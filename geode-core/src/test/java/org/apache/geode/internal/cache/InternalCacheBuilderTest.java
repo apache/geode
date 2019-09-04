@@ -14,15 +14,26 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.internal.cache.InternalCacheBuilderTest.CacheState.CLOSED;
-import static org.apache.geode.internal.cache.InternalCacheBuilderTest.CacheState.OPEN;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.CacheState.CLOSED;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.CacheState.OPEN;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.THROWING_CACHE_CONSTRUCTOR;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.THROWING_CACHE_SUPPLIER;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.THROWING_SYSTEM_CONSTRUCTOR;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.THROWING_SYSTEM_SUPPLIER;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.cache;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.constructedCache;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.constructedSystem;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.constructorOf;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.singletonSystem;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.supplierOf;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.systemWithNoCache;
+import static org.apache.geode.internal.util.InternalCacheBuilderTestUtil.throwingCacheConfig;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.same;
@@ -32,11 +43,8 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Properties;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.Before;
@@ -44,39 +52,15 @@ import org.junit.Test;
 import org.mockito.Mock;
 
 import org.apache.geode.cache.CacheExistsException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalCacheConstructor;
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalDistributedSystemConstructor;
-import org.apache.geode.internal.metrics.CompositeMeterRegistryFactory;
+import org.apache.geode.metrics.internal.MetricsService;
 
 /**
  * Unit tests for {@link InternalCacheBuilder}.
  */
 public class InternalCacheBuilderTest {
-
-  private static final int ANY_SYSTEM_ID = 12;
-  private static final String ANY_MEMBER_NAME = "a-member-name";
-  private static final String ANY_HOST_NAME = "a-host-name";
-
-  private static final Supplier<InternalDistributedSystem> THROWING_SYSTEM_SUPPLIER =
-      () -> {
-        throw new AssertionError("throwing system supplier");
-      };
-  private static final Supplier<InternalCache> THROWING_CACHE_SUPPLIER =
-      () -> {
-        throw new AssertionError("throwing cache supplier");
-      };
-
-  private static final InternalDistributedSystemConstructor THROWING_SYSTEM_CONSTRUCTOR =
-      (a, b) -> {
-        throw new AssertionError("throwing system constructor");
-      };
-  private static final InternalCacheConstructor THROWING_CACHE_CONSTRUCTOR =
-      (a, b, c, d, e, f, g, addedMeterSubregistries) -> {
-        throw new AssertionError("throwing cache constructor");
-      };
 
   @Mock
   private Supplier<InternalDistributedSystem> nullSingletonSystemSupplier;
@@ -85,10 +69,7 @@ public class InternalCacheBuilderTest {
   private Supplier<InternalCache> nullSingletonCacheSupplier;
 
   @Mock
-  private CompositeMeterRegistryFactory compositeMeterRegistryFactory;
-
-  @Mock
-  private Consumer<CompositeMeterRegistry> metricsSessionInitializer;
+  private MetricsService.Builder metricsServiceBuilder;
 
   @Before
   public void setUp() {
@@ -99,100 +80,119 @@ public class InternalCacheBuilderTest {
   }
 
   @Test
+  public void setsMetricsServiceBuilderIsClientFalseByDefault() {
+    MetricsService.Builder theMetricsServiceBuilder = mock(MetricsService.Builder.class);
+
+    new InternalCacheBuilder(new Properties(), new CacheConfig(), theMetricsServiceBuilder,
+        nullSingletonSystemSupplier, constructorOf(constructedSystem()), nullSingletonCacheSupplier,
+        constructorOf(constructedCache()));
+
+    verify(theMetricsServiceBuilder).setIsClient(false);
+  }
+
+  @Test
+  public void addMeterSubregistry_addsGivenRegistryToMetricsServiceBuilder() {
+    InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
+        new Properties(), new CacheConfig(), metricsServiceBuilder, nullSingletonSystemSupplier,
+        constructorOf(constructedSystem()), nullSingletonCacheSupplier,
+        constructorOf(constructedCache()));
+
+    SimpleMeterRegistry addedMeterRegistry = new SimpleMeterRegistry();
+
+    internalCacheBuilder.addMeterSubregistry(addedMeterRegistry);
+
+    verify(metricsServiceBuilder).addPersistentMeterRegistry(same(addedMeterRegistry));
+  }
+
+  @Test
+  public void addMeterSubregistry_throwsNullPointerExceptionIfTheGivenRegistryIsNull() {
+    InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
+        new Properties(), new CacheConfig(), metricsServiceBuilder, nullSingletonSystemSupplier,
+        constructorOf(constructedSystem()), nullSingletonCacheSupplier,
+        constructorOf(constructedCache()));
+
+    assertThatThrownBy(() -> internalCacheBuilder.addMeterSubregistry(null))
+        .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void setIsClient_setsIsClientInMetricsServiceBuilder() {
+    MetricsService.Builder theMetricsServiceBuilder = mock(MetricsService.Builder.class);
+
+    InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
+        new Properties(), new CacheConfig(), theMetricsServiceBuilder, nullSingletonSystemSupplier,
+        constructorOf(constructedSystem()), nullSingletonCacheSupplier,
+        constructorOf(constructedCache()));
+
+    internalCacheBuilder.setIsClient(true);
+
+    verify(theMetricsServiceBuilder).setIsClient(true);
+  }
+
+  @Test
   public void create_throwsNullPointerException_ifConfigPropertiesIsNull() {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        null, new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        nullSingletonSystemSupplier, constructorOf(constructedSystem()),
+        null, new CacheConfig(), metricsServiceBuilder, nullSingletonSystemSupplier,
+        constructorOf(constructedSystem()),
         nullSingletonCacheSupplier, constructorOf(constructedCache()));
 
-    Throwable thrown = catchThrowable(() -> internalCacheBuilder
-        .create());
-
-    assertThat(thrown).isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(internalCacheBuilder::create)
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   public void create_throwsNullPointerException_andCacheConfigIsNull() {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), null,
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        nullSingletonSystemSupplier, constructorOf(constructedSystem()),
-        nullSingletonCacheSupplier, constructorOf(constructedCache()));
+        new Properties(), null, metricsServiceBuilder, nullSingletonSystemSupplier,
+        constructorOf(constructedSystem()), nullSingletonCacheSupplier,
+        constructorOf(constructedCache()));
 
-    Throwable thrown = catchThrowable(() -> internalCacheBuilder
-        .create());
-
-    assertThat(thrown).isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(internalCacheBuilder::create)
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   public void create_constructsSystem_withGivenProperties_ifNoSystemExists_andNoCacheExists() {
-    InternalCache constructedCache = constructedCache();
-
     InternalDistributedSystemConstructor systemConstructor = constructorOf(constructedSystem());
     Properties configProperties = new Properties();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        configProperties, new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        nullSingletonSystemSupplier, systemConstructor,
-        nullSingletonCacheSupplier, constructorOf(constructedCache));
+        configProperties, new CacheConfig(), metricsServiceBuilder, nullSingletonSystemSupplier,
+        systemConstructor, nullSingletonCacheSupplier, constructorOf(constructedCache()));
 
     internalCacheBuilder
         .create();
 
-    verify(systemConstructor).construct(same(configProperties), any());
+    verify(systemConstructor).construct(same(configProperties), any(), any());
   }
 
   @Test
-  public void create_constructsCompositeMeterRegistry_ifNoCacheExists() {
-    int theSystemId = 21;
-    String theMemberName = "theMemberName";
-    String theHostName = "theHostName";
-    boolean isClient = false;
-    InternalDistributedSystem theConstructedSystem =
-        systemWith("theConstructedSystem", theSystemId, theMemberName, theHostName);
-    InternalCache constructedCache = constructedCache();
-
-    CompositeMeterRegistryFactory theCompositeMeterRegistryFactory =
-        mock(CompositeMeterRegistryFactory.class);
-
+  public void create_passesIsClientToSystemConstructor_isNoSystemExists() {
+    InternalCacheConstructor cacheConstructor = constructorOf(constructedCache());
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        theCompositeMeterRegistryFactory, metricsSessionInitializer,
-        nullSingletonSystemSupplier, constructorOf(theConstructedSystem),
-        nullSingletonCacheSupplier, constructorOf(constructedCache));
+        new Properties(), new CacheConfig(), metricsServiceBuilder, nullSingletonSystemSupplier,
+        constructorOf(constructedSystem()), nullSingletonCacheSupplier, cacheConstructor);
 
     internalCacheBuilder
+        .setIsClient(true)
         .create();
 
-    verify(theCompositeMeterRegistryFactory)
-        .create(eq(theSystemId), eq(theMemberName), eq(theHostName), eq(isClient));
+    verify(cacheConstructor)
+        .construct(eq(true), any(), any(), any(), anyBoolean(), any());
   }
 
   @Test
-  public void create_setsConstructedCompositeMeterRegistry_onTheConstructedCache_ifNoCacheExists() {
-    InternalCache constructedCache = constructedCache();
-    InternalCacheConstructor cacheConstructor = constructorOf(constructedCache);
+  public void create_passesMetricsServiceBuilderToSystemConstructor_ifNoSystemExists() {
+    InternalDistributedSystemConstructor systemConstructor = constructorOf(constructedSystem());
 
-    CompositeMeterRegistry theCompositeMeterRegistry = new CompositeMeterRegistry();
-    CompositeMeterRegistryFactory theCompositeMeterRegistryFactory =
-        mock(CompositeMeterRegistryFactory.class);
-    when(theCompositeMeterRegistryFactory.create(anyInt(), any(), any(), anyBoolean()))
-        .thenReturn(theCompositeMeterRegistry);
-
+    MetricsService.Builder theMetricsServiceBuilder = mock(MetricsService.Builder.class);
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        theCompositeMeterRegistryFactory, metricsSessionInitializer,
-        nullSingletonSystemSupplier, constructorOf(constructedSystem()),
-        nullSingletonCacheSupplier, cacheConstructor);
+        new Properties(), new CacheConfig(), theMetricsServiceBuilder, nullSingletonSystemSupplier,
+        systemConstructor, nullSingletonCacheSupplier, constructorOf(constructedCache()));
 
-    internalCacheBuilder
-        .create();
+    internalCacheBuilder.create();
 
-    verify(cacheConstructor).construct(anyBoolean(), any(), any(), any(),
-        anyBoolean(), any(), same(theCompositeMeterRegistry), any());
+    verify(systemConstructor).construct(any(), any(), same(theMetricsServiceBuilder));
   }
 
   @Test
@@ -200,10 +200,9 @@ public class InternalCacheBuilderTest {
     InternalCache constructedCache = constructedCache();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        nullSingletonSystemSupplier, constructorOf(constructedSystem()),
-        nullSingletonCacheSupplier, constructorOf(constructedCache));
+        new Properties(), new CacheConfig(), metricsServiceBuilder, nullSingletonSystemSupplier,
+        constructorOf(constructedSystem()), nullSingletonCacheSupplier,
+        constructorOf(constructedCache));
 
     InternalCache result = internalCacheBuilder
         .create();
@@ -217,10 +216,9 @@ public class InternalCacheBuilderTest {
     InternalCache constructedCache = constructedCache();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        nullSingletonSystemSupplier, constructorOf(constructedSystem),
-        nullSingletonCacheSupplier, constructorOf(constructedCache));
+        new Properties(), new CacheConfig(), metricsServiceBuilder, nullSingletonSystemSupplier,
+        constructorOf(constructedSystem), nullSingletonCacheSupplier,
+        constructorOf(constructedCache));
 
     internalCacheBuilder
         .create();
@@ -236,16 +234,14 @@ public class InternalCacheBuilderTest {
     InternalCacheConstructor cacheConstructor = constructorOf(constructedCache);
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        nullSingletonSystemSupplier, constructorOf(constructedSystem),
-        nullSingletonCacheSupplier, cacheConstructor);
+        new Properties(), new CacheConfig(), metricsServiceBuilder, nullSingletonSystemSupplier,
+        constructorOf(constructedSystem), nullSingletonCacheSupplier, cacheConstructor);
 
     internalCacheBuilder
         .create();
 
-    verify(cacheConstructor).construct(anyBoolean(), any(), same(constructedSystem), any(),
-        anyBoolean(), any(), any(), any());
+    verify(cacheConstructor)
+        .construct(anyBoolean(), any(), same(constructedSystem), any(), anyBoolean(), any());
   }
 
   @Test
@@ -253,10 +249,8 @@ public class InternalCacheBuilderTest {
     InternalCache constructedCache = constructedCache();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        supplierOf(singletonSystem()), THROWING_SYSTEM_CONSTRUCTOR,
-        nullSingletonCacheSupplier, constructorOf(constructedCache));
+        new Properties(), new CacheConfig(), metricsServiceBuilder, supplierOf(singletonSystem()),
+        THROWING_SYSTEM_CONSTRUCTOR, nullSingletonCacheSupplier, constructorOf(constructedCache));
 
     InternalCache result = internalCacheBuilder
         .create();
@@ -272,10 +266,8 @@ public class InternalCacheBuilderTest {
     InternalCacheConstructor cacheConstructor = constructorOf(constructedCache);
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        supplierOf(singletonSystem), THROWING_SYSTEM_CONSTRUCTOR,
-        nullSingletonCacheSupplier, cacheConstructor);
+        new Properties(), new CacheConfig(), metricsServiceBuilder, supplierOf(singletonSystem),
+        THROWING_SYSTEM_CONSTRUCTOR, nullSingletonCacheSupplier, cacheConstructor);
 
     internalCacheBuilder
         .create();
@@ -291,16 +283,14 @@ public class InternalCacheBuilderTest {
     InternalCacheConstructor cacheConstructor = constructorOf(constructedCache);
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        supplierOf(singletonSystem), THROWING_SYSTEM_CONSTRUCTOR,
-        nullSingletonCacheSupplier, cacheConstructor);
+        new Properties(), new CacheConfig(), metricsServiceBuilder, supplierOf(singletonSystem),
+        THROWING_SYSTEM_CONSTRUCTOR, nullSingletonCacheSupplier, cacheConstructor);
 
     internalCacheBuilder
         .create();
 
-    verify(cacheConstructor).construct(anyBoolean(), any(), same(singletonSystem), any(),
-        anyBoolean(), any(), any(), any());
+    verify(cacheConstructor)
+        .construct(anyBoolean(), any(), same(singletonSystem), any(), anyBoolean(), any());
   }
 
   @Test
@@ -308,10 +298,9 @@ public class InternalCacheBuilderTest {
     InternalCache constructedCache = constructedCache();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        supplierOf(singletonSystem()), THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(CLOSED)), constructorOf(constructedCache));
+        new Properties(), new CacheConfig(), metricsServiceBuilder, supplierOf(singletonSystem()),
+        THROWING_SYSTEM_CONSTRUCTOR, supplierOf(cache("singleton", CLOSED)),
+        constructorOf(constructedCache));
 
     InternalCache result = internalCacheBuilder
         .create();
@@ -325,10 +314,9 @@ public class InternalCacheBuilderTest {
     InternalCache constructedCache = constructedCache();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        supplierOf(singletonSystem), THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(CLOSED)), constructorOf(constructedCache));
+        new Properties(), new CacheConfig(), metricsServiceBuilder, supplierOf(singletonSystem),
+        THROWING_SYSTEM_CONSTRUCTOR, supplierOf(cache("singleton", CLOSED)),
+        constructorOf(constructedCache));
 
     internalCacheBuilder
         .create();
@@ -343,25 +331,22 @@ public class InternalCacheBuilderTest {
     InternalCacheConstructor cacheConstructor = constructorOf(constructedCache());
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        supplierOf(singletonSystem), THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(CLOSED)), cacheConstructor);
+        new Properties(), new CacheConfig(), metricsServiceBuilder, supplierOf(singletonSystem),
+        THROWING_SYSTEM_CONSTRUCTOR, supplierOf(cache("singleton", CLOSED)), cacheConstructor);
 
     internalCacheBuilder
         .create();
 
-    verify(cacheConstructor).construct(anyBoolean(), any(), same(singletonSystem), any(),
-        anyBoolean(), any(), any(), any());
+    verify(cacheConstructor)
+        .construct(anyBoolean(), any(), same(singletonSystem), any(), anyBoolean(), any());
   }
 
   @Test
   public void create_throwsCacheExistsException_ifSingletonSystemExists_andSingletonCacheIsOpen_butExistingIsNotOk() {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        supplierOf(singletonSystem()), THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(OPEN)), THROWING_CACHE_CONSTRUCTOR);
+        new Properties(), new CacheConfig(), metricsServiceBuilder, supplierOf(singletonSystem()),
+        THROWING_SYSTEM_CONSTRUCTOR, supplierOf(cache("singleton", OPEN)),
+        THROWING_CACHE_CONSTRUCTOR);
 
     Throwable thrown = catchThrowable(() -> internalCacheBuilder
         .setIsExistingOk(false)
@@ -375,10 +360,10 @@ public class InternalCacheBuilderTest {
     Throwable thrownByCacheConfig = new IllegalStateException("incompatible");
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), throwingCacheConfig(thrownByCacheConfig),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        supplierOf(singletonSystem()), THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(OPEN)), THROWING_CACHE_CONSTRUCTOR);
+        new Properties(), throwingCacheConfig(thrownByCacheConfig), metricsServiceBuilder,
+        supplierOf(singletonSystem()),
+        THROWING_SYSTEM_CONSTRUCTOR, supplierOf(cache("singleton", OPEN)),
+        THROWING_CACHE_CONSTRUCTOR);
 
     Throwable thrown = catchThrowable(() -> internalCacheBuilder
         .setIsExistingOk(true)
@@ -389,13 +374,11 @@ public class InternalCacheBuilderTest {
 
   @Test
   public void create_returnsSingletonCache_ifSingletonCacheIsOpen() {
-    InternalCache singletonCache = singletonCache(OPEN);
+    InternalCache singletonCache = cache("singleton", OPEN);
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        supplierOf(singletonSystem()), THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache), THROWING_CACHE_CONSTRUCTOR);
+        new Properties(), new CacheConfig(), metricsServiceBuilder, supplierOf(singletonSystem()),
+        THROWING_SYSTEM_CONSTRUCTOR, supplierOf(singletonCache), THROWING_CACHE_CONSTRUCTOR);
 
     InternalCache result = internalCacheBuilder
         .create();
@@ -406,9 +389,8 @@ public class InternalCacheBuilderTest {
   @Test
   public void createWithSystem_throwsNullPointerException_ifSystemIsNull() {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
+        new Properties(), new CacheConfig(), metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR,
         THROWING_CACHE_SUPPLIER, THROWING_CACHE_CONSTRUCTOR);
 
     Throwable thrown = catchThrowable(() -> internalCacheBuilder
@@ -422,26 +404,24 @@ public class InternalCacheBuilderTest {
     InternalCache constructedCache = constructedCache();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
+        new Properties(), new CacheConfig(), metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR,
         nullSingletonCacheSupplier, constructorOf(constructedCache));
 
     InternalCache result = internalCacheBuilder
-        .create(givenSystem());
+        .create(systemWithNoCache());
 
     assertThat(result).isSameAs(constructedCache);
   }
 
   @Test
   public void createWithSystem_setsConstructedCache_onGivenSystem_ifNoCacheExists() {
-    InternalDistributedSystem givenSystem = givenSystem();
+    InternalDistributedSystem givenSystem = systemWithNoCache();
     InternalCache constructedCache = constructedCache();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
+        new Properties(), new CacheConfig(), metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR,
         nullSingletonCacheSupplier, constructorOf(constructedCache));
 
     internalCacheBuilder
@@ -452,21 +432,20 @@ public class InternalCacheBuilderTest {
 
   @Test
   public void createWithSystem_setsGivenSystem_onConstructedCache_ifNoCacheExists() {
-    InternalDistributedSystem givenSystem = givenSystem();
+    InternalDistributedSystem givenSystem = systemWithNoCache();
 
     InternalCacheConstructor cacheConstructor = constructorOf(constructedCache());
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
+        new Properties(), new CacheConfig(), metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR,
         nullSingletonCacheSupplier, cacheConstructor);
 
     internalCacheBuilder
         .create(givenSystem);
 
-    verify(cacheConstructor).construct(anyBoolean(), any(), same(givenSystem), any(),
-        anyBoolean(), any(), any(), any());
+    verify(cacheConstructor)
+        .construct(anyBoolean(), any(), same(givenSystem), any(), anyBoolean(), any());
   }
 
   @Test
@@ -474,27 +453,25 @@ public class InternalCacheBuilderTest {
     InternalCache constructedCache = constructedCache();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(CLOSED)), constructorOf(constructedCache));
+        new Properties(), new CacheConfig(), metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR,
+        supplierOf(cache("singleton", CLOSED)), constructorOf(constructedCache));
 
     InternalCache result = internalCacheBuilder
-        .create(givenSystem());
+        .create(systemWithNoCache());
 
     assertThat(result).isSameAs(constructedCache);
   }
 
   @Test
   public void createWithSystem_setsConstructedCache_onGivenSystem_ifSingletonCacheIsClosed() {
-    InternalDistributedSystem givenSystem = givenSystem();
+    InternalDistributedSystem givenSystem = systemWithNoCache();
     InternalCache constructedCache = constructedCache();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(CLOSED)), constructorOf(constructedCache));
+        new Properties(), new CacheConfig(), metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR,
+        supplierOf(cache("singleton", CLOSED)), constructorOf(constructedCache));
 
     internalCacheBuilder
         .create(givenSystem);
@@ -504,47 +481,44 @@ public class InternalCacheBuilderTest {
 
   @Test
   public void createWithSystem_setsGivenSystem_onConstructedCache_ifSingletonCacheIsClosed() {
-    InternalDistributedSystem givenSystem = givenSystem();
+    InternalDistributedSystem givenSystem = systemWithNoCache();
 
     InternalCacheConstructor cacheConstructor = constructorOf(constructedCache());
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(CLOSED)), cacheConstructor);
+        new Properties(), new CacheConfig(), metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR,
+        supplierOf(cache("singleton", CLOSED)), cacheConstructor);
 
     internalCacheBuilder
         .create(givenSystem);
 
-    verify(cacheConstructor).construct(anyBoolean(), any(), same(givenSystem), any(),
-        anyBoolean(), any(), any(), any());
+    verify(cacheConstructor)
+        .construct(anyBoolean(), any(), same(givenSystem), any(), anyBoolean(), any());
   }
 
   @Test
   public void createWithSystem_throwsCacheExistsException_ifSingletonCacheIsOpen_butExistingIsNotOk() {
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(OPEN)), THROWING_CACHE_CONSTRUCTOR);
+        new Properties(), new CacheConfig(), metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR,
+        supplierOf(cache("singleton", OPEN)), THROWING_CACHE_CONSTRUCTOR);
 
     Throwable thrown = catchThrowable(() -> internalCacheBuilder
         .setIsExistingOk(false)
-        .create(givenSystem()));
+        .create(systemWithNoCache()));
 
     assertThat(thrown).isInstanceOf(CacheExistsException.class);
   }
 
   @Test
   public void createWithSystem_doesNotSetSingletonCache_onGivenSystem_ifSingletonCacheIsOpen_butExistingIsNotOk() {
-    InternalDistributedSystem givenSystem = givenSystem();
+    InternalDistributedSystem givenSystem = systemWithNoCache();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(OPEN)), THROWING_CACHE_CONSTRUCTOR);
+        new Properties(), new CacheConfig(), metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR,
+        supplierOf(cache("singleton", OPEN)), THROWING_CACHE_CONSTRUCTOR);
 
     ignoreThrowable(() -> internalCacheBuilder
         .setIsExistingOk(false)
@@ -558,27 +532,27 @@ public class InternalCacheBuilderTest {
     Throwable thrownByCacheConfig = new IllegalStateException("incompatible");
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), throwingCacheConfig(thrownByCacheConfig),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(OPEN)), THROWING_CACHE_CONSTRUCTOR);
+        new Properties(), throwingCacheConfig(thrownByCacheConfig), metricsServiceBuilder,
+        THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR, supplierOf(cache("singleton", OPEN)),
+        THROWING_CACHE_CONSTRUCTOR);
 
     Throwable thrown = catchThrowable(() -> internalCacheBuilder
         .setIsExistingOk(true)
-        .create(givenSystem()));
+        .create(systemWithNoCache()));
 
     assertThat(thrown).isSameAs(thrownByCacheConfig);
   }
 
   @Test
   public void createWithSystem_doesNotSetSingletonCache_onGivenSystem_ifSingletonCacheIsOpen_andExistingIsOk_butCacheIsNotCompatible() {
-    InternalDistributedSystem givenSystem = givenSystem();
+    InternalDistributedSystem givenSystem = systemWithNoCache();
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
         new Properties(), throwingCacheConfig(new IllegalStateException("incompatible")),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
-        supplierOf(singletonCache(OPEN)), THROWING_CACHE_CONSTRUCTOR);
+        metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
+        supplierOf(cache("singleton", OPEN)),
+        THROWING_CACHE_CONSTRUCTOR);
 
     ignoreThrowable(() -> internalCacheBuilder
         .setIsExistingOk(true)
@@ -589,30 +563,28 @@ public class InternalCacheBuilderTest {
 
   @Test
   public void createWithSystem_returnsSingletonCache_ifSingletonCacheIsOpen_andExistingIsOk_andCacheIsCompatible() {
-    InternalCache singletonCache = singletonCache(OPEN);
+    InternalCache singletonCache = cache("singleton", OPEN);
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
+        new Properties(), new CacheConfig(), metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR,
         supplierOf(singletonCache), THROWING_CACHE_CONSTRUCTOR);
 
     InternalCache result = internalCacheBuilder
         .setIsExistingOk(true)
-        .create(givenSystem());
+        .create(systemWithNoCache());
 
     assertThat(result).isSameAs(singletonCache);
   }
 
   @Test
   public void createWithSystem_setsSingletonCache_onGivenSystem_ifSingletonCacheIsOpen_andExistingIsOk_andCacheIsCompatible() {
-    InternalDistributedSystem givenSystem = givenSystem();
-    InternalCache singletonCache = singletonCache(OPEN);
+    InternalDistributedSystem givenSystem = systemWithNoCache();
+    InternalCache singletonCache = cache("singleton", OPEN);
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        THROWING_SYSTEM_SUPPLIER, THROWING_SYSTEM_CONSTRUCTOR,
+        new Properties(), new CacheConfig(), metricsServiceBuilder, THROWING_SYSTEM_SUPPLIER,
+        THROWING_SYSTEM_CONSTRUCTOR,
         supplierOf(singletonCache), THROWING_CACHE_CONSTRUCTOR);
 
     internalCacheBuilder
@@ -622,114 +594,10 @@ public class InternalCacheBuilderTest {
     verify(givenSystem).setCache(same(singletonCache));
   }
 
-  @Test
-  public void addMeterRegistry_createsCache_withGivenMeterRegistry() {
-    MeterRegistry theMeterRegistry = new SimpleMeterRegistry();
-
-    CompositeMeterRegistry theCompositeMeterRegistry = new CompositeMeterRegistry();
-    when(compositeMeterRegistryFactory.create(anyInt(), any(), any(), anyBoolean()))
-        .thenReturn(theCompositeMeterRegistry);
-
-    InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
-        new Properties(), new CacheConfig(),
-        compositeMeterRegistryFactory, metricsSessionInitializer,
-        nullSingletonSystemSupplier, constructorOf(constructedSystem()),
-        nullSingletonCacheSupplier, constructorOf(constructedCache()));
-
-    internalCacheBuilder
-        .addMeterSubregistry(theMeterRegistry)
-        .create();
-
-    assertThat(theCompositeMeterRegistry.getRegistries()).containsExactly(theMeterRegistry);
-  }
-
-  private InternalDistributedSystem constructedSystem() {
-    return systemWith("constructedSystem", ANY_SYSTEM_ID, ANY_MEMBER_NAME, ANY_HOST_NAME);
-  }
-
-  private InternalDistributedSystem givenSystem() {
-    return systemWith("givenSystem", ANY_SYSTEM_ID, ANY_MEMBER_NAME, ANY_HOST_NAME);
-  }
-
-  private InternalDistributedSystem singletonSystem() {
-    return systemWith("singletonSystem", ANY_SYSTEM_ID, ANY_MEMBER_NAME, ANY_HOST_NAME);
-  }
-
-  private InternalDistributedSystem systemWith(String mockName, int systemId, String memberName,
-      String hostName) {
-    InternalDistributedSystem system = mock(InternalDistributedSystem.class, mockName);
-    DistributionConfig distributionConfig = mock(DistributionConfig.class);
-    InternalDistributedMember distributedMember = mock(InternalDistributedMember.class);
-    when(distributionConfig.getDistributedSystemId()).thenReturn(systemId);
-    when(distributedMember.getHost()).thenReturn(hostName);
-    when(system.getConfig()).thenReturn(distributionConfig);
-    when(system.getDistributedMember()).thenReturn(distributedMember);
-    when(system.getName()).thenReturn(memberName);
-    return system;
-  }
-
-  private static InternalCache constructedCache() {
-    return cache("constructedCache", OPEN);
-  }
-
-  private static InternalCache singletonCache(CacheState state) {
-    return cache("singletonCache", state);
-  }
-
-  private static InternalCache cache(String name, CacheState state) {
-    InternalCache cache = mock(InternalCache.class, name);
-    when(cache.isClosed()).thenReturn(state.isClosed());
-    doThrow(new CacheExistsException(cache, "cache exists"))
-        .when(cache).throwCacheExistsException();
-    return cache;
-  }
-
-  private static InternalDistributedSystemConstructor constructorOf(
-      InternalDistributedSystem constructedSystem) {
-    InternalDistributedSystemConstructor constructor =
-        mock(InternalDistributedSystemConstructor.class, "internal distributed system constructor");
-    when(constructor.construct(any(), any())).thenReturn(constructedSystem);
-    return constructor;
-  }
-
-  private static InternalCacheConstructor constructorOf(InternalCache constructedCache) {
-    InternalCacheConstructor constructor =
-        mock(InternalCacheConstructor.class, "internal cache constructor");
-    when(
-        constructor.construct(anyBoolean(), any(), any(), any(), anyBoolean(), any(), any(), any()))
-            .thenReturn(constructedCache);
-    return constructor;
-  }
-
-  private static <T> Supplier<T> supplierOf(T instance) {
-    return () -> instance;
-  }
-
-  private static CacheConfig throwingCacheConfig(Throwable throwable) {
-    CacheConfig cacheConfig = mock(CacheConfig.class);
-    doThrow(throwable).when(cacheConfig).validateCacheConfig(any());
-    return cacheConfig;
-  }
-
   private static void ignoreThrowable(ThrowingCallable shouldRaiseThrowable) {
     try {
       shouldRaiseThrowable.call();
     } catch (Throwable ignored) {
-    }
-  }
-
-  enum CacheState {
-    OPEN(false),
-    CLOSED(true);
-
-    private final boolean isClosed;
-
-    CacheState(boolean isClosed) {
-      this.isClosed = isClosed;
-    }
-
-    boolean isClosed() {
-      return isClosed;
     }
   }
 }

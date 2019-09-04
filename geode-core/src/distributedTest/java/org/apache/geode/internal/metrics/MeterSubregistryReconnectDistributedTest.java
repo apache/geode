@@ -107,25 +107,26 @@ public class MeterSubregistryReconnectDistributedTest implements Serializable {
   }
 
   @Test
-  public void reconnect_restoresOnlySubregistriesFromCacheFactory() throws InterruptedException {
-    MeterRegistry subregistryFromCacheFactory = meterRegistryFrom("CacheFactory");
-    MeterRegistry subregistryFromPublishingService = meterRegistryFrom("MetricsPublishingService");
+  public void reconnect_restoresOnlyUserRegistriesFromCacheFactory() throws InterruptedException {
+    MeterRegistry userRegistryFromCacheFactory = meterRegistryFrom("CacheFactory");
+    MeterRegistry publishingRegistryFromPublishingService =
+        meterRegistryFrom("MetricsPublishingService");
 
-    Consumer<CompositeMeterRegistry> addSubregistryViaPublishingService =
-        compositeMeterRegistry -> compositeMeterRegistry.add(subregistryFromPublishingService);
+    Consumer<CompositeMeterRegistry> addPublishingRegistryViaPublishingService =
+        compositeRegistry -> compositeRegistry.add(publishingRegistryFromPublishingService);
 
-    Consumer<CacheFactory> addSubregistryViaCacheFactory =
-        cacheFactory -> cacheFactory.addMeterSubregistry(subregistryFromCacheFactory);
+    Consumer<CacheFactory> addUserRegistryViaCacheFactory =
+        cacheFactory -> cacheFactory.addMeterSubregistry(userRegistryFromCacheFactory);
 
     createServer(NAME_OF_SERVER_TO_RECONNECT,
-        addSubregistryViaCacheFactory,
-        addSubregistryViaPublishingService);
+        addUserRegistryViaCacheFactory,
+        addPublishingRegistryViaPublishingService);
 
     reconnect();
 
     assertThat(cacheMeterRegistry().getRegistries())
-        .contains(subregistryFromCacheFactory)
-        .doesNotContain(subregistryFromPublishingService);
+        .contains(userRegistryFromCacheFactory)
+        .doesNotContain(publishingRegistryFromPublishingService);
   }
 
   private CompositeMeterRegistry cacheMeterRegistry() {

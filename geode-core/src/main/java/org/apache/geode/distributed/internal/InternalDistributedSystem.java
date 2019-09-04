@@ -121,6 +121,7 @@ import org.apache.geode.logging.internal.spi.LogConfigSupplier;
 import org.apache.geode.logging.internal.spi.LogFile;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.metrics.internal.MeterRegistrySupplier;
+import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
@@ -171,6 +172,7 @@ public class InternalDistributedSystem extends DistributedSystem
       ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   private final StatisticsManager statisticsManager;
+  private MetricsService metricsService;
   private final FunctionStatsManager functionStatsManager;
 
   /**
@@ -180,7 +182,9 @@ public class InternalDistributedSystem extends DistributedSystem
 
   private final GrantorRequestProcessor.GrantorRequestContext grc;
 
-  /** services provided by other modules */
+  /**
+   * services provided by other modules
+   */
   private Map<Class, DistributedSystemService> services = new HashMap<>();
 
   private final AtomicReference<ClusterAlertMessaging> clusterAlertMessaging =
@@ -194,13 +198,13 @@ public class InternalDistributedSystem extends DistributedSystem
    * existing one with the same properties.
    */
   public static InternalDistributedSystem connectInternal(Properties config,
-      SecurityConfig securityConfig) {
+      SecurityConfig securityConfig, MetricsService.Builder metricsSessionBuilder) {
     if (config == null) {
       config = new Properties();
     }
 
     if (Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY)) {
-      return new Builder(config)
+      return new Builder(config, metricsSessionBuilder)
           .setSecurityConfig(securityConfig)
           .build();
     }
@@ -250,7 +254,7 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       // Make a new connection to the distributed system
-      InternalDistributedSystem newSystem = new Builder(config)
+      InternalDistributedSystem newSystem = new Builder(config, metricsSessionBuilder)
           .setSecurityConfig(securityConfig)
           .build();
       addSystem(newSystem);
@@ -317,13 +321,11 @@ public class InternalDistributedSystem extends DistributedSystem
    * A set of listeners that are invoked when this connection to the distributed system is
    * disconnected
    */
-  private final Set<DisconnectListener> disconnectListeners = new LinkedHashSet<>(); // needs to be
-                                                                                     // ordered
+  private final Set<DisconnectListener> disconnectListeners = new LinkedHashSet<>();
 
   /**
    * Set of listeners that are invoked whenever a connection is created to the distributed system
    */
-  // needs to be ordered
   @MakeNotStatic
   private static final Set<ConnectListener> connectListeners = new LinkedHashSet<>();
 
@@ -545,8 +547,8 @@ public class InternalDistributedSystem extends DistributedSystem
     isReconnectingDS = config.isReconnecting();
     quorumChecker = config.quorumChecker();
 
-    ((DistributionConfigImpl) originalConfig).checkForDisallowedDefaults(); // throws
-                                                                            // IllegalStateEx
+    // throws IllegalStateEx
+    ((DistributionConfigImpl) originalConfig).checkForDisallowedDefaults();
     shareSockets = originalConfig.getConserveSockets();
     startTime = System.currentTimeMillis();
     grc = new GrantorRequestProcessor.GrantorRequestContext(stopper);
@@ -640,7 +642,8 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Initializes this connection to a distributed system with the current configuration state.
    */
-  private void initialize(SecurityManager securityManager, PostProcessor postProcessor) {
+  private void initialize(SecurityManager securityManager, PostProcessor postProcessor,
+      MetricsService.Builder metricsServiceBuilder) {
     if (originalConfig.getLocators().equals("")) {
       if (originalConfig.getMcastPort() != 0) {
         throw new GemFireConfigException("The " + LOCATORS + " attribute can not be empty when the "
@@ -690,7 +693,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
       if (attemptingToReconnect && logger.isDebugEnabled()) {
         logger.debug(
-            "This thread is initializing a new DistributedSystem in order to reconnect to other members");
+            "This thread is initializing a new DistributedSystem in order to reconnect to other "
+                + "members");
       }
       // Note we need loners to load the license in case they are a
       // cache server and will need to enforce the member limit
@@ -727,12 +731,18 @@ public class InternalDistributedSystem extends DistributedSystem
         if (avail < size) {
           if (ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED) {
             logger.warn(
-                "System memory appears to be over committed by {} bytes.  You may experience instability, performance issues, or terminated processes due to the Linux OOM killer.",
+                "System memory appears to be over committed by {} bytes.  You may experience "
+                    + "instability, performance issues, or terminated processes due to the Linux "
+                    + "OOM killer.",
                 size - avail);
           } else {
             throw new IllegalStateException(
                 String.format(
-                    "Insufficient free memory (%s) when attempting to lock %s bytes.  Either reduce the amount of heap or off-heap memory requested or free up additional system memory.  You may also specify -Dgemfire.Cache.ALLOW_MEMORY_OVERCOMMIT=true on the command-line to override the constraint check.",
+                    "Insufficient free memory (%s) when attempting to lock %s bytes.  Either "
+                        + "reduce the amount of heap or off-heap memory requested or free up "
+                        + "additional system memory.  You may also specify -Dgemfire.Cache"
+                        + ".ALLOW_MEMORY_OVERCOMMIT=true on the command-line to override the "
+                        + "constraint check.",
                     avail, size));
           }
         }
@@ -803,6 +813,9 @@ public class InternalDistributedSystem extends DistributedSystem
       alertingService.useAlertMessaging(clusterAlertMessaging.get());
       alertingSession.createSession(alertingService);
       alertingSession.startSession();
+
+      metricsService = metricsServiceBuilder.build(this);
+      metricsService.start();
 
       // Log any instantiators that were registered before the log writer
       // was created
@@ -1112,6 +1125,10 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public long getStartTime() {
     return startTime;
+  }
+
+  public MeterRegistry getMeterRegistry() {
+    return metricsService.getMeterRegistry();
   }
 
   /**
@@ -1511,7 +1528,7 @@ public class InternalDistributedSystem extends DistributedSystem
           InternalCache currentCache = getCache();
           if (currentCache != null && !currentCache.isClosed()) {
             isDisconnectThread.set(Boolean.TRUE); // bug #42663 - this must be set while
-                                                  // closing the cache
+            // closing the cache
             try {
               currentCache.close(reason, dm.getRootCause(), keepAlive, true); // fix for 42150
             } catch (VirtualMachineError e) {
@@ -1589,6 +1606,7 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       functionStatsManager.close();
+      metricsService.stop();
 
       InternalFunctionService.unregisterAllFunctions();
 
@@ -2218,7 +2236,6 @@ public class InternalDistributedSystem extends DistributedSystem
 
     /**
      * Invoked after the connection to the distributed system has been disconnected
-     *
      */
     void onShutdown(InternalDistributedSystem sys);
   }
@@ -2417,13 +2434,11 @@ public class InternalDistributedSystem extends DistributedSystem
     // reconnecting for lost roles then this will be null
     String cacheXML = null;
     List<CacheServerCreation> cacheServerCreation = null;
-    Set<MeterRegistry> meterRegistries = null;
 
     InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       cacheXML = cache.getCacheConfig().getCacheXMLDescription();
       cacheServerCreation = cache.getCacheConfig().getCacheServerCreation();
-      meterRegistries = cache.getMeterSubregistries();
     }
 
     DistributionConfig oldConfig = ids.getConfig();
@@ -2486,7 +2501,8 @@ public class InternalDistributedSystem extends DistributedSystem
           if (reconnectAttemptCounter.get() >= maxTries) {
             if (isDebugEnabled) {
               logger.debug(
-                  "Stopping the checkrequiredrole thread because reconnect : {} reached the max number of reconnect tries : {}",
+                  "Stopping the checkrequiredrole thread because reconnect : {} reached the max "
+                      + "number of reconnect tries : {}",
                   reconnectAttemptCounter, maxTries);
             }
             InternalCache internalCache = dm.getCache();
@@ -2528,7 +2544,6 @@ public class InternalDistributedSystem extends DistributedSystem
           return;
         }
 
-
         logger.info(
             "Attempting to reconnect to the distributed system.  This is attempt #{}.",
             reconnectAttemptCounter);
@@ -2554,7 +2569,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
           try {
 
-            newDS = (InternalDistributedSystem) connect(configProps);
+            newDS = connectInternal(configProps, null, metricsService.getRebuilder());
 
           } catch (CancelException e) {
             if (isReconnectCancelled()) {
@@ -2603,7 +2618,6 @@ public class InternalDistributedSystem extends DistributedSystem
           reconnectAttemptCounter.set(saveNumberOfTries);
         }
 
-
         DistributionManager newDM = reconnectDS.getDistributionManager();
         if (newDM instanceof ClusterDistributionManager) {
           // Admin systems don't carry a cache, but for others we can now create
@@ -2613,12 +2627,9 @@ public class InternalDistributedSystem extends DistributedSystem
             do {
               retry = false;
               try {
-                InternalCacheBuilder cacheBuilder = new InternalCacheBuilder()
-                    .setCacheXMLDescription(cacheXML);
-                for (MeterRegistry meterRegistry : meterRegistries) {
-                  cacheBuilder.addMeterSubregistry(meterRegistry);
-                }
-                cache = cacheBuilder.create(reconnectDS);
+                cache = new InternalCacheBuilder()
+                    .setCacheXMLDescription(cacheXML)
+                    .create(reconnectDS);
 
                 if (!cache.isClosed()) {
                   createAndStartCacheServers(cacheServerCreation, cache);
@@ -2644,7 +2655,8 @@ public class InternalDistributedSystem extends DistributedSystem
                 // We need to give up because we'll probably get the same exception in
                 // the next attempt to build the cache.
                 logger.warn(
-                    "Exception occurred while trying to create the cache during reconnect.  Auto-reconnect is terminating.",
+                    "Exception occurred while trying to create the cache during reconnect.  "
+                        + "Auto-reconnect is terminating.",
                     e);
                 reconnectCancelled = true;
                 reconnectException = e;
@@ -2752,7 +2764,6 @@ public class InternalDistributedSystem extends DistributedSystem
    * InternalDistributedSystem
    *
    * @param propsToCheck the Properties instance to compare with the existing Properties
-   *
    * @throws IllegalStateException when the configuration is not the same other returns
    */
   public void validateSameProperties(Properties propsToCheck, boolean isConnected) {
@@ -2789,12 +2800,14 @@ public class InternalDistributedSystem extends DistributedSystem
       if (creationStack == null) {
         throw new IllegalStateException(
             String.format(
-                "A connection to a distributed system already exists in this VM.  It has the following configuration:%s",
+                "A connection to a distributed system already exists in this VM.  It has the "
+                    + "following configuration:%s",
                 sb.toString()));
       } else {
         throw new IllegalStateException(
             String.format(
-                "A connection to a distributed system already exists in this VM.  It has the following configuration:%s",
+                "A connection to a distributed system already exists in this VM.  It has the "
+                    + "following configuration:%s",
                 sb.toString()),
             creationStack);
       }
@@ -2947,9 +2960,11 @@ public class InternalDistributedSystem extends DistributedSystem
     private final Properties configProperties;
 
     private SecurityConfig securityConfig;
+    private MetricsService.Builder metricsServiceBuilder;
 
-    public Builder(Properties configProperties) {
+    public Builder(Properties configProperties, MetricsService.Builder metricsServiceBuilder) {
       this.configProperties = configProperties;
+      this.metricsServiceBuilder = metricsServiceBuilder;
     }
 
     public Builder setSecurityConfig(SecurityConfig securityConfig) {
@@ -2969,11 +2984,13 @@ public class InternalDistributedSystem extends DistributedSystem
       InternalDataSerializer.checkSerializationVersion();
       try {
         SystemFailure.startThreads();
-        InternalDistributedSystem newSystem = new InternalDistributedSystem(
-            new ConnectionConfigImpl(configProperties), defaultStatisticsManagerFactory(),
-            FunctionStatsManager::new);
+        InternalDistributedSystem newSystem =
+            new InternalDistributedSystem(new ConnectionConfigImpl(
+                configProperties), defaultStatisticsManagerFactory(),
+                FunctionStatsManager::new);
         newSystem
-            .initialize(securityConfig.getSecurityManager(), securityConfig.getPostProcessor());
+            .initialize(securityConfig.getSecurityManager(), securityConfig.getPostProcessor(),
+                metricsServiceBuilder);
         notifyConnectListeners(newSystem);
         stopThreads = false;
         return newSystem;
@@ -3014,8 +3031,9 @@ public class InternalDistributedSystem extends DistributedSystem
     public InternalDistributedSystem build() {
       ConnectionConfigImpl connectionConfig = new ConnectionConfigImpl(configProperties);
 
-      InternalDistributedSystem internalDistributedSystem = new InternalDistributedSystem(
-          connectionConfig, statisticsManagerFactory, FunctionStatsManager::new);
+      InternalDistributedSystem internalDistributedSystem =
+          new InternalDistributedSystem(connectionConfig, statisticsManagerFactory,
+              FunctionStatsManager::new);
 
       internalDistributedSystem.config =
           new RuntimeDistributionConfigImpl(internalDistributedSystem);
