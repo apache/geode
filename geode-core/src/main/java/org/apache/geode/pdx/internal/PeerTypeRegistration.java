@@ -95,7 +95,7 @@ public class PeerTypeRegistration implements TypeRegistration {
    * that type in the region. And, if a type is present in this map, that means we read the type
    * while holding the dlock, which means the type was distributed to all members.
    */
-  private final Map<PdxType, Integer> typeToId = Collections.synchronizedMap(new HashMap<>());
+  private volatile Map<PdxType, Integer> typeToId = Collections.synchronizedMap(new HashMap<>());
 
   private final Map<EnumInfo, EnumId> enumToId = Collections.synchronizedMap(new HashMap<>());
 
