@@ -2369,7 +2369,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       factory.addGatewayEventFilter(gatewayEventFilter);
     }
     if (asyncEventChannelCreation.isDispatchingPaused()) {
-      factory.pauseEventDispatchingToListener();
+      factory.pauseEventDispatching();
     }
     factory.setGatewayEventSubstitutionListener(
         asyncEventChannelCreation.getGatewayEventSubstitutionFilter());

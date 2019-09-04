@@ -167,7 +167,7 @@ public class AsyncEventQueuePausedDUnitTest implements Serializable {
   private static void createRegionAndDispatchingPausedAEQ(AEQandRegionProperties props) {
     Cache cache = ClusterStartupRule.getCache();
     cache.createAsyncEventQueueFactory()
-        .pauseEventDispatchingToListener()
+        .pauseEventDispatching()
         .setParallel(props.isParallel())
         .setPersistent(isPersistent(props))
         .create("aeqID", new MyAsyncEventListener());

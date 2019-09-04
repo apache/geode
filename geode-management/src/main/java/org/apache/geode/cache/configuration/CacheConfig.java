@@ -1146,7 +1146,7 @@ public class CacheConfig {
     protected Boolean pauseEventProcessing;
 
     /**
-     * Gets the value of whether the processing of the events queued is paused or not
+     * Gets the value of whether the queue was created with paused processing of the events queued
      *
      *
      * @return {@link Boolean} - true if queue will be created with paused processing of the events
@@ -1159,7 +1159,8 @@ public class CacheConfig {
     }
 
     /**
-     * Sets the value of whether the processing of the events queued is paused or not
+     * Sets the value of whether the queue will be created with paused processing of the events
+     * queued
      *
      * @param pauseEventProcessing {@link Boolean} - true if queue will be created with paused
      *        processing of the events queued
