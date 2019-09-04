@@ -222,7 +222,14 @@ public class PeerTypeRegistration implements TypeRegistration {
       verifyConfiguration();
     }
 
-    buildTypeToIdFromIdToType();
+    try {
+      lock();
+
+      buildTypeToIdFromIdToType();
+    }
+    finally {
+      unlock();
+    }
   }
 
   protected DistributedLockService getLockService() {
