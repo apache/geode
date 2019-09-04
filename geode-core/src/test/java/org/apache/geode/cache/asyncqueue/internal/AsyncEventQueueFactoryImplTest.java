@@ -47,9 +47,9 @@ public class AsyncEventQueueFactoryImplTest {
   @Test
   public void whenAsyncEventQueueIsStartedInPausedStateThenSenderMustBePaused() {
     asyncEventQueueFactory = new AsyncEventQueueFactoryImpl(cache);
-    asyncEventQueueFactory.pauseEventDispatchingToListener();
+    asyncEventQueueFactory.pauseEventDispatching();
     assertTrue(
-        ((AsyncEventQueueFactoryImpl) asyncEventQueueFactory).isPauseEventsDispatchingToListener());
+        ((AsyncEventQueueFactoryImpl) asyncEventQueueFactory).isPauseEventsDispatching());
   }
 
   /**

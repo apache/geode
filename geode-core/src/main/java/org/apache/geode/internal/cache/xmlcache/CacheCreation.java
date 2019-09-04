@@ -555,7 +555,7 @@ public class CacheCreation implements InternalCache {
           (AsyncEventQueueFactoryImpl) cache.createAsyncEventQueueFactory();
       asyncQueueFactory.configureAsyncEventQueue(asyncEventQueueCreation);
       if (asyncEventQueueCreation.isDispatchingPaused()) {
-        asyncQueueFactory.pauseEventDispatchingToListener();
+        asyncQueueFactory.pauseEventDispatching();
       }
 
       AsyncEventQueue asyncEventQueue = cache.getAsyncEventQueue(asyncEventQueueCreation.getId());

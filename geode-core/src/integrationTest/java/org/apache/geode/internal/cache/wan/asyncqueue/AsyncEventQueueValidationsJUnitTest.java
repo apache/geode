@@ -82,10 +82,11 @@ public class AsyncEventQueueValidationsJUnitTest {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     AsyncEventQueueFactory fact = cache.createAsyncEventQueueFactory()
         .setParallel(isParallel)
-        .pauseEventDispatchingToListener()
+        .pauseEventDispatching()
         .setDispatcherThreads(5);
     AsyncEventQueue aeq =
         fact.create("aeqID", new org.apache.geode.internal.cache.wan.MyAsyncEventListener());
+    assertTrue(aeq.isDispatchingPaused());
     assertTrue(((AsyncEventQueueImpl) aeq).getSender().isPaused());
   }
 
@@ -95,12 +96,10 @@ public class AsyncEventQueueValidationsJUnitTest {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     AsyncEventQueueFactory fact = cache.createAsyncEventQueueFactory()
         .setParallel(isParallel)
-        .pauseEventDispatchingToListener()
+        .pauseEventDispatching()
         .setDispatcherThreads(5);
     AsyncEventQueue aeq =
         fact.create("aeqID", new org.apache.geode.internal.cache.wan.MyAsyncEventListener());
-    assertTrue(aeq.isDispatchingPaused());
-    assertTrue(((AsyncEventQueueImpl) aeq).getSender().isPaused());
 
     aeq.resumeEventDispatching();
 
