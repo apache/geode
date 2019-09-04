@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -50,7 +49,6 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 
 @ControllerAdvice
-@Configurable
 public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   private static final Logger logger = LogService.getLogger();
 
@@ -78,7 +76,10 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
     try {
       String json = objectMapper.writeValueAsString(body);
       if (!includeClass) {
-        json = json.replaceAll("\"class\":\"[^\"]*\",", "");
+        // remove entire object if class was the only attribute present
+        json = json.replaceAll("\\{\"class\":\"[^\"]*\"\\},?", "");
+        // otherwise remove just the class attribute
+        json = json.replaceAll("\"class\":\"[^\"]*\",?", "");
       }
       response.getHeaders().add(HttpHeaders.CONTENT_TYPE,
           "application/json; charset=" + Charset.defaultCharset().toString());
