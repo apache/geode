@@ -603,7 +603,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private Optional<HttpService> httpService = Optional.ofNullable(null);
 
   private final MeterRegistry meterRegistry;
-  private final Set<MeterRegistry> meterSubregistries;
 
   private final StatisticsClock statisticsClock;
 
@@ -782,13 +781,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   GemFireCacheImpl(boolean isClient, PoolFactory poolFactory,
       InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
       boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry,
-      Set<MeterRegistry> meterSubregistries, CacheMetricsSession metricsSession) {
+      CacheMetricsSession metricsSession) {
     this.isClient = isClient;
     this.poolFactory = poolFactory;
     this.cacheConfig = cacheConfig; // do early for bug 43213
     pdxRegistry = typeRegistry;
     this.meterRegistry = meterRegistry;
-    this.meterSubregistries = meterSubregistries;
 
     // Synchronized to prevent a new cache from being created
     // before an old one has finished closing
@@ -999,11 +997,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       getCacheConfig().setCacheServerCreation(list);
       logger.info("CacheServer configuration saved");
     }
-  }
-
-  @Override
-  public Set<MeterRegistry> getMeterSubregistries() {
-    return meterSubregistries;
   }
 
   @Override

@@ -80,7 +80,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  * @see org.apache.geode.cache.Cache
  * @since GemFire 7.0
  */
-public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, ReconnectableCache,
+public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
     StatisticsClockSupplier {
 
   InternalDistributedMember getMyId();

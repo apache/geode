@@ -218,7 +218,7 @@ public class InternalCacheBuilder {
             cache =
                 internalCacheConstructor.construct(isClient, poolFactory, internalDistributedSystem,
                     cacheConfig, useAsyncEventListeners, typeRegistry, compositeMeterRegistry,
-                    userMeterRegistries, metricsSession);
+                    metricsSession);
 
             internalDistributedSystem.setCache(cache);
             internalDistributedSystem.setMetricsSession(metricsSession);
@@ -440,7 +440,7 @@ public class InternalCacheBuilder {
     InternalCache construct(boolean isClient, PoolFactory poolFactory,
         InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
         boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry,
-        Set<MeterRegistry> addedMeterSubregistries, CacheMetricsSession metricsSession);
+        CacheMetricsSession metricsSession);
   }
 
   @VisibleForTesting

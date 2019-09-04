@@ -45,7 +45,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -182,6 +181,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
   /** services provided by other modules */
   private Map<Class, DistributedSystemService> services = new HashMap<>();
+  private CacheMetricsSession metricsSession;
 
   /**
    * If the experimental multiple-system feature is enabled, always create a new system.
@@ -2436,13 +2436,11 @@ public class InternalDistributedSystem extends DistributedSystem
     // reconnecting for lost roles then this will be null
     String cacheXML = null;
     List<CacheServerCreation> cacheServerCreation = null;
-    Set<MeterRegistry> meterRegistries = null;
 
     InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       cacheXML = cache.getCacheConfig().getCacheXMLDescription();
       cacheServerCreation = cache.getCacheConfig().getCacheServerCreation();
-      meterRegistries = cache.getMeterSubregistries();
     }
 
     DistributionConfig oldConfig = ids.getConfig();
@@ -2634,8 +2632,8 @@ public class InternalDistributedSystem extends DistributedSystem
               try {
                 InternalCacheBuilder cacheBuilder = new InternalCacheBuilder()
                     .setCacheXMLDescription(cacheXML);
-                for (MeterRegistry meterRegistry : meterRegistries) {
-                  cacheBuilder.addMeterSubregistry(meterRegistry);
+                if (metricsSession != null) {
+                  metricsSession.prepareBuilder(cacheBuilder);
                 }
                 cache = cacheBuilder.create(reconnectDS);
 
@@ -2951,7 +2949,9 @@ public class InternalDistributedSystem extends DistributedSystem
     return dm == null ? null : dm.getCache();
   }
 
-  public void setMetricsSession(CacheMetricsSession metricsSession) {}
+  public void setMetricsSession(CacheMetricsSession metricsSession) {
+    this.metricsSession = metricsSession;
+  }
 
   private static StatisticsManagerFactory defaultStatisticsManagerFactory() {
     return (name, startTime, statsDisabled) -> {

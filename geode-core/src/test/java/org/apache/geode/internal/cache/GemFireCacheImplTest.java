@@ -565,16 +565,16 @@ public class GemFireCacheImplTest {
   }
 
   @Test
-  public void closeDoesNotCloseMeterSubregistries() {
-    MeterRegistry subregistry = spy(new SimpleMeterRegistry());
+  public void closeDoesNotCloseUserMeterRegistries() {
+    MeterRegistry userRegistry = spy(new SimpleMeterRegistry());
     gemFireCacheImpl = (GemFireCacheImpl) new InternalCacheBuilder()
-        .addMeterSubregistry(subregistry)
+        .addMeterSubregistry(userRegistry)
         .setTypeRegistry(mock(TypeRegistry.class))
         .create(Fakes.distributedSystem());
 
     gemFireCacheImpl.close();
 
-    assertThat(subregistry.isClosed()).isFalse();
+    assertThat(userRegistry.isClosed()).isFalse();
   }
 
   private static GemFireCacheImpl createGemFireCacheImpl() {

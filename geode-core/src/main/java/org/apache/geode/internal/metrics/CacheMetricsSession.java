@@ -14,5 +14,8 @@
  */
 package org.apache.geode.internal.metrics;
 
+import org.apache.geode.internal.cache.InternalCacheBuilder;
+
 public interface CacheMetricsSession {
+  void prepareBuilder(InternalCacheBuilder cacheBuilder);
 }

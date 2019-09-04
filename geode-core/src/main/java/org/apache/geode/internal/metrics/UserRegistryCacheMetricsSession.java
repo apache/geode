@@ -18,6 +18,17 @@ import java.util.Set;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
+import org.apache.geode.internal.cache.InternalCacheBuilder;
+
 public class UserRegistryCacheMetricsSession implements CacheMetricsSession {
-  public UserRegistryCacheMetricsSession(Set<MeterRegistry> userRegistries) {}
+  private final Set<MeterRegistry> userRegistries;
+
+  public UserRegistryCacheMetricsSession(Set<MeterRegistry> userRegistries) {
+    this.userRegistries = userRegistries;
+  }
+
+  @Override
+  public void prepareBuilder(InternalCacheBuilder cacheBuilder) {
+    userRegistries.forEach(cacheBuilder::addMeterSubregistry);
+  }
 }
