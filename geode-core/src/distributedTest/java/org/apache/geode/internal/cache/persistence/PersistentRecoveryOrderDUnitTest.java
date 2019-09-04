@@ -160,6 +160,11 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     checkForRecoveryStat(vm0, false);
   }
 
+  @Test
+  public void testMe() {
+
+  }
+
   /**
    * Tests to make sure that we stop waiting for a member that we revoke.
    */

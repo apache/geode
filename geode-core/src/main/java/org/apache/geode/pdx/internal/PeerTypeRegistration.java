@@ -171,7 +171,7 @@ public class PeerTypeRegistration implements TypeRegistration {
         // update a local map with the pdxtypes registered
         Object value = event.getNewValue();
         if (value instanceof PdxType) {
-          updateClassToTypeMap((PdxType) value);
+          updateLocalMaps((PdxType) value);
         }
       }
     });
@@ -360,23 +360,25 @@ public class PeerTypeRegistration implements TypeRegistration {
     statistics.typeDefined();
     verifyConfiguration();
     Integer existingId = typeToId.get(newType);
+
     if (existingId != null) {
       return existingId;
     }
     lock();
     try {
-      int id = getExistingIdForType(newType);
-      if (id != -1) {
-        return id;
+      if (typeToId.isEmpty()) {
+        buildTypeToIdFromIdToType();
+      }
+      // double check if my type is in region in case the typeToId map has been updated while
+      // waiting to obtain a lock
+      existingId = typeToId.get(newType);
+      if (existingId != null) {
+        return existingId;
       }
 
-      id = allocateTypeId(newType);
+      int id = allocateTypeId(newType);
       newType.setTypeId(id);
-
       updateIdToTypeRegion(newType);
-
-      typeToId.put(newType, id);
-
       return newType.getTypeId();
     } finally {
       unlock();
@@ -543,12 +545,10 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
-  /** Should be called holding the dlock */
-  private int getExistingIdForType(PdxType newType) {
+  private void buildTypeToIdFromIdToType() {
     int totalPdxTypeIdInDS = 0;
     TXStateProxy currentState = suspendTX();
     try {
-      int result = -1;
       for (Map.Entry<Object, Object> entry : getIdToType().entrySet()) {
         Object v = entry.getValue();
         Object k = entry.getKey();
@@ -562,20 +562,16 @@ public class PeerTypeRegistration implements TypeRegistration {
           int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id;
           if (tmpDsId == typeIdPrefix) {
             totalPdxTypeIdInDS++;
+            if (totalPdxTypeIdInDS >= this.maxTypeId) {
+              throw new InternalGemFireError(
+                  "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
+                      + this.maxTypeId);
+            }
           }
 
           typeToId.put(foundType, id);
-          if (foundType.equals(newType)) {
-            result = foundType.getTypeId();
-          }
         }
       }
-      if (totalPdxTypeIdInDS == MAX_TYPE_ID) {
-        throw new InternalGemFireError(
-            "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                + MAX_TYPE_ID);
-      }
-      return result;
     } finally {
       resumeTX(currentState);
     }
@@ -721,9 +717,14 @@ public class PeerTypeRegistration implements TypeRegistration {
   /**
    * adds a PdxType for a field to a {@code className => Set<PdxType>} map
    */
-  private void updateClassToTypeMap(PdxType type) {
+  private void updateLocalMaps(PdxType type) {
     if (type != null) {
+<<<<<<< HEAD
       synchronized (classToType) {
+=======
+      typeToId.put(type, type.getTypeId());
+      synchronized (this.classToType) {
+>>>>>>> parent of 2047c40d59... Revert "GEODE-6973: Use cachelistener to synchronize typeToId with IdToType r… (#3853)"
         if (type.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
           return; // no need to include here
         }
@@ -787,5 +788,10 @@ public class PeerTypeRegistration implements TypeRegistration {
   @Override
   public int getLocalSize() {
     return getIdToType().size();
+  }
+
+  @VisibleForTesting
+  public int getTypeToIdSize() {
+    return typeToId.size();
   }
 }
