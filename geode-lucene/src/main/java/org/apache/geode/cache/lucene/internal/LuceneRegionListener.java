@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
@@ -29,6 +28,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionListener;
+import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.logging.LogService;
 
 public class LuceneRegionListener implements RegionListener {
@@ -90,9 +90,10 @@ public class LuceneRegionListener implements RegionListener {
 
       String aeqId = LuceneServiceImpl.getUniqueIndexName(this.indexName, this.regionPath);
       if (!attrs.getAsyncEventQueueIds().contains(aeqId)) {
-        AttributesFactory af = new AttributesFactory(attrs);
-        af.addAsyncEventQueueId(aeqId);
-        updatedRA = af.create();
+        RegionAttributesCreation regionAttributesCreation =
+            new RegionAttributesCreation(attrs, false);
+        regionAttributesCreation.addAsyncEventQueueId(aeqId);
+        updatedRA = regionAttributesCreation;
       }
 
       // Add index creation profile

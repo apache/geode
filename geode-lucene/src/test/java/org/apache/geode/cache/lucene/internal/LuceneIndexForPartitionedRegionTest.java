@@ -35,7 +35,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
@@ -56,6 +55,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
+import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
@@ -222,15 +222,15 @@ public class LuceneIndexForPartitionedRegionTest {
 
   private RegionAttributes createRegionAttributes(final boolean withPersistence,
       PartitionAttributes partitionAttributes) {
-    AttributesFactory factory = new AttributesFactory();
+    RegionAttributesCreation regionAttributes = new RegionAttributesCreation();
     if (withPersistence) {
-      factory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+      regionAttributes.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
     } else {
-      factory.setDataPolicy(DataPolicy.PARTITION);
+      regionAttributes.setDataPolicy(DataPolicy.PARTITION);
     }
-    factory.setPartitionAttributes(partitionAttributes);
-    RegionAttributes ra = factory.create();
-    return ra;
+
+    regionAttributes.setPartitionAttributes(partitionAttributes);
+    return regionAttributes;
   }
 
   private Region initializeScenario(final boolean withPersistence, final String regionPath,
