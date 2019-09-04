@@ -561,10 +561,10 @@ public class PeerTypeRegistration implements TypeRegistration {
           int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id;
           if (tmpDsId == typeIdPrefix) {
             totalPdxTypeIdInDS++;
-            if (totalPdxTypeIdInDS >= this.maxTypeId) {
+            if (totalPdxTypeIdInDS >= MAX_TYPE_ID) {
               throw new InternalGemFireError(
                   "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                      + this.maxTypeId);
+                      + MAX_TYPE_ID);
             }
           }
 
@@ -718,12 +718,8 @@ public class PeerTypeRegistration implements TypeRegistration {
    */
   private void updateLocalMaps(PdxType type) {
     if (type != null) {
-<<<<<<< HEAD
       synchronized (classToType) {
-=======
       typeToId.put(type, type.getTypeId());
-      synchronized (this.classToType) {
->>>>>>> parent of 2047c40d59... Revert "GEODE-6973: Use cachelistener to synchronize typeToId with IdToType r… (#3853)"
         if (type.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
           return; // no need to include here
         }
@@ -789,7 +785,6 @@ public class PeerTypeRegistration implements TypeRegistration {
     return getIdToType().size();
   }
 
-  @VisibleForTesting
   public int getTypeToIdSize() {
     return typeToId.size();
   }
