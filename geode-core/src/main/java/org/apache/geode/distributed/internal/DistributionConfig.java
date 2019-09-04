@@ -2626,20 +2626,20 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
 
   /**
    * Sets the value for
-   * {@link ConfigurationProperties#SECURITY_MANAGEMENT_REST_TOKEN_AUTHENTICATION}
+   * {@link ConfigurationProperties#SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS}
    */
   @ConfigAttributeSetter(name = SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS)
   void setSecurityAuthTokenEnabledComponents(String[] newValue);
 
   /**
    * Returns the value of
-   * {@link ConfigurationProperties#SECURITY_MANAGEMENT_REST_TOKEN_AUTHENTICATION} property
+   * {@link ConfigurationProperties#SSECURITY_AUTH_TOKEN_ENABLED_COMPONENTS} property
    */
   @ConfigAttributeGetter(name = SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS)
   String[] getSecurityAuthTokenEnabledComponents();
 
   /**
-   * the name of the {@link ConfigurationProperties#SECURITY_MANAGEMENT_REST_TOKEN_AUTHENTICATION}
+   * the name of the {@link ConfigurationProperties#SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS}
    * property
    */
   @ConfigAttribute(type = String[].class)

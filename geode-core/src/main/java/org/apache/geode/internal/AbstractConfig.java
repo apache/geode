@@ -36,6 +36,8 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.internal.FlowControlParams;
 import org.apache.geode.internal.net.SocketCreator;
@@ -222,7 +224,12 @@ public abstract class AbstractConfig implements Config {
       if (valueType.equals(String.class)) {
         attObjectValue = value;
       } else if (valueType.equals(String[].class)) {
-        attObjectValue = value.split(",");
+        // this would avoid converting empty string value to an array of size 1.
+        if (StringUtils.isBlank(value)) {
+          attObjectValue = new String[0];
+        } else {
+          attObjectValue = value.split(",");
+        }
       } else if (valueType.equals(Integer.class)) {
         attObjectValue = Integer.valueOf(value);
       } else if (valueType.equals(Long.class)) {

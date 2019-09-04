@@ -30,12 +30,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -675,6 +677,29 @@ public class InternalDistributedSystemJUnitTest {
     props3.setProperty(CLUSTER_SSL_ENABLED, "false");
     Config config3 = new DistributionConfigImpl(props3, false);
     assertEquals(false, config1.sameAs(config3));
+  }
+
+  @Test
+  public void testEmptySecurityAuthTokenProp() throws Exception {
+    Properties props = getCommonProperties();
+    props.setProperty(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "");
+    DistributionConfig config1 = new DistributionConfigImpl(props, false);
+    assertThat(config1.getSecurityAuthTokenEnabledComponents()).hasSize(0);
+    Properties securityProps = config1.getSecurityProps();
+    assertThat(securityProps.getProperty(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS)).isEqualTo("");
+    assertThat(config1.getSecurityAuthTokenEnabledComponents()).hasSize(0);
+  }
+
+  @Test
+  public void testSecurityAuthTokenProp() throws Exception {
+    Properties props = getCommonProperties();
+    props.setProperty(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "management");
+    DistributionConfig config1 = new DistributionConfigImpl(props, false);
+    assertThat(config1.getSecurityAuthTokenEnabledComponents()).containsExactly("management");
+    Properties securityProps = config1.getSecurityProps();
+    assertThat(securityProps.getProperty(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS))
+        .isEqualTo("management");
+    assertThat(config1.getSecurityAuthTokenEnabledComponents()).containsExactly("management");
   }
 
   @Test

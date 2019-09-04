@@ -101,7 +101,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertThat(attNames.length).isEqualTo(166);
+    assertThat(attNames.length).isEqualTo(167);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -139,7 +139,7 @@ public class DistributionConfigJUnitTest {
     assertEquals(35, intList.size());
     assertEquals(87, stringList.size());
     assertEquals(5, fileList.size());
-    assertEquals(4, otherList.size());
+    assertEquals(5, otherList.size());
   }
 
   @Test
