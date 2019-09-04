@@ -153,7 +153,7 @@ public interface AsyncEventQueueFactory {
    * Pauses the dispatching of the queued events to the listener.
    *
    */
-  AsyncEventQueueFactory pauseEventDispatchingToListener();
+  AsyncEventQueueFactory pauseEventDispatching();
 
   /**
    * Creates the <code>AsyncEventQueue</code>. It accepts Id of AsyncEventQueue and instance of
