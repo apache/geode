@@ -224,6 +224,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.metrics.CacheMetricsSession;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -781,7 +782,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   GemFireCacheImpl(boolean isClient, PoolFactory poolFactory,
       InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
       boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry,
-      Set<MeterRegistry> meterSubregistries) {
+      Set<MeterRegistry> meterSubregistries, CacheMetricsSession metricsSession) {
     this.isClient = isClient;
     this.poolFactory = poolFactory;
     this.cacheConfig = cacheConfig; // do early for bug 43213

@@ -106,6 +106,7 @@ import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.NullLoggingSession;
+import org.apache.geode.internal.metrics.CacheMetricsSession;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
@@ -2949,6 +2950,8 @@ public class InternalDistributedSystem extends DistributedSystem
   public InternalCache getCache() {
     return dm == null ? null : dm.getCache();
   }
+
+  public void setMetricsSession(CacheMetricsSession metricsSession) {}
 
   private static StatisticsManagerFactory defaultStatisticsManagerFactory() {
     return (name, startTime, statsDisabled) -> {
