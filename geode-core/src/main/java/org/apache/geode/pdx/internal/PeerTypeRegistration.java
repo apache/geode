@@ -215,12 +215,6 @@ public class PeerTypeRegistration implements TypeRegistration {
 
     statistics.initialize();
 
-    // If there is anything in the id to type registry,
-    // we should validate our configuration now.
-    // And send those types to any existing gateways.
-    if (!getIdToType().isEmpty()) {
-      verifyConfiguration();
-    }
 
     try {
       lock();
@@ -230,6 +224,14 @@ public class PeerTypeRegistration implements TypeRegistration {
     finally {
       unlock();
     }
+
+    // If there is anything in the id to type registry,
+    // we should validate our configuration now.
+    // And send those types to any existing gateways.
+    if (!getIdToType().isEmpty()) {
+      verifyConfiguration();
+    }
+
   }
 
   protected DistributedLockService getLockService() {
