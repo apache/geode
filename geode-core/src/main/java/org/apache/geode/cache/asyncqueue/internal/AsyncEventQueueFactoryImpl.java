@@ -47,7 +47,7 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
 
   private final InternalCache cache;
 
-  private boolean pauseEventsDispatchingToListener = false;
+  private boolean pauseEventsDispatching = false;
 
   /**
    * Used internally to pass the attributes from this factory to the real GatewaySender it is
@@ -162,7 +162,7 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
     if (cache instanceof CacheCreation) {
       asyncEventQueue =
           new AsyncEventQueueCreation(asyncQueueId, gatewaySenderAttributes, listener);
-      if (pauseEventsDispatchingToListener) {
+      if (pauseEventsDispatching) {
         ((AsyncEventQueueCreation) asyncEventQueue).setPauseEventDispatching(true);
       }
       ((CacheCreation) cache).addAsyncEventQueue(asyncEventQueue);
@@ -177,7 +177,7 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       AsyncEventQueueImpl asyncEventQueueImpl = new AsyncEventQueueImpl(sender, listener);
       asyncEventQueue = asyncEventQueueImpl;
       cache.addAsyncEventQueue(asyncEventQueueImpl);
-      if (pauseEventsDispatchingToListener) {
+      if (pauseEventsDispatching) {
         sender.setStartEventProcessorInPausedState();
       }
       if (!gatewaySenderAttributes.isManualStart()) {
@@ -278,13 +278,13 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   }
 
   @Override
-  public AsyncEventQueueFactory pauseEventDispatchingToListener() {
-    pauseEventsDispatchingToListener = true;
+  public AsyncEventQueueFactory pauseEventDispatching() {
+    pauseEventsDispatching = true;
     return this;
   }
 
   @VisibleForTesting
-  protected boolean isPauseEventsDispatchingToListener() {
-    return pauseEventsDispatchingToListener;
+  protected boolean isPauseEventsDispatching() {
+    return pauseEventsDispatching;
   }
 }
