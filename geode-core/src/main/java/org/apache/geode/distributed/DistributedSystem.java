@@ -667,5 +667,4 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * Returns the new DistributedSystem if there was an auto-reconnect
    */
   public abstract DistributedSystem getReconnectedSystem();
-
 }

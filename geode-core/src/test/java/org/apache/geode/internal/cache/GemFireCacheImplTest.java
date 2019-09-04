@@ -22,6 +22,8 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -50,6 +52,8 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
+import org.apache.geode.internal.metrics.CacheMetricsSession;
+import org.apache.geode.internal.metrics.CacheMetricsSessionFactory;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.fake.Fakes;
 
@@ -368,10 +372,80 @@ public class GemFireCacheImplTest {
   }
 
   @Test
-  public void getMeterRegistryReturnsTheMeterRegistry() {
-    gemFireCacheImpl = createGemFireCacheImpl();
+  public void initialize_startsTheMetricSession() {
+    InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
 
-    assertThat(gemFireCacheImpl.getMeterRegistry()).isInstanceOf(MeterRegistry.class);
+    CacheMetricsSessionFactory metricsSessionFactory = mock(CacheMetricsSessionFactory.class);
+    CacheMetricsSession metricsSession = mock(CacheMetricsSession.class);
+    when(metricsSessionFactory.create(any())).thenReturn(metricsSession);
+
+    InternalCacheBuilder cacheBuilder =
+        new InternalCacheBuilder(new Properties(), new CacheConfig(),
+            metricsSessionFactory,
+            InternalDistributedSystem::getConnectedInstance,
+            InternalDistributedSystem::connectInternal,
+            GemFireCacheImpl::getInstance,
+            GemFireCacheImpl::new);
+
+    gemFireCacheImpl = (GemFireCacheImpl) cacheBuilder
+        .setUseAsyncEventListeners(true)
+        .setTypeRegistry(mock(TypeRegistry.class))
+        .create(internalDistributedSystem);
+
+    verify(metricsSession).start(same(internalDistributedSystem));
+  }
+
+  @Test
+  public void getMeterRegistry_returnsTheMetricSessionMeterRegistry() {
+    InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
+
+    CacheMetricsSession metricsSession = mock(CacheMetricsSession.class);
+    when(metricsSession.meterRegistry()).thenReturn(mock(MeterRegistry.class));
+
+    CacheMetricsSessionFactory metricsSessionFactory = mock(CacheMetricsSessionFactory.class);
+    when(metricsSessionFactory.create(any())).thenReturn(metricsSession);
+
+    InternalCacheBuilder cacheBuilder =
+        new InternalCacheBuilder(new Properties(), new CacheConfig(),
+            metricsSessionFactory,
+            InternalDistributedSystem::getConnectedInstance,
+            InternalDistributedSystem::connectInternal,
+            GemFireCacheImpl::getInstance,
+            GemFireCacheImpl::new);
+
+    gemFireCacheImpl = (GemFireCacheImpl) cacheBuilder
+        .setUseAsyncEventListeners(true)
+        .setTypeRegistry(mock(TypeRegistry.class))
+        .create(internalDistributedSystem);
+
+    assertThat(gemFireCacheImpl.getMeterRegistry())
+        .isSameAs(metricsSession.meterRegistry());
+  }
+
+  @Test
+  public void close_stopsTheMetricSession() {
+    InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
+
+    CacheMetricsSessionFactory metricsSessionFactory = mock(CacheMetricsSessionFactory.class);
+    CacheMetricsSession metricsSession = mock(CacheMetricsSession.class);
+    when(metricsSessionFactory.create(any())).thenReturn(metricsSession);
+
+    InternalCacheBuilder cacheBuilder =
+        new InternalCacheBuilder(new Properties(), new CacheConfig(),
+            metricsSessionFactory,
+            InternalDistributedSystem::getConnectedInstance,
+            InternalDistributedSystem::connectInternal,
+            GemFireCacheImpl::getInstance,
+            GemFireCacheImpl::new);
+
+    gemFireCacheImpl = (GemFireCacheImpl) cacheBuilder
+        .setUseAsyncEventListeners(true)
+        .setTypeRegistry(mock(TypeRegistry.class))
+        .create(internalDistributedSystem);
+
+    gemFireCacheImpl.close();
+
+    verify(metricsSession).stop();
   }
 
   @Test
@@ -565,16 +639,16 @@ public class GemFireCacheImplTest {
   }
 
   @Test
-  public void closeDoesNotCloseMeterSubregistries() {
-    MeterRegistry subregistry = spy(new SimpleMeterRegistry());
+  public void closeDoesNotCloseUserMeterRegistries() {
+    MeterRegistry userRegistry = spy(new SimpleMeterRegistry());
     gemFireCacheImpl = (GemFireCacheImpl) new InternalCacheBuilder()
-        .addMeterSubregistry(subregistry)
+        .addMeterSubregistry(userRegistry)
         .setTypeRegistry(mock(TypeRegistry.class))
         .create(Fakes.distributedSystem());
 
     gemFireCacheImpl.close();
 
-    assertThat(subregistry.isClosed()).isFalse();
+    assertThat(userRegistry.isClosed()).isFalse();
   }
 
   private static GemFireCacheImpl createGemFireCacheImpl() {

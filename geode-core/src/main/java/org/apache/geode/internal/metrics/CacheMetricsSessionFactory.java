@@ -14,12 +14,11 @@
  */
 package org.apache.geode.internal.metrics;
 
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import java.util.Set;
 
-/**
- * Creates {@code CompositeMeterRegistry} and configures commonTags.
- */
-public interface CompositeMeterRegistryFactory {
+import io.micrometer.core.instrument.MeterRegistry;
 
-  CompositeMeterRegistry create(int systemId, String memberName, String hostName);
+@FunctionalInterface
+public interface CacheMetricsSessionFactory {
+  CacheMetricsSession create(Set<MeterRegistry> userRegistries);
 }
