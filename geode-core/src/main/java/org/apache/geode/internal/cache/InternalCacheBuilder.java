@@ -22,11 +22,9 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -44,9 +42,9 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SecurityConfig;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.metrics.CacheLifecycleMetricsSession;
-import org.apache.geode.internal.metrics.CacheMeterRegistryFactory;
-import org.apache.geode.internal.metrics.CompositeMeterRegistryFactory;
+import org.apache.geode.internal.metrics.CacheMetricsSession;
+import org.apache.geode.internal.metrics.CacheMetricsSessionFactory;
+import org.apache.geode.internal.metrics.CompositeCacheMetricsSession;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -64,12 +62,11 @@ public class InternalCacheBuilder {
   private static final boolean IS_EXISTING_OK_DEFAULT = true;
   private static final boolean IS_CLIENT_DEFAULT = false;
 
-  private final Set<MeterRegistry> meterSubregistries = new HashSet<>();
+  private final Set<MeterRegistry> userMeterRegistries = new HashSet<>();
 
   private final Properties configProperties;
   private final CacheConfig cacheConfig;
-  private final CompositeMeterRegistryFactory compositeMeterRegistryFactory;
-  private final Consumer<CompositeMeterRegistry> metricsSessionInitializer;
+  private final CacheMetricsSessionFactory metricsSessionFactory;
   private final Supplier<InternalDistributedSystem> singletonSystemSupplier;
   private final Supplier<InternalCache> singletonCacheSupplier;
   private final InternalDistributedSystemConstructor internalDistributedSystemConstructor;
@@ -116,30 +113,24 @@ public class InternalCacheBuilder {
   private InternalCacheBuilder(Properties configProperties, CacheConfig cacheConfig) {
     this(configProperties,
         cacheConfig,
-        new CacheMeterRegistryFactory(),
-        CacheLifecycleMetricsSession.builder()::build,
+        CompositeCacheMetricsSession::new,
         InternalDistributedSystem::getConnectedInstance,
         InternalDistributedSystem::connectInternal,
         GemFireCacheImpl::getInstance,
-        (isClient1, poolFactory1, internalDistributedSystem, cacheConfig1, useAsyncEventListeners1,
-            typeRegistry1, meterRegistry, addedMeterSubregistries) -> new GemFireCacheImpl(
-                isClient1, poolFactory1, internalDistributedSystem, cacheConfig1,
-                useAsyncEventListeners1, typeRegistry1, meterRegistry, addedMeterSubregistries));
+        GemFireCacheImpl::new);
   }
 
   @VisibleForTesting
   InternalCacheBuilder(Properties configProperties,
       CacheConfig cacheConfig,
-      CompositeMeterRegistryFactory compositeMeterRegistryFactory,
-      Consumer<CompositeMeterRegistry> metricsSessionInitializer,
+      CacheMetricsSessionFactory metricsSessionFactory,
       Supplier<InternalDistributedSystem> singletonSystemSupplier,
       InternalDistributedSystemConstructor internalDistributedSystemConstructor,
       Supplier<InternalCache> singletonCacheSupplier,
       InternalCacheConstructor internalCacheConstructor) {
     this.configProperties = configProperties;
     this.cacheConfig = cacheConfig;
-    this.compositeMeterRegistryFactory = compositeMeterRegistryFactory;
-    this.metricsSessionInitializer = metricsSessionInitializer;
+    this.metricsSessionFactory = metricsSessionFactory;
     this.singletonSystemSupplier = singletonSystemSupplier;
     this.internalDistributedSystemConstructor = internalDistributedSystemConstructor;
     this.internalCacheConstructor = internalCacheConstructor;
@@ -167,7 +158,7 @@ public class InternalCacheBuilder {
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
     synchronized (InternalCacheBuilder.class) {
       InternalDistributedSystem internalDistributedSystem = findInternalDistributedSystem()
-          .orElseGet(() -> createInternalDistributedSystem());
+          .orElseGet(this::createInternalDistributedSystem);
       return create(internalDistributedSystem);
     }
   }
@@ -196,28 +187,14 @@ public class InternalCacheBuilder {
           InternalCache cache =
               existingCache(internalDistributedSystem::getCache, singletonCacheSupplier);
           if (cache == null) {
-
-            int systemId = internalDistributedSystem.getConfig().getDistributedSystemId();
-            String memberName = internalDistributedSystem.getName();
-            String hostName = internalDistributedSystem.getDistributedMember().getHost();
-
-            CompositeMeterRegistry compositeMeterRegistry = compositeMeterRegistryFactory
-                .create(systemId, memberName, hostName);
-
-            for (MeterRegistry meterSubregistry : meterSubregistries) {
-              compositeMeterRegistry.add(meterSubregistry);
-            }
-
-            metricsSessionInitializer.accept(compositeMeterRegistry);
+            CacheMetricsSession metricsSession = metricsSessionFactory.create(userMeterRegistries);
 
             cache =
                 internalCacheConstructor.construct(isClient, poolFactory, internalDistributedSystem,
-                    cacheConfig, useAsyncEventListeners, typeRegistry, compositeMeterRegistry,
-                    meterSubregistries);
+                    cacheConfig, useAsyncEventListeners, typeRegistry, null, metricsSession);
 
             internalDistributedSystem.setCache(cache);
             cache.initialize();
-
           } else {
             internalDistributedSystem.setCache(cache);
           }
@@ -350,7 +327,7 @@ public class InternalCacheBuilder {
    * @see CacheFactory#addMeterSubregistry(MeterRegistry)
    */
   public InternalCacheBuilder addMeterSubregistry(MeterRegistry subregistry) {
-    meterSubregistries.add(subregistry);
+    userMeterRegistries.add(subregistry);
     return this;
   }
 
@@ -431,15 +408,15 @@ public class InternalCacheBuilder {
   }
 
   @VisibleForTesting
-  interface InternalCacheConstructor {
+  public interface InternalCacheConstructor {
     InternalCache construct(boolean isClient, PoolFactory poolFactory,
         InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
         boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry,
-        Set<MeterRegistry> addedMeterSubregistries);
+        CacheMetricsSession metricsSession);
   }
 
   @VisibleForTesting
-  interface InternalDistributedSystemConstructor {
+  public interface InternalDistributedSystemConstructor {
     InternalDistributedSystem construct(Properties configProperties, SecurityConfig securityConfig);
   }
 }

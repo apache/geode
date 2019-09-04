@@ -222,6 +222,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.metrics.CacheMetricsSession;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.MemoryAllocator;
@@ -597,8 +598,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final ClusterConfigurationLoader ccLoader = new ClusterConfigurationLoader();
 
-  private final MeterRegistry meterRegistry;
-  private final Set<MeterRegistry> meterSubregistries;
+  private final CacheMetricsSession metricsSession;
 
   private final StatisticsClock statisticsClock;
 
@@ -777,13 +777,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   GemFireCacheImpl(boolean isClient, PoolFactory poolFactory,
       InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
       boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry,
-      Set<MeterRegistry> meterSubregistries) {
+      CacheMetricsSession metricsSession) {
     this.isClient = isClient;
     this.poolFactory = poolFactory;
     this.cacheConfig = cacheConfig; // do early for bug 43213
     pdxRegistry = typeRegistry;
-    this.meterRegistry = meterRegistry;
-    this.meterSubregistries = meterSubregistries;
+    this.metricsSession = metricsSession;
 
     // Synchronized to prevent a new cache from being created
     // before an old one has finished closing
@@ -943,7 +942,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public MeterRegistry getMeterRegistry() {
-    return meterRegistry;
+    return metricsSession.meterRegistry();
   }
 
   /** generate XML for the cache before shutting down due to forced disconnect */
@@ -978,11 +977,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       getCacheConfig().setCacheServerCreation(list);
       logger.info("CacheServer configuration saved");
     }
-  }
-
-  @Override
-  public Set<MeterRegistry> getMeterSubregistries() {
-    return meterSubregistries;
   }
 
   @Override
@@ -1185,6 +1179,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     for (CacheLifecycleListener listener : cacheLifecycleListeners) {
       listener.cacheCreated(this);
     }
+    metricsSession.start(system);
 
     if (isClient()) {
       initializeClientRegionShortcuts(this);
@@ -2166,6 +2161,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
          * closed!
          */
         try {
+          metricsSession.stop();
+
           stopServers();
 
           stopServices();

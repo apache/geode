@@ -45,7 +45,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -101,6 +100,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.metrics.CacheMetricsSession;
 import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
@@ -186,6 +186,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
   private final AtomicReference<ClusterAlertMessaging> clusterAlertMessaging =
       new AtomicReference<>();
+  private CacheMetricsSession metricsSession;
 
   /**
    * If the experimental multiple-system feature is enabled, always create a new system.
@@ -2440,13 +2441,11 @@ public class InternalDistributedSystem extends DistributedSystem
     // reconnecting for lost roles then this will be null
     String cacheXML = null;
     List<CacheServerCreation> cacheServerCreation = null;
-    Set<MeterRegistry> meterRegistries = null;
 
     InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       cacheXML = cache.getCacheConfig().getCacheXMLDescription();
       cacheServerCreation = cache.getCacheConfig().getCacheServerCreation();
-      meterRegistries = cache.getMeterSubregistries();
     }
 
     DistributionConfig oldConfig = ids.getConfig();
@@ -2638,8 +2637,8 @@ public class InternalDistributedSystem extends DistributedSystem
               try {
                 InternalCacheBuilder cacheBuilder = new InternalCacheBuilder()
                     .setCacheXMLDescription(cacheXML);
-                for (MeterRegistry meterRegistry : meterRegistries) {
-                  cacheBuilder.addMeterSubregistry(meterRegistry);
+                if (metricsSession != null) {
+                  metricsSession.prepareToReconstruct(cacheBuilder);
                 }
                 cache = cacheBuilder.create(reconnectDS);
 
@@ -2953,6 +2952,10 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public InternalCache getCache() {
     return dm == null ? null : dm.getCache();
+  }
+
+  public void setMetricsSession(CacheMetricsSession metricsSession) {
+    this.metricsSession = metricsSession;
   }
 
   private static StatisticsManagerFactory defaultStatisticsManagerFactory() {
