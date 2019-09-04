@@ -221,6 +221,8 @@ public class PeerTypeRegistration implements TypeRegistration {
     if (!getIdToType().isEmpty()) {
       verifyConfiguration();
     }
+
+    buildTypeToIdFromIdToType();
   }
 
   protected DistributedLockService getLockService() {
@@ -366,9 +368,6 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
     lock();
     try {
-      if (typeToId.isEmpty()) {
-        buildTypeToIdFromIdToType();
-      }
       // double check if my type is in region in case the typeToId map has been updated while
       // waiting to obtain a lock
       existingId = typeToId.get(newType);
