@@ -719,7 +719,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   private void updateLocalMaps(PdxType type) {
     if (type != null) {
       synchronized (classToType) {
-      typeToId.put(type, type.getTypeId());
+        typeToId.put(type, type.getTypeId());
         if (type.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
           return; // no need to include here
         }
