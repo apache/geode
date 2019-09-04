@@ -14,14 +14,30 @@
  */
 package org.apache.geode.management.internal.rest.controllers;
 
+import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementException;
@@ -33,8 +49,46 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 
 @ControllerAdvice
-public class ManagementControllerAdvice {
+@Configurable
+public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   private static final Logger logger = LogService.getLogger();
+
+  @Override
+  public boolean supports(MethodParameter returnType, Class converterType) {
+    System.out.println("CALLED: supports(" + returnType + ", " + converterType + ")");
+    return true;
+  }
+
+  @Override
+  public Object beforeBodyWrite(Object body, MethodParameter returnType,
+      MediaType selectedContentType, Class selectedConverterType,
+      ServerHttpRequest request, ServerHttpResponse response) {
+    boolean includeClass = request.getHeaders().containsKey("X-Include-Class");
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, true);
+    objectMapper.setDateFormat(new SimpleDateFormat("MM/dd/yyyy"));
+    objectMapper.configure(Feature.ALLOW_COMMENTS, true);
+    objectMapper.configure(Feature.ALLOW_SINGLE_QUOTES, true);
+    objectMapper.configure(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL, true);
+    objectMapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+
+    try {
+      String json = objectMapper.writeValueAsString(body);
+      if (!includeClass) {
+        json = json.replaceAll("\"class\":\"[^\"]*\",", "");
+      }
+      response.getHeaders().add(HttpHeaders.CONTENT_TYPE,
+          "application/json; charset=" + Charset.defaultCharset().toString());
+      response.getBody().write(json.getBytes());
+      response.close();
+      return null;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ClusterManagementResult> internalError(final Exception e) {

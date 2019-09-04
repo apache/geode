@@ -15,11 +15,17 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.management.api.RestfulEndpoint.URI_CONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.concurrent.CompletableFuture;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -29,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
@@ -64,6 +71,7 @@ public class RebalanceIntegrationTest {
     String json = "{}";
     context.perform(post("/experimental/operations/rebalances").content(json))
         .andExpect(status().isAccepted())
+        .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(
             jsonPath("$.uri",
                 Matchers.containsString("/management/experimental/operations/rebalances/")))
@@ -71,9 +79,43 @@ public class RebalanceIntegrationTest {
   }
 
   @Test
+  public void getStatus() throws Exception {
+    String json = "{}";
+    CompletableFuture<String> futureUri = new CompletableFuture<String>();
+    context.perform(post("/experimental/operations/rebalances").content(json))
+        .andExpect(status().isAccepted())
+        .andExpect(new ResponseBodyMatchers().containsObjectAsJson(futureUri))
+        .andExpect(jsonPath("$.statusMessage", Matchers.containsString("Operation started")));
+    while (true) {
+      try {
+        context.perform(get(futureUri.get()))
+            .andExpect(status().isOk())
+            .andExpect(content().string(not(containsString("\"class\""))))
+            .andExpect(jsonPath("$.statusMessage",
+                Matchers.containsString("Operation finished successfully.")));
+        return;
+      } catch (Throwable t) {
+        if (!t.getMessage().contains("Operation in progress"))
+          throw t;
+      }
+    }
+  }
+
+  class ResponseBodyMatchers {
+    public ResultMatcher containsObjectAsJson(CompletableFuture<String> futureUri) {
+      return mvcResult -> {
+        String json = mvcResult.getResponse().getContentAsString();
+        String uri = json.replaceFirst(".*\"uri\":\"" + URI_CONTEXT, "").replaceFirst("\".*", "");
+        futureUri.complete(uri);
+      };
+    }
+  }
+
+  @Test
   public void checkStatus() throws Exception {
     context.perform(get("/experimental/operations/rebalances/abc"))
         .andExpect(status().isNotFound())
+        .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(
             jsonPath("$.statusMessage",
@@ -86,6 +128,7 @@ public class RebalanceIntegrationTest {
     context.perform(post("/experimental/operations/rebalances").content(json));
     context.perform(get("/experimental/operations/rebalances"))
         .andExpect(status().isOk())
+        .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(
             jsonPath("$.result[0].statusCode", Matchers.isOneOf("IN_PROGRESS", "ERROR", "OK")))
         .andExpect(jsonPath("$.result[0].uri", Matchers.containsString("rebalances/")))
