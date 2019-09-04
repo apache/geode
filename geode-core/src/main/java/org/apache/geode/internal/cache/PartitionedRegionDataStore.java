@@ -3020,12 +3020,13 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     // int num = random.nextInt(7);
     // System.out.println("PRDS.verifyBuckets returning " + arr[num]);
     // return arr[num];
-    if (bucketArray == null || bucketArray[0] == 0) {
+    int bucketlength = BucketSetHelper.length(bucketArray);
+    if (bucketlength == 0) {
       return true;
     }
     int bucket;
-    for (int i = 1; i <= bucketArray[0]; i++) {
-      bucket = bucketArray[i];
+    for (int i = 0; i < bucketlength; i++) {
+      bucket = BucketSetHelper.get(bucketArray, i);
       if (!this.partitionedRegion.getRegionAdvisor().getBucketAdvisor(bucket).isHosting()) {
         return false;
       }

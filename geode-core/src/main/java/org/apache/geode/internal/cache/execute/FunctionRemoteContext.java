@@ -21,14 +21,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.BucketSetHelper;
 
 /**
  * FunctionContext for remote/target nodes
@@ -82,11 +81,7 @@ public class FunctionRemoteContext implements DataSerializable {
       this.bucketArray = DataSerializer.readIntArray(in);
     } else {
       HashSet<Integer> bucketSet = DataSerializer.readHashSet(in);
-      this.bucketArray = new int[bucketSet.size() + 1];
-      this.bucketArray[0] = bucketSet.size();
-      System.arraycopy(ArrayUtils.toPrimitive(bucketSet.toArray(new Integer[bucketSet.size()])), 0,
-          this.bucketArray,
-          1, bucketSet.size());
+      this.bucketArray = BucketSetHelper.fromSet(bucketSet);
     }
     this.isReExecute = DataSerializer.readBoolean(in);
   }
@@ -103,11 +98,8 @@ public class FunctionRemoteContext implements DataSerializable {
     if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_1_11_0) >= 0) {
       DataSerializer.writeIntArray(this.bucketArray, out);
     } else {
-      HashSet<Integer> bucketSet =
-          new HashSet(
-              Arrays.asList(ArrayUtils
-                  .toObject(Arrays.copyOfRange(this.bucketArray, 1, this.bucketArray[0] + 1))));
-      DataSerializer.writeHashSet(bucketSet, out);
+      Set<Integer> bucketSet = BucketSetHelper.toSet(this.bucketArray);
+      DataSerializer.writeHashSet((HashSet) bucketSet, out);
     }
     DataSerializer.writeBoolean(this.isReExecute, out);
   }

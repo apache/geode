@@ -3577,11 +3577,12 @@ public class PartitionedRegion extends LocalRegion
       for (InternalDistributedMember targetNode : memberToBuckets.keySet()) {
         if (!targetNode.equals(getMyId())) {
           int[] bucketArray = memberToBuckets.get(targetNode);
-          if (bucketArray == null || bucketArray[0] == 0) {
+          int length = BucketSetHelper.length(bucketArray);
+          if (length == 0) {
             continue;
           }
-          for (int i = 1; i <= bucketArray[0]; i++) {
-            int bucketId = bucketArray[i];
+          for (int i = 0; i < length; i++) {
+            int bucketId = BucketSetHelper.get(bucketArray, i);
             Set<ServerBucketProfile> profiles =
                 this.getRegionAdvisor().getClientBucketProfiles(bucketId);
             if (profiles != null) {
@@ -3631,12 +3632,13 @@ public class PartitionedRegion extends LocalRegion
     for (Map.Entry entry : memberToBuckets.entrySet()) {
       InternalDistributedMember member = (InternalDistributedMember) entry.getKey();
       int[] buckets = (int[]) entry.getValue();
-      if (buckets == null || buckets[0] == 0) {
+      int length = BucketSetHelper.length(buckets);
+      if (length == 0) {
         continue;
       }
       int bucket;
-      for (int i = 1; i <= buckets[0]; i++) {
-        bucket = buckets[i];
+      for (int i = 0; i < length; i++) {
+        bucket = BucketSetHelper.get(buckets, i);
         HashSet keys = memberToKeysMap.get(member);
         if (keys == null) {
           keys = new HashSet();
@@ -3789,8 +3791,8 @@ public class PartitionedRegion extends LocalRegion
     }
 
     final int[] buckets = new int[2];
-    buckets[0] = 1;
-    buckets[1] = bucketId;
+    buckets[0] = 0;
+    BucketSetHelper.add(buckets, bucketId);
     final Set<InternalDistributedMember> singleMember = Collections.singleton(targetNode);
     execution.validateExecution(function, singleMember);
     execution.setExecutionNodes(singleMember);
@@ -3847,11 +3849,12 @@ public class PartitionedRegion extends LocalRegion
       for (InternalDistributedMember targetNode : memberToBuckets.keySet()) {
         if (!targetNode.equals(getMyId())) {
           int[] bucketArray = memberToBuckets.get(targetNode);
-          if (bucketArray == null || bucketArray[0] == 0) {
+          int length = BucketSetHelper.length(bucketArray);
+          if (length == 0) {
             continue;
           }
-          for (int i = 1; i <= bucketArray[0]; i++) {
-            int bucketId = bucketArray[i];
+          for (int i = 0; i < length; i++) {
+            int bucketId = BucketSetHelper.get(bucketArray, i);
             Set<ServerBucketProfile> profiles =
                 this.getRegionAdvisor().getClientBucketProfiles(bucketId);
             if (profiles != null) {
@@ -3906,7 +3909,7 @@ public class PartitionedRegion extends LocalRegion
     boolean isSelf = false;
     execution.setExecutionNodes(dest);
     final int[] localBucketSet = memberToBuckets.remove(getMyId());
-    if (localBucketSet != null && localBucketSet[0] > 0) {
+    if (BucketSetHelper.length(localBucketSet) > 0) {
       isSelf = true;
     }
     final HashMap<InternalDistributedMember, FunctionRemoteContext> recipMap =
@@ -4000,7 +4003,7 @@ public class PartitionedRegion extends LocalRegion
 
     boolean isSelf = false;
     final int[] localBucketSet = memberToBuckets.remove(getMyId());
-    if (localBucketSet != null && localBucketSet[0] > 0) {
+    if (BucketSetHelper.length(localBucketSet) > 0) {
       isSelf = true;
     }
     final HashMap<InternalDistributedMember, FunctionRemoteContext> recipMap =

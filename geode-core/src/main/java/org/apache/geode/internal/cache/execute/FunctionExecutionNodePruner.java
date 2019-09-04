@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -23,12 +22,12 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.BucketSetHelper;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.logging.LogService;
@@ -68,13 +67,12 @@ public class FunctionExecutionNodePruner {
         for (InternalDistributedMember node : nodes) {
           if (nodeToBucketsMap.get(node) == null) {
             int[] bucketArray = new int[buckets.size() + 1];
-            bucketArray[0] = 1;
-            bucketArray[1] = bucketId;
+            bucketArray[0] = 0;
+            BucketSetHelper.add(bucketArray, bucketId);
             nodeToBucketsMap.put(node, bucketArray);
           } else {
             int[] bucketArray = nodeToBucketsMap.get(node);
-            bucketArray[0] = bucketArray[0] + 1;
-            bucketArray[bucketArray[0]] = bucketId;
+            BucketSetHelper.add(bucketArray, bucketId);
             // nodeToBucketsMap.put(node, bucketSet);
           }
         }
@@ -130,7 +128,7 @@ public class FunctionExecutionNodePruner {
       }
       int[] bucketArray = nodeToBucketsMap.get(node);
       bucketArray = removeAllElements(bucketArray, currentBucketArray);
-      if (bucketArray[0] != 0) {
+      if (BucketSetHelper.length(bucketArray) != 0) {
         currentBucketArray = addAllElements(currentBucketArray, bucketArray);
         prunedNodeToBucketsMap.put(node, bucketArray);
         if (isDebugEnabled) {
@@ -164,12 +162,12 @@ public class FunctionExecutionNodePruner {
       System.arraycopy(buckets, 0, tempbuckets, 0, buckets[0] + 1);
       tempbuckets = removeAllElements(tempbuckets, currentBucketArray);
 
-      if (max < tempbuckets[0]) {
-        max = tempbuckets[0];
+      if (max < BucketSetHelper.length(tempbuckets)) {
+        max = BucketSetHelper.length(tempbuckets);
         node = entry.getKey();
         nodesOfEqualSize.clear();
         nodesOfEqualSize.add(node);
-      } else if (max == tempbuckets[0]) {
+      } else if (max == BucketSetHelper.length(tempbuckets)) {
         nodesOfEqualSize.add(node);
       }
     }
@@ -239,8 +237,7 @@ public class FunctionExecutionNodePruner {
         bucketArray = new int[routingKeys.size() + 1];
         bucketArray[0] = 0;
       }
-      bucketArray[0] = bucketArray[0] + 1;
-      bucketArray[bucketArray[0]] = bucketId;
+      BucketSetHelper.add(bucketArray, bucketId);
     }
     return bucketArray;
   }
@@ -252,14 +249,14 @@ public class FunctionExecutionNodePruner {
       try {
         for (Integer bucketId : bucketSet) {
           InternalDistributedMember mem = pr.getOrCreateNodeForBucketWrite(bucketId, null);
-          int[] buckets = memberToBucketsMap.get(mem);
-          if (buckets == null) {
-            buckets = new int[bucketSet.size() + 1]; // faster if this was an ArrayList
-            memberToBucketsMap.put(mem, buckets);
-            buckets[0] = 0;
+          int[] bucketArray = memberToBucketsMap.get(mem);
+          if (bucketArray == null) {
+            bucketArray = new int[bucketSet.size() + 1]; // faster if this was an ArrayList
+            memberToBucketsMap.put(mem, bucketArray);
+            bucketArray[0] = 0;
           }
-          buckets[0] = buckets[0] + 1;
-          buckets[buckets[0]] = bucketId;
+          BucketSetHelper.add(bucketArray, bucketId);
+
         }
       } catch (NoSuchElementException done) {
       }
@@ -270,95 +267,41 @@ public class FunctionExecutionNodePruner {
   }
 
   private static boolean arrayAndSetAreEqual(Set<Integer> setA, int[] arrayB) {
-    Set<Integer> setB;
-    if (arrayB != null && arrayB[0] != 0) {
-      setB =
-          new HashSet(
-              Arrays.asList(ArrayUtils.toObject(Arrays.copyOfRange(arrayB, 1, arrayB[0] + 1))));
-    } else {
-      setB = new HashSet();
-    }
+    Set<Integer> setB = BucketSetHelper.toSet(arrayB);
 
     return setA.equals(setB);
   }
 
   private static int[] removeAllElements(int[] arrayA, int[] arrayB) {
-    if (arrayA == null || arrayB == null || arrayA[0] == 0 || arrayB[0] == 0) {
+    if (BucketSetHelper.length(arrayA) == 0 || BucketSetHelper.length(arrayB) == 0) {
       return arrayA;
     }
 
-    Set<Integer> inSet =
-        new HashSet(
-            Arrays.asList(ArrayUtils.toObject(Arrays.copyOfRange(arrayA, 1, arrayA[0] + 1))));
+    Set<Integer> inSet = BucketSetHelper.toSet(arrayA);
 
-    Set<Integer> subSet =
-        new HashSet(
-            Arrays.asList(ArrayUtils.toObject(Arrays.copyOfRange(arrayB, 1, arrayB[0] + 1))));
+    Set<Integer> subSet = BucketSetHelper.toSet(arrayB);
 
     inSet.removeAll(subSet);
 
-    int[] outArray = new int[inSet.size() + 1];
-    outArray[0] = inSet.size();
+    int[] outArray = BucketSetHelper.fromSet(inSet);
 
-    if (!inSet.isEmpty()) {
-      System.arraycopy(ArrayUtils.toPrimitive(inSet.toArray(new Integer[inSet.size()])), 0,
-          outArray, 1, inSet.size());
-    }
     return outArray;
 
-    /*
-     * int elementA;
-     * int arraylength = arrayA[0];
-     * int index = 0;
-     * boolean found;
-     * for (int i=1; i<=arraylength; i++) {
-     * elementA = arrayA[i];
-     * found = false;
-     * for (int j=1; j<=arraylength; j++) {
-     * if (arrayB[j] == elementA) {
-     * found = true;
-     * break;
-     * }
-     * }
-     * if (!found) {
-     * index++;
-     * arrayA[index] = elementA;
-     * }
-     * }
-     * arrayA[0] = index;
-     *
-     */
   }
 
   private static int[] addAllElements(int[] arrayA, int[] arrayB) {
-    if (arrayB == null || arrayB[0] == 0) {
+    if (BucketSetHelper.length(arrayB) == 0) {
       return arrayA;
     }
 
-    /*
-     * Or we can implement double for loop
-     */
+    Set<Integer> inSet = BucketSetHelper.toSet(arrayA);
 
-    Set<Integer> inSet;
-    if (arrayA != null && arrayA[0] != 0) {
-      inSet =
-          new HashSet(
-              Arrays.asList(ArrayUtils.toObject(Arrays.copyOfRange(arrayA, 1, arrayA[0] + 1))));
-    } else {
-      inSet = new HashSet();
-    }
-
-    Set<Integer> addSet =
-        new HashSet(
-            Arrays.asList(ArrayUtils.toObject(Arrays.copyOfRange(arrayB, 1, arrayB[0] + 1))));
+    Set<Integer> addSet = BucketSetHelper.toSet(arrayB);
 
     inSet.addAll(addSet);
 
-    int[] outArray = new int[inSet.size() + 1];
-    outArray[0] = inSet.size();
+    int[] outArray = BucketSetHelper.fromSet(inSet);
 
-    System.arraycopy(ArrayUtils.toPrimitive(inSet.toArray(new Integer[inSet.size()])), 0, outArray,
-        1, inSet.size());
     return outArray;
 
   }
