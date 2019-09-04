@@ -40,10 +40,8 @@ import java.util.StringTokenizer;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -51,7 +49,8 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallbackAdapter;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayReceiver;
@@ -495,7 +494,8 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
   private void createPartitionedRegion(String regionName, String senderIds, Integer redundantCopies,
       Integer totalNumBuckets) {
-    AttributesFactory fact = new AttributesFactory();
+    RegionFactory fact = cache.createRegionFactory(RegionShortcut.PARTITION);
+
     if (senderIds != null) {
       StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
       while (tokenizer.hasMoreTokens()) {
@@ -503,17 +503,19 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
         fact.addGatewaySenderId(senderId);
       }
     }
+
     PartitionAttributesFactory pFact = new PartitionAttributesFactory();
     pFact.setTotalNumBuckets(totalNumBuckets);
     pFact.setRedundantCopies(redundantCopies);
     pFact.setRecoveryDelay(0);
     fact.setPartitionAttributes(pFact.create());
-    Region r = cache.createRegionFactory(fact.create()).create(regionName);
+    Region r = fact.create(regionName);
     assertNotNull(r);
   }
 
   private void createReplicatedRegion(String regionName, String senderIds) {
-    AttributesFactory fact = new AttributesFactory();
+    RegionFactory fact = cache.createRegionFactory(RegionShortcut.REPLICATE);
+
     if (senderIds != null) {
       StringTokenizer tokenizer = new StringTokenizer(senderIds, ",");
       while (tokenizer.hasMoreTokens()) {
@@ -521,9 +523,8 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
         fact.addGatewaySenderId(senderId);
       }
     }
-    fact.setDataPolicy(DataPolicy.REPLICATE);
-    fact.setScope(Scope.DISTRIBUTED_ACK);
-    Region r = cache.createRegionFactory(fact.create()).create(regionName);
+
+    Region r = fact.create(regionName);
     assertNotNull(r);
   }
 
