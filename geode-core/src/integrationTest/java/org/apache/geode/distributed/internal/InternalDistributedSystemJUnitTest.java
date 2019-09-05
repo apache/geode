@@ -695,11 +695,11 @@ public class InternalDistributedSystemJUnitTest {
     Properties props = getCommonProperties();
     props.setProperty(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "management");
     DistributionConfig config1 = new DistributionConfigImpl(props, false);
-    assertThat(config1.getSecurityAuthTokenEnabledComponents()).containsExactly("management");
+    assertThat(config1.getSecurityAuthTokenEnabledComponents()).containsExactly("MANAGEMENT");
     Properties securityProps = config1.getSecurityProps();
     assertThat(securityProps.getProperty(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS))
         .isEqualTo("management");
-    assertThat(config1.getSecurityAuthTokenEnabledComponents()).containsExactly("management");
+    assertThat(config1.getSecurityAuthTokenEnabledComponents()).containsExactly("MANAGEMENT");
   }
 
   @Test

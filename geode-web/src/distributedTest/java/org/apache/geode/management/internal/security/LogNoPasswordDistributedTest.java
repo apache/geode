@@ -81,7 +81,7 @@ public class LogNoPasswordDistributedTest {
     public Object authenticate(Properties properties) throws AuthenticationFailedException {
       String user = properties.getProperty("security-username");
       String password = properties.getProperty("security-password");
-      if (PASSWORD.equals(password)) {
+      if (LogNoPasswordDistributedTest.PASSWORD.equals(password)) {
         return user;
       }
 
