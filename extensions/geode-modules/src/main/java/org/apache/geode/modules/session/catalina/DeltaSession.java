@@ -320,6 +320,10 @@ public class DeltaSession extends StandardSession
     return value;
   }
 
+  Object getAttributeWithoutDeserialize(String name) {
+    return super.getAttribute(name);
+  }
+
   @Override
   public void invalidate() {
     super.invalidate();
@@ -416,7 +420,7 @@ public class DeltaSession extends StandardSession
         }
       }
     }
-    this.eventQueue.add(event);
+    addEventToEventQueue(event);
   }
 
   @SuppressWarnings("unchecked")
@@ -602,8 +606,8 @@ public class DeltaSession extends StandardSession
     @SuppressWarnings("unchecked")
     Enumeration<String> attributeNames = (Enumeration<String>) getAttributeNames();
     while (attributeNames.hasMoreElements()) {
-      // Don't use this.getAttribute() because we don't want to deserialize the value.
-      Object value = super.getAttribute(attributeNames.nextElement());
+      // Don't use getAttribute() because we don't want to deserialize the value.
+      Object value = getAttributeWithoutDeserialize(attributeNames.nextElement());
       if (value instanceof byte[]) {
         size += ((byte[]) value).length;
       }
@@ -639,7 +643,7 @@ public class DeltaSession extends StandardSession
   byte[] serialize(Object obj) {
     byte[] serializedValue = null;
     try {
-      serializedValue = BlobHelper.serializeToBlob(obj);
+      serializedValue = serializeViaBlobHelper(obj);
     } catch (IOException e) {
       String builder = this + ": Object " + obj
           + " cannot be serialized due to the following exception";
@@ -648,6 +652,11 @@ public class DeltaSession extends StandardSession
     }
     return serializedValue;
   }
+
+  byte[] serializeViaBlobHelper(Object obj) throws IOException {
+    return BlobHelper.serializeToBlob(obj);
+  }
+
 
   @Override
   public String toString() {
@@ -666,5 +675,9 @@ public class DeltaSession extends StandardSession
 
   boolean isPackageProtectionEnabled() {
     return SecurityUtil.isPackageProtectionEnabled();
+  }
+
+  void addEventToEventQueue(DeltaSessionAttributeEvent event) {
+    eventQueue.add(event);
   }
 }
