@@ -1492,7 +1492,6 @@ public class AttributesFactory<K, V> {
       implements Cloneable {
     public Set<String> gatewaySenderIds;
     public Set<String> asyncEventQueueIds;
-    // private static final long serialVersionUID = -3663000883567530374L;
 
     ArrayList<CacheListener<K, V>> cacheListeners;
     CacheLoader<K, V> cacheLoader;

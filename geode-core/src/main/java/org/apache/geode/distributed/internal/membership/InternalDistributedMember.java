@@ -1109,8 +1109,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     netMbr = MemberFactory.newNetMember(inetAddr, hostName, port, sbEnabled, elCoord,
         InternalDataSerializer.getVersionForDataStream(in).ordinal(), attr);
 
-    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(
-        Version.GFE_90) == 0) {
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_90) == 0) {
       netMbr.readAdditionalData(in);
     }
   }

@@ -498,38 +498,6 @@ public class JGroupsMessengerJUnitTest {
     doTestBigMessageIsFragmented(false, true);
   }
 
-  public static class ByteHolder implements DataSerializableFixedID {
-    static final int DSFID = 123456;
-    private byte[] payload;
-
-    @Override
-    public int getDSFID() {
-      return DSFID;
-    }
-
-    public ByteHolder(byte[] payload) {
-      this.payload = payload;
-    }
-
-    public ByteHolder() {}
-
-    @Override
-    public void toData(DataOutput out, SerializationContext context) throws IOException {
-      StaticSerialization.writeByteArray(payload, out);
-    }
-
-    @Override
-    public void fromData(DataInput in, DeserializationContext context)
-        throws IOException, ClassNotFoundException {
-      payload = StaticSerialization.readByteArray(in);
-    }
-
-    @Override
-    public Version[] getSerializationVersions() {
-      return null;
-    }
-  }
-
   public void doTestBigMessageIsFragmented(boolean mcastEnabled, boolean broadcastMessage)
       throws Exception {
     initMocks(mcastEnabled);
@@ -547,7 +515,7 @@ public class JGroupsMessengerJUnitTest {
     JoinRequestMessage msg = new JoinRequestMessage(recipient, sender,
         new ByteHolder(
             new byte[(int) (services.getConfig().getDistributionConfig().getUdpFragmentSize()
-                * (1.2))]),
+                * 1.5)]),
         -1, 0);
 
     msg.setMulticast(broadcastMessage);
@@ -1169,4 +1137,39 @@ public class JGroupsMessengerJUnitTest {
     gms.setVersionOrdinal(Version.getCurrentVersion().ordinal());
     return gms;
   }
+
+
+  public static class ByteHolder implements DataSerializableFixedID {
+    static final int DSFID = 123456;
+    private byte[] payload;
+
+    @Override
+    public int getDSFID() {
+      return DSFID;
+    }
+
+    public ByteHolder(byte[] payload) {
+      this();
+      this.payload = payload;
+    }
+
+    public ByteHolder() {}
+
+    @Override
+    public void toData(DataOutput out, SerializationContext context) throws IOException {
+      StaticSerialization.writeByteArray(payload, out);
+    }
+
+    @Override
+    public void fromData(DataInput in, DeserializationContext context)
+        throws IOException {
+      payload = StaticSerialization.readByteArray(in);
+    }
+
+    @Override
+    public Version[] getSerializationVersions() {
+      return null;
+    }
+  }
+
 }

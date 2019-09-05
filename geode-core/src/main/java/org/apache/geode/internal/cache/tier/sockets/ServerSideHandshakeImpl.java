@@ -171,8 +171,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     dos.writeUTF("");
 
     // Write delta-propagation property value if this is not WAN.
-    if (!communicationMode.isWAN() && this.clientVersion.compareTo(
-        Version.GFE_61) >= 0) {
+    if (!communicationMode.isWAN() && this.clientVersion.compareTo(Version.GFE_61) >= 0) {
       dos.writeBoolean(((InternalDistributedSystem) this.system).getConfig().getDeltaPropagation());
     }
 
@@ -190,8 +189,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
           .getDistributedSystemId());
     }
 
-    if ((communicationMode.isWAN()) && this.clientVersion.compareTo(
-        Version.GFE_80) >= 0
+    if ((communicationMode.isWAN()) && this.clientVersion.compareTo(Version.GFE_80) >= 0
         && currentServerVersion.compareTo(Version.GFE_80) >= 0) {
       int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
       dos.writeInt(pdxSize);

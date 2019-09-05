@@ -852,8 +852,7 @@ public class JGroupsMessenger implements Messenger {
     try {
       long start = services.getStatistics().startMsgSerialization();
       BufferDataOutputStream out_stream =
-          new BufferDataOutputStream(
-              Version.fromOrdinalNoThrow((short) version, false));
+          new BufferDataOutputStream(Version.fromOrdinalNoThrow((short) version, false));
       Version.writeOrdinal(out_stream,
           Version.getCurrentVersion().ordinal(), true);
       if (encrypt != null) {
@@ -918,8 +917,7 @@ public class JGroupsMessenger implements Messenger {
       }
 
       BufferDataOutputStream out_stream =
-          new BufferDataOutputStream(
-              Version.fromOrdinalNoThrow((short) version, false));
+          new BufferDataOutputStream(Version.fromOrdinalNoThrow((short) version, false));
       byte[] messageBytes = serializeMessage(gfmsg, out_stream);
 
       if (pkMbr != null) {
