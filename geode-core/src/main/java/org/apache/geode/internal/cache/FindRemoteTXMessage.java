@@ -110,7 +110,7 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
             reply.isPartialCommitMessage = true;
           }
           // cleanup the local txStateProxy fixes bug 43069
-          mgr.removeHostedTXState(txId);
+          mgr.removeHostedTXState(txId, true);
         }
       }
       reply.setRecipient(getSender());

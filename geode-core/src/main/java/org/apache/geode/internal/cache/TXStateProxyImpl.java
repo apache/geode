@@ -80,6 +80,8 @@ public class TXStateProxyImpl implements TXStateProxy {
   private long lastOperationTimeFromClient;
   private final StatisticsClock statisticsClock;
 
+  private boolean removedCausedByFailover = false;
+
   public TXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id,
       InternalDistributedMember clientMember, StatisticsClock statisticsClock) {
     this.cache = cache;
@@ -203,6 +205,14 @@ public class TXStateProxyImpl implements TXStateProxy {
     if (isJTA()) {
       throw new IllegalStateException(errmsg);
     }
+  }
+
+  boolean isRemovedCausedByFailover() {
+    return removedCausedByFailover;
+  }
+
+  void setRemovedCausedByFailover(boolean removedCausedByFailover) {
+    this.removedCausedByFailover = removedCausedByFailover;
   }
 
   @Override
