@@ -2008,7 +2008,7 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"security-auth-token-enabled-components"</i> property <a
    * name="security-auth-token-enabled-components"/a>
    * </p>
-   * <U>Description</U>: This setting is a comma delimited component names which works in
+   * <U>Description</U>: This setting is a comma delimited list of component names which works in
    * conjunction with
    * the {@link #SECURITY_MANAGER} properties. if security manager is enabled, this property will
    * determine what rest end point will use token based authentication instead of basic

@@ -1225,7 +1225,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "Prefix for security related properties which are packed together and invoked as authentication parameter. Neither key nor value can be NULL. Legal tags can be [security-username, security-digitalid] and Legal values can be any string data.");
 
     m.put(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS,
-        "list of rest service to authenticate request with a Bearer token passed in the 'Authentication' header of the REST request. Otherwise BASIC authentication scheme is used. Possible value is a comma separated list of: 'all', 'managmeent'. This property is ignored if 'security-manager' is not set. Default value is empty.");
+        "list of rest service to authenticate request with a Bearer token passed in the 'Authentication' header of the REST request. Otherwise BASIC authentication scheme is used. Possible value is a comma separated list of: 'all', 'management'. This property is ignored if 'security-manager' is not set. Default value is empty.");
 
     m.put(USERDEFINED_PREFIX_NAME,
         "Prefix for user defined properties which are used for replacements in Cache.xml. Neither key nor value can be NULL. Legal tags can be [custom-any-string] and Legal values can be any string data.");
