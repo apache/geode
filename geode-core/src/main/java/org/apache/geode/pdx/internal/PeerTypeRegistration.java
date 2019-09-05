@@ -170,8 +170,10 @@ public class PeerTypeRegistration implements TypeRegistration {
         verifyConfiguration();
         // update a local map with the pdxtypes registered
         Object value = event.getNewValue();
-        if (value instanceof PdxType) {
-          updateClassToTypeMap((PdxType) value);
+        Object key = event.getKey();
+        if (value != null) {
+          // if (value instanceof PdxType) {
+          updateLocalMaps(key, value);
         }
       }
     });
@@ -221,6 +223,8 @@ public class PeerTypeRegistration implements TypeRegistration {
     if (!getIdToType().isEmpty()) {
       verifyConfiguration();
     }
+
+    buildTypeToIdFromIdToType();
   }
 
   protected DistributedLockService getLockService() {
@@ -365,18 +369,20 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
     lock();
     try {
-      int id = getExistingIdForType(newType);
-      if (id != -1) {
-        return id;
+      if (typeToId.isEmpty() || typeToId.size() != idToType.size()) {
+        buildTypeToIdFromIdToType();
+      }
+      // double check if my type is in region in case the typeToId map has been updated while
+      // waiting to obtain a lock
+      existingId = typeToId.get(newType);
+      if (existingId != null) {
+        return existingId;
       }
 
-      id = allocateTypeId(newType);
+      int id = allocateTypeId(newType);
       newType.setTypeId(id);
 
       updateIdToTypeRegion(newType);
-
-      typeToId.put(newType, id);
-
       return newType.getTypeId();
     } finally {
       unlock();
@@ -543,12 +549,10 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
-  /** Should be called holding the dlock */
-  private int getExistingIdForType(PdxType newType) {
+  private void buildTypeToIdFromIdToType() {
     int totalPdxTypeIdInDS = 0;
     TXStateProxy currentState = suspendTX();
     try {
-      int result = -1;
       for (Map.Entry<Object, Object> entry : getIdToType().entrySet()) {
         Object v = entry.getValue();
         Object k = entry.getKey();
@@ -562,20 +566,16 @@ public class PeerTypeRegistration implements TypeRegistration {
           int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id;
           if (tmpDsId == typeIdPrefix) {
             totalPdxTypeIdInDS++;
+            if (totalPdxTypeIdInDS >= MAX_TYPE_ID) {
+              throw new InternalGemFireError(
+                  "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
+                      + MAX_TYPE_ID);
+            }
           }
 
           typeToId.put(foundType, id);
-          if (foundType.equals(newType)) {
-            result = foundType.getTypeId();
-          }
         }
       }
-      if (totalPdxTypeIdInDS == MAX_TYPE_ID) {
-        throw new InternalGemFireError(
-            "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                + MAX_TYPE_ID);
-      }
-      return result;
     } finally {
       resumeTX(currentState);
     }
@@ -721,8 +721,10 @@ public class PeerTypeRegistration implements TypeRegistration {
   /**
    * adds a PdxType for a field to a {@code className => Set<PdxType>} map
    */
-  private void updateClassToTypeMap(PdxType type) {
-    if (type != null) {
+  private void updateLocalMaps(Object key, Object value) {
+    if (value instanceof PdxType) {
+      PdxType type = (PdxType) value;
+      typeToId.put(type, (Integer) key);
       synchronized (classToType) {
         if (type.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
           return; // no need to include here
@@ -734,6 +736,9 @@ public class PeerTypeRegistration implements TypeRegistration {
         pdxTypeSet.add(type);
         classToType.put(type.getClassName(), pdxTypeSet);
       }
+    } else if (value instanceof EnumInfo) {
+      EnumInfo info = (EnumInfo) value;
+      enumToId.put(info, (EnumId) key);
     }
   }
 
@@ -786,6 +791,11 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public int getLocalSize() {
+    return getIdToType().size();
+  }
+
+  @VisibleForTesting
+  public int getTypeToIdSize() {
     return getIdToType().size();
   }
 }
