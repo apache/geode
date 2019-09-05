@@ -25,6 +25,18 @@ import org.apache.geode.distributed.DistributedSystem;
  * @since Geode 1.0
  */
 public interface SecurityManager {
+  /**
+   * property name of the username passed in the Properties in authenticate method
+   */
+  String USER_NAME = "security-username";
+  /**
+   * property name of the password passed in the Properties in authenticate method
+   */
+  String PASSWORD = "security-password";
+  /**
+   * property name of the token passed in the Properties in authenticate method
+   */
+  String TOKEN = "security-token";
 
   /**
    * Initialize the SecurityManager. This is invoked when a cache is created
@@ -46,7 +58,7 @@ public interface SecurityManager {
    * property, so your securityManager implementation needs to validate these kind of properties
    * as well.
    *
-   * if a rest service supports token-based-authentication, the token will be passed to the
+   * if a channel supports token-based-authentication, the token will be passed to the
    * security manager in the property with the key "security-token".
    *
    * @param credentials it contains the security-username, security-password or security-token,

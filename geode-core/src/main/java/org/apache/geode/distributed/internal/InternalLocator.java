@@ -99,6 +99,7 @@ import org.apache.geode.management.internal.configuration.handlers.SharedConfigu
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.geode.security.AuthTokenEnabledComponents;
 
 /**
  * Provides the implementation of a distribution {@code Locator} as well as internal-only
@@ -764,7 +765,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     String[] authEnabledComponents = distributionConfig.getSecurityAuthTokenEnabledComponents();
 
     boolean managementAuthTokenEnabled = Arrays.stream(authEnabledComponents)
-        .anyMatch(s -> "all".equals(s) || "management".equals(s));
+        .anyMatch(AuthTokenEnabledComponents::hasManagement);
     serviceAttributes.put(InternalHttpService.AUTH_TOKEN_ENABLED_PARAM, managementAuthTokenEnabled);
 
     if (distributionConfig.getEnableManagementRestService()) {

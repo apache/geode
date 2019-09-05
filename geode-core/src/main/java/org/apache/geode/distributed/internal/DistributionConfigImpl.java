@@ -91,6 +91,7 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.security.AuthTokenEnabledComponents;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
@@ -2544,6 +2545,18 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   @Override
   public void setSecurityAuthTokenEnabledComponents(String[] newValue) {
+    // validate the value first
+    for (int i = 0; i < newValue.length; i++) {
+      String value = newValue[i];
+      try {
+        AuthTokenEnabledComponents.valueOf(value.toUpperCase());
+        // normalize the values to all uppercase
+        newValue[i] = value.toUpperCase();
+      } catch (Exception e) {
+        throw new IllegalArgumentException(
+            "Invalid security-auth-token-enabled-components value: " + value);
+      }
+    }
     securityAuthTokenEnabledComponents = newValue;
   }
 
