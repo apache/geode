@@ -26,6 +26,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.security.access.AccessDeniedException;
@@ -48,7 +49,7 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   private static final Logger logger = LogService.getLogger();
 
   @Autowired
-  private AbstractJackson2HttpMessageConverter jsonConverter;
+  private Jackson2ObjectMapperFactoryBean objectMapperFactory;
 
   @Override
   public boolean supports(MethodParameter returnType, Class converterType) {
@@ -62,7 +63,7 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
     boolean includeClass = request.getHeaders().containsKey("X-Include-Class");
 
     try {
-      ObjectMapper objectMapper = jsonConverter.getObjectMapper();
+      ObjectMapper objectMapper = objectMapperFactory.getObject();
       String json = objectMapper.writeValueAsString(body);
       if (!includeClass) {
         json = removeClassFromJsonText(json);
@@ -78,10 +79,10 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   }
 
   private static String removeClassFromJsonText(String json) {
-    // remove entire object if class was the only attribute present
+    // remove entire key and object if class was the only attribute present
     // otherwise remove just the class attribute
     return json
-        .replaceAll("\\{\"class\":\"[^\"]*\"\\},?", "")
+        .replaceAll("\"[^\"]*\":\\{\"class\":\"[^\"]*\"\\},?", "")
         .replaceAll("\"class\":\"[^\"]*\",?", "");
   }
 
