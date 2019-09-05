@@ -23,6 +23,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
 /**
@@ -32,6 +33,7 @@ import org.springframework.util.Assert;
  * @since GemFire 0.0.1
  */
 @SuppressWarnings("unused")
+@Component
 public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2HttpMessageConverter {
 
   protected static final int INITIAL_BYTE_ARRAY_BUFFER_SIZE = 8192;

@@ -15,15 +15,10 @@
 package org.apache.geode.management.internal.rest.controllers;
 
 import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonParser.Feature;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -52,6 +47,9 @@ import org.apache.geode.security.NotAuthorizedException;
 public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   private static final Logger logger = LogService.getLogger();
 
+  @Autowired
+  private AbstractJackson2HttpMessageConverter jsonConverter;
+
   @Override
   public boolean supports(MethodParameter returnType, Class converterType) {
     return AbstractJackson2HttpMessageConverter.class.isAssignableFrom(converterType);
@@ -63,23 +61,11 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
       ServerHttpRequest request, ServerHttpResponse response) {
     boolean includeClass = request.getHeaders().containsKey("X-Include-Class");
 
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, true);
-    objectMapper.setDateFormat(new SimpleDateFormat("MM/dd/yyyy"));
-    objectMapper.configure(Feature.ALLOW_COMMENTS, true);
-    objectMapper.configure(Feature.ALLOW_SINGLE_QUOTES, true);
-    objectMapper.configure(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL, true);
-    objectMapper.configure(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT, true);
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-    objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-
     try {
+      ObjectMapper objectMapper = jsonConverter.getObjectMapper();
       String json = objectMapper.writeValueAsString(body);
       if (!includeClass) {
-        // remove entire object if class was the only attribute present
-        json = json.replaceAll("\\{\"class\":\"[^\"]*\"\\},?", "");
-        // otherwise remove just the class attribute
-        json = json.replaceAll("\"class\":\"[^\"]*\",?", "");
+        json = removeClassFromJsonText(json);
       }
       response.getHeaders().add(HttpHeaders.CONTENT_TYPE,
           "application/json; charset=" + Charset.defaultCharset().toString());
@@ -89,6 +75,14 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static String removeClassFromJsonText(String json) {
+    // remove entire object if class was the only attribute present
+    // otherwise remove just the class attribute
+    return json
+        .replaceAll("\\{\"class\":\"[^\"]*\"\\},?", "")
+        .replaceAll("\"class\":\"[^\"]*\",?", "");
   }
 
   @ExceptionHandler(Exception.class)
