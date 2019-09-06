@@ -29,6 +29,7 @@ import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -98,6 +99,7 @@ import org.apache.geode.management.internal.configuration.handlers.SharedConfigu
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.geode.security.AuthTokenEnabledComponents;
 
 /**
  * Provides the implementation of a distribution {@code Locator} as well as internal-only
@@ -759,6 +761,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         internalCache.getSecurityService());
     serviceAttributes.put(InternalHttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
         clusterManagementService);
+
+    String[] authEnabledComponents = distributionConfig.getSecurityAuthTokenEnabledComponents();
+
+    boolean managementAuthTokenEnabled = Arrays.stream(authEnabledComponents)
+        .anyMatch(AuthTokenEnabledComponents::hasManagement);
+    serviceAttributes.put(InternalHttpService.AUTH_TOKEN_ENABLED_PARAM, managementAuthTokenEnabled);
 
     if (distributionConfig.getEnableManagementRestService()) {
       internalCache.getHttpService().ifPresent(x -> {

@@ -118,6 +118,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZO
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOVE_UNRESPONSIVE_CLIENT;
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
@@ -756,7 +757,12 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     }
 
     if (attName.startsWith(SECURITY_PREFIX)) {
-      setSecurity(attName, attValue.toString());
+      // some security properties will be an array, such as security-auth-token-enabled-components
+      if (attValue instanceof Object[]) {
+        setSecurity(attName, StringUtils.join((Object[]) attValue, ','));
+      } else {
+        setSecurity(attName, attValue.toString());
+      }
     }
 
     if (attName.startsWith(SSL_SYSTEM_PROPS_NAME) || attName.startsWith(SYS_PROP_NAME)) {
@@ -1217,6 +1223,9 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
     m.put(SECURITY_PREFIX,
         "Prefix for security related properties which are packed together and invoked as authentication parameter. Neither key nor value can be NULL. Legal tags can be [security-username, security-digitalid] and Legal values can be any string data.");
+
+    m.put(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS,
+        "list of rest service to authenticate request with a Bearer token passed in the 'Authentication' header of the REST request. Otherwise BASIC authentication scheme is used. Possible value is a comma separated list of: 'all', 'management'. This property is ignored if 'security-manager' is not set. Default value is empty.");
 
     m.put(USERDEFINED_PREFIX_NAME,
         "Prefix for user defined properties which are used for replacements in Cache.xml. Neither key nor value can be NULL. Legal tags can be [custom-any-string] and Legal values can be any string data.");

@@ -15,7 +15,6 @@
 package org.apache.geode.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -52,14 +51,14 @@ public class AbstractConfigTest {
   public void setAttributeForStringArrayTypeWithEmpty() {
     abstractConfig.setAttribute(stringArrayAttributeName, "", source);
 
-    verify(abstractConfig).setAttributeObject(stringArrayAttributeName, new String[] {""}, source);
+    verify(abstractConfig).setAttributeObject(stringArrayAttributeName, new String[0], source);
   }
 
   @Test
   public void setAttributeForStringArrayTypeWithNull() {
-    Throwable thrown =
-        catchThrowable(() -> abstractConfig.setAttribute(stringArrayAttributeName, null, source));
-    assertThat(thrown).isInstanceOf(NullPointerException.class);
+    abstractConfig.setAttribute(stringArrayAttributeName, null, source);
+
+    verify(abstractConfig).setAttributeObject(stringArrayAttributeName, new String[0], source);
   }
 
   @Test
