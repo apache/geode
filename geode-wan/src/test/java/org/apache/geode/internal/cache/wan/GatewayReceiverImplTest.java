@@ -59,8 +59,8 @@ public class GatewayReceiverImplTest {
 
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
 
-    when(availablePort.isPortAvailable(anyInt(), anyInt(), any())).thenReturn(true);
-    when(availablePort.getRandomAvailablePortInRange(anyInt(), anyInt(), anyInt()))
+    when(availablePort.isPortAvailable(anyInt(), any(), any())).thenReturn(true);
+    when(availablePort.getRandomAvailablePortInRange(anyInt(), anyInt(), any()))
         .thenAnswer((Answer<Integer>) invocation -> invocation.getArgument(0));
     when(cache.getInternalDistributedSystem()).thenReturn(system);
     when(cache.addGatewayReceiverServer(any())).thenReturn(receiverServer);
