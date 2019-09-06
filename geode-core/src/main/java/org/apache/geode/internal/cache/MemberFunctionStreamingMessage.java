@@ -43,6 +43,7 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.MemberFunctionResultSender;
@@ -113,7 +114,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   }
 
   public MemberFunctionStreamingMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in, null);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   private TXStateProxy prepForTransaction(ClusterDistributionManager dm)

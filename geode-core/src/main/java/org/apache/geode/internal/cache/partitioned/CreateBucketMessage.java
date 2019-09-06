@@ -79,7 +79,7 @@ public class CreateBucketMessage extends PartitionMessage {
   }
 
   public CreateBucketMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in, null);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override
@@ -209,7 +209,7 @@ public class CreateBucketMessage extends PartitionMessage {
     public CreateBucketReplyMessage() {}
 
     public CreateBucketReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in, null);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private CreateBucketReplyMessage(int processorId, InternalDistributedMember primary) {

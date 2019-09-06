@@ -23,6 +23,7 @@ import java.io.ObjectOutput;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -200,11 +201,11 @@ public class ClientInterestMessageImpl implements ClientMessage {
   }
 
   public void writeExternal(ObjectOutput out) throws IOException {
-    toData(out, null);
+    toData(out, InternalDataSerializer.createSerializationContext(out));
   }
 
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    fromData(in, null);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override

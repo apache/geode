@@ -30,6 +30,7 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category(SerializationTest.class)
@@ -111,14 +112,16 @@ public class EnumIdTest {
     final EnumId before = new EnumId(ID);
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
     DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
-    before.toData(dataOutputStream, null);
+    before.toData(dataOutputStream,
+        InternalDataSerializer.createSerializationContext(dataOutputStream));
     dataOutputStream.close();
 
     final EnumId after = new EnumId();
     ByteArrayInputStream byteArrayInputStream =
         new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
-    after.fromData(dataInputStream, null);
+    after.fromData(dataInputStream,
+        InternalDataSerializer.createDeserializationContext(dataInputStream));
 
     assertEquals(before.intValue(), after.intValue());
   }

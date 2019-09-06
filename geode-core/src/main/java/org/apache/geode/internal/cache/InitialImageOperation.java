@@ -2494,7 +2494,7 @@ public class InitialImageOperation {
       if (versionVector != null) {
         dop.writeBoolean(true);
         dop.writeBoolean(versionVector instanceof DiskRegionVersionVector);
-        versionVector.toData(dop, null);
+        versionVector.toData(dop, context);
       } else {
         dop.writeBoolean(false);
       }
@@ -3119,7 +3119,7 @@ public class InitialImageOperation {
     public int calcSerializedSize() {
       NullDataOutputStream dos = new NullDataOutputStream();
       try {
-        toData(dos, null);
+        toData(dos, InternalDataSerializer.createSerializationContext(dos));
         return dos.size();
       } catch (IOException ex) {
         RuntimeException ex2 = new IllegalArgumentException(
@@ -3420,12 +3420,12 @@ public class InitialImageOperation {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-      toData(out, null);
+      toData(out, InternalDataSerializer.createSerializationContext(out));
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-      fromData(in, null);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     @Override

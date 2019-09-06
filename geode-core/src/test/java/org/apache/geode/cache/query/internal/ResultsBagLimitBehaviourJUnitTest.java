@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,6 +36,8 @@ import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DeserializationContext;
 
 /**
  * Test ResultsBag Limit behaviour
@@ -323,13 +326,13 @@ public class ResultsBagLimitBehaviourJUnitTest {
     assertEquals(9, toBag.size());
     ByteArrayOutputStream baos = new ByteArrayOutputStream(10240);
     DataOutputStream dos = new DataOutputStream(baos);
-    toBag.toData(dos, null);
+    toBag.toData(dos, InternalDataSerializer.createSerializationContext(dos));
     byte[] data = baos.toByteArray();
     ByteArrayInputStream bis = new ByteArrayInputStream(data);
     DataInputStream dis = new DataInputStream(bis);
     // Create a From ResultBag
     ResultsBag fromBag = getBagObject(String.class);
-    fromBag.fromData(dis, null);
+    fromBag.fromData(dis, mock(DeserializationContext.class));
     assertEquals(toBag.size(), fromBag.size());
     assertEquals(toBag.occurrences(wrap(null, toBag.getCollectionType().getElementType())),
         fromBag.occurrences(wrap(null, fromBag.getCollectionType().getElementType())));

@@ -14,15 +14,19 @@
  */
 package org.apache.geode.internal.cache.tx;
 
+import static org.mockito.Mockito.mock;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
 import org.apache.geode.internal.cache.OldValueImporterTestBase;
 import org.apache.geode.internal.cache.tx.RemotePutMessage.PutReplyMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
 
 public class RemotePutReplyMessageJUnitTest extends OldValueImporterTestBase {
 
@@ -38,12 +42,13 @@ public class RemotePutReplyMessageJUnitTest extends OldValueImporterTestBase {
 
   @Override
   protected void toData(OldValueImporter ovi, HeapDataOutputStream hdos) throws IOException {
-    ((PutReplyMessage) ovi).toData(hdos, null);
+    ((PutReplyMessage) ovi).toData(hdos, InternalDataSerializer.createSerializationContext(hdos));
   }
 
   @Override
   protected void fromData(OldValueImporter ovi, byte[] bytes)
       throws IOException, ClassNotFoundException {
-    ((PutReplyMessage) ovi).fromData(new DataInputStream(new ByteArrayInputStream(bytes)), null);
+    ((PutReplyMessage) ovi).fromData(new DataInputStream(new ByteArrayInputStream(bytes)), mock(
+        DeserializationContext.class));
   }
 }

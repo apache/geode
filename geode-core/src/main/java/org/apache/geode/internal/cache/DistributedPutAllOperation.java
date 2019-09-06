@@ -768,12 +768,12 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-      toData(out, null);
+      toData(out, InternalDataSerializer.createSerializationContext(out));
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-      fromData(in, null);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     @Override

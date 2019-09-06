@@ -43,6 +43,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -183,7 +184,7 @@ public class DistTXCommitMessage extends TXMessage {
     public DistTXCommitReplyMessage() {}
 
     public DistTXCommitReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in, null);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private DistTXCommitReplyMessage(int processorId, TXCommitMessage val) {

@@ -280,7 +280,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static final DSFIDSerializer dsfidSerializer;
 
   @MakeNotStatic
-  private static DSFIDFactory dsfidFactory;
+  private static final DSFIDFactory dsfidFactory;
 
   /**
    * {@code RegistrationListener}s that receive callbacks when {@code DataSerializer}s and {@code
@@ -320,7 +320,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }).create();
     initializeWellKnownSerializers();
     dsfidFactory = new DSFIDFactory(dsfidSerializer);
-    dsfidFactory.registerDSFIDTypes();
   }
 
   /**
@@ -364,7 +363,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
     if (out instanceof VersionedDataStream) {
       VersionedDataStream vout = (VersionedDataStream) out;
-      Version version = (Version) vout.getVersion();
+      Version version = vout.getVersion();
       if (null != version) {
         if (version.compareTo(Version.GEODE_1_9_0) < 0) {
           if (name.equals(POST_GEODE_190_SERVER_CQIMPL)) {
@@ -2255,7 +2254,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       try {
         ObjectOutput oos = new ObjectOutputStream(stream);
         if (stream instanceof VersionedDataStream) {
-          Version v = (Version) ((VersionedDataStream) stream).getVersion();
+          Version v = ((VersionedDataStream) stream).getVersion();
           if (v != null && v != Version.CURRENT) {
             oos = new VersionedObjectOutput(oos, v);
           }
@@ -2283,8 +2282,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
    */
   public static void invokeToData(Object ds, DataOutput out) throws IOException {
     try {
-      boolean isDSFID = ds instanceof DataSerializableFixedID;
-      if (isDSFID) {
+      if (ds instanceof DataSerializableFixedID) {
         dsfidSerializer.invokeToData(ds, out);
         return;
       }
@@ -2426,7 +2424,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   public static Version getVersionForDataStream(DataInput in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
-      final Version v = (Version) ((VersionedDataStream) in).getVersion();
+      final Version v = ((VersionedDataStream) in).getVersion();
       return v != null ? v : Version.CURRENT;
     } else {
       // assume latest version
@@ -2442,7 +2440,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   public static Version getVersionForDataStreamOrNull(DataInput in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
-      return (Version) ((VersionedDataStream) in).getVersion();
+      return ((VersionedDataStream) in).getVersion();
     } else {
       // assume latest version
       return null;
@@ -2456,7 +2454,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   public static Version getVersionForDataStream(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
-      final Version v = (Version) ((VersionedDataStream) out).getVersion();
+      final Version v = ((VersionedDataStream) out).getVersion();
       return v != null ? v : Version.CURRENT;
     } else {
       // assume latest version
@@ -2472,7 +2470,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   public static Version getVersionForDataStreamOrNull(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
-      return (Version) ((VersionedDataStream) out).getVersion();
+      return ((VersionedDataStream) out).getVersion();
     } else {
       // assume latest version
       return null;
@@ -2812,7 +2810,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       ObjectInput ois = new DSObjectInputStream(stream);
       serializationFilter.setFilterOn((ObjectInputStream) ois);
       if (stream instanceof VersionedDataStream) {
-        Version v = (Version) ((VersionedDataStream) stream).getVersion();
+        Version v = ((VersionedDataStream) stream).getVersion();
         if (Version.CURRENT != v && v != null) {
           ois = new VersionedObjectInput(ois, v);
         }
@@ -3278,6 +3276,24 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   public static DSFIDSerializer getDSFIDSerializer() {
     return dsfidSerializer;
+  }
+
+  /**
+   * shortcut for getDSFIDSerializer().createDeserializationContext(), this should be used
+   * when you need to create a deserialization "context" to pass to a fromData method
+   * and don't have one available
+   */
+  public static DeserializationContext createDeserializationContext(DataInput in) {
+    return dsfidSerializer.createDeserializationContext(in);
+  }
+
+  /**
+   * shortcut for getDSFIDSerializer().createSerializationContext(), this should be used
+   * when you need to create a deserialization "context" to pass to a toData method and
+   * don't have a one available
+   */
+  public static SerializationContext createSerializationContext(DataOutput out) {
+    return dsfidSerializer.createSerializationContext(out);
   }
 
   public static DSFIDFactory getDSFIDFactory() {

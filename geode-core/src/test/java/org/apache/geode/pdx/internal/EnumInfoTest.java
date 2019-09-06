@@ -30,6 +30,8 @@ import java.io.PrintStream;
 
 import org.junit.Test;
 
+import org.apache.geode.internal.InternalDataSerializer;
+
 
 public class EnumInfoTest {
   enum TestEnum {
@@ -157,14 +159,16 @@ public class EnumInfoTest {
     final EnumInfo before = new EnumInfo(TestEnum.ONE);
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
     DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
-    before.toData(dataOutputStream, null);
+    before.toData(dataOutputStream,
+        InternalDataSerializer.createSerializationContext(dataOutputStream));
     dataOutputStream.close();
 
     final EnumInfo after = new EnumInfo();
     ByteArrayInputStream byteArrayInputStream =
         new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
-    after.fromData(dataInputStream, null);
+    after.fromData(dataInputStream,
+        InternalDataSerializer.createDeserializationContext(dataInputStream));
 
     assertEquals(before.getClassName(), after.getClassName());
     assertEquals(before.getOrdinal(), after.getOrdinal());

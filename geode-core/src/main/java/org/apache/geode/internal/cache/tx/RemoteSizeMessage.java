@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
@@ -67,7 +68,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   }
 
   public RemoteSizeMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in, null);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   /**
@@ -138,7 +139,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
     }
 
     public SizeReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in, null);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     /** Send an ack */

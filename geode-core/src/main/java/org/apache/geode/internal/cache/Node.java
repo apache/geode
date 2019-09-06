@@ -72,7 +72,7 @@ public class Node extends ExternalizableDSFID {
   }
 
   public Node(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in, null);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   // for Externalizable

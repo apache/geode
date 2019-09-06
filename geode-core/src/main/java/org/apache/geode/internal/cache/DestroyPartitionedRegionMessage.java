@@ -232,7 +232,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
 
   public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
-    super.fromData(in, null);
+    super.fromData(in, context);
     this.cbArg = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
     this.prSerial = in.readInt();
@@ -252,7 +252,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
 
   public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
       throws IOException {
-    super.toData(out, null);
+    super.toData(out, context);
     DataSerializer.writeObject(this.cbArg, out);
     out.writeByte(this.op.ordinal);
     out.writeInt(this.prSerial);

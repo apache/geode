@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.apache.geode.CopyHelper;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -247,7 +248,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
 
   @Override
   public void writeValueAsByteArray(DataOutput out) throws IOException {
-    toData(out, null);
+    toData(out, InternalDataSerializer.createSerializationContext(out));
   }
 
   @Override

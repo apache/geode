@@ -29,6 +29,7 @@ import org.junit.rules.ExpectedException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 
@@ -60,6 +61,7 @@ public class RemotePutMessageJUnitTest {
     put.setSendDelta(true);
     put.setInternalDs(mockInternalDistributedSystem);
 
-    put.toData(new DataOutputStream(new ByteArrayOutputStream()), null);
+    DataOutputStream out = new DataOutputStream(new ByteArrayOutputStream());
+    put.toData(out, InternalDataSerializer.createSerializationContext(out));
   }
 }

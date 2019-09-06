@@ -106,7 +106,7 @@ public class FetchEntryMessage extends PartitionMessage {
   }
 
   public FetchEntryMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in, null);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override
@@ -224,7 +224,7 @@ public class FetchEntryMessage extends PartitionMessage {
     public FetchEntryReplyMessage() {}
 
     public FetchEntryReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in, null);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private FetchEntryReplyMessage(int processorId, EntrySnapshot value, ReplyException re) {

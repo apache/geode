@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -94,7 +95,7 @@ public class RemoveBucketMessage extends PartitionMessage {
   }
 
   public RemoveBucketMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in, null);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override
@@ -153,7 +154,7 @@ public class RemoveBucketMessage extends PartitionMessage {
     public RemoveBucketReplyMessage() {}
 
     public RemoveBucketReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in, null);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private RemoveBucketReplyMessage(int processorId, ReplyException re, boolean removed) {

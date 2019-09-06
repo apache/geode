@@ -29,6 +29,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.FunctionStreamingOrderedReplyMessage;
 import org.apache.geode.internal.cache.FunctionStreamingReplyMessage;
@@ -63,7 +64,7 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
 
   public PartitionedRegionFunctionStreamingMessage(DataInput in)
       throws IOException, ClassNotFoundException {
-    fromData(in, null);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override

@@ -87,7 +87,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
   }
 
   public ManageBackupBucketMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in, null);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override
@@ -257,7 +257,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
     public ManageBackupBucketReplyMessage() {}
 
     public ManageBackupBucketReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in, null);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private ManageBackupBucketReplyMessage(int processorId, boolean accept, boolean initializing) {

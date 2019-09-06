@@ -75,7 +75,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
   }
 
   public EndBucketCreationMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in, null);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override

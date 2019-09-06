@@ -211,7 +211,7 @@ public class GMSMemberJUnitTest {
     bais = new ByteArrayInputStream(baos.toByteArray());
     DataInputStream stream = new DataInputStream(bais);
     deserializationContext =
-        InternalDataSerializer.getDSFIDSerializer().createDeserializationContext(stream);
+        InternalDataSerializer.createDeserializationContext(stream);
     dataInput = new VersionedDataInputStream(stream, Version.GFE_90);
     newMember = new GMSMember();
     newMember.readEssentialData(dataInput, deserializationContext);

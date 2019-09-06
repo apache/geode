@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.compression.Compressor;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
@@ -183,7 +184,7 @@ public abstract class CompressedCachedDeserializable
 
   @Override
   public void writeValueAsByteArray(DataOutput out) throws IOException {
-    toData(out, null);
+    toData(out, InternalDataSerializer.createSerializationContext(out));
   }
 
   @Override

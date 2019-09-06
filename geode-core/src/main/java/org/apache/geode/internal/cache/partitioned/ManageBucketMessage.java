@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.Node;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -77,7 +78,7 @@ public class ManageBucketMessage extends PartitionMessage {
   }
 
   public ManageBucketMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in, null);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override
@@ -229,7 +230,7 @@ public class ManageBucketMessage extends PartitionMessage {
     public ManageBucketReplyMessage() {}
 
     public ManageBucketReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in, null);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private ManageBucketReplyMessage(int processorId, boolean accept, boolean initializing) {

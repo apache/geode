@@ -426,6 +426,8 @@ public class DSFIDFactory implements DataSerializableFixedID {
 
   DSFIDFactory(DSFIDSerializer serializer) {
     this.serializer = serializer;
+    // register geode-core classes with the serializer
+    registerDSFIDTypes(serializer);
   }
 
   @Override
@@ -450,7 +452,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
     throw new UnsupportedOperationException();
   }
 
-  void registerDSFIDTypes() {
+  private void registerDSFIDTypes(DSFIDSerializer serializer) {
     serializer.registerDSFID(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
     serializer.registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
     serializer.registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
@@ -1059,21 +1061,21 @@ public class DSFIDFactory implements DataSerializableFixedID {
   private static DataSerializableFixedID readDestroyOnDataStore(DataInput in)
       throws IOException, ClassNotFoundException {
     DataSerializableFixedID serializable = new DestroyRegionOnDataStoreMessage();
-    serializable.fromData(in, null);
+    serializable.fromData(in, InternalDataSerializer.createDeserializationContext(in));
     return serializable;
   }
 
   private static DataSerializableFixedID readNullToken(DataInput in)
       throws IOException, ClassNotFoundException {
     DataSerializableFixedID serializable = (NullToken) IndexManager.NULL;
-    serializable.fromData(in, null);
+    serializable.fromData(in, InternalDataSerializer.createDeserializationContext(in));
     return serializable;
   }
 
   private static DataSerializableFixedID readConfigurationResponse(DataInput in)
       throws IOException, ClassNotFoundException {
     DataSerializableFixedID serializable = new ConfigurationResponse();
-    serializable.fromData(in, null);
+    serializable.fromData(in, InternalDataSerializer.createDeserializationContext(in));
     return serializable;
   }
 

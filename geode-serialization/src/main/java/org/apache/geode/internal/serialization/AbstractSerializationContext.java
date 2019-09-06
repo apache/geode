@@ -15,12 +15,10 @@
  */
 package org.apache.geode.internal.serialization;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 
 abstract class AbstractSerializationContext {
 
-  public Version getVersionForDataStream(DataInput in) {
+  <IO> Version getVersionForDataStream(final IO in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
       final Version v = ((VersionedDataStream) in).getVersion();
@@ -30,20 +28,4 @@ abstract class AbstractSerializationContext {
       return Version.getCurrentVersion();
     }
   }
-
-  /**
-   * Get the Version of the peer or disk store that created this
-   * {@link DataOutput}.
-   */
-  Version getVersionForDataStream(DataOutput out) {
-    // check if this is a versioned data output
-    if (out instanceof VersionedDataStream) {
-      final Version v = ((VersionedDataStream) out).getVersion();
-      return v != null ? v : Version.getCurrentVersion();
-    } else {
-      // assume latest version
-      return Version.getCurrentVersion();
-    }
-  }
-
 }
