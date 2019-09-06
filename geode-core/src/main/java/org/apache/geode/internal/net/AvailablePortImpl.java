@@ -40,8 +40,11 @@ import java.security.SecureRandom;
 import java.util.Enumeration;
 import java.util.Random;
 
+import org.apache.geode.annotations.Immutable;
+
 public class AvailablePortImpl implements AvailablePort {
 
+  @Immutable
   private static final Random RANDOM =
       Boolean.getBoolean("AvailablePort.fastRandom") ? new Random() : new SecureRandom();
 

@@ -30,6 +30,7 @@ import org.apache.geode.internal.net.AvailablePort.Range;
  */
 public class AvailablePort {
 
+  @Immutable
   private static final org.apache.geode.internal.net.AvailablePort delegate =
       org.apache.geode.internal.net.AvailablePort.create();
 
