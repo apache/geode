@@ -70,7 +70,8 @@ GRADLE_COMMAND="./gradlew \
 
 echo "${GRADLE_COMMAND}"
 ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "mkdir -p tmp \
-  && geode/ci/scripts/attach_sha_to_branch.sh geode ${BUILD_BRANCH} \
+  && cp geode/ci/scripts/attach_sha_to_branch.sh /tmp/ \
+  && /tmp/attach_sha_to_branch.sh geode ${BUILD_BRANCH} \
   && cd geode \
   && ${SET_JAVA_HOME} \
   && ${GRADLE_COMMAND}"
