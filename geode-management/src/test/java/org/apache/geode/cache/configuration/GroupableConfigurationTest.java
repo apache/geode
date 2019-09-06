@@ -22,13 +22,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.apache.geode.management.configuration.AbstractConfiguration;
-import org.apache.geode.management.configuration.Pdx;
+import org.apache.geode.management.configuration.GroupableConfiguration;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
-public class AbstractConfigurationTest {
+public class GroupableConfigurationTest {
 
-  private AbstractConfiguration<?> element;
+  private GroupableConfiguration<?> element;
 
   private static ObjectMapper mapper;
   private String json;
@@ -40,11 +40,11 @@ public class AbstractConfigurationTest {
 
   @Before
   public void before() throws Exception {
-    element = new Pdx();
+    element = new Region();
   }
 
   @Test
-  public void plainPdxConfig() throws Exception {
+  public void plainRegionConfig() throws Exception {
     assertThat(element.getGroup()).isNull();
     json = mapper.writeValueAsString(element);
     System.out.println(json);
@@ -52,14 +52,27 @@ public class AbstractConfigurationTest {
   }
 
   @Test
-  public void isCluster() {
-    assertThat(AbstractConfiguration.isCluster("foo")).isFalse();
-    assertThat(AbstractConfiguration.isCluster(null)).isTrue();
-    assertThat(AbstractConfiguration.isCluster("")).isTrue();
-    assertThat(AbstractConfiguration.isCluster(AbstractConfiguration.CLUSTER)).isTrue();
-    assertThat(AbstractConfiguration.isCluster(AbstractConfiguration.CLUSTER.toLowerCase()))
-        .isTrue();
-    assertThat(AbstractConfiguration.isCluster(AbstractConfiguration.CLUSTER.toUpperCase()))
-        .isTrue();
+  public void setterRegionConfigGroup() throws Exception {
+    element.setGroup("group1");
+    assertThat(element.getGroup()).isEqualTo("group1");
+    json = mapper.writeValueAsString(element);
+    System.out.println(json);
+    assertThat(json).contains("\"group\":\"group1\"");
+  }
+
+  @Test
+  public void setGroup() throws Exception {
+    element.setGroup("group1");
+    assertThat(element.getGroup()).isEqualTo("group1");
+    element.setGroup(null);
+    assertThat(element.getGroup()).isNull();
+    element.setGroup("");
+    assertThat(element.getGroup()).isEqualTo("");
+    element.setGroup("CLUSTER");
+    assertThat(element.getGroup()).isEqualTo("CLUSTER");
+    element.setGroup("cluster");
+    assertThat(element.getGroup()).isEqualTo("cluster");
+    element.setGroup("ClUsTeR");
+    assertThat(element.getGroup()).isEqualTo("ClUsTeR");
   }
 }

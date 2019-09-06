@@ -116,7 +116,7 @@ public class MemberValidatorTest {
 
   @Test
   public void findMembers() throws Exception {
-    assertThat(validator.findMembers(null, null)).flatExtracting(DistributedMember::getName)
+    assertThat(validator.findMembers(null)).flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
 
     assertThat(validator.findMembers(null, new String[] {}))
@@ -138,7 +138,7 @@ public class MemberValidatorTest {
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
 
-    assertThat(validator.findMembers("member1", null)).flatExtracting(DistributedMember::getName)
+    assertThat(validator.findMembers("member1")).flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1");
 
     assertThat(validator.findMembers("member1", "group1"))

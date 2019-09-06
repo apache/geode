@@ -30,7 +30,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * @param <R> the runtimeInfo type
  */
 @Experimental
-public class ConfigurationResult<T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> {
+public class ConfigurationResult<T extends AbstractConfiguration<R>, R extends RuntimeInfo> {
   private T configuration;
   private List<R> runtimeInfo = new ArrayList<>();
 

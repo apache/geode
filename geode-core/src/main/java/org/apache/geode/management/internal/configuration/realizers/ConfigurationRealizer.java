@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.configuration.realizers;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.RuntimeInfo;
@@ -29,7 +28,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * configuration change.
  */
 @Experimental
-public interface ConfigurationRealizer<T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> {
+public interface ConfigurationRealizer<T extends AbstractConfiguration<R>, R extends RuntimeInfo> {
   RealizationResult create(T config, InternalCache cache);
 
   default boolean exists(T config, InternalCache cache) {
