@@ -20,7 +20,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
@@ -36,6 +38,7 @@ import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.UniquePortSupplier;
+import org.apache.geode.internal.Version;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
@@ -57,12 +60,20 @@ public class Tomcat8ClientServerRollingUpgradeTest {
   private String locatorDir;
   private String server1Dir;
   private String server2Dir;
+  private static Map<String, Version> versionMap = new HashMap<>();
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     int minimumVersion = SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9) ? 180 : 170;
     result.removeIf(s -> Integer.parseInt(s) < minimumVersion);
+    Version.getAllVersions().forEach(v -> {
+      result.forEach(r -> {
+        if (r.equals(v.getName().replace(".", ""))) {
+          versionMap.put(r, v);
+        }
+      });
+    });
     return result;
   }
 
@@ -140,12 +151,9 @@ public class Tomcat8ClientServerRollingUpgradeTest {
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             portSupplier::getAvailablePort);
 
-    classPathTomcat8AndOldModules = tomcat8AndOldModules.getHome() + "/lib/*" + File.pathSeparator
-        + tomcat8AndOldModules.getHome() + "/bin/*";
+    classPathTomcat8AndOldModules = getClassPathTomcat8AndOldModules();
 
-    classPathTomcat8AndCurrentModules =
-        tomcat8AndCurrentModules.getHome() + "/lib/*" + File.pathSeparator
-            + tomcat8AndCurrentModules.getHome() + "/bin/*";
+    classPathTomcat8AndCurrentModules = getClassPathTomcat8AndCurrentModules();
 
     // Get available port for the locator
     locatorPort = portSupplier.getAvailablePort();
@@ -290,4 +298,67 @@ public class Tomcat8ClientServerRollingUpgradeTest {
     }
   }
 
+  /**
+   * If this test breaks due to a change in required jars, please update the
+   * "Setting up the Module" section of the Tomcat module documentation!
+   *
+   * Returns the jars required on the classpath for the old modules. This list may
+   * differ from the list required by the current modules at some point in the future, hence the
+   * duplication of the requiredClasspathJars array.
+   *
+   * @return Paths to required jars
+   */
+  private String getClassPathTomcat8AndOldModules() {
+    String oldVersion = versionMap.get(this.oldVersion).getName();
+
+    final String[] requiredClasspathJars = {
+        "/lib/geode-modules-" + oldVersion + ".jar",
+        "/lib/geode-modules-tomcat8-" + oldVersion + ".jar",
+        "/lib/servlet-api.jar",
+        "/lib/catalina.jar",
+        "/lib/tomcat-util.jar",
+        "/bin/tomcat-juli.jar"
+    };
+
+    return getRequiredClasspathJars(tomcat8AndOldModules.getHome(), requiredClasspathJars);
+  }
+
+  /**
+   * If this test breaks due to a change in required jars, please update the
+   * "Setting up the Module" section of the Tomcat module documentation!
+   *
+   * Returns the jars required on the classpath for the current modules. This list may
+   * differ from the list required by the old modules at some point in the future, hence the
+   * duplication of the requiredClasspathJars array.
+   *
+   * @return Paths to required jars
+   */
+  private String getClassPathTomcat8AndCurrentModules() {
+    String currentVersion = Version.CURRENT.getName();
+
+    final String[] requiredClasspathJars = {
+        "/lib/geode-modules-" + currentVersion + "-SNAPSHOT.jar",
+        "/lib/geode-modules-tomcat8-" + currentVersion + "-SNAPSHOT.jar",
+        "/lib/servlet-api.jar",
+        "/lib/catalina.jar",
+        "/lib/tomcat-util.jar",
+        "/bin/tomcat-juli.jar"
+    };
+
+    return getRequiredClasspathJars(tomcat8AndCurrentModules.getHome(), requiredClasspathJars);
+  }
+
+  private String getRequiredClasspathJars(final String tomcat8AndRequiredModules,
+      final String[] requiredClasspathJars) {
+    StringBuilder completeJarList = new StringBuilder();
+    for (String requiredJar : requiredClasspathJars) {
+      completeJarList.append(tomcat8AndRequiredModules)
+          .append(requiredJar)
+          .append(File.pathSeparator);
+    }
+
+    completeJarList.deleteCharAt(completeJarList.length() - 1);
+
+    return completeJarList.toString();
+  }
 }
