@@ -87,20 +87,6 @@ done
 
 
 echo "============================================================"
-echo "Removing temporary commit from geode-examples..."
-echo "============================================================"
-cd ${GEODE_EXAMPLES}
-git pull
-sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl =#' \
-    -e 's#^geodeReleaseUrl *=.*#geodeReleaseUrl =#' -i.bak gradle.properties
-rm gradle.properties.bak
-git add gradle.properties
-git diff --staged
-git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
-git push
-
-
-echo "============================================================"
 echo "Done promoting release artifacts!"
 echo "============================================================"
 cd ${GEODE}/../..

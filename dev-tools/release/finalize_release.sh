@@ -50,11 +50,11 @@ if [[ ${VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${GITHUB_USER} == 
     usage
 fi
 
-SIGNING_KEY=$(echo $SIGNING_KEY|tr -d ' ')
+SIGNING_KEY=$(echo $SIGNING_KEY|sed 's/[^0-9A-Fa-f]//g')
 if [[ $SIGNING_KEY =~ ^[0-9A-Fa-f]{40}$ ]]; then
     true
 else
-    echo "Malformed signing key ${SIGNING_KEY}. Example valid key: '0000 0000 1111 1111 2222 2222 3333 3333 ABCD 1234'"
+    echo "Malformed signing key ${SIGNING_KEY}. Example valid key: '0000 0000 1111 1111 2222  2222 3333 3333 ABCD 1234'"
     exit 1
 fi
 
@@ -84,7 +84,7 @@ fi
 echo "============================================================"
 echo "Updating brew"
 echo "============================================================"
-cd ${BREW}/Formula
+cd ${BREW_DIR}/Formula
 git pull
 git remote add myfork git@github.com:${GITHUB_USER}/homebrew-core.git
 if ! git fetch myfork ; then
@@ -126,6 +126,7 @@ cd ${GEODE}/docker
 docker build .
 docker build -t apachegeode/geode:${VERSION} .
 docker build -t apachegeode/geode:latest .
+docker login
 docker push apachegeode/geode:${VERSION}
 docker push apachegeode/geode:latest
 set +x
@@ -140,6 +141,20 @@ fly -t concourse.apachegeode-ci.info login --concourse-url https://concourse.apa
 cd ci/pipelines/meta
 ./destroy_pipelines.sh
 set +x
+
+
+echo "============================================================"
+echo "Removing temporary commit from geode-examples..."
+echo "============================================================"
+cd ${GEODE_EXAMPLES}
+git pull
+sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl =#' \
+    -e 's#^geodeReleaseUrl *=.*#geodeReleaseUrl =#' -i.bak gradle.properties
+rm gradle.properties.bak
+git add gradle.properties
+git diff --staged
+git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
+git push
 
 
 echo "============================================================"
@@ -198,14 +213,15 @@ cd $WORKSPACE/dist/release/geode
 svn update --set-depth immediates
 #identify the latest patch release for the latest 2 major.minor releases, remove anything else from mirrors (all releases remain available on non-mirrored archive site)
 RELEASES_TO_KEEP=2
-ls | awk -F. '/KEYS/{next}{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'|tail -$RELEASES_TO_KEEP > keep
-(ls | grep -v KEYS; cat keep keep)|sort|uniq -u|while read oldVersion; do
+ls | awk -F. '/KEYS/{next}{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'|tail -$RELEASES_TO_KEEP > ../keep
+echo Keeping releases: $(cat ../keep)
+(ls | grep -v KEYS; cat ../keep ../keep)|sort|uniq -u|while read oldVersion; do
     set -x
     svn rm $oldVersion
     svn commit -m "remove $oldVersion from mirrors (it is still available at http://archive.apache.org/dist/geode)"
     set +x
 done
-rm keep
+rm ../keep
 
 
 echo "============================================================"
@@ -213,7 +229,7 @@ echo "Done finalizing the release!"
 echo "============================================================"
 cd ${GEODE}/../..
 echo "Don't forget to:"
-echo "- Go to https://github.com/${GITHUB_USERNAME}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
+echo "- Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
 echo "- Validate docker image: docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apachegeode/geode"
 echo "- Update mirror links for old releases that were removed from mirrors"
 echo "- Publish documentation to docs site"
