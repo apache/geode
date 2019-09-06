@@ -27,7 +27,6 @@ import java.net.ServerSocket;
  * Usage:
  *
  * <pre>
- *
  * AvailablePort availablePort = AvailablePort.create();
  * int portToUse = availablePort.getRandomAvailablePort(AvailablePort.Protocol.SOCKET);
  * </pre>
@@ -40,14 +39,23 @@ public interface AvailablePort {
     /** Is the port available for a JGroups (UDP) multicast connection */
     MULTICAST(1);
 
-    private final int value;
+    private final int intLevel;
 
-    Protocol(int value) {
-      this.value = value;
+    Protocol(int intLevel) {
+      this.intLevel = intLevel;
     }
 
-    public int value() {
-      return value;
+    public int intLevel() {
+      return intLevel;
+    }
+
+    public static Protocol valueOf(int intLevel) {
+      for (Protocol protocol : Protocol.values()) {
+        if (protocol.intLevel() == intLevel) {
+          return protocol;
+        }
+      }
+      throw new IllegalArgumentException("No matching Protocol for intLevel '" + intLevel + "'.");
     }
   }
 
@@ -55,14 +63,14 @@ public interface AvailablePort {
     LOWER_BOUND(20001), // 20000/udp is securid
     UPPER_BOUND(29999);// 30000/tcp is spoolfax
 
-    private final int value;
+    private final int intLevel;
 
-    Range(int value) {
-      this.value = value;
+    Range(int intLevel) {
+      this.intLevel = intLevel;
     }
 
-    public int value() {
-      return value;
+    public int intLevel() {
+      return intLevel;
     }
   }
 
@@ -74,7 +82,18 @@ public interface AvailablePort {
    * see if there is a gemfire system property that establishes a default address for the given
    * protocol, and return it
    */
-  InetAddress getAddress(int protocol);
+  InetAddress getAddress(Protocol protocol);
+
+  /**
+   * see if there is a gemfire system property that establishes a default address for the given
+   * protocol, and return it
+   *
+   * @deprecated Please use {@link #getAddress(Protocol)} instead.
+   */
+  @Deprecated
+  default InetAddress getAddress(int protocol) {
+    return getAddress(Protocol.valueOf(protocol));
+  }
 
   /**
    * Returns whether or not the given port on the local host is available (that is, unused).
@@ -85,7 +104,7 @@ public interface AvailablePort {
    *
    * @throws IllegalArgumentException {@code protocol} is unknown
    */
-  boolean isPortAvailable(final int port, int protocol);
+  boolean isPortAvailable(int port, Protocol protocol);
 
   /**
    * Returns whether or not the given port on the local host is available (that is, unused).
@@ -93,13 +112,54 @@ public interface AvailablePort {
    * @param port The port to check
    * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
    *        {@link Protocol#MULTICAST}).
-   * @param addr The bind address (or mcast address) to use
+   *
+   * @throws IllegalArgumentException {@code protocol} is unknown
+   *
+   * @deprecated Please use {@link #isPortAvailable(int, Protocol)} instead.
+   */
+  @Deprecated
+  default boolean isPortAvailable(int port, int protocol) {
+    return isPortAvailable(port, Protocol.valueOf(protocol));
+  }
+
+  /**
+   * Returns whether or not the given port on the local host is available (that is, unused).
+   *
+   * @param port The port to check
+   * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
+   *        {@link Protocol#MULTICAST}).
+   * @param address The bind address (or mcast address) to use
    *
    * @throws IllegalArgumentException If the given {@code protocol} is unknown
    */
-  boolean isPortAvailable(final int port, int protocol, InetAddress addr);
+  boolean isPortAvailable(int port, Protocol protocol, InetAddress address);
 
-  Keeper isPortKeepable(final int port, int protocol, InetAddress addr);
+  /**
+   * Returns whether or not the given port on the local host is available (that is, unused).
+   *
+   * @param port The port to check
+   * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
+   *        {@link Protocol#MULTICAST}).
+   * @param address The bind address (or mcast address) to use
+   *
+   * @throws IllegalArgumentException If the given {@code protocol} is unknown
+   *
+   * @deprecated Please use {@link #isPortAvailable(int, Protocol, InetAddress)} instead.
+   */
+  @Deprecated
+  default boolean isPortAvailable(int port, int protocol, InetAddress address) {
+    return isPortAvailable(port, Protocol.valueOf(protocol), address);
+  }
+
+  Keeper isPortKeepable(int port, Protocol protocol, InetAddress address);
+
+  /**
+   * @deprecated Please use {@link #isPortKeepable(int, Protocol, InetAddress)} instead.
+   */
+  @Deprecated
+  default Keeper isPortKeepable(int port, int protocol, InetAddress address) {
+    return isPortKeepable(port, Protocol.valueOf(protocol), address);
+  }
 
   /**
    * Returns a randomly selected available port in the range 5001 to 32767.
@@ -109,9 +169,32 @@ public interface AvailablePort {
    *
    * @throws IllegalArgumentException If the given {@code protocol} is unknown
    */
-  int getRandomAvailablePort(int protocol);
+  int getRandomAvailablePort(Protocol protocol);
 
-  Keeper getRandomAvailablePortKeeper(int protocol);
+  /**
+   * Returns a randomly selected available port in the range 5001 to 32767.
+   *
+   * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
+   *        {@link Protocol#MULTICAST}).
+   *
+   * @throws IllegalArgumentException If the given {@code protocol} is unknown
+   *
+   * @deprecated Please use {@link #getRandomAvailablePort(Protocol)} instead.
+   */
+  @Deprecated
+  default int getRandomAvailablePort(int protocol) {
+    return getRandomAvailablePort(Protocol.valueOf(protocol));
+  }
+
+  Keeper getRandomAvailablePortKeeper(Protocol protocol);
+
+  /**
+   * @deprecated Please use {@link #getRandomAvailablePortKeeper(Protocol)} instead.
+   */
+  @Deprecated
+  default Keeper getRandomAvailablePortKeeper(int protocol) {
+    return getRandomAvailablePortKeeper(Protocol.valueOf(protocol));
+  }
 
   /**
    * Returns a randomly selected available port in the provided range.
@@ -121,7 +204,22 @@ public interface AvailablePort {
    *
    * @throws IllegalArgumentException If the given {@code protocol} is unknown
    */
-  int getAvailablePortInRange(int rangeBase, int rangeTop, int protocol);
+  int getAvailablePortInRange(int rangeBase, int rangeTop, Protocol protocol);
+
+  /**
+   * Returns a randomly selected available port in the provided range.
+   *
+   * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
+   *        {@link Protocol#MULTICAST}).
+   *
+   * @throws IllegalArgumentException If the given {@code protocol} is unknown
+   *
+   * @deprecated Please use {@link #getAvailablePortInRange(int, int, Protocol)} instead.
+   */
+  @Deprecated
+  default int getAvailablePortInRange(int rangeBase, int rangeTop, int protocol) {
+    return getAvailablePortInRange(rangeBase, rangeTop, Protocol.valueOf(protocol));
+  }
 
   /**
    * Returns a randomly selected available port in the range 5001 to 32767 that satisfies a modulus
@@ -131,46 +229,133 @@ public interface AvailablePort {
    *
    * @throws IllegalArgumentException If the given {@code protocol} is unknown
    */
-  int getRandomAvailablePortWithMod(int protocol, int mod);
+  int getRandomAvailablePortWithMod(Protocol protocol, int mod);
+
+  /**
+   * Returns a randomly selected available port in the range 5001 to 32767 that satisfies a modulus
+   *
+   * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
+   *        {@link Protocol#MULTICAST}).
+   *
+   * @throws IllegalArgumentException If the given {@code protocol} is unknown
+   *
+   * @deprecated Please use {@link #getRandomAvailablePortWithMod(Protocol, int)} instead.
+   */
+  @Deprecated
+  default int getRandomAvailablePortWithMod(int protocol, int mod) {
+    return getRandomAvailablePortWithMod(Protocol.valueOf(protocol), mod);
+  }
 
   /**
    * Returns a randomly selected available port in the range 5001 to 32767.
    *
    * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
    *        {@link Protocol#MULTICAST}).
-   * @param addr The bind address or mcast address to use
+   * @param address The bind address or mcast address to use
    *
    * @throws IllegalArgumentException If the given {@code protocol} is unknown
    */
-  int getRandomAvailablePort(int protocol, InetAddress addr);
+  int getRandomAvailablePort(Protocol protocol, InetAddress address);
 
   /**
    * Returns a randomly selected available port in the range 5001 to 32767.
    *
    * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
    *        {@link Protocol#MULTICAST}).
-   * @param addr The bind address or mcast address to use
+   * @param address The bind address or mcast address to use
+   *
+   * @throws IllegalArgumentException If the given {@code protocol} is unknown
+   *
+   * @deprecated Please use {@link #getRandomAvailablePort(Protocol, InetAddress)} instead.
+   */
+  @Deprecated
+  default int getRandomAvailablePort(int protocol, InetAddress address) {
+    return getRandomAvailablePort(Protocol.valueOf(protocol), address);
+  }
+
+  /**
+   * Returns a randomly selected available port in the range 5001 to 32767.
+   *
+   * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
+   *        {@link Protocol#MULTICAST}).
+   * @param address The bind address or mcast address to use
    * @param useMembershipPortRange True if the port will be used for membership
    *
    * @throws IllegalArgumentException If the given {@code protocol} is unknown
    */
-  int getRandomAvailablePort(int protocol, InetAddress addr, boolean useMembershipPortRange);
-
-  Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr);
-
-  Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr,
+  int getRandomAvailablePort(Protocol protocol, InetAddress address,
       boolean useMembershipPortRange);
+
+  /**
+   * Returns a randomly selected available port in the range 5001 to 32767.
+   *
+   * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
+   *        {@link Protocol#MULTICAST}).
+   * @param address The bind address or mcast address to use
+   * @param useMembershipPortRange True if the port will be used for membership
+   *
+   * @throws IllegalArgumentException If the given {@code protocol} is unknown
+   *
+   * @deprecated Please use {@link #getRandomAvailablePort(Protocol, InetAddress, boolean)} instead.
+   */
+  @Deprecated
+  default int getRandomAvailablePort(int protocol, InetAddress address,
+      boolean useMembershipPortRange) {
+    return getRandomAvailablePort(Protocol.valueOf(protocol), address, useMembershipPortRange);
+  }
+
+  Keeper getRandomAvailablePortKeeper(Protocol protocol, InetAddress address);
+
+  /**
+   * @deprecated Please use {@link #getRandomAvailablePortKeeper(Protocol, InetAddress)} instead.
+   */
+  @Deprecated
+  default Keeper getRandomAvailablePortKeeper(int protocol, InetAddress address) {
+    return getRandomAvailablePortKeeper(Protocol.valueOf(protocol), address);
+  }
+
+  Keeper getRandomAvailablePortKeeper(Protocol protocol, InetAddress address,
+      boolean useMembershipPortRange);
+
+  /**
+   * @deprecated Please use {@link #getRandomAvailablePortKeeper(Protocol, InetAddress, boolean)}
+   *             instead.
+   */
+  @Deprecated
+  default Keeper getRandomAvailablePortKeeper(int protocol, InetAddress address,
+      boolean useMembershipPortRange) {
+    return getRandomAvailablePortKeeper(Protocol.valueOf(protocol), address,
+        useMembershipPortRange);
+  }
 
   /**
    * Returns a randomly selected available port in the provided range.
    *
    * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
    *        {@link Protocol#MULTICAST}).
-   * @param addr The bind address or mcast address to use
+   * @param address The bind address or mcast address to use
    *
    * @throws IllegalArgumentException If the given {@code protocol} is unknown
    */
-  int getAvailablePortInRange(int protocol, InetAddress addr, int rangeBase, int rangeTop);
+  int getAvailablePortInRange(Protocol protocol, InetAddress address, int rangeBase, int rangeTop);
+
+  /**
+   * Returns a randomly selected available port in the provided range.
+   *
+   * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
+   *        {@link Protocol#MULTICAST}).
+   * @param address The bind address or mcast address to use
+   *
+   * @throws IllegalArgumentException If the given {@code protocol} is unknown
+   *
+   * @deprecated Please use {@link #getAvailablePortInRange(Protocol, InetAddress, int, int)}
+   *             instead.
+   */
+  @Deprecated
+  default int getAvailablePortInRange(int protocol, InetAddress address, int rangeBase,
+      int rangeTop) {
+    return getAvailablePortInRange(Protocol.valueOf(protocol), address, rangeBase, rangeTop);
+  }
 
   /**
    * Returns a randomly selected available port in the range 5001 to 32767 that satisfies a modulus
@@ -178,17 +363,42 @@ public interface AvailablePort {
    *
    * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
    *        {@link Protocol#MULTICAST}).
-   * @param addr The bind address or mcast address to use
+   * @param address The bind address or mcast address to use
    *
    * @throws IllegalArgumentException If the given {@code protocol} is unknown
    */
-  int getRandomAvailablePortWithMod(int protocol, InetAddress addr, int mod);
-
-  int getRandomAvailablePortInRange(int rangeBase, int rangeTop, int protocol);
+  int getRandomAvailablePortWithMod(Protocol protocol, InetAddress address, int mod);
 
   /**
-   * This class will keep an allocated port allocated until it is used. This makes the window
-   * smaller that can cause bug 46690
+   * Returns a randomly selected available port in the range 5001 to 32767 that satisfies a modulus
+   * and the provided protocol
+   *
+   * @param protocol The protocol to check (either {@link Protocol#SOCKET} or
+   *        {@link Protocol#MULTICAST}).
+   * @param address The bind address or mcast address to use
+   *
+   * @throws IllegalArgumentException If the given {@code protocol} is unknown
+   *
+   * @deprecated Please use {@link #getRandomAvailablePortWithMod(Protocol, InetAddress, int)}
+   *             instead.
+   */
+  @Deprecated
+  default int getRandomAvailablePortWithMod(int protocol, InetAddress address, int mod) {
+    return getRandomAvailablePortWithMod(Protocol.valueOf(protocol), address, mod);
+  }
+
+  int getRandomAvailablePortInRange(int rangeBase, int rangeTop, Protocol protocol);
+
+  /**
+   * @deprecated Please use {@link #getRandomAvailablePortInRange(int, int, Protocol)} instead.
+   */
+  @Deprecated
+  default int getRandomAvailablePortInRange(int rangeBase, int rangeTop, int protocol) {
+    return getRandomAvailablePortInRange(rangeBase, rangeTop, Protocol.valueOf(protocol));
+  }
+
+  /**
+   * This class will keep an allocated port allocated until it is used.
    */
   class Keeper implements Serializable {
 

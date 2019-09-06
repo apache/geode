@@ -51,8 +51,8 @@ public class AvailablePortHelper {
         rand.nextInt(DEFAULT_MEMBERSHIP_PORT_RANGE[1] - DEFAULT_MEMBERSHIP_PORT_RANGE[0])
             + DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
     currentAvailablePort =
-        new AtomicInteger(rand.nextInt(UPPER_BOUND.value() - LOWER_BOUND.value())
-            + LOWER_BOUND.value());
+        new AtomicInteger(rand.nextInt(UPPER_BOUND.intLevel() - LOWER_BOUND.intLevel())
+            + LOWER_BOUND.intLevel());
   }
 
   /**
@@ -196,7 +196,7 @@ public class AvailablePortHelper {
       throw new RuntimeException("Range number cannot be negative.");
     }
     singleton.currentMembershipPort.set(DEFAULT_MEMBERSHIP_PORT_RANGE[0]);
-    singleton.currentAvailablePort.set(LOWER_BOUND.value());
+    singleton.currentAvailablePort.set(LOWER_BOUND.intLevel());
     if (rangeNumber != 0) {
       // This code will generate starting points such that range 0 starts at the lowest possible
       // value, range 1 starts halfway through the total available ports, 2 starts 1/4 of the way
@@ -206,7 +206,7 @@ public class AvailablePortHelper {
       // it possible to grow the number of ranges without bound (within some reasonable fraction of
       // the number of available ports)
       int membershipRange = DEFAULT_MEMBERSHIP_PORT_RANGE[1] - DEFAULT_MEMBERSHIP_PORT_RANGE[0];
-      int availableRange = UPPER_BOUND.value() - LOWER_BOUND.value();
+      int availableRange = UPPER_BOUND.intLevel() - LOWER_BOUND.intLevel();
       int numChunks = Integer.highestOneBit(rangeNumber) << 1;
       int chunkNumber = 2 * (rangeNumber - Integer.highestOneBit(rangeNumber)) + 1;
 
@@ -229,13 +229,13 @@ public class AvailablePortHelper {
     AtomicInteger targetRange =
         useMembershipPortRange ? singleton.currentMembershipPort : singleton.currentAvailablePort;
     int targetBound =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : UPPER_BOUND.value();
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : UPPER_BOUND.intLevel();
 
     while (true) {
       int uniquePort = targetRange.getAndAdd(rangeSize);
       if (uniquePort + rangeSize > targetBound) {
         targetRange.set(useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0]
-            : LOWER_BOUND.value());
+            : LOWER_BOUND.intLevel());
         continue;
       }
       List<Keeper> keepers = new ArrayList<>();
@@ -272,13 +272,13 @@ public class AvailablePortHelper {
     AtomicInteger targetRange =
         useMembershipPortRange ? singleton.currentMembershipPort : singleton.currentAvailablePort;
     int targetBound =
-        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : UPPER_BOUND.value();
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : UPPER_BOUND.intLevel();
 
     while (true) {
       int uniquePort = targetRange.getAndIncrement();
       if (uniquePort > targetBound) {
         targetRange.set(useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0]
-            : LOWER_BOUND.value());
+            : LOWER_BOUND.intLevel());
         continue;
       }
 

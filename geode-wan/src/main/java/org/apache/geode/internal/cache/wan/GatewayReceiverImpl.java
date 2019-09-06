@@ -148,8 +148,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   }
 
   private boolean tryToStart(int port) {
-    if (!availablePort.isPortAvailable(port, SOCKET.value(),
-        availablePort.getAddress(SOCKET.value()))) {
+    if (!availablePort.isPortAvailable(port, SOCKET, availablePort.getAddress(SOCKET))) {
       return false;
     }
 
@@ -213,7 +212,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     if (startPort == endPort) {
       randomPort = startPort;
     } else {
-      randomPort = availablePort.getRandomAvailablePortInRange(startPort, endPort, SOCKET.value());
+      randomPort = availablePort.getRandomAvailablePortInRange(startPort, endPort, SOCKET);
     }
     return randomPort;
   }

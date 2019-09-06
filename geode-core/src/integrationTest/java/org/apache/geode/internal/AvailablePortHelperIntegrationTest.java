@@ -127,8 +127,8 @@ public class AvailablePortHelperIntegrationTest {
         assertThat(port).isGreaterThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[0])
             .isLessThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
       } else {
-        assertThat(port).isGreaterThanOrEqualTo(LOWER_BOUND.value())
-            .isLessThanOrEqualTo(UPPER_BOUND.value());
+        assertThat(port).isGreaterThanOrEqualTo(LOWER_BOUND.intLevel())
+            .isLessThanOrEqualTo(UPPER_BOUND.intLevel());
       }
       ports.add(port);
     }
@@ -213,8 +213,8 @@ public class AvailablePortHelperIntegrationTest {
         assertThat(port).isGreaterThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[0])
             .isLessThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
       } else {
-        assertThat(port).isGreaterThanOrEqualTo(LOWER_BOUND.value())
-            .isLessThanOrEqualTo(UPPER_BOUND.value());
+        assertThat(port).isGreaterThanOrEqualTo(LOWER_BOUND.intLevel())
+            .isLessThanOrEqualTo(UPPER_BOUND.intLevel());
       }
       ports.add(port);
     }
@@ -234,7 +234,7 @@ public class AvailablePortHelperIntegrationTest {
   public void getRandomAvailableUDPPort_succeeds() throws IOException {
     int udpPort = getRandomAvailableUDPPort();
     assertThat(udpPort).isNotZero();
-    assertThat(AvailablePort.isPortAvailable(udpPort, MULTICAST.value())).isTrue();
+    assertThat(AvailablePort.isPortAvailable(udpPort, MULTICAST.intLevel())).isTrue();
   }
 
   @Test

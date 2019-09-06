@@ -34,13 +34,13 @@ public class AvailablePort {
       org.apache.geode.internal.net.AvailablePort.create();
 
   /** Is the port available for a Socket (TCP) connection? */
-  public static final int SOCKET = Protocol.SOCKET.value();
-  public static final int AVAILABLE_PORTS_LOWER_BOUND = Range.LOWER_BOUND.value();// 20000/udp is
-                                                                                  // securid
-  public static final int AVAILABLE_PORTS_UPPER_BOUND = Range.UPPER_BOUND.value();// 30000/tcp is
-                                                                                  // spoolfax
+  public static final int SOCKET = Protocol.SOCKET.intLevel();
+  public static final int AVAILABLE_PORTS_LOWER_BOUND = Range.LOWER_BOUND.intLevel();// 20000/udp is
+  // securid
+  public static final int AVAILABLE_PORTS_UPPER_BOUND = Range.UPPER_BOUND.intLevel();// 30000/tcp is
+  // spoolfax
   /** Is the port available for a JGroups (UDP) multicast connection */
-  public static final int MULTICAST = Protocol.MULTICAST.value();
+  public static final int MULTICAST = Protocol.MULTICAST.intLevel();
 
   /**
    * see if there is a gemfire system property that establishes a default address for the given

@@ -42,18 +42,21 @@ import java.util.Random;
 
 public class AvailablePortImpl implements AvailablePort {
 
-  private static final Random random =
+  private static final Random RANDOM =
       Boolean.getBoolean("AvailablePort.fastRandom") ? new Random() : new SecureRandom();
 
   @Override
-  public InetAddress getAddress(int protocol) {
+  public InetAddress getAddress(Protocol protocol) {
     String name = null;
     try {
-      if (protocol == SOCKET.value()) {
-        name = System.getProperty(GEMFIRE_PREFIX + "bind-address");
-      } else if (protocol == MULTICAST.value()) {
-        name = System.getProperty(GEMFIRE_PREFIX + "mcast-address");
+      switch (protocol) {
+        case SOCKET:
+          name = System.getProperty(GEMFIRE_PREFIX + "bind-address");
+          break;
+        case MULTICAST:
+          name = System.getProperty(GEMFIRE_PREFIX + "mcast-address");
       }
+
       if (name != null) {
         return InetAddress.getByName(name);
       }
@@ -64,22 +67,22 @@ public class AvailablePortImpl implements AvailablePort {
   }
 
   @Override
-  public boolean isPortAvailable(final int port, int protocol) {
+  public boolean isPortAvailable(int port, Protocol protocol) {
     return isPortAvailable(port, protocol, getAddress(protocol));
   }
 
   @Override
-  public boolean isPortAvailable(final int port, int protocol, InetAddress addr) {
-    if (protocol == SOCKET.value()) {
+  public boolean isPortAvailable(int port, Protocol protocol, InetAddress address) {
+    if (protocol == SOCKET) {
       // Try to create a ServerSocket
-      if (addr == null) {
+      if (address == null) {
         return checkAllInterfaces(port);
       }
 
-      return checkOneInterface(addr, port);
+      return checkOneInterface(address, port);
     }
 
-    if (protocol == MULTICAST.value()) {
+    if (protocol == MULTICAST) {
       MulticastSocket socket = null;
       try {
         socket = new MulticastSocket();
@@ -92,7 +95,7 @@ public class AvailablePortImpl implements AvailablePort {
         buffer[1] = (byte) 'i';
         buffer[2] = (byte) 'n';
         buffer[3] = (byte) 'g';
-        InetAddress mcid = addr == null ? DEFAULT_MCAST_ADDRESS : addr;
+        InetAddress mcid = address == null ? DEFAULT_MCAST_ADDRESS : address;
         SocketAddress mcaddr = new InetSocketAddress(mcid, port);
         socket.joinGroup(mcid);
         DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length, mcaddr);
@@ -126,17 +129,17 @@ public class AvailablePortImpl implements AvailablePort {
   }
 
   @Override
-  public Keeper isPortKeepable(final int port, int protocol, InetAddress addr) {
-    if (protocol == SOCKET.value()) {
+  public Keeper isPortKeepable(int port, Protocol protocol, InetAddress address) {
+    if (protocol == SOCKET) {
       // Try to create a ServerSocket
-      if (addr == null) {
+      if (address == null) {
         return keepAllInterfaces(port);
       }
 
-      return keepOneInterface(addr, port);
+      return keepOneInterface(address, port);
     }
 
-    if (protocol == MULTICAST.value()) {
+    if (protocol == MULTICAST) {
       throw new IllegalArgumentException("You can not keep the JGROUPS protocol");
     }
 
@@ -144,38 +147,38 @@ public class AvailablePortImpl implements AvailablePort {
   }
 
   @Override
-  public int getRandomAvailablePort(int protocol) {
+  public int getRandomAvailablePort(Protocol protocol) {
     return getRandomAvailablePort(protocol, getAddress(protocol));
   }
 
   @Override
-  public Keeper getRandomAvailablePortKeeper(int protocol) {
+  public Keeper getRandomAvailablePortKeeper(Protocol protocol) {
     return getRandomAvailablePortKeeper(protocol, getAddress(protocol));
   }
 
   @Override
-  public int getAvailablePortInRange(int rangeBase, int rangeTop, int protocol) {
+  public int getAvailablePortInRange(int rangeBase, int rangeTop, Protocol protocol) {
     return getAvailablePortInRange(protocol, getAddress(protocol), rangeBase, rangeTop);
   }
 
   @Override
-  public int getRandomAvailablePortWithMod(int protocol, int mod) {
+  public int getRandomAvailablePortWithMod(Protocol protocol, int mod) {
     return getRandomAvailablePortWithMod(protocol, getAddress(protocol), mod);
   }
 
   @Override
-  public int getRandomAvailablePort(int protocol, InetAddress addr) {
-    return getRandomAvailablePort(protocol, addr, false);
+  public int getRandomAvailablePort(Protocol protocol, InetAddress address) {
+    return getRandomAvailablePort(protocol, address, false);
   }
 
   @Override
-  public int getRandomAvailablePort(int protocol, InetAddress addr,
+  public int getRandomAvailablePort(Protocol protocol, InetAddress address,
       boolean useMembershipPortRange) {
     while (true) {
       int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
-      if (isPortAvailable(port, protocol, addr)) {
+      if (isPortAvailable(port, protocol, address)) {
         // don't return the products default multicast port
-        if (!(protocol == MULTICAST.value() && port == DEFAULT_MCAST_PORT)) {
+        if (!(protocol == MULTICAST && port == DEFAULT_MCAST_PORT)) {
           return port;
         }
       }
@@ -183,16 +186,16 @@ public class AvailablePortImpl implements AvailablePort {
   }
 
   @Override
-  public Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr) {
-    return getRandomAvailablePortKeeper(protocol, addr, false);
+  public Keeper getRandomAvailablePortKeeper(Protocol protocol, InetAddress address) {
+    return getRandomAvailablePortKeeper(protocol, address, false);
   }
 
   @Override
-  public Keeper getRandomAvailablePortKeeper(int protocol, InetAddress addr,
+  public Keeper getRandomAvailablePortKeeper(Protocol protocol, InetAddress address,
       boolean useMembershipPortRange) {
     while (true) {
       int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
-      Keeper result = isPortKeepable(port, protocol, addr);
+      Keeper result = isPortKeepable(port, protocol, address);
       if (result != null) {
         return result;
       }
@@ -200,9 +203,10 @@ public class AvailablePortImpl implements AvailablePort {
   }
 
   @Override
-  public int getAvailablePortInRange(int protocol, InetAddress addr, int rangeBase, int rangeTop) {
+  public int getAvailablePortInRange(Protocol protocol, InetAddress address, int rangeBase,
+      int rangeTop) {
     for (int port = rangeBase; port <= rangeTop; port++) {
-      if (isPortAvailable(port, protocol, addr)) {
+      if (isPortAvailable(port, protocol, address)) {
         return port;
       }
     }
@@ -210,23 +214,23 @@ public class AvailablePortImpl implements AvailablePort {
   }
 
   @Override
-  public int getRandomAvailablePortWithMod(int protocol, InetAddress addr, int mod) {
+  public int getRandomAvailablePortWithMod(Protocol protocol, InetAddress address, int mod) {
     while (true) {
       int port = getRandomWildcardBindPortNumber();
-      if (isPortAvailable(port, protocol, addr) && (port % mod) == 0) {
+      if (isPortAvailable(port, protocol, address) && (port % mod) == 0) {
         return port;
       }
     }
   }
 
   @Override
-  public int getRandomAvailablePortInRange(int rangeBase, int rangeTop, int protocol) {
+  public int getRandomAvailablePortInRange(int rangeBase, int rangeTop, Protocol protocol) {
     int numberOfPorts = rangeTop - rangeBase;
     // do "5 times the numberOfPorts" iterations to select a port number. This will ensure that
     // each of the ports from given port range get a chance at least once
     int numberOfRetrys = numberOfPorts * 5;
     for (int i = 0; i < numberOfRetrys; i++) {
-      int port = random.nextInt(numberOfPorts + 1) + rangeBase;// add 1 to numberOfPorts so that
+      int port = RANDOM.nextInt(numberOfPorts + 1) + rangeBase;// add 1 to numberOfPorts so that
       // rangeTop also gets included
       if (isPortAvailable(port, protocol, getAddress(protocol))) {
         return port;
@@ -235,8 +239,8 @@ public class AvailablePortImpl implements AvailablePort {
     return -1;
   }
 
-  private static boolean checkOneInterface(InetAddress addr, int port) {
-    Keeper k = keepOneInterface(addr, port);
+  private static boolean checkOneInterface(InetAddress address, int port) {
+    Keeper k = keepOneInterface(address, port);
     if (k != null) {
       k.release();
       return true;
@@ -244,13 +248,13 @@ public class AvailablePortImpl implements AvailablePort {
     return false;
   }
 
-  private static Keeper keepOneInterface(InetAddress addr, int port) {
+  private static Keeper keepOneInterface(InetAddress address, int port) {
     ServerSocket server = null;
     try {
       server = new ServerSocket();
       server.setReuseAddress(true);
-      if (addr != null) {
-        server.bind(new InetSocketAddress(addr, port));
+      if (address != null) {
+        server.bind(new InetSocketAddress(address, port));
       } else {
         server.bind(new InetSocketAddress(port));
       }
@@ -262,8 +266,8 @@ public class AvailablePortImpl implements AvailablePort {
         throw new UncheckedIOException("Network is unreachable", e);
       }
 
-      if (addr instanceof Inet6Address) {
-        byte[] addrBytes = addr.getAddress();
+      if (address instanceof Inet6Address) {
+        byte[] addrBytes = address.getAddress();
         if ((addrBytes[0] == (byte) 0xfe) && (addrBytes[1] == (byte) 0x80)) {
           // Hack, early Sun 1.5 versions (like Hitachi's JVM) cannot handle IPv6
           // link local addresses. Cannot trust InetAddress.isLinkLocalAddress()
@@ -350,13 +354,13 @@ public class AvailablePortImpl implements AvailablePort {
     int rangeBase;
     int rangeTop;
     if (!useMembershipPortRange) {
-      rangeBase = LOWER_BOUND.value(); // 20000/udp is securid
-      rangeTop = UPPER_BOUND.value(); // 30000/tcp is spoolfax
+      rangeBase = LOWER_BOUND.intLevel(); // 20000/udp is securid
+      rangeTop = UPPER_BOUND.intLevel(); // 30000/tcp is spoolfax
     } else {
       rangeBase = DEFAULT_MEMBERSHIP_PORT_RANGE[0];
       rangeTop = DEFAULT_MEMBERSHIP_PORT_RANGE[1];
     }
 
-    return random.nextInt(rangeTop - rangeBase) + rangeBase;
+    return RANDOM.nextInt(rangeTop - rangeBase) + rangeBase;
   }
 }
