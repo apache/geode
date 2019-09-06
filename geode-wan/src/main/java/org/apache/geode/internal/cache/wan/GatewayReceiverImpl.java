@@ -22,9 +22,11 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -52,6 +54,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   private final boolean manualStart;
   private final List<GatewayTransportFilter> gatewayTransportFilters;
   private final String bindAddress;
+  private final Function<Integer, Boolean> isPortAvailableFunction;
 
   private volatile int port;
   private volatile InternalCacheServer receiverServer;
@@ -60,6 +63,16 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       final int maximumTimeBetweenPings, final int socketBufferSize, final String bindAddress,
       final List<GatewayTransportFilter> gatewayTransportFilters, final String hostnameForSenders,
       final boolean manualStart) {
+    this(cache, startPort, endPort, maximumTimeBetweenPings, socketBufferSize, bindAddress,
+        gatewayTransportFilters, hostnameForSenders, manualStart,
+        GatewayReceiverImpl::isPortAvailable);
+  }
+
+  @VisibleForTesting
+  GatewayReceiverImpl(final InternalCache cache, final int startPort, final int endPort,
+      final int maximumTimeBetweenPings, final int socketBufferSize, final String bindAddress,
+      final List<GatewayTransportFilter> gatewayTransportFilters, final String hostnameForSenders,
+      final boolean manualStart, final Function<Integer, Boolean> isPortAvailableFunction) {
     this.cache = cache;
     this.hostnameForSenders = hostnameForSenders;
     this.startPort = startPort;
@@ -69,6 +82,11 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     this.bindAddress = bindAddress;
     this.gatewayTransportFilters = gatewayTransportFilters;
     this.manualStart = manualStart;
+    this.isPortAvailableFunction = isPortAvailableFunction;
+  }
+
+  private static boolean isPortAvailable(int port) {
+    return AvailablePort.isPortAvailable(port, SOCKET, getAddress(SOCKET));
   }
 
   @Override
@@ -138,7 +156,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   }
 
   private boolean tryToStart(int port) {
-    if (!AvailablePort.isPortAvailable(port, SOCKET, getAddress(SOCKET))) {
+    if (!isPortAvailableFunction.apply(port)) {
       return false;
     }
 

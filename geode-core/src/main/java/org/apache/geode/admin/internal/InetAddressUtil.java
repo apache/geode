@@ -15,42 +15,24 @@
 package org.apache.geode.admin.internal;
 
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.SocketCreator;
-
+import org.apache.geode.internal.net.InetAddressUtils;
 
 /**
  * Provides static utilities for manipulating, validating, and converting InetAddresses and host
  * strings.
  *
  * @since GemFire 3.5
+ *
+ * @deprecated Please use {@link InetAddressUtils} instead.
  */
 @Deprecated
 public class InetAddressUtil {
 
-  private static final Logger logger = LogService.getLogger();
-
-  /** InetAddress instance representing the local host */
-  @Immutable
-  public static final InetAddress LOCALHOST = createLocalHost();
-
-  public static final String LOOPBACK_ADDRESS =
-      SocketCreator.preferIPv6Addresses() ? "::1" : "127.0.0.1";
-
-  @Immutable
-  public static final InetAddress LOOPBACK = InetAddressUtil.toInetAddress(LOOPBACK_ADDRESS);
-
   /** Disallows InetAddressUtil instantiation. */
-  private InetAddressUtil() {}
+  private InetAddressUtil() {
+    // nothing
+  }
 
   /**
    * Returns a string version of InetAddress which can be converted back to an InetAddress later.
@@ -60,15 +42,7 @@ public class InetAddressUtil {
    * @return string version the InetAddress minus any leading slash
    */
   public static String toString(Object val) {
-    if (val instanceof String) {
-      return trimLeadingSlash((String) val);
-
-    } else if (val instanceof InetAddress) {
-      return ((InetAddress) val).getHostAddress();
-
-    } else {
-      return trimLeadingSlash(val.toString());
-    }
+    return InetAddressUtils.toString(val);
   }
 
   /**
@@ -81,37 +55,7 @@ public class InetAddressUtil {
    * @return the host converted to InetAddress instance
    */
   public static InetAddress toInetAddress(String host) {
-    if (host == null || host.length() == 0) {
-      return null;
-    }
-    try {
-      if (host.indexOf("/") > -1) {
-        return InetAddress.getByName(host.substring(host.indexOf("/") + 1));
-      } else {
-        return InetAddress.getByName(host);
-      }
-    } catch (java.net.UnknownHostException e) {
-      logStackTrace(e);
-      Assert.assertTrue(false, "Failed to get InetAddress: " + host);
-      return null; // will never happen since the Assert will fail
-    }
-  }
-
-  /**
-   * Creates an InetAddress representing the local host. The checked exception
-   * <code>java.lang.UnknownHostException</code> is captured and results in an Assertion failure
-   * instead.
-   *
-   * @return InetAddress instance representing the local host
-   */
-  public static InetAddress createLocalHost() {
-    try {
-      return SocketCreator.getLocalHost();
-    } catch (java.net.UnknownHostException e) {
-      logStackTrace(e);
-      Assert.assertTrue(false, "Failed to get local host");
-      return null; // will never happen
-    }
+    return InetAddressUtils.toInetAddress(host);
   }
 
   /**
@@ -125,76 +69,22 @@ public class InetAddressUtil {
    * @return the host converted to InetAddress instance
    */
   public static String validateHost(String host) {
-    if (host == null || host.length() == 0) {
-      return null;
-    }
-    try {
-      InetAddress.getByName(trimLeadingSlash(host));
-      return host;
-    } catch (java.net.UnknownHostException e) {
-      logStackTrace(e);
-      return null;
-    }
+    return InetAddressUtils.validateHost(host);
   }
 
   /** Returns true if host matches the LOCALHOST. */
-  public static boolean isLocalHost(Object host) {
+  static boolean isLocalHost(Object host) {
     if (host instanceof InetAddress) {
-      if (LOCALHOST.equals(host)) {
-        return true;
-      } else {
-        try {
-          Enumeration en = NetworkInterface.getNetworkInterfaces();
-          while (en.hasMoreElements()) {
-            NetworkInterface i = (NetworkInterface) en.nextElement();
-            for (Enumeration en2 = i.getInetAddresses(); en2.hasMoreElements();) {
-              InetAddress addr = (InetAddress) en2.nextElement();
-              if (host.equals(addr)) {
-                return true;
-              }
-            }
-          }
-          return false;
-        } catch (SocketException e) {
-          throw new GemFireIOException(
-              "Unable to query network interface",
-              e);
-        }
-      }
-    } else {
-      return isLocalHost(InetAddressUtil.toInetAddress(host.toString()));
+      return InetAddressUtils.isLocalHost((InetAddress) host);
     }
+    return InetAddressUtils.isLocalHost((String) host);
   }
 
   /** Returns true if host matches the LOOPBACK (127.0.0.1). */
-  public static boolean isLoopback(Object host) {
+  static boolean isLoopback(Object host) {
     if (host instanceof InetAddress) {
-      return LOOPBACK.equals(host);
-    } else {
-      return isLoopback(InetAddressUtil.toInetAddress(host.toString()));
+      return InetAddressUtils.isLoopback((InetAddress) host);
     }
+    return InetAddressUtils.isLoopback((String) host);
   }
-
-  /** Returns a version of the value after removing any leading slashes */
-  private static String trimLeadingSlash(String value) {
-    if (value == null)
-      return "";
-    while (value.indexOf("/") > -1) {
-      value = value.substring(value.indexOf("/") + 1);
-    }
-    return value;
-  }
-
-  /**
-   * Logs the stack trace for the given Throwable if logger is initialized else prints the stack
-   * trace using System.out. If logged the logs are logged at WARNING level.
-   *
-   * @param throwable Throwable to log stack trace for
-   */
-  private static void logStackTrace(Throwable throwable) {
-    AdminDistributedSystemImpl adminDS = AdminDistributedSystemImpl.getConnectedInstance();
-
-    logger.warn(throwable.getMessage(), throwable);
-  }
-
 }

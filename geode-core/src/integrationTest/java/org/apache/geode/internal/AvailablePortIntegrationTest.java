@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.internal.net.InetAddressUtils.getLoopback;
+import static org.apache.geode.internal.net.InetAddressUtils.getLoopbackAddress;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -25,13 +27,10 @@ import java.net.ServerSocket;
 import org.junit.After;
 import org.junit.Test;
 
-import org.apache.geode.admin.internal.InetAddressUtil;
-import org.apache.geode.distributed.internal.DistributionConfig;
-
 /**
  * multicast availability is tested in JGroupsMessengerJUnitTest
  */
-public class AvailablePortJUnitTest {
+public class AvailablePortIntegrationTest {
 
   private ServerSocket socket;
 
@@ -46,27 +45,25 @@ public class AvailablePortJUnitTest {
   public void testIsPortAvailable() throws IOException {
     socket = new ServerSocket();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    socket.bind(new InetSocketAddress(InetAddressUtil.LOOPBACK, port));
+    socket.bind(new InetSocketAddress(getLoopback(), port));
 
-    assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET,
-        InetAddress.getByName(InetAddressUtil.LOOPBACK_ADDRESS)));
+    assertThat(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET,
+        InetAddress.getByName(getLoopbackAddress()))).isFalse();
     // Get local host will return the hostname for the server, so this should succeed, since we're
     // bound to the loopback address only.
-    assertTrue(
-        AvailablePort.isPortAvailable(port, AvailablePort.SOCKET, InetAddress.getLocalHost()));
+    assertThat(
+        AvailablePort.isPortAvailable(port, AvailablePort.SOCKET, InetAddress.getLocalHost()))
+            .isTrue();
     // This should test all interfaces.
-    assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
+    assertThat(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET)).isFalse();
   }
 
   @Test
   public void testWildcardAddressBound() throws IOException {
-    // assumeFalse(SystemUtils.isWindows()); // See bug #39368
     socket = new ServerSocket();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     socket.bind(new InetSocketAddress((InetAddress) null, port));
-    System.out.println(
-        "bind addr=" + System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "bind-address"));
-    assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
+    System.out.println("bind-address=" + System.getProperty(GEMFIRE_PREFIX + "bind-address"));
+    assertThat(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET)).isFalse();
   }
-
 }
