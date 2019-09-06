@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -33,11 +34,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
+import org.apache.geode.internal.net.AvailablePort;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.test.junit.categories.WanTest;
 
@@ -46,14 +49,19 @@ public class GatewayReceiverImplTest {
 
   private InternalCache cache;
   private InternalCacheServer receiverServer;
+  private AvailablePort availablePort;
 
   @Before
   public void setUp() {
+    availablePort = mock(AvailablePort.class);
     cache = mock(InternalCache.class);
     receiverServer = mock(InternalCacheServer.class);
 
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
 
+    when(availablePort.isPortAvailable(anyInt(), anyInt(), any())).thenReturn(true);
+    when(availablePort.getRandomAvailablePortInRange(anyInt(), anyInt(), anyInt()))
+        .thenAnswer((Answer<Integer>) invocation -> invocation.getArgument(0));
     when(cache.getInternalDistributedSystem()).thenReturn(system);
     when(cache.addGatewayReceiverServer(any())).thenReturn(receiverServer);
     when(receiverServer.getExternalAddress()).thenReturn("hello");
@@ -62,7 +70,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void getHostOnUnstartedGatewayShouldReturnLocalHostName() throws UnknownHostException {
     GatewayReceiver gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, port -> true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, availablePort);
 
     assertThat(gateway.getHost()).isEqualTo(SocketCreator.getLocalHost().getHostName());
   }
@@ -72,7 +80,7 @@ public class GatewayReceiverImplTest {
     String theExternalAddress = "theExternalAddress";
     when(receiverServer.getExternalAddress()).thenReturn(theExternalAddress);
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, port -> true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, availablePort);
 
     gateway.start();
 
@@ -82,7 +90,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void destroyCalledOnRunningGatewayReceiverShouldThrowGatewayReceiverException() {
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, port -> true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, availablePort);
     when(receiverServer.isRunning()).thenReturn(true);
     gateway.start();
 
@@ -94,7 +102,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromCacheServers() {
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, port -> true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, availablePort);
     gateway.start();
     when(receiverServer.isRunning()).thenReturn(false);
 
@@ -108,7 +116,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromReceivers() {
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, port -> true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, availablePort);
     gateway.start();
     when(receiverServer.isRunning()).thenReturn(false);
 
@@ -121,7 +129,7 @@ public class GatewayReceiverImplTest {
   public void startShouldThrowGatewayReceiverExceptionIfIOExceptionIsThrown() throws IOException {
     doThrow(new SocketException("Address already in use")).when(receiverServer).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2000, 5, 100, null, null, null, true, port -> true);
+        new GatewayReceiverImpl(cache, 2000, 2000, 5, 100, null, null, null, true, availablePort);
 
     Throwable thrown = catchThrowable(() -> gateway.start());
 
@@ -136,7 +144,7 @@ public class GatewayReceiverImplTest {
   public void startShouldTryTwoPortsInPortRangeIfIOExceptionIsThrown() throws IOException {
     doThrow(new SocketException("Address already in use")).when(receiverServer).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, port -> true);
+        new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null, true, availablePort);
 
     Throwable thrown = catchThrowable(() -> gateway.start());
 
@@ -154,7 +162,7 @@ public class GatewayReceiverImplTest {
     int endPort = 2100;
     GatewayReceiverImpl gateway =
         new GatewayReceiverImpl(cache, startPort, endPort, 5, 100, null, null, null, true,
-            port -> true);
+            availablePort);
 
     Throwable thrown = catchThrowable(() -> gateway.start());
 
@@ -173,7 +181,7 @@ public class GatewayReceiverImplTest {
     IOException ioException = new SocketException("Address already in use");
     doThrow(ioException).doThrow(ioException).doNothing().when(receiverServer).start();
     GatewayReceiverImpl gateway =
-        new GatewayReceiverImpl(cache, 2000, 2010, 5, 100, null, null, null, true, port -> true);
+        new GatewayReceiverImpl(cache, 2000, 2010, 5, 100, null, null, null, true, availablePort);
 
     gateway.start();
 
