@@ -20,9 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
@@ -60,20 +58,13 @@ public class Tomcat8ClientServerRollingUpgradeTest {
   private String locatorDir;
   private String server1Dir;
   private String server2Dir;
-  private static Map<String, Version> versionMap = new HashMap<>();
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    int minimumVersion = SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9) ? 180 : 170;
-    result.removeIf(s -> Integer.parseInt(s) < minimumVersion);
-    Version.getAllVersions().forEach(v -> {
-      result.forEach(r -> {
-        if (r.equals(v.getName().replace(".", ""))) {
-          versionMap.put(r, v);
-        }
-      });
-    });
+    String minimumVersion =
+        SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9) ? "1.8.0" : "1.7.0";
+    result.removeIf(s -> s.compareTo(minimumVersion) < 0);
     return result;
   }
 
@@ -309,8 +300,6 @@ public class Tomcat8ClientServerRollingUpgradeTest {
    * @return Paths to required jars
    */
   private String getClassPathTomcat8AndOldModules() {
-    String oldVersion = versionMap.get(this.oldVersion).getName();
-
     final String[] requiredClasspathJars = {
         "/lib/geode-modules-" + oldVersion + ".jar",
         "/lib/geode-modules-tomcat8-" + oldVersion + ".jar",
