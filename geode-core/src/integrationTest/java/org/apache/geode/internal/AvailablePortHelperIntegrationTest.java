@@ -15,14 +15,14 @@
 package org.apache.geode.internal;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
-import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRangeKeepers;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
 import static org.apache.geode.internal.AvailablePortHelper.initializeUniquePortRange;
+import static org.apache.geode.internal.net.AvailablePort.Protocol.MULTICAST;
+import static org.apache.geode.internal.net.AvailablePort.Range.LOWER_BOUND;
+import static org.apache.geode.internal.net.AvailablePort.Range.UPPER_BOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeFalse;
 
@@ -42,8 +42,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.internal.AvailablePort.Keeper;
 import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.net.AvailablePort.Keeper;
 
 @RunWith(JUnitParamsRunner.class)
 public class AvailablePortHelperIntegrationTest {
@@ -127,8 +127,8 @@ public class AvailablePortHelperIntegrationTest {
         assertThat(port).isGreaterThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[0])
             .isLessThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
       } else {
-        assertThat(port).isGreaterThanOrEqualTo(AVAILABLE_PORTS_LOWER_BOUND)
-            .isLessThanOrEqualTo(AVAILABLE_PORTS_UPPER_BOUND);
+        assertThat(port).isGreaterThanOrEqualTo(LOWER_BOUND.value())
+            .isLessThanOrEqualTo(UPPER_BOUND.value());
       }
       ports.add(port);
     }
@@ -213,8 +213,8 @@ public class AvailablePortHelperIntegrationTest {
         assertThat(port).isGreaterThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[0])
             .isLessThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
       } else {
-        assertThat(port).isGreaterThanOrEqualTo(AVAILABLE_PORTS_LOWER_BOUND)
-            .isLessThanOrEqualTo(AVAILABLE_PORTS_UPPER_BOUND);
+        assertThat(port).isGreaterThanOrEqualTo(LOWER_BOUND.value())
+            .isLessThanOrEqualTo(UPPER_BOUND.value());
       }
       ports.add(port);
     }
@@ -234,7 +234,7 @@ public class AvailablePortHelperIntegrationTest {
   public void getRandomAvailableUDPPort_succeeds() throws IOException {
     int udpPort = getRandomAvailableUDPPort();
     assertThat(udpPort).isNotZero();
-    assertThat(AvailablePort.isPortAvailable(udpPort, MULTICAST)).isTrue();
+    assertThat(AvailablePort.isPortAvailable(udpPort, MULTICAST.value())).isTrue();
   }
 
   @Test

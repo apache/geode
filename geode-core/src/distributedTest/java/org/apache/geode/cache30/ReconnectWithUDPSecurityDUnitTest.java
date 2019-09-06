@@ -26,10 +26,6 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @Category({MembershipTest.class, ClientServerTest.class})
 public class ReconnectWithUDPSecurityDUnitTest extends ReconnectDUnitTest {
 
-  public ReconnectWithUDPSecurityDUnitTest() {
-    super();
-  }
-
   @Override
   protected void addDSProps(Properties p) {
     p.setProperty(SECURITY_UDP_DHALGO, "AES:128");

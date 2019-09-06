@@ -41,7 +41,6 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
-import static org.apache.geode.test.dunit.ThreadUtils.join;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
@@ -69,17 +68,13 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Declarable;
-import org.apache.geode.cache.LossAction;
 import org.apache.geode.cache.MembershipAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionExistsException;
-import org.apache.geode.cache.ResumptionAction;
-import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
@@ -100,16 +95,13 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
@@ -119,25 +111,25 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @SuppressWarnings("serial")
 @Category({MembershipTest.class})
 public class ReconnectDUnitTest extends JUnit4CacheTestCase {
-  static int locatorPort;
-  static Locator locator;
-  static DistributedSystem savedSystem;
-  static GemFireCacheImpl savedCache;
-  static int locatorVMNumber = 3;
-  static Thread gfshThread;
+  private static int locatorPort;
+  private static Locator locator;
+  private static DistributedSystem savedSystem;
+  private static GemFireCacheImpl savedCache;
+  private static int locatorVMNumber = 3;
+  private static Thread gfshThread;
 
-  static Properties dsProperties;
-  static String fileSeparator = File.separator;
+  private static Properties dsProperties;
+  private static String fileSeparator = File.separator;
 
-  public ReconnectDUnitTest() {
-    super();
-  }
+  private static volatile int reconnectTries;
+  private static volatile boolean initialized;
+  private static volatile boolean initialRolePlayerStarted;
 
   @Override
   public final void postSetUp() throws Exception {
     locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final int locPort = locatorPort;
-    Host.getHost(0).getVM(locatorVMNumber).invoke(new SerializableRunnable("start locator") {
+    getHost(0).getVM(locatorVMNumber).invoke(new SerializableRunnable("start locator") {
       @Override
       public void run() {
         try {
@@ -148,8 +140,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           locator = Locator.startLocatorAndDS(locatorPort, new File(""), props);
           system = (InternalDistributedSystem) locator.getDistributedSystem();
           cache = ((InternalLocator) locator).getCache();
-          ReconnectDUnitTest.savedSystem = locator.getDistributedSystem();
-          IgnoredException.addIgnoredException(
+          savedSystem = locator.getDistributedSystem();
+          addIgnoredException(
               "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
           // MembershipManagerHelper.getMembershipManager(InternalDistributedSystem.getConnectedInstance()).setDebugJGroups(true);
         } catch (IOException e) {
@@ -182,17 +174,17 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   public Properties getDistributedSystemProperties() {
     if (dsProperties == null) {
       dsProperties = new Properties();
-      dsProperties.put(MAX_WAIT_TIME_RECONNECT, "20000");
-      dsProperties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-      dsProperties.put(DISABLE_AUTO_RECONNECT, "false");
-      dsProperties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-      dsProperties.put(LOCATORS, "localHost[" + locatorPort + "]");
-      dsProperties.put(MCAST_PORT, "0");
-      dsProperties.put(MEMBER_TIMEOUT, "2000");
-      dsProperties.put(LOG_LEVEL, "info");
-      dsProperties.put(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
-      dsProperties.put("security-username", "clusterManage");
-      dsProperties.put("security-password", "clusterManage");
+      dsProperties.setProperty(MAX_WAIT_TIME_RECONNECT, "20000");
+      dsProperties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
+      dsProperties.setProperty(DISABLE_AUTO_RECONNECT, "false");
+      dsProperties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+      dsProperties.setProperty(LOCATORS, "localHost[" + locatorPort + "]");
+      dsProperties.setProperty(MCAST_PORT, "0");
+      dsProperties.setProperty(MEMBER_TIMEOUT, "2000");
+      dsProperties.setProperty(LOG_LEVEL, "info");
+      dsProperties.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+      dsProperties.setProperty("security-username", "clusterManage");
+      dsProperties.setProperty("security-password", "clusterManage");
       addDSProps(dsProperties);
     }
     return dsProperties;
@@ -200,7 +192,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    System.out.println("entering postTearDownCacheTestCase");
+    out.println("entering postTearDownCacheTestCase");
     SerializableRunnable disconnect = new SerializableRunnable("disconnect and clean up") {
       @Override
       public void run() {
@@ -226,8 +218,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     AttributesFactory factory = new AttributesFactory();
 
     {
-      factory.setDataPolicy(DataPolicy.REPLICATE);
-      factory.setScope(Scope.DISTRIBUTED_ACK);
+      factory.setDataPolicy(REPLICATE);
+      factory.setScope(DISTRIBUTED_ACK);
     }
 
     return factory.create();
@@ -237,8 +229,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testReconnectWithQuorum() throws Exception {
     // quorum check fails, then succeeds
-    IgnoredException.addIgnoredException("killing member's ds");
-    Host host = Host.getHost(0);
+    addIgnoredException("killing member's ds");
+    Host host = getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM locatorVm = host.getVM(locatorVMNumber);
@@ -251,8 +243,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     locatorVm.invoke(new SerializableRunnable("disable force-disconnect") {
       @Override
       public void run() {
-        GMSMembershipManager mgr = (GMSMembershipManager) MembershipManagerHelper
-            .getMembership(Locator.getLocator().getDistributedSystem());
+        GMSMembershipManager mgr = (GMSMembershipManager)
+            getMembership(getLocator().getDistributedSystem());
         mgr.disableDisconnectOnQuorumLossForTesting();
       }
     });
@@ -263,20 +255,21 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           public Object call() throws CacheException {
             locatorPort = locPort;
             Properties props = getDistributedSystemProperties();
-            props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
-            props.put(MAX_NUM_RECONNECT_TRIES, "2");
+            props
+                .setProperty(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
+            props.setProperty(MAX_NUM_RECONNECT_TRIES, "2");
             // props.put("log-file", "autoReconnectVM"+VM.getCurrentVMNum()+"_"+getPID()+".log");
             cache = (InternalCache) new CacheFactory(props).create();
-            IgnoredException.addIgnoredException(
+            addIgnoredException(
                 "org.apache.geode.ForcedDisconnectException||Possible loss of quorum");
             Region myRegion = cache.getRegion("root/myRegion");
-            ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
+            savedSystem = cache.getDistributedSystem();
             myRegion.put("MyKey1", "MyValue1");
             return savedSystem.getDistributedMember();
           }
         };
 
-    System.out.println("creating caches in vm0 and vm1");
+    out.println("creating caches in vm0 and vm1");
     vm0.invoke(create);
     vm1.invoke(create);
 
@@ -286,7 +279,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
      * now we want to kick out the locator and observe that it reconnects using its rebooted
      * location service
      */
-    System.out.println("disconnecting locator");
+    out.println("disconnecting locator");
     forceDisconnect(locatorVm);
     waitForReconnect(locatorVm);
 
@@ -309,11 +302,11 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     doTestReconnectOnForcedDisconnect(true);
   }
 
-  public void doTestReconnectOnForcedDisconnect(final boolean createInAppToo) throws Exception {
+  private void doTestReconnectOnForcedDisconnect(final boolean createInAppToo) throws Exception {
 
-    IgnoredException.addIgnoredException("killing member's ds");
+    addIgnoredException("killing member's ds");
 
-    Host host = Host.getHost(0);
+    Host host = getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
@@ -332,11 +325,12 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           public Object call() throws CacheException {
             locatorPort = locPort;
             Properties props = getDistributedSystemProperties();
-            props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
-            props.put(MAX_WAIT_TIME_RECONNECT, "1000");
+            props
+                .setProperty(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
+            props.setProperty(MAX_WAIT_TIME_RECONNECT, "1000");
             cache = (InternalCache) new CacheFactory(props).create();
             Region myRegion = cache.getRegion("root/myRegion");
-            ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
+            savedSystem = cache.getDistributedSystem();
             myRegion.put("MyKey1", "MyValue1");
             return savedSystem.getDistributedMember();
           }
@@ -348,13 +342,15 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           public Object call() throws CacheException {
             locatorPort = locPort;
             final Properties props = getDistributedSystemProperties();
-            props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
-            props.put(MAX_WAIT_TIME_RECONNECT, "5000");
-            props.put(START_LOCATOR, "localhost[" + secondLocPort + "]");
-            props.put(LOCATORS, props.get(LOCATORS) + ",localhost[" + secondLocPort + "]");
+            props
+                .setProperty(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
+            props.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
+            props.setProperty(START_LOCATOR, "localhost[" + secondLocPort + "]");
+            props.setProperty(LOCATORS,
+                props.getProperty(LOCATORS) + ",localhost[" + secondLocPort + "]");
             getSystem(props);
             cache = getCache();
-            ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
+            savedSystem = cache.getDistributedSystem();
             Region myRegion = cache.getRegion("root/myRegion");
             myRegion.put("Mykey2", "MyValue2");
             assertNotNull(myRegion.get("MyKey1"));
@@ -384,7 +380,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(create1);
     final DistributedMember dm = (DistributedMember) vm1.invoke(create2);
 
-    IgnoredException.addIgnoredException("ForcedDisconnectException");
+    addIgnoredException("ForcedDisconnectException");
     forceDisconnect(vm1);
 
     DistributedMember newdm =
@@ -393,7 +389,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           public Object call() {
             final DistributedSystem ds = savedSystem;
             savedSystem = null;
-            GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
+            await().untilAsserted(new WaitCriterion() {
               @Override
               public boolean done() {
                 return ds.isReconnecting();
@@ -404,8 +400,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
                 return "waiting for ds to begin reconnecting";
               }
             });
-            System.out.println("entering reconnect wait for " + ds);
-            System.out.println("ds.isReconnecting() = " + ds.isReconnecting());
+            out.println("entering reconnect wait for " + ds);
+            out.println("ds.isReconnecting() = " + ds.isReconnecting());
             boolean failure = true;
             try {
               ds.waitUntilReconnected(getTimeout().getValueInMS(), MILLISECONDS);
@@ -444,7 +440,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       public Object call() {
         final DistributedSystem ds = savedSystem;
         savedSystem = null;
-        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
+        await().untilAsserted(new WaitCriterion() {
           @Override
           public boolean done() {
             return ds.isReconnecting() || ds.getReconnectedSystem() != null;
@@ -482,8 +478,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     return (DistributedMember) vm.invoke(new SerializableCallable("get ID") {
       @Override
       public Object call() {
-        ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
-        return ReconnectDUnitTest.savedSystem.getDistributedMember();
+        savedSystem = cache.getDistributedSystem();
+        return savedSystem.getDistributedMember();
       }
     });
   }
@@ -509,7 +505,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             out.println("waitForReconnect invoked");
             final DistributedSystem ds = savedSystem;
             savedSystem = null;
-            GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
+            await().untilAsserted(new WaitCriterion() {
               @Override
               public boolean done() {
                 return ds.isReconnecting();
@@ -521,7 +517,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
               }
             });
             long waitTime = 600;
-            System.out.println("VM" + VM.getCurrentVMNum() + " waiting up to "
+            out.println("VM" + VM.getCurrentVMNum() + " waiting up to "
                 + waitTime + " seconds for reconnect to complete");
             try {
               ds.waitUntilReconnected(waitTime, SECONDS);
@@ -545,7 +541,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testReconnectALocator() throws Exception {
-    Host host = Host.getHost(0);
+    Host host = getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM locatorVm = host.getVM(3);
@@ -568,9 +564,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke("Create a second locator", () -> {
       locatorPort = locPort;
       Properties props = getDistributedSystemProperties();
-      props.put(MAX_WAIT_TIME_RECONNECT, "1000");
-      props.put(LOCATORS, props.get(LOCATORS) + ",localhost[" + locPort + "]");
-      props.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+      props.setProperty(MAX_WAIT_TIME_RECONNECT, "1000");
+      props.setProperty(LOCATORS, props.getProperty(LOCATORS) + ",localhost[" + locPort + "]");
+      props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
       try {
         InternalLocator locator =
             (InternalLocator) Locator.startLocatorAndDS(secondLocPort, null, props);
@@ -590,9 +586,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke("Create Cache and Regions from cache.xml", () -> {
       locatorPort = locPort;
       Properties props = getDistributedSystemProperties();
-      props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
-      props.put(MAX_WAIT_TIME_RECONNECT, "1000");
-      ReconnectDUnitTest.savedSystem = getSystem(props);
+      props.setProperty(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
+      props.setProperty(MAX_WAIT_TIME_RECONNECT, "1000");
+      savedSystem = getSystem(props);
       cache = getCache();
       Region myRegion = cache.getRegion("root/myRegion");
       myRegion.put("MyKey1", "MyValue1");
@@ -610,7 +606,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           vm0.invoke("check for running locator", () -> {
             await("waiting for locator to restart")
                 .until(Locator::getLocator, notNullValue());
-            if (((InternalLocator) Locator.getLocator()).isStopped()) {
+            if (((InternalLocator) getLocator()).isStopped()) {
               System.err.println("found a stopped locator");
               return false;
             }
@@ -630,7 +626,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       vm0.invoke(new SerializableRunnable("stop locator") {
         @Override
         public void run() {
-          Locator loc = Locator.getLocator();
+          Locator loc = getLocator();
           if (loc != null) {
             loc.stop();
           }
@@ -650,7 +646,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     vm.invoke(new SerializableRunnable("create Gfsh-like waiting thread") {
       @Override
       public void run() {
-        final Locator loc = Locator.getLocator();
+        final Locator loc = getLocator();
         assertNotNull(loc);
         gfshThread = new Thread("ReconnectDUnitTest_Gfsh_thread") {
           @Override
@@ -658,13 +654,13 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             try {
               ((InternalLocator) loc).waitToStop();
             } catch (InterruptedException e) {
-              System.out.println(Thread.currentThread().getName() + " interrupted - exiting");
+              out.println(Thread.currentThread().getName() + " interrupted - exiting");
             }
           }
         };
         gfshThread.setDaemon(true);
         gfshThread.start();
-        System.out.println("created gfsh thread: " + gfshThread);
+        out.println("created gfsh thread: " + gfshThread);
       }
     });
   }
@@ -699,18 +695,18 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
     locatorPort = locPort;
     Properties config = getDistributedSystemProperties();
-    config.put(ROLES, "");
-    config.put(LOG_LEVEL, "info");
+    config.setProperty(ROLES, "");
+    config.setProperty(LOG_LEVEL, "info");
     // config.put("log-file", "roleLossController.log");
     // creating the DS
     getSystem(config);
 
     MembershipAttributes ra =
-        new MembershipAttributes(requiredRoles, LossAction.RECONNECT, ResumptionAction.NONE);
+        new MembershipAttributes(requiredRoles, RECONNECT, NONE);
 
     AttributesFactory fac = new AttributesFactory();
     fac.setMembershipAttributes(ra);
-    fac.setScope(Scope.DISTRIBUTED_ACK);
+    fac.setScope(DISTRIBUTED_ACK);
 
     RegionAttributes attr = fac.create();
     createRootRegion("MyRegion", attr);
@@ -728,8 +724,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     closeCache();
     basicGetSystem().disconnect();
 
-    System.out.println("disconnected from the system...");
-    Host host = Host.getHost(0);
+    out.println("disconnected from the system...");
+    Host host = getHost(0);
 
     VM vm0 = host.getVM(0);
 
@@ -738,28 +734,28 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     SerializableRunnable roleLoss = new CacheSerializableRunnable("ROLERECONNECTTESTS") {
       @Override
       public void run2() throws RuntimeException {
-        System.out.println("####### STARTING THE REAL TEST ##########");
+        out.println("####### STARTING THE REAL TEST ##########");
 
         locatorPort = locPort;
         dsProperties = null;
         Properties props = getDistributedSystemProperties();
-        props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "RoleReconnect-cache.xml");
-        props.put(MAX_WAIT_TIME_RECONNECT, "200");
+        props.setProperty(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "RoleReconnect-cache.xml");
+        props.setProperty(MAX_WAIT_TIME_RECONNECT, "200");
         final int timeReconnect = 3;
-        props.put(MAX_NUM_RECONNECT_TRIES, "3");
-        props.put(LOG_LEVEL, "info");
+        props.setProperty(MAX_NUM_RECONNECT_TRIES, "3");
+        props.setProperty(LOG_LEVEL, "info");
         // props.put("log-file", "roleLossVM0.log");
 
         getSystem(props);
 
         addReconnectListener();
 
-        IgnoredException.addIgnoredException("CacheClosedException");
+        addIgnoredException("CacheClosedException");
         try {
           getCache(props);
           throw new RuntimeException("The test should throw a CancelException ");
         } catch (CancelException ignor) { // can be caused by role loss during intialization.
-          System.out.println("Got Expected CancelException ");
+          out.println("Got Expected CancelException ");
         }
 
         WaitCriterion ev = new WaitCriterion() {
@@ -785,15 +781,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   }
 
 
-
-  public static volatile int reconnectTries;
-
-  public static volatile boolean initialized = false;
-
-  public static volatile boolean initialRolePlayerStarted = false;
-
   // public static boolean rPut;
-  public static int reconnectTries() {
+  private static int reconnectTries() {
     return reconnectTries;
   }
 
@@ -801,7 +790,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     return initialized;
   }
 
-  public static boolean isInitialRolePlayerStarted() {
+  private static boolean isInitialRolePlayerStarted() {
     return initialRolePlayerStarted;
   }
 
@@ -836,8 +825,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
     locatorPort = locPort;
     Properties config = getDistributedSystemProperties();
-    config.put(ROLES, "");
-    config.put(LOG_LEVEL, "info");
+    config.setProperty(ROLES, "");
+    config.setProperty(LOG_LEVEL, "info");
     // creating the DS
     getSystem(config);
 
@@ -891,7 +880,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             file.getAbsolutePath());
     final AsyncInvocation roleLossAsync = vm0.invokeAsync(roleLoss);
 
-    System.out.println("waiting for role loss vm to start reconnect attempts");
+    out.println("waiting for role loss vm to start reconnect attempts");
 
     WaitCriterion ev = new WaitCriterion() {
       @Override
@@ -899,7 +888,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         if (!roleLossAsync.isAlive()) {
           return true;
         }
-        int tries = vm0.invoke(() -> ReconnectDUnitTest.reconnectTries());
+        int tries = vm0.invoke(() -> reconnectTries());
         return tries != 0;
       }
 
@@ -908,7 +897,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         return "waiting for event";
       }
     };
-    GeodeAwaitility.await().untilAsserted(ev);
+    await().untilAsserted(ev);
 
     VM vm2 = host.getVM(2);
     if (roleLossAsync.isAlive()) {
@@ -926,19 +915,15 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
        * "and the number of reconnected tried is not set to zero for " + "more than 2 mins"); try{
        * Thread.sleep(15); }catch(Exception ee){ getLogWriter().severe("Exception : "+ee); } }
        */
-      System.out.println("waiting for vm0 to finish reconnecting");
-      ThreadUtils.join(roleLossAsync, 120 * 1000);
+      out.println("waiting for vm0 to finish reconnecting");
+      roleLossAsync.await();
     }
 
     if (roleLossAsync.getException() != null) {
       throw roleLossAsync.getException();
     }
 
-    join(avkVm1, 30 * 1000);
-    if (avkVm1.getException() != null) {
-      Assert.fail("Exception in Vm1", avkVm1.getException());
-    }
-
+    avkVm1.await();
   }
 
   private CacheSerializableRunnable getRoleLossRunnable(final VM otherVM, final int locPort,
@@ -948,11 +933,11 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     return new CacheSerializableRunnable("roleloss runnable") {
       @Override
       public void run2() {
-        System.out.println(startupMessage);
+        out.println(startupMessage);
         WaitCriterion ev = new WaitCriterion() {
           @Override
           public boolean done() {
-            return otherVM.invoke(() -> ReconnectDUnitTest.isInitialRolePlayerStarted())
+            return otherVM.invoke(() -> isInitialRolePlayerStarted())
                 .booleanValue();
           }
 
@@ -963,23 +948,23 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         };
         await().untilAsserted(ev);
 
-        System.out.println(
+        out.println(
             "Starting the test and creating the cache and regions etc ..." + System.getenv("PWD"));
         locatorPort = locPort;
         Properties props = getDistributedSystemProperties();
-        props.put(CACHE_XML_FILE, xmlFilePath);
-        props.put(MAX_WAIT_TIME_RECONNECT, "3000");
-        props.put(MAX_NUM_RECONNECT_TRIES, "8");
-        props.put(LOG_LEVEL, "info");
+        props.setProperty(CACHE_XML_FILE, xmlFilePath);
+        props.setProperty(MAX_WAIT_TIME_RECONNECT, "3000");
+        props.setProperty(MAX_NUM_RECONNECT_TRIES, "8");
+        props.setProperty(LOG_LEVEL, "info");
 
         getSystem(props);
-        IgnoredException.addIgnoredException("CacheClosedException");
+        addIgnoredException("CacheClosedException");
 
         try {
           getCache();
         } catch (CancelException e) {
           // can happen if RoleA goes away during initialization
-          System.out.println("cache threw CancelException while creating the cache");
+          out.println("cache threw CancelException while creating the cache");
         }
 
         initialized = true;
@@ -991,7 +976,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         await().until(() -> {
           String excuse = "none";
           if (InternalDistributedSystem.getReconnectAttemptCounter() != 0) {
-            System.out.println("reconnectAttemptCounter is "
+            out.println("reconnectAttemptCounter is "
                 + InternalDistributedSystem.getReconnectAttemptCounter()
                 + " waiting for it to be zero");
             return false;
@@ -1033,8 +1018,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
               excuse = "value is wrong";
               return false;
             }
-            System.out.println("All assertions passed");
-            System.out.println("MyKey : " + key + " and myvalue : " + value);
+            out.println("All assertions passed");
+            out.println("MyKey : " + key + " and myvalue : " + value);
             return true;
           } catch (CancelException ecc) {
             // ignor the exception because the cache can be closed/null some times
@@ -1042,7 +1027,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           } catch (RegionDestroyedException rex) {
 
           } finally {
-            System.out.println("waiting for reconnect.  Current status is '" + excuse + "'");
+            out.println("waiting for reconnect.  Current status is '" + excuse + "'");
           }
           return false;
         });
@@ -1062,8 +1047,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testReconnectFailsInCacheCreation() throws Exception {
-
-    Host host = Host.getHost(0);
+    Host host = getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
@@ -1074,10 +1058,10 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         locatorPort = locPort;
         final Properties props = getDistributedSystemProperties();
-        props.put(MAX_WAIT_TIME_RECONNECT, "1000");
+        props.setProperty(MAX_WAIT_TIME_RECONNECT, "1000");
         dsProperties = props;
-        ReconnectDUnitTest.savedSystem = getSystem(props);
-        ReconnectDUnitTest.savedCache = (GemFireCacheImpl) getCache();
+        savedSystem = getSystem(props);
+        savedCache = (GemFireCacheImpl) getCache();
         Region myRegion = createRegion("myRegion", createAtts());
         myRegion.put("MyKey", "MyValue");
         myRegion.getAttributesMutator()
@@ -1088,7 +1072,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(createCache); // vm0 keeps the locator from losing quorum when vm1 crashes
 
     vm1.invoke(createCache);
-    IgnoredException.addIgnoredException(
+    addIgnoredException(
         "DistributedSystemDisconnectedException|ForcedDisconnectException", vm1);
     forceDisconnect(vm1);
 
@@ -1096,7 +1080,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         final GemFireCacheImpl cache = savedCache;
-        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
+        await().untilAsserted(new WaitCriterion() {
           @Override
           public boolean done() {
             return cache.isReconnecting();
@@ -1124,7 +1108,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testReconnectFailsDueToBadCacheXML() throws Exception {
-
     Host host = getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -1136,7 +1119,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         locatorPort = locPort;
         final Properties props = getDistributedSystemProperties();
-        props.put(MAX_WAIT_TIME_RECONNECT, "1000");
+        props.setProperty(MAX_WAIT_TIME_RECONNECT, "1000");
         dsProperties = props;
         savedSystem = getSystem(props);
         savedCache = (GemFireCacheImpl) getCache();
@@ -1154,7 +1137,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     forceDisconnect(null);
 
     final GemFireCacheImpl cache = savedCache;
-    GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
+    await().untilAsserted(new WaitCriterion() {
       @Override
       public boolean done() {
         return cache.isReconnecting()
@@ -1180,23 +1163,23 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     return new CacheSerializableRunnable("second RoleA player") {
       @Override
       public void run2() throws CacheException {
-        System.out.println(startupMessage);
+        out.println(startupMessage);
         // closeCache();
         // getSystem().disconnect();
         locatorPort = locPort;
         Properties props = getDistributedSystemProperties();
-        props.put(LOG_LEVEL, "info");
-        props.put(ROLES, "RoleA");
+        props.setProperty(LOG_LEVEL, "info");
+        props.setProperty(ROLES, "RoleA");
 
         getSystem(props);
         getCache();
         AttributesFactory fac = new AttributesFactory();
-        fac.setScope(Scope.DISTRIBUTED_ACK);
-        fac.setDataPolicy(DataPolicy.REPLICATE);
+        fac.setScope(DISTRIBUTED_ACK);
+        fac.setDataPolicy(REPLICATE);
 
         RegionAttributes attr = fac.create();
         Region region = createRootRegion(regionName, attr);
-        System.out.println("STARTED THE REQUIREDROLES CACHE");
+        out.println("STARTED THE REQUIREDROLES CACHE");
         try {
           Thread.sleep(120);
         } catch (Exception ee) {
@@ -1211,15 +1194,10 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         } catch (InterruptedException ee) {
           fail("interrupted");
         }
-        System.out.println("RolePlayer is done...");
-
-
+        out.println("RolePlayer is done...");
       }
-
-
     };
   }
-
 
   private CacheSerializableRunnable getRoleAPlayerForCacheInitializationRunnable(final VM otherVM,
       final int locPort, final String regionName, final String startupMessage) {
@@ -1228,72 +1206,65 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         // closeCache();
         // getSystem().disconnect();
-        System.out.println(startupMessage);
+        out.println(startupMessage);
         locatorPort = locPort;
         Properties props = getDistributedSystemProperties();
-        props.put(LOG_LEVEL, "info");
-        props.put(ROLES, "RoleA");
+        props.setProperty(LOG_LEVEL, "info");
+        props.setProperty(ROLES, "RoleA");
 
         getSystem(props);
         getCache();
         AttributesFactory fac = new AttributesFactory();
-        fac.setScope(Scope.DISTRIBUTED_ACK);
-        fac.setDataPolicy(DataPolicy.REPLICATE);
+        fac.setScope(DISTRIBUTED_ACK);
+        fac.setDataPolicy(REPLICATE);
 
         RegionAttributes attr = fac.create();
         createRootRegion(regionName, attr);
-        System.out.println("STARTED THE REQUIREDROLES CACHE");
+        out.println("STARTED THE REQUIREDROLES CACHE");
         initialRolePlayerStarted = true;
 
-        while (!otherVM.invoke(() -> ReconnectDUnitTest.isInitialized()).booleanValue()) {
+        while (!otherVM.invoke(() -> isInitialized()).booleanValue()) {
           try {
             Thread.sleep(15);
           } catch (InterruptedException ignor) {
             fail("interrupted");
           }
         }
-        System.out.println("RoleAPlayerInitializer is done...");
+        out.println("RoleAPlayerInitializer is done...");
         closeCache();
-
       }
     };
   }
 
-
-  void addReconnectListener() {
+  private void addReconnectListener() {
     reconnectTries = 0; // reset the count for this listener
-    System.out.println("adding reconnect listener");
+    out.println("adding reconnect listener");
     ReconnectListener reconlis = new ReconnectListener() {
       @Override
       public void reconnecting(InternalDistributedSystem oldSys) {
-        System.out.println("reconnect listener invoked");
+        out.println("reconnect listener invoked");
         reconnectTries++;
       }
 
       @Override
       public void onReconnect(InternalDistributedSystem system1,
           InternalDistributedSystem system2) {
-        System.out.println("reconnect listener onReconnect invoked " + system2);
+        out.println("reconnect listener onReconnect invoked " + system2);
         cache = system2.getCache();
       }
     };
     InternalDistributedSystem.addReconnectListener(reconlis);
   }
 
-  private void waitTimeout() throws InterruptedException {
-    Thread.sleep(500);
-
-  }
-
-  public boolean forceDisconnect(VM vm) throws Exception {
+  private boolean forceDisconnect(VM vm) throws Exception {
     SerializableCallable fd = new SerializableCallable("crash distributed system") {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         // since the system will disconnect and attempt to reconnect
         // a new system the old reference to DTC.system can cause
         // trouble, so we first null it out.
         nullSystem();
-        final Locator oldLocator = Locator.getLocator();
+        final Locator oldLocator = getLocator();
         final DistributedSystem msys = cache.getDistributedSystem();
         MembershipManagerHelper.crashDistributedSystem(msys);
         if (oldLocator != null) {
@@ -1308,7 +1279,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
               return "waiting for locator to start reconnecting: " + oldLocator;
             }
           };
-          GeodeAwaitility.await().untilAsserted(wc);
+          await().untilAsserted(wc);
         }
         return true;
       }
@@ -1339,7 +1310,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
    */
   public static class CacheListenerTriggeringForcedDisconnect extends CacheListenerAdapter
       implements Declarable {
-    public static int crashCount = 0;
+
+    private static int crashCount;
 
     @Override
     public void afterRegionCreate(final RegionEvent event) {
@@ -1351,7 +1323,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         Thread t = new Thread("crash reconnecting system (ReconnectDUnitTest)") {
           @Override
           public void run() {
-            System.out.println("crashing distributed system");
+            out.println("crashing distributed system");
             GemFireCacheImpl cache = (GemFireCacheImpl) event.getRegion().getCache();
             MembershipManagerHelper.crashDistributedSystem(cache.getDistributedSystem());
           }
@@ -1360,11 +1332,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         t.start();
       }
     }
-
-    @Override
-    public void init(Properties props) {}
-
   }
 
-  protected void addDSProps(Properties p) {}
+  protected void addDSProps(Properties p) {
+    // nothing
+  }
 }
