@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.geode.admin.ConfigurationParameter;
 import org.apache.geode.admin.UnmodifiableConfigurationException;
+import org.apache.geode.internal.net.InetAddressUtils;
 
 /**
  * A single configuration parameter of a system member.
@@ -111,7 +112,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
     if (isString()) {
       return (String) this.value;
     } else if (isInetAddress()) {
-      return InetAddressUtil.toString(this.value);
+      return InetAddressUtils.toString(this.value);
     } else if (isFile()) {
       return this.value.toString();
     } else if (isOctal()) {
@@ -222,7 +223,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
     }
 
     if (isInetAddress()) {
-      this.value = InetAddressUtil.toInetAddress(newValue);
+      this.value = InetAddressUtils.toInetAddress(newValue);
     } else if (isFile()) {
       this.value = new File(newValue);
     } else if (isOctal()) {

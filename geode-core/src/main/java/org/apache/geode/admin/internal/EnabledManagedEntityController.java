@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ProcessOutputReader;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.net.InetAddressUtils;
 
 /**
  * Implements the actual administration (starting, stopping, etc.) of GemFire
@@ -169,7 +170,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
   private String arrangeRemoteCommand(InternalManagedEntity entity, String cmd) {
 
     String host = entity.getEntityConfig().getHost();
-    if (InetAddressUtil.isLocalHost(host)) {
+    if (InetAddressUtils.isLocalHost(host)) {
       // No arranging necessary
       return cmd;
     }

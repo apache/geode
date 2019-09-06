@@ -45,6 +45,7 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.StatResource;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.InetAddressUtils;
 
 /**
  * Member of a GemFire system.
@@ -168,7 +169,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
 
   @Override
   public InetAddress getHostAddress() {
-    return InetAddressUtil.toInetAddress(this.getHost());
+    return InetAddressUtils.toInetAddress(this.getHost());
   }
 
   // -------------------------------------------------------------------------
@@ -403,7 +404,7 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
       this.internalId = vm.getId();
       this.id = this.internalId.toString();
       this.name = vm.getName();
-      this.host = InetAddressUtil.toString(vm.getHost());
+      this.host = InetAddressUtils.toString(vm.getHost());
     } else {
       this.internalId = null;
       this.id = null;

@@ -21,9 +21,9 @@ import java.util.Properties;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.admin.internal.InetAddressUtil;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.InetAddressUtils;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 
@@ -108,7 +108,7 @@ public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServer
 
     } else {
       return socketCreator.createServerSocket(port, backlog,
-          InetAddressUtil.toInetAddress(bindAddress));
+          InetAddressUtils.toInetAddress(bindAddress));
     }
   }
 
@@ -123,7 +123,7 @@ public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServer
       sock = socketCreator.createServerSocket(port, this.backlog);
     } else {
       sock = socketCreator.createServerSocket(port, this.backlog,
-          InetAddressUtil.toInetAddress(this.bindAddress));
+          InetAddressUtils.toInetAddress(this.bindAddress));
     }
 
     if (logger.isDebugEnabled()) {

@@ -28,9 +28,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 
 import java.util.Properties;
 
-import org.apache.geode.admin.internal.InetAddressUtil;
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.net.InetAddressUtils;
 
 
 /**
@@ -104,7 +104,8 @@ public interface DistributedSystemConfig extends Cloneable {
   String MCAST_ADDRESS_NAME = MCAST_ADDRESS;
 
   /** The default value of the "mcastAddress" property (239.192.81.1). */
-  String DEFAULT_MCAST_ADDRESS = InetAddressUtil.toString(DistributionConfig.DEFAULT_MCAST_ADDRESS);
+  String DEFAULT_MCAST_ADDRESS =
+      InetAddressUtils.toString(DistributionConfig.DEFAULT_MCAST_ADDRESS);
 
   /**
    * The name of the "membership-port-range" property

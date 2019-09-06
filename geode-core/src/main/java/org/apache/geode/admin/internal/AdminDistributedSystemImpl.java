@@ -97,6 +97,7 @@ import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.NullLoggingSession;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.net.InetAddressUtils;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 
 /**
@@ -654,7 +655,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         new ConfigurationParameterImpl(MCAST_PORT, Integer.valueOf(this.config.getMcastPort())),
         new ConfigurationParameterImpl(LOCATORS, this.config.getLocators()),
         new ConfigurationParameterImpl(MCAST_ADDRESS,
-            InetAddressUtil.toInetAddress(this.config.getMcastAddress())),
+            InetAddressUtils.toInetAddress(this.config.getMcastAddress())),
         new ConfigurationParameterImpl(DISABLE_TCP, Boolean.valueOf(this.config.getDisableTcp())),};
     member.setConfiguration(configParms);
   }
@@ -878,8 +879,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
             DistributionLocatorConfig conf = impl.getConfig();
 
-            InetAddress host1 = InetAddressUtil.toInetAddress(host);
-            InetAddress host2 = InetAddressUtil.toInetAddress(conf.getHost());
+            InetAddress host1 = InetAddressUtils.toInetAddress(host);
+            InetAddress host2 = InetAddressUtils.toInetAddress(conf.getHost());
             if (port == conf.getPort() && host1.equals(host2)) {
               // Already have an admin object for this locator
               continue NEXT;
@@ -892,7 +893,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         // an admin object for it.
         InetAddress bindAddress = null;
         if (bindAddr != null) {
-          bindAddress = InetAddressUtil.toInetAddress(bindAddr);
+          bindAddress = InetAddressUtils.toInetAddress(bindAddr);
         }
         DistributionLocatorConfig conf =
             DistributionLocatorConfigImpl.createConfigFor(host, port, bindAddress);
@@ -1392,7 +1393,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       }
 
       ManagedEntityConfig conf = entity.getEntityConfig();
-      InetAddress managedHost = InetAddressUtil.toInetAddress(conf.getHost());
+      InetAddress managedHost = InetAddressUtils.toInetAddress(conf.getHost());
       File managedWorkingDir = new File(conf.getWorkingDirectory());
       File managedProdDir = new File(conf.getProductDirectory());
 
