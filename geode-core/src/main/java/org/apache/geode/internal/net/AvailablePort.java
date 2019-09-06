@@ -402,17 +402,16 @@ public interface AvailablePort {
    */
   class Keeper implements Serializable {
 
-    private final transient ServerSocket ss;
+    private final transient ServerSocket serverSocket;
     private final int port;
 
-    public Keeper(ServerSocket ss, int port) {
-      this.ss = ss;
-      this.port = port;
+    public Keeper(ServerSocket serverSocket) {
+      this(serverSocket, 0);
     }
 
-    public Keeper(ServerSocket ss, Integer port) {
-      this.ss = ss;
-      this.port = port != null ? port : 0;
+    public Keeper(ServerSocket serverSocket, int port) {
+      this.serverSocket = serverSocket;
+      this.port = port;
     }
 
     public int getPort() {
@@ -424,10 +423,11 @@ public interface AvailablePort {
      */
     public void release() {
       try {
-        if (ss != null) {
-          ss.close();
+        if (serverSocket != null) {
+          serverSocket.close();
         }
       } catch (IOException ignore) {
+        // ignored
       }
     }
   }
