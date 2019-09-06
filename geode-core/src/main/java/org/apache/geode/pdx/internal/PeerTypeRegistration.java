@@ -97,6 +97,15 @@ public class PeerTypeRegistration implements TypeRegistration {
    */
   private final Map<PdxType, Integer> typeToId = Collections.synchronizedMap(new HashMap<>());
 
+  /**
+   * When a new pdxType is added to idToType region, its listener will add the new type to
+   * the tmpTypeToId first, to make sure the distribution finished.
+   * Then any member who wants to use this new pdxType has to get the dlock to flush the
+   * tmpTypeToId map into typeToId. This design to guarantee that when using the new pdxType,
+   * it should have been distributed to all the members.
+   */
+  private final Map<PdxType, Integer> tmpTypeToId = Collections.synchronizedMap(new HashMap<>());
+
   private final Map<EnumInfo, EnumId> enumToId = Collections.synchronizedMap(new HashMap<>());
 
   private final Map<String, CopyOnWriteHashSet<PdxType>> classToType = new CopyOnWriteHashMap<>();
@@ -372,6 +381,11 @@ public class PeerTypeRegistration implements TypeRegistration {
       if (typeToId.isEmpty() || typeToId.size() != idToType.size()) {
         buildTypeToIdFromIdToType();
       }
+      // flush the tmpTypeToId map
+      if (!tmpTypeToId.isEmpty()) {
+        typeToId.putAll(tmpTypeToId);
+        tmpTypeToId.clear();
+      }
       // double check if my type is in region in case the typeToId map has been updated while
       // waiting to obtain a lock
       existingId = typeToId.get(newType);
@@ -385,6 +399,11 @@ public class PeerTypeRegistration implements TypeRegistration {
       updateIdToTypeRegion(newType);
       return newType.getTypeId();
     } finally {
+      // flush the tmpTypeToId map for who introduced this new pdxType
+      if (!tmpTypeToId.isEmpty()) {
+        typeToId.putAll(tmpTypeToId);
+        tmpTypeToId.clear();
+      }
       unlock();
     }
   }
@@ -724,7 +743,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   private void updateLocalMaps(Object key, Object value) {
     if (value instanceof PdxType) {
       PdxType type = (PdxType) value;
-      typeToId.put(type, (Integer) key);
+      tmpTypeToId.put(type, (Integer) key);
       synchronized (classToType) {
         if (type.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
           return; // no need to include here
