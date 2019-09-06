@@ -156,6 +156,8 @@ resources:
     branch: ((geode-build-branch))
     ignore_paths:
     - ci/*
+    - dev-tools/release/*
+    - *.md
     {{ github_access() | indent(4) }}
 - name: geode-ci
   type: git
