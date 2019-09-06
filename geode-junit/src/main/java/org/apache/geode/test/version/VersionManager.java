@@ -38,11 +38,9 @@ import org.apache.commons.lang3.SystemUtils;
  * see Host.getVM(String, int)
  */
 public class VersionManager {
-  public static final String CURRENT_VERSION = "000";
-  public static final String GEODE_110 = "110";
-  public static final String GEODE_120 = "120";
-  public static final String GEODE_130 = "130";
-  public static final String GEODE_140 = "140";
+  public static final String CURRENT_VERSION = "0.0.0";
+  public static final String GEODE_130 = "1.3.0";
+  public static final String GEODE_140 = "1.4.0";
 
   private static VersionManager instance;
 
@@ -166,12 +164,15 @@ public class VersionManager {
 
   private Optional<String> parseVersion(String version) {
     String parsedVersion = null;
-    if (version.startsWith("test") && version.length() >= "test".length()) {
-      if (version.equals("test")) {
-        parsedVersion = CURRENT_VERSION;
-      } else {
-        parsedVersion = version.substring("test".length());
+    if (version.length() > 0 && Character.isDigit(version.charAt(0))
+        && version.length() >= "1.2.3".length()) {
+      for (int i = 1; i < version.length(); i++) {
+        char character = version.charAt(i);
+        if (!Character.isDigit(character) && character != '.') {
+          return Optional.ofNullable(parsedVersion);
+        }
       }
+      parsedVersion = version;
     }
     return Optional.ofNullable(parsedVersion);
   }
