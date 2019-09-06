@@ -18,16 +18,18 @@
 set -e
 
 usage() {
-    echo "Usage: promote_rc.sh -v version_number"
+    echo "Usage: promote_rc.sh -v version_number -k your_full_gpg_public_key -g your_github_username"
     echo "  -v   The #.#.#.RC# version number to ship"
-    echo "  -k   Your 8 digit GPG key id (the last 8 digits of your gpg fingerprint)"
+    echo "  -k   Your 40-digit GPG fingerprint"
+    echo "  -g   Your github username"
     exit 1
 }
 
 FULL_VERSION=""
 SIGNING_KEY=""
+GITHUB_USER=""
 
-while getopts ":v:k:" opt; do
+while getopts ":v:k:g:" opt; do
   case ${opt} in
     v )
       FULL_VERSION=$OPTARG
@@ -35,14 +37,25 @@ while getopts ":v:k:" opt; do
     k )
       SIGNING_KEY=$OPTARG
       ;;
+    g )
+      GITHUB_USER=$OPTARG
+      ;;
     \? )
       usage
       ;;
   esac
 done
 
-if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]]; then
+if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${GITHUB_USER} == "" ]]; then
     usage
+fi
+
+SIGNING_KEY=$(echo $SIGNING_KEY|sed 's/[^0-9A-Fa-f]//g')
+if [[ $SIGNING_KEY =~ ^[0-9A-Fa-f]{40}$ ]]; then
+    true
+else
+    echo "Malformed signing key ${SIGNING_KEY}. Example valid key: '0000 0000 1111 1111 2222  2222 3333 3333 ABCD 1234'"
+    exit 1
 fi
 
 if [[ $FULL_VERSION =~ ^([0-9]+\.[0-9]+\.[0-9]+)\.(RC[0-9]+)$ ]]; then
@@ -56,6 +69,7 @@ WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
+BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
 
 if [ -d "$GEODE" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$SVN_DIR" ] ; then
@@ -87,11 +101,65 @@ done
 
 
 echo "============================================================"
+echo "Updating brew"
+echo "============================================================"
+cd ${BREW_DIR}/Formula
+git pull
+git remote add myfork git@github.com:${GITHUB_USER}/homebrew-core.git
+if ! git fetch myfork ; then
+    echo "Please fork https://github.com/Homebrew/homebrew-core"
+    exit 1
+fi
+git checkout -b apache-geode-${VERSION}
+GEODE_SHA=$(awk '{print $1}' < $WORKSPACE/dist/release/geode/${VERSION}/apache-geode-${VERSION}.tgz.sha256)
+sed -e 's# *url ".*#  url "https://www.apache.org/dyn/closer.cgi?path=geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
+    -e 's# *mirror ".*#  mirror "https://archive.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
+    -e 's/ *sha256 ".*/  sha256 "'"${GEODE_SHA}"'"/' \
+    -i.bak apache-geode.rb
+rm apache-geode.rb.bak
+git add apache-geode.rb
+git diff --staged
+git commit -m "apache-geode ${VERSION}"
+git push -u myfork
+
+
+echo "============================================================"
+echo "Updating Dockerfile"
+echo "============================================================"
+cd ${GEODE}/docker
+sed -e "s/^ENV GEODE_GPG.*/ENV GEODE_GPG ${SIGNING_KEY}/" \
+    -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
+    -e "s/^ENV GEODE_SHA256.*/ENV GEODE_SHA256 ${GEODE_SHA}/" \
+    -i.bak Dockerfile
+rm Dockerfile.bak
+git add Dockerfile
+git diff --staged
+git commit -m "apache-geode ${VERSION}"
+git push
+
+
+echo "============================================================"
+echo "Building docker image"
+echo "============================================================"
+set -x
+cd ${GEODE}/docker
+docker build .
+docker build -t apachegeode/geode:${VERSION} .
+docker build -t apachegeode/geode:latest .
+docker login
+docker push apachegeode/geode:${VERSION}
+docker push apachegeode/geode:latest
+set +x
+
+
+echo "============================================================"
 echo "Done promoting release artifacts!"
 echo "============================================================"
 cd ${GEODE}/../..
 echo "Next steps:"
 echo "1. Click 'Release' in http://repository.apache.org/"
-echo "2. Transition JIRA issues fixed in this release to Closed"
-echo "3. Wait 8-24 hours for apache mirror sites to sync"
-echo "4. Run ${0%/*}/finalize-release.sh -v ${VERSION}"
+echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
+echo "3. Validate docker image: docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apachegeode/geode"
+echo "4. Bulk-transition JIRA issues fixed in this release to Closed"
+echo "5. Wait 8-24 hours for apache mirror sites to sync"
+echo "6. Run ${0%/*}/finalize-release.sh -v ${VERSION}"
