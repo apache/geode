@@ -181,7 +181,6 @@ public class PeerTypeRegistration implements TypeRegistration {
         Object value = event.getNewValue();
         Object key = event.getKey();
         if (value != null) {
-          // if (value instanceof PdxType) {
           updateLocalMaps(key, value);
         }
       }
@@ -815,6 +814,11 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @VisibleForTesting
   public int getTypeToIdSize() {
-    return getIdToType().size();
+    return this.typeToId.size();
+  }
+
+  @VisibleForTesting
+  public int getEnumToIdSize() {
+    return this.enumToId.size();
   }
 }
