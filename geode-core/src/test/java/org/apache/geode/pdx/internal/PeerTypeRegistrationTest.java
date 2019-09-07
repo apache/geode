@@ -19,11 +19,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 
+import org.apache.geode.internal.cache.TXManagerImpl;
 import org.junit.Test;
 
 import org.apache.geode.Statistics;
@@ -57,6 +59,9 @@ public class PeerTypeRegistrationTest {
     when(region.size()).thenReturn(1);
     when(internalCache.createVMRegion(eq(PeerTypeRegistration.REGION_NAME), any(), any()))
         .thenReturn(region);
+    when(region.getRegionService()).thenReturn(internalCache);
+    TXManagerImpl txManager = mock(TXManagerImpl.class);
+    when(internalCache.getCacheTransactionManager()).thenReturn(txManager);
     peerTypeRegistration = new PeerTypeRegistration(internalCache);
   }
 
