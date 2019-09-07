@@ -65,12 +65,14 @@ else
     exit 1
 fi
 
+set -x
 WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
 BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
+set +x
 
 if [ -d "$GEODE" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$SVN_DIR" ] ; then
     true
@@ -80,29 +82,57 @@ else
 fi
 
 
+echo ""
 echo "============================================================"
 echo "Releasing artifacts to mirror sites..."
 echo "(note: must be logged in to svn as a PMC member or this will fail)"
 echo "============================================================"
+set -x
 cd ${SVN_DIR}/../..
 svn mv dev/geode/${FULL_VERSION} release/geode/${VERSION}
 cp dev/geode/KEYS release/geode/KEYS
 svn commit -m "Releasing Apache Geode ${VERSION} distribution"
+set +x
 
 
+echo ""
 echo "============================================================"
 echo "Tagging ${FULL_VERSION} as ${VERSION} and pushing tags..."
 echo "============================================================"
 for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
+    set -x
     cd ${DIR}
     git tag -s -u ${SIGNING_KEY} rel/v${VERSION} -m "Apache Geode v${VERSION} release" rel/v${FULL_VERSION}
     git push origin rel/v${VERSION}
+    set +x
 done
 
 
+echo ""
+echo "============================================================"
+echo "Checking that artifacts have published to archive.apache.org..."
+echo "============================================================"
+for suffix in "" .asc .sha256 ; do
+  file=apache-geode-${VERSION}.tgz
+  url=https://archive.apache.org/dist/geode/${VERSION}/${file}${suffix}
+  expectedsize=$(cd ${SVN_DIR}/../../release/geode/${VERSION}; ls -l $file | awk '{print $5}')
+  actualsize=0
+  while [ $expectedsize -ne $actualsize ] ; do
+    while ! curl -s --output /dev/null --head --fail "$url"; do
+      echo -n .
+      sleep 3
+    done
+    actualsize=$(curl -s --head "$url" | grep "Content-Length" | awk '{print $2}' | tr -d '\r')
+  done
+  echo "$url exists and is correct size"
+done
+
+
+echo ""
 echo "============================================================"
 echo "Updating brew"
 echo "============================================================"
+set -x
 cd ${BREW_DIR}/Formula
 git pull
 git remote add myfork git@github.com:${GITHUB_USER}/homebrew-core.git
@@ -112,32 +142,41 @@ if ! git fetch myfork ; then
 fi
 git checkout -b apache-geode-${VERSION}
 GEODE_SHA=$(awk '{print $1}' < $WORKSPACE/dist/release/geode/${VERSION}/apache-geode-${VERSION}.tgz.sha256)
+set +x
 sed -e 's# *url ".*#  url "https://www.apache.org/dyn/closer.cgi?path=geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
     -e 's# *mirror ".*#  mirror "https://archive.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
     -e 's/ *sha256 ".*/  sha256 "'"${GEODE_SHA}"'"/' \
     -i.bak apache-geode.rb
 rm apache-geode.rb.bak
+set -x
 git add apache-geode.rb
 git diff --staged
 git commit -m "apache-geode ${VERSION}"
 git push -u myfork
+set +x
 
 
+echo ""
 echo "============================================================"
 echo "Updating Dockerfile"
 echo "============================================================"
+set -x
 cd ${GEODE}/docker
+set +x
 sed -e "s/^ENV GEODE_GPG.*/ENV GEODE_GPG ${SIGNING_KEY}/" \
     -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
     -e "s/^ENV GEODE_SHA256.*/ENV GEODE_SHA256 ${GEODE_SHA}/" \
     -i.bak Dockerfile
 rm Dockerfile.bak
+set -x
 git add Dockerfile
 git diff --staged
 git commit -m "apache-geode ${VERSION}"
 git push
+set +x
 
 
+echo ""
 echo "============================================================"
 echo "Building docker image"
 echo "============================================================"
@@ -146,12 +185,22 @@ cd ${GEODE}/docker
 docker build .
 docker build -t apachegeode/geode:${VERSION} .
 docker build -t apachegeode/geode:latest .
+set +x
+
+
+echo ""
+echo "============================================================"
+echo "Publishing docker image"
+echo "============================================================"
+set -x
+cd ${GEODE}/docker
 docker login
 docker push apachegeode/geode:${VERSION}
 docker push apachegeode/geode:latest
 set +x
 
 
+echo ""
 echo "============================================================"
 echo "Done promoting release artifacts!"
 echo "============================================================"

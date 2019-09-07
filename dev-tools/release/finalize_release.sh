@@ -25,16 +25,10 @@ usage() {
 
 VERSION=""
 
-while getopts ":v:k:g:" opt; do
+while getopts ":v:" opt; do
   case ${opt} in
     v )
       VERSION=$OPTARG
-      ;;
-    k )
-      SIGNING_KEY=$OPTARG
-      ;;
-    g )
-      GITHUB_USER=$OPTARG
       ;;
     \? )
       usage
@@ -53,12 +47,14 @@ else
     exit 1
 fi
 
+set -x
 WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
 GEODE_DEVELOP=$WORKSPACE/geode-develop
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
 SVN_RELEASE_DIR=$WORKSPACE/dist/release/geode
+set +x
 
 if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_RELEASE_DIR" ] ; then
     true
@@ -68,6 +64,7 @@ else
 fi
 
 
+echo ""
 echo "============================================================"
 echo "Destroying pipeline"
 echo "============================================================"
@@ -79,20 +76,26 @@ cd ci/pipelines/meta
 set +x
 
 
+echo ""
 echo "============================================================"
 echo "Removing temporary commit from geode-examples..."
 echo "============================================================"
+set -x
 cd ${GEODE_EXAMPLES}
 git pull
+set +x
 sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl =#' \
     -e 's#^geodeReleaseUrl *=.*#geodeReleaseUrl =#' -i.bak gradle.properties
 rm gradle.properties.bak
+set -x
 git add gradle.properties
 git diff --staged
 git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
 git push
+set +x
 
 
+echo ""
 echo "============================================================"
 echo "Merging to master"
 echo "============================================================"
@@ -110,6 +113,7 @@ for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
 done
 
 
+echo ""
 echo "============================================================"
 echo "Destroying release branches"
 echo "============================================================"
@@ -122,11 +126,14 @@ for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
 done
 
 
+echo ""
 echo "============================================================"
 echo "Updating 'old' versions"
 echo "============================================================"
+set -x
 cd ${GEODE_DEVELOP}
 git pull
+set +x
 #before:
 # '1.9.0'].each {
 #after:
@@ -136,19 +143,24 @@ sed -e "s/].each/,\\
  '${VERSION}'].each/" \
     -i.bak settings.gradle
 rm settings.gradle.bak
+set -x
 git add settings.gradle
 git diff --staged
 git commit -m "add ${VERSION} to old versions"
 git push
+set -x
 
 
+echo ""
 echo "============================================================"
 echo "Removing old versions from mirrors"
 echo "============================================================"
+set -x
 cd $SVN_RELEASE_DIR
 svn update --set-depth immediates
 #identify the latest patch release for the latest 2 major.minor releases, remove anything else from mirrors (all releases remain available on non-mirrored archive site)
 RELEASES_TO_KEEP=2
+set +x
 ls | awk -F. '/KEYS/{next}{print 1000000*$1+1000*$2+$3,$1"."$2"."$3}'| sort -n | awk '{mm=$2;sub(/\.[^.]*$/,"",mm);V[mm]=$2}END{for(v in V){print V[v]}}'|tail -$RELEASES_TO_KEEP > ../keep
 echo Keeping releases: $(cat ../keep)
 (ls | grep -v KEYS; cat ../keep ../keep)|sort|uniq -u|while read oldVersion; do
@@ -161,6 +173,7 @@ done
 rm ../keep
 
 
+echo ""
 echo "============================================================"
 echo "Done finalizing the release!"
 echo "============================================================"

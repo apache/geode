@@ -52,11 +52,13 @@ else
     exit 1
 fi
 
+set -x
 WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
 GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
 SVN_DIR=$WORKSPACE/dist/dev/geode
+set +x
 
 if [ -d "$GEODE" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$SVN_DIR" ] ; then
     true
@@ -66,36 +68,48 @@ else
 fi
 
 
+echo ""
 echo "============================================================"
 echo "Publishing artifacts to apache release location..."
 echo "============================================================"
+set -x
 cd ${SVN_DIR}
 svn commit -m "Releasing Apache Geode ${FULL_VERSION} distribution"
+set +x
 
 
+echo ""
 echo "============================================================"
 echo "Adding temporary commit for geode-examples to build against staged ${FULL_VERSION}..."
 echo "============================================================"
+set -x
 cd ${GEODE_EXAMPLES}
+set +x
 sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl = https://repository.apache.org/content/repositories/orgapachegeode-'"${MAVEN}#" \
     -e 's#^geodeReleaseUrl *=.*#geodeReleaseUrl = https://dist.apache.org/repos/dist/dev/geode/'"${FULL_VERSION}#" -i.bak gradle.properties
 rm gradle.properties.bak
+set -x
 git add gradle.properties
 git diff --staged
 git commit -m "temporarily point to staging repo for CI purposes"
 git push
+set +x
 
 
+echo ""
 echo "============================================================"
 echo "Pushing tags..."
 echo "============================================================"
 
 for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
+    set -x
     cd ${DIR}
     git push origin rel/v${FULL_VERSION}
+    set +x
 done
 
 
+echo ""
 echo "============================================================"
 echo "Done publishing the release candidate!  Send the email below to announce it:"
 echo "============================================================"

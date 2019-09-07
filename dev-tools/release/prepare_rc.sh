@@ -77,6 +77,7 @@ checkCommand cmake
 checkCommand svn
 checkCommand doxygen
 
+echo ""
 echo "============================================================"
 echo "Checking gpg... (you will be prompted to enter passphase)"
 echo "============================================================"
@@ -92,6 +93,7 @@ else
 fi
 
 
+set -x
 WORKSPACE=$PWD/release-${VERSION}-workspace
 GEODE=$WORKSPACE/geode
 GEODE_DEVELOP=$WORKSPACE/geode-develop
@@ -99,15 +101,20 @@ GEODE_EXAMPLES=$WORKSPACE/geode-examples
 GEODE_NATIVE=$WORKSPACE/geode-native
 BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
+set +x
 
+echo ""
 echo "============================================================"
 echo "Cleaning workspace directory..."
 echo "============================================================"
+set -x
 rm -rf $WORKSPACE
 mkdir -p $WORKSPACE
 cd $WORKSPACE
+set +x
 
 
+echo ""
 echo "============================================================"
 echo "Cloning repositories..."
 echo "============================================================"
@@ -124,6 +131,7 @@ svn update --set-depth infinity --parents dist/dev/geode
 set +x
 
 
+echo ""
 echo "============================================================"
 echo "Building geode..."
 echo "============================================================"
@@ -134,19 +142,26 @@ set +x
 
 
 if [ "${VERSION##*.RC}" -gt 1 ] ; then
+    echo ""
     echo "============================================================"
     echo "Removing previous RC's temporary commit from geode-examples..."
     echo "============================================================"
+    set -x
     cd ${GEODE_EXAMPLES}
     git pull
+    set +x
     sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl =#' \
         -e 's#^geodeReleaseUrl *=.*#geodeReleaseUrl =#' -i.bak gradle.properties
     rm gradle.properties.bak
+    set -x
     git add gradle.properties
     git diff --staged
     git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
+    set +x
 fi
 
+
+echo ""
 echo "============================================================"
 echo "Building geode-examples..."
 echo "============================================================"
@@ -156,13 +171,14 @@ git clean -dxf && ./gradlew -PsignArchives -PgeodeReleaseUrl="file://${GEODE}/ge
 set +x
 
 
+echo ""
 echo "============================================================"
 echo "Building geode-native..."
 echo "============================================================"
+set -x
 cd ${GEODE_NATIVE}
 mkdir build
 which brew >/dev/null && OPENSSL_ROOT_DIR=$(brew --prefix openssl) || OPENSSL_ROOT_DIR=$(which openssl)
-set -x
 cd ${GEODE_NATIVE}/build
 cmake .. -DPRODUCT_VERSION=${VERSION} -DOPENSSL_ROOT_DIR=$OPENSSL_ROOT_DIR -DGEODE_ROOT=${GEODE}/geode-assembly/build/install/apache-geode
 cpack -G TGZ --config CPackSourceConfig.cmake
@@ -170,27 +186,31 @@ gpg --armor -u ${SIGNING_KEY} -b apache-geode-native-${VERSION}-src.tar.gz
 set +x
 
 
+echo ""
 echo "============================================================"
 echo "Tagging the release candidate in each repository. The tags will not be pushed yet..."
 echo "============================================================"
 for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
+    set -x
     cd ${DIR}
     git tag -s -u ${SIGNING_KEY} rel/v${FULL_VERSION} -m "Release candidate ${FULL_VERSION}"
+    set +x
 done
 
 
+echo ""
 echo "============================================================"
 echo "Copying artifacts to svn directory for publication. The artifacts will not be committed..."
 echo "============================================================"
+set -x
 cd ${SVN_DIR}
 svn rm ${VERSION}.RC* &>/dev/null || true
 cp ${GEODE}/KEYS .
 mkdir ${FULL_VERSION}
 cp ${GEODE}/geode-assembly/build/distributions/* ${FULL_VERSION}
-
 cp ${GEODE_EXAMPLES}/build/distributions/* ${FULL_VERSION}
-
 cp ${GEODE_NATIVE}/build/apache-geode-native-${VERSION}* ${FULL_VERSION}
+set +x
 
 # verify all files are signed.  sometimes gradle "forgets" to make the .asc file
 for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tar.gz ${FULL_VERSION}/*.zip ; do
@@ -199,7 +219,9 @@ for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tar.gz ${FULL_VERSION}/*.zip ; 
     exit 1
   fi
   if ! [ -r $f.asc ] ; then
+    set -x
     gpg --armor -u ${SIGNING_KEY} -b $f
+    set +x
     if ! [ -r $f.asc ] ; then
       echo missing $f.asc
       exit 1
@@ -212,9 +234,12 @@ for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tar.gz ${FULL_VERSION}/*.zip ; 
   fi
 done
 
+set -x
 svn add ${FULL_VERSION}
+set +x
 
 
+echo ""
 echo "============================================================"
 echo "Publishing artifacts to nexus staging manager..."
 echo "PLEASE NOTE, the 2nd prompt will be for your apache (not gpg) password.  Pay attention as the prompts look very similar."
@@ -225,6 +250,7 @@ cd ${GEODE}
 set +x
 
 
+echo ""
 echo "============================================================"
 echo "Done preparing the release and staging to nexus! Next steps:"
 echo "============================================================"
