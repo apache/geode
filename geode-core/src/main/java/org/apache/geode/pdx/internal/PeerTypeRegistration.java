@@ -233,8 +233,6 @@ public class PeerTypeRegistration implements TypeRegistration {
     if (!getIdToType().isEmpty()) {
       verifyConfiguration();
     }
-
-    buildTypeToIdFromIdToType();
   }
 
   protected DistributedLockService getLockService() {
@@ -401,10 +399,8 @@ public class PeerTypeRegistration implements TypeRegistration {
       return newType.getTypeId();
     } finally {
       // flush the tmpTypeToId map for who introduced this new pdxType
-      if (!tmpTypeToId.isEmpty()) {
-        typeToId.putAll(tmpTypeToId);
-        tmpTypeToId.clear();
-      }
+      typeToId.putAll(tmpTypeToId);
+      tmpTypeToId.clear();
       unlock();
     }
   }
