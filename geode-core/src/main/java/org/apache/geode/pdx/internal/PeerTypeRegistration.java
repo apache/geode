@@ -66,6 +66,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   private static final int MAX_TRANSACTION_FAILURES = 10;
 
   public static final String LOCK_SERVICE_NAME = "__PDX";
+  private static final String LOCK_NAME = "PDX_LOCK";
 
   public static final String REGION_NAME = "PdxTypes";
   public static final String REGION_FULL_PATH = "/" + REGION_NAME;
@@ -90,7 +91,7 @@ public class PeerTypeRegistration implements TypeRegistration {
    */
   private Region<Object/* Integer or EnumCode */, Object/* PdxType or enum info */> idToType;
 
-  private LocalReverseMap localReverseMap = new LocalReverseMap();
+  private PeerTypeRegistrationReverseMap reverseMap = new PeerTypeRegistrationReverseMap();
 
   private final Map<String, CopyOnWriteHashSet<PdxType>> classToType = new CopyOnWriteHashMap<>();
 
@@ -140,7 +141,8 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
 
     @SuppressWarnings("deprecation")
-    AttributesFactory<Object, Object> factory = new AttributesFactory<>();
+    AttributesFactory<Object, Object> factory = getAttributesFactory();
+
     factory.setScope(Scope.DISTRIBUTED_ACK);
     if (cache.getPdxPersistent()) {
       if (cache.getCacheConfig().pdxDiskStoreUserSet) {
@@ -161,11 +163,11 @@ public class PeerTypeRegistration implements TypeRegistration {
       @Override
       public void afterCreate(EntryEvent<Object, Object> event) {
         verifyConfiguration();
-        // update a local map with the pdxtypes registered
+        // update the local map and reverse map with the pdxtypes registered
         Object value = event.getNewValue();
         Object key = event.getKey();
         if (value != null) {
-          updateLocalMaps(key, value);
+          updateLocalAndReverseMaps(key, value);
         }
       }
     });
@@ -216,7 +218,7 @@ public class PeerTypeRegistration implements TypeRegistration {
       verifyConfiguration();
     }
 
-    buildTypeToIdFromIdToType();
+    buildReverseMapsFromRegion();
   }
 
   protected DistributedLockService getLockService() {
@@ -239,8 +241,6 @@ public class PeerTypeRegistration implements TypeRegistration {
       return dls;
     }
   }
-
-  private static final String LOCK_NAME = "PDX_LOCK";
 
   private int allocateTypeId(PdxType newType) {
     TXStateProxy currentState = suspendTX();
@@ -355,30 +355,31 @@ public class PeerTypeRegistration implements TypeRegistration {
   public int defineType(PdxType newType) {
     statistics.typeDefined();
     verifyConfiguration();
-    Integer existingId = localReverseMap.checkIfExistsInLocal(newType);
+    Integer existingId = reverseMap.getIdFromReverseMap(newType);
     if (existingId != null) {
       return existingId;
     }
     lock();
     try {
-      if (localReverseMap.shouldReloadFromRegion()) {
-        buildTypeToIdFromIdToType();
+      if (reverseMap.shouldReloadFromRegion(getIdToType())) {
+        buildReverseMapsFromRegion();
       }
-      localReverseMap.flushLocalMap();
-      // double check if my type is in region in case the typeToId map has been updated while
-      // waiting to obtain a lock
-      existingId = localReverseMap.checkIfExistsInLocal(newType);
+      reverseMap.flushPendingReverseMap();
+
+      // double check if my PdxType is in the reverse map in case it was just flushed into it
+      existingId = reverseMap.getIdFromReverseMap(newType);
       if (existingId != null) {
         return existingId;
       }
 
       int id = allocateTypeId(newType);
       newType.setTypeId(id);
-
       updateIdToTypeRegion(newType);
+
       return newType.getTypeId();
     } finally {
-      localReverseMap.flushLocalMap();
+      // flush the reverse map for the member that introduced this new PdxType
+      reverseMap.flushPendingReverseMap();
       unlock();
     }
   }
@@ -543,15 +544,33 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
-  private void buildTypeToIdFromIdToType() {
+  /**
+   * Should only be called holding the dlock
+   * This method iterates through the entire PdxTypes region and syncs the reverse map with the pdx
+   * region This is an expensive operation and should only be called during initialization. A cache
+   * listener is used to keep the reverse maps up to date.
+   */
+  void buildReverseMapsFromRegion() {
     int totalPdxTypeIdInDS = 0;
+    int totalEnumIdInDS = 0;
     TXStateProxy currentState = suspendTX();
     try {
+      reverseMap.clear();
       for (Map.Entry<Object, Object> entry : getIdToType().entrySet()) {
-        Object v = entry.getValue();
         Object k = entry.getKey();
-        if (v instanceof PdxType) {
-          PdxType foundType = (PdxType) v;
+        Object v = entry.getValue();
+        if (k instanceof EnumId) {
+          EnumId id = (EnumId) k;
+          int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id.intValue();
+          if (tmpDsId == typeIdPrefix) {
+            totalEnumIdInDS++;
+            if (totalEnumIdInDS >= MAX_TYPE_ID) {
+              throw new InternalGemFireError(
+                  "Used up all of the PDX enum ids for this distributed system. The maximum number of PDX types is "
+                      + MAX_TYPE_ID);
+            }
+          }
+        } else {
           Integer id = (Integer) k;
           int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id;
           if (tmpDsId == typeIdPrefix) {
@@ -563,42 +582,8 @@ public class PeerTypeRegistration implements TypeRegistration {
             }
           }
         }
-        localReverseMap.save(k, v, false);
+        reverseMap.save(k, v);
       }
-    } finally {
-      resumeTX(currentState);
-    }
-  }
-
-  /** Should be called holding the dlock */
-  private EnumId getExistingIdForEnum(EnumInfo ei) {
-    TXStateProxy currentState = suspendTX();
-    int totalEnumIdInDS = 0;
-    try {
-      EnumId result = null;
-      for (Map.Entry<Object, Object> entry : getIdToType().entrySet()) {
-        Object v = entry.getValue();
-        Object k = entry.getKey();
-        if (k instanceof EnumId) {
-          EnumId id = (EnumId) k;
-          EnumInfo info = (EnumInfo) v;
-          int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id.intValue();
-          if (tmpDsId == typeIdPrefix) {
-            totalEnumIdInDS++;
-          }
-          if (ei.equals(info)) {
-            result = id;
-          }
-        }
-        localReverseMap.save(k, v, false);
-      }
-
-      if (totalEnumIdInDS == MAX_TYPE_ID) {
-        throw new InternalGemFireError(
-            "Used up all of the PDX enum ids for this distributed system. The maximum number of PDX types is "
-                + MAX_TYPE_ID);
-      }
-      return result;
     } finally {
       resumeTX(currentState);
     }
@@ -650,27 +635,30 @@ public class PeerTypeRegistration implements TypeRegistration {
   public int defineEnum(final EnumInfo newInfo) {
     statistics.enumDefined();
     verifyConfiguration();
-    final EnumId existingId = localReverseMap.checkIfExistsInLocal(newInfo);
+    EnumId existingId = reverseMap.getIdFromReverseMap(newInfo);
     if (existingId != null) {
       return existingId.intValue();
     }
     lock();
     try {
-      localReverseMap.flushLocalMap();
-      EnumId id = getExistingIdForEnum(newInfo);
-      if (id != null) {
-        return id.intValue();
+      if (reverseMap.shouldReloadFromRegion(getIdToType())) {
+        buildReverseMapsFromRegion();
+      }
+      reverseMap.flushPendingReverseMap();
+
+      // double check if my Enum is in the reverse map in case it was just flushed into it
+      existingId = reverseMap.getIdFromReverseMap(newInfo);
+      if (existingId != null) {
+        return existingId.intValue();
       }
 
-      id = allocateEnumId(newInfo);
-
+      EnumId id = allocateEnumId(newInfo);
       updateIdToEnumRegion(id, newInfo);
-
-      localReverseMap.save(id, newInfo, false);
 
       return id.intValue();
     } finally {
-      localReverseMap.flushLocalMap();
+      // flush the reverse map for the member that introduced this new enumInfo
+      reverseMap.flushPendingReverseMap();
       unlock();
     }
   }
@@ -710,8 +698,8 @@ public class PeerTypeRegistration implements TypeRegistration {
   /**
    * adds a PdxType for a field to a {@code className => Set<PdxType>} map
    */
-  private void updateLocalMaps(Object key, Object value) {
-    localReverseMap.save(key, value, true);
+  private void updateLocalAndReverseMaps(Object key, Object value) {
+    reverseMap.saveToPending(key, value);
     if (value instanceof PdxType) {
       PdxType type = (PdxType) value;
       synchronized (classToType) {
@@ -781,89 +769,18 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   @VisibleForTesting
+  @SuppressWarnings("deprecation")
+  protected AttributesFactory<Object, Object> getAttributesFactory() {
+    return new AttributesFactory<>();
+  }
+
+  @VisibleForTesting
   public int getTypeToIdSize() {
-    return localReverseMap.typeToIdSize();
+    return reverseMap.typeToIdSize();
   }
 
   @VisibleForTesting
   public int getEnumToIdSize() {
-    return localReverseMap.enumToIdSize();
-  }
-
-  class LocalReverseMap {
-    /**
-     * When a new pdxType or a new enumInfo is added to idToType region, its
-     * listener will add the new type to the pendingTypeToId first, to make sure
-     * the distribution finished.
-     * Then any member who wants to use this new pdxType has to get the dlock to
-     * flush the pendingTypeToId map into typeToId. This design to guarantee that
-     * when using the new pdxType, it should have been distributed to all members.
-     */
-    private final Map<PdxType, Integer> pendingTypeToId =
-        Collections.synchronizedMap(new HashMap<>());
-    private final Map<EnumInfo, EnumId> pendingEnumToId =
-        Collections.synchronizedMap(new HashMap<>());
-
-    /**
-     * This map serves two purposes. It lets us look up an id based on a type, if we previously
-     * found
-     * that type in the region. And, if a type is present in this map, that means we read the type
-     * while holding the dlock, which means the type was distributed to all members.
-     */
-    private final Map<PdxType, Integer> typeToId = Collections.synchronizedMap(new HashMap<>());
-
-    private final Map<EnumInfo, EnumId> enumToId = Collections.synchronizedMap(new HashMap<>());
-
-    void save(Object key, Object value, boolean isPending) {
-      if (value instanceof PdxType) {
-        PdxType type = (PdxType) value;
-        if (isPending) {
-          pendingTypeToId.put(type, (Integer) key);
-        } else {
-          typeToId.put(type, (Integer) key);
-        }
-      } else if (value instanceof EnumInfo) {
-        EnumInfo info = (EnumInfo) value;
-        if (isPending) {
-          pendingEnumToId.put(info, (EnumId) key);
-        } else {
-          enumToId.put(info, (EnumId) key);
-        }
-      }
-    }
-
-    int typeToIdSize() {
-      return typeToId.size();
-    }
-
-    int enumToIdSize() {
-      return enumToId.size();
-    }
-
-    Integer checkIfExistsInLocal(PdxType newType) {
-      return typeToId.get(newType);
-    }
-
-    EnumId checkIfExistsInLocal(EnumInfo newInfo) {
-      return enumToId.get(newInfo);
-    }
-
-    // The local maps should be loaded from the region if there is a mismatch in size between the
-    // region and all local maps
-    boolean shouldReloadFromRegion() {
-      return ((typeToId.size() + pendingTypeToId.size() + enumToId.size()
-          + pendingEnumToId.size()) != getIdToType().size());
-    }
-
-    void flushLocalMap() {
-      if (!pendingTypeToId.isEmpty()) {
-        typeToId.putAll(pendingTypeToId);
-        pendingTypeToId.clear();
-      }
-      if (!pendingEnumToId.isEmpty()) {
-        enumToId.putAll(pendingEnumToId);
-        pendingEnumToId.clear();
-      }
-    }
+    return reverseMap.enumToIdSize();
   }
 }
