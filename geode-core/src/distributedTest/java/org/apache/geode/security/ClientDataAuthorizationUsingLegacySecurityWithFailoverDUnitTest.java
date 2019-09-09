@@ -131,7 +131,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   @Before
   public void setup() throws Exception {
     Properties clusterMemberProperties = getVMPropertiesWithPermission("cluster,data");
-    int version = Integer.parseInt(clientVersion);
+    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
     if (version == 0 || version >= 140) {
       clusterMemberProperties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
@@ -317,7 +317,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   @Test
   public void dataWriterCannotRegisterInterestAcrossFailover() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataWrite");
-    int version = Integer.parseInt(clientVersion);
+    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
     if (version == 0 || version >= 140) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
@@ -378,7 +378,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
 
     Properties props = getVMPropertiesWithPermission(withPermission);
 
-    int version = Integer.parseInt(clientVersion);
+    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
     if (version == 0 || version >= 140) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");

@@ -98,7 +98,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     // We want the cluster VMs to be super-users for ease of testing / remote invocation.
     Properties clusterMemberProperties = getVMPropertiesWithPermission("cluster,data");
 
-    int version = Integer.parseInt(clientVersion);
+    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
     if (version == 0 || version >= 140) {
       clusterMemberProperties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
@@ -145,7 +145,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
   @Test
   public void dataWriteCannotGet() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataWrite");
-    int version = Integer.parseInt(clientVersion);
+    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
     if (version == 0 || version >= 140) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
@@ -206,7 +206,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
   @Test
   public void dataReadCannotPut() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataRead");
-    int version = Integer.parseInt(clientVersion);
+    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
     if (version == 0 || version >= 140) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");

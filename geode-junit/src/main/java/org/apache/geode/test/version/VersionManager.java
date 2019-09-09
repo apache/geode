@@ -125,6 +125,18 @@ public class VersionManager {
   }
 
   /**
+   * Remove the dots from a version string.  "1.2.0" -> "120"
+   */
+  public String versionWithNoDots(String s) {
+    StringBuilder b = new StringBuilder(10);
+    for (int i = 0; i < s.length(); i++) {
+      if (s.charAt(i) != '.')
+        b.append(s.charAt(i));
+    }
+    return b.toString();
+  }
+
+  /**
    * Returns a list of older versions available for testing
    */
   public List<String> getVersions() {
