@@ -967,11 +967,11 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    * system.
    */
   public DistributionManager getDistributionManager() {
-    if (this.gfManagerAgent == null) {
+    GfManagerAgent agent = gfManagerAgent;
+    if (agent == null) {
       return null;
     }
-    return this.gfManagerAgent.getDM();
-
+    return agent.getDM();
   }
 
   /**
