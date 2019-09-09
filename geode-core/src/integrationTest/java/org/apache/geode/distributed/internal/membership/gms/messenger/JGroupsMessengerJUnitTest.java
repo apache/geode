@@ -262,6 +262,7 @@ public class JGroupsMessengerJUnitTest {
 
   @Test
   public void testMemberWeightIsSerialized() throws Exception {
+    initMocks(false);
     BufferDataOutputStream out =
         new BufferDataOutputStream(500, Version.getCurrentVersion());
     GMSMember mbr = createAddress(8888);
