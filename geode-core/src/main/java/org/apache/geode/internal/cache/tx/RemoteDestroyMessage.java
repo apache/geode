@@ -458,8 +458,9 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   }
 
   @Override
-  protected void setFlags(short flags, DataInput in) throws IOException, ClassNotFoundException {
-    super.setFlags(flags, in);
+  protected void setFlags(short flags, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setFlags(flags, in, context);
     this.hasOldValue = (flags & HAS_OLD_VALUE) != 0;
     this.useOriginRemote = (flags & USE_ORIGIN_REMOTE) != 0;
     this.possibleDuplicate = (flags & POS_DUP) != 0;

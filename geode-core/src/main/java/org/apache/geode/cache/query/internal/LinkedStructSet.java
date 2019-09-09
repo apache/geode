@@ -24,7 +24,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
@@ -175,9 +174,9 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.modifiable = in.readBoolean();
     int size = in.readInt();
-    this.structType = (StructTypeImpl) DataSerializer.readObject(in);
+    this.structType = (StructTypeImpl) context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
-      Object[] fieldValues = DataSerializer.readObject(in);
+      Object[] fieldValues = context.getDeserializer().readObject(in);
       this.add(new StructImpl(this.structType, fieldValues));
     }
   }
@@ -193,9 +192,9 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
     // how do we serialize the comparator?
     out.writeBoolean(this.modifiable);
     out.writeInt(this.size());
-    DataSerializer.writeObject(this.structType, out);
+    context.getSerializer().writeObject(this.structType, out);
     for (Struct struct : this) {
-      DataSerializer.writeObject(struct.getFieldValues(), out);
+      context.getSerializer().writeObject(struct.getFieldValues(), out);
     }
   }
 

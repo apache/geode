@@ -559,7 +559,8 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    // DataSerializer.writeObject(this.recipients, out); // no need to serialize; filled in later
+    // context.getSerializer().writeObject(this.recipients, out); // no need to serialize; filled in
+    // later
     // ((IpAddress)this.sender).toData(out); // no need to serialize; filled in later
     // out.writeLong(this.timeStamp);
   }
@@ -573,7 +574,8 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
 
-    // this.recipients = (Set)DataSerializer.readObject(in); // no to deserialize; filled in later
+    // this.recipients = (Set)context.getDeserializer().readObject(in); // no to deserialize; filled
+    // in later
     // this.sender = DataSerializer.readIpAddress(in); // no to deserialize; filled in later
     // this.timeStamp = (long)in.readLong();
   }

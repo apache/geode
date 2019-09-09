@@ -195,7 +195,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
         Object value = this.objects.get(index);
         byte objectType = this.objectTypeArray[index];
         if (this.hasKeys) {
-          DataSerializer.writeObject(this.keys.get(index), out);
+          context.getSerializer().writeObject(this.keys.get(index), out);
         }
         out.writeBoolean(objectType == EXCEPTION);
         if (objectType == OBJECT && value instanceof byte[]) {
@@ -206,7 +206,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
           // write the exception string for native clients
           DataSerializer.writeString(value.toString(), out);
         } else {
-          DataSerializer.writeObject(value, out);
+          context.getSerializer().writeObject(value, out);
         }
       }
     } else {
@@ -225,7 +225,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
     if (numObjects > 0) {
       for (int index = 0; index < numObjects; ++index) {
         if (this.hasKeys) {
-          Object key = DataSerializer.readObject(in);
+          Object key = context.getDeserializer().readObject(in);
           this.keys.add(key);
         }
         boolean isException = in.readBoolean();
@@ -236,7 +236,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
           // ignore the exception string meant for native clients
           DataSerializer.readString(in);
         } else {
-          value = DataSerializer.readObject(in);
+          value = context.getDeserializer().readObject(in);
         }
         this.objects.add(value);
       }

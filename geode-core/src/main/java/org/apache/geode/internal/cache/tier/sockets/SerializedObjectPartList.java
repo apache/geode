@@ -52,7 +52,7 @@ public class SerializedObjectPartList extends ObjectPartList651 {
         Object value = this.objects.get(index);
         byte objectType = this.objectTypeArray[index];
         if (this.hasKeys) {
-          DataSerializer.writeObject(this.keys.get(index), out);
+          context.getSerializer().writeObject(this.keys.get(index), out);
         }
         if ((objectType == KEY_NOT_AT_SERVER)) {
           out.writeByte(KEY_NOT_AT_SERVER);
@@ -93,7 +93,7 @@ public class SerializedObjectPartList extends ObjectPartList651 {
     if (numObjects > 0) {
       for (int index = 0; index < numObjects; ++index) {
         if (keysPresent) {
-          Object key = DataSerializer.readObject(in);
+          Object key = context.getDeserializer().readObject(in);
           this.keys.add(key);
         }
         byte objectType = in.readByte();

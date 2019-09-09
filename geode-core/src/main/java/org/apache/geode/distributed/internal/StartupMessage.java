@@ -360,7 +360,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
       DataSerializer.writeNonPrimitiveClassName(instantiatedClassName, out);
       out.writeInt(id);
     }
-    DataSerializer.writeObject(interfaces, out);
+    context.getSerializer().writeObject(interfaces, out);
     out.writeInt(distributedSystemId);
     DataSerializer.writeString(redundancyZone, out);
     out.writeBoolean(enforceUniqueZone);
@@ -428,7 +428,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
       }
     } // for
 
-    this.interfaces = DataSerializer.readObject(in);
+    this.interfaces = context.getDeserializer().readObject(in);
     this.distributedSystemId = in.readInt();
     this.redundancyZone = DataSerializer.readString(in);
     this.enforceUniqueZone = in.readBoolean();

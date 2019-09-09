@@ -239,7 +239,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
       final Version version = InternalDataSerializer.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.putAllDataCount; i++) {
-        this.putAllData[i] = new PutAllEntryData(in, this.eventId, i, version, bytesIn);
+        this.putAllData[i] = new PutAllEntryData(in, context, this.eventId, i, version, bytesIn);
       }
 
       boolean hasTags = in.readBoolean();
@@ -276,7 +276,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
         VersionTag<?> tag = putAllData[i].versionTag;
         versionTags.add(tag);
         putAllData[i].versionTag = null;
-        this.putAllData[i].toData(out);
+        this.putAllData[i].toData(out, context);
         this.putAllData[i].versionTag = tag;
       }
 

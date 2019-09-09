@@ -1872,6 +1872,7 @@ public class TXEntryState implements Releasable {
    * <p>
    * The fromData for this is TXCommitMessage$RegionCommit$FarSideEntryOp#fromData.
    *
+   *
    * @param largeModCount true if modCount needs to be represented by an int; false if a byte is
    *        enough
    * @param sendVersionTag true if versionTag should be sent to clients 7.0 and above
@@ -1879,7 +1880,9 @@ public class TXEntryState implements Releasable {
    *
    * @since GemFire 5.0
    */
-  void toFarSideData(DataOutput out, boolean largeModCount, boolean sendVersionTag,
+  void toFarSideData(DataOutput out,
+      SerializationContext context,
+      boolean largeModCount, boolean sendVersionTag,
       boolean sendShadowKey) throws IOException {
     Operation operation = getFarSideOperation();
     out.writeByte(operation.ordinal);
@@ -1888,10 +1891,10 @@ public class TXEntryState implements Releasable {
     } else {
       out.writeByte(this.modSerialNum);
     }
-    DataSerializer.writeObject(getCallbackArgument(), out);
-    DataSerializer.writeObject(getFilterRoutingInfo(), out);
+    context.getSerializer().writeObject(getCallbackArgument(), out);
+    context.getSerializer().writeObject(getFilterRoutingInfo(), out);
     if (sendVersionTag) {
-      DataSerializer.writeObject(getVersionTag(), out);
+      context.getSerializer().writeObject(getVersionTag(), out);
       assert getVersionTag() != null || !txRegionState.getRegion().getConcurrencyChecksEnabled()
           || txRegionState.getRegion().getDataPolicy() != DataPolicy.REPLICATE : "tag:"
               + getVersionTag() + " r:" + txRegionState.getRegion() + " op:" + opToString()
@@ -1909,7 +1912,7 @@ public class TXEntryState implements Releasable {
         out.writeBoolean(isTokenOrByteArray);
         if (isTokenOrByteArray) {
           // this is a token or byte[] only
-          DataSerializer.writeObject(getPendingValue(), out);
+          context.getSerializer().writeObject(getPendingValue(), out);
         } else {
           // this is a CachedDeserializable, Object and PDX
           DataSerializer.writeByteArray(getSerializedPendingValue(), out);

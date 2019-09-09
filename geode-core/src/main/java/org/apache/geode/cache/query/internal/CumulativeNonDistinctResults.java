@@ -281,7 +281,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    ObjectType elementType = (ObjectType) DataSerializer.readObject(in);
+    ObjectType elementType = (ObjectType) context.getDeserializer().readObject(in);
     this.collectionType = new CollectionTypeImpl(CumulativeNonDistinctResults.class, elementType);
     boolean isStruct = elementType.isStructType();
 
@@ -293,7 +293,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
         Object[] fields = DataSerializer.readObjectArray(in);
         this.data.add((E) new StructImpl((StructTypeImpl) elementType, fields));
       } else {
-        E element = DataSerializer.readObject(in);
+        E element = context.getDeserializer().readObject(in);
         this.data.add(element);
       }
       --numLeft;
@@ -312,7 +312,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     boolean isStruct = this.collectionType.getElementType().isStructType();
-    DataSerializer.writeObject(this.collectionType.getElementType(), out);
+    context.getSerializer().writeObject(this.collectionType.getElementType(), out);
 
     HeapDataOutputStream hdos = new HeapDataOutputStream(1024, null);
     LongUpdater lu = hdos.reserveLong();
@@ -324,7 +324,7 @@ public class CumulativeNonDistinctResults<E> implements SelectResults<E>, DataSe
         Object[] fields = ((Struct) data).getFieldValues();
         DataSerializer.writeObjectArray(fields, out);
       } else {
-        DataSerializer.writeObject(data, hdos);
+        context.getSerializer().writeObject(data, hdos);
       }
       ++numElements;
     }

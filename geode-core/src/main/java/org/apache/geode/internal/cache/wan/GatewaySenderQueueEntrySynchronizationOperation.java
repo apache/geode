@@ -299,15 +299,15 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
-      DataSerializer.writeObject(this.key, out);
-      DataSerializer.writeObject(this.entryVersion, out);
+      context.getSerializer().writeObject(this.key, out);
+      context.getSerializer().writeObject(this.entryVersion, out);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
-      this.key = DataSerializer.readObject(in);
-      this.entryVersion = DataSerializer.readObject(in);
+      this.key = context.getDeserializer().readObject(in);
+      this.entryVersion = context.getDeserializer().readObject(in);
     }
 
     @Override

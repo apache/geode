@@ -704,12 +704,12 @@ public class GatewaySenderEventImpl
     out.writeInt(this.action);
     out.writeInt(this.numberOfParts);
     // out.writeUTF(this._id);
-    DataSerializer.writeObject(this.id, out);
+    context.getSerializer().writeObject(this.id, out);
     DataSerializer.writeString(this.regionPath, out);
     out.writeByte(this.valueIsObject);
-    serializeKey(out);
+    serializeKey(out, context);
     DataSerializer.writeByteArray(getSerializedValue(), out);
-    DataSerializer.writeObject(this.callbackArgument, out);
+    context.getSerializer().writeObject(this.callbackArgument, out);
     out.writeBoolean(this.possibleDuplicate);
     out.writeLong(this.creationTime);
     out.writeInt(this.bucketId);
@@ -717,8 +717,9 @@ public class GatewaySenderEventImpl
     out.writeLong(getVersionTimeStamp());
   }
 
-  protected void serializeKey(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.key, out);
+  protected void serializeKey(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(this.key, out);
   }
 
   @Override
@@ -741,16 +742,17 @@ public class GatewaySenderEventImpl
         && InternalDataSerializer.getVersionForDataStream(in) == Version.CURRENT) {
       in = new VersionedDataInputStream((InputStream) in, Version.GFE_701);
     }
-    this.id = (EventID) DataSerializer.readObject(in);
+    this.id = (EventID) context.getDeserializer().readObject(in);
     // TODO:Asif ; Check if this violates Barry's logic of not assiging VM
     // specific Token.FROM_GATEWAY
     // and retain the serialized Token.FROM_GATEWAY
     // this._id.setFromGateway(false);
     this.regionPath = DataSerializer.readString(in);
     this.valueIsObject = in.readByte();
-    deserializeKey(in);
+    deserializeKey(in, context);
     this.value = DataSerializer.readByteArray(in);
-    this.callbackArgument = (GatewaySenderEventCallbackArgument) DataSerializer.readObject(in);
+    this.callbackArgument =
+        (GatewaySenderEventCallbackArgument) context.getDeserializer().readObject(in);
     this.possibleDuplicate = in.readBoolean();
     this.creationTime = in.readLong();
     this.bucketId = in.readInt();
@@ -759,8 +761,9 @@ public class GatewaySenderEventImpl
     // TODO should this call initializeKey()?
   }
 
-  protected void deserializeKey(DataInput in) throws IOException, ClassNotFoundException {
-    this.key = DataSerializer.readObject(in);
+  protected void deserializeKey(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    this.key = context.getDeserializer().readObject(in);
   }
 
   @Override

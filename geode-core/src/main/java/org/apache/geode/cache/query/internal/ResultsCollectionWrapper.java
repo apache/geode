@@ -30,7 +30,6 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
@@ -550,9 +549,9 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     if (isBagSetView) {
       InternalDataSerializer.writeSet((Set) this.base, out);
     } else {
-      DataSerializer.writeObject(this.base, out);
+      context.getSerializer().writeObject(this.base, out);
     }
-    DataSerializer.writeObject(this.collectionType, out);
+    context.getSerializer().writeObject(this.collectionType, out);
     out.writeBoolean(this.modifiable);
   }
 
@@ -569,9 +568,9 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
     if (isBagSetView) {
       this.base = (Set) InternalDataSerializer.readSet(in);
     } else {
-      this.base = (Collection) DataSerializer.readObject(in);
+      this.base = (Collection) context.getDeserializer().readObject(in);
     }
-    this.collectionType = (CollectionType) DataSerializer.readObject(in);
+    this.collectionType = (CollectionType) context.getDeserializer().readObject(in);
     this.modifiable = in.readBoolean();
   }
 

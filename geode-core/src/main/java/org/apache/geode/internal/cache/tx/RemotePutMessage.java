@@ -490,8 +490,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   }
 
   @Override
-  protected void setFlags(short flags, DataInput in) throws IOException, ClassNotFoundException {
-    super.setFlags(flags, in);
+  protected void setFlags(short flags, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setFlags(flags, in, context);
     this.ifNew = (flags & IF_NEW) != 0;
     this.ifOld = (flags & IF_OLD) != 0;
     this.requireOldValue = (flags & REQUIRED_OLD_VAL) != 0;

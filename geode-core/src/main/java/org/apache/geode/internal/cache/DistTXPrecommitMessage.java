@@ -253,14 +253,14 @@ public class DistTXPrecommitMessage extends TXMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(commitResponse, out);
+      context.getSerializer().writeObject(commitResponse, out);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.commitResponse = (DistTxPrecommitResponse) DataSerializer.readObject(in);
+      this.commitResponse = (DistTxPrecommitResponse) context.getDeserializer().readObject(in);
     }
 
     @Override

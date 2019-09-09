@@ -220,9 +220,9 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
       throws IOException {
     DataSerializer.writeString(this.memberIdOrName, out);
     DataSerializer.writePrimitiveBoolean(this.isSuccessful(), out);
-    DataSerializer.writeObject(this.xmlEntity, out);
+    context.getSerializer().writeObject(this.xmlEntity, out);
     DataSerializer.writeObjectArray(this.serializables, out);
-    DataSerializer.writeObject(this.resultObject, out);
+    context.getSerializer().writeObject(this.resultObject, out);
     DataSerializer.writeByteArray(this.byteData, out);
   }
 
@@ -230,7 +230,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
       throws IOException {
     DataSerializer.writeString(this.memberIdOrName, out);
     DataSerializer.writeObjectArray(this.serializables, out);
-    DataSerializer.writeObject(this.resultObject, out);
+    context.getSerializer().writeObject(this.resultObject, out);
   }
 
   @Override
@@ -244,16 +244,16 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
       throws IOException, ClassNotFoundException {
     this.memberIdOrName = DataSerializer.readString(in);
     this.state = DataSerializer.readPrimitiveBoolean(in) ? StatusState.OK : StatusState.ERROR;
-    this.xmlEntity = DataSerializer.readObject(in);
+    this.xmlEntity = context.getDeserializer().readObject(in);
     this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
-    this.resultObject = DataSerializer.readObject(in);
+    this.resultObject = context.getDeserializer().readObject(in);
     this.byteData = DataSerializer.readByteArray(in);
   }
 
   public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     this.memberIdOrName = DataSerializer.readString(in);
-    this.resultObject = DataSerializer.readObject(in);
+    this.resultObject = context.getDeserializer().readObject(in);
     this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);
   }
 
