@@ -536,7 +536,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
   private static void verifyMembers(final int numExpectedMembers) {
     DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-    Membership mgr = MembershipManagerHelper.getMembershipManager(ds);
+    Membership mgr = MembershipManagerHelper.getMembership(ds);
     assertEquals(numExpectedMembers, mgr.getView().size());
   }
 }

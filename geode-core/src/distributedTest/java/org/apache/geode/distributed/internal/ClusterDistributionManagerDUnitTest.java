@@ -127,14 +127,14 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   @Test
   public void testConnectAfterBeingShunned() {
     InternalDistributedSystem system = getSystem();
-    Membership membership = MembershipManagerHelper.getMembershipManager(system);
+    Membership membership = MembershipManagerHelper.getMembership(system);
     InternalDistributedMember memberBefore = membership.getLocalMember();
 
     // TODO GMS needs to have a system property allowing the bind-port to be set
     System.setProperty(GEMFIRE_PREFIX + "jg-bind-port", "" + memberBefore.getPort());
     system.disconnect();
     system = getSystem();
-    membership = MembershipManagerHelper.getMembershipManager(system);
+    membership = MembershipManagerHelper.getMembership(system);
     system.disconnect();
     InternalDistributedMember memberAfter = membership.getLocalMember();
 
@@ -152,7 +152,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
     System.setProperty(GEMFIRE_PREFIX + "surprise-member-timeout", "3000");
     InternalDistributedSystem system = getSystem();
     GMSMembershipManager membershipManager =
-        (GMSMembershipManager) MembershipManagerHelper.getMembershipManager(system);
+        (GMSMembershipManager) MembershipManagerHelper.getMembership(system);
     assertThat(membershipManager.isCleanupTimerStarted()).isTrue();
 
     InternalDistributedMember member = new InternalDistributedMember(getIPLiteral(), 12345);
