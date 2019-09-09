@@ -1463,12 +1463,18 @@ public abstract class BaseCommand implements Command {
     }
 
     // Fallback for older clients.
-    final Operation operation = (Operation) operationPart.getObject();
+    final Object operation = operationPart.getObject();
     if (operation == null) {
-      // native clients may send a null since the op is java-serialized.
+      // older native clients may send a null since the op was java-serialized.
       return defaultOperation;
     }
-    return operation;
-  }
 
+    if (operation instanceof Byte) {
+      // older native clients may send Byte object.
+      return Operation.fromOrdinal((Byte) operation);
+    }
+
+    // Older java clients send operation as java-serialized
+    return (Operation) operation;
+  }
 }
