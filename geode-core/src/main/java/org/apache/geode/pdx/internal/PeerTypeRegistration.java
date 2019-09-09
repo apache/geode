@@ -99,14 +99,16 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   /**
    * When a new pdxType or a new enumInfo is added to idToType region, its
-   * listener will add the new type to the tmpTypeToId first, to make sure the
-   * distribution finished.
-   * Then any member who wants to use this new pdxType has to get the dlock to flush the
-   * tmpTypeToId map into typeToId. This design to guarantee that when using the new pdxType,
-   * it should have been distributed to all the members.
+   * listener will add the new type to the pendingTypeToId first, to make sure
+   * the distribution finished.
+   * Then any member who wants to use this new pdxType has to get the dlock to
+   * flush the pendingTypeToId map into typeToId. This design to guarantee that
+   * when using the new pdxType, it should have been distributed to all members.
    */
-  private final Map<PdxType, Integer> tmpTypeToId = Collections.synchronizedMap(new HashMap<>());
-  private final Map<EnumInfo, EnumId> tmpEnumToId = Collections.synchronizedMap(new HashMap<>());
+  private final Map<PdxType, Integer> pendingTypeToId =
+      Collections.synchronizedMap(new HashMap<>());
+  private final Map<EnumInfo, EnumId> pendingEnumToId =
+      Collections.synchronizedMap(new HashMap<>());
 
   private final Map<EnumInfo, EnumId> enumToId = Collections.synchronizedMap(new HashMap<>());
 
@@ -377,13 +379,13 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
     lock();
     try {
-      if (typeToId.isEmpty() || typeToId.size() != idToType.size()) {
+      if (typeToId.isEmpty() || (typeToId.size() + enumToId.size()) != idToType.size()) {
         buildTypeToIdFromIdToType();
       }
-      // flush the tmpTypeToId map
-      if (!tmpTypeToId.isEmpty()) {
-        typeToId.putAll(tmpTypeToId);
-        tmpTypeToId.clear();
+      // flush the pendingTypeToId map
+      if (!pendingTypeToId.isEmpty()) {
+        typeToId.putAll(pendingTypeToId);
+        pendingTypeToId.clear();
       }
       // double check if my type is in region in case the typeToId map has been updated while
       // waiting to obtain a lock
@@ -398,9 +400,9 @@ public class PeerTypeRegistration implements TypeRegistration {
       updateIdToTypeRegion(newType);
       return newType.getTypeId();
     } finally {
-      // flush the tmpTypeToId map for who introduced this new pdxType
-      typeToId.putAll(tmpTypeToId);
-      tmpTypeToId.clear();
+      // flush the pendingTypeToId map for who introduced this new pdxType
+      typeToId.putAll(pendingTypeToId);
+      pendingTypeToId.clear();
       unlock();
     }
   }
@@ -685,10 +687,10 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
     lock();
     try {
-      // flush the tmpTypeToId map
-      if (!tmpEnumToId.isEmpty()) {
-        enumToId.putAll(tmpEnumToId);
-        tmpEnumToId.clear();
+      // flush the pendingEnumToId map
+      if (!pendingEnumToId.isEmpty()) {
+        enumToId.putAll(pendingEnumToId);
+        pendingEnumToId.clear();
       }
       EnumId id = getExistingIdForEnum(newInfo);
       if (id != null) {
@@ -703,11 +705,9 @@ public class PeerTypeRegistration implements TypeRegistration {
 
       return id.intValue();
     } finally {
-      // flush the tmpEnumToId map for who introduced this new enumInfo
-      if (!tmpEnumToId.isEmpty()) {
-        enumToId.putAll(tmpEnumToId);
-        tmpEnumToId.clear();
-      }
+      // flush the pendingEnumToId map for who introduced this new enumInfo
+      enumToId.putAll(pendingEnumToId);
+      pendingEnumToId.clear();
       unlock();
     }
   }
@@ -750,7 +750,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   private void updateLocalMaps(Object key, Object value) {
     if (value instanceof PdxType) {
       PdxType type = (PdxType) value;
-      tmpTypeToId.put(type, (Integer) key);
+      pendingTypeToId.put(type, (Integer) key);
       synchronized (classToType) {
         if (type.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
           return; // no need to include here
@@ -764,7 +764,7 @@ public class PeerTypeRegistration implements TypeRegistration {
       }
     } else if (value instanceof EnumInfo) {
       EnumInfo info = (EnumInfo) value;
-      tmpEnumToId.put(info, (EnumId) key);
+      pendingEnumToId.put(info, (EnumId) key);
     }
   }
 
