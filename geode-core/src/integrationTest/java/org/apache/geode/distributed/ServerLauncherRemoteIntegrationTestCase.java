@@ -66,7 +66,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   @After
   public void tearDownServerLauncherRemoteIntegrationTestCase() {
     if (process != null) {
-      process.destroy();
+      process.destroyForcibly();
       process = null;
     }
     if (processOutReader != null && processOutReader.isRunning()) {
