@@ -36,11 +36,13 @@ import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ByteArrayDataInput;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This class represents a ConnectionProxy of the CacheClient
@@ -50,6 +52,7 @@ import org.apache.geode.internal.logging.LogService;
  */
 public class ClientProxyMembershipID
     implements DataSerializableFixedID, Serializable, Externalizable {
+  public static final long serialVersionUID = 7144300815346556370L;
 
   private static final Logger logger = LogService.getLogger();
 
@@ -317,7 +320,8 @@ public class ClientProxyMembershipID
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // if (this.transientPort == 0) {
     // InternalDistributedSystem.getLogger().warning(
     // String.format("%s",
@@ -329,7 +333,8 @@ public class ClientProxyMembershipID
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.identity = DataSerializer.readByteArray(in);
     this.uniqueId = in.readInt();
     // {toString(); this.transientPort = ((InternalDistributedMember)this.memberId).getPort();}

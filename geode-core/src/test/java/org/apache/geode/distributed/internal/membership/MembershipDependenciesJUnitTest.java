@@ -20,6 +20,7 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPac
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.type;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchIgnore;
 import com.tngtech.archunit.junit.ArchTest;
@@ -28,27 +29,19 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.FlowControlParams;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ConnectionWatcher;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedObjectInput;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.alerting.AlertingAction;
@@ -59,12 +52,11 @@ import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.tcp.ConnectExceptions;
-import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..")
+@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",
+    importOptions = ImportOption.DoNotIncludeTests.class)
 public class MembershipDependenciesJUnitTest {
 
   /*
@@ -90,6 +82,7 @@ public class MembershipDependenciesJUnitTest {
       .should()
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
+              .or(resideInAPackage("org.apache.geode.internal.serialization.."))
               .or(not(resideInAPackage("org.apache.geode.."))));
 
   /*
@@ -106,6 +99,7 @@ public class MembershipDependenciesJUnitTest {
       .should()
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
+              .or(resideInAPackage("org.apache.geode.internal.serialization.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
               .or(resideInAPackage("org.apache.geode.test.."))
@@ -113,26 +107,16 @@ public class MembershipDependenciesJUnitTest {
               // TODO: Create a new stats interface for membership
               .or(assignableTo(DMStats.class))
               .or(type(LocatorStats.class))
-              .or(type(OverflowQueueWithDMStats.class))
 
               // TODO: Figure out what to do with exceptions
               .or(assignableTo(GemFireException.class))
               .or(type(InternalGemFireError.class))
-              .or(type(ConnectExceptions.class))
 
               // TODO: Serialization needs to become its own module
-              .or(type(DataSerializer.class))
-              .or(type(DataSerializableFixedID.class))
-              .or(type(InternalDataSerializer.class))
-              .or(type(Version.class))
-              .or(type(Version[].class)) // ArchUnit needs the array type to be explicitly mentioned
-              .or(type(VersionedObjectInput.class))
-              .or(type(HeapDataOutputStream.class))
-              .or(type(VersionedDataInputStream.class))
+              .or(type(InternalDataSerializer.class)) // still used by GMSLocator
 
               // TODO: Membership needs its own config object
               .or(type(DistributionConfig.class))
-              .or(type(DistributionConfigImpl.class))
               .or(type(RemoteTransportConfig.class))
               .or(type(FlowControlParams.class))
 
@@ -177,9 +161,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO:
               .or(type(AlertingAction.class))
-
-              // TODO:
-              .or(type(Breadcrumbs.class))
 
   );
 

@@ -42,6 +42,8 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A request from an accessor to a datastore telling it to direct the creation of a bucket. This
@@ -77,7 +79,7 @@ public class CreateBucketMessage extends PartitionMessage {
   }
 
   public CreateBucketMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override
@@ -157,15 +159,17 @@ public class CreateBucketMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bucketId = in.readInt();
     this.bucketSize = in.readInt();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.bucketId);
     out.writeInt(this.bucketSize);
   }
@@ -205,7 +209,7 @@ public class CreateBucketMessage extends PartitionMessage {
     public CreateBucketReplyMessage() {}
 
     public CreateBucketReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private CreateBucketReplyMessage(int processorId, InternalDistributedMember primary) {
@@ -257,8 +261,9 @@ public class CreateBucketMessage extends PartitionMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(primary != null);
       if (primary != null) {
         InternalDataSerializer.invokeToData(primary, out);
@@ -271,8 +276,9 @@ public class CreateBucketMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       boolean hasPrimary = in.readBoolean();
       if (hasPrimary) {
         primary = new InternalDistributedMember();

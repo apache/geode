@@ -22,14 +22,15 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 public class FindCoordinatorResponse extends AbstractGMSMessage
     implements DataSerializableFixedID {
@@ -152,32 +153,34 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
   // TODO serialization not backward compatible with 1.9 - may need InternalDistributedMember, not
   // GMSMember
   @Override
-  public void toData(DataOutput out) throws IOException {
-    GMSUtil.writeMemberID(coordinator, out);
-    GMSUtil.writeMemberID(senderId, out);
-    InternalDataSerializer.writeByteArray(coordinatorPublicKey, out);
-    InternalDataSerializer.writeString(rejectionMessage, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    GMSUtil.writeMemberID(coordinator, out, context);
+    GMSUtil.writeMemberID(senderId, out, context);
+    StaticSerialization.writeByteArray(coordinatorPublicKey, out);
+    StaticSerialization.writeString(rejectionMessage, out);
     out.writeBoolean(isShortForm);
     out.writeBoolean(fromView);
     out.writeBoolean(networkPartitionDetectionEnabled);
     out.writeBoolean(usePreferredCoordinators);
-    DataSerializer.writeObject(view, out);
-    GMSUtil.writeSetOfMemberIDs(registrants, out);
+    context.getSerializer().writeObject(view, out);
+    GMSUtil.writeSetOfMemberIDs(registrants, out, context);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    coordinator = GMSUtil.readMemberID(in);
-    senderId = GMSUtil.readMemberID(in);
-    coordinatorPublicKey = InternalDataSerializer.readByteArray(in);
-    rejectionMessage = InternalDataSerializer.readString(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    coordinator = GMSUtil.readMemberID(in, context);
+    senderId = GMSUtil.readMemberID(in, context);
+    coordinatorPublicKey = StaticSerialization.readByteArray(in);
+    rejectionMessage = StaticSerialization.readString(in);
     isShortForm = in.readBoolean();
     if (!isShortForm) {
       fromView = in.readBoolean();
       networkPartitionDetectionEnabled = in.readBoolean();
       usePreferredCoordinators = in.readBoolean();
-      view = DataSerializer.readObject(in);
-      registrants = GMSUtil.readHashSetOfMemberIDs(in);
+      view = (GMSMembershipView) context.getDeserializer().readObject(in);
+      registrants = GMSUtil.readHashSetOfMemberIDs(in, context);
     }
   }
 

@@ -62,9 +62,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.CopyOnWriteHashSet;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryData;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllEntryData;
@@ -77,6 +75,10 @@ import org.apache.geode.internal.cache.tier.sockets.UnregisterAllInterest;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 
 /**
@@ -1484,7 +1486,8 @@ public class FilterProfile implements DataSerializableFixedID {
 
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     InternalDistributedMember id = new InternalDistributedMember();
     InternalDataSerializer.invokeFromData(id, in);
     this.memberID = id;
@@ -1523,7 +1526,8 @@ public class FilterProfile implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     InternalDataSerializer.invokeToData(memberID, out);
     InternalDataSerializer.writeSetOfLongs(this.allKeyClients.getSnapshot(),
         this.clientMap.hasLongID, out);
@@ -1977,7 +1981,7 @@ public class FilterProfile implements DataSerializableFixedID {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+     * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
      */
     @Override
     public int getDSFID() {
@@ -1985,8 +1989,9 @@ public class FilterProfile implements DataSerializableFixedID {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.processorId);
       out.writeUTF(this.regionName);
       out.writeShort(this.opType.ordinal());
@@ -2008,8 +2013,9 @@ public class FilterProfile implements DataSerializableFixedID {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.processorId = in.readInt();
       this.regionName = in.readUTF();
       this.opType = operationType.values()[in.readShort()];

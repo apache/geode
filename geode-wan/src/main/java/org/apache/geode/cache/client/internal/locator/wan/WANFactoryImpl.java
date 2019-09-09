@@ -17,30 +17,37 @@ package org.apache.geode.cache.client.internal.locator.wan;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
-import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewayReceiverFactoryImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderFactoryImpl;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public class WANFactoryImpl implements WANFactory {
 
   @Override
   public void initialize() {
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_JOIN_REQUEST,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REMOTE_LOCATOR_JOIN_REQUEST,
         RemoteLocatorJoinRequest.class);
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_JOIN_RESPONSE,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REMOTE_LOCATOR_JOIN_RESPONSE,
         RemoteLocatorJoinResponse.class);
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_REQUEST,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REMOTE_LOCATOR_REQUEST,
         RemoteLocatorRequest.class);
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LOCATOR_JOIN_MESSAGE,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.LOCATOR_JOIN_MESSAGE,
         LocatorJoinMessage.class);
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_PING_REQUEST,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REMOTE_LOCATOR_PING_REQUEST,
         RemoteLocatorPingRequest.class);
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_PING_RESPONSE,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REMOTE_LOCATOR_PING_RESPONSE,
         RemoteLocatorPingResponse.class);
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.REMOTE_LOCATOR_RESPONSE,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.REMOTE_LOCATOR_RESPONSE,
         RemoteLocatorResponse.class);
   }
 

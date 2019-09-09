@@ -76,7 +76,6 @@ import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.SystemTimer;
@@ -534,12 +533,6 @@ public class InternalDistributedSystem extends DistributedSystem
     alertingSession = AlertingSession.create();
     alertingService = new AlertingService();
     loggingSession = LoggingSession.create();
-
-    // register DSFID types first; invoked explicitly so that all message type
-    // initializations do not happen in first deserialization on a possibly
-    // "precious" thread
-    DSFIDFactory.registerTypes();
-
     originalConfig = config.distributionConfig();
     isReconnectingDS = config.isReconnecting();
     quorumChecker = config.quorumChecker();

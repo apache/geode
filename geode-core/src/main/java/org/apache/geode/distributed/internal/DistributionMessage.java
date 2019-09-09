@@ -32,12 +32,14 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.MessageLogger;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.internal.util.Breadcrumbs;
 
@@ -555,7 +557,8 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * (<code>super.toData()</code>).
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // DataSerializer.writeObject(this.recipients, out); // no need to serialize; filled in later
     // ((IpAddress)this.sender).toData(out); // no need to serialize; filled in later
     // out.writeLong(this.timeStamp);
@@ -567,7 +570,8 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * (<code>super.fromData()</code>).
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
 
     // this.recipients = (Set)DataSerializer.readObject(in); // no to deserialize; filled in later
     // this.sender = DataSerializer.readIpAddress(in); // no to deserialize; filled in later

@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class LocatorListResponse extends ServerLocationResponse {
   /** ArrayList of ServerLocations for controllers */
@@ -40,7 +42,8 @@ public class LocatorListResponse extends ServerLocationResponse {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.controllers = SerializationHelper.readServerLocationList(in);
     this.isBalanced = in.readBoolean();
     if (this.controllers != null && !this.controllers.isEmpty()) {
@@ -49,7 +52,8 @@ public class LocatorListResponse extends ServerLocationResponse {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     SerializationHelper.writeServerLocationList(this.controllers, out);
     out.writeBoolean(isBalanced);
   }

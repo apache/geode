@@ -62,7 +62,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheObserverAdapter;
 import org.apache.geode.internal.cache.CacheObserverHolder;
 import org.apache.geode.internal.cache.DiskRegion;
@@ -854,7 +853,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
 
       RegionVersionVector rvv = region.getVersionVector();
       rvv = rvv.getCloneForTransmission();
-      HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+      HeapDataOutputStream hdos = new HeapDataOutputStream(2048);
 
       // Using gemfire serialization because RegionVersionVector is not java serializable
       DataSerializer.writeObject(rvv, hdos);
@@ -871,7 +870,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
 
       RegionVersionVector rvv = region.getDiskRegion().getRegionVersionVector();
       rvv = rvv.getCloneForTransmission();
-      HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+      HeapDataOutputStream hdos = new HeapDataOutputStream(2048);
 
       // Using gemfire serialization because RegionVersionVector is not java serializable
       DataSerializer.writeObject(rvv, hdos);

@@ -35,7 +35,6 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
@@ -44,12 +43,15 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor.ProfileId;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed system.
@@ -115,7 +117,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
   /** The versions in which this message was modified */
   @Immutable
-  private static final Version[] dsfidVersions = new Version[] {Version.GFE_71, Version.GFE_90};
+  private static final Version[] dsfidVersions = new Version[] {
+      Version.GFE_71, Version.GFE_90};
 
   private void defaultToCurrentHost() {
     netMbr.setProcessId(OSProcess.getId());
@@ -159,8 +162,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     short version = netMbr.getVersionOrdinal();
     try {
-      this.versionObj = Version.fromOrdinal(version, false);
-    } catch (UnsupportedVersionException e) {
+      this.versionObj = Version.fromOrdinal(version);
+    } catch (UnsupportedSerializationVersionException e) {
       this.versionObj = Version.CURRENT;
     }
     // checkHostName();
@@ -182,8 +185,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     short version = m.getVersionOrdinal();
     try {
-      this.versionObj = Version.fromOrdinal(version, false);
-    } catch (UnsupportedVersionException e) {
+      this.versionObj = Version.fromOrdinal(version);
+    } catch (UnsupportedSerializationVersionException e) {
       this.versionObj = Version.CURRENT;
     }
     cachedToString = null;
@@ -858,15 +861,17 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    toDataPre_GFE_9_0_0_0(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    toDataPre_GFE_9_0_0_0(out, context);
     if (netMbr.getVersionOrdinal() >= Version.GFE_90.ordinal()) {
       getNetMember().writeAdditionalData(out);
     }
   }
 
 
-  public void toDataPre_GFE_9_0_0_0(DataOutput out) throws IOException {
+  public void toDataPre_GFE_9_0_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
     // Assert.assertTrue(vmKind > 0);
     // NOTE: If you change the serialized format of this class
     // then bump Connection.HANDSHAKE_VERSION since an
@@ -911,7 +916,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     Version.writeOrdinal(out, version, true);
   }
 
-  public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
+  public void toDataPre_GFE_7_1_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
     Assert.assertTrue(netMbr.getVmKind() > 0);
     // disabled to allow post-connect setting of the port for loner systems
     // Assert.assertTrue(getPort() > 0);
@@ -958,8 +964,9 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    fromDataPre_GFE_9_0_0_0(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    fromDataPre_GFE_9_0_0_0(in, context);
     // just in case this is just a non-versioned read
     // from a file we ought to check the version
     if (getNetMember().getVersionOrdinal() >= Version.GFE_90.ordinal()) {
@@ -971,7 +978,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     }
   }
 
-  public void fromDataPre_GFE_9_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GFE_9_0_0_0(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();
 
@@ -1017,7 +1025,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     // Assert.assertTrue(getPort() > 0);
   }
 
-  public void fromDataPre_GFE_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GFE_7_1_0_0(DataInput in, DeserializationContext context)
+      throws IOException, ClassNotFoundException {
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();
 

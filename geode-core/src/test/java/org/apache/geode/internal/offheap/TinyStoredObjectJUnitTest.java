@@ -29,11 +29,11 @@ import java.nio.ByteBuffer;
 import org.junit.Test;
 
 import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntryContext;
+import org.apache.geode.internal.serialization.DSCODE;
 
 public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 

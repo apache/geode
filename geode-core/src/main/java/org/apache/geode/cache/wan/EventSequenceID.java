@@ -17,7 +17,7 @@ package org.apache.geode.cache.wan;
 import java.util.Arrays;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
 
 /**
  * This class wraps 1) DistributedMembershipID 2) ThreadID 3) SequenceID attributes which are used

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.alerting;
 
-import static org.apache.geode.internal.DataSerializableFixedID.ALERT_LISTENER_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.ALERT_LISTENER_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;

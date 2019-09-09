@@ -57,6 +57,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A class that specifies a destroy operation.
@@ -327,8 +329,9 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     setKey(DataSerializer.readObject(in));
     this.cbArg = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
@@ -348,8 +351,9 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(getKey(), out);
     DataSerializer.writeObject(this.cbArg, out);
     out.writeByte(this.op.ordinal);
@@ -521,8 +525,9 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       byte b = this.versionTag != null ? HAS_VERSION_TAG : 0;
       b |= this.versionTag instanceof DiskVersionTag ? PERSISTENT_TAG : 0;
       out.writeByte(b);
@@ -532,8 +537,9 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       byte b = in.readByte();
       boolean hasTag = (b & HAS_VERSION_TAG) != 0;
       boolean persistentTag = (b & PERSISTENT_TAG) != 0;

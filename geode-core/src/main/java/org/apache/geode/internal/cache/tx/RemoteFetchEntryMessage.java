@@ -45,6 +45,8 @@ import org.apache.geode.internal.cache.NonLocalRegionEntry;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This message is used as the request for a
@@ -133,14 +135,16 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.key = DataSerializer.readObject(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.key, out);
   }
 
@@ -212,8 +216,9 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       if (this.value == null) {
         out.writeBoolean(true); // null entry
       } else {
@@ -228,8 +233,9 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       boolean nullEntry = in.readBoolean();
       if (!nullEntry) {
         // EntrySnapshot.setRegion is called later

@@ -25,8 +25,8 @@ import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.DirectReplyMessage;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * GMSMessageAdapter wraps a Geode DistributionMessage to be sent via the GMS Messenger

@@ -319,7 +319,9 @@ public class ClusterConfigurationLoader {
         configResponse = (ConfigurationResponse) result;
         configResponse.setMember(locator);
       } else {
-        logger.error("Received invalid result from {}: {}", locator.toString(), result);
+        if (result != null) {
+          logger.error("Received invalid result from {}: {}", locator.toString(), result);
+        }
         if (result instanceof Throwable) {
           // log the stack trace.
           logger.error(result.toString(), result);

@@ -13,30 +13,29 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
-import java.io.DataInputStream;
-import java.io.InputStream;
+import java.io.DataOutputStream;
+import java.io.OutputStream;
 
 
 /**
- * An extension to {@link DataInputStream} that implements {@link VersionedDataStream} for a stream
- * coming from a different product version.
+ * An extension of {@link DataOutputStream} that implements {@link VersionedDataStream}.
  *
  * @since GemFire 7.1
  */
-public class VersionedDataInputStream extends DataInputStream implements VersionedDataStream {
+public class VersionedDataOutputStream extends DataOutputStream implements VersionedDataStream {
 
-  private final Version version;
+  private Version version;
 
   /**
-   * Creates a VersionedDataInputStream that uses the specified underlying InputStream.
+   * Creates a VersionedDataOutputStream that wraps the specified underlying OutputStream.
    *
-   * @param in the specified input stream
-   * @param version the product version that serialized object on the given input stream
+   * @param out the underlying output stream
+   * @param version the product version that serialized object on the given {@link OutputStream}
    */
-  public VersionedDataInputStream(InputStream in, Version version) {
-    super(in);
+  public VersionedDataOutputStream(OutputStream out, Version version) {
+    super(out);
     this.version = version;
   }
 
@@ -46,13 +45,5 @@ public class VersionedDataInputStream extends DataInputStream implements Version
   @Override
   public Version getVersion() {
     return this.version;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public String toString() {
-    return super.toString() + " (" + this.version + ')';
   }
 }

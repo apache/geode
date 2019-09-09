@@ -20,9 +20,9 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.sequencelog.GraphType;
 import org.apache.geode.internal.sequencelog.model.GraphSet;
+import org.apache.geode.internal.serialization.Version;
 
 public class GraphReader {
 

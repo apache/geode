@@ -23,11 +23,11 @@ import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.ConnectionStats;
 import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.cache.query.cq.internal.ops.CreateCQOp.CreateCQOpImpl;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Retrieves all durable cqs for a client from a server

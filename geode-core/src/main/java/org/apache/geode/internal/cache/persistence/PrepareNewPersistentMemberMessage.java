@@ -45,6 +45,8 @@ import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionMessage
     implements MessageWithReply {
@@ -151,8 +153,9 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     regionPath = DataSerializer.readString(in);
     processorId = in.readInt();
     boolean hasOldId = in.readBoolean();
@@ -165,8 +168,9 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeString(regionPath, out);
     out.writeInt(processorId);
     out.writeBoolean(oldId != null);

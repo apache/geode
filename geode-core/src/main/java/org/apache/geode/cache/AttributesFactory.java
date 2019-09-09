@@ -15,7 +15,6 @@
 package org.apache.geode.cache;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -1490,10 +1489,9 @@ public class AttributesFactory<K, V> {
   }
 
   private static class RegionAttributesImpl<K, V> extends UserSpecifiedRegionAttributes<K, V>
-      implements Cloneable, Serializable {
+      implements Cloneable {
     public Set<String> gatewaySenderIds;
     public Set<String> asyncEventQueueIds;
-    private static final long serialVersionUID = -3663000883567530374L;
 
     ArrayList<CacheListener<K, V>> cacheListeners;
     CacheLoader<K, V> cacheLoader;

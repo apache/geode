@@ -45,6 +45,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This operation ensures that a particular member has seen all state changes for a Region prior to
@@ -464,8 +466,9 @@ public class StateFlushOperation {
     }
 
     @Override
-    public void toData(DataOutput dout) throws IOException {
-      super.toData(dout);
+    public void toData(DataOutput dout,
+        SerializationContext context) throws IOException {
+      super.toData(dout, context);
       DataSerializer.writeObject(relayRecipient, dout);
       dout.writeInt(processorId);
       dout.writeInt(processorType);
@@ -481,8 +484,9 @@ public class StateFlushOperation {
     }
 
     @Override
-    public void fromData(DataInput din) throws IOException, ClassNotFoundException {
-      super.fromData(din);
+    public void fromData(DataInput din,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(din, context);
       relayRecipient = (DistributedMember) DataSerializer.readObject(din);
       processorId = din.readInt();
       processorType = din.readInt();
@@ -624,8 +628,9 @@ public class StateFlushOperation {
     }
 
     @Override
-    public void toData(DataOutput dout) throws IOException {
-      super.toData(dout);
+    public void toData(DataOutput dout,
+        SerializationContext context) throws IOException {
+      super.toData(dout, context);
       dout.writeInt(processorId);
       DataSerializer.writeHashMap(channelState, dout);
       DataSerializer.writeObject(requestingMember, dout);
@@ -638,8 +643,9 @@ public class StateFlushOperation {
     }
 
     @Override
-    public void fromData(DataInput din) throws IOException, ClassNotFoundException {
-      super.fromData(din);
+    public void fromData(DataInput din,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(din, context);
       processorId = din.readInt();
       channelState = DataSerializer.readHashMap(din);
       requestingMember = (DistributedMember) DataSerializer.readObject(din);
@@ -688,8 +694,9 @@ public class StateFlushOperation {
     }
 
     @Override
-    public void toData(DataOutput dout) throws IOException {
-      super.toData(dout);
+    public void toData(DataOutput dout,
+        SerializationContext context) throws IOException {
+      super.toData(dout, context);
       DataSerializer.writeObject(sendingMember, dout);
     }
 
@@ -699,8 +706,9 @@ public class StateFlushOperation {
     }
 
     @Override
-    public void fromData(DataInput din) throws IOException, ClassNotFoundException {
-      super.fromData(din);
+    public void fromData(DataInput din,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(din, context);
       sendingMember = (DistributedMember) DataSerializer.readObject(din);
     }
 

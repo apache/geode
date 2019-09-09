@@ -68,6 +68,8 @@ import org.apache.geode.internal.cache.partitioned.DeposePrimaryBucketMessage.De
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.StopWatch;
 
 /**
@@ -2273,16 +2275,18 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       isPrimary = in.readBoolean();
       isHosting = in.readBoolean();
       isInitializing = in.readBoolean();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(isPrimary);
       out.writeBoolean(isHosting);
       out.writeBoolean(isInitializing);
@@ -2326,15 +2330,17 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       bucketServerLocations = SerializationHelper.readBucketServerLocationSet(in);
       bucketId = DataSerializer.readPrimitiveInt(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       SerializationHelper.writeBucketServerLocationSet(bucketServerLocations, out);
       DataSerializer.writePrimitiveInt(bucketId, out);
     }

@@ -30,6 +30,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A Partitioned Region specific message whose reply guarantees that all operations have completed
@@ -131,17 +133,19 @@ public class FlushMessage extends SerialDistributionMessage implements MessageWi
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.prId = in.readInt();
     this.bucketId = in.readInt();
     this.processorId = in.readInt();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // TODO Auto-generated method stub
-    super.toData(out);
+    super.toData(out, context);
     out.writeInt(this.prId);
     out.writeInt(this.bucketId);
     out.writeInt(this.processorId);

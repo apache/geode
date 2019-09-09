@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.tier;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Provides the version of the client.

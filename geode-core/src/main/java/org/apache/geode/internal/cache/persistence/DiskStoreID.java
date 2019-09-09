@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
 
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A Unique ID for a disk store
@@ -51,7 +53,8 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
   public DiskStoreID() {}
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeLong(mostSig);
     out.writeLong(leastSig);
   }
@@ -69,7 +72,8 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     mostSig = in.readLong();
     leastSig = in.readLong();
   }

@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -24,8 +24,6 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.UnsupportedVersionException;
-import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
 
 /**
  * Enumerated type for client / server and p2p version.
@@ -317,17 +315,20 @@ public class Version implements Comparable<Version> {
     }
   }
 
+  public static Version getCurrentVersion() {
+    return CURRENT;
+  }
+
   /** Return the <code>Version</code> represented by specified ordinal */
-  public static Version fromOrdinal(short ordinal, boolean forGFEClients)
-      throws UnsupportedVersionException {
+  public static Version fromOrdinal(short ordinal)
+      throws UnsupportedSerializationVersionException {
     if (ordinal == TOKEN_ORDINAL) {
       return TOKEN;
     }
     // for clients also check that there must be a commands object mapping
     // for processing
-    if ((VALUES.length < ordinal + 1) || VALUES[ordinal] == null
-        || (forGFEClients && CommandInitializer.getCommands(VALUES[ordinal]) == null)) {
-      throw new UnsupportedVersionException(String.format(
+    if ((VALUES.length < ordinal + 1) || VALUES[ordinal] == null) {
+      throw new UnsupportedSerializationVersionException(String.format(
           "Peer or client version with ordinal %s not supported. Highest known version is %s",
           ordinal, CURRENT.name));
     }
@@ -569,8 +570,8 @@ public class Version implements Comparable<Version> {
   public static String toString(short ordinal) {
     if (ordinal <= CURRENT.ordinal) {
       try {
-        return fromOrdinal(ordinal, false).toString();
-      } catch (UnsupportedVersionException uve) {
+        return fromOrdinal(ordinal).toString();
+      } catch (UnsupportedSerializationVersionException uve) {
         // ignored in toString()
       }
     }
@@ -614,5 +615,9 @@ public class Version implements Comparable<Version> {
   public static Iterable<? extends Version> getAllVersions() {
     return Arrays.asList(VALUES).stream().filter(x -> x != null && x != TEST_VERSION)
         .collect(Collectors.toList());
+  }
+
+  public boolean isCurrentVersion() {
+    return this.ordinal == CURRENT.ordinal;
   }
 }

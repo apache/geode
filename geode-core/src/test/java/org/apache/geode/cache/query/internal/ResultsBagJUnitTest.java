@@ -29,7 +29,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Test ResultsBag, including null elements
