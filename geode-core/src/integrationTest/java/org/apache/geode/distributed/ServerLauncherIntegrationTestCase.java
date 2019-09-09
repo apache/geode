@@ -52,6 +52,9 @@ import org.apache.geode.internal.process.ProcessType;
  */
 public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrationTestCase {
 
+  protected static final boolean DEFAULT_SERVER_NOT_NEEDED = true;
+  protected static final boolean DEFAULT_SERVER_IS_NEEDED = false;
+
   protected volatile int defaultServerPort;
   protected volatile int nonDefaultServerPort;
   protected volatile int unusedServerPort;
@@ -104,6 +107,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
    */
   protected Builder newBuilder() {
     return new Builder()
+        .setDisableDefaultServer(DEFAULT_SERVER_NOT_NEEDED)
         .setMemberName(getUniqueName())
         .setWorkingDirectory(getWorkingDirectoryPath())
         .set(DISABLE_AUTO_RECONNECT, "true");

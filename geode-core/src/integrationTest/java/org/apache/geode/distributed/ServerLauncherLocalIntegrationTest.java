@@ -172,6 +172,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
     givenCacheXmlFileWithServerPort(cacheXmlPort);
 
     launcher = startServer(newBuilder()
+        .setDisableDefaultServer(DEFAULT_SERVER_IS_NEEDED)
         .setServerPort(startPort));
 
     // server should use --server-port instead of port in cache.xml
@@ -185,6 +186,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
     givenCacheXmlFile();
 
     launcher = awaitStart(newBuilder()
+        .setDisableDefaultServer(DEFAULT_SERVER_IS_NEEDED)
         .setServerPort(defaultServerPort));
 
     // verify server used --server-port instead of default
@@ -196,6 +198,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void startWithDefaultPortInUseFailsWithBindException() {
     givenServerPortInUse(defaultServerPort);
     launcher = newBuilder()
+        .setDisableDefaultServer(DEFAULT_SERVER_IS_NEEDED)
         .build();
 
     Throwable thrown = catchThrowable(() -> launcher.start());
@@ -209,6 +212,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void startWithServerPortInUseFailsWithBindException() {
     givenServerPortInUse(nonDefaultServerPort);
     launcher = newBuilder()
+        .setDisableDefaultServer(DEFAULT_SERVER_IS_NEEDED)
         .setServerPort(nonDefaultServerPort)
         .build();
 
@@ -233,6 +237,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
     String serverBindAddress = "127.0.0.1";
 
     ServerLauncher.Builder launcherBuilder = newBuilder()
+        .setDisableDefaultServer(DEFAULT_SERVER_IS_NEEDED)
         .setHostNameForClients(hostnameForClients)
         .setMaxConnections(maxConnections)
         .setMaxMessageCount(maxMessageCount)
