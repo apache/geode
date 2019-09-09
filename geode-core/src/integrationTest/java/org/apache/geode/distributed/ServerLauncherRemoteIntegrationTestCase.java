@@ -79,7 +79,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
 
   @Override
   public boolean getDisableDefaultServer() {
-    return false;
+    return true;
   }
 
   @Override
@@ -140,7 +140,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   }
 
   protected void startServerShouldFail() throws IOException, InterruptedException {
-    startServerShouldFail(serverCommand);
+    startServerShouldFail(serverCommand.disableDefaultServer(false));
   }
 
   protected void startServerShouldFail(final ServerCommand command)
@@ -152,6 +152,14 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
 
   protected ServerCommand addJvmArgument(final String arg) {
     return serverCommand.addJvmArgument(arg);
+  }
+
+  protected ServerCommand withDefaultServer() {
+    return withDisableDefaultServer(false);
+  }
+
+  protected ServerCommand withDefaultServer(final boolean value) {
+    return withDisableDefaultServer(value);
   }
 
   protected ServerCommand withDisableDefaultServer() {
@@ -171,7 +179,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   }
 
   protected ServerCommand withServerPort(final int port) {
-    return serverCommand.withServerPort(port);
+    return serverCommand.disableDefaultServer(false).withServerPort(port);
   }
 
   private ServerLauncher awaitStart(final File workingDirectory) {
