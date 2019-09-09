@@ -13,24 +13,21 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.rest;
+package org.apache.geode.security;
 
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.api.ClusterManagementService;
+public enum AuthTokenEnabledComponents {
+  /**
+   * This determines that all rest components will use token based authentication. <U>Since</U>:
+   * Geode 1.11
+   */
+  ALL,
+  /**
+   * This determines that management rest service will use token based authentication. <U>Since</U>:
+   * Geode 1.11
+   */
+  MANAGEMENT;
 
-public interface GeodeComponent {
-
-  void start();
-
-  void stop();
-
-  int getPort();
-
-  SecurityService getSecurityService();
-
-  ClusterManagementService getClusterManagementService();
-
-  default boolean isAuthTokenEnabled() {
-    return false;
+  public static boolean hasManagement(String value) {
+    return ALL.name().equalsIgnoreCase(value) || MANAGEMENT.name().equalsIgnoreCase(value);
   }
 }

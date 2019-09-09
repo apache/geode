@@ -38,6 +38,7 @@ import org.apache.geode.security.GemFireSecurityException;
 public class GeodeAuthenticationProvider implements AuthenticationProvider, ServletContextAware {
 
   private SecurityService securityService;
+  private boolean authTokenEnabled;
 
 
   public SecurityService getSecurityService() {
@@ -46,13 +47,20 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider, Serv
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+    Properties credentials = new Properties();
     String username = authentication.getName();
     String password = authentication.getCredentials().toString();
-    Properties credentials = new Properties();
-    if (username != null)
-      credentials.put(ResourceConstants.USER_NAME, username);
-    if (password != null)
-      credentials.put(ResourceConstants.PASSWORD, password);
+
+    if (authTokenEnabled) {
+      if (password != null) {
+        credentials.setProperty(ResourceConstants.TOKEN, password);
+      }
+    } else {
+      if (username != null)
+        credentials.put(ResourceConstants.USER_NAME, username);
+      if (password != null)
+        credentials.put(ResourceConstants.PASSWORD, password);
+    }
 
     try {
       securityService.login(credentials);
@@ -68,9 +76,15 @@ public class GeodeAuthenticationProvider implements AuthenticationProvider, Serv
     return authentication.isAssignableFrom(UsernamePasswordAuthenticationToken.class);
   }
 
+  public boolean isAuthTokenEnabled() {
+    return authTokenEnabled;
+  }
+
   @Override
   public void setServletContext(ServletContext servletContext) {
     securityService = (SecurityService) servletContext
         .getAttribute(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
+    authTokenEnabled =
+        (Boolean) servletContext.getAttribute(InternalHttpService.AUTH_TOKEN_ENABLED_PARAM);
   }
 }

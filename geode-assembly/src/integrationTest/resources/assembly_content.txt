@@ -899,6 +899,7 @@ javadoc/org/apache/geode/redis/package-summary.html
 javadoc/org/apache/geode/redis/package-tree.html
 javadoc/org/apache/geode/security/AccessControl.html
 javadoc/org/apache/geode/security/AuthInitialize.html
+javadoc/org/apache/geode/security/AuthTokenEnabledComponents.html
 javadoc/org/apache/geode/security/AuthenticationFailedException.html
 javadoc/org/apache/geode/security/AuthenticationRequiredException.html
 javadoc/org/apache/geode/security/Authenticator.html

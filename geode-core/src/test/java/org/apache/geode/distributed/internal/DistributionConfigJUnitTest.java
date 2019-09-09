@@ -27,6 +27,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE_SIZE
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
@@ -38,6 +39,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -101,7 +103,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertThat(attNames.length).isEqualTo(166);
+    assertThat(attNames.length).isEqualTo(167);
 
     List boolList = new ArrayList();
     List intList = new ArrayList();
@@ -139,7 +141,7 @@ public class DistributionConfigJUnitTest {
     assertEquals(35, intList.size());
     assertEquals(87, stringList.size());
     assertEquals(5, fileList.size());
-    assertEquals(4, otherList.size());
+    assertEquals(5, otherList.size());
   }
 
   @Test
@@ -449,5 +451,21 @@ public class DistributionConfigJUnitTest {
 
     DistributionConfig config = new DistributionConfigImpl(props);
     assertThat(config.getSSLEndPointIdentificationEnabled()).isEqualTo(true);
+  }
+
+  @Test
+  public void invalidAuthToken() throws Exception {
+    Properties props = new Properties();
+    props.put(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "manager");
+    assertThatThrownBy(() -> new DistributionConfigImpl(props))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void authTokenIsCaseInsensitive() throws Exception {
+    Properties props = new Properties();
+    props.put(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "MANAGEment");
+    DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSecurityAuthTokenEnabledComponents()).containsExactly("MANAGEMENT");
   }
 }

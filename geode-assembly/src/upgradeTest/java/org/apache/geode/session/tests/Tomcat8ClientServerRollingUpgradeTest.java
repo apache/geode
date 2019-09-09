@@ -140,9 +140,12 @@ public class Tomcat8ClientServerRollingUpgradeTest {
             ContainerInstall.ConnectionType.CLIENT_SERVER,
             portSupplier::getAvailablePort);
 
-    classPathTomcat8AndOldModules = getClassPathTomcat8AndOldModules();
+    classPathTomcat8AndOldModules = tomcat8AndOldModules.getHome() + "/lib/*" + File.pathSeparator
+        + tomcat8AndOldModules.getHome() + "/bin/*";
 
-    classPathTomcat8AndCurrentModules = getClassPathTomcat8AndCurrentModules();
+    classPathTomcat8AndCurrentModules =
+        tomcat8AndCurrentModules.getHome() + "/lib/*" + File.pathSeparator
+            + tomcat8AndCurrentModules.getHome() + "/bin/*";
 
     // Get available port for the locator
     locatorPort = portSupplier.getAvailablePort();

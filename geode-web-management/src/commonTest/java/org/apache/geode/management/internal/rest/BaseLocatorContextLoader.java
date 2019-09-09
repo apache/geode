@@ -41,6 +41,8 @@ public abstract class BaseLocatorContextLoader extends GenericXmlWebContextLoade
     context.getServletContext().setAttribute(
         InternalHttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
         getClusterManagementService());
+    context.getServletContext().setAttribute(InternalHttpService.AUTH_TOKEN_ENABLED_PARAM,
+        isAuthTokenEnabled());
     context.getServletContext().setAttribute("locator", this);
   }
 }

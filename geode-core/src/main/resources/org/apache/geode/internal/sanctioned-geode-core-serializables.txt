@@ -578,6 +578,7 @@ org/apache/geode/pdx/PdxSerializationException,true,-3843814927034345635
 org/apache/geode/pdx/internal/EnumInfo$PdxInstanceEnumInfo,true,7907582104525106416,ei:org/apache/geode/pdx/internal/EnumInfo,enumId:int
 org/apache/geode/pdx/internal/PdxInputStream,false
 org/apache/geode/pdx/internal/PdxReaderImpl,true,-6094553093860427759,blobType:org/apache/geode/pdx/internal/PdxType,dis:org/apache/geode/pdx/internal/PdxInputStream
+org/apache/geode/security/AuthTokenEnabledComponents,false
 org/apache/geode/security/AuthenticationFailedException,true,-8202866472279088879
 org/apache/geode/security/AuthenticationRequiredException,true,4675976651103154919
 org/apache/geode/security/GemFireSecurityException,true,3814254578203076926,cause:java/lang/Throwable

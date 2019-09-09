@@ -91,6 +91,7 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.security.AuthTokenEnabledComponents;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
@@ -605,6 +606,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private SecurableCommunicationChannel[] securableCommunicationChannels =
       DEFAULT_SSL_ENABLED_COMPONENTS;
+  private String[] securityAuthTokenEnabledComponents =
+      DEFAULT_SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS;
 
   private boolean sslUseDefaultSSLContext = DEFAULT_SSL_USE_DEFAULT_CONTEXT;
   private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
@@ -866,8 +869,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     validateSerializableObjects = other.getValidateSerializableObjects();
     serializableObjectFilter = other.getSerializableObjectFilter();
 
-    // following added for 9.9
     enableManagementRestService = other.getEnableManagementRestService();
+    securityAuthTokenEnabledComponents = other.getSecurityAuthTokenEnabledComponents();
   }
 
   /**
@@ -2538,6 +2541,28 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setSecurity(String attName, String attValue) {
     security.setProperty(attName, attValue);
+  }
+
+  @Override
+  public void setSecurityAuthTokenEnabledComponents(String[] newValue) {
+    // validate the value first
+    for (int i = 0; i < newValue.length; i++) {
+      String value = newValue[i];
+      try {
+        AuthTokenEnabledComponents.valueOf(value.toUpperCase());
+        // normalize the values to all uppercase
+        newValue[i] = value.toUpperCase();
+      } catch (Exception e) {
+        throw new IllegalArgumentException(
+            "Invalid security-auth-token-enabled-components value: " + value);
+      }
+    }
+    securityAuthTokenEnabledComponents = newValue;
+  }
+
+  @Override
+  public String[] getSecurityAuthTokenEnabledComponents() {
+    return securityAuthTokenEnabledComponents;
   }
 
   @Override

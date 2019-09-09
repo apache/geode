@@ -95,7 +95,7 @@ ext.readScmInfo = { proj ->
     } finally {
       git.close()
     }
-  } catch (IllegalArgumentException ignoredDistributionBuild) {
+  } catch (IllegalStateException ignoredDistributionBuild) {
     // If we're building from the source distribution, we don't have git.
     // Instead, we use the .buildinfo copied to the root directory during the distribution build
     // from the writeBuildInfo task below (from build/.buildinfo)
