@@ -94,14 +94,25 @@ public class PdxTypeGenerationDUnitTest {
       assertThat(registration.getEnumToIdSize()).isEqualTo(numOfEnums);
     });
 
-    server1.stop(false);
+    server2.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      PeerTypeRegistration registration =
+              (PeerTypeRegistration) (cache.getPdxRegistry().getTypeRegistration());
+
+      assertThat(registration.getLocalSize()).isEqualTo(numOfTypes + numOfEnums);
+      assertThat(registration.getTypeToIdSize()).isEqualTo(0);
+      assertThat(registration.getEnumToIdSize()).isEqualTo(0);
+
+    });
+
+    server2.stop(false);
     Properties props = new Properties();
     props.setProperty("log-level", "WARN");
     int locatorPort1 = locator.getPort();
-    server1 = cluster.startServerVM(1,
+    server2 = cluster.startServerVM(2,
         x -> x.withProperties(props).withConnectionToLocator(locatorPort1));
 
-    server1.invoke(() -> {
+    server2.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
 
@@ -112,6 +123,54 @@ public class PdxTypeGenerationDUnitTest {
       assertThat(registration.getTypeToIdSize()).isEqualTo(numOfTypes);
       assertThat(registration.getEnumToIdSize()).isEqualTo(numOfEnums);
     });
+  }
+
+  @Test
+  public void definingNewTypeUpdatesLocalMaps() {
+    final String fileName = "/org/apache/geode/pdx/jsonStrings/testJSON.txt";
+    String jsonString = loadJSONFileAsString(fileName);
+    final int numOfTypes = 15;
+    final int numOfEnums = 10;
+
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      assertThat(cache).isNotNull();
+
+      // Creating PdxTypes amd PdxEnums to allow us to confirm that they are all recovered after restarting the server
+      for (int i = 0; i < numOfTypes; ++i) {
+        String replacementField = "counter" + i;
+        String modifiedJSON = jsonString.replace(FIELD_NAME_TO_REPLACE, replacementField);
+        JSONFormatter.fromJSON(modifiedJSON);
+      }
+      for (int i = 0; i < numOfEnums; ++i) {
+        cache.createPdxEnum("ClassName", "EnumName" + i, i);
+      }
+
+      PeerTypeRegistration registration =
+              (PeerTypeRegistration) (cache.getPdxRegistry().getTypeRegistration());
+
+      assertThat(registration.getLocalSize()).isEqualTo(numOfTypes + numOfEnums);
+      assertThat(registration.getTypeToIdSize()).isEqualTo(numOfTypes);
+      assertThat(registration.getEnumToIdSize()).isEqualTo(numOfEnums);
+    });
+
+    server2.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      PeerTypeRegistration registration =
+              (PeerTypeRegistration) (cache.getPdxRegistry().getTypeRegistration());
+
+      assertThat(registration.getLocalSize()).isEqualTo(numOfTypes + numOfEnums);
+      assertThat(registration.getTypeToIdSize()).isEqualTo(0);
+      assertThat(registration.getEnumToIdSize()).isEqualTo(0);
+
+      // Creating a new PdxType to trigger the pending local maps to be flushed
+      JSONFormatter.fromJSON("{\"fieldName\": \"value\"}");
+
+      assertThat(registration.getLocalSize()).isEqualTo(numOfTypes + numOfEnums + 1);
+      assertThat(registration.getTypeToIdSize()).isEqualTo(numOfTypes + 1);
+      assertThat(registration.getEnumToIdSize()).isEqualTo(numOfEnums);
+    });
+
   }
 
   @Test
