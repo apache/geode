@@ -113,6 +113,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @SuppressWarnings("unchecked")
   public <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config) {
+
     return assertSuccessful(restTemplate
         .getForEntity(getIdentityEndPoint(config), ClusterManagementListResult.class)
         .getBody());

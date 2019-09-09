@@ -52,6 +52,8 @@ public class ClusterManagementServiceBuilder {
     PlainBuilder setHostnameVerifier(HostnameVerifier hostnameVerifier);
 
     PlainBuilder setCredentials(String username, String password);
+
+    PlainBuilder setAuthToken(String authToken);
   }
 
   public interface HttpRequestFactoryBuilder extends Builder {

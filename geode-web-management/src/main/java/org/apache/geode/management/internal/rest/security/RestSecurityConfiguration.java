@@ -36,7 +36,6 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -75,22 +74,23 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
         .anyRequest().authenticated().and().csrf().disable();
 
     if (this.authProvider.getSecurityService().isIntegratedSecurity()) {
+      // if auth token is enabled, add a filter to parse the request header. The filter still
+      // saves the token in the form of UsernamePasswordAuthenticationToken
       if (authProvider.isAuthTokenEnabled()) {
         JwtAuthenticationFilter tokenEndpointFilter = new JwtAuthenticationFilter();
         tokenEndpointFilter.setAuthenticationSuccessHandler((request, response, authentication) -> {
         });
-        tokenEndpointFilter.setAuthenticationFailureHandler(new AuthenticationFailedHandler());
+        tokenEndpointFilter.setAuthenticationFailureHandler((request, response, exception) -> {
+        });
         http.addFilterBefore(tokenEndpointFilter, BasicAuthenticationFilter.class);
-      } else {
-        http.httpBasic().authenticationEntryPoint(new AuthenticationFailedHandler());
       }
+      http.httpBasic().authenticationEntryPoint(new AuthenticationFailedHandler());
     } else {
       http.authorizeRequests().anyRequest().permitAll();
     }
   }
 
-  private class AuthenticationFailedHandler
-      implements AuthenticationFailureHandler, AuthenticationEntryPoint {
+  private class AuthenticationFailedHandler implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
         AuthenticationException authException)
@@ -102,13 +102,6 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
           new ClusterManagementResult(ClusterManagementResult.StatusCode.UNAUTHENTICATED,
               authException.getMessage());
       objectMapper.writeValue(response.getWriter(), result);
-    }
-
-    @Override
-    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
-        AuthenticationException exception)
-        throws IOException, ServletException {
-      commence(request, response, exception);
     }
   }
 }

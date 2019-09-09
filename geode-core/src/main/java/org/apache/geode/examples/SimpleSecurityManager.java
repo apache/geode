@@ -29,6 +29,7 @@ import org.apache.geode.security.SecurityManager;
  * the password, which also represents the permissions the user is granted.
  */
 public class SimpleSecurityManager implements SecurityManager {
+  public static final String VALID_TOKEN = "FOO_BAR";
 
   @Override
   public void init(final Properties securityProps) {
@@ -39,7 +40,11 @@ public class SimpleSecurityManager implements SecurityManager {
   public Object authenticate(final Properties credentials) throws AuthenticationFailedException {
     String token = credentials.getProperty(TOKEN);
     if (token != null) {
-      return "Bearer " + token;
+      if (VALID_TOKEN.equals(token)) {
+        return "Bearer " + token;
+      } else {
+        throw new AuthenticationFailedException("Invalid token");
+      }
     }
     String username = credentials.getProperty(USER_NAME);
     String password = credentials.getProperty(PASSWORD);

@@ -71,6 +71,12 @@ public class GeodeClusterManagementServiceBuilder implements
     return this;
   }
 
+  @Override
+  public ClusterManagementServiceBuilder.GeodeBuilder setAuthToken(String authToken) {
+    javaBuilder.setAuthToken(authToken);
+    return this;
+  }
+
   public GeodeClusterManagementServiceBuilder setCache(GemFireCache cache) {
     GemFireCacheImpl cacheImpl = (GemFireCacheImpl) cache;
     if (cacheImpl.isServer()) {
