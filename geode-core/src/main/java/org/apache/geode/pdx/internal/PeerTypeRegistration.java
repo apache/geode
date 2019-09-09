@@ -98,13 +98,15 @@ public class PeerTypeRegistration implements TypeRegistration {
   private final Map<PdxType, Integer> typeToId = Collections.synchronizedMap(new HashMap<>());
 
   /**
-   * When a new pdxType is added to idToType region, its listener will add the new type to
-   * the tmpTypeToId first, to make sure the distribution finished.
+   * When a new pdxType or a new enumInfo is added to idToType region, its
+   * listener will add the new type to the tmpTypeToId first, to make sure the
+   * distribution finished.
    * Then any member who wants to use this new pdxType has to get the dlock to flush the
    * tmpTypeToId map into typeToId. This design to guarantee that when using the new pdxType,
    * it should have been distributed to all the members.
    */
   private final Map<PdxType, Integer> tmpTypeToId = Collections.synchronizedMap(new HashMap<>());
+  private final Map<EnumInfo, EnumId> tmpEnumToId = Collections.synchronizedMap(new HashMap<>());
 
   private final Map<EnumInfo, EnumId> enumToId = Collections.synchronizedMap(new HashMap<>());
 
@@ -687,6 +689,11 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
     lock();
     try {
+      // flush the tmpTypeToId map
+      if (!tmpEnumToId.isEmpty()) {
+        enumToId.putAll(tmpEnumToId);
+        tmpEnumToId.clear();
+      }
       EnumId id = getExistingIdForEnum(newInfo);
       if (id != null) {
         return id.intValue();
@@ -700,6 +707,11 @@ public class PeerTypeRegistration implements TypeRegistration {
 
       return id.intValue();
     } finally {
+      // flush the tmpEnumToId map for who introduced this new enumInfo
+      if (!tmpEnumToId.isEmpty()) {
+        enumToId.putAll(tmpEnumToId);
+        tmpEnumToId.clear();
+      }
       unlock();
     }
   }
@@ -756,7 +768,7 @@ public class PeerTypeRegistration implements TypeRegistration {
       }
     } else if (value instanceof EnumInfo) {
       EnumInfo info = (EnumInfo) value;
-      enumToId.put(info, (EnumId) key);
+      tmpEnumToId.put(info, (EnumId) key);
     }
   }
 
