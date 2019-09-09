@@ -63,6 +63,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.NonTXEntry;
+import org.apache.geode.internal.cache.OpType;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.TXManagerImpl;
@@ -1463,12 +1464,20 @@ public abstract class BaseCommand implements Command {
     }
 
     // Fallback for older clients.
-    final Operation operation = (Operation) operationPart.getObject();
+    final Object operation = operationPart.getObject();
     if (operation == null) {
-      // native clients may send a null since the op is java-serialized.
+      // older native clients may send a null since the op was java-serialized.
       return defaultOperation;
     }
-    return operation;
-  }
 
+    if (operation instanceof Byte) {
+      // older native clients may send Byte object OpType.DESTROY value treated as Operation.REMOVE.
+      if ((Byte) operation == OpType.DESTROY) {
+        return Operation.REMOVE;
+      }
+    }
+
+    // Older java clients send operation as java-serialized
+    return (Operation) operation;
+  }
 }
