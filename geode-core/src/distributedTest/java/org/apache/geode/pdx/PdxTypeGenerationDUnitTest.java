@@ -97,7 +97,7 @@ public class PdxTypeGenerationDUnitTest {
     server2.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       PeerTypeRegistration registration =
-              (PeerTypeRegistration) (cache.getPdxRegistry().getTypeRegistration());
+          (PeerTypeRegistration) (cache.getPdxRegistry().getTypeRegistration());
 
       assertThat(registration.getLocalSize()).isEqualTo(numOfTypes + numOfEnums);
       assertThat(registration.getTypeToIdSize()).isEqualTo(0);
@@ -136,7 +136,8 @@ public class PdxTypeGenerationDUnitTest {
       InternalCache cache = ClusterStartupRule.getCache();
       assertThat(cache).isNotNull();
 
-      // Creating PdxTypes amd PdxEnums to allow us to confirm that they are all recovered after restarting the server
+      // Creating PdxTypes amd PdxEnums to allow us to confirm that they are all recovered after
+      // restarting the server
       for (int i = 0; i < numOfTypes; ++i) {
         String replacementField = "counter" + i;
         String modifiedJSON = jsonString.replace(FIELD_NAME_TO_REPLACE, replacementField);
@@ -147,7 +148,7 @@ public class PdxTypeGenerationDUnitTest {
       }
 
       PeerTypeRegistration registration =
-              (PeerTypeRegistration) (cache.getPdxRegistry().getTypeRegistration());
+          (PeerTypeRegistration) (cache.getPdxRegistry().getTypeRegistration());
 
       assertThat(registration.getLocalSize()).isEqualTo(numOfTypes + numOfEnums);
       assertThat(registration.getTypeToIdSize()).isEqualTo(numOfTypes);
@@ -157,7 +158,7 @@ public class PdxTypeGenerationDUnitTest {
     server2.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       PeerTypeRegistration registration =
-              (PeerTypeRegistration) (cache.getPdxRegistry().getTypeRegistration());
+          (PeerTypeRegistration) (cache.getPdxRegistry().getTypeRegistration());
 
       assertThat(registration.getLocalSize()).isEqualTo(numOfTypes + numOfEnums);
       assertThat(registration.getTypeToIdSize()).isEqualTo(0);
