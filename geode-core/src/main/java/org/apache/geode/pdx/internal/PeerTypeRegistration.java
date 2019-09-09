@@ -235,6 +235,8 @@ public class PeerTypeRegistration implements TypeRegistration {
     if (!getIdToType().isEmpty()) {
       verifyConfiguration();
     }
+
+    buildTypeToIdFromIdToType();
   }
 
   protected DistributedLockService getLockService() {
