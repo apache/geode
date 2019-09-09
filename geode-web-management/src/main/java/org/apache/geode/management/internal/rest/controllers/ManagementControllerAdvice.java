@@ -53,6 +53,7 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
 
   @Override
   public boolean supports(MethodParameter returnType, Class converterType) {
+    // only invoke our beforeBodyWrite for conversions to JSON (not String, etc)
     return AbstractJackson2HttpMessageConverter.class.isAssignableFrom(converterType);
   }
 
@@ -78,7 +79,7 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
     }
   }
 
-  private static String removeClassFromJsonText(String json) {
+  static String removeClassFromJsonText(String json) {
     // remove entire key and object if class was the only attribute present
     // otherwise remove just the class attribute
     return json
