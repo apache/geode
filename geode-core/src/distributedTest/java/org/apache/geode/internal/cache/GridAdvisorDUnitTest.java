@@ -53,11 +53,11 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
  *
  * @since GemFire 5.7
  */
-
 public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
-  private final Logger logger = LogService.getLogger();
-  private static InternalCache cache;
 
+  private static final Logger logger = LogService.getLogger();
+
+  private static InternalCache cache;
 
   /**
    * Tests 2 controllers and 2 cache servers

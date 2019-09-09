@@ -1,0 +1,369 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package org.apache.geode.internal.net;
+
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MCAST_ADDRESS;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MCAST_PORT;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.internal.net.AvailablePort.Protocol.MULTICAST;
+import static org.apache.geode.internal.net.AvailablePort.Protocol.SOCKET;
+import static org.apache.geode.internal.net.AvailablePort.Range.LOWER_BOUND;
+import static org.apache.geode.internal.net.AvailablePort.Range.UPPER_BOUND;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.net.DatagramPacket;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.ServerSocket;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.security.SecureRandom;
+import java.util.Enumeration;
+import java.util.Random;
+
+import org.apache.geode.annotations.Immutable;
+
+public class AvailablePortImpl implements AvailablePort {
+
+  @Immutable
+  private static final Random RANDOM =
+      Boolean.getBoolean("AvailablePort.fastRandom") ? new Random() : new SecureRandom();
+
+  @Override
+  public InetAddress getAddress(Protocol protocol) {
+    String name = null;
+    try {
+      switch (protocol) {
+        case SOCKET:
+          name = System.getProperty(GEMFIRE_PREFIX + "bind-address");
+          break;
+        case MULTICAST:
+          name = System.getProperty(GEMFIRE_PREFIX + "mcast-address");
+      }
+
+      if (name != null) {
+        return InetAddress.getByName(name);
+      }
+    } catch (UnknownHostException e) {
+      throw new RuntimeException("Unable to resolve address " + name, e);
+    }
+    return null;
+  }
+
+  @Override
+  public boolean isPortAvailable(int port, Protocol protocol) {
+    return isPortAvailable(port, protocol, getAddress(protocol));
+  }
+
+  @Override
+  public boolean isPortAvailable(int port, Protocol protocol, InetAddress address) {
+    if (protocol == SOCKET) {
+      // Try to create a ServerSocket
+      if (address == null) {
+        return checkAllInterfaces(port);
+      }
+
+      return checkOneInterface(address, port);
+    }
+
+    if (protocol == MULTICAST) {
+      MulticastSocket socket = null;
+      try {
+        socket = new MulticastSocket();
+        InetAddress localHost = SocketCreator.getLocalHost();
+        socket.setInterface(localHost);
+        socket.setSoTimeout(Integer.getInteger("AvailablePort.timeout", 2000));
+        socket.setReuseAddress(true);
+        byte[] buffer = new byte[4];
+        buffer[0] = (byte) 'p';
+        buffer[1] = (byte) 'i';
+        buffer[2] = (byte) 'n';
+        buffer[3] = (byte) 'g';
+        InetAddress mcid = address == null ? DEFAULT_MCAST_ADDRESS : address;
+        SocketAddress mcaddr = new InetSocketAddress(mcid, port);
+        socket.joinGroup(mcid);
+        DatagramPacket packet = new DatagramPacket(buffer, 0, buffer.length, mcaddr);
+        socket.send(packet);
+
+        try {
+          socket.receive(packet);
+          packet.getData(); // make sure there's data, but no need to process it
+          return false;
+        } catch (SocketTimeoutException ignored) {
+          return true;
+        } catch (Exception ignored) {
+          return false;
+        }
+
+      } catch (IOException e) {
+        if (e.getMessage().equals("Network is unreachable")) {
+          throw new UncheckedIOException("Network is unreachable", e);
+        }
+        return false;
+      } catch (Exception ignored) {
+        return false;
+      } finally {
+        if (socket != null) {
+          socket.close();
+        }
+      }
+    }
+
+    throw new IllegalArgumentException(String.format("Unknown protocol: %s", protocol));
+  }
+
+  @Override
+  public Keeper isPortKeepable(int port, Protocol protocol, InetAddress address) {
+    if (protocol == SOCKET) {
+      // Try to create a ServerSocket
+      if (address == null) {
+        return keepAllInterfaces(port);
+      }
+
+      return keepOneInterface(address, port);
+    }
+
+    if (protocol == MULTICAST) {
+      throw new IllegalArgumentException("You can not keep the JGROUPS protocol");
+    }
+
+    throw new IllegalArgumentException(String.format("Unknown protocol: %s", protocol));
+  }
+
+  @Override
+  public int getRandomAvailablePort(Protocol protocol) {
+    return getRandomAvailablePort(protocol, getAddress(protocol));
+  }
+
+  @Override
+  public Keeper getRandomAvailablePortKeeper(Protocol protocol) {
+    return getRandomAvailablePortKeeper(protocol, getAddress(protocol));
+  }
+
+  @Override
+  public int getAvailablePortInRange(int rangeBase, int rangeTop, Protocol protocol) {
+    return getAvailablePortInRange(protocol, getAddress(protocol), rangeBase, rangeTop);
+  }
+
+  @Override
+  public int getRandomAvailablePortWithMod(Protocol protocol, int mod) {
+    return getRandomAvailablePortWithMod(protocol, getAddress(protocol), mod);
+  }
+
+  @Override
+  public int getRandomAvailablePort(Protocol protocol, InetAddress address) {
+    return getRandomAvailablePort(protocol, address, false);
+  }
+
+  @Override
+  public int getRandomAvailablePort(Protocol protocol, InetAddress address,
+      boolean useMembershipPortRange) {
+    while (true) {
+      int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
+      if (isPortAvailable(port, protocol, address)) {
+        // don't return the products default multicast port
+        if (!(protocol == MULTICAST && port == DEFAULT_MCAST_PORT)) {
+          return port;
+        }
+      }
+    }
+  }
+
+  @Override
+  public Keeper getRandomAvailablePortKeeper(Protocol protocol, InetAddress address) {
+    return getRandomAvailablePortKeeper(protocol, address, false);
+  }
+
+  @Override
+  public Keeper getRandomAvailablePortKeeper(Protocol protocol, InetAddress address,
+      boolean useMembershipPortRange) {
+    while (true) {
+      int port = getRandomWildcardBindPortNumber(useMembershipPortRange);
+      Keeper result = isPortKeepable(port, protocol, address);
+      if (result != null) {
+        return result;
+      }
+    }
+  }
+
+  @Override
+  public int getAvailablePortInRange(Protocol protocol, InetAddress address, int rangeBase,
+      int rangeTop) {
+    for (int port = rangeBase; port <= rangeTop; port++) {
+      if (isPortAvailable(port, protocol, address)) {
+        return port;
+      }
+    }
+    return -1;
+  }
+
+  @Override
+  public int getRandomAvailablePortWithMod(Protocol protocol, InetAddress address, int mod) {
+    while (true) {
+      int port = getRandomWildcardBindPortNumber();
+      if (isPortAvailable(port, protocol, address) && (port % mod) == 0) {
+        return port;
+      }
+    }
+  }
+
+  @Override
+  public int getRandomAvailablePortInRange(int rangeBase, int rangeTop, Protocol protocol) {
+    int numberOfPorts = rangeTop - rangeBase;
+    // do "5 times the numberOfPorts" iterations to select a port number. This will ensure that
+    // each of the ports from given port range get a chance at least once
+    int numberOfRetrys = numberOfPorts * 5;
+    for (int i = 0; i < numberOfRetrys; i++) {
+      int port = RANDOM.nextInt(numberOfPorts + 1) + rangeBase;// add 1 to numberOfPorts so that
+      // rangeTop also gets included
+      if (isPortAvailable(port, protocol, getAddress(protocol))) {
+        return port;
+      }
+    }
+    return -1;
+  }
+
+  private static boolean checkOneInterface(InetAddress address, int port) {
+    Keeper k = keepOneInterface(address, port);
+    if (k != null) {
+      k.release();
+      return true;
+    }
+    return false;
+  }
+
+  private static Keeper keepOneInterface(InetAddress address, int port) {
+    ServerSocket server = null;
+    try {
+      server = new ServerSocket();
+      server.setReuseAddress(true);
+      if (address != null) {
+        server.bind(new InetSocketAddress(address, port));
+      } else {
+        server.bind(new InetSocketAddress(port));
+      }
+      Keeper result = new Keeper(server, port);
+      server = null;
+      return result;
+    } catch (IOException e) {
+      if (e.getMessage().equals("Network is unreachable")) {
+        throw new UncheckedIOException("Network is unreachable", e);
+      }
+
+      if (address instanceof Inet6Address) {
+        byte[] addrBytes = address.getAddress();
+        if ((addrBytes[0] == (byte) 0xfe) && (addrBytes[1] == (byte) 0x80)) {
+          // Hack, early Sun 1.5 versions (like Hitachi's JVM) cannot handle IPv6
+          // link local addresses. Cannot trust InetAddress.isLinkLocalAddress()
+          // see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6558853
+          // By returning true we ignore these interfaces and potentially say a
+          // port is not in use when it really is.
+          Keeper result = new Keeper(server, port);
+          server = null;
+          return result;
+        }
+      }
+
+      return null;
+    } catch (Exception ex) {
+      return null;
+    } finally {
+      if (server != null) {
+        try {
+          server.close();
+        } catch (IOException ignored) {
+          // ignored
+        }
+      }
+    }
+  }
+
+  /**
+   * Check to see if a given port is available port on all interfaces on this host.
+   *
+   * @return true of if the port is free on all interfaces
+   */
+  private static boolean checkAllInterfaces(int port) {
+    Keeper k = keepAllInterfaces(port);
+    if (k != null) {
+      k.release();
+      return true;
+    }
+    return false;
+  }
+
+  private static Keeper keepAllInterfaces(int port) {
+    // First check to see if we can bind to the wildcard address.
+    if (!checkOneInterface(null, port)) {
+      return null;
+    }
+
+    // Now check all of the addresses for all of the addresses
+    // on this system. On some systems (solaris, aix) binding
+    // to the wildcard address will successfully bind to only some
+    // of the interfaces if other interfaces are in use. We want to
+    // make sure this port is completely free.
+    //
+    // Note that we still need the check of the wildcard address, above,
+    // because on some systems (aix) we can still bind to specific addresses
+    // if someone else has bound to the wildcard address.
+    Enumeration en;
+    try {
+      en = NetworkInterface.getNetworkInterfaces();
+    } catch (SocketException e) {
+      throw new RuntimeException(e);
+    }
+
+    while (en.hasMoreElements()) {
+      NetworkInterface next = (NetworkInterface) en.nextElement();
+      Enumeration en2 = next.getInetAddresses();
+      while (en2.hasMoreElements()) {
+        InetAddress addr = (InetAddress) en2.nextElement();
+        boolean available = checkOneInterface(addr, port);
+        if (!available) {
+          return null;
+        }
+      }
+    }
+
+    // Now do it one more time but reserve the wildcard address
+    return keepOneInterface(null, port);
+  }
+
+  private static int getRandomWildcardBindPortNumber() {
+    return getRandomWildcardBindPortNumber(false);
+  }
+
+  private static int getRandomWildcardBindPortNumber(boolean useMembershipPortRange) {
+    int rangeBase;
+    int rangeTop;
+    if (!useMembershipPortRange) {
+      rangeBase = LOWER_BOUND.intLevel(); // 20000/udp is securid
+      rangeTop = UPPER_BOUND.intLevel(); // 30000/tcp is spoolfax
+    } else {
+      rangeBase = DEFAULT_MEMBERSHIP_PORT_RANGE[0];
+      rangeTop = DEFAULT_MEMBERSHIP_PORT_RANGE[1];
+    }
+
+    return RANDOM.nextInt(rangeTop - rangeBase) + rangeBase;
+  }
+}

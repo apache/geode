@@ -12,10 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.net;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.apache.geode.internal.net.AvailablePort.Protocol.SOCKET;
+import static org.apache.geode.internal.net.InetAddressUtils.getLoopback;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -23,17 +24,30 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.admin.internal.InetAddressUtil;
-import org.apache.geode.distributed.internal.DistributionConfig;
-
 /**
- * multicast availability is tested in JGroupsMessengerJUnitTest
+ * Note: multicast availability is tested in JGroupsMessengerJUnitTest
+ *
+ * <p>
+ * This test assumes that {@code InetAddress.getLocalHost()} returns non-loopback address.
  */
-public class AvailablePortJUnitTest {
+public class AvailablePortImplIntegrationTest {
 
   private ServerSocket socket;
+  private InetAddress loopback;
+  private InetAddress localHost;
+
+  private AvailablePort availablePort;
+
+  @Before
+  public void setUp() throws IOException {
+    socket = new ServerSocket();
+    loopback = getLoopback();
+    localHost = InetAddress.getLocalHost();
+    availablePort = new AvailablePortImpl();
+  }
 
   @After
   public void tearDown() throws IOException {
@@ -44,29 +58,23 @@ public class AvailablePortJUnitTest {
 
   @Test
   public void testIsPortAvailable() throws IOException {
-    socket = new ServerSocket();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    socket.bind(new InetSocketAddress(InetAddressUtil.LOOPBACK, port));
+    int port = availablePort.getRandomAvailablePort(SOCKET);
+    socket.bind(new InetSocketAddress(loopback, port));
 
-    assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET,
-        InetAddress.getByName(InetAddressUtil.LOOPBACK_ADDRESS)));
+    assertThat(availablePort.isPortAvailable(port, SOCKET, loopback)).isFalse();
     // Get local host will return the hostname for the server, so this should succeed, since we're
     // bound to the loopback address only.
-    assertTrue(
-        AvailablePort.isPortAvailable(port, AvailablePort.SOCKET, InetAddress.getLocalHost()));
+    assertThat(availablePort.isPortAvailable(port, SOCKET, localHost)).isTrue();
     // This should test all interfaces.
-    assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
+    assertThat(availablePort.isPortAvailable(port, SOCKET)).isFalse();
   }
 
   @Test
   public void testWildcardAddressBound() throws IOException {
-    // assumeFalse(SystemUtils.isWindows()); // See bug #39368
-    socket = new ServerSocket();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    socket.bind(new InetSocketAddress((InetAddress) null, port));
-    System.out.println(
-        "bind addr=" + System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "bind-address"));
-    assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET));
-  }
+    int port = availablePort.getRandomAvailablePort(SOCKET);
 
+    socket.bind(new InetSocketAddress((InetAddress) null, port));
+
+    assertThat(availablePort.isPortAvailable(port, SOCKET)).isFalse();
+  }
 }

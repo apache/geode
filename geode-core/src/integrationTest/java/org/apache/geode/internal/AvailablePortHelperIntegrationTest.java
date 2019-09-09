@@ -15,14 +15,14 @@
 package org.apache.geode.internal;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
-import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
-import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRangeKeepers;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
 import static org.apache.geode.internal.AvailablePortHelper.initializeUniquePortRange;
+import static org.apache.geode.internal.net.AvailablePort.Protocol.MULTICAST;
+import static org.apache.geode.internal.net.AvailablePort.Range.LOWER_BOUND;
+import static org.apache.geode.internal.net.AvailablePort.Range.UPPER_BOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeFalse;
 
@@ -51,13 +51,13 @@ public class AvailablePortHelperIntegrationTest {
   private Set<ServerSocket> serverSockets;
 
   @Before
-  public void before() throws Exception {
-    this.serverSockets = new HashSet<>();
+  public void setUp() {
+    serverSockets = new HashSet<>();
   }
 
   @After
-  public void after() throws Exception {
-    for (ServerSocket serverSocket : this.serverSockets) {
+  public void tearDown() {
+    for (ServerSocket serverSocket : serverSockets) {
       try {
         if (serverSocket != null && !serverSocket.isClosed()) {
           serverSocket.close();
@@ -70,24 +70,21 @@ public class AvailablePortHelperIntegrationTest {
 
   @Test
   @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRange_zero(final boolean useMembershipPortRange)
-      throws Exception {
+  public void getRandomAvailableTCPPortRange_zero(final boolean useMembershipPortRange) {
     int[] results = getRandomAvailableTCPPortRange(0, useMembershipPortRange);
     assertThat(results).isEmpty();
   }
 
   @Test
   @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRange_one_returnsOne(final boolean useMembershipPortRange)
-      throws Exception {
+  public void getRandomAvailableTCPPortRange_one_returnsOne(final boolean useMembershipPortRange) {
     int[] results = getRandomAvailableTCPPortRange(1, useMembershipPortRange);
     assertThat(results).hasSize(1);
   }
 
   @Test
   @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRange_two_returnsTwo(final boolean useMembershipPortRange)
-      throws Exception {
+  public void getRandomAvailableTCPPortRange_two_returnsTwo(final boolean useMembershipPortRange) {
     int[] results = getRandomAvailableTCPPortRange(2, useMembershipPortRange);
     assertThat(results).hasSize(2);
   }
@@ -104,7 +101,7 @@ public class AvailablePortHelperIntegrationTest {
   @Test
   @Parameters({"true", "false"})
   public void getRandomAvailableTCPPortRange_returnsUniquePorts(
-      final boolean useMembershipPortRange) throws Exception {
+      final boolean useMembershipPortRange) {
     int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
 
     Set<Integer> ports = new HashSet<>();
@@ -118,7 +115,7 @@ public class AvailablePortHelperIntegrationTest {
   @Test
   @Parameters({"true", "false"})
   public void getRandomAvailableTCPPortRange_returnsConsecutivePorts(
-      final boolean useMembershipPortRange) throws Exception {
+      final boolean useMembershipPortRange) {
     int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
 
     List<Integer> ports = new ArrayList<>();
@@ -127,8 +124,8 @@ public class AvailablePortHelperIntegrationTest {
         assertThat(port).isGreaterThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[0])
             .isLessThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
       } else {
-        assertThat(port).isGreaterThanOrEqualTo(AVAILABLE_PORTS_LOWER_BOUND)
-            .isLessThanOrEqualTo(AVAILABLE_PORTS_UPPER_BOUND);
+        assertThat(port).isGreaterThanOrEqualTo(LOWER_BOUND.intLevel())
+            .isLessThanOrEqualTo(UPPER_BOUND.intLevel());
       }
       ports.add(port);
     }
@@ -146,8 +143,7 @@ public class AvailablePortHelperIntegrationTest {
 
   @Test
   @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRangeKeepers_zero(final boolean useMembershipPortRange)
-      throws Exception {
+  public void getRandomAvailableTCPPortRangeKeepers_zero(final boolean useMembershipPortRange) {
     List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(0, useMembershipPortRange);
     assertThat(results).isEmpty();
   }
@@ -155,7 +151,7 @@ public class AvailablePortHelperIntegrationTest {
   @Test
   @Parameters({"true", "false"})
   public void getRandomAvailableTCPPortRangeKeepers_one_returnsOne(
-      final boolean useMembershipPortRange) throws Exception {
+      final boolean useMembershipPortRange) {
     List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(1, useMembershipPortRange);
     assertThat(results).hasSize(1);
   }
@@ -163,7 +159,7 @@ public class AvailablePortHelperIntegrationTest {
   @Test
   @Parameters({"true", "false"})
   public void getRandomAvailableTCPPortRangeKeepers_two_returnsTwo(
-      final boolean useMembershipPortRange) throws Exception {
+      final boolean useMembershipPortRange) {
     List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(2, useMembershipPortRange);
     assertThat(results).hasSize(2);
   }
@@ -188,7 +184,7 @@ public class AvailablePortHelperIntegrationTest {
   @Test
   @Parameters({"true", "false"})
   public void getRandomAvailableTCPPortRangeKeepers_returnsUniqueKeepers(
-      final boolean useMembershipPortRange) throws Exception {
+      final boolean useMembershipPortRange) {
     List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
 
     Set<Integer> ports = new HashSet<>();
@@ -202,7 +198,7 @@ public class AvailablePortHelperIntegrationTest {
   @Test
   @Parameters({"true", "false"})
   public void getRandomAvailableTCPPortRangeKeepers_returnsConsecutivePorts(
-      final boolean useMembershipPortRange) throws Exception {
+      final boolean useMembershipPortRange) {
     List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
 
     List<Integer> ports = new ArrayList<>();
@@ -213,8 +209,8 @@ public class AvailablePortHelperIntegrationTest {
         assertThat(port).isGreaterThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[0])
             .isLessThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
       } else {
-        assertThat(port).isGreaterThanOrEqualTo(AVAILABLE_PORTS_LOWER_BOUND)
-            .isLessThanOrEqualTo(AVAILABLE_PORTS_UPPER_BOUND);
+        assertThat(port).isGreaterThanOrEqualTo(LOWER_BOUND.intLevel())
+            .isLessThanOrEqualTo(UPPER_BOUND.intLevel());
       }
       ports.add(port);
     }
@@ -231,10 +227,10 @@ public class AvailablePortHelperIntegrationTest {
   }
 
   @Test
-  public void getRandomAvailableUDPPort_succeeds() throws IOException {
+  public void getRandomAvailableUDPPort_succeeds() {
     int udpPort = getRandomAvailableUDPPort();
     assertThat(udpPort).isNotZero();
-    assertThat(AvailablePort.isPortAvailable(udpPort, MULTICAST)).isTrue();
+    assertThat(AvailablePort.isPortAvailable(udpPort, MULTICAST.intLevel())).isTrue();
   }
 
   @Test
@@ -332,7 +328,7 @@ public class AvailablePortHelperIntegrationTest {
 
   private ServerSocket createServerSocket() throws IOException {
     ServerSocket serverSocket = new ServerSocket();
-    this.serverSockets.add(serverSocket);
+    serverSockets.add(serverSocket);
     return serverSocket;
   }
 

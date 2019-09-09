@@ -51,6 +51,9 @@ org/apache/geode/internal/logging/log4j/FastLogger
 org/apache/geode/internal/logging/log4j/LogWriterLogger
 org/apache/geode/internal/logging/log4j/message/GemFireParameterizedMessage
 org/apache/geode/internal/logging/log4j/message/GemFireParameterizedMessageFactory
+org/apache/geode/internal/net/AvailablePort$Keeper
+org/apache/geode/internal/net/AvailablePort$Protocol
+org/apache/geode/internal/net/AvailablePort$Range
 org/apache/geode/internal/offheap/RefCountChangeInfo
 org/apache/geode/internal/process/ProcessStreamReader$ReadingMode
 org/apache/geode/internal/process/ProcessType
