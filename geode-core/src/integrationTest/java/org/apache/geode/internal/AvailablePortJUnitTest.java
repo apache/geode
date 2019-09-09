@@ -25,8 +25,8 @@ import java.net.ServerSocket;
 import org.junit.After;
 import org.junit.Test;
 
-import org.apache.geode.admin.internal.InetAddressUtil;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.net.InetAddressUtils;
 
 /**
  * multicast availability is tested in JGroupsMessengerJUnitTest
@@ -46,10 +46,10 @@ public class AvailablePortJUnitTest {
   public void testIsPortAvailable() throws IOException {
     socket = new ServerSocket();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    socket.bind(new InetSocketAddress(InetAddressUtil.LOOPBACK, port));
+    socket.bind(new InetSocketAddress(InetAddressUtils.getLoopback(), port));
 
     assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET,
-        InetAddress.getByName(InetAddressUtil.LOOPBACK_ADDRESS)));
+        InetAddress.getByName(InetAddressUtils.getLoopbackAddress())));
     // Get local host will return the hostname for the server, so this should succeed, since we're
     // bound to the loopback address only.
     assertTrue(
