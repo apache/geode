@@ -589,8 +589,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
     logger.info("Starting peer location for {}", this);
 
-    String locatorsConfigValue = distributionConfig.getLocators();
-
     // check for settings that would require only locators to hold the
     // coordinator - e.g., security and network-partition detection
     boolean locatorsAreCoordinators;
@@ -607,6 +605,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         locatorsAreCoordinators = Boolean.getBoolean(LOCATORS_PREFERRED_AS_COORDINATORS);
       }
     }
+
+    final String locatorsConfigValue = distributionConfig.getLocators();
 
     netLocator = NetLocatorFactory.newLocatorHandler(bindAddress, locatorsConfigValue,
         locatorsAreCoordinators, networkPartitionDetectionEnabled, locatorStats, securityUDPDHAlgo,

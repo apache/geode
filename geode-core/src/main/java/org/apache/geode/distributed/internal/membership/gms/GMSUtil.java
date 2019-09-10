@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.function.BiFunction;
 
 import org.apache.logging.log4j.Logger;
 
@@ -42,6 +43,9 @@ import org.apache.geode.internal.serialization.Version;
 
 public class GMSUtil {
   private static final Logger logger = LogService.getLogger();
+
+  private static final BiFunction<String, Integer, InetSocketAddress> defaultSocketAddressFactory =
+      InetSocketAddress::new;
 
   /**
    * parse locators & check that the resulting address is compatible with the given address
@@ -102,8 +106,18 @@ public class GMSUtil {
    * @param locatorsString a DistributionConfig "locators" string
    * @param bindAddress optional address to check for loopback compatibility
    * @return addresses of locators
+   *
+   * @see org.apache.geode.distributed.ConfigurationProperties#LOCATORS for format
    */
   public static List<HostAddress> parseLocators(String locatorsString, InetAddress bindAddress) {
+    return parseLocators(locatorsString, bindAddress, defaultSocketAddressFactory);
+  }
+
+  // package-level access for unit testing
+  static List<HostAddress> parseLocators(
+      final String locatorsString,
+      final InetAddress bindAddress,
+      final BiFunction<String, Integer, InetSocketAddress> inetSocketAddressFactory) {
     List<HostAddress> result = new ArrayList<>(2);
     Set<InetSocketAddress> inetAddresses = new HashSet<>();
     String host;
@@ -137,7 +151,7 @@ public class GMSUtil {
       int startIdx = portSpecificationStart + 1;
       int endIdx = str.indexOf(']');
 
-      if (endIdx == -1) {
+      if (portSpecificationStart != -1 && endIdx == -1) {
         throw createBadPortException(str);
       }
 
@@ -149,11 +163,7 @@ public class GMSUtil {
         throw createBadPortException(str);
       }
 
-      if (port <= 0) {
-        throw createBadPortException(str);
-      }
-
-      InetSocketAddress isa = new InetSocketAddress(host, port);
+      InetSocketAddress isa = inetSocketAddressFactory.apply(host, port);
 
       final InetAddress locatorAddress = isa.getAddress();
 
@@ -162,14 +172,13 @@ public class GMSUtil {
             " at an unknown address or FQDN: " + host);
       }
 
-      if (checkLoopback) {
-        if (isLoopback && !locatorAddress.isLoopbackAddress()) {
-          throw new GemFireConfigException(
-              "This process is attempting to join with a loopback address (" + bindAddress
-                  + ") using a locator that does not have a local address (" + isa
-                  + ").  On Unix this usually means that /etc/hosts is misconfigured.");
-        }
+      if (checkLoopback && isLoopback && !locatorAddress.isLoopbackAddress()) {
+        throw new GemFireConfigException(
+            "This process is attempting to join with a loopback address (" + bindAddress
+                + ") using a locator that does not have a local address (" + isa
+                + ").  On Unix this usually means that /etc/hosts is misconfigured.");
       }
+
       HostAddress la = new HostAddress(isa, host);
       if (!inetAddresses.contains(isa)) {
         inetAddresses.add(isa);
@@ -182,7 +191,7 @@ public class GMSUtil {
 
   private static GemFireConfigException createBadPortException(final String str) {
     return new GemFireConfigException("This process is attempting to use a locator" +
-        " with a malformed or missing port specification: " + str);
+        " with a malformed port specification: " + str);
   }
 
   /** Parses comma-separated-roles/groups into array of groups (strings). */
