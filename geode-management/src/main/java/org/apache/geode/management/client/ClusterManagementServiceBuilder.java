@@ -45,14 +45,30 @@ public class ClusterManagementServiceBuilder {
   }
 
   public interface PlainBuilder extends Builder {
+    /**
+     * points to the locator address and http-service-port
+     */
     PlainBuilder setHostAddress(String host, int port);
 
+    /**
+     * if the web component is ssl-enabled, need to set an SSLContext to connect
+     */
     PlainBuilder setSslContext(SSLContext context);
 
     PlainBuilder setHostnameVerifier(HostnameVerifier hostnameVerifier);
 
+    /**
+     * if the cluster has SecurityManager enabled, set the credentials to access the
+     * ClusterManagementService
+     */
     PlainBuilder setCredentials(String username, String password);
 
+    /**
+     * If security-manager is enabled and auth-token-enabled-components includes "management",
+     * set the authToken to access the ClusterManagementService
+     *
+     * Note: if this is set, username/password will be ignored if set
+     */
     PlainBuilder setAuthToken(String authToken);
   }
 

@@ -25,10 +25,15 @@ import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
 
 /**
- * Intended for implementation testing, this class authenticates a user when the username matches
+ * Intended for example and demo purpose, this class authenticates a user when the username matches
  * the password, which also represents the permissions the user is granted.
+ *
+ * It also validate an auth token if it's present
  */
 public class SimpleSecurityManager implements SecurityManager {
+  /**
+   * the valid token string that will be authenticated. Any other token string will be rejected.
+   */
   public static final String VALID_TOKEN = "FOO_BAR";
 
   @Override
@@ -37,6 +42,11 @@ public class SimpleSecurityManager implements SecurityManager {
   }
 
   @Override
+  /**
+   * these following users will be authenticated:
+   * 1. auth token defined as SimpleSecurityManager.VALID_TOKEN
+   * 2. username and password that are the same
+   */
   public Object authenticate(final Properties credentials) throws AuthenticationFailedException {
     String token = credentials.getProperty(TOKEN);
     if (token != null) {
@@ -55,6 +65,13 @@ public class SimpleSecurityManager implements SecurityManager {
   }
 
   @Override
+  /**
+   * these following users will be authorized for the permission:
+   * 1. All authtoken users will be authorized
+   * 2. users with passwords, if the permission string (without the :) starts with the username,
+   * then it will be authorized, e.g. if the permission string cluster:manage, then username
+   * "cluster" or "clusterManage" will be authorized
+   */
   public boolean authorize(final Object principal, final ResourcePermission permission) {
     if (principal.toString().startsWith("Bearer ")) {
       return true;
