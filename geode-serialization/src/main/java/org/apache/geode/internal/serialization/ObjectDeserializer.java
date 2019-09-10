@@ -12,37 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.serialization;
 
-package org.apache.geode.internal;
+import java.io.DataInput;
+import java.io.IOException;
 
-import java.io.DataOutputStream;
-import java.io.OutputStream;
-
-/**
- * An extension of {@link DataOutputStream} that implements {@link VersionedDataStream}.
- *
- * @since GemFire 7.1
- */
-public class VersionedDataOutputStream extends DataOutputStream implements VersionedDataStream {
-
-  private final Version version;
+public interface ObjectDeserializer {
 
   /**
-   * Creates a VersionedDataOutputStream that wraps the specified underlying OutputStream.
-   *
-   * @param out the underlying output stream
-   * @param version the product version that serialized object on the given {@link OutputStream}
+   * Read an object from the given data input
    */
-  public VersionedDataOutputStream(OutputStream out, Version version) {
-    super(out);
-    this.version = version;
-  }
+  Object readObject(DataInput input) throws IOException, ClassNotFoundException;
 
   /**
-   * {@inheritDoc}
+   * When deserializing you may want to invoke a fromData method on an object.
+   * Use this method to ensure that the proper fromData method is invoked for
+   * backward-compatibility.
    */
-  @Override
-  public Version getVersion() {
-    return this.version;
-  }
+  void invokeFromData(Object ds, DataInput in)
+      throws IOException, ClassNotFoundException;
+
 }

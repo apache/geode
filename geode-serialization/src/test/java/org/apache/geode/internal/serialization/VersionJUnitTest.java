@@ -12,15 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-
-import org.apache.geode.cache.UnsupportedVersionException;
-import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
 
 public class VersionJUnitTest {
   @Test
@@ -39,6 +36,12 @@ public class VersionJUnitTest {
     compare(Version.GEODE_1_3_0, Version.GEODE_1_2_0);
     compare(Version.GEODE_1_4_0, Version.GEODE_1_3_0);
     compare(Version.GEODE_1_5_0, Version.GEODE_1_4_0);
+    compare(Version.GEODE_1_6_0, Version.GEODE_1_5_0);
+    compare(Version.GEODE_1_7_0, Version.GEODE_1_6_0);
+    compare(Version.GEODE_1_8_0, Version.GEODE_1_7_0);
+    compare(Version.GEODE_1_9_0, Version.GEODE_1_8_0);
+    compare(Version.GEODE_1_10_0, Version.GEODE_1_9_0);
+    compare(Version.GEODE_1_11_0, Version.GEODE_1_10_0);
   }
 
   private void compare(Version later, Version earlier) {
@@ -57,19 +60,12 @@ public class VersionJUnitTest {
     assertTrue(Version.GFE_61.isPre65());
     assertFalse(Version.GFE_65.isPre65());
     assertFalse(Version.GFE_70.isPre65());
+    assertFalse(Version.GEODE_1_1_0.isPre65());
   }
 
   @Test
-  public void testCommandMapContainsAllVersions() {
-    for (Version version : Version.getAllVersions()) {
-      org.junit.Assert.assertNotNull(
-          "Please add a commnd set for " + version + " of Geode to CommandInitializer",
-          CommandInitializer.getCommands(version));
-    }
-  }
-
-  @Test
-  public void testFromOrdinalForCurrentVersionSucceeds() throws UnsupportedVersionException {
-    Version.fromOrdinal(Version.CURRENT_ORDINAL, true);
+  public void testFromOrdinalForCurrentVersionSucceeds()
+      throws UnsupportedSerializationVersionException {
+    Version.fromOrdinal(Version.CURRENT_ORDINAL);
   }
 }

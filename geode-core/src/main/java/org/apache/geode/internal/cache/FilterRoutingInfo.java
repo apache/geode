@@ -29,12 +29,13 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataSerializable;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This class is used to hold the information about the servers and their Filters (CQs and Interest
@@ -380,7 +381,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       size += interestedClients == null ? 4 : interestedClients.size() * 8 + 5;
       size += interestedClientsInv == null ? 4 : interestedClientsInv.size() * 8 + 5;
       size += cqs == null ? 0 : cqs.size() * 12;
-      byte[] myData = InternalDataSerializer.getThreadLocalByteArray(size);
+      byte[] myData = StaticSerialization.getThreadLocalByteArray(size);
       hdos = new HeapDataOutputStream(myData);
       hdos.disallowExpansion();
       if (this.cqs == null) {
@@ -485,7 +486,8 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
      */
     private void deserialize() {
       try {
-        ByteArrayDataInput dis = new ByteArrayDataInput(myData, myDataVersion);
+        ByteArrayDataInput dis =
+            new ByteArrayDataInput(myData, myDataVersion);
         boolean hasCQs = dis.readBoolean();
         if (hasCQs) {
           int numEntries = InternalDataSerializer.readArrayLength(dis);

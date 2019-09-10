@@ -15,14 +15,14 @@
 
 package org.apache.geode.cache.client.internal.locator;
 
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * The LocatorStatusRequest class...
  * </p>
  *
  * @see org.apache.geode.cache.client.internal.locator.ServerLocationRequest
- * @see org.apache.geode.internal.DataSerializableFixedID
+ * @see DataSerializableFixedID
  * @since GemFire 7.0
  */
 public class LocatorStatusRequest extends ServerLocationRequest {

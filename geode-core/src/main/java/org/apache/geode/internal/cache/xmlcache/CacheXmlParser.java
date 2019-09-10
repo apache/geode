@@ -2247,6 +2247,12 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       asyncEventQueueCreation.setBatchSize(Integer.parseInt(batchSize));
     }
 
+    // start in Paused state
+    String paused = atts.getValue(PAUSE_EVENT_PROCESSING);
+    if (paused != null) {
+      asyncEventQueueCreation.setPauseEventDispatching(Boolean.parseBoolean(paused));
+    } // no else block needed as default is set to false.
+
     // batch-time-interval
     String batchTimeInterval = atts.getValue(BATCH_TIME_INTERVAL);
     if (batchTimeInterval == null) {
@@ -2362,6 +2368,9 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         asyncEventChannelCreation.getGatewayEventFilters();
     for (GatewayEventFilter gatewayEventFilter : gatewayEventFilters) {
       factory.addGatewayEventFilter(gatewayEventFilter);
+    }
+    if (asyncEventChannelCreation.isDispatchingPaused()) {
+      factory.pauseEventDispatching();
     }
     factory.setGatewayEventSubstitutionListener(
         asyncEventChannelCreation.getGatewayEventSubstitutionFilter());

@@ -54,11 +54,13 @@ import org.apache.geode.distributed.internal.deadlock.UnsafeThreadLocal;
 import org.apache.geode.distributed.internal.locks.DLockQueryProcessor.DLockQueryReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 
@@ -2983,10 +2985,12 @@ public class DLockService extends DistributedLockService {
     }
 
     @Override
-    public void fromData(DataInput in) {}
+    public void fromData(DataInput in,
+        DeserializationContext context) {}
 
     @Override
-    public void toData(DataOutput out) {}
+    public void toData(DataOutput out,
+        SerializationContext context) {}
 
     @Override
     public Version[] getSerializationVersions() {

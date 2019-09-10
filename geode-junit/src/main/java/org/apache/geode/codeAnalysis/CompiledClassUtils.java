@@ -38,7 +38,7 @@ import java.util.jar.JarFile;
 import org.apache.geode.codeAnalysis.decode.CompiledClass;
 import org.apache.geode.codeAnalysis.decode.CompiledField;
 import org.apache.geode.codeAnalysis.decode.CompiledMethod;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 public class CompiledClassUtils {
 

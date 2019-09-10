@@ -22,8 +22,10 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Represents a held lock in a member for use when initializing a new grantor. All currently held
@@ -195,7 +197,8 @@ public class DLockRemoteToken implements DataSerializableFixedID {
    * Writes the contents of this object to the given output.
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeObject(this.name, out);
     DataSerializer.writeObject(this.lesseeThread.getDistributedMember(), out);
     out.writeInt(this.lesseeThread.getThreadId());
@@ -207,7 +210,8 @@ public class DLockRemoteToken implements DataSerializableFixedID {
    * Unsupported. Use {@link DLockRemoteToken#createFromDataInput(DataInput)} instead.
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     throw new UnsupportedOperationException(
         "Use DLockRemoteToken#createFromDataInput(DataInput) instead.");
   }

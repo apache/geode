@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import java.io.DataInput;
 import java.io.EOFException;
@@ -23,8 +23,8 @@ import java.io.UTFDataFormatException;
 
 /**
  * A reusable {@link DataInput} implementation that wraps a given byte array. It also implements
- * {@link org.apache.geode.internal.VersionedDataStream} for a stream coming from a different
- * product version.
+ * {@link org.apache.geode.internal.serialization.VersionedDataStream} for a stream coming from a
+ * different product version.
  *
  * @since GemFire 7.1
  */
@@ -69,7 +69,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public Version getVersion() {
-    return this.version;
+    return version;
   }
 
   private int skipOver(long n) {
@@ -471,7 +471,8 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public String toString() {
-    return this.version == null ? super.toString() : (super.toString() + " (" + this.version + ')');
+    return this.version == null ? super.toString()
+        : (super.toString() + " (v" + this.version + ')');
   }
 
   private void throwUTFEncodingError(int index, int char1, int char2, Integer char3, int enc)

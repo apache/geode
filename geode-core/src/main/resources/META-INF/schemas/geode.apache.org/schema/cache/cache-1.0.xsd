@@ -250,6 +250,7 @@ declarative caching XML file elements unless indicated otherwise.
             </xsd:sequence>
             <xsd:attribute name="id" type="xsd:string" use="required" />
             <xsd:attribute name="parallel" type="xsd:boolean" use="optional" />
+            <xsd:attribute name="pause-event-processing" type="xsd:boolean" use="optional" />
             <xsd:attribute name="batch-size" type="xsd:string" use="optional" />
             <xsd:attribute name="batch-time-interval" type="xsd:string" use="optional" />
             <xsd:attribute name="enable-batch-conflation" type="xsd:boolean" use="optional" />

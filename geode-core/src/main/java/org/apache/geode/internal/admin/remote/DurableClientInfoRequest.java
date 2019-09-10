@@ -21,6 +21,8 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular distribution manager to get information about a durable
@@ -65,15 +67,17 @@ public class DurableClientInfoRequest extends AdminRequest {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeString(this.durableId, out);
     out.writeInt(this.action);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.durableId = DataSerializer.readString(in);
     this.action = in.readInt();
     setFriendlyName(this);
@@ -86,7 +90,7 @@ public class DurableClientInfoRequest extends AdminRequest {
   /*
    * (non-Javadoc)
    *
-   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+   * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
    */
   @Override
   public int getDSFID() {

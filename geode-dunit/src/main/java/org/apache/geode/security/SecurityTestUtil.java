@@ -29,8 +29,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.internal.Version;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * @deprecated use @org.apache.geode.test.junit.rules.ClientCacheRule instead
@@ -53,7 +53,7 @@ public class SecurityTestUtil {
     props.setProperty(LOCATORS, "");
     props.setProperty(MCAST_PORT, "0");
     props.putAll(extraProperties);
-    if (Version.CURRENT.ordinal() >= 75) {
+    if (VersionManager.getInstance().getCurrentVersionOrdinal() >= 75) {
       props.setProperty(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.security.query.data.*");
     }
     ClientCache cache = new ClientCacheFactory(props).setPoolSubscriptionEnabled(true)

@@ -12,33 +12,29 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.util;
+package org.apache.geode.internal.serialization;
 
+import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
 
-import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.DSCODE;
+public interface ObjectSerializer {
 
-public class DscodeHelper {
+  /**
+   * serialize an object to the given data-output
+   */
+  void writeObject(Object obj, DataOutput output) throws IOException;
 
-  @Immutable
-  private static final DSCODE[] dscodes = new DSCODE[128];
+  /**
+   * When deserializing you may want to invoke a toData method on an object.
+   * Use this method to ensure that the proper toData method is invoked for
+   * backward-compatibility.
+   */
+  void invokeToData(Object ds, DataOutput out) throws IOException;
 
-  static {
-    Arrays.stream(DSCODE.values()).filter(dscode -> dscode.toByte() >= 0)
-        .forEach(dscode -> dscodes[dscode.toByte()] = dscode);
-  }
+  /**
+   * write a DSFID object using a specific fixed ID code
+   */
+  void writeDSFID(DataSerializableFixedID object, int dsfid,
+      DataOutput out) throws IOException;
 
-  public static DSCODE toDSCODE(final byte value) throws IOException {
-    try {
-      DSCODE result = dscodes[value];
-      if (result == null) {
-        throw new IOException("Unknown header byte " + value);
-      }
-      return result;
-    } catch (ArrayIndexOutOfBoundsException e) {
-      throw new IOException("Unknown header byte: " + value);
-    }
-  }
 }

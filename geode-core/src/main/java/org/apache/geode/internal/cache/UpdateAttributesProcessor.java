@@ -43,6 +43,8 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This class is a bit misnamed. It really has more with pushing a DistributionAdvisee's profile out
@@ -352,8 +354,9 @@ public class UpdateAttributesProcessor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.adviseePath = DataSerializer.readString(in);
       this.processorId = in.readInt();
       // set the processor ID to be able to send reply to sender in case of any
@@ -365,8 +368,9 @@ public class UpdateAttributesProcessor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(this.adviseePath, out);
       out.writeInt(this.processorId);
       DataSerializer.writeObject(this.profile, out);
@@ -402,14 +406,16 @@ public class UpdateAttributesProcessor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.profile = (Profile) DataSerializer.readObject(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.profile, out);
     }
 
@@ -475,8 +481,9 @@ public class UpdateAttributesProcessor {
 
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       int length = in.readInt();
       if (length == -1) {
         this.profiles = null;
@@ -490,8 +497,9 @@ public class UpdateAttributesProcessor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       if (this.profiles == null) {
         out.writeInt(-1);
       } else {

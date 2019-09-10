@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EvictionAction;
@@ -43,7 +44,7 @@ import org.apache.geode.internal.InternalDataSerializer;
  *
  * @since GemFire 5.0
  */
-public class EvictionAttributesImpl extends EvictionAttributes {
+public class EvictionAttributesImpl extends EvictionAttributes implements DataSerializable {
   private static final long serialVersionUID = -6404395520499379715L;
 
   private EvictionAlgorithm algorithm = EvictionAlgorithm.NONE;

@@ -899,6 +899,7 @@ javadoc/org/apache/geode/redis/package-summary.html
 javadoc/org/apache/geode/redis/package-tree.html
 javadoc/org/apache/geode/security/AccessControl.html
 javadoc/org/apache/geode/security/AuthInitialize.html
+javadoc/org/apache/geode/security/AuthTokenEnabledComponents.html
 javadoc/org/apache/geode/security/AuthenticationFailedException.html
 javadoc/org/apache/geode/security/AuthenticationRequiredException.html
 javadoc/org/apache/geode/security/Authenticator.html
@@ -953,6 +954,7 @@ lib/geode-protobuf-0.0.0.jar
 lib/geode-protobuf-messages-0.0.0.jar
 lib/geode-rebalancer-0.0.0.jar
 lib/geode-redis-0.0.0.jar
+lib/geode-serialization-0.0.0.jar
 lib/geode-unsafe-0.0.0.jar
 lib/geode-wan-0.0.0.jar
 lib/gfsh-dependencies.jar

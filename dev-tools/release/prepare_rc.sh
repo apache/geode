@@ -18,23 +18,24 @@
 set -e
 
 usage() {
-      echo "Usage: prepare_rc -v version_number -k signing_key -a apache_ldap_username"
-      echo "  -v   The #.#.#.RC# version number"
-      echo "  -k   Your 8 digit PGP key id. Must be 8 digits. Also the last 8 digits of your gpg fingerprint"
-      echo "  -a   Your apache LDAP username (that you use to log in to https://id.apache.org)"
-      exit 1
+    echo "Usage: prepare_rc -v version_number -k signing_key -a apache_ldap_username"
+    echo "  -v   The #.#.#.RC# version number"
+    echo "  -k   Your 8 digit GPG key id (the last 8 digits of your gpg fingerprint)"
+    echo "  -a   Your apache LDAP username (that you use to log in to https://id.apache.org)"
+    exit 1
 }
 
 checkCommand() {
-  COMMAND=$1
-  if ! [[ -x "$(command -v $COMMAND)" ]]; then
-    echo "$COMMAND must be installed"
-    exit 1
-  fi
+    COMMAND=$1
+    if ! [[ -x "$(command -v $COMMAND)" ]]; then
+        echo "$COMMAND must be installed"
+        exit 1
+    fi
 }
 
 FULL_VERSION=""
 SIGNING_KEY=""
+APACHE_USERNAME=""
 
 while getopts ":v:k:a:" opt; do
   case ${opt} in
@@ -54,14 +55,20 @@ while getopts ":v:k:a:" opt; do
 done
 
 if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${APACHE_USERNAME} == "" ]]; then
-  usage
+    usage
 fi
 
-if [[ $FULL_VERSION =~ ([0-9]+\.[0-9]+\.[0-9]+)\.(RC[0-9]+) ]]; then
-    VERSION=${BASH_REMATCH[1]}
-    RC=${BASH_REMATCH[2]}
+if [[ $SIGNING_KEY =~ ^[0-9A-Fa-f]{8}$ ]]; then
+    true
 else
-    echo "Malformed version number ${FULL_VERSION}. Example valid number - 1.9.0.RC1"
+    echo "Malformed signing key ${SIGNING_KEY}. Example valid key: ABCD1234"
+    exit 1
+fi
+
+if [[ $FULL_VERSION =~ ^([0-9]+\.[0-9]+\.[0-9]+)\.(RC[0-9]+)$ ]]; then
+    VERSION=${BASH_REMATCH[1]}
+else
+    echo "Malformed version number ${FULL_VERSION}. Example valid version: 1.9.0.RC1"
     exit 1
 fi
 
@@ -70,6 +77,7 @@ checkCommand cmake
 checkCommand svn
 checkCommand doxygen
 
+echo ""
 echo "============================================================"
 echo "Checking gpg... (you will be prompted to enter passphase)"
 echo "============================================================"
@@ -85,110 +93,171 @@ else
 fi
 
 
-GEODE=$PWD/build/geode
-GEODE_EXAMPLES=$PWD/build/geode-examples
-GEODE_NATIVE=$PWD/build/geode-native
-SVN_DIR=$PWD/build/dist/dev/geode
+set -x
+WORKSPACE=$PWD/release-${VERSION}-workspace
+GEODE=$WORKSPACE/geode
+GEODE_DEVELOP=$WORKSPACE/geode-develop
+GEODE_EXAMPLES=$WORKSPACE/geode-examples
+GEODE_NATIVE=$WORKSPACE/geode-native
+BREW_DIR=$WORKSPACE/homebrew-core
+SVN_DIR=$WORKSPACE/dist/dev/geode
+set +x
 
+echo ""
 echo "============================================================"
-echo "Cleaning build directory..."
+echo "Cleaning workspace directory..."
 echo "============================================================"
-rm -rf build
-mkdir -p build
-cd build
+set -x
+rm -rf $WORKSPACE
+mkdir -p $WORKSPACE
+cd $WORKSPACE
+set +x
 
 
-
+echo ""
 echo "============================================================"
 echo "Cloning repositories..."
 echo "============================================================"
 set -x
 git clone --branch release/${VERSION} git@github.com:apache/geode.git
+git clone --branch develop git@github.com:apache/geode.git geode-develop
 git clone --branch release/${VERSION} git@github.com:apache/geode-examples.git
 git clone --branch release/${VERSION} git@github.com:apache/geode-native.git
+git clone --branch master git@github.com:Homebrew/homebrew-core.git
 
 svn checkout https://dist.apache.org/repos/dist --depth empty
+svn update --set-depth immediates --parents dist/release/geode
 svn update --set-depth infinity --parents dist/dev/geode
-
-
 set +x
+
+
+echo ""
 echo "============================================================"
 echo "Building geode..."
 echo "============================================================"
-
-cd ${GEODE}
-svn rm ${VERSION}.RC* &>/dev/null || true
 set -x
+cd ${GEODE}
 git clean -fdx && ./gradlew build -x test publishToMavenLocal -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg
 set +x
 
 
+if [ "${VERSION##*.RC}" -gt 1 ] ; then
+    echo ""
+    echo "============================================================"
+    echo "Removing previous RC's temporary commit from geode-examples..."
+    echo "============================================================"
+    set -x
+    cd ${GEODE_EXAMPLES}
+    git pull
+    set +x
+    sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl =#' \
+        -e 's#^geodeReleaseUrl *=.*#geodeReleaseUrl =#' -i.bak gradle.properties
+    rm gradle.properties.bak
+    set -x
+    git add gradle.properties
+    git diff --staged
+    git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
+    set +x
+fi
+
+
+echo ""
 echo "============================================================"
 echo "Building geode-examples..."
 echo "============================================================"
-
-cd ${GEODE_EXAMPLES}
 set -x
+cd ${GEODE_EXAMPLES}
 git clean -dxf && ./gradlew -PsignArchives -PgeodeReleaseUrl="file://${GEODE}/geode-assembly/build/geode-assembly/build/distributions/apache-geode-${VERSION}" -PgeodeRepositoryUrl="file://${HOME}/.m2/repository" -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg build
 set +x
 
+
+echo ""
 echo "============================================================"
 echo "Building geode-native..."
 echo "============================================================"
-
+set -x
 cd ${GEODE_NATIVE}
 mkdir build
-cd build
 which brew >/dev/null && OPENSSL_ROOT_DIR=$(brew --prefix openssl) || OPENSSL_ROOT_DIR=$(which openssl)
-set -x
+cd ${GEODE_NATIVE}/build
 cmake .. -DPRODUCT_VERSION=${VERSION} -DOPENSSL_ROOT_DIR=$OPENSSL_ROOT_DIR -DGEODE_ROOT=${GEODE}/geode-assembly/build/install/apache-geode
 cpack -G TGZ --config CPackSourceConfig.cmake
 gpg --armor -u ${SIGNING_KEY} -b apache-geode-native-${VERSION}-src.tar.gz
 set +x
 
 
+echo ""
 echo "============================================================"
 echo "Tagging the release candidate in each repository. The tags will not be pushed yet..."
 echo "============================================================"
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
+    set -x
+    cd ${DIR}
+    git tag -s -u ${SIGNING_KEY} rel/v${FULL_VERSION} -m "Release candidate ${FULL_VERSION}"
+    set +x
+done
 
-cd ${GEODE}
-git tag -s -u ${SIGNING_KEY} rel/v${FULL_VERSION} -m "Release candidate ${FULL_VERSION}"
-cd ${GEODE_EXAMPLES}
-git tag -s -u ${SIGNING_KEY} rel/v${FULL_VERSION} -m "Release candidate ${FULL_VERSION}"
-cd ${GEODE_NATIVE}
-git tag -s -u ${SIGNING_KEY} rel/v${FULL_VERSION} -m "Release candidate ${FULL_VERSION}"
 
+echo ""
 echo "============================================================"
 echo "Copying artifacts to svn directory for publication. The artifacts will not be committed..."
 echo "============================================================"
-
+set -x
 cd ${SVN_DIR}
+svn rm ${VERSION}.RC* &>/dev/null || true
 cp ${GEODE}/KEYS .
 mkdir ${FULL_VERSION}
 cp ${GEODE}/geode-assembly/build/distributions/* ${FULL_VERSION}
-
 cp ${GEODE_EXAMPLES}/build/distributions/* ${FULL_VERSION}
-
 cp ${GEODE_NATIVE}/build/apache-geode-native-${VERSION}* ${FULL_VERSION}
-svn add ${FULL_VERSION}
+set +x
 
+# verify all files are signed.  sometimes gradle "forgets" to make the .asc file
+for f in ${FULL_VERSION}/*.tgz ${FULL_VERSION}/*.tar.gz ${FULL_VERSION}/*.zip ; do
+  if ! [ -r $f.sha256 ] && ! [ -r $f.sha512 ] ; then
+    echo missing $f.sha256 or $f.sha512
+    exit 1
+  fi
+  if ! [ -r $f.asc ] ; then
+    set -x
+    gpg --armor -u ${SIGNING_KEY} -b $f
+    set +x
+    if ! [ -r $f.asc ] ; then
+      echo missing $f.asc
+      exit 1
+    fi
+  fi
+  size=$(ls -l $f | awk '{print $5}')
+  if [ $size -lt 10000 ] ; then
+    echo $f file size is only $size bytes, that seems suspicious.
+    exit 1
+  fi
+done
+
+set -x
+svn add ${FULL_VERSION}
+set +x
+
+
+echo ""
 echo "============================================================"
 echo "Publishing artifacts to nexus staging manager..."
-echo "PLEASE NOTE, the 2nd prompt will be for your apache password (not gpg).  Pay attention as the prompts look very similar."
+echo "PLEASE NOTE, the 2nd prompt will be for your apache (not gpg) password.  Pay attention as the prompts look very similar."
 echo "============================================================"
-cd ${GEODE}
 set -x
+cd ${GEODE}
 ./gradlew publish -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg -PmavenUsername=${APACHE_USERNAME}
 set +x
 
+
+echo ""
 echo "============================================================"
 echo "Done preparing the release and staging to nexus! Next steps:"
 echo "============================================================"
+cd ${GEODE}/../..
 echo "1. Go to https://repository.apache.org, login as ${APACHE_USERNAME}, and click on Staging Repositories"
 echo "2. If there is a prior ${VERSION} RC, select it and click Drop."
 echo '3. Make a note of the 4-digit ID of the current ("implicitly created") staging repo.'
 echo '4. Select the current staging repo and click Close.'
 echo '5. Wait ~15 minutes for status to become "Closed"'
 echo "6. Run ${0%/*}/commit_rc.sh -v ${FULL_VERSION} -m <4-DIGIT-ID-NOTED-ABOVE>"
-
-cd ${GEODE}/../..

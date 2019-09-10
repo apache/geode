@@ -23,7 +23,6 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -52,11 +51,9 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -65,6 +62,9 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.PdxInstance;
 
 /**
@@ -445,7 +445,7 @@ public abstract class DataSerializer {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing InetAddress {}", address);
     }
 
-    writeByteArray((address != null) ? address.getAddress() : null, out);
+    StaticSerialization.writeInetAddress(address, out);
   }
 
   /**
@@ -460,22 +460,13 @@ public abstract class DataSerializer {
   public static InetAddress readInetAddress(DataInput in) throws IOException {
 
     InternalDataSerializer.checkIn(in);
+    InetAddress address = StaticSerialization.readInetAddress(in);
 
-    byte[] address = readByteArray(in);
-    if (address == null) {
-      return null;
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read InetAddress {}", address);
     }
 
-    try {
-      InetAddress addr = InetAddress.getByAddress(address);
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read InetAddress {}", addr);
-      }
-      return addr;
-    } catch (UnknownHostException ex) {
-      throw new IOException("While reading an InetAddress", ex);
-    }
-
+    return address;
   }
 
   /**
@@ -497,71 +488,7 @@ public abstract class DataSerializer {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing String \"{}\"", value);
     }
 
-    if (value == null) {
-      if (isTraceSerialzerVerbose) {
-        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing NULL_STRING");
-      }
-      out.writeByte(DSCODE.NULL_STRING.toByte());
-
-    } else {
-      // writeUTF is expensive - it creates a char[] to fetch
-      // the string's contents, iterates over the array to compute the
-      // encoded length, creates a byte[] to hold the encoded bytes,
-      // iterates over the char[] again to create the encode bytes,
-      // then writes the bytes. Since we usually deal with ISO-8859-1
-      // strings, we can accelerate this by accessing chars directly
-      // with charAt and fill a single-byte buffer. If we run into
-      // a multibyte char, we revert to using writeUTF()
-      int len = value.length();
-      int utfLen = len; // added for bug 40932
-      for (int i = 0; i < len; i++) {
-        char c = value.charAt(i);
-        if ((c <= 0x007F) && (c >= 0x0001)) {
-          // nothing needed
-        } else if (c > 0x07FF) {
-          utfLen += 2;
-        } else {
-          utfLen += 1;
-        }
-        // Note we no longer have an early out when we detect the first
-        // non-ascii char because we need to compute the utfLen for bug 40932.
-        // This is not a performance problem because most strings are ascii
-        // and they never did the early out.
-      }
-      boolean writeUTF = utfLen > len;
-      if (writeUTF) {
-        if (utfLen > 0xFFFF) {
-          if (isTraceSerialzerVerbose) {
-            logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing utf HUGE_STRING of len={}", len);
-          }
-          out.writeByte(DSCODE.HUGE_STRING.toByte());
-          out.writeInt(len);
-          out.writeChars(value);
-        } else {
-          if (isTraceSerialzerVerbose) {
-            logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing utf STRING of len={}", len);
-          }
-          out.writeByte(DSCODE.STRING.toByte());
-          out.writeUTF(value);
-        }
-      } else {
-        if (len > 0xFFFF) {
-          if (isTraceSerialzerVerbose) {
-            logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing HUGE_STRING_BYTES of len={}", len);
-          }
-          out.writeByte(DSCODE.HUGE_STRING_BYTES.toByte());
-          out.writeInt(len);
-          out.writeBytes(value);
-        } else {
-          if (isTraceSerialzerVerbose) {
-            logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing STRING_BYTES of len={}", len);
-          }
-          out.writeByte(DSCODE.STRING_BYTES.toByte());
-          out.writeShort(len);
-          out.writeBytes(value);
-        }
-      }
-    }
+    StaticSerialization.writeString(value, out);
   }
 
   /**
@@ -573,7 +500,7 @@ public abstract class DataSerializer {
    * @see #writeString
    */
   public static String readString(DataInput in) throws IOException {
-    return InternalDataSerializer.readString(in, in.readByte());
+    return StaticSerialization.readString(in);
   }
 
   /**
@@ -1335,19 +1262,14 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkIn(in);
 
-    int length = InternalDataSerializer.readArrayLength(in);
-    if (length == -1) {
-      return null;
-    } else {
-      byte[] array = new byte[length];
-      in.readFully(array, 0, length);
+    byte[] result = StaticSerialization.readByteArray(in);
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read byte array of length {}", length);
-      }
-
-      return array;
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read byte array of length {}",
+          result == null ? "null" : result.length);
     }
+
+    return result;
   }
 
   /**
@@ -1363,20 +1285,18 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    int length;
-    if (array == null) {
-      length = -1;
-    } else {
-      length = array.length;
-    }
-    InternalDataSerializer.writeArrayLength(length, out);
+
+    StaticSerialization.writeStringArray(array, out);
+
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing String array of length {}", length);
-    }
-    if (length > 0) {
-      for (int i = 0; i < length; i++) {
-        writeString(array[i], out);
+      int length;
+      if (array == null) {
+        length = -1;
+      } else {
+        length = array.length;
       }
+
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing String array of length {}", length);
     }
   }
 
@@ -1391,21 +1311,14 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkIn(in);
 
-    int length = InternalDataSerializer.readArrayLength(in);
-    if (length == -1) {
-      return null;
-    } else {
-      String[] array = new String[length];
-      for (int i = 0; i < length; i++) {
-        array[i] = readString(in);
-      }
+    String array[] = StaticSerialization.readStringArray(in);
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read String array of length {}", length);
-      }
-
-      return array;
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read String array of length {}",
+          array == null ? "null" : array.length);
     }
+
+    return array;
   }
 
   /**
@@ -1576,21 +1489,11 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkOut(out);
 
-    int length;
-    if (array == null) {
-      length = -1;
-    } else {
-      length = array.length;
-    }
-    InternalDataSerializer.writeArrayLength(length, out);
+    StaticSerialization.writeIntArray(array, out);
 
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing int array of length {}", length);
-    }
-    if (length > 0) {
-      for (int i = 0; i < length; i++) {
-        out.writeInt(array[i]);
-      }
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing int array of length {}",
+          array == null ? "null" : array.length);
     }
   }
 
@@ -1605,21 +1508,14 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkIn(in);
 
-    int length = InternalDataSerializer.readArrayLength(in);
-    if (length == -1) {
-      return null;
-    } else {
-      int[] array = new int[length];
-      for (int i = 0; i < length; i++) {
-        array[i] = in.readInt();
-      }
+    int[] result = StaticSerialization.readIntArray(in);
 
-      if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-        logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read int array of length {}", length);
-      }
-
-      return array;
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read int array of length {}",
+          result == null ? "null" : result.length);
     }
+
+    return result;
   }
 
   /**

@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import java.io.NotSerializableException;
 
@@ -36,7 +36,7 @@ public class DSFIDNotFoundException extends NotSerializableException {
   public DSFIDNotFoundException(String msg, int dsfid) {
     super(msg);
     this.dsfid = dsfid;
-    this.versionOrdinal = Version.CURRENT.ordinal();
+    this.versionOrdinal = Version.getCurrentVersion().ordinal();
   }
 
   public int getUnknownDSFID() {

@@ -70,6 +70,7 @@ tasks.eclipse.dependsOn(cleanEclipse)
 
 idea {
   module {
+    inheritOutputDirs = true
     downloadSources = true
   }
 }

@@ -22,8 +22,10 @@ import java.util.stream.Collectors;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
@@ -60,11 +62,18 @@ public class ListAsyncEventQueuesFunction extends CliFunction {
       if (listener instanceof Declarable2) {
         listenerProperties = ((Declarable2) listener).getConfig();
       }
+
       return new AsyncEventQueueDetails(queue.getId(), queue.getBatchSize(), queue.isPersistent(),
           queue.getDiskStoreName(), queue.getMaximumQueueMemory(), listener.getClass().getName(),
-          listenerProperties);
+          listenerProperties, isCreatedWithPausedEventDispatching(queue),
+          queue.isDispatchingPaused());
     }).collect(Collectors.toList());
 
     return new CliFunctionResult(memberId, details);
+  }
+
+  private boolean isCreatedWithPausedEventDispatching(AsyncEventQueue queue) {
+    return ((AbstractGatewaySender) ((AsyncEventQueueImpl) queue).getSender())
+        .isStartEventProcessorInPausedState();
   }
 }

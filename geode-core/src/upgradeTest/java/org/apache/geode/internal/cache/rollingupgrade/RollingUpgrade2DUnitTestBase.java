@@ -81,7 +81,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -268,8 +267,10 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
 
       invokeRunnableInVMs(invokeCreateCache(props), oldServer2, currentServer1, currentServer2);
 
-      currentServer1.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
-      currentServer2.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
+      currentServer1
+          .invoke(invokeAssertVersion(VersionManager.getInstance().getCurrentVersionOrdinal()));
+      currentServer2
+          .invoke(invokeAssertVersion(VersionManager.getInstance().getCurrentVersionOrdinal()));
 
       // create region
       invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), currentServer1, currentServer2,
@@ -327,8 +328,10 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       props.put(DistributionConfig.LOCATORS_NAME, serverHostName + "[" + port + "]");
       invokeRunnableInVMs(invokeCreateCache(props), currentServer1, currentServer2, oldServer);
 
-      currentServer1.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
-      currentServer2.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
+      currentServer1
+          .invoke(invokeAssertVersion(VersionManager.getInstance().getCurrentVersionOrdinal()));
+      currentServer2
+          .invoke(invokeAssertVersion(VersionManager.getInstance().getCurrentVersionOrdinal()));
 
       // create region
       invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), currentServer1, currentServer2,
@@ -387,8 +390,10 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
       props.put(DistributionConfig.LOCATORS_NAME, serverHostName + "[" + port + "]");
       invokeRunnableInVMs(invokeCreateCache(props), currentServer1, currentServer2, oldServer);
 
-      currentServer1.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
-      currentServer2.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
+      currentServer1
+          .invoke(invokeAssertVersion(VersionManager.getInstance().getCurrentVersionOrdinal()));
+      currentServer2
+          .invoke(invokeAssertVersion(VersionManager.getInstance().getCurrentVersionOrdinal()));
 
       // create region
       invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), currentServer1, currentServer2,
@@ -556,7 +561,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     VM rollServer = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldServer.getId());
     rollServer.invoke(invokeCreateCache(locatorPorts == null ? getSystemPropertiesPost71()
         : getSystemPropertiesPost71(locatorPorts)));
-    rollServer.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
+    rollServer.invoke(invokeAssertVersion(VersionManager.getInstance().getCurrentVersionOrdinal()));
     return rollServer;
   }
 
@@ -566,7 +571,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
     VM rollClient = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldClient.getId());
     rollClient.invoke(invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts,
         subscriptionEnabled));
-    rollClient.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
+    rollClient.invoke(invokeAssertVersion(VersionManager.getInstance().getCurrentVersionOrdinal()));
     return rollClient;
   }
 
@@ -947,7 +952,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
 
   private static Cache createCache(Properties systemProperties) {
     systemProperties.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
-    if (Version.CURRENT_ORDINAL < 75) {
+    if (VersionManager.getInstance().getCurrentVersionOrdinal() < 75) {
       systemProperties.remove("validate-serializable-objects");
       systemProperties.remove("serializable-object-filter");
     }
@@ -1205,7 +1210,9 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
         System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
       }
     }
-    if (Version.CURRENT == Version.GFE_90) {
+    // note: 45 is Version.GFE_90 - can't refer to Version class in backward-compatibility
+    // distributed tests
+    if (VersionManager.getInstance().getCurrentVersionOrdinal() == 45) {
       Thread.sleep(5000); // bug in 1.0 - cluster config service not immediately available
     }
   }

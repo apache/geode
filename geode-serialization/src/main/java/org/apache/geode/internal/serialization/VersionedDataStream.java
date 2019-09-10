@@ -13,29 +13,27 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 
-import org.apache.geode.DataSerializable;
 
 /**
  * An extension to {@link DataOutput}, {@link DataInput} used internally in product to indicate that
  * the input/output stream is attached to a GemFire peer having a different version.
  *
- * Internal product classes that implement {@link DataSerializableFixedID} and
- * {@link DataSerializable} and change serialization format must check this on DataInput/DataOutput
- * (see {@link InternalDataSerializer#getVersionForDataStream} methods) and deal with serialization
+ * Internal product classes that implement {@link DataSerializableFixedID}
+ * and change serialization format must check this on DataInput/DataOutput
+ * (see {@link SerializationContext#getSerializationVersion()} methods) and deal with serialization
  * with previous {@link Version}s appropriately.
- *
- * @since GemFire 7.1
  */
 public interface VersionedDataStream {
 
   /**
    * If the remote peer to which this input/output is connected has a lower version that this
-   * member, then this returns the {@link Version} of the peer else null. If the peer has a higher
+   * member, then this returns the {@link Version} of the peer else null. If the peer has a
+   * higher
    * {@link Version}, then this member cannot do any adjustment to serialization and its the remote
    * peer's responsibility to adjust the serialization/deserialization according to this peer.
    */

@@ -18,14 +18,14 @@
 set -e
 
 usage() {
-      echo "Usage: print_rc_email.sh -v version_number -m maven_repo_id"
-      echo "  -v   The #.#.#.RC# version number"
-      echo "  -m   The 4 digit id of the nexus maven repo"
-      exit 1
+    echo "Usage: print_rc_email.sh -v version_number -m maven_repo_id"
+    echo "  -v   The #.#.#.RC# version number"
+    echo "  -m   The 4 digit id of the nexus maven repo"
+    exit 1
 }
 
 FULL_VERSION=""
-SIGNING_KEY=""
+MAVEN=""
 
 while getopts ":v:m:" opt; do
   case ${opt} in
@@ -42,60 +42,80 @@ while getopts ":v:m:" opt; do
 done
 
 if [[ ${FULL_VERSION} == "" ]] || [[ ${MAVEN} == "" ]]; then
-  usage
+    usage
 fi
 
-if [[ $FULL_VERSION =~ ([0-9]+\.[0-9]+\.[0-9]+)\.(RC[0-9]+) ]]; then
+if [[ $FULL_VERSION =~ ^([0-9]+\.[0-9]+\.[0-9]+)\.(RC[0-9]+)$ ]]; then
     VERSION=${BASH_REMATCH[1]}
-    RC=${BASH_REMATCH[2]}
 else
-    echo "Malformed version number ${FULL_VERSION}. Example valid number - 1.9.0.RC1"
+    echo "Malformed version number ${FULL_VERSION}. Example valid version: 1.9.0.RC1"
     exit 1
 fi
 
-GEODE=$PWD/build/geode
-GEODE_EXAMPLES=$PWD/build/geode-examples
-GEODE_NATIVE=$PWD/build/geode-native
-SVN_DIR=$PWD/build/dist/dev/geode
+set -x
+WORKSPACE=$PWD/release-${VERSION}-workspace
+GEODE=$WORKSPACE/geode
+GEODE_EXAMPLES=$WORKSPACE/geode-examples
+GEODE_NATIVE=$WORKSPACE/geode-native
+SVN_DIR=$WORKSPACE/dist/dev/geode
+set +x
 
+if [ -d "$GEODE" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$SVN_DIR" ] ; then
+    true
+else
+    echo "Please run this script from the same working directory as you initially ran prepare_rc.sh"
+    exit 1
+fi
+
+
+echo ""
 echo "============================================================"
 echo "Publishing artifacts to apache release location..."
 echo "============================================================"
+set -x
 cd ${SVN_DIR}
 svn commit -m "Releasing Apache Geode ${FULL_VERSION} distribution"
+set +x
 
 
-echo "============================================================"
-echo "Pushing tags..."
-echo "============================================================"
-
-cd ${GEODE}
-git push origin rel/v${FULL_VERSION}
-cd ${GEODE_EXAMPLES}
-git push origin rel/v${FULL_VERSION}
-cd ${GEODE_NATIVE}
-git push origin rel/v${FULL_VERSION}
-
-
+echo ""
 echo "============================================================"
 echo "Adding temporary commit for geode-examples to build against staged ${FULL_VERSION}..."
 echo "============================================================"
+set -x
 cd ${GEODE_EXAMPLES}
+set +x
 sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl = https://repository.apache.org/content/repositories/orgapachegeode-'"${MAVEN}#" \
     -e 's#^geodeReleaseUrl *=.*#geodeReleaseUrl = https://dist.apache.org/repos/dist/dev/geode/'"${FULL_VERSION}#" -i.bak gradle.properties
 rm gradle.properties.bak
+set -x
 git add gradle.properties
 git diff --staged
 git commit -m "temporarily point to staging repo for CI purposes"
 git push
+set +x
 
 
+echo ""
 echo "============================================================"
-echo "Done publishing the release!  Send the email below to announce it:"
+echo "Pushing tags..."
 echo "============================================================"
+
+for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
+    set -x
+    cd ${DIR}
+    git push origin rel/v${FULL_VERSION}
+    set +x
+done
+
+
+echo ""
+echo "============================================================"
+echo "Done publishing the release candidate!  Send the email below to announce it:"
+echo "============================================================"
+cd ${GEODE}/../..
 echo "To: dev@geode.apache.org"
 echo "Subject: [VOTE] Apache Geode ${FULL_VERSION}"
-cd ${GEODE}/../..
 ${0%/*}/print_rc_email.sh -v ${FULL_VERSION} -m ${MAVEN}
 echo ""
 which pbcopy >/dev/null && ${0%/*}/print_rc_email.sh -v ${FULL_VERSION} -m ${MAVEN} | pbcopy && echo "(copied to clipboard)"

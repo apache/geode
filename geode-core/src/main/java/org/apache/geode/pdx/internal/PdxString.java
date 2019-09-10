@@ -21,8 +21,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.Sendable;
+import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 
 /**

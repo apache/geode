@@ -17,7 +17,6 @@ package org.apache.geode.cache;
 
 import java.util.Optional;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.control.ResourceManager;
@@ -38,7 +37,7 @@ import org.apache.geode.internal.cache.EvictionAttributesImpl;
  * @since GemFire 5.0
  */
 @SuppressWarnings("serial")
-public abstract class EvictionAttributes implements DataSerializable {
+public abstract class EvictionAttributes {
   /**
    * The default maximum for {@linkplain EvictionAlgorithm#LRU_ENTRY entry LRU}. Currently
    * <code>900</code> entries.

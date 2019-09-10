@@ -67,17 +67,14 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.OplogCancelledException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Sendable;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogCompactor;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
@@ -108,6 +105,9 @@ import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.shared.NativeCalls;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
@@ -2073,8 +2073,8 @@ public class Oplog implements CompactableOplog, Flushable {
     Version recoveredGFVersion;
     short ver = Version.readOrdinal(dis);
     try {
-      recoveredGFVersion = Version.fromOrdinal(ver, false);
-    } catch (UnsupportedVersionException e) {
+      recoveredGFVersion = Version.fromOrdinal(ver);
+    } catch (UnsupportedSerializationVersionException e) {
       throw new DiskAccessException(
           String.format("Unknown version ordinal %s found when recovering Oplogs", ver), e,
           getParent());
@@ -6362,7 +6362,8 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   /**
-   * If this OpLog is from an older version of the product, then return that {@link Version} else
+   * If this OpLog is from an older version of the product, then return that
+   * {@link Version} else
    * return null.
    */
   public Version getProductVersionIfOld() {

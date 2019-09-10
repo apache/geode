@@ -45,9 +45,8 @@ if [[ ${FULL_VERSION} == "" ]] || [[ ${MAVEN} == "" ]]; then
   usage
 fi
 
-if [[ $FULL_VERSION =~ ([0-9]+\.[0-9]+\.[0-9]+)\.(RC[0-9]+) ]]; then
+if [[ $FULL_VERSION =~ ^([0-9]+\.[0-9]+\.[0-9]+)\.(RC[0-9]+)$ ]]; then
     VERSION=${BASH_REMATCH[1]}
-    RC=${BASH_REMATCH[2]}
 else
     echo "Malformed version number ${FULL_VERSION}. Example valid number - 1.9.0.RC1"
     exit 1

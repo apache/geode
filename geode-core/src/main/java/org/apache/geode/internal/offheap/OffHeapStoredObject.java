@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
@@ -28,6 +27,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DSCODE;
 
 /**
  * A class that stores a Java object in off-heap memory. See {@link AddressableMemoryManager} for

@@ -2003,6 +2003,27 @@ public interface ConfigurationProperties {
    * {@link org.apache.geode.security.SecurableCommunicationChannels} <U>Since</U>: Geode 1.0
    */
   String SSL_ENABLED_COMPONENTS = "ssl-enabled-components";
+
+  /**
+   * The static String definition of the <i>"security-auth-token-enabled-components"</i> property <a
+   * name="security-auth-token-enabled-components"/a>
+   * </p>
+   * <U>Description</U>: This setting is a comma delimited list of component names which works in
+   * conjunction with
+   * the {@link #SECURITY_MANAGER} properties. if security manager is enabled, this property will
+   * determine what rest end point will use token based authentication instead of basic
+   * (username/password)
+   * authentication.
+   * </p>
+   * <U>Componant names</U>: "all","management" <U>Since</U>: Geode 1.11
+   * "all": shorthand for all the security components that support token authentication.
+   * "management": the {@link #ENABLE_MANAGEMENT_REST_SERVICE Management REST Service}
+   *
+   * Note: listing components that are not enabled does nothing.
+   *
+   * Default: empty. All security components use basic (username/password) authentication
+   */
+  String SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS = SECURITY_PREFIX + "auth-token-enabled-components";
   /**
    * The static String definition of the <i>"ssl-ciphers"</i> property <a name="ssl-ciphers"/a>
    * </p>

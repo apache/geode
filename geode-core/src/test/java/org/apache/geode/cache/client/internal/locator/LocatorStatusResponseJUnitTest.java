@@ -18,6 +18,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,6 +29,8 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
@@ -56,7 +59,8 @@ public class LocatorStatusResponseJUnitTest {
 
     assertNotNull(expectedResponse);
 
-    expectedResponse.toData(new DataOutputStream(byteStream));
+    DataOutputStream out = new DataOutputStream(byteStream);
+    expectedResponse.toData(out, InternalDataSerializer.createSerializationContext(out));
 
     final byte[] bytes = byteStream.toByteArray();
 
@@ -69,7 +73,8 @@ public class LocatorStatusResponseJUnitTest {
     assertNotSame(expectedResponse, actualResponse);
     assertFalse(actualResponse.equals(expectedResponse));
 
-    actualResponse.fromData(new DataInputStream(new ByteArrayInputStream(bytes)));
+    actualResponse.fromData(new DataInputStream(new ByteArrayInputStream(bytes)), mock(
+        DeserializationContext.class));
 
     assertEquals(expectedResponse, actualResponse);
   }

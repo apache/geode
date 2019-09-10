@@ -89,12 +89,12 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.Version;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.security.templates.UsernamePrincipal;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * Contains utility methods for setting up servers/clients for authentication and authorization
@@ -330,7 +330,7 @@ public class SecurityTestUtils {
     authProps.setProperty(MCAST_PORT, "0");
     authProps.setProperty(LOCATORS, "");
     authProps.setProperty(SECURITY_LOG_LEVEL, "finest");
-    if (Version.CURRENT_ORDINAL >= 75) {
+    if (VersionManager.getInstance().getCurrentVersionOrdinal() >= 75) {
       authProps.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           UsernamePrincipal.class.getName());
     }
@@ -474,7 +474,7 @@ public class SecurityTestUtils {
           String.valueOf(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT));
     }
 
-    if (Version.CURRENT.ordinal() >= 75) {
+    if (VersionManager.getInstance().getCurrentVersionOrdinal() >= 75) {
       props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }

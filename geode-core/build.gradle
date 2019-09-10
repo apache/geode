@@ -290,8 +290,10 @@ dependencies {
   implementation('org.eclipse.jetty:jetty-webapp') {
     ext.optional = true
   }
-  //Jetty is used by the http service, which is used for the developer and management rest APIs
-  implementation('org.eclipse.jetty:jetty-server')
+//  Jetty is used by the http service, which is used for the developer and management rest APIs
+  implementation('org.eclipse.jetty:jetty-server') {
+    ext.optional = true
+  }
 
   //Spring core is used by the the gfsh cli
   implementation('org.springframework:spring-core') {
@@ -332,6 +334,8 @@ dependencies {
   //probably does not belong in this project
   api(project(':geode-common'))
   api(project(':geode-unsafe'))
+
+  api(project(':geode-serialization'))
   
   //geode-management currently has pieces of the public API
   //copied into it, so it is an API dependency
@@ -362,6 +366,7 @@ dependencies {
   testRuntime('commons-io:commons-io')
   testRuntime('commons-validator:commons-validator')
   testRuntime('com.pholser:junit-quickcheck-generators')
+  testRuntime(project(':geode-old-versions'))
 
 
   integrationTestCompile(project(':geode-junit')) {

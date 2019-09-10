@@ -20,7 +20,7 @@ import java.util.List;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public abstract class AbstractGMSMessage implements DataSerializableFixedID, GMSMessage {
   @Immutable

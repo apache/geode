@@ -29,6 +29,7 @@ import java.nio.file.Paths
 def dependentProjectNames = [
   ':geode-common',
   ':geode-connectors',
+  ':geode-serialization',
   ':geode-core',
   ':geode-cq',
   ':geode-lucene',
@@ -167,6 +168,7 @@ dependencies {
   geodeArchives project(':geode-protobuf-messages')
   geodeArchives project(':geode-rebalancer')
   geodeArchives project(':geode-redis')
+  geodeArchives project(':geode-serialization')
   geodeArchives project(':geode-wan')
   geodeArchives project(':geode-web')
   geodeArchives project(':geode-web-api')

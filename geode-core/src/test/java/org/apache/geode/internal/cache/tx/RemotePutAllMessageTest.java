@@ -23,6 +23,7 @@ import java.io.DataInput;
 import org.junit.Test;
 
 
+
 public class RemotePutAllMessageTest {
 
   @Test
@@ -30,8 +31,8 @@ public class RemotePutAllMessageTest {
     RemotePutAllMessage mockRemotePutAllMessage = mock(RemotePutAllMessage.class);
     DataInput mockDataInput = mock(DataInput.class);
 
-    mockRemotePutAllMessage.fromData(mockDataInput);
+    mockRemotePutAllMessage.fromData(mockDataInput, null);
 
-    verify(mockRemotePutAllMessage, times(1)).fromData(mockDataInput);
+    verify(mockRemotePutAllMessage, times(1)).fromData(mockDataInput, null);
   }
 }

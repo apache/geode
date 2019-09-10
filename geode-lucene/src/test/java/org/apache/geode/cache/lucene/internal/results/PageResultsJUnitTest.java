@@ -21,8 +21,8 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.junit.categories.LuceneTest;
 
@@ -31,7 +31,9 @@ public class PageResultsJUnitTest {
 
   @Test
   public void serializationShouldNotChangeObject() throws IOException, ClassNotFoundException {
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_PAGE_RESULTS, PageResults.class);
+    InternalDataSerializer
+        .getDSFIDSerializer()
+        .registerDSFID(DataSerializableFixedID.LUCENE_PAGE_RESULTS, PageResults.class);
     PageResults results = new PageResults();
     results.add(new PageEntry("key1", "value1"));
     results.add(new PageEntry("key2", "value2"));

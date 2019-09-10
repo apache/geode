@@ -101,6 +101,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.SignalBounceOnRequestImageMessageObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.partitioned.BucketCountLoadProbe;
+import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -2104,7 +2105,10 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     // Cache is closed so loadProbeToRestore does not need to be restored
     vm0.invoke(
-        () -> getCache().getInternalResourceManager().setLoadProbe(new BucketCountLoadProbe()));
+        () -> {
+          LoadProbe ignored =
+              getCache().getInternalResourceManager().setLoadProbe(new BucketCountLoadProbe());
+        });
 
     // Create the region in only 1 VM
     vm0.invoke(() -> createPartitionedRegion("region1", 0, new NullReturningLoader()));

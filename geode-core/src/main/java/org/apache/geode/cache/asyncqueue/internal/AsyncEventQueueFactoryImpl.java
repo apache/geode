@@ -18,6 +18,7 @@ import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl.get
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
@@ -45,6 +46,8 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   public static final int DEFAULT_BATCH_TIME_INTERVAL = 5;
 
   private final InternalCache cache;
+
+  private boolean pauseEventsDispatching = false;
 
   /**
    * Used internally to pass the attributes from this factory to the real GatewaySender it is
@@ -159,6 +162,9 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
     if (cache instanceof CacheCreation) {
       asyncEventQueue =
           new AsyncEventQueueCreation(asyncQueueId, gatewaySenderAttributes, listener);
+      if (pauseEventsDispatching) {
+        ((AsyncEventQueueCreation) asyncEventQueue).setPauseEventDispatching(true);
+      }
       ((CacheCreation) cache).addAsyncEventQueue(asyncEventQueue);
     } else {
       if (logger.isDebugEnabled()) {
@@ -171,6 +177,9 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       AsyncEventQueueImpl asyncEventQueueImpl = new AsyncEventQueueImpl(sender, listener);
       asyncEventQueue = asyncEventQueueImpl;
       cache.addAsyncEventQueue(asyncEventQueueImpl);
+      if (pauseEventsDispatching) {
+        sender.setStartEventProcessorInPausedState();
+      }
       if (!gatewaySenderAttributes.isManualStart()) {
         sender.start();
       }
@@ -270,5 +279,16 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
   public AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward) {
     gatewaySenderAttributes.forwardExpirationDestroy = forward;
     return this;
+  }
+
+  @Override
+  public AsyncEventQueueFactory pauseEventDispatching() {
+    pauseEventsDispatching = true;
+    return this;
+  }
+
+  @VisibleForTesting
+  protected boolean isPauseEventsDispatching() {
+    return pauseEventsDispatching;
   }
 }

@@ -30,11 +30,11 @@ import org.apache.geode.cache.query.cq.internal.command.StopCQ;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
+import org.apache.geode.internal.serialization.Version;
 
 public class CqServiceFactoryImpl implements CqServiceFactory {
 

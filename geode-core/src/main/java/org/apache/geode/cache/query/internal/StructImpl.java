@@ -26,8 +26,10 @@ import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
 
@@ -167,7 +169,8 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.type = (StructTypeImpl) DataSerializer.readObject(in);
     this.values = DataSerializer.readObjectArray(in);
     if (this.values != null) {
@@ -181,7 +184,8 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeObject(this.type, out);
     DataSerializer.writeObjectArray(this.values, out);
   }
