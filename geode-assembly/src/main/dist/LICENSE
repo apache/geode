@@ -227,16 +227,15 @@ Apache Geode bundles the following files under the BSD 3-Clause License:
     Marc Prud'hommeaux <mwp1@cornell.edu>
   - jQuery Sparklines v2.0 (http://omnipotent.net/jquery.sparkline/),
     Copyright (c) 2012 Splunk Inc.
-  - Paranamer v2.3 (http://github.com/paul-hammant/paranamer), Copyright
+  - Paranamer v2.8 (http://github.com/paul-hammant/paranamer), Copyright
     (c) 2006 Paul Hammant and Thoughtworks Inc.
   - Protocol Buffers (https://github.com/google/protobuf), Copyright (c)
     2014 Google Inc.
-  - scala-library v2.10.0 (http://www.scala-lang.org), Copyright (c)
+  - scala-library v2.10.7 (http://www.scala-lang.org), Copyright (c)
     2002-2016 EPFL, Copyright (c) 2011-2016 Lightbend, Inc. (formerly
     Typesafe, Inc.)
-  - scala-reflect v2.10.0 (http://www.scala-lang.org), Copyright (c)
-    2002-2016 EPFL, Copyright (c) 2011-2016 Lightbend, Inc. (formerly
-    Typesafe, Inc.)
+ -  Snappy v0.4 (https://github.com/google/snappy), Copyright (c) 2011,
+    Google Inc.
 
 All rights reserved.
 Redistribution and use in source and binary forms, with or without
@@ -1040,7 +1039,7 @@ Apache Geode bundles the following files under the MIT license:
     2004-present by the Checker Framework developers
   - JavaScript InfoVis Toolkit v2.0.1 (http://philogb.github.io/jit/),
     Copyright (c) 2011 Sencha Inc.
-  - JOpt Simple (http://pholser.github.io/jopt-simple/), Copyright (c)
+  - JOpt Simple v5.0.4 (http://pholser.github.io/jopt-simple/), Copyright (c)
     2004-2015 Paul R. Holser, Jr.
   - jQuery JavaScript Library v1.7.2 (https://jquery.com), Copyright (c)
     jQuery Foundation and other contributors, http://jquery.org
@@ -1067,7 +1066,7 @@ Apache Geode bundles the following files under the MIT license:
     Proietti, <http://mad4milk.net/>
   - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
     Copyright (c) Nicolas Gallagher and Jonathan Neal
-  - SLF4J API v1.7.21 (http://www.slf4j.org), Copyright (c) 2004-2013 QOS.ch
+  - SLF4J API v1.7.25 (http://www.slf4j.org), Copyright (c) 2004-2013 QOS.ch
   - sizzle.js (http://sizzlejs.com/), Copyright (c) 2011, The Dojo Foundation
   - Split.js (https://github.com/nathancahill/Split.js), Copyright (c)
     2015 Nathan Cahill
@@ -1103,7 +1102,7 @@ The MX4J License (http://mx4j.sourceforge.net/docs/ch01s06.html)
 Apache Geode bundles the following file under the MX4J license:
 
   - MX4JModelMBean.java (http://mx4j.sourceforge.net)
-  - MX4J v3.0.1 (http://mx4j.sourceforge.net), Copyright (c) MX4J
+  - MX4J v3.0.2 (http://mx4j.sourceforge.net), Copyright (c) MX4J
 
 Version 1.0
 
@@ -1161,6 +1160,6 @@ domain:
   - AOP Alliance v1.0 (http://aopalliance.sourceforge.net)
   - CompactConcurrentHashSet2, derived from JSR-166 ConcurrentHashMap v1.43
     (http://gee.cs.oswego.edu/dl/concurrency-interest).
-  - HdrHistogram (https://github.com/HdrHistogram/HdrHistogram)
-  - LatencyUtils (https://github.com/LatencyUtils/LatencyUtils)
+  - HdrHistogram v2.1.11 (https://github.com/HdrHistogram/HdrHistogram)
+  - LatencyUtils v2.0.3 (https://github.com/LatencyUtils/LatencyUtils)
   - tooltip.js v1.2.6 (https://github.com/jquerytools/jquerytools)
