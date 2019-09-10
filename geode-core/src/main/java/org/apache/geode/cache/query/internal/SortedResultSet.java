@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
@@ -130,9 +129,9 @@ public class SortedResultSet extends TreeSet
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     int size = in.readInt();
-    this.elementType = (ObjectType) DataSerializer.readObject(in);
+    this.elementType = (ObjectType) context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
-      this.add(DataSerializer.readObject(in));
+      this.add(context.getDeserializer().readObject(in));
     }
   }
 
@@ -141,9 +140,9 @@ public class SortedResultSet extends TreeSet
       SerializationContext context) throws IOException {
     // how do we serialize the comparator?
     out.writeInt(this.size());
-    DataSerializer.writeObject(this.elementType, out);
+    context.getSerializer().writeObject(this.elementType, out);
     for (Iterator i = this.iterator(); i.hasNext();) {
-      DataSerializer.writeObject(i.next(), out);
+      context.getSerializer().writeObject(i.next(), out);
     }
   }
 

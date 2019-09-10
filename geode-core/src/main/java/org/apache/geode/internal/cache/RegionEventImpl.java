@@ -207,7 +207,7 @@ public class RegionEventImpl
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     DataSerializer.writeString(this.regionPath, out);
-    DataSerializer.writeObject(this.callbackArgument, out);
+    context.getSerializer().writeObject(this.callbackArgument, out);
     out.writeByte(this.op.ordinal);
     out.writeBoolean(this.originRemote);
     InternalDataSerializer.invokeToData(((InternalDistributedMember) this.distributedMember), out);
@@ -220,7 +220,7 @@ public class RegionEventImpl
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.regionPath = DataSerializer.readString(in);
-    this.callbackArgument = DataSerializer.readObject(in);
+    this.callbackArgument = context.getDeserializer().readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
     this.originRemote = in.readBoolean();
     this.distributedMember = DSFIDFactory.readInternalDistributedMember(in);

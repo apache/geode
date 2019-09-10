@@ -171,7 +171,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.type = (StructTypeImpl) DataSerializer.readObject(in);
+    this.type = context.getDeserializer().readObject(in);
     this.values = DataSerializer.readObjectArray(in);
     if (this.values != null) {
       for (Object o : values) {
@@ -186,7 +186,7 @@ public class StructImpl implements Struct, DataSerializableFixedID, Serializable
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeObject(this.type, out);
+    context.getSerializer().writeObject(this.type, out);
     DataSerializer.writeObjectArray(this.values, out);
   }
 

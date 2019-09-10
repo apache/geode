@@ -64,7 +64,7 @@ public class QueueConnectionRequest extends ServerLocationRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(proxyId, out);
+    context.getSerializer().writeObject(proxyId, out);
     DataSerializer.writePrimitiveInt(redundantCopies, out);
     SerializationHelper.writeServerLocationSet(this.excludedServers, out);
     out.writeBoolean(this.findDurable);

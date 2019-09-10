@@ -23,7 +23,6 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
@@ -538,7 +537,7 @@ public abstract class PartitionMessage extends DistributionMessage
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.flags = in.readShort();
-    setBooleans(this.flags, in);
+    setBooleans(this.flags, in, context);
     this.regionId = in.readInt();
     // extra field post 9.0
     if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_90) >= 0) {
@@ -550,7 +549,8 @@ public abstract class PartitionMessage extends DistributionMessage
    * Re-construct the booleans using the compressed short. A subclass must override this method if
    * it is using bits in the compressed short.
    */
-  protected void setBooleans(short s, DataInput in) throws IOException, ClassNotFoundException {
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     if ((s & HAS_PROCESSOR_ID) != 0) {
       this.processorId = in.readInt();
       ReplyProcessor21.setMessageRPId(this.processorId);
@@ -560,7 +560,7 @@ public abstract class PartitionMessage extends DistributionMessage
     if ((s & HAS_TX_ID) != 0)
       this.txUniqId = in.readInt();
     if ((s & HAS_TX_MEMBERID) != 0) {
-      this.txMemberId = (InternalDistributedMember) DataSerializer.readObject(in);
+      this.txMemberId = context.getDeserializer().readObject(in);
     }
   }
 
@@ -581,7 +581,7 @@ public abstract class PartitionMessage extends DistributionMessage
     if (this.txUniqId != TXManagerImpl.NOTX)
       out.writeInt(this.txUniqId);
     if (this.txMemberId != null)
-      DataSerializer.writeObject(this.txMemberId, out);
+      context.getSerializer().writeObject(this.txMemberId, out);
     out.writeInt(this.regionId);
     // extra field post 9.0
     if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GFE_90) >= 0) {

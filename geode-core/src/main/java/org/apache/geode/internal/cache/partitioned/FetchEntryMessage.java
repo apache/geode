@@ -185,8 +185,9 @@ public class FetchEntryMessage extends PartitionMessage {
   }
 
   @Override
-  protected void setBooleans(short s, DataInput in) throws IOException, ClassNotFoundException {
-    super.setBooleans(s, in);
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setBooleans(s, in, context);
     this.access = ((s & HAS_ACCESS) != 0);
   }
 

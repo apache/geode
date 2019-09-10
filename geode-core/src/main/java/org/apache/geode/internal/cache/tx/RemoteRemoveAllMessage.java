@@ -234,7 +234,8 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
       final Version version = InternalDataSerializer.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.removeAllDataCount; i++) {
-        this.removeAllData[i] = new RemoveAllEntryData(in, this.eventId, i, version, bytesIn);
+        this.removeAllData[i] = new RemoveAllEntryData(in, this.eventId, i, version, bytesIn,
+            context);
       }
 
       boolean hasTags = in.readBoolean();
@@ -271,7 +272,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
         VersionTag<?> tag = removeAllData[i].versionTag;
         versionTags.add(tag);
         removeAllData[i].versionTag = null;
-        this.removeAllData[i].toData(out);
+        this.removeAllData[i].toData(out, context);
         this.removeAllData[i].versionTag = tag;
       }
 

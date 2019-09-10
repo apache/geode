@@ -320,7 +320,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.flags = in.readShort();
-    setFlags(this.flags, in);
+    setFlags(this.flags, in, context);
     this.regionPath = DataSerializer.readString(in);
     this.isTransactionDistributed = in.readBoolean();
   }
@@ -351,7 +351,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       out.writeInt(this.getTXUniqId());
     }
     if (this.getTXMemberId() != null) {
-      DataSerializer.writeObject(this.getTXMemberId(), out);
+      context.getSerializer().writeObject(this.getTXMemberId(), out);
     }
     DataSerializer.writeString(this.regionPath, out);
     out.writeBoolean(this.isTransactionDistributed);
@@ -370,7 +370,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     return flags;
   }
 
-  protected void setFlags(short flags, DataInput in) throws IOException, ClassNotFoundException {
+  protected void setFlags(short flags, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     if ((flags & HAS_PROCESSOR_ID) != 0) {
       this.processorId = in.readInt();
       ReplyProcessor21.setMessageRPId(this.processorId);
@@ -382,7 +383,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       this.txUniqId = in.readInt();
     }
     if ((flags & HAS_TX_MEMBERID) != 0) {
-      this.txMemberId = DataSerializer.readObject(in);
+      this.txMemberId = context.getDeserializer().readObject(in);
     }
   }
 

@@ -54,7 +54,7 @@ public class JmxManagerLocatorResponse implements DataSerializableFixedID {
     this.host = DataSerializer.readString(in);
     this.port = DataSerializer.readPrimitiveInt(in);
     this.ssl = DataSerializer.readPrimitiveBoolean(in);
-    this.ex = DataSerializer.readObject(in);
+    this.ex = context.getDeserializer().readObject(in);
   }
 
   @Override
@@ -63,7 +63,7 @@ public class JmxManagerLocatorResponse implements DataSerializableFixedID {
     DataSerializer.writeString(this.host, out);
     DataSerializer.writePrimitiveInt(this.port, out);
     DataSerializer.writePrimitiveBoolean(this.ssl, out);
-    DataSerializer.writeObject(this.ex, out);
+    context.getSerializer().writeObject(this.ex, out);
   }
 
   @Override

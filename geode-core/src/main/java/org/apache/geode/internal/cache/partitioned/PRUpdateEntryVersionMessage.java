@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
@@ -172,20 +171,20 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.key = DataSerializer.readObject(in);
+    this.key = context.getDeserializer().readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
-    this.eventId = (EventID) DataSerializer.readObject(in);
-    this.versionTag = DataSerializer.readObject(in);
+    this.eventId = (EventID) context.getDeserializer().readObject(in);
+    this.versionTag = context.getDeserializer().readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(getKey(), out);
+    context.getSerializer().writeObject(getKey(), out);
     out.writeByte(this.op.ordinal);
-    DataSerializer.writeObject(this.eventId, out);
-    DataSerializer.writeObject(this.versionTag, out);
+    context.getSerializer().writeObject(this.eventId, out);
+    context.getSerializer().writeObject(this.versionTag, out);
   }
 
   /**

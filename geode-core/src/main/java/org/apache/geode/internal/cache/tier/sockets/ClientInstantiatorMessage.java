@@ -156,8 +156,8 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
     for (int i = 0; i < instantiatorCount; i++) {
       DataSerializer.writeByteArray(this.serializedInstantiators[i], out);
     }
-    DataSerializer.writeObject(_membershipId, out);
-    DataSerializer.writeObject(_eventIdentifier, out);
+    context.getSerializer().writeObject(_membershipId, out);
+    context.getSerializer().writeObject(_eventIdentifier, out);
   }
 
   /**
@@ -178,7 +178,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
       this.serializedInstantiators[i] = DataSerializer.readByteArray(in);
     }
     _membershipId = ClientProxyMembershipID.readCanonicalized(in);
-    _eventIdentifier = (EventID) DataSerializer.readObject(in);
+    _eventIdentifier = (EventID) context.getDeserializer().readObject(in);
   }
 
   @Override

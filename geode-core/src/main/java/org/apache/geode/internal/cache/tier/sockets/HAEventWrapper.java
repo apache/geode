@@ -281,10 +281,10 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
     // by sending false boolean value.
     if (cum != null) {
       DataSerializer.writePrimitiveBoolean(true, out);
-      DataSerializer.writeObject(cum.getEventId(), out);
+      context.getSerializer().writeObject(cum.getEventId(), out);
     } else {
       DataSerializer.writePrimitiveBoolean(false, out);
-      DataSerializer.writeObject(new EventID(), out);
+      context.getSerializer().writeObject(new EventID(), out);
       // Create a dummy ClientUpdateMessageImpl instance
       cum = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_CREATE,
           new ClientProxyMembershipID(), null);
@@ -306,7 +306,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       DeserializationContext context) throws IOException, ClassNotFoundException {
     if (DataSerializer.readPrimitiveBoolean(in)) {
       // Indicates that we have a ClientUpdateMessage along with the HAEW instance in inputstream.
-      this.eventIdentifier = (EventID) DataSerializer.readObject(in);
+      this.eventIdentifier = (EventID) context.getDeserializer().readObject(in);
       this.clientUpdateMessage = new ClientUpdateMessageImpl();
       InternalDataSerializer.invokeFromData(this.clientUpdateMessage, in);
       ((ClientUpdateMessageImpl) this.clientUpdateMessage).setEventIdentifier(this.eventIdentifier);
@@ -363,7 +363,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       rcUpdater.set(this, 0);
     } else {
       // Read and ignore dummy eventIdentifier instance.
-      DataSerializer.readObject(in);
+      context.getDeserializer().readObject(in);
       // Read and ignore dummy ClientUpdateMessageImpl instance.
       InternalDataSerializer.invokeFromData(new ClientUpdateMessageImpl(), in);
       // hasCq will be false here, so client CQs are not read from this input

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -122,13 +121,13 @@ public class TopEntries<K> implements DataSerializableFixedID {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     out.writeInt(limit);
-    DataSerializer.writeObject(hits, out);
+    context.getSerializer().writeObject(hits, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     limit = in.readInt();
-    hits = DataSerializer.readObject(in);
+    hits = context.getDeserializer().readObject(in);
   };
 }

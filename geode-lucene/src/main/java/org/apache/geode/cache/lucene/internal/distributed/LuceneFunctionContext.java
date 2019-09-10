@@ -98,8 +98,8 @@ public class LuceneFunctionContext<C extends IndexResultCollector>
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     out.writeInt(limit);
-    DataSerializer.writeObject(queryProvider, out);
-    DataSerializer.writeObject(manager, out);
+    context.getSerializer().writeObject(queryProvider, out);
+    context.getSerializer().writeObject(manager, out);
     DataSerializer.writeString(indexName, out);
   }
 
@@ -107,8 +107,8 @@ public class LuceneFunctionContext<C extends IndexResultCollector>
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     limit = in.readInt();
-    queryProvider = DataSerializer.readObject(in);
-    manager = DataSerializer.readObject(in);
+    queryProvider = context.getDeserializer().readObject(in);
+    manager = context.getDeserializer().readObject(in);
     this.indexName = DataSerializer.readString(in);
   }
 

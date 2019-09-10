@@ -248,7 +248,7 @@ public class SnapshotPacket implements DataSerializableFixedID {
       SerializationContext context) throws IOException {
     out.writeInt(windowId);
     InternalDataSerializer.writeString(packetId, out);
-    InternalDataSerializer.writeObject(sender, out);
+    context.getSerializer().writeObject(sender, out);
 
     InternalDataSerializer.writeArrayLength(records.length, out);
     for (SnapshotRecord rec : records) {
@@ -261,7 +261,7 @@ public class SnapshotPacket implements DataSerializableFixedID {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     windowId = in.readInt();
     packetId = InternalDataSerializer.readString(in);
-    sender = InternalDataSerializer.readObject(in);
+    sender = context.getDeserializer().readObject(in);
 
     int count = InternalDataSerializer.readArrayLength(in);
     records = new SnapshotRecord[count];

@@ -128,7 +128,7 @@ public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out);
-    DataSerializer.writeObject(this.threshold, out);
+    context.getSerializer().writeObject(this.threshold, out);
     DataSerializer.writePrimitiveBoolean(this.evalForGtThan, out);
   }
 
@@ -136,7 +136,7 @@ public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.threshold = (Number) DataSerializer.readObject(in);
+    this.threshold = (Number) context.getDeserializer().readObject(in);
     this.evalForGtThan = DataSerializer.readPrimitiveBoolean(in);
   }
 

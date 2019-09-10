@@ -22,7 +22,7 @@ public interface ObjectDeserializer {
   /**
    * Read an object from the given data input
    */
-  Object readObject(DataInput input) throws IOException, ClassNotFoundException;
+  <T> T readObject(DataInput input) throws IOException, ClassNotFoundException;
 
   /**
    * When deserializing you may want to invoke a fromData method on an object.

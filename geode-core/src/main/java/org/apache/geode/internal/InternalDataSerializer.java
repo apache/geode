@@ -308,7 +308,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       }
     }).setObjectDeserializer(new ObjectDeserializer() {
       @Override
-      public Object readObject(DataInput input) throws IOException, ClassNotFoundException {
+      public <T> T readObject(DataInput input) throws IOException, ClassNotFoundException {
         return InternalDataSerializer.readObject(input);
       }
 

@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
@@ -149,7 +148,7 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
     InternalDataSerializer.invokeFromData(clt, in);
     setElementType(clt);
     for (int k = size; k > 0; k--) {
-      this.add(DataSerializer.readObject(in));
+      this.add(context.getDeserializer().readObject(in));
     }
   }
 
@@ -161,7 +160,7 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
     Assert.assertTrue(ctImpl != null, "ctImpl can not be null");
     InternalDataSerializer.invokeToData(ctImpl, out);
     for (Iterator itr = this.iterator(); itr.hasNext();) {
-      DataSerializer.writeObject(itr.next(), out);
+      context.getSerializer().writeObject(itr.next(), out);
     }
   }
 
