@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.function.BiFunction;
 
 import org.apache.logging.log4j.Logger;
 
@@ -43,9 +42,6 @@ import org.apache.geode.internal.serialization.Version;
 
 public class GMSUtil {
   private static final Logger logger = LogService.getLogger();
-
-  private static final BiFunction<String, Integer, InetSocketAddress> defaultSocketAddressFactory =
-      InetSocketAddress::new;
 
   /**
    * parse locators & check that the resulting address is compatible with the given address
@@ -110,14 +106,6 @@ public class GMSUtil {
    * @see org.apache.geode.distributed.ConfigurationProperties#LOCATORS for format
    */
   public static List<HostAddress> parseLocators(String locatorsString, InetAddress bindAddress) {
-    return parseLocators(locatorsString, bindAddress, defaultSocketAddressFactory);
-  }
-
-  // package-level access for unit testing
-  static List<HostAddress> parseLocators(
-      final String locatorsString,
-      final InetAddress bindAddress,
-      final BiFunction<String, Integer, InetSocketAddress> inetSocketAddressFactory) {
     List<HostAddress> result = new ArrayList<>(2);
     Set<InetSocketAddress> inetAddresses = new HashSet<>();
     String host;
@@ -163,7 +151,7 @@ public class GMSUtil {
         throw createBadPortException(str);
       }
 
-      InetSocketAddress isa = inetSocketAddressFactory.apply(host, port);
+      final InetSocketAddress isa = new InetSocketAddress(host, port);
 
       final InetAddress locatorAddress = isa.getAddress();
 
