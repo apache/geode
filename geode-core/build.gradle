@@ -286,12 +286,7 @@ dependencies {
     ext.optional = true
   }
 
-  //Jetty is used by the http service, which is used for the developer and management rest APIs
-  implementation('org.eclipse.jetty:jetty-webapp') {
-    ext.optional = true
-  }
-//  Jetty is used by the http service, which is used for the developer and management rest APIs
-  implementation('org.eclipse.jetty:jetty-server') {
+  runtimeOnly(project(':geode-http-service')) {
     ext.optional = true
   }
 

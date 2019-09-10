@@ -54,8 +54,9 @@ public class OldClientSupportProvider implements OldClientSupportService {
   }
 
   @Override
-  public void init(final Cache cache) {
+  public boolean init(final Cache cache) {
     InternalDataSerializer.setOldClientSupportService(this);
+    return true;
   }
 
   @Override

@@ -35,9 +35,11 @@ public class GeodeMemcachedService implements CacheService {
   private GemFireMemcachedServer memcachedServer;
 
   @Override
-  public void init(Cache cache) {
+  public boolean init(Cache cache) {
     InternalCache internalCache = (InternalCache) cache;
     startMemcachedServer(internalCache);
+
+    return true;
   }
 
   private void startMemcachedServer(InternalCache internalCache) {

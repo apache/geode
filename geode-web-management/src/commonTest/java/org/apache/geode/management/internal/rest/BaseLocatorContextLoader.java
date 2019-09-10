@@ -19,7 +19,7 @@ import org.springframework.test.context.web.GenericXmlWebContextLoader;
 import org.springframework.test.context.web.WebMergedContextConfiguration;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
-import org.apache.geode.internal.cache.InternalHttpService;
+import org.apache.geode.cache.internal.HttpService;
 
 /**
  * This is quite horrible. In particular we're trying to link the lifecycle of the
@@ -36,12 +36,12 @@ public abstract class BaseLocatorContextLoader extends GenericXmlWebContextLoade
     start();
     super.loadBeanDefinitions(context, webMergedConfig);
     context.getServletContext().setAttribute(
-        InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+        HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
         getSecurityService());
     context.getServletContext().setAttribute(
-        InternalHttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+        HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
         getClusterManagementService());
-    context.getServletContext().setAttribute(InternalHttpService.AUTH_TOKEN_ENABLED_PARAM,
+    context.getServletContext().setAttribute(HttpService.AUTH_TOKEN_ENABLED_PARAM,
         isAuthTokenEnabled());
     context.getServletContext().setAttribute("locator", this);
   }

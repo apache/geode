@@ -20,15 +20,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Properties;
 
 import org.junit.rules.ExternalResource;
 
 import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.tests.Server;
 
@@ -52,7 +49,7 @@ public class ServerRule extends ExternalResource {
   @Override
   protected void before() throws Throwable {
     startServer();
-    startJetty();
+    // startJetty();
   }
 
   @Override
@@ -74,24 +71,24 @@ public class ServerRule extends ExternalResource {
     server.start();
   }
 
-  private void startJetty() throws Exception {
-
-    System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_HOST, LOCALHOST);
-    System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED,
-        String.valueOf(Boolean.TRUE));
-
-    int httpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    jetty = new InternalHttpService(LOCALHOST, httpPort, new SSLConfig());
-    jetty.addWebApplication(PULSE_CONTEXT, getPulseWarPath(), new HashMap<>());
-    pulseURL = "http://" + LOCALHOST + ":" + httpPort + PULSE_CONTEXT;
-  }
+  // private void startJetty() throws Exception {
+  //
+  // System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_HOST, LOCALHOST);
+  // System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED,
+  // String.valueOf(Boolean.TRUE));
+  //
+  // int httpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+  // jetty = new InternalHttpService(LOCALHOST, httpPort, new SSLConfig());
+  // jetty.addWebApplication(PULSE_CONTEXT, getPulseWarPath(), new HashMap<>());
+  // pulseURL = "http://" + LOCALHOST + ":" + httpPort + PULSE_CONTEXT;
+  // }
 
   private void stopServer() throws Exception {
     server.stop();
   }
 
   private void stopJetty() throws Exception {
-    jetty.stop();
+    jetty.close();
   }
 
   private Path getPulseWarPath() throws IOException {

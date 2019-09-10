@@ -22,8 +22,9 @@ public class MockCacheServiceImpl implements MockCacheService {
   private Cache cache;
 
   @Override
-  public void init(Cache cache) {
+  public boolean init(Cache cache) {
     this.cache = cache;
+    return true;
   }
 
   @Override

@@ -55,6 +55,7 @@ import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
+import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
@@ -72,7 +73,6 @@ import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
-import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.config.JAXBService;
@@ -757,19 +757,19 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
     Map<String, Object> serviceAttributes = new HashMap<>();
-    serviceAttributes.put(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+    serviceAttributes.put(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
         internalCache.getSecurityService());
-    serviceAttributes.put(InternalHttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+    serviceAttributes.put(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
         clusterManagementService);
 
     String[] authEnabledComponents = distributionConfig.getSecurityAuthTokenEnabledComponents();
 
     boolean managementAuthTokenEnabled = Arrays.stream(authEnabledComponents)
         .anyMatch(AuthTokenEnabledComponents::hasManagement);
-    serviceAttributes.put(InternalHttpService.AUTH_TOKEN_ENABLED_PARAM, managementAuthTokenEnabled);
+    serviceAttributes.put(HttpService.AUTH_TOKEN_ENABLED_PARAM, managementAuthTokenEnabled);
 
     if (distributionConfig.getEnableManagementRestService()) {
-      internalCache.getHttpService().ifPresent(x -> {
+      internalCache.getOptionalService(HttpService.class).ifPresent(x -> {
         try {
           logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
               ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);

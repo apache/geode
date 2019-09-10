@@ -17,20 +17,23 @@ package org.apache.geode.cache.internal;
 import java.nio.file.Path;
 import java.util.Map;
 
+import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * This interface provides access to the simple http service exposed on the Geode
  * {@link InternalCache}. An instance can be retrieved by calling
- * {@code InternalCache.getHttpService()}.
+ * {@code InternalCache.getService(HttpService.class)}.
  */
-public interface HttpService {
+public interface HttpService extends CacheService {
 
-  /**
-   * Stop the service. This should also stop any transitively managed components. Starting the
-   * service is implicitly handled by {@link #addWebApplication(String, Path, Map)}
-   */
-  void stop();
+  String SECURITY_SERVICE_SERVLET_CONTEXT_PARAM = "org.apache.geode.securityService";
+
+  String CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM = "org.apache.geode.cluster.management.service";
+
+  String GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM = "org.apache.geode.sslConfig";
+
+  String AUTH_TOKEN_ENABLED_PARAM = "org.apache.geode.auth.token.enabled";
 
   /**
    * Add a new web application in the form of a war file. This method is also implicitly

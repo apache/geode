@@ -30,9 +30,11 @@ public class GeodeRedisService implements CacheService {
   private GeodeRedisServer redisServer;
 
   @Override
-  public void init(Cache cache) {
+  public boolean init(Cache cache) {
     InternalCache internalCache = (InternalCache) cache;
     startRedisServer(internalCache);
+
+    return true;
   }
 
   @Override

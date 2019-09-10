@@ -78,7 +78,6 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.client.internal.PoolImpl;
-import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqServiceStatistics;
@@ -2109,6 +2108,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public <T extends CacheService> Optional<T> getOptionalService(Class<T> clazz) {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
   public Collection<CacheService> getServices() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
@@ -2408,11 +2412,6 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void throwCacheExistsException() {
-    throw new UnsupportedOperationException("Should not be invoked");
-  }
-
-  @Override
-  public Optional<HttpService> getHttpService() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 

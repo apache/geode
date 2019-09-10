@@ -56,7 +56,6 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.QueryMonitor;
@@ -633,6 +632,11 @@ public class InternalCacheForClientAccess implements InternalCache {
   @Override
   public <T extends CacheService> T getService(Class<T> clazz) {
     return delegate.getService(clazz);
+  }
+
+  @Override
+  public <T extends CacheService> Optional<T> getOptionalService(Class<T> clazz) {
+    return Optional.ofNullable(getService(clazz));
   }
 
   @Override
@@ -1227,11 +1231,6 @@ public class InternalCacheForClientAccess implements InternalCache {
   @Override
   public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
     return this;
-  }
-
-  @Override
-  public Optional<HttpService> getHttpService() {
-    return delegate.getHttpService();
   }
 
   @Override
