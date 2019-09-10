@@ -12,9 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.cache.query.security.RestrictedMethodAuthorizer.UNAUTHORIZED_STRING;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -29,14 +29,12 @@ import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
-
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
+import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * Utility class for mapping operations in the query language to Java methods
- *
- * @version $Revision: 1.1 $
  */
-
 public class MethodDispatch {
   private Class _targetClass;
   private String _methodName;
@@ -62,13 +60,15 @@ public class MethodDispatch {
     Object[] argsArray = args.toArray();
 
     try {
-      _methodInvocationAuthorizer.authorizeMethodInvocation(_method, target);
+      if (!_methodInvocationAuthorizer.authorize(_method, target)) {
+        throw new NotAuthorizedException(UNAUTHORIZED_STRING + _method.getName());
+      }
+
       return _method.invoke(target, argsArray);
     } catch (IllegalAccessException e) {
       throw new NameNotFoundException(
-          String.format(
-              "Method ' %s ' in class ' %s ' is not accessible to the query processor",
-              new Object[] {_method.getName(), target.getClass().getName()}),
+          String.format("Method ' %s ' in class ' %s ' is not accessible to the query processor",
+              _method.getName(), target.getClass().getName()),
           e);
     } catch (InvocationTargetException e) {
       // if targetException is Exception, wrap it, otherwise wrap the InvocationTargetException
@@ -79,7 +79,6 @@ public class MethodDispatch {
       throw new QueryInvocationTargetException(e);
     }
   }
-
 
   private void resolve() throws NameResolutionException {
     // if argTypes contains a null, then go directly to resolveGeneral(),
@@ -97,10 +96,7 @@ public class MethodDispatch {
     } catch (NoSuchMethodException e) {
       resolveGeneral();
     }
-
-
   }
-
 
   private void resolveGeneral() throws NameResolutionException {
     Method[] allMethods = _targetClass.getMethods();
@@ -121,15 +117,12 @@ public class MethodDispatch {
       candidates.add(meth);
     }
 
-
     if (candidates.isEmpty()) {
       throw new NameNotFoundException(
           String.format(
               "No applicable and accessible method named ' %s ' was found in class ' %s ' for the argument types %s",
-
-              new Object[] {_methodName, _targetClass.getName(), Arrays.asList(_argTypes)}));
+              _methodName, _targetClass.getName(), Arrays.asList(_argTypes)));
     }
-
 
     // now we have a list of accessible and applicable method,
     // choose the most specific
@@ -137,7 +130,6 @@ public class MethodDispatch {
       _method = candidates.get(0);
       return;
     }
-
 
     sortByDecreasingSpecificity(candidates);
     // get the first two methods in the sorted list,
@@ -149,18 +141,14 @@ public class MethodDispatch {
     // special case a null argument type in this case, since there should
     // be not differentiation for those parameter types regarding specificity
 
-
     if (equalSpecificity(meth1, meth2, _argTypes))
       throw new AmbiguousNameException(
           String.format(
               "Two or more maximally specific methods were found for the method named ' %s ' in class ' %s ' for the argument types: %s",
-              new Object[] {meth1.getName(), _targetClass.getName(),
-                  Arrays.asList(_argTypes)}));
+              meth1.getName(), _targetClass.getName(), Arrays.asList(_argTypes)));
 
     _method = meth1;
   }
-
-
 
   private void sortByDecreasingSpecificity(List methods) {
     Collections.sort(methods, new Comparator() {
@@ -181,7 +169,7 @@ public class MethodDispatch {
     });
   }
 
-  protected boolean methodConvertible(Method m1, Method m2) {
+  private boolean methodConvertible(Method m1, Method m2) {
     boolean declaringClassesConvertible =
         TypeUtils.isTypeConvertible(m1.getDeclaringClass(), m2.getDeclaringClass());
 
@@ -203,24 +191,17 @@ public class MethodDispatch {
     if (!methodConvertible(m1, m2))
       return true;
 
-
     // if there is at least one param type that is more specific
     // ignoring parameters with a null argument, then
     // answer false, otherwise true.
-
     Class[] p1 = m1.getParameterTypes();
     Class[] p2 = m2.getParameterTypes();
     for (int i = 0; i < p1.length; i++) {
-      if (argTypes[i] != null && p1[i] != p2[i] && TypeUtils.isTypeConvertible(p1[i], p2[i])) // assumes
-                                                                                              // m1
-                                                                                              // is
-                                                                                              // <=
-                                                                                              // m2
-                                                                                              // in
-                                                                                              // specificity
+      // assumes m1 is <= m2 in specificity
+      if (argTypes[i] != null && p1[i] != p2[i] && TypeUtils.isTypeConvertible(p1[i], p2[i]))
         return false;
     }
+
     return true;
   }
-
 }

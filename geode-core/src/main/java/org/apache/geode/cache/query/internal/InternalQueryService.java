@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.internal;
 
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 
 public interface InternalQueryService extends QueryService {
 

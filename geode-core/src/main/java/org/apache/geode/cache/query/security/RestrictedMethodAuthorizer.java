@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.query.internal;
+package org.apache.geode.cache.query.security;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -29,8 +29,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 
-public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAuthorizer {
-
+public class RestrictedMethodAuthorizer implements MethodInvocationAuthorizer {
   public static final String UNAUTHORIZED_STRING = "Unauthorized access to method: ";
 
   @Immutable
@@ -43,26 +42,26 @@ public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAut
   private final Map<String, Set> acceptListedMethodsToClass;
 
 
-  public RestrictedMethodInvocationAuthorizer(SecurityService securityService) {
+  public RestrictedMethodAuthorizer(SecurityService securityService) {
     this.securityService = securityService;
     acceptListedMethodsToClass = DEFAULT_ACCEPTLIST;
   }
 
   private static HashMap<String, Set> createAcceptList() {
-    HashMap<String, Set> acceptListMap = new HashMap();
-    Set<Class> objectCallers = new HashSet();
+    HashMap<String, Set> acceptListMap = new HashMap<>();
+    Set<Class> objectCallers = new HashSet<>();
     objectCallers.add(Object.class);
     objectCallers = Collections.unmodifiableSet(objectCallers);
     acceptListMap.put("toString", objectCallers);
     acceptListMap.put("equals", objectCallers);
     acceptListMap.put("compareTo", objectCallers);
 
-    Set<Class> booleanCallers = new HashSet();
+    Set<Class> booleanCallers = new HashSet<>();
     booleanCallers.add(Boolean.class);
     booleanCallers = Collections.unmodifiableSet(booleanCallers);
     acceptListMap.put("booleanValue", booleanCallers);
 
-    Set<Class> numericCallers = new HashSet();
+    Set<Class> numericCallers = new HashSet<>();
     numericCallers.add(Number.class);
     numericCallers = Collections.unmodifiableSet(numericCallers);
     acceptListMap.put("byteValue", numericCallers);
@@ -72,7 +71,7 @@ public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAut
     acceptListMap.put("longValue", numericCallers);
     acceptListMap.put("shortValue", numericCallers);
 
-    Set<Class> mapCallers = new HashSet();
+    Set<Class> mapCallers = new HashSet<>();
     mapCallers.add(Collection.class);
     mapCallers.add(Map.class);
     mapCallers = Collections.unmodifiableSet(mapCallers);
@@ -84,7 +83,7 @@ public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAut
     acceptListMap.put("getValues", mapCallers);
     acceptListMap.put("containsKey", mapCallers);
 
-    Set<Class> mapEntryCallers = new HashSet();
+    Set<Class> mapEntryCallers = new HashSet<>();
     mapEntryCallers.add(Map.Entry.class);
     mapEntryCallers = Collections.unmodifiableSet(mapEntryCallers);
     acceptListMap.put("getKey", mapEntryCallers);
@@ -155,11 +154,18 @@ public class RestrictedMethodInvocationAuthorizer implements MethodInvocationAut
   }
 
   @Override
-  public void authorizeMethodInvocation(Method method, Object target) {
+  public boolean authorize(Method method, Object target) {
     if (!isAcceptlisted(method)) {
-      throw new NotAuthorizedException(UNAUTHORIZED_STRING + method.getName());
+      return false;
     }
-    authorizeRegionAccess(securityService, target);
+
+    try {
+      authorizeRegionAccess(securityService, target);
+    } catch (NotAuthorizedException noAuthorizedException) {
+      return false;
+    }
+
+    return true;
   }
 
   private void authorizeRegionAccess(SecurityService securityService, Object target) {
