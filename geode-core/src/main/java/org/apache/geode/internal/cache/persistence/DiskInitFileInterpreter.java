@@ -17,9 +17,9 @@ package org.apache.geode.internal.cache.persistence;
 import java.util.EnumSet;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
+import org.apache.geode.internal.serialization.Version;
 
 public interface DiskInitFileInterpreter {
 

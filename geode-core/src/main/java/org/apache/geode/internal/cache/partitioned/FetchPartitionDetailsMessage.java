@@ -39,6 +39,8 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class FetchPartitionDetailsMessage extends PartitionMessage {
 
@@ -89,7 +91,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
   }
 
   public FetchPartitionDetailsMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override
@@ -131,16 +133,18 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.internal = in.readBoolean();
     this.fetchOfflineMembers = in.readBoolean();
     this.loadProbe = (LoadProbe) DataSerializer.readObject(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeBoolean(this.internal);
     out.writeBoolean(this.fetchOfflineMembers);
     DataSerializer.writeObject(loadProbe, out);
@@ -167,7 +171,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
 
     public FetchPartitionDetailsReplyMessage(DataInput in)
         throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private FetchPartitionDetailsReplyMessage(int processorId, PartitionMemberInfoImpl details,
@@ -238,8 +242,9 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       if (this.configuredMaxMemory == 0) {
         out.writeByte(NO_PARTITION);
       } else {
@@ -267,8 +272,9 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       byte flag = in.readByte();
       if (flag != NO_PARTITION) {
         this.configuredMaxMemory = in.readLong();

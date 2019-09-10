@@ -26,7 +26,6 @@ import org.apache.geode.cache.ResourceException;
 import org.apache.geode.cache.operations.PutAllOperationContext;
 import org.apache.geode.cache.operations.internal.UpdateOnlyMap;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -46,6 +45,7 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 

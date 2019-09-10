@@ -23,6 +23,7 @@ import java.io.DataInput;
 import org.junit.Test;
 
 
+
 public class RemoteRemoveAllMessageTest {
 
   @Test
@@ -30,8 +31,8 @@ public class RemoteRemoveAllMessageTest {
     RemoteRemoveAllMessage mockRemoteRemoveAllMessage = mock(RemoteRemoveAllMessage.class);
     DataInput mockDataInput = mock(DataInput.class);
 
-    mockRemoteRemoveAllMessage.fromData(mockDataInput);
+    mockRemoteRemoveAllMessage.fromData(mockDataInput, null);
 
-    verify(mockRemoteRemoveAllMessage, times(1)).fromData(mockDataInput);
+    verify(mockRemoteRemoveAllMessage, times(1)).fromData(mockDataInput, null);
   }
 }

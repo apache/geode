@@ -15,7 +15,6 @@
 package org.apache.geode.internal.offheap;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -26,6 +25,7 @@ import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DSCODE;
 
 /**
  * The class just has static methods that operate on instances of {@link OffHeapRegionEntry}. It

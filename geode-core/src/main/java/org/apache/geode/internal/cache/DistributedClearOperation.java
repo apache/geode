@@ -29,6 +29,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class DistributedClearOperation extends DistributedCacheOperation {
   public static enum OperationType {
@@ -229,8 +231,9 @@ public class DistributedClearOperation extends DistributedCacheOperation {
 
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.clearOp = OperationType.values()[in.readByte()];
       this.eventID = (EventID) DataSerializer.readObject(in);
       this.rvv = (RegionVersionVector) DataSerializer.readObject(in);
@@ -238,8 +241,9 @@ public class DistributedClearOperation extends DistributedCacheOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeByte(this.clearOp.ordinal());
       DataSerializer.writeObject(this.eventID, out);
       DataSerializer.writeObject(this.rvv, out);
@@ -282,14 +286,16 @@ public class DistributedClearOperation extends DistributedCacheOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.context = DataSerializer.readObject(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.context, out);
     }
   }

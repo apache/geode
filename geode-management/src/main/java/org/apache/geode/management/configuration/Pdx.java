@@ -55,7 +55,7 @@ public class Pdx extends AbstractConfiguration
   }
 
   public void setGroup(String group) {
-    if (group != null && !CLUSTER.equals(group)) {
+    if (!isCluster(group)) {
       throw new IllegalArgumentException("Pdx can only be configured in cluster level.");
     }
   }

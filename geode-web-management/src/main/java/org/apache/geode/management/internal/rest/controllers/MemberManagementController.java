@@ -66,6 +66,9 @@ public class MemberManagementController extends AbstractManagementController {
     if (StringUtils.isNotBlank(id)) {
       filter.setId(id);
     }
+    if (StringUtils.isNotBlank(group)) {
+      filter.setGroup(group);
+    }
     ClusterManagementListResult<MemberConfig, MemberInformation> result =
         clusterManagementService.list(filter);
 

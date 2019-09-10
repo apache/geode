@@ -75,10 +75,27 @@ public class ListAsyncEventQueuesCommandDUnitTest {
         .tableHasRowWithValues("Member", "ID", "server-1", "queue")
         .tableHasRowWithValues("Member", "ID", "server-2", "queue");
 
+    // Test case where start-paused is set
+    gfsh.executeAndAssertThat("create async-event-queue --id=queue3 --listener="
+        + MyAsyncEventListener.class.getName() + " --pause-event-processing").statusIsSuccess();
+
+    // locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue3", 1);
+    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+        .tableHasRowCount(6)
+        .tableHasRowWithValues("Member", "ID", "Created with paused event processing",
+            "Currently Paused", "server-1", "queue3",
+            "true", "true")
+        .tableHasRowWithValues("Member", "ID", "Created with paused event processing",
+            "Currently Paused", "server-2", "queue2",
+            "false", "false");
+
+
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue").statusIsSuccess();
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1").statusIsSuccess();
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue2").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy async-event-queue --id=queue3").statusIsSuccess();
   }
+
 
   @Test
   public void ensureNoResultIsSuccess() {

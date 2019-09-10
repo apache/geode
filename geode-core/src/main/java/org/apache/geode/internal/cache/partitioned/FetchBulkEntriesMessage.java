@@ -44,7 +44,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.ForceReattemptException;
@@ -57,6 +56,9 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  *
@@ -150,8 +152,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.keys = DataSerializer.readByte(in);
     if (this.keys == KEY_LIST) {
       this.bucketKeys = DataSerializer.readHashMap(in);
@@ -163,8 +166,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeByte(this.keys, out);
     if (this.keys == KEY_LIST) {
       DataSerializer.writeHashMap(this.bucketKeys, out);
@@ -423,8 +427,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
 
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.lastInSeries);
       DataSerializer.writePrimitiveInt(this.msgNum, out);
       DataSerializer.writeObjectAsByteArray(this.chunkStream, out);
@@ -437,8 +442,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.lastInSeries = in.readBoolean();
       this.msgNum = DataSerializer.readPrimitiveInt(in);
       this.chunk = DataSerializer.readByteArray(in);

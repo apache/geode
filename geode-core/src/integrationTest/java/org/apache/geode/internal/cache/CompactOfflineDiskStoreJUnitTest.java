@@ -40,8 +40,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Tests offline compaction

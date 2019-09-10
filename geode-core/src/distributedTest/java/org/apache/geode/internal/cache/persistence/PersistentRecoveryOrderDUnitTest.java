@@ -72,7 +72,6 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.AbstractUpdateOperation.AbstractUpdateMessage;
 import org.apache.geode.internal.cache.DestroyRegionOperation.DestroyRegionMessage;
 import org.apache.geode.internal.cache.DiskRegion;
@@ -1188,7 +1187,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
       RegionVersionVector regionVersionVector = region.getVersionVector();
       regionVersionVector = regionVersionVector.getCloneForTransmission();
-      HeapDataOutputStream outputStream = new HeapDataOutputStream(Version.CURRENT);
+      HeapDataOutputStream outputStream = new HeapDataOutputStream(2048);
 
       // Using gemfire serialization because RegionVersionVector is not java serializable
       DataSerializer.writeObject(regionVersionVector, outputStream);

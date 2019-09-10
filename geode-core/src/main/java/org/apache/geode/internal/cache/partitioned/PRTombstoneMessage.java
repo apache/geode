@@ -32,8 +32,6 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.SerializationVersions;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.FilterProfile;
@@ -45,6 +43,10 @@ import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This message class sends tombstone GC information to other PR holders
@@ -132,8 +134,9 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     int numKeys = in.readInt();
     this.keys = new HashSet<Object>(numKeys);
     for (int i = 0; i < numKeys; i++) {
@@ -143,8 +146,9 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.keys.size());
     for (Object key : keys) {
       DataSerializer.writeObject(key, out);

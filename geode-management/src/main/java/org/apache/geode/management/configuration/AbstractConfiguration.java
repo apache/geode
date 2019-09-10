@@ -15,13 +15,9 @@
 
 package org.apache.geode.management.configuration;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import org.apache.commons.lang3.StringUtils;
+import java.io.Serializable;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
@@ -30,50 +26,31 @@ import org.apache.geode.management.api.JsonSerializable;
 @Experimental
 public abstract class AbstractConfiguration
     implements Identifiable<String>, Serializable, JsonSerializable {
+  /**
+   * The reserved group name that represents the predefined "cluster" group.
+   * Every member of a cluster automatically belongs to this group.
+   * Note that this cluster group name is not allowed in some contexts.
+   * For example when creating a region, instead of setting the group to CLUSTER,
+   * you need to set it to NULL or just let it default.
+   */
   public static final String CLUSTER = "cluster";
 
-  protected List<String> groups = new ArrayList<>();
-
   /**
-   * this returns a non-null value
-   * for cluster level element, it will return "cluster" for sure.
+   * Returns true if the given "groupName" represents the predefined "cluster" group.
+   * This is true if "groupName" is a case-insensitive match for {@link #CLUSTER},
+   * is <code>null</code>, or is an empty string.
    */
-  @JsonIgnore
-  public String getConfigGroup() {
-    String group = getGroup();
-    if (StringUtils.isBlank(group))
-      return CLUSTER;
-    else
-      return group;
+  public static boolean isCluster(String groupName) {
+    return isBlank(groupName) || groupName.equalsIgnoreCase(CLUSTER);
   }
 
-  /**
-   * this returns the first group set by the user
-   * if no group is set, this returns null
-   */
-  @JsonIgnore
+  private String group;
+
   public String getGroup() {
-    if (groups.size() == 0) {
-      return null;
-    }
-    return groups.get(0);
+    return group;
   }
 
-  @JsonSetter
   public void setGroup(String group) {
-    groups.clear();
-
-    if (StringUtils.isBlank(group)) {
-      return;
-    }
-    groups.add(group);
-  }
-
-  public List<String> getGroups() {
-    return groups;
-  }
-
-  public void addGroup(String group) {
-    groups.add(group);
+    this.group = group;
   }
 }

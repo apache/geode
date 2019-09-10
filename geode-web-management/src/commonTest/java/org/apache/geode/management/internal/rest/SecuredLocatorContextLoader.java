@@ -44,5 +44,4 @@ public class SecuredLocatorContextLoader extends BaseLocatorContextLoader {
   public ClusterManagementService getClusterManagementService() {
     return locator.getLocator().getClusterManagementService();
   }
-
 }

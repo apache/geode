@@ -32,8 +32,10 @@ import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 public class LinkedResultSet extends java.util.LinkedHashSet
     implements Ordered, SelectResults, DataSerializableFixedID {
@@ -111,7 +113,8 @@ public class LinkedResultSet extends java.util.LinkedHashSet
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     int size = in.readInt();
     this.elementType = (ObjectType) DataSerializer.readObject(in);
     for (int j = size; j > 0; j--) {
@@ -120,7 +123,8 @@ public class LinkedResultSet extends java.util.LinkedHashSet
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // how do we serialize the comparator?
     out.writeInt(this.size());
     DataSerializer.writeObject(this.elementType, out);

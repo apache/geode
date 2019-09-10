@@ -21,7 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.version.VersionManager;
 
@@ -46,8 +45,8 @@ public class ChildVM {
       int pid = OSProcess.getId();
       logger.info("VM" + vmNum + " is launching" + (pid > 0 ? " with PID " + pid : ""));
       if (!VersionManager.isCurrentVersion(geodeVersion)) {
-        logger.info("This VM is using Geode version {}. Version.CURRENT is {} (ordinal={})",
-            geodeVersion, Version.CURRENT, Version.CURRENT_ORDINAL);
+        logger.info("This VM is using a Geode version {}",
+            geodeVersion);
       }
       MasterRemote holder = (MasterRemote) Naming
           .lookup("//localhost:" + namingPort + "/" + DUnitLauncher.MASTER_PARAM);

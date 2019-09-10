@@ -27,6 +27,8 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Responds to {@link ObjectNamesResponse}.
@@ -86,14 +88,16 @@ public class ObjectNamesResponse extends AdminResponse implements Cancellable {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.objectNames, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.objectNames = (HashSet) DataSerializer.readObject(in);
   }
 

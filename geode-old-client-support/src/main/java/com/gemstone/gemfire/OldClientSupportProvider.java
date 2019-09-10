@@ -22,11 +22,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 import com.gemstone.gemfire.cache.execute.EmtpyRegionFunctionException;

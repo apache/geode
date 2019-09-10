@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 import org.apache.geode.distributed.DurableClientAttributes;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This is the SPI for the basic element of membership provided in Geode.

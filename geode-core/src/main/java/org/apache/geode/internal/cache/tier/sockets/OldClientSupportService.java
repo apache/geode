@@ -18,8 +18,8 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.DataInput;
 import java.io.DataOutput;
 
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheService;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Support for old GemFire clients

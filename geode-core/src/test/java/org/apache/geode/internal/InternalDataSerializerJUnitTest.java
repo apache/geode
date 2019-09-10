@@ -38,6 +38,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.examples.security.ExampleSecurityManager;
+import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**

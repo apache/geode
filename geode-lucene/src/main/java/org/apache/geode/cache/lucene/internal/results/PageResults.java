@@ -19,8 +19,10 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 public class PageResults extends ArrayList<PageEntry> implements DataSerializableFixedID {
 
@@ -36,7 +38,8 @@ public class PageResults extends ArrayList<PageEntry> implements DataSerializabl
   }
 
   @Override
-  public void toData(final DataOutput out) throws IOException {
+  public void toData(final DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(this.size());
     for (PageEntry entry : this) {
       entry.toData(out);
@@ -44,7 +47,8 @@ public class PageResults extends ArrayList<PageEntry> implements DataSerializabl
   }
 
   @Override
-  public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(final DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     int size = in.readInt();
     for (int i = 0; i < size; i++) {
       PageEntry entry = new PageEntry();

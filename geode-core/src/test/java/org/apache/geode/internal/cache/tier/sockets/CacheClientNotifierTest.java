@@ -41,6 +41,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Operation;
@@ -55,6 +57,17 @@ import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
 
 public class CacheClientNotifierTest {
+  @Before
+  public void setup() {
+    // Perform cleanup on any singletons received from previous test runs, since the
+    // CacheClientNotifier is a static and previous tests may not have cleaned up properly.
+    shutdownExistingCacheClientNotifier();
+  }
+
+  @After
+  public void tearDown() {
+    shutdownExistingCacheClientNotifier();
+  }
 
   @Test
   public void eventsInClientRegistrationQueueAreSentToClientAfterRegistrationIsComplete()
@@ -294,5 +307,12 @@ public class CacheClientNotifierTest {
 
     when(proxy.getAcceptorId()).thenReturn(Long.valueOf(111));
     ccn.shutdown(111);
+  }
+
+  private void shutdownExistingCacheClientNotifier() {
+    CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance();
+    if (cacheClientNotifier != null) {
+      cacheClientNotifier.shutdown(0);
+    }
   }
 }

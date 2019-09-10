@@ -17,6 +17,7 @@ package org.apache.geode.test.junit.rules;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -35,6 +36,16 @@ public abstract class VMProvider {
     }
 
     Arrays.stream(members).forEach(member -> member.invoke(runnableIF));
+  }
+
+  public static void invokeInRandomMember(SerializableRunnableIF runnableIF,
+      VMProvider... members) {
+    if (ArrayUtils.isEmpty(members)) {
+      throw new IllegalArgumentException("Array of members must not be null nor empty.");
+    }
+
+    int randomMemberIndex = new Random().nextInt(members.length);
+    members[randomMemberIndex].invoke(runnableIF);
   }
 
   public static void invokeInEveryMember(String name, SerializableRunnableIF runnableIF,
@@ -66,9 +77,7 @@ public abstract class VMProvider {
   }
 
   public boolean isClient() {
-    return getVM().invoke("isClient", () -> {
-      return ClusterStartupRule.clientCacheRule != null;
-    });
+    return getVM().invoke("isClient", () -> ClusterStartupRule.clientCacheRule != null);
   }
 
   public boolean isLocator() {

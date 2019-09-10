@@ -22,10 +22,11 @@ import java.util.function.UnaryOperator;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 
 @Experimental
 public interface ConfigurationPersistenceService {
-  String CLUSTER_CONFIG = "cluster";
+  String CLUSTER_CONFIG = AbstractConfiguration.CLUSTER;
 
   /**
    * retrieves all the group names in the cluster

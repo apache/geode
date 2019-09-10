@@ -51,7 +51,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import org.apache.geode.internal.cache.ControllerAdvisor;
 import org.apache.geode.internal.cache.ControllerAdvisor.ControllerProfile;
@@ -59,6 +58,7 @@ import org.apache.geode.internal.cache.FindDurableQueueProcessor;
 import org.apache.geode.internal.cache.GridAdvisor.GridProfile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  *

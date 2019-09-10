@@ -19,10 +19,11 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 public class JoinRequestMessage extends AbstractGMSMessage {
   private GMSMember memberID;
@@ -87,10 +88,11 @@ public class JoinRequestMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    GMSUtil.writeMemberID(memberID, out);
-    DataSerializer.writeObject(credentials, out);
-    DataSerializer.writePrimitiveInt(failureDetectionPort, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    GMSUtil.writeMemberID(memberID, out, context);
+    context.getSerializer().writeObject(credentials, out);
+    out.writeInt(failureDetectionPort);
     // preserve the multicast setting so the receiver can tell
     // if this is a mcast join request
     out.writeBoolean(false);
@@ -98,10 +100,11 @@ public class JoinRequestMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    memberID = GMSUtil.readMemberID(in);
-    credentials = DataSerializer.readObject(in);
-    failureDetectionPort = DataSerializer.readPrimitiveInt(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    memberID = GMSUtil.readMemberID(in, context);
+    credentials = context.getDeserializer().readObject(in);
+    failureDetectionPort = in.readInt();
     // setMulticast(in.readBoolean());
     in.readBoolean();
     requestId = in.readInt();

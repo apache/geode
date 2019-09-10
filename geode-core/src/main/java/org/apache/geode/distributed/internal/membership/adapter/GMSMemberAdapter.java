@@ -22,7 +22,7 @@ import java.net.InetAddress;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * GMSMemberAdapter implements the NetMember interface required by InternalDistributedMember

@@ -29,7 +29,7 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDestroyIndexFu
 import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;

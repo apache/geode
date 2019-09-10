@@ -82,8 +82,8 @@ public interface ClusterManagementService extends AutoCloseable {
    *        supplying the name (id) of the desired config element
    * @return a {@link ClusterManagementListResult} holding a single element in
    *         {@link ClusterManagementListResult#getResult()}
-   * @throws ClusterManagementException if unsuccesful or, no matching element is found, or multiple
-   *         matches are found
+   * @throws ClusterManagementException if unsuccessful or, no matching element is found, or
+   *         multiple matches are found
    */
   <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config);

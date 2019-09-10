@@ -25,9 +25,9 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.junit.categories.SerializationTest;
 

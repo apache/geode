@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 
+import org.apache.geode.internal.serialization.ThreadLocalByteArrayCache;
+
 public class ThreadLocalByteArrayCacheTest {
   private ThreadLocalByteArrayCache instance = new ThreadLocalByteArrayCache(2);
 

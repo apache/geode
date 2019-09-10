@@ -22,6 +22,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class WaitForViewInstallation extends HighPriorityDistributionMessage
     implements MessageWithReply {
@@ -78,7 +80,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
   /*
    * (non-Javadoc)
    *
-   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+   * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
    */
   @Override
   public int getDSFID() {
@@ -86,15 +88,17 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeLong(this.viewId);
     out.writeInt(this.processorId);
   }
 
   @Override
-  public void fromData(DataInput in) throws ClassNotFoundException, IOException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws ClassNotFoundException, IOException {
+    super.fromData(in, context);
     this.viewId = in.readLong();
     this.processorId = in.readInt();
   }

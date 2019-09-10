@@ -79,7 +79,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.LeaveReques
 import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.test.junit.categories.MembershipTest;
 

@@ -46,10 +46,10 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class RegionVersionVectorTest {

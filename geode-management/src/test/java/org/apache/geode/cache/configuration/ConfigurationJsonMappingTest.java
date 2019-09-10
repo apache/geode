@@ -88,7 +88,6 @@ public class ConfigurationJsonMappingTest {
   @Test
   public void getGroup() throws Exception {
     assertThat(region.getGroup()).isNull();
-    assertThat(region.getConfigGroup()).isEqualTo("cluster");
 
     String json = mapper.writeValueAsString(region);
     assertThat(json).doesNotContain("\"group\"");
@@ -102,13 +101,6 @@ public class ConfigurationJsonMappingTest {
   }
 
   @Test
-  public void groups() throws Exception {
-    String json = "{'name':'test','groups':['group1','group2']}";
-    Region regionConfig = mapper.readValue(json, Region.class);
-    assertThat(regionConfig.getGroups()).containsExactlyInAnyOrder("group1", "group2");
-  }
-
-  @Test
   public void serializeGroup() throws Exception {
     Region config = new Region();
     config.setName("test");
@@ -116,18 +108,7 @@ public class ConfigurationJsonMappingTest {
     String json = mapper.writeValueAsString(config);
     System.out.println(json);
     assertThat(json)
-        .contains("\"groups\":[\"group1\"]");
-  }
-
-  @Test
-  public void serializeMultipleGroup() throws Exception {
-    Region config = new Region();
-    config.setName("test");
-    config.getGroups().add("group1");
-    config.getGroups().add("group2");
-    String json = mapper.writeValueAsString(config);
-    System.out.println(json);
-    assertThat(json).contains("\"groups\":[\"group1\",\"group2\"]").doesNotContain("\"group\"");
+        .contains("\"group\":\"group1\"");
   }
 
   @Test
@@ -137,6 +118,26 @@ public class ConfigurationJsonMappingTest {
     config.setGroup("cluster");
     String json = mapper.writeValueAsString(config);
     System.out.println(json);
-    assertThat(json).contains("\"groups\":[\"cluster\"]");
+    assertThat(json).contains("\"group\":\"cluster\"");
+  }
+
+  @Test
+  public void serializeNullGroup() throws Exception {
+    Region config = new Region();
+    config.setName("test");
+    config.setGroup(null);
+    String json = mapper.writeValueAsString(config);
+    System.out.println(json);
+    assertThat(json).doesNotContain("group");
+  }
+
+  @Test
+  public void serializeEmptyGroup() throws Exception {
+    Region config = new Region();
+    config.setName("test");
+    config.setGroup("");
+    String json = mapper.writeValueAsString(config);
+    System.out.println(json);
+    assertThat(json).doesNotContain("group");
   }
 }

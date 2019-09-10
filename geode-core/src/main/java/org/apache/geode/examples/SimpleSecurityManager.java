@@ -14,6 +14,10 @@
  */
 package org.apache.geode.examples;
 
+import static org.apache.geode.security.SecurityManager.PASSWORD;
+import static org.apache.geode.security.SecurityManager.TOKEN;
+import static org.apache.geode.security.SecurityManager.USER_NAME;
+
 import java.util.Properties;
 
 import org.apache.geode.security.AuthenticationFailedException;
@@ -33,8 +37,12 @@ public class SimpleSecurityManager implements SecurityManager {
 
   @Override
   public Object authenticate(final Properties credentials) throws AuthenticationFailedException {
-    String username = credentials.getProperty("security-username");
-    String password = credentials.getProperty("security-password");
+    String token = credentials.getProperty(TOKEN);
+    if (token != null) {
+      return "Bearer " + token;
+    }
+    String username = credentials.getProperty(USER_NAME);
+    String password = credentials.getProperty(PASSWORD);
     if (username != null && username.equals(password)) {
       return username;
     }
@@ -43,6 +51,9 @@ public class SimpleSecurityManager implements SecurityManager {
 
   @Override
   public boolean authorize(final Object principal, final ResourcePermission permission) {
+    if (principal.toString().startsWith("Bearer ")) {
+      return true;
+    }
     String[] principals = principal.toString().toLowerCase().split(",");
     for (String role : principals) {
       String permissionString = permission.toString().replace(":", "").toLowerCase();

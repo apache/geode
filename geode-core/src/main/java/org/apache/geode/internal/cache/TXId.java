@@ -23,7 +23,9 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.ExternalizableDSFID;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * The implementation of the {@link TransactionId} interface stored in the transaction state and
@@ -95,13 +97,15 @@ public class TXId extends ExternalizableDSFID implements TransactionId {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(this.uniqId);
     InternalDataSerializer.invokeToData(this.memberId, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.uniqId = in.readInt();
     this.memberId = DSFIDFactory.readInternalDistributedMember(in);
   }

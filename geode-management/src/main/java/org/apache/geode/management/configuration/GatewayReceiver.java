@@ -35,7 +35,11 @@ public class GatewayReceiver extends AbstractConfiguration implements RestfulEnd
   @Override
   @JsonIgnore
   public String getId() {
-    return getConfigGroup();
+    String id = getGroup();
+    if (isCluster(id)) {
+      id = AbstractConfiguration.CLUSTER;
+    }
+    return id;
   }
 
   /**

@@ -17,8 +17,6 @@ package org.apache.geode.management.internal.rest;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
-import java.util.Properties;
-
 import org.springframework.test.web.client.MockMvcClientHttpRequestFactory;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
@@ -56,13 +54,6 @@ public class LocatorWebContext {
 
   public GeodeComponent getLocator() {
     return (GeodeComponent) webApplicationContext.getServletContext().getAttribute("locator");
-  }
-
-  public void login(String username, String password) {
-    Properties properties = new Properties();
-    properties.setProperty("security-username", username);
-    properties.setProperty("security-password", password);
-    getLocator().getSecurityService().login(properties);
   }
 
   public MockMvcClientHttpRequestFactory getRequestFactory() {
