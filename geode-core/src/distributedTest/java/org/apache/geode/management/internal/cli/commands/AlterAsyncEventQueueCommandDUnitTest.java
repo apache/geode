@@ -16,6 +16,8 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -92,6 +94,116 @@ public class AlterAsyncEventQueueCommandDUnitTest {
       assertThat(queue.getBatchSize()).isEqualTo(200);
       assertThat(queue.getBatchTimeInterval()).isEqualTo(300);
       assertThat(queue.getMaximumQueueMemory()).isEqualTo(400);
+      assertThat(cache.getAsyncEventQueue("queue2")).isNull();
+    });
+  }
+
+  @Test
+  public void whenAlterCommandUsedToChangeFromPauseToResumeThenAEQBehaviorMustChange()
+      throws Exception {
+    gfsh.executeAndAssertThat(
+        "create async-event-queue --pause-event-processing=true --id=queue1 --group=group1 --listener="
+            + MyAsyncEventListener.class.getName())
+        .statusIsSuccess();
+
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 1);
+
+    // verify that server1's event queue has the default value
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
+      assertThat(queue.getBatchSize()).isEqualTo(100);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
+      assertTrue(queue.isDispatchingPaused());
+      assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
+    });
+
+    gfsh.executeAndAssertThat(
+        "alter async-event-queue --id=queue1 --pause-event-processing=false " + "--batch-size=200 "
+            + "--batch-time-interval=300 " + "--max-queue-memory=400")
+        .statusIsSuccess();
+
+    // verify that server1's event queue still has the default value
+    // without restart
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
+      assertThat(queue.getBatchSize()).isEqualTo(100);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
+      assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
+      assertTrue(queue.isDispatchingPaused());
+      assertThat(cache.getAsyncEventQueue("queue2")).isNull();
+    });
+
+    // restart locator and server without clearing the file system
+    server1.stop(false);
+    locator.stop(false);
+
+    locator = lsRule.startLocatorVM(0);
+    server1 = lsRule.startServerVM(1, "group1", locator.getPort());
+    // verify that server1's queue is updated
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
+      assertThat(queue.getBatchSize()).isEqualTo(200);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(300);
+      assertThat(queue.getMaximumQueueMemory()).isEqualTo(400);
+      assertFalse(queue.isDispatchingPaused());
+      assertThat(cache.getAsyncEventQueue("queue2")).isNull();
+    });
+  }
+
+  @Test
+  public void whenAlterCommandUsedToChangeFromResumeStateToPausedThenAEQBehaviorMustChange()
+      throws Exception {
+    gfsh.executeAndAssertThat(
+        "create async-event-queue --pause-event-processing=false --id=queue1 --group=group1 --listener="
+            + MyAsyncEventListener.class.getName())
+        .statusIsSuccess();
+
+    locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue1", 1);
+
+    // verify that server1's event queue has the default value
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
+      assertThat(queue.getBatchSize()).isEqualTo(100);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
+      assertFalse(queue.isDispatchingPaused());
+      assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
+    });
+
+    gfsh.executeAndAssertThat(
+        "alter async-event-queue --id=queue1 --pause-event-processing=true " + "--batch-size=200 "
+            + "--batch-time-interval=300 " + "--max-queue-memory=400")
+        .statusIsSuccess();
+
+    // verify that server1's event queue still has the default value
+    // without restart
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
+      assertThat(queue.getBatchSize()).isEqualTo(100);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
+      assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
+      assertFalse(queue.isDispatchingPaused());
+      assertThat(cache.getAsyncEventQueue("queue2")).isNull();
+    });
+
+    // restart locator and server without clearing the file system
+    server1.stop(false);
+    locator.stop(false);
+
+    locator = lsRule.startLocatorVM(0);
+    server1 = lsRule.startServerVM(1, "group1", locator.getPort());
+    // verify that server1's queue is updated
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
+      assertThat(queue.getBatchSize()).isEqualTo(200);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(300);
+      assertThat(queue.getMaximumQueueMemory()).isEqualTo(400);
+      assertTrue(queue.isDispatchingPaused());
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
   }
