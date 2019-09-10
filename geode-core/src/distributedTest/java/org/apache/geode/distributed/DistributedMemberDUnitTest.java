@@ -311,7 +311,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     message.setSender(partialID);
 
     GMSMembershipManager manager =
-        (GMSMembershipManager) MembershipManagerHelper.getMembershipManager(basicGetSystem());
+        (GMSMembershipManager) MembershipManagerHelper.getMembership(basicGetSystem());
     manager.replacePartialIdentifierInMessage(message);
 
     assertFalse(message.getSender().isPartial());

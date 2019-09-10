@@ -12,12 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.direct;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 
-public interface DirectChannelListener {
+public interface MessageListener {
 
   /**
    * Event indicating a message has been delivered that we need to process.
@@ -26,12 +25,5 @@ public interface DirectChannelListener {
    */
   void messageReceived(DistributionMessage o);
 
-
-  /**
-   * Return the distribution manager for this receiver
-   *
-   * @return the distribution manager
-   */
-  ClusterDistributionManager getDM();
 
 }

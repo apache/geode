@@ -75,11 +75,12 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor.ClientSocketHandler;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
@@ -99,7 +100,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 public class GMSHealthMonitorJUnitTest {
 
   private Services services;
-  private ServiceConfig mockConfig;
+  private MembershipConfig mockConfig;
   private DistributionConfig mockDistConfig;
   private List<GMSMember> mockMembers;
   private Messenger messenger;
@@ -145,7 +146,6 @@ public class GMSHealthMonitorJUnitTest {
         .setDistributionManager(dm)
         .build();
 
-    when(mockConfig.getDistributionConfig()).thenReturn(mockDistConfig);
     when(mockConfig.getMemberTimeout()).thenReturn(memberTimeout);
     when(mockConfig.getMembershipPortRange()).thenReturn(portRange);
     when(services.getConfig()).thenReturn(mockConfig);

@@ -28,6 +28,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doCallRealMethod;
@@ -73,11 +74,12 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
@@ -116,6 +118,8 @@ public class JGroupsMessengerJUnitTest {
   private HealthMonitor healthMonitor;
   private InterceptUDP interceptor;
   private long statsId = 123;
+  private MembershipConfig membershipConfig;
+  private RemoteTransportConfig tconfig;
 
   private void initMocks(boolean enableMcast) throws Exception {
     initMocks(enableMcast, new Properties());
@@ -140,8 +144,7 @@ public class JGroupsMessengerJUnitTest {
     nonDefault.put(ACK_WAIT_THRESHOLD, "1");
     nonDefault.putAll(addProp);
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
-    RemoteTransportConfig tconfig =
-        new RemoteTransportConfig(config, GMSMember.NORMAL_DM_TYPE);
+    tconfig = new RemoteTransportConfig(config, GMSMember.NORMAL_DM_TYPE);
 
     stopper = mock(Stopper.class);
     when(stopper.isCancelInProgress()).thenReturn(false);
@@ -157,10 +160,10 @@ public class JGroupsMessengerJUnitTest {
 
     joinLeave = mock(JoinLeave.class);
 
-    ServiceConfig serviceConfig = new ServiceConfig(tconfig, config);
+    membershipConfig = new ServiceConfig(tconfig, config);
 
     services = mock(Services.class);
-    when(services.getConfig()).thenReturn(serviceConfig);
+    when(services.getConfig()).thenReturn(membershipConfig);
     when(services.getCancelCriterion()).thenReturn(stopper);
     when(services.getHealthMonitor()).thenReturn(healthMonitor);
     when(services.getManager()).thenReturn(manager);
@@ -267,7 +270,7 @@ public class JGroupsMessengerJUnitTest {
         new BufferDataOutputStream(500, Version.getCurrentVersion());
     GMSMember mbr = createAddress(8888);
     mbr.setMemberWeight((byte) 40);
-    mbr.toData(out, services.getSerializer().createSerializationContext(out));
+    mbr.toData(out, mock(SerializationContext.class));
     DataInputStream in = new DataInputStream(new ByteArrayInputStream(out.toByteArray()));
     mbr = new GMSMember();
     mbr.fromData(in, mock(DeserializationContext.class));
@@ -515,7 +518,7 @@ public class JGroupsMessengerJUnitTest {
     services.getSerializer().registerDSFID(ByteHolder.DSFID, ByteHolder.class);
     JoinRequestMessage msg = new JoinRequestMessage(recipient, sender,
         new ByteHolder(
-            new byte[(int) (services.getConfig().getDistributionConfig().getUdpFragmentSize()
+            new byte[(int) (services.getConfig().getUdpFragmentSize()
                 * 1.5)]),
         -1, 0);
 
@@ -863,14 +866,15 @@ public class JGroupsMessengerJUnitTest {
     when(manager.shutdownInProgress()).thenReturn(Boolean.TRUE);
     receiver.receive(msg);
     verify(manager, never()).processMessage(isA(GMSMessage.class));
-    verify(services.getStatistics(), times(3)).incUDPDispatchRequestTime(isA(Long.class));
+    verify(services.getStatistics(), times(3)).startUDPDispatchRequest();
+    verify(services.getStatistics(), times(3)).endUDPDispatchRequest(anyLong());
   }
 
   @Test
   public void testUseOldJChannel() throws Exception {
     initMocks(false);
     JChannel channel = messenger.myChannel;
-    services.getConfig().getTransport().setOldDSMembershipInfo(new MembershipInformation(channel,
+    tconfig.setOldDSMembershipInfo(new MembershipInformation(channel,
         Collections.singleton(new GMSMember("localhost", 10000)),
         new ConcurrentLinkedQueue<>()));
     JGroupsMessenger newMessenger = new JGroupsMessenger();

@@ -72,13 +72,13 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
@@ -89,7 +89,6 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequest
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.net.SocketCreator;
@@ -186,17 +185,16 @@ public class JGroupsMessenger implements Messenger {
   public void init(Services s) {
     this.services = s;
 
-    RemoteTransportConfig transport = services.getConfig().getTransport();
-    DistributionConfig dc = services.getConfig().getDistributionConfig();
+    MembershipConfig config = services.getConfig();
 
 
-    boolean b = dc.getEnableNetworkPartitionDetection();
-    System.setProperty("jgroups.resolve_dns", String.valueOf(!b));
+    boolean enableNetworkPartitionDetection = config.getEnableNetworkPartitionDetection();
+    System.setProperty("jgroups.resolve_dns", String.valueOf(!enableNetworkPartitionDetection));
 
     InputStream is;
 
     String r;
-    if (transport.isMcastEnabled()) {
+    if (config.isMcastEnabled()) {
       r = JGROUPS_MCAST_CONFIG_FILE_NAME;
     } else {
       r = DEFAULT_JGROUPS_TCP_CONFIG;
@@ -230,33 +228,34 @@ public class JGroupsMessenger implements Messenger {
     }
 
 
-    if (transport.isMcastEnabled()) {
+    if (config.isMcastEnabled()) {
       properties = replaceStrings(properties, "MCAST_PORT",
-          String.valueOf(transport.getMcastId().getPort()));
+          String.valueOf(config.getMcastPort()));
       properties =
-          replaceStrings(properties, "MCAST_ADDRESS", dc.getMcastAddress().getHostAddress());
-      properties = replaceStrings(properties, "MCAST_TTL", String.valueOf(dc.getMcastTtl()));
+          replaceStrings(properties, "MCAST_ADDRESS", config.getMcastAddress().getHostAddress());
+      properties = replaceStrings(properties, "MCAST_TTL", String.valueOf(config.getMcastTtl()));
       properties = replaceStrings(properties, "MCAST_SEND_BUFFER_SIZE",
-          String.valueOf(dc.getMcastSendBufferSize()));
+          String.valueOf(config.getMcastSendBufferSize()));
       properties = replaceStrings(properties, "MCAST_RECV_BUFFER_SIZE",
-          String.valueOf(dc.getMcastRecvBufferSize()));
+          String.valueOf(config.getMcastRecvBufferSize()));
       properties = replaceStrings(properties, "MCAST_RETRANSMIT_INTERVAL", "" + Integer
           .getInteger(DistributionConfig.GEMFIRE_PREFIX + "mcast-retransmit-interval", 500));
       properties = replaceStrings(properties, "RETRANSMIT_LIMIT",
-          String.valueOf(dc.getUdpFragmentSize() - 256));
+          String.valueOf(config.getUdpFragmentSize() - 256));
     }
 
-    if (transport.isMcastEnabled() || transport.isTcpDisabled()
-        || (dc.getUdpRecvBufferSize() != DistributionConfig.DEFAULT_UDP_RECV_BUFFER_SIZE)) {
+    if (config.isMcastEnabled() || config.isTcpDisabled()
+        || (config.getUdpRecvBufferSize() != DistributionConfig.DEFAULT_UDP_RECV_BUFFER_SIZE)) {
       properties =
-          replaceStrings(properties, "UDP_RECV_BUFFER_SIZE", "" + dc.getUdpRecvBufferSize());
+          replaceStrings(properties, "UDP_RECV_BUFFER_SIZE", "" + config.getUdpRecvBufferSize());
     } else {
       properties = replaceStrings(properties, "UDP_RECV_BUFFER_SIZE",
           "" + DistributionConfig.DEFAULT_UDP_RECV_BUFFER_SIZE_REDUCED);
     }
-    properties = replaceStrings(properties, "UDP_SEND_BUFFER_SIZE", "" + dc.getUdpSendBufferSize());
+    properties =
+        replaceStrings(properties, "UDP_SEND_BUFFER_SIZE", "" + config.getUdpSendBufferSize());
 
-    String str = transport.getBindAddress();
+    String str = config.getBindAddress();
     // JGroups UDP protocol requires a bind address
     if (str == null || str.length() == 0) {
       try {
@@ -272,25 +271,25 @@ public class JGroupsMessenger implements Messenger {
       properties = replaceStrings(properties, "MEMBERSHIP_PORT_RANGE_START", "" + port);
       properties = replaceStrings(properties, "MEMBERSHIP_PORT_RANGE", "" + 0);
     } else {
-      int[] ports = dc.getMembershipPortRange();
+      int[] ports = config.getMembershipPortRange();
       properties = replaceStrings(properties, "MEMBERSHIP_PORT_RANGE_START", "" + ports[0]);
       properties = replaceStrings(properties, "MEMBERSHIP_PORT_RANGE", "" + (ports[1] - ports[0]));
     }
 
-    properties = replaceStrings(properties, "UDP_FRAGMENT_SIZE", "" + dc.getUdpFragmentSize());
+    properties = replaceStrings(properties, "UDP_FRAGMENT_SIZE", "" + config.getUdpFragmentSize());
 
     properties = replaceStrings(properties, "FC_MAX_CREDITS",
-        "" + dc.getMcastFlowControl().getByteAllowance());
+        "" + config.getMcastByteAllowance());
     properties = replaceStrings(properties, "FC_THRESHOLD",
-        "" + dc.getMcastFlowControl().getRechargeThreshold());
+        "" + config.getMcastRechargeThreshold());
     properties = replaceStrings(properties, "FC_MAX_BLOCK",
-        "" + dc.getMcastFlowControl().getRechargeBlockMs());
+        "" + config.getMcastRechargeBlockMs());
 
     this.jgStackConfig = properties;
 
-    if (!dc.getSecurityUDPDHAlgo().isEmpty()) {
+    if (!config.getSecurityUDPDHAlgo().isEmpty()) {
       try {
-        this.encrypt = new GMSEncrypt(services, dc.getSecurityUDPDHAlgo());
+        this.encrypt = new GMSEncrypt(services, config.getSecurityUDPDHAlgo());
         logger.info("Initializing GMSEncrypt ");
       } catch (Exception e) {
         throw new GemFireConfigException("problem initializing encryption protocol", e);
@@ -310,7 +309,7 @@ public class JGroupsMessenger implements Messenger {
     // start the jgroups channel and establish the membership ID
     boolean reconnecting = false;
     try {
-      Object oldDSMembershipInfo = services.getConfig().getTransport().getOldDSMembershipInfo();
+      Object oldDSMembershipInfo = services.getConfig().getOldDSMembershipInfo();
       if (oldDSMembershipInfo != null) {
         logger.debug("Reusing JGroups channel from previous system", properties);
         MembershipInformation oldInfo = (MembershipInformation) oldDSMembershipInfo;
@@ -528,10 +527,10 @@ public class JGroupsMessenger implements Messenger {
     // install the address in the JGroups channel protocols
     myChannel.down(new Event(Event.SET_LOCAL_ADDRESS, this.jgAddress));
 
-    DistributionConfig config = services.getConfig().getDistributionConfig();
-    boolean isLocator = (services.getConfig().getTransport()
+    MembershipConfig config = services.getConfig();
+    boolean isLocator = (config
         .getVmKind() == GMSMember.LOCATOR_DM_TYPE)
-        || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty();
+        || !config.getStartLocator().isEmpty();
 
     // establish the DistributedSystem's address
     String hostname =
@@ -539,7 +538,7 @@ public class JGroupsMessenger implements Messenger {
             : jgAddress.getInetAddress().getHostAddress();
     GMSMember gmsMember = new GMSMember(jgAddress.getInetAddress(),
         hostname, jgAddress.getPort(),
-        OSProcess.getId(), (byte) services.getConfig().getTransport().getVmKind(),
+        OSProcess.getId(), (byte) services.getConfig().getVmKind(),
         -1 /* directport */, -1 /* viewID */, config.getName(),
         GMSUtil.parseGroups(config.getRoles(), config.getGroups()), config.getDurableClientId(),
         config.getDurableClientTimeout(),
@@ -548,7 +547,7 @@ public class JGroupsMessenger implements Messenger {
         jgAddress.getUUIDMsbs(), jgAddress.getUUIDLsbs());
     gmsMember.setMemberWeight((byte) (services.getConfig().getMemberWeight() & 0xff));
     gmsMember.setNetworkPartitionDetectionEnabled(
-        services.getConfig().getDistributionConfig().getEnableNetworkPartitionDetection());
+        services.getConfig().getEnableNetworkPartitionDetection());
     localAddress = gmsMember;
     logger.info("Established local address {}", localAddress);
     services.setLocalAddress(localAddress);
@@ -606,7 +605,7 @@ public class JGroupsMessenger implements Messenger {
     if (seqno == null) {
       return;
     }
-    long timeout = services.getConfig().getDistributionConfig().getAckWaitThreshold() * 1000L;
+    long timeout = services.getConfig().getAckWaitThreshold() * 1000L;
     long startTime = System.currentTimeMillis();
     long warnTime = startTime + timeout;
     long quitTime = warnTime + timeout - 1000L;
@@ -665,7 +664,7 @@ public class JGroupsMessenger implements Messenger {
     // localAddress at the beginning of the message. These should be used in the receiver
     // code to create a versioned input stream, read the sender address, then read the message
     // and set its sender address
-    DMStats theStats = services.getStatistics();
+    MembershipStatistics theStats = services.getStatistics();
     GMSMembershipView oldView = this.view;
 
     if (!myChannel.isConnected()) {
@@ -679,7 +678,7 @@ public class JGroupsMessenger implements Messenger {
     boolean allDestinations = msg.forAll();
 
     boolean useMcast = false;
-    if (services.getConfig().getTransport().isMcastEnabled()) {
+    if (services.getConfig().isMcastEnabled()) {
       if (msg.getMulticast() || allDestinations) {
         useMcast = services.getManager().isMulticastAllowed();
       }
@@ -1252,7 +1251,7 @@ public class JGroupsMessenger implements Messenger {
     }
 
     private void receive(Message jgmsg, boolean fromQuorumChecker) {
-      long startTime = DistributionStats.getStatTime();
+      long startTime = services.getStatistics().startUDPDispatchRequest();
       try {
         if (services.getManager().shutdownInProgress()) {
           return;
@@ -1289,7 +1288,7 @@ public class JGroupsMessenger implements Messenger {
         // admin-only VMs don't have caches, so we ignore cache operations
         // multicast to them, avoiding deserialization cost and classpath
         // problems
-        if ((services.getConfig().getTransport()
+        if ((services.getConfig()
             .getVmKind() == GMSMember.ADMIN_ONLY_DM_TYPE)
             && (msg instanceof DistributedCacheOperation.CacheOperationMessage)) {
           return;
@@ -1323,8 +1322,7 @@ public class JGroupsMessenger implements Messenger {
         }
 
       } finally {
-        long delta = DistributionStats.getStatTime() - startTime;
-        JGroupsMessenger.this.services.getStatistics().incUDPDispatchRequestTime(delta);
+        JGroupsMessenger.this.services.getStatistics().endUDPDispatchRequest(startTime);
       }
     }
 

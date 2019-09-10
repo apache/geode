@@ -49,13 +49,15 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
-import org.apache.geode.distributed.internal.membership.MemberFactory;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
+import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -164,18 +166,25 @@ public class GMSLocatorRecoveryIntegrationTest {
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig transport = new RemoteTransportConfig(config, NORMAL_DM_TYPE);
 
-    DistributedMembershipListener mockListener = mock(DistributedMembershipListener.class);
+    MembershipListener mockListener = mock(MembershipListener.class);
+    MessageListener mockMessageListener = mock(MessageListener.class);
     InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
     DMStats mockDmStats = mock(DMStats.class);
 
     when(mockSystem.getConfig()).thenReturn(config);
 
     // start the membership manager
-    membershipManager = MemberFactory.newMembershipManager(mockListener, transport,
-        mockDmStats,
-        new GMSAuthenticator(mockSystem.getSecurityProperties(), mockSystem.getSecurityService(),
-            mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()),
-        mockSystem.getConfig());
+    membershipManager =
+        MembershipBuilder.newMembershipBuilder(null)
+            .setAuthenticator(new GMSAuthenticator(mockSystem.getSecurityProperties(),
+                mockSystem.getSecurityService(),
+                mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()))
+            .setStatistics(mockDmStats)
+            .setMessageListener(mockMessageListener)
+            .setMembershipListener(mockListener)
+            .setConfig(new ServiceConfig(transport, config))
+            .setSerializer(InternalDataSerializer.getDSFIDSerializer())
+            .create();
 
     GMSLocator gmsLocator = new GMSLocator(localHost,
         membershipManager.getLocalMember().getHost() + "[" + port + "]", true, true,

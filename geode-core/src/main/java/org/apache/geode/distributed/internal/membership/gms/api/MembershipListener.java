@@ -12,16 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
 import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.direct.DirectChannelListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.MembershipView;
 
-public interface DistributedMembershipListener extends DirectChannelListener {
+public interface MembershipListener {
 
   /** this method is invoked when the processing of a new view is completed */
   void viewInstalled(MembershipView view);
@@ -57,25 +57,10 @@ public interface DistributedMembershipListener extends DirectChannelListener {
       String reason);
 
   /**
-   * Event indicating a message has been delivered that we need to process.
-   *
-   * @param o the message that should be processed.
-   */
-  @Override
-  void messageReceived(DistributionMessage o);
-
-  /**
    * Event indicating that the membership service has failed catastrophically.
    *
    */
   void membershipFailure(String reason, Throwable t);
-
-  /**
-   * Support good logging on this listener
-   *
-   * @return a printable string for this listener
-   */
-  String toString();
 
   /**
    * Save the configuration before a force disconnect.
