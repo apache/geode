@@ -67,6 +67,10 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
     return isBlank(groupName) || groupName.equalsIgnoreCase(CLUSTER);
   }
 
+  public static String getGroupName(String group) {
+    return isCluster(group) ? CLUSTER : group;
+  }
+
   @JsonIgnore
   public String getGroup() {
     return null;
