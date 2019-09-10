@@ -16,6 +16,8 @@
 package org.apache.geode.management.internal;
 
 
+import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
+
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -83,7 +85,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   static <T> HttpEntity<T> makeEntity(T config) {
     HttpHeaders headers = new HttpHeaders();
-    headers.add("X-Include-Class", "true");
+    headers.add(INCLUDE_CLASS_HEADER, "true");
     return new HttpEntity<>(config, headers);
   }
 

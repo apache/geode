@@ -14,7 +14,10 @@
  */
 package org.apache.geode.management.internal.rest.controllers;
 
+import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
+
 import java.nio.charset.Charset;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Logger;
@@ -61,7 +64,8 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   public Object beforeBodyWrite(Object body, MethodParameter returnType,
       MediaType selectedContentType, Class selectedConverterType,
       ServerHttpRequest request, ServerHttpResponse response) {
-    boolean includeClass = request.getHeaders().containsKey("X-Include-Class");
+    List<String> values = request.getHeaders().get(INCLUDE_CLASS_HEADER);
+    boolean includeClass = values != null && values.contains("true");
 
     try {
       ObjectMapper objectMapper = objectMapperFactory.getObject();
