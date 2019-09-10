@@ -37,14 +37,15 @@ public class ResumeAsyncEventQueueDispatcherCommand extends SingleGfshCommand {
       help = CliStrings.RESUME_ASYNCEVENTQUEUE__HELP)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public ResultModel resumeAsyncEventQueueDispatcher(@CliOption(key = CliStrings.RESUME_ASYNCEVENTQUEUE__ID,
-      mandatory = true, optionContext = ConverterHint.ASYNC_EVENT_QUEUE_ID,
-      help = CliStrings.RESUME_ASYNCEVENTQUEUE__ID__HELP) String queueId,
+  public ResultModel resumeAsyncEventQueueDispatcher(
+      @CliOption(key = CliStrings.RESUME_ASYNCEVENTQUEUE__ID,
+          mandatory = true, optionContext = ConverterHint.ASYNC_EVENT_QUEUE_ID,
+          help = CliStrings.RESUME_ASYNCEVENTQUEUE__ID__HELP) String queueId,
 
-                                                     @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
+      @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.RESUME_ASYNCEVENTQUEUE__GROUP__HELP) String[] onGroup,
-                                                     @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
+      @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
           help = CliStrings.RESUME_ASYNCEVENTQUEUE__MEMBER__HELP) String[] onMember) {
 
@@ -55,7 +56,8 @@ public class ResumeAsyncEventQueueDispatcherCommand extends SingleGfshCommand {
     Set<DistributedMember> targetMembers = findMembers(onGroup, onMember);
 
     List<CliFunctionResult> results =
-        executeAndGetFunctionResult(new ResumeAsyncEventQueueDispatcherFunction(), queueId, targetMembers);
+        executeAndGetFunctionResult(new ResumeAsyncEventQueueDispatcherFunction(), queueId,
+            targetMembers);
 
     return constructResultModel(results);
   }

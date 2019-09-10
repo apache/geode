@@ -61,7 +61,8 @@ public class ResumeAsyncEventQueueDispatcherDUnitTest {
 
     // Issue the resume command and confirm it reports success
     gfsh.executeAndAssertThat(RESUME_COMMAND + " --id=queue").statusIsSuccess()
-        .tableHasRowCount(1).containsOutput("Async Event Queue \"queue\" dispatching was resumed successfully");
+        .tableHasRowCount(1)
+        .containsOutput("Async Event Queue \"queue\" dispatching was resumed successfully");
 
     // list the queue to verify the result
     gfsh.executeAndAssertThat(LIST_COMMAND).statusIsSuccess()
