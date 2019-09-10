@@ -25,6 +25,8 @@ evaluationDependsOn(":geode-core")
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
+  implementation(project(':geode-common'))
+  implementation(project(':geode-serialization'))
   compile(project(':geode-core'))
   integrationTestCompile(project(':extensions:geode-modules-test')) {
     exclude module: 'geode-modules'

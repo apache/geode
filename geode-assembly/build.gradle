@@ -207,6 +207,8 @@ dependencies {
   integrationTestRuntime('io.swagger:swagger-annotations')
 
 
+  distributedTestImplementation(project(':geode-common'))
+  distributedTestImplementation(project(':geode-serialization'))
   distributedTestCompile(project(':geode-core'))
   distributedTestCompile(project(':geode-dunit')){
     exclude module: 'geode-core'

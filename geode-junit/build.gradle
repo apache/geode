@@ -24,6 +24,9 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
 
   compileOnly(project(':geode-core'))
+  compileOnly(project(':geode-serialization'))
+  compileOnly(project(':geode-common'))
+  compileOnly(project(':geode-unsafe'))
 
   compile('com.fasterxml.jackson.core:jackson-annotations')
   compile('com.fasterxml.jackson.core:jackson-databind')
