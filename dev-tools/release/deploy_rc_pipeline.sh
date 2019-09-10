@@ -256,7 +256,6 @@ jobs:
               apt-get update
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev
               cd geode-native
-              sed -e '/Werror/d' -i.bak CMakeLists.txt #some versions of openssl's TcpSslConn.cpp have warnings
               mkdir build
               cd build
               cmake .. -DGEODE_ROOT=$PWD/../../apache-geode-${VERSION}
@@ -303,7 +302,6 @@ jobs:
               curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tar.gz > src.tgz
               tar xzf src.tgz
               cd apache-geode-native
-              sed -e '/Werror/d' -i.bak CMakeLists.txt #some versions of openssl's TcpSslConn.cpp have warnings
               mkdir build
               cd build
               cmake .. -DGEODE_ROOT=$PWD/../../geode/geode-assembly/build/install/apache-geode
