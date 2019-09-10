@@ -105,9 +105,10 @@ public class DiskStoreImplIntegrationTest {
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithMaxSize_thenGetDiskUsagePercentageShouldBeZero()
+  public void givenDiskStoreIsCreatedWithMaxSize_thenDiskPercentagesShouldBeZeroAnd100()
       throws Exception {
 
+    final int ALLOWED_MARGIN = 1;
     File[] diskDirs = new File[2];
     diskDirs[0] = temporaryDirectory.newFolder("dir1");
     diskDirs[1] = temporaryDirectory.newFolder("dir2");
@@ -121,13 +122,16 @@ public class DiskStoreImplIntegrationTest {
     DiskStore diskStore = cache.findDiskStore(DISK_STORE_NAME);
 
     assertEquals(0, ((DiskStoreImpl) diskStore).getDiskUsagePercentage(), 0);
+    assertEquals(100, ((DiskStoreImpl) diskStore).getDiskFreePercentage(),
+        ALLOWED_MARGIN);
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithMaxSize_whenDataIsStored_thenGetDiskUsagePercentageShouldBeIncreased()
+  public void givenDiskStoreIsCreatedWithMaxSize_whenDataIsStored_thenDiskPercentagesShouldBeModified()
       throws Exception {
 
     final int ESTIMATED_USAGE_PERCENTAGE = 7; // Estimated disk percentage for NUM_ENTRIES
+    final int ESTIMATED_FREE_PERCENTAGE = 100 - ESTIMATED_USAGE_PERCENTAGE;
     final int ALLOWED_MARGIN = 2;
 
     File[] diskDirs = new File[2];
@@ -150,10 +154,12 @@ public class DiskStoreImplIntegrationTest {
 
     assertEquals(ESTIMATED_USAGE_PERCENTAGE, ((DiskStoreImpl) diskStore).getDiskUsagePercentage(),
         ALLOWED_MARGIN);
+    assertEquals(ESTIMATED_FREE_PERCENTAGE, ((DiskStoreImpl) diskStore).getDiskFreePercentage(),
+        ALLOWED_MARGIN);
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithDefaultSize_thenGetDiskUsagePercentageShouldNotBeAvailable()
+  public void givenDiskStoreIsCreatedWithDefaultSize_thenDiskPercentagesShouldNotBeAvailable()
       throws Exception {
 
     File[] diskDirs = new File[2];
@@ -166,10 +172,12 @@ public class DiskStoreImplIntegrationTest {
 
     assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
         ((DiskStoreImpl) diskStore).getDiskUsagePercentage(), 0);
+    assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
+        ((DiskStoreImpl) diskStore).getDiskFreePercentage(), 0);
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithDefaultSize_whenDataIsStored_thenGetDiskUsagePercentageShouldNotBeAvailable()
+  public void givenDiskStoreIsCreatedWithDefaultSize_whenDataIsStored_thenDiskPercentagesShouldNotBeAvailable()
       throws Exception {
 
     File[] diskDirs = new File[2];
@@ -186,10 +194,12 @@ public class DiskStoreImplIntegrationTest {
 
     assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
         ((DiskStoreImpl) diskStore).getDiskUsagePercentage(), 0);
+    assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
+        ((DiskStoreImpl) diskStore).getDiskFreePercentage(), 0);
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithAtLeastOneDefaultSize_thenGetDiskUsagePercentageShouldNotBeAvailable()
+  public void givenDiskStoreIsCreatedWithAtLeastOneDefaultSize_thenDiskPercentagesShouldNotBeAvailable()
       throws Exception {
 
     File[] diskDirs = new File[3];
@@ -210,12 +220,14 @@ public class DiskStoreImplIntegrationTest {
 
       assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
           ((DiskStoreImpl) diskStore).getDiskUsagePercentage(), 0);
+      assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
+          ((DiskStoreImpl) diskStore).getDiskFreePercentage(), 0);
       cache.close();
     }
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithAtLeastOneDefaultSize_whenDataIsStored_thenGetDiskUsagePercentageShouldNotBeAvailable()
+  public void givenDiskStoreIsCreatedWithAtLeastOneDefaultSize_whenDataIsStored_thenDiskPercentagesShouldNotBeAvailable()
       throws Exception {
 
     File[] diskDirs = new File[2];
@@ -236,6 +248,8 @@ public class DiskStoreImplIntegrationTest {
 
     assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
         ((DiskStoreImpl) diskStore).getDiskUsagePercentage(), 0);
+    assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
+        ((DiskStoreImpl) diskStore).getDiskFreePercentage(), 0);
   }
 
   @Test
