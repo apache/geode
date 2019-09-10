@@ -12,6 +12,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -176,4 +177,12 @@ public class DeltaSessionJUnitTest {
 
     assertThat(result).isEqualTo(serializedObj);
   }
+
+//  @Test
+//  public void testToData() throws IOException {
+//    DeltaSession session = spy(new DeltaSession(manager));
+//    DataOutput out = mock(DataOutput.class);
+//
+//    session.toData(out);
+//  }
 }

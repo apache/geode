@@ -341,7 +341,7 @@ public abstract class DeltaSessionManager extends ManagerBase
         && !getContextName().equals(session.getContextName())) {
       getLogger()
           .info(this + ": Session " + id + " rejected as container name and context do not match: "
-              + getContextName() + " != " + session.getContextName());
+             + getContextName() + " != " + session.getContextName());
       session = null;
     }
 
@@ -830,8 +830,8 @@ public abstract class DeltaSessionManager extends ManagerBase
     Loader loader = null;
     ClassLoader classLoader = null;
     try {
-      fis = new FileInputStream(store.getAbsolutePath());
-      bis = new BufferedInputStream(fis);
+      fis = getFileInputStream(store);
+      bis = getBufferedInputStream(fis);
       if (getTheContext() != null) {
         loader = getTheContext().getLoader();
       }
@@ -847,7 +847,7 @@ public abstract class DeltaSessionManager extends ManagerBase
         if (getLogger().isDebugEnabled()) {
           getLogger().debug("Creating standard object input stream");
         }
-        ois = new ObjectInputStream(bis);
+        ois = getObjectInputStream(bis);
       }
     } catch (FileNotFoundException e) {
       if (getLogger().isDebugEnabled()) {
@@ -871,7 +871,7 @@ public abstract class DeltaSessionManager extends ManagerBase
 
     // Load the previously unloaded active sessions
     try {
-      int n = (Integer) ois.readObject();
+      int n = getSessionCountFromObjectInputStream(ois);
       if (getLogger().isDebugEnabled()) {
         getLogger().debug("Loading " + n + " persisted sessions");
       }
@@ -932,14 +932,39 @@ public abstract class DeltaSessionManager extends ManagerBase
    * Return a File object representing the pathname to our persistence file, if any.
    */
   private File sessionStore(String ctxPath) {
-    String storeDir = System.getProperty("catalina.base");
+    String storeDir = getSystemPropertyValue("catalina.base");
     if (storeDir == null || storeDir.isEmpty()) {
-      storeDir = System.getProperty("java.io.tmpdir");
+      storeDir = getSystemPropertyValue("java.io.tmpdir");
     } else {
-      storeDir += System.getProperty("file.separator") + "temp";
+      storeDir += getSystemPropertyValue("file.separator") + "temp";
     }
 
+    return getFileAtPath(storeDir, ctxPath);
+  }
+
+  String getSystemPropertyValue(String propertyKey) {
+    return System.getProperty(propertyKey);
+  }
+
+  File getFileAtPath(String storeDir, String ctxPath) {
     return (new File(storeDir, ctxPath.replaceAll("/", "_") + ".sessions.ser"));
+  }
+
+  FileInputStream getFileInputStream(File file) throws FileNotFoundException {
+    return new FileInputStream(file.getAbsolutePath());
+  }
+
+  BufferedInputStream getBufferedInputStream(FileInputStream fis) {
+    return new BufferedInputStream(fis);
+  }
+
+  ObjectInputStream getObjectInputStream(BufferedInputStream bis) throws IOException {
+    return new ObjectInputStream(bis);
+  }
+
+  int getSessionCountFromObjectInputStream(ObjectInputStream ois)
+      throws IOException, ClassNotFoundException {
+    return (Integer) ois.readObject();
   }
 
   @Override
