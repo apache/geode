@@ -563,9 +563,8 @@ public class PeerTypeRegistration implements TypeRegistration {
             }
           }
         }
-        localReverseMap.save(k, v);
+        localReverseMap.save(k, v, false);
       }
-      localReverseMap.flushLocalMap();
     } finally {
       resumeTX(currentState);
     }
@@ -591,7 +590,7 @@ public class PeerTypeRegistration implements TypeRegistration {
             result = id;
           }
         }
-        localReverseMap.save(k, v);
+        localReverseMap.save(k, v, false);
       }
 
       if (totalEnumIdInDS == MAX_TYPE_ID) {
@@ -667,7 +666,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
       updateIdToEnumRegion(id, newInfo);
 
-      localReverseMap.save(id, newInfo);
+      localReverseMap.save(id, newInfo, false);
 
       return id.intValue();
     } finally {
@@ -712,7 +711,7 @@ public class PeerTypeRegistration implements TypeRegistration {
    * adds a PdxType for a field to a {@code className => Set<PdxType>} map
    */
   private void updateLocalMaps(Object key, Object value) {
-    localReverseMap.save(key, value);
+    localReverseMap.save(key, value, true);
     if (value instanceof PdxType) {
       PdxType type = (PdxType) value;
       synchronized (classToType) {
@@ -815,13 +814,21 @@ public class PeerTypeRegistration implements TypeRegistration {
 
     private final Map<EnumInfo, EnumId> enumToId = Collections.synchronizedMap(new HashMap<>());
 
-    void save(Object key, Object value) {
+    void save(Object key, Object value, boolean isPending) {
       if (value instanceof PdxType) {
         PdxType type = (PdxType) value;
-        pendingTypeToId.put(type, (Integer) key);
+        if (isPending) {
+          pendingTypeToId.put(type, (Integer) key);
+        } else {
+          typeToId.put(type, (Integer) key);
+        }
       } else if (value instanceof EnumInfo) {
         EnumInfo info = (EnumInfo) value;
-        pendingEnumToId.put(info, (EnumId) key);
+        if (isPending) {
+          pendingEnumToId.put(info, (EnumId) key);
+        } else {
+          enumToId.put(info, (EnumId) key);
+        }
       }
     }
 
