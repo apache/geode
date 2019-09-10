@@ -48,6 +48,8 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom'))) {
     exclude module: "jackson-annotations"
   }
+  compileOnly(project(':geode-common'))
+  compileOnly(project(':geode-serialization'))
   compileOnly(project(':geode-core'))
 
   compileOnly('javax.servlet:javax.servlet-api')

@@ -21,12 +21,14 @@ apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-  compile(project(':geode-core'))
-  distributedTestCompile(project(':geode-dunit')){
+  implementation(platform(project(':boms:geode-all-bom')))
+  implementation(project(':geode-core'))
+  implementation(project(':geode-serialization'))
+  distributedTestImplementation(project(':geode-dunit')){
     exclude module: 'geode-core'
   }
 
 
-  distributedTestCompile('junit:junit')
+  distributedTestImplementation('junit:junit')
 }
+

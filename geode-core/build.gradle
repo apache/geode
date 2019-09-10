@@ -330,13 +330,10 @@ dependencies {
   implementation('com.healthmarketscience.rmiio:rmiio')
 
   //Geode-common has annotations and other pieces used geode-core
-  //Currently it has ExpirationAction in it, which is an API dependency in core, but
-  //probably does not belong in this project
-  api(project(':geode-common'))
-  api(project(':geode-unsafe'))
+  implementation(project(':geode-common'))
+  implementation(project(':geode-unsafe'))
+  implementation(project(':geode-serialization'))
 
-  api(project(':geode-serialization'))
-  
   //geode-management currently has pieces of the public API
   //copied into it, so it is an API dependency
   api(project(':geode-management'))

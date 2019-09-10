@@ -26,6 +26,8 @@ dependencies {
     // See GEODE-6128 -- ignore xml-apis in linter to avoid changes with every run.
     upgradeTestCompile('xml-apis:xml-apis:1.4.01')
   }
+  implementation(project(':geode-common'))
+  implementation(project(':geode-serialization'))
   compile(project(':geode-core'))
 
   compileOnly('org.apache.logging.log4j:log4j-api:2.12.0')

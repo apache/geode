@@ -20,12 +20,10 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-
+  implementation(platform(project(':boms:geode-all-bom')))
 
   //Geode-common has annotations and other pieces used by geode-serialization
-  api(project(':geode-common'))
-  api(project(':geode-unsafe'))
+  implementation(project(':geode-common'))
 
   //FastUtil contains optimized collections that are used in multiple places in core
   implementation('it.unimi.dsi:fastutil')
@@ -36,37 +34,35 @@ dependencies {
     ext.optional = true
   }
 
-   testCompile(project(':geode-junit')) {
+  testImplementation(project(':geode-junit')) {
     exclude module: 'geode-serialization'
   }
-  testCompile(project(':geode-concurrency-test'))
+  testImplementation(project(':geode-concurrency-test'))
 
   testImplementation('com.tngtech.archunit:archunit-junit4')
-
-  testCompile('org.apache.bcel:bcel')
-  testCompile('org.mockito:mockito-core')
-  testCompile('junit:junit')
-  testCompile('org.assertj:assertj-core')
+  testImplementation('org.apache.bcel:bcel')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('junit:junit')
+  testImplementation('org.assertj:assertj-core')
 
   testRuntime(project(':geode-old-versions'))
 
-  integrationTestCompile(project(':geode-junit')) {
+  integrationTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-serialization'
   }
-  integrationTestCompile(project(':geode-dunit')) {
+  integrationTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-serialization'
   }
-  integrationTestCompile('pl.pragmatists:JUnitParams')
-  distributedTestCompile(project(':geode-junit')) {
+  integrationTestImplementation('pl.pragmatists:JUnitParams')
+  distributedTestImplementation(project(':geode-junit')) {
     exclude module: 'geode-serialization'
   }
-  distributedTestCompile(project(':geode-dunit')) {
+  distributedTestImplementation(project(':geode-dunit')) {
     exclude module: 'geode-serialization'
   }
-  distributedTestCompile('pl.pragmatists:JUnitParams')
+  distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestRuntime(project(':geode-old-versions'))
   upgradeTestRuntime(project(':geode-old-versions'))
- 
 }
 
 distributedTest {
