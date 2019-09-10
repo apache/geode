@@ -273,7 +273,7 @@ public class GMSMembershipManager implements MembershipManager {
   private final MembershipListener listener;
 
   /**
-   * This is the listener that accepts our membership events
+   * This is the listener that accepts our membership messages
    */
   private final MessageListener messageListener;
 

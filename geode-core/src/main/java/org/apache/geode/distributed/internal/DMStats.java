@@ -14,13 +14,14 @@
  */
 package org.apache.geode.distributed.internal;
 
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
+
 /**
  * Defines the interface used to access and modify DM statistics.
  *
  *
  */
-public interface DMStats extends
-    org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics {
+public interface DMStats extends MembershipStatistics {
 
   /**
    * Returns the total number of messages sent by the distribution manager

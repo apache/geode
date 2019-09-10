@@ -72,7 +72,6 @@ public class ServiceConfig implements MembershipConfig {
       }
     }
 
-
     membershipPortRange = theConfig.getMembershipPortRange();
 
     memberTimeout = theConfig.getMemberTimeout();
