@@ -32,7 +32,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.pdx.PdxInitializationException;
 
@@ -58,9 +57,6 @@ public class PeerTypeRegistrationTest {
     when(region.size()).thenReturn(1);
     when(internalCache.createVMRegion(eq(PeerTypeRegistration.REGION_NAME), any(), any()))
         .thenReturn(region);
-    when(region.getRegionService()).thenReturn(internalCache);
-    final TXManagerImpl txManager = mock(TXManagerImpl.class);
-    when(internalCache.getCacheTransactionManager()).thenReturn(txManager);
     peerTypeRegistration = new PeerTypeRegistration(internalCache);
   }
 
