@@ -25,6 +25,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
@@ -72,6 +73,7 @@ public class ListAsyncEventQueuesFunction extends CliFunction {
   }
 
   private boolean isCreatedWithPausedEventDispatching(AsyncEventQueue queue) {
-    return ((AsyncEventQueueImpl) queue).getSender().isPaused();
+    return ((AbstractGatewaySender) ((AsyncEventQueueImpl) queue).getSender())
+        .isStartEventProcessorInPausedState();
   }
 }
