@@ -845,7 +845,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     // region and all local maps
     boolean shouldReloadFromRegion() {
       return ((typeToId.size() + pendingTypeToId.size() + enumToId.size()
-          + pendingEnumToId.size()) != idToType.size());
+          + pendingEnumToId.size()) != getIdToType().size());
     }
 
     void flushLocalMap() {
