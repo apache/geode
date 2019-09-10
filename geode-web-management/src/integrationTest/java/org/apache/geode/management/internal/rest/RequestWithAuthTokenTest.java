@@ -28,6 +28,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
+import org.apache.geode.examples.SimpleSecurityManager;
+
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
@@ -48,12 +50,18 @@ public class RequestWithAuthTokenTest {
   }
 
   @Test
-  public void ping() throws Exception {
-    String accessToken = "foobar";
+  public void pingWithValidToken() throws Exception {
     context.perform(get("/experimental/ping")
-        .header("Authorization", "Bearer " + accessToken))
+        .header("Authorization", "Bearer " + SimpleSecurityManager.VALID_TOKEN))
         .andExpect(status().isOk())
         .andExpect(content().string("pong"));
+  }
+
+  @Test
+  public void pingWithInvalidToken() throws Exception {
+    context.perform(get("/experimental/ping")
+        .header("Authorization", "Bearer invalidToken"))
+        .andExpect(status().isUnauthorized());
   }
 
 }
