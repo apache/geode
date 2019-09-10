@@ -841,8 +841,11 @@ public class PeerTypeRegistration implements TypeRegistration {
       return enumToId.get(newInfo);
     }
 
+    // The local maps should be loaded from the region if there is a mismatch in size between the
+    // region and all local maps
     boolean shouldReloadFromRegion() {
-      return (typeToId.isEmpty() || (typeToId.size() + enumToId.size()) != idToType.size());
+      return ((typeToId.size() + pendingTypeToId.size() + enumToId.size()
+          + pendingEnumToId.size()) != idToType.size());
     }
 
     void flushLocalMap() {
