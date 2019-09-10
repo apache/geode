@@ -36,7 +36,7 @@ import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.UniquePortSupplier;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
