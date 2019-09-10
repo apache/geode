@@ -1,14 +1,26 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package org.apache.geode.distributed.internal.membership.gms;
 
 import static org.apache.geode.distributed.internal.membership.gms.GMSUtil.parseLocators;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.function.BiFunction;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -23,38 +35,28 @@ public class GMSUtilTest {
 
   static final int PORT = 1234; // any old port--no need to have anything actually bound here
 
-  static final String RESOLVEABLE_HOST = "127.0.0.1"; // loopback addy
-  static final String RESOLVEABLE_HOST_AND_PORT = RESOLVEABLE_HOST + "[" + PORT + "]";
+  static final String RESOLVEABLE_LOOPBACK_HOST = "127.0.0.1"; // loopback addy
+
+  static final String RESOLVEABLE_NON_LOOPBACK_HOST = "1.1.1.1";
 
   static final String UNRESOLVEABLE_HOST = "not-localhost-937c64aa"; // some FQDN that does not
-                                                                     // exist
-  static final String UNRESOLVEABLE_HOST_AND_PORT = UNRESOLVEABLE_HOST + "[" + PORT + "]";
+
 
   @Test
   public void resolveableLoopBackAddress() {
     assertThat(
-        parseLocators(RESOLVEABLE_HOST_AND_PORT, InetAddress.getLoopbackAddress()))
-            .contains(
-                new HostAddress(new InetSocketAddress(RESOLVEABLE_HOST, PORT), RESOLVEABLE_HOST));
+        parseLocators(RESOLVEABLE_LOOPBACK_HOST + "[" + PORT + "]",
+            InetAddress.getLoopbackAddress()))
+                .contains(
+                    new HostAddress(new InetSocketAddress(RESOLVEABLE_LOOPBACK_HOST, PORT),
+                        RESOLVEABLE_LOOPBACK_HOST));
   }
 
   @Test
   public void resolveableNonLoopBackAddress() {
-
-    final InetAddress nonLoopbackAddy = mock(InetAddress.class);
-    when(nonLoopbackAddy.isLoopbackAddress()).thenReturn(false);
-
-    final InetSocketAddress resolveableNonLoopbackSocketAddress = mock(InetSocketAddress.class);
-    when(resolveableNonLoopbackSocketAddress.getAddress()).thenReturn(nonLoopbackAddy);
-
-    final BiFunction<String, Integer, InetSocketAddress> socketAddyFactory =
-        (host, port) -> resolveableNonLoopbackSocketAddress;
-
     assertThatThrownBy(
-        () -> parseLocators(
-            "fake@123.4.5.6[7890]",
-            InetAddress.getLoopbackAddress(),
-            socketAddyFactory))
+        () -> parseLocators(RESOLVEABLE_NON_LOOPBACK_HOST + "[" + PORT + "]",
+            InetAddress.getLoopbackAddress()))
                 .isInstanceOf(GemFireConfigException.class)
                 .hasMessageContaining("does not have a local address");
   }
@@ -62,24 +64,26 @@ public class GMSUtilTest {
   @Test
   public void unresolveableAddress() {
     assertThatThrownBy(
-        () -> parseLocators(UNRESOLVEABLE_HOST_AND_PORT, InetAddress.getLoopbackAddress()))
-            .isInstanceOf(GemFireConfigException.class)
-            .hasMessageContaining("unknown address or FQDN: " + UNRESOLVEABLE_HOST);
+        () -> parseLocators(UNRESOLVEABLE_HOST + "[" + PORT + "]",
+            InetAddress.getLoopbackAddress()))
+                .isInstanceOf(GemFireConfigException.class)
+                .hasMessageContaining("unknown address or FQDN: " + UNRESOLVEABLE_HOST);
   }
 
   @Test
   @Parameters({"1234", "0"})
   public void validPortSpecified(final int validPort) {
-    final String locatorsString = RESOLVEABLE_HOST + "[" + validPort + "]";
+    final String locatorsString = RESOLVEABLE_LOOPBACK_HOST + "[" + validPort + "]";
     assertThat(parseLocators(locatorsString, InetAddress.getLoopbackAddress()))
         .contains(
-            new HostAddress(new InetSocketAddress(RESOLVEABLE_HOST, validPort), RESOLVEABLE_HOST));
+            new HostAddress(new InetSocketAddress(RESOLVEABLE_LOOPBACK_HOST, validPort),
+                RESOLVEABLE_LOOPBACK_HOST));
   }
 
   @Test
   @Parameters({"[]", "1234]", "[1234", ":1234", ""})
   public void malformedPortSpecification(final String portSpecification) {
-    final String locatorsString = RESOLVEABLE_HOST + portSpecification;
+    final String locatorsString = RESOLVEABLE_LOOPBACK_HOST + portSpecification;
     assertThatThrownBy(
         () -> parseLocators(locatorsString, InetAddress.getLoopbackAddress()))
             .isInstanceOf(GemFireConfigException.class)

@@ -151,7 +151,7 @@ public class GMSUtil {
       int startIdx = portSpecificationStart + 1;
       int endIdx = str.indexOf(']');
 
-      if (portSpecificationStart != -1 && endIdx == -1) {
+      if (endIdx == -1) {
         throw createBadPortException(str);
       }
 
