@@ -129,9 +129,16 @@ public class VersionManager {
    */
   public String versionWithNoDots(String s) {
     StringBuilder b = new StringBuilder(10);
-    for (int i = 0; i < s.length(); i++) {
-      if (s.charAt(i) != '.')
+    int length = s.length();
+    for (int i = 0; i < length; i++) {
+      char ch = s.charAt(i);
+      if (ch != '.') {
+        // leave off any trailing stuff like "-incubating"
+        if (!Character.isDigit(ch)) {
+          break;
+        }
         b.append(s.charAt(i));
+      }
     }
     return b.toString();
   }
@@ -163,13 +170,13 @@ public class VersionManager {
     readVersionsFile(fileName, (version, path) -> {
       Optional<String> parsedVersion = parseVersion(version);
       if (parsedVersion.isPresent()) {
-        if (parsedVersion.get().equals("140")
+        if (parsedVersion.get().equals("1.4.0")
             && SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
           // Serialization filtering was added in 140, but the support for them in java 9+ was added
-          // in 150. As a result, 140 servers and clients will fail categorically when run in
+          // in 1.5.0. As a result, 1.4.0 servers and clients will fail categorically when run in
           // Java 9+ even with the additional libs (jaxb and activation) in the classpath
           System.err.println(
-              "Geode version 140 is incompatible with Java 9 and higher.  Skipping this version.");
+              "Geode version 1.4.0 is incompatible with Java 9 and higher.  Skipping this version.");
         } else {
           classPaths.put(parsedVersion.get(), path);
           testVersions.add(parsedVersion.get());
@@ -192,12 +199,12 @@ public class VersionManager {
     String parsedVersion = null;
     if (version.length() > 0 && Character.isDigit(version.charAt(0))
         && version.length() >= "1.2.3".length()) {
-      for (int i = 1; i < version.length(); i++) {
-        char character = version.charAt(i);
-        if (!Character.isDigit(character) && character != '.') {
-          return Optional.ofNullable(parsedVersion);
-        }
-      }
+      // for (int i = 1; i < version.length(); i++) {
+      // char character = version.charAt(i);
+      // if (!Character.isDigit(character) && character != '.') {
+      // return Optional.ofNullable(parsedVersion);
+      // }
+      // }
       parsedVersion = version;
     }
     return Optional.ofNullable(parsedVersion);

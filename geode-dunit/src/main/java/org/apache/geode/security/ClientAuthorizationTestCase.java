@@ -826,6 +826,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
             } catch (NoSuchMethodException e) {
               // running an old version of Geode
             }
+
             SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps,
                 0, setupDynamicRegionFactory, NO_EXCEPTION);
           });

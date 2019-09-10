@@ -86,6 +86,9 @@ public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
 
   private static String getDottedVersionString(String vmVersionShorthand) throws Exception {
     if (vmVersionShorthand.contains(".")) {
+      if (vmVersionShorthand.equals("1.0.0")) {
+        return "1.0.0-incubating";
+      }
       return vmVersionShorthand;
     }
     if (vmVersionShorthand.equals("100")) {
