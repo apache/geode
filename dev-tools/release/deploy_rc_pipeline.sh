@@ -301,7 +301,7 @@ jobs:
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev
               curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tar.gz > src.tgz
               tar xzf src.tgz
-              cd apache-geode-native
+              cd apache-geode-native*
               mkdir build
               cd build
               cmake .. -DGEODE_ROOT=$PWD/../../geode/geode-assembly/build/install/apache-geode
