@@ -1918,7 +1918,7 @@ public class CliStrings {
       "Name/Id of the member on which to resume the Gateway Sender.";
 
   /* resume async-event-queue */
-  public static final String RESUME_ASYNCEVENTQUEUE = "resume async-event-queue";
+  public static final String RESUME_ASYNCEVENTQUEUE = "resume async-event-queue-dispatcher";
   public static final String RESUME_ASYNCEVENTQUEUE__ID = "id";
   public static final String RESUME_ASYNCEVENTQUEUE__HELP =
       "Resume the processing of the events in the Async Event Queue on a member or members.";

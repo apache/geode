@@ -20,7 +20,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliFunction;
 
-public class ResumeAsyncEventQueueFunction extends CliFunction {
+public class ResumeAsyncEventQueueDispatcherFunction extends CliFunction {
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext context) {
@@ -39,10 +39,16 @@ public class ResumeAsyncEventQueueFunction extends CliFunction {
 
     if (queue.isDispatchingPaused()) {
       queue.resumeEventDispatching();
+
+      return new CliFunctionResult(member.getId(), CliFunctionResult.StatusState.OK,
+          "Async Event Queue \"" + AEQId
+              + "\" dispatching was resumed successfully");
+    } else {
+      return new CliFunctionResult(member.getId(), CliFunctionResult.StatusState.OK,
+          "Async Event Queue \"" + AEQId
+              + "\" dispatching is already in progress.");
     }
 
-    return new CliFunctionResult(member.getId(), CliFunctionResult.StatusState.OK,
-        "Async Event Queue \"" + AEQId
-            + "\" was resumed successfully");
+
   }
 }

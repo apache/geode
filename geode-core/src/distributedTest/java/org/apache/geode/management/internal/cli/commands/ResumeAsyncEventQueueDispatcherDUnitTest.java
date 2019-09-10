@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.RESUME_ASYNCEVENTQUEUE;
+
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -22,12 +24,12 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-public class ResumeAsyncEventQueueDUnitTest {
+public class ResumeAsyncEventQueueDispatcherDUnitTest {
 
   public static final String CREATE_COMMAND =
       "create async-event-queue --listener=" + MyAsyncEventListener.class.getName();
 
-  public static final String RESUME_COMMAND = "resume async-event-queue ";
+  public static final String RESUME_COMMAND = RESUME_ASYNCEVENTQUEUE;
 
   public static final String LIST_COMMAND = "list async-event-queue";
 
@@ -58,8 +60,8 @@ public class ResumeAsyncEventQueueDUnitTest {
             "true");
 
     // Issue the resume command and confirm it reports success
-    gfsh.executeAndAssertThat(RESUME_COMMAND + "--id=queue").statusIsSuccess()
-        .tableHasRowCount(1).containsOutput("Async Event Queue \"queue\" was resumed successfully");
+    gfsh.executeAndAssertThat(RESUME_COMMAND + " --id=queue").statusIsSuccess()
+        .tableHasRowCount(1).containsOutput("Async Event Queue \"queue\" dispatching was resumed successfully");
 
     // list the queue to verify the result
     gfsh.executeAndAssertThat(LIST_COMMAND).statusIsSuccess()

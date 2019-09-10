@@ -35,17 +35,17 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-public class ResumeAsyncEventQueueCommandTest {
+public class ResumeAsyncEventQueueDispatcherCommandTest {
 
   public static final String COMMAND = RESUME_ASYNCEVENTQUEUE;
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
 
-  private ResumeAsyncEventQueueCommand command;
+  private ResumeAsyncEventQueueDispatcherCommand command;
 
   @Before
   public void before() throws Exception {
-    command = spy(ResumeAsyncEventQueueCommand.class);
+    command = spy(ResumeAsyncEventQueueDispatcherCommand.class);
   }
 
   @Test
