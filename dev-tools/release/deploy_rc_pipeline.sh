@@ -245,15 +245,18 @@ jobs:
               set -ex
               FULL_VERSION=$(cd geode-native && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
+              #use geode from binary dist
               curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > geode-bin.tgz
               tar xzf geode-bin.tgz
-              cd geode-native
+              # needed to get cmake >= 3.12
               echo 'APT::Default-Release "stable";' >> /etc/apt/apt.conf.d/99defaultrelease
               echo 'deb     http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               echo 'deb-src http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               echo 'deb     http://security.debian.org/         stable/updates  main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               apt-get update
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev
+              cd geode-native
+              sed -e '/Werror/d' -i.bak CMakeLists.txt #some versions of openssl's TcpSslConn.cpp have warnings
               mkdir build
               cd build
               cmake .. -DGEODE_ROOT=$PWD/../../apache-geode-${VERSION}
@@ -284,9 +287,13 @@ jobs:
             - -ec
             - |
               set -ex
+              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
+              # build geode from source
               cd geode
               ./gradlew build -x test -x javadoc -x rat -x pmdMain
               cd ..
+              # needed to get cmake >= 3.12
               echo 'APT::Default-Release "stable";' >> /etc/apt/apt.conf.d/99defaultrelease
               echo 'deb     http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               echo 'deb-src http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
@@ -296,6 +303,7 @@ jobs:
               curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tar.gz > src.tgz
               tar xzf src.tgz
               cd apache-geode-native
+              sed -e '/Werror/d' -i.bak CMakeLists.txt #some versions of openssl's TcpSslConn.cpp have warnings
               mkdir build
               cd build
               cmake .. -DGEODE_ROOT=$PWD/../../geode/geode-assembly/build/install/apache-geode
