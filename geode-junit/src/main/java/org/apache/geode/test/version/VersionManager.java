@@ -30,8 +30,6 @@ import java.util.function.BiConsumer;
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 
-import org.apache.geode.internal.serialization.Version;
-
 /**
  * VersionManager loads the class-paths for all of the releases of Geode configured for
  * backward-compatibility testing in the geode-core build.gradle file.
@@ -265,24 +263,5 @@ public class VersionManager {
           "Unable to retrieve Version.java's CURRENT_ORDINAL field in order to establlish the product's serialization version",
           e);
     }
-  }
-
-  /**
-   * map a VersionManager version string (like "180) to the actual name of the corresponding
-   * Version
-   */
-  public String getVersionName(String oldVersion) {
-    if (oldVersion.equals(CURRENT_VERSION)) {
-      return Version.CURRENT.getName();
-    }
-    if (!this.testVersions.contains(oldVersion)) {
-      throw new IllegalArgumentException("Unknown version of Geode: " + oldVersion);
-    }
-    for (Version v : Version.getAllVersions()) {
-      if (oldVersion.equals(v.getName().replace(".", ""))) {
-        return v.getName();
-      }
-    }
-    throw new IllegalArgumentException("Unknown version of Geode: " + oldVersion);
   }
 }
