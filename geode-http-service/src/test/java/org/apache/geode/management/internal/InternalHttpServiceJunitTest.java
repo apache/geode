@@ -24,10 +24,10 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.junit.After;
 import org.junit.Test;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 
@@ -37,7 +37,7 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
  */
 public class InternalHttpServiceJunitTest {
   private DistributionConfig distributionConfig;
-  private Cache cache;
+  private InternalCache cache;
 
   public void setup(String bindAddress, int port) {
     Properties props = new Properties();
@@ -50,7 +50,7 @@ public class InternalHttpServiceJunitTest {
     InternalDistributedSystem ds = mock(InternalDistributedSystem.class);
     when(ds.getConfig()).thenReturn(distributionConfig);
 
-    cache = mock(Cache.class);
+    cache = mock(InternalCache.class);
     when(cache.getDistributedSystem()).thenReturn(ds);
     when(cache.isServer()).thenReturn(true);
   }

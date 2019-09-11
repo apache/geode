@@ -1219,8 +1219,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     initializeServices();
 
-    // this starts up the ManagementService, register and federate the internal beans
+    // This starts up the ManagementService, registers and federates the internal beans. Since it
+    // may be starting up web services, it relies on the prior step which would have started the
+    // HttpService.
     system.handleResourceEvent(ResourceEvent.CACHE_CREATE, this);
+
+    // Resource events, generated for started services. These events may depend on the prior
+    // CACHE_CREATE event which is why they are split out separately.
+    handleResourceEventsForCacheServices();
 
     boolean completedCacheXml = false;
     try {
@@ -1271,7 +1277,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       try {
         if (service.init(this)) {
           services.put(service.getInterface(), service);
-          system.handleResourceEvent(ResourceEvent.CACHE_SERVICE_CREATE, service);
           logger.info("Initialized cache service {}", service.getClass().getName());
         } else {
           logger.warn("Cache service {} failed to initialize", service.getClass().getName());
@@ -1279,6 +1284,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       } catch (Exception ex) {
         logger.warn("Cache service " + service.getClass().getName() + " failed to initialize", ex);
       }
+    }
+  }
+
+  private void handleResourceEventsForCacheServices() {
+    for (CacheService service : services.values()) {
+      system.handleResourceEvent(ResourceEvent.CACHE_SERVICE_CREATE, service);
     }
   }
 
