@@ -24,7 +24,8 @@ public class DeltaSessionStatisticsJUnitTest {
 
     when(internalDistributedSystem.createAtomicStatistics(any(), any())).thenReturn(statistics);
 
-    DeltaSessionStatistics deltaSessionStatistics = new DeltaSessionStatistics(internalDistributedSystem, appName);
+    DeltaSessionStatistics deltaSessionStatistics =
+        new DeltaSessionStatistics(internalDistributedSystem, appName);
 
     deltaSessionStatistics.incSessionsCreated();
     deltaSessionStatistics.incSessionsExpired();

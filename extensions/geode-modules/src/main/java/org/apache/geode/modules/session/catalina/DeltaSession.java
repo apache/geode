@@ -667,7 +667,7 @@ public class DeltaSession extends StandardSession
         + "]";
   }
 
-  //Helper methods to enable better unit testing
+  // Helper methods to enable better unit testing
   DeltaSessionFacade getNewFacade(DeltaSessionInterface fSession) {
     return (DeltaSessionFacade) AccessController.doPrivileged(
         (PrivilegedAction) () -> new DeltaSessionFacade(fSession));

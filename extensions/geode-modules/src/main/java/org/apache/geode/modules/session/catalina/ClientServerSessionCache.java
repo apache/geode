@@ -258,13 +258,13 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     return region;
   }
 
-  //Helper methods added to improve unit testing of class
+  // Helper methods added to improve unit testing of class
   Execution getExecutionForFunctionOnServers() {
     return getExecutionForFunctionOnServersWithArguments(null);
   }
 
   Execution getExecutionForFunctionOnServersWithArguments(Object[] arguments) {
-    if(arguments != null && arguments.length > 0) {
+    if (arguments != null && arguments.length > 0) {
       return FunctionService.onServers(getCache()).setArguments(arguments);
     } else {
       return FunctionService.onServers(getCache());
@@ -272,7 +272,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
   }
 
   Execution getExecutionForFunctionOnServerWithRegionConfiguration(RegionConfiguration arguments) {
-    if(arguments != null) {
+    if (arguments != null) {
       return FunctionService.onServer(getCache()).setArguments(arguments);
     } else {
       return FunctionService.onServer(getCache());
@@ -280,7 +280,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
   }
 
   Execution getExecutionForFunctionOnRegionWithFilter(Set<?> filter) {
-    if(filter != null && filter.size() > 0) {
+    if (filter != null && filter.size() > 0) {
       return FunctionService.onRegion(getSessionRegion()).withFilter(filter);
     } else {
       return FunctionService.onRegion(getSessionRegion());

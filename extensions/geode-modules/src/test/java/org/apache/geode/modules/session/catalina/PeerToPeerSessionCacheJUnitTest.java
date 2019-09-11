@@ -16,7 +16,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.juli.logging.Log;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,10 +23,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
 import org.apache.geode.modules.util.RegionConfiguration;
@@ -47,14 +44,17 @@ public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTe
   @Before
   public void setUp() {
     sessionCache = spy(new PeerToPeerSessionCache(sessionManager, cache));
-    doReturn(sessionRegion).when((PeerToPeerSessionCache)sessionCache).createRegionUsingHelper(any(RegionConfiguration.class));
-    doReturn(true).when((PeerToPeerSessionCache)sessionCache).isFunctionRegistered(any(String.class));
+    doReturn(sessionRegion).when((PeerToPeerSessionCache) sessionCache)
+        .createRegionUsingHelper(any(RegionConfiguration.class));
+    doReturn(true).when((PeerToPeerSessionCache) sessionCache)
+        .isFunctionRegistered(any(String.class));
 
     when(sessionManager.getRegionName()).thenReturn(sessionRegionName);
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.PARTITION.toString());
     when(sessionManager.getLogger()).thenReturn(logger);
     when(sessionManager.getEnableLocalCache()).thenReturn(true);
-    when(sessionManager.getMaxInactiveInterval()).thenReturn(RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL);
+    when(sessionManager.getMaxInactiveInterval())
+        .thenReturn(RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL);
 
     when(sessionRegion.getName()).thenReturn(sessionRegionName);
 
@@ -70,7 +70,8 @@ public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTe
 
     verify(cache).createRegionFactory(RegionShortcut.LOCAL_HEAP_LRU);
     verify(regionFactory).create(localRegionName);
-    verify((PeerToPeerSessionCache)sessionCache).createRegionUsingHelper(any(RegionConfiguration.class));
+    verify((PeerToPeerSessionCache) sessionCache)
+        .createRegionUsingHelper(any(RegionConfiguration.class));
     verify(regionFactory, times(0)).setStatisticsEnabled(true);
     verify(regionFactory, times(0)).setCustomEntryIdleTimeout(any(SessionCustomExpiry.class));
     verify(regionFactory, times(0)).addCacheListener(any(SessionExpirationCacheListener.class));
@@ -78,30 +79,35 @@ public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTe
 
   @Test
   public void functionRegistrationDoesNotThrowException() {
-    doReturn(false).when((PeerToPeerSessionCache)sessionCache).isFunctionRegistered(any(String.class));
+    doReturn(false).when((PeerToPeerSessionCache) sessionCache)
+        .isFunctionRegistered(any(String.class));
 
     sessionCache.initialize();
 
-    verify((PeerToPeerSessionCache)sessionCache).registerFunctionWithFunctionService(any(
+    verify((PeerToPeerSessionCache) sessionCache).registerFunctionWithFunctionService(any(
         TouchPartitionedRegionEntriesFunction.class));
-    verify((PeerToPeerSessionCache)sessionCache).registerFunctionWithFunctionService(any(
+    verify((PeerToPeerSessionCache) sessionCache).registerFunctionWithFunctionService(any(
         TouchReplicatedRegionEntriesFunction.class));
   }
 
   @Test
   public void initializeSessionCacheSucceedsWhenSessionRegionAlreadyExists() {
     doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
-    doNothing().when((PeerToPeerSessionCache)sessionCache).validateRegionUsingRegionhelper(any(RegionConfiguration.class),any(Region.class));
+    doNothing().when((PeerToPeerSessionCache) sessionCache)
+        .validateRegionUsingRegionhelper(any(RegionConfiguration.class), any(Region.class));
 
     sessionCache.initialize();
 
-    verify((PeerToPeerSessionCache)sessionCache, times(0)).createRegionUsingHelper(any(RegionConfiguration.class));
+    verify((PeerToPeerSessionCache) sessionCache, times(0))
+        .createRegionUsingHelper(any(RegionConfiguration.class));
   }
 
   @Test
   public void nonDefaultMaxTimeoutIntervalSetsExpirationDetails() {
-    //Setting the mocked return value of getMaxInactiveInterval to something distinctly not equal to the default
-    when(sessionManager.getMaxInactiveInterval()).thenReturn(RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL+1);
+    // Setting the mocked return value of getMaxInactiveInterval to something distinctly not equal
+    // to the default
+    when(sessionManager.getMaxInactiveInterval())
+        .thenReturn(RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL + 1);
 
     sessionCache.initialize();
 
@@ -136,7 +142,8 @@ public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTe
     ResultCollector collector = mock(ResultCollector.class);
 
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.PARTITION.toString());
-    doReturn(emptyExecution).when((PeerToPeerSessionCache)sessionCache).getExecutionForFunctionOnRegionWithFilter(sessionIds);
+    doReturn(emptyExecution).when((PeerToPeerSessionCache) sessionCache)
+        .getExecutionForFunctionOnRegionWithFilter(sessionIds);
     when(emptyExecution.execute(TouchPartitionedRegionEntriesFunction.ID)).thenReturn(collector);
 
     sessionCache.touchSessions(sessionIds);
@@ -147,14 +154,15 @@ public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTe
 
   @Test
   public void touchSessionsWithReplicatedRegionSucceeds() {
-    //Need to invoke this to set the session region
+    // Need to invoke this to set the session region
     sessionCache.initialize();
 
     Set<String> sessionIds = new HashSet<>();
     ResultCollector collector = mock(ResultCollector.class);
 
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.REPLICATE.toString());
-    doReturn(emptyExecution).when((PeerToPeerSessionCache)sessionCache).getExecutionForFunctionOnMembersWithArguments(any(Object[].class));
+    doReturn(emptyExecution).when((PeerToPeerSessionCache) sessionCache)
+        .getExecutionForFunctionOnMembersWithArguments(any(Object[].class));
     when(emptyExecution.execute(TouchReplicatedRegionEntriesFunction.ID)).thenReturn(collector);
 
     sessionCache.touchSessions(sessionIds);
@@ -170,7 +178,8 @@ public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTe
     FunctionException exception = new FunctionException();
 
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.PARTITION.toString());
-    doReturn(emptyExecution).when((PeerToPeerSessionCache)sessionCache).getExecutionForFunctionOnRegionWithFilter(sessionIds);
+    doReturn(emptyExecution).when((PeerToPeerSessionCache) sessionCache)
+        .getExecutionForFunctionOnRegionWithFilter(sessionIds);
     when(emptyExecution.execute(TouchPartitionedRegionEntriesFunction.ID)).thenReturn(collector);
     doThrow(exception).when(collector).getResult();
 

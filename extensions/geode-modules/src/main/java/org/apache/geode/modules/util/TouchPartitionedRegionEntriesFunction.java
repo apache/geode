@@ -97,7 +97,7 @@ public class TouchPartitionedRegionEntriesFunction
   @Override
   public void fromData(DataInput in) {}
 
-  //Helper methods added to improve unit testing of class
+  // Helper methods added to improve unit testing of class
   Region getLocalDataForContextViaRegionHelper(RegionFunctionContext rfc) {
     return PartitionRegionHelper.getLocalDataForContext(rfc);
   }

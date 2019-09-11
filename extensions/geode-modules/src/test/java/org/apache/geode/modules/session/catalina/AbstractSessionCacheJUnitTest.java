@@ -1,6 +1,5 @@
 package org.apache.geode.modules.session.catalina;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
@@ -28,7 +27,7 @@ public abstract class AbstractSessionCacheJUnitTest {
 
   protected String sessionRegionName = "sessionRegion";
   private String sessionRegionAttributesId = RegionShortcut.PARTITION.toString();
-  private int nonDefaultMaxInactiveInterval = RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL+1;
+  private int nonDefaultMaxInactiveInterval = RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL + 1;
   private boolean gatewayDeltaReplicationEnabled = true;
   private boolean gatewayReplicationEnabled = true;
   private boolean enableDebugListener = true;
@@ -50,8 +49,10 @@ public abstract class AbstractSessionCacheJUnitTest {
 
     when(sessionManager.getRegionName()).thenReturn(sessionRegionName);
     when(sessionManager.getRegionAttributesId()).thenReturn(sessionRegionAttributesId);
-    when(sessionManager.getMaxInactiveInterval()).thenReturn(RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL);
-    when(sessionManager.getEnableGatewayDeltaReplication()).thenReturn(gatewayDeltaReplicationEnabled);
+    when(sessionManager.getMaxInactiveInterval())
+        .thenReturn(RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL);
+    when(sessionManager.getEnableGatewayDeltaReplication())
+        .thenReturn(gatewayDeltaReplicationEnabled);
     when(sessionManager.getEnableGatewayReplication()).thenReturn(gatewayReplicationEnabled);
     when(sessionManager.getEnableDebugListener()).thenReturn(enableDebugListener);
 
@@ -74,7 +75,8 @@ public abstract class AbstractSessionCacheJUnitTest {
     when(sessionManager.getRegionName()).thenReturn(sessionRegionName);
     when(sessionManager.getRegionAttributesId()).thenReturn(sessionRegionAttributesId);
     when(sessionManager.getMaxInactiveInterval()).thenReturn(nonDefaultMaxInactiveInterval);
-    when(sessionManager.getEnableGatewayDeltaReplication()).thenReturn(gatewayDeltaReplicationEnabled);
+    when(sessionManager.getEnableGatewayDeltaReplication())
+        .thenReturn(gatewayDeltaReplicationEnabled);
     when(sessionManager.getEnableGatewayReplication()).thenReturn(gatewayReplicationEnabled);
     when(sessionManager.getEnableDebugListener()).thenReturn(enableDebugListener);
 
@@ -93,9 +95,11 @@ public abstract class AbstractSessionCacheJUnitTest {
   public void destroySessionDoesNotThrowExceptionWhenGetOperatingRegionThrowsEntryNotFoundException() {
     EntryNotFoundException exception = new EntryNotFoundException("Entry not found.");
     String sessionId = "sessionId";
-    //For Client/Server the operating Region is always the session Region, for peer to peer this is only true when
-    //local caching is not enabled. For the purposes of this test the behavior is equivalent regardless of local
-    //caching.
+    // For Client/Server the operating Region is always the session Region, for peer to peer this is
+    // only true when
+    // local caching is not enabled. For the purposes of this test the behavior is equivalent
+    // regardless of local
+    // caching.
     when(sessionCache.getOperatingRegion()).thenReturn(sessionRegion);
     doThrow(exception).when(sessionRegion).destroy(sessionId);
 

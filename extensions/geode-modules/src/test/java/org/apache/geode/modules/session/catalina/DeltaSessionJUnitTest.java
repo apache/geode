@@ -1,18 +1,17 @@
 package org.apache.geode.modules.session.catalina;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,8 +48,9 @@ public class DeltaSessionJUnitTest {
     when(manager.getLogger()).thenReturn(logger);
     when(manager.getContextName()).thenReturn(contextName);
     when(manager.getStatistics()).thenReturn(stats);
-    //For Client/Server behavior and some PeerToPeer use cases the session region and operating regions
-    //will be the same.
+    // For Client/Server behavior and some PeerToPeer use cases the session region and operating
+    // regions
+    // will be the same.
     when(sessionCache.getOperatingRegion()).thenReturn(sessionRegion);
     when(logger.isDebugEnabled()).thenReturn(true);
   }
@@ -59,7 +59,8 @@ public class DeltaSessionJUnitTest {
   public void sessionConstructionThrowsIllegalArgumentExceptionIfProvidedManagerIsNotDeltaSessionManager() {
     Manager invalidManager = mock(Manager.class);
 
-    assertThatThrownBy(() ->  new DeltaSession(invalidManager)).isInstanceOf(IllegalArgumentException.class)
+    assertThatThrownBy(() -> new DeltaSession(invalidManager))
+        .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("The Manager must be an AbstractManager");
   }
 
@@ -95,7 +96,7 @@ public class DeltaSessionJUnitTest {
   public void processExpiredIncrementsStatisticsCountForExpiredSessions() {
     DeltaSession session = spy(new DeltaSession(manager));
 
-    doNothing().when((StandardSession)session).expire(false);
+    doNothing().when((StandardSession) session).expire(false);
     session.processExpired();
 
     verify(stats).incSessionsExpired();
@@ -113,11 +114,11 @@ public class DeltaSessionJUnitTest {
 
     session.applyAttributeEvents(region, events);
 
-    //confirm that events were all added to the queue
+    // confirm that events were all added to the queue
     verify(session).addEventToEventQueue(event1);
     verify(session).addEventToEventQueue(event2);
 
-    //confirm that session was put into region
+    // confirm that session was put into region
     verify(region).put(session.getId(), session, true);
   }
 
@@ -127,7 +128,8 @@ public class DeltaSessionJUnitTest {
     String sessionId = "invalidatedSession";
     doReturn(sessionId).when(session).getId();
 
-    assertThatThrownBy(() ->  session.commit()).isInstanceOf(IllegalStateException.class).hasMessage("commit: Session " + sessionId + " already invalidated");
+    assertThatThrownBy(() -> session.commit()).isInstanceOf(IllegalStateException.class)
+        .hasMessage("commit: Session " + sessionId + " already invalidated");
   }
 
   @Test
@@ -140,8 +142,8 @@ public class DeltaSessionJUnitTest {
 
     Enumeration<String> attrNames = Collections.enumeration(attrList);
 
-    byte[] value1 = {0,0,0,0};
-    byte[] value2 = {0,0,0,0,0};
+    byte[] value1 = {0, 0, 0, 0};
+    byte[] value2 = {0, 0, 0, 0, 0};
     int totalSize = value1.length + value2.length;
 
     DeltaSession session = spy(new DeltaSession(manager));
@@ -178,11 +180,11 @@ public class DeltaSessionJUnitTest {
     assertThat(result).isEqualTo(serializedObj);
   }
 
-//  @Test
-//  public void testToData() throws IOException {
-//    DeltaSession session = spy(new DeltaSession(manager));
-//    DataOutput out = mock(DataOutput.class);
-//
-//    session.toData(out);
-//  }
+  // @Test
+  // public void testToData() throws IOException {
+  // DeltaSession session = spy(new DeltaSession(manager));
+  // DataOutput out = mock(DataOutput.class);
+  //
+  // session.toData(out);
+  // }
 }

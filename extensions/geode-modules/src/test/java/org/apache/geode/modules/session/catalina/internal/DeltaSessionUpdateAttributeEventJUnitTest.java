@@ -13,7 +13,8 @@ public class DeltaSessionUpdateAttributeEventJUnitTest {
     String attributeName = "UpdateAttribute";
     String attributeValue = "UpdateValue";
 
-    DeltaSessionUpdateAttributeEvent event = new DeltaSessionUpdateAttributeEvent(attributeName, attributeValue);
+    DeltaSessionUpdateAttributeEvent event =
+        new DeltaSessionUpdateAttributeEvent(attributeName, attributeValue);
     DeltaSessionInterface deltaSessionInterface = mock(DeltaSessionInterface.class);
     event.apply((deltaSessionInterface));
 

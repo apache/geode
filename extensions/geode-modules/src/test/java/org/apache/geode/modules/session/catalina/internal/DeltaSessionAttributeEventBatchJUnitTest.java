@@ -1,7 +1,7 @@
 package org.apache.geode.modules.session.catalina.internal;
 
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -40,7 +40,8 @@ public class DeltaSessionAttributeEventBatchJUnitTest {
     when(logWriter.fineEnabled()).thenReturn(false);
     when(region.get(sessionId)).thenReturn(deltaSessionInterface);
 
-    DeltaSessionAttributeEventBatch batch = new DeltaSessionAttributeEventBatch(regionName, sessionId, eventList);
+    DeltaSessionAttributeEventBatch batch =
+        new DeltaSessionAttributeEventBatch(regionName, sessionId, eventList);
 
     batch.apply(cache);
 

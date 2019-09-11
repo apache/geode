@@ -1,18 +1,13 @@
 package org.apache.geode.modules.util;
 
-import static org.assertj.core.internal.bytebuddy.matcher.ElementMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
 import java.util.HashSet;
 
-import org.apache.geode.internal.logging.LocalLogWriter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,10 +17,11 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.internal.logging.LocalLogWriter;
 
 public class TouchReplicatedRegionEntriesFunctionJUnitTest {
-  private TouchReplicatedRegionEntriesFunction function = spy(new TouchReplicatedRegionEntriesFunction());
+  private TouchReplicatedRegionEntriesFunction function =
+      spy(new TouchReplicatedRegionEntriesFunction());
   private FunctionContext context = mock(RegionFunctionContext.class);
   private Cache cache = mock(GemFireCacheImpl.class);
   private LocalLogWriter logger = mock(LocalLogWriter.class);

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -49,6 +50,7 @@ import org.apache.catalina.util.CustomObjectInputStream;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Query;
@@ -341,7 +343,7 @@ public abstract class DeltaSessionManager extends ManagerBase
         && !getContextName().equals(session.getContextName())) {
       getLogger()
           .info(this + ": Session " + id + " rejected as container name and context do not match: "
-             + getContextName() + " != " + session.getContextName());
+              + getContextName() + " != " + session.getContextName());
       session = null;
     }
 
@@ -660,7 +662,7 @@ public abstract class DeltaSessionManager extends ManagerBase
    * @throws IOException if an input/output error occurs
    */
   private void doUnload() throws IOException {
-    QueryService querySvc = sessionCache.getCache().getQueryService();
+    QueryService querySvc = getSessionCache().getCache().getQueryService();
     Context context = getTheContext();
 
     if (context == null) {
@@ -707,9 +709,9 @@ public abstract class DeltaSessionManager extends ManagerBase
     ObjectOutputStream oos = null;
     boolean error = false;
     try {
-      fos = new FileOutputStream(store.getAbsolutePath());
-      bos = new BufferedOutputStream(fos);
-      oos = new ObjectOutputStream(bos);
+      fos = getFileOutputStream(store);
+      bos = getBufferedOutputStream(fos);
+      oos = getObjectOutputStream(bos);
     } catch (IOException e) {
       error = true;
       getLogger().error("Exception unloading sessions", e);
@@ -755,7 +757,7 @@ public abstract class DeltaSessionManager extends ManagerBase
     if (getLogger().isDebugEnabled())
       getLogger().debug("Unloading " + list.size() + " sessions");
     try {
-      oos.writeObject(list.size());
+      writeToObjectOutputStream(oos, list);
       for (DeltaSessionInterface session : list) {
         if (session instanceof StandardSession) {
           StandardSession standardSession = (StandardSession) session;
@@ -950,16 +952,39 @@ public abstract class DeltaSessionManager extends ManagerBase
     return (new File(storeDir, ctxPath.replaceAll("/", "_") + ".sessions.ser"));
   }
 
+  @VisibleForTesting
   FileInputStream getFileInputStream(File file) throws FileNotFoundException {
     return new FileInputStream(file.getAbsolutePath());
   }
 
+  @VisibleForTesting
   BufferedInputStream getBufferedInputStream(FileInputStream fis) {
     return new BufferedInputStream(fis);
   }
 
+  @VisibleForTesting
   ObjectInputStream getObjectInputStream(BufferedInputStream bis) throws IOException {
     return new ObjectInputStream(bis);
+  }
+
+  @VisibleForTesting
+  FileOutputStream getFileOutputStream(File file) throws FileNotFoundException {
+    return new FileOutputStream(file.getAbsolutePath());
+  }
+
+  @VisibleForTesting
+  BufferedOutputStream getBufferedOutputStream(FileOutputStream fos) {
+    return new BufferedOutputStream(fos);
+  }
+
+  @VisibleForTesting
+  ObjectOutputStream getObjectOutputStream(BufferedOutputStream bos) throws IOException {
+    return new ObjectOutputStream(bos);
+  }
+
+  @VisibleForTesting
+  void writeToObjectOutputStream(ObjectOutputStream oos, List listToWrite) throws IOException {
+    oos.writeObject(listToWrite.size());
   }
 
   int getSessionCountFromObjectInputStream(ObjectInputStream ois)

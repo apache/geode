@@ -2,6 +2,7 @@ package org.apache.geode.modules.session.catalina;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -9,7 +10,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -18,16 +18,15 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
@@ -35,24 +34,19 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.client.internal.PoolImpl;
-import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
+import org.apache.geode.modules.util.BootstrappingFunction;
+import org.apache.geode.modules.util.CreateRegionFunction;
 import org.apache.geode.modules.util.DebugCacheListener;
 import org.apache.geode.modules.util.RegionConfiguration;
 import org.apache.geode.modules.util.RegionStatus;
-import org.apache.geode.modules.util.BootstrappingFunction;
-import org.apache.geode.modules.util.CreateRegionFunction;
 import org.apache.geode.modules.util.SessionCustomExpiry;
 import org.apache.geode.modules.util.TouchPartitionedRegionEntriesFunction;
 import org.apache.geode.modules.util.TouchReplicatedRegionEntriesFunction;
-
-import org.apache.juli.logging.Log;
-import org.mockito.ArgumentCaptor;
 
 public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTest {
 
@@ -68,19 +62,25 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
   @Before
   public void setUp() {
     sessionCache = spy(new ClientServerSessionCache(sessionManager, cache));
-    doReturn(emptyExecution).when((ClientServerSessionCache)sessionCache).getExecutionForFunctionOnServers();
-    doReturn(emptyExecution).when((ClientServerSessionCache)sessionCache).getExecutionForFunctionOnServersWithArguments(any());
-    doReturn(emptyExecution).when((ClientServerSessionCache)sessionCache).getExecutionForFunctionOnServerWithRegionConfiguration(any());
-    doReturn(emptyExecution).when((ClientServerSessionCache)sessionCache).getExecutionForFunctionOnRegionWithFilter(any());
+    doReturn(emptyExecution).when((ClientServerSessionCache) sessionCache)
+        .getExecutionForFunctionOnServers();
+    doReturn(emptyExecution).when((ClientServerSessionCache) sessionCache)
+        .getExecutionForFunctionOnServersWithArguments(any());
+    doReturn(emptyExecution).when((ClientServerSessionCache) sessionCache)
+        .getExecutionForFunctionOnServerWithRegionConfiguration(any());
+    doReturn(emptyExecution).when((ClientServerSessionCache) sessionCache)
+        .getExecutionForFunctionOnRegionWithFilter(any());
 
     when(sessionManager.getLogger()).thenReturn(logger);
     when(sessionManager.getEnableLocalCache()).thenReturn(true);
     when(sessionManager.getRegionName()).thenReturn(sessionRegionName);
-    when(sessionManager.getMaxInactiveInterval()).thenReturn(RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL);
+    when(sessionManager.getMaxInactiveInterval())
+        .thenReturn(RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL);
 
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
-    doReturn(regionFactory).when(cache).createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU);
-    when(((InternalClientCache)cache).isClient()).thenReturn(true);
+    doReturn(regionFactory).when(cache)
+        .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU);
+    when(((InternalClientCache) cache).isClient()).thenReturn(true);
 
     when(emptyExecution.execute(any(Function.class))).thenReturn(collector);
     when(emptyExecution.execute(any(String.class))).thenReturn(collector);
@@ -124,9 +124,10 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
   @Test
   public void createOrRetrieveRegionThrowsException() {
     RuntimeException exception = new RuntimeException();
-    doThrow(exception).when((ClientServerSessionCache)sessionCache).createLocalSessionRegion();
+    doThrow(exception).when((ClientServerSessionCache) sessionCache).createLocalSessionRegion();
 
-    assertThatThrownBy(() -> sessionCache.initialize()).hasCause(exception).isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(() -> sessionCache.initialize()).hasCause(exception)
+        .isInstanceOf(IllegalStateException.class);
 
     verify(logger).fatal("Unable to create or retrieve region", exception);
 
@@ -139,8 +140,11 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
     regionStatusResultList.clear();
     regionStatusResultList.add(RegionStatus.INVALID);
 
-    assertThatThrownBy(() -> sessionCache.initialize()).isInstanceOf(IllegalStateException.class).hasCauseInstanceOf(IllegalStateException.class).hasMessageContaining("An exception occurred on the server while attempting to create or validate region named " + sessionRegionName
-        + ". See the server log for additional details.");
+    assertThatThrownBy(() -> sessionCache.initialize()).isInstanceOf(IllegalStateException.class)
+        .hasCauseInstanceOf(IllegalStateException.class).hasMessageContaining(
+            "An exception occurred on the server while attempting to create or validate region named "
+                + sessionRegionName
+                + ". See the server log for additional details.");
 
     verify(logger).fatal(stringCaptor.capture(), any(Exception.class));
     assertThat(stringCaptor.getValue()).isEqualTo("Unable to create or retrieve region");
@@ -148,8 +152,10 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
 
   @Test
   public void nonDefaultMaxTimeoutIntervalSetsExpirationDetails() {
-    //Setting the mocked return value of getMaxInactiveInterval to something distinctly not equal to the default
-    when(sessionManager.getMaxInactiveInterval()).thenReturn(RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL+1);
+    // Setting the mocked return value of getMaxInactiveInterval to something distinctly not equal
+    // to the default
+    when(sessionManager.getMaxInactiveInterval())
+        .thenReturn(RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL + 1);
 
     sessionCache.initialize();
 
@@ -173,21 +179,23 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
   @Test
   public void createOrRetrieveRegionWithNonNullSessionRegionDoesNotCreateRegion() {
     @SuppressWarnings("unchecked")
-    CacheListener<String, HttpSession>[] cacheListeners = new CacheListener[] { new SessionExpirationCacheListener()};
+    CacheListener<String, HttpSession>[] cacheListeners =
+        new CacheListener[] {new SessionExpirationCacheListener()};
     doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
     doReturn(attributes).when(sessionRegion).getAttributes();
     doReturn(cacheListeners).when(attributes).getCacheListeners();
 
     sessionCache.initialize();
 
-    verify((ClientServerSessionCache)sessionCache, times(0)).createSessionRegionOnServers();
-    verify((ClientServerSessionCache)sessionCache, times(0)).createLocalSessionRegion();
+    verify((ClientServerSessionCache) sessionCache, times(0)).createSessionRegionOnServers();
+    verify((ClientServerSessionCache) sessionCache, times(0)).createLocalSessionRegion();
   }
 
   @Test
   public void createOrRetrieveRegionWithNonNullSessionRegionAndNoSessionExpirationCacheListenerCreatesListener() {
     @SuppressWarnings("unchecked")
-    CacheListener<String, HttpSession>[] cacheListeners = new CacheListener[] { new DebugCacheListener()};
+    CacheListener<String, HttpSession>[] cacheListeners =
+        new CacheListener[] {new DebugCacheListener()};
     @SuppressWarnings("unchecked")
     AttributesMutator<String, HttpSession> attributesMutator = mock(AttributesMutator.class);
     doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
@@ -203,7 +211,8 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
   @Test
   public void createOrRetrieveRegionWithNonNullSessionProxyRegionRegistersInterestForAllKeys() {
     @SuppressWarnings("unchecked")
-    CacheListener<String, HttpSession>[] cacheListeners = new CacheListener[] { new SessionExpirationCacheListener()};
+    CacheListener<String, HttpSession>[] cacheListeners =
+        new CacheListener[] {new SessionExpirationCacheListener()};
     doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
     doReturn(attributes).when(sessionRegion).getAttributes();
     doReturn(cacheListeners).when(attributes).getCacheListeners();
@@ -232,7 +241,8 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
     ResultCollector exceptionCollector = mock(ResultCollector.class);
 
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.PARTITION.toString());
-    when(emptyExecution.execute(TouchPartitionedRegionEntriesFunction.ID)).thenReturn(exceptionCollector);
+    when(emptyExecution.execute(TouchPartitionedRegionEntriesFunction.ID))
+        .thenReturn(exceptionCollector);
     when(exceptionCollector.getResult()).thenThrow(exception);
 
     sessionCache.touchSessions(sessionIds);
@@ -241,7 +251,7 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
 
   @Test
   public void touchSessionsInvokesRRFunctionForRRAndDoesNotThrowExceptionWhenFunctionDoesNotThrowException() {
-    //Need to invoke this to set the session region
+    // Need to invoke this to set the session region
     when(regionFactory.create(sessionRegionName)).thenReturn(sessionRegion);
     sessionCache.initialize();
 
@@ -256,7 +266,7 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
 
   @Test
   public void touchSessionsInvokesRRFunctionForRRAndThrowsExceptionWhenFunctionThrowsException() {
-    //Need to invoke this to set the session region
+    // Need to invoke this to set the session region
     when(regionFactory.create(sessionRegionName)).thenReturn(sessionRegion);
     sessionCache.initialize();
 
@@ -266,7 +276,8 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
 
     when(sessionRegion.getFullPath()).thenReturn("/" + sessionRegionName);
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.REPLICATE.toString());
-    when(emptyExecution.execute(TouchReplicatedRegionEntriesFunction.ID)).thenReturn(exceptionCollector);
+    when(emptyExecution.execute(TouchReplicatedRegionEntriesFunction.ID))
+        .thenReturn(exceptionCollector);
     when(exceptionCollector.getResult()).thenThrow(exception);
 
     sessionCache.touchSessions(sessionIds);
@@ -284,7 +295,7 @@ public class ClientServerSessionCacheJUnitTest extends AbstractSessionCacheJUnit
     PoolImpl pool = mock(PoolImpl.class);
 
     when(sessionManager.isCommitValveFailfastEnabled()).thenReturn(true);
-    doReturn(pool).when((ClientServerSessionCache)sessionCache).findPoolInPoolManager();
+    doReturn(pool).when((ClientServerSessionCache) sessionCache).findPoolInPoolManager();
     when(pool.isPrimaryUpdaterAlive()).thenReturn(backingCacheEnabled);
 
     assertThat(sessionCache.isBackingCacheAvailable()).isEqualTo(backingCacheEnabled);

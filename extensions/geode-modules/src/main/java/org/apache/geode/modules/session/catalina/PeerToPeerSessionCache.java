@@ -92,7 +92,8 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
       collector = execution.execute(TouchPartitionedRegionEntriesFunction.ID);
     } else {
       // Execute the member touch function on all the server(s)
-      Execution execution = getExecutionForFunctionOnMembersWithArguments(new Object[] {this.sessionRegion.getFullPath(), sessionIds});
+      Execution execution = getExecutionForFunctionOnMembersWithArguments(
+          new Object[] {this.sessionRegion.getFullPath(), sessionIds});
       collector = execution.execute(TouchReplicatedRegionEntriesFunction.ID);
     }
 
@@ -225,7 +226,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     return frontingRegion;
   }
 
-  //Helper methods added to improve unit testing of class
+  // Helper methods added to improve unit testing of class
   void registerFunctionWithFunctionService(Function function) {
     FunctionService.registerFunction(function);
   }

@@ -1,40 +1,46 @@
 package org.apache.geode.modules.session.catalina;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.lang.reflect.Array;
-import java.util.Arrays;
+import java.io.ObjectOutputStream;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Loader;
 import org.apache.catalina.Session;
+import org.apache.catalina.session.StandardSession;
 import org.apache.juli.logging.Log;
-import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.Statistics;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.LinkedResultSet;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
 
 public abstract class DeltaSessionManagerJUnitTest {
@@ -93,7 +99,7 @@ public abstract class DeltaSessionManagerJUnitTest {
     doReturn(containerMaxInactiveInterval).when(container).getSessionTimeout();
 
     manager.setContainer(container);
-    verify(manager).setMaxInactiveInterval(containerMaxInactiveInterval*60);
+    verify(manager).setMaxInactiveInterval(containerMaxInactiveInterval * 60);
   }
 
   @Test
@@ -193,13 +199,14 @@ public abstract class DeltaSessionManagerJUnitTest {
 
     String listOutput = manager.listSessionIds();
 
-    for(String id : ids) {
+    for (String id : ids) {
       assertThat(listOutput).contains(id);
     }
   }
 
   @Test
-  public void loadActivatesAndAddsSingleSessionWithValidIdAndMoreRecentAccessTime() throws IOException, ClassNotFoundException {
+  public void loadActivatesAndAddsSingleSessionWithValidIdAndMoreRecentAccessTime()
+      throws IOException, ClassNotFoundException {
     String contextPath = "contextPath";
     String catalinaBaseSystemProp = "Catalina/Base";
     String systemFileSeparator = "/";
@@ -214,7 +221,8 @@ public abstract class DeltaSessionManagerJUnitTest {
     DeltaSession newSession = mock(DeltaSession.class);
     DeltaSession existingSession = mock(DeltaSession.class);
 
-    prepareMocksForLoadTest(contextPath, loader, newSession, newSessionId, existingSession, catalinaBaseSystemProp, systemFileSeparator, store, expectedStoreDir, fis, bis, ois);
+    prepareMocksForLoadTest(contextPath, loader, newSession, newSessionId, existingSession,
+        catalinaBaseSystemProp, systemFileSeparator, store, expectedStoreDir, fis, bis, ois);
 
     manager.load();
 
@@ -239,7 +247,8 @@ public abstract class DeltaSessionManagerJUnitTest {
     DeltaSession newSession = mock(DeltaSession.class);
     DeltaSession existingSession = mock(DeltaSession.class);
 
-    prepareMocksForLoadTest(contextPath, loader, newSession, newSessionId, existingSession, catalinaBaseSystemProp, systemFileSeparator, store, expectedStoreDir, fis, bis, ois);
+    prepareMocksForLoadTest(contextPath, loader, newSession, newSessionId, existingSession,
+        catalinaBaseSystemProp, systemFileSeparator, store, expectedStoreDir, fis, bis, ois);
 
     doReturn(null).when(manager).getFileAtPath(expectedStoreDir, contextPath);
 
@@ -249,8 +258,81 @@ public abstract class DeltaSessionManagerJUnitTest {
     verify(manager, times(0)).add(any());
   }
 
-  public void prepareMocksForLoadTest(String contextPath, Loader loader, DeltaSession newSession, String newSessionId, DeltaSession existingSession, String catalinaBaseSystemProp, String systemFileSeparator, File store, String expectedStoreDir,
-                                      FileInputStream fis, BufferedInputStream bis, ObjectInputStream ois)
+  @Test
+  public void loadDoesNotAddSessionToManagerWithValidIdAndLessRecentAccessTime()
+      throws IOException, ClassNotFoundException {
+    String contextPath = "contextPath";
+    String catalinaBaseSystemProp = "Catalina/Base";
+    String systemFileSeparator = "/";
+    String expectedStoreDir = catalinaBaseSystemProp + systemFileSeparator + "temp";
+    String newSessionId = "newSessionId";
+
+    File store = mock(File.class);
+    FileInputStream fis = mock(FileInputStream.class);
+    BufferedInputStream bis = mock(BufferedInputStream.class);
+    ObjectInputStream ois = mock(ObjectInputStream.class);
+    Loader loader = mock(Loader.class);
+    DeltaSession newSession = mock(DeltaSession.class);
+    DeltaSession existingSession = mock(DeltaSession.class);
+
+    prepareMocksForLoadTest(contextPath, loader, newSession, newSessionId, existingSession,
+        catalinaBaseSystemProp, systemFileSeparator, store, expectedStoreDir, fis, bis, ois);
+
+    when(existingSession.getLastAccessedTime()).thenReturn(2L);
+
+    manager.load();
+
+    verify(newSession, times(0)).activate();
+    verify(manager, times(0)).add(newSession);
+  }
+
+  @Test
+  public void unloadWritesSingleSessionToDiskWhenIdIsValid() throws IOException, NameResolutionException, TypeMismatchException,
+      QueryInvocationTargetException, FunctionDomainException {
+    String regionName = "regionName";
+    String sessionId1 = "sessionId1";
+    String contextPath = "contextPath";
+    String catalinaBaseSystemProp = "Catalina/Base";
+    String systemFileSeparator = "/";
+    String expectedStoreDir = catalinaBaseSystemProp + systemFileSeparator + "temp";
+
+    Cache cache = mock(Cache.class);
+    QueryService queryService = mock(QueryService.class);
+    Query query = mock(Query.class);
+    File store = mock(File.class);
+    FileOutputStream fos = mock(FileOutputStream.class);
+    BufferedOutputStream bos = mock(BufferedOutputStream.class);
+    ObjectOutputStream oos = mock(ObjectOutputStream.class);
+    SelectResults results = new LinkedResultSet();
+    DeltaSession session = mock(DeltaSession.class);
+
+    when(sessionCache.getCache()).thenReturn(cache);
+    when(context.getPath()).thenReturn(contextPath);
+    when(cache.getQueryService()).thenReturn(queryService);
+    when(queryService.newQuery(anyString())).thenReturn(query);
+    when(query.execute()).thenReturn(results);
+    doReturn(catalinaBaseSystemProp).when(manager).getSystemPropertyValue("catalina.base");
+    doReturn(systemFileSeparator).when(manager).getSystemPropertyValue("file.separator");
+    doReturn(store).when(manager).getFileAtPath(expectedStoreDir, contextPath);
+    doReturn(fos).when(manager).getFileOutputStream(store);
+    doReturn(bos).when(manager).getBufferedOutputStream(fos);
+    doReturn(oos).when(manager).getObjectOutputStream(bos);
+    doReturn(regionName).when(manager).getRegionName();
+    doReturn(session).when(manager).findSession(sessionId1);
+    doNothing().when(manager).writeToObjectOutputStream(any(), any());
+
+    results.add(sessionId1);
+
+    manager.unload();
+
+    verify((StandardSession)session).writeObjectData(oos);
+  }
+
+
+  public void prepareMocksForLoadTest(String contextPath, Loader loader, DeltaSession newSession,
+      String newSessionId, DeltaSession existingSession, String catalinaBaseSystemProp,
+      String systemFileSeparator, File store, String expectedStoreDir,
+      FileInputStream fis, BufferedInputStream bis, ObjectInputStream ois)
       throws IOException, ClassNotFoundException {
     when(context.getPath()).thenReturn(contextPath);
     when(context.getLoader()).thenReturn(loader);
@@ -268,6 +350,4 @@ public abstract class DeltaSessionManagerJUnitTest {
     doReturn(newSession).when(manager).getNewSession();
     doReturn(existingSession).when(operatingRegion).get(newSessionId);
   }
-
-
 }
