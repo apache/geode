@@ -1,24 +1,32 @@
 package org.apache.geode.modules.session.catalina;
 
+import static org.apache.geode.modules.util.RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
+import java.beans.PropertyChangeEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpSession;
@@ -208,21 +216,11 @@ public abstract class DeltaSessionManagerJUnitTest {
   public void loadActivatesAndAddsSingleSessionWithValidIdAndMoreRecentAccessTime()
       throws IOException, ClassNotFoundException {
     String contextPath = "contextPath";
-    String catalinaBaseSystemProp = "Catalina/Base";
-    String systemFileSeparator = "/";
-    String expectedStoreDir = catalinaBaseSystemProp + systemFileSeparator + "temp";
-    String newSessionId = "newSessionId";
-
-    File store = mock(File.class);
-    FileInputStream fis = mock(FileInputStream.class);
-    BufferedInputStream bis = mock(BufferedInputStream.class);
-    ObjectInputStream ois = mock(ObjectInputStream.class);
-    Loader loader = mock(Loader.class);
+    String expectedStoreDir = "";
     DeltaSession newSession = mock(DeltaSession.class);
     DeltaSession existingSession = mock(DeltaSession.class);
 
-    prepareMocksForLoadTest(contextPath, loader, newSession, newSessionId, existingSession,
-        catalinaBaseSystemProp, systemFileSeparator, store, expectedStoreDir, fis, bis, ois);
+    prepareMocksForLoadTest(contextPath, newSession, existingSession, expectedStoreDir);
 
     manager.load();
 
@@ -234,23 +232,13 @@ public abstract class DeltaSessionManagerJUnitTest {
   public void loadLogsWarningAndDoesNotAddSessionWhenSessionStoreNotFound()
       throws IOException, ClassNotFoundException {
     String contextPath = "contextPath";
-    String catalinaBaseSystemProp = "Catalina/Base";
-    String systemFileSeparator = "/";
-    String expectedStoreDir = catalinaBaseSystemProp + systemFileSeparator + "temp";
-    String newSessionId = "newSessionId";
-
-    File store = mock(File.class);
-    FileInputStream fis = mock(FileInputStream.class);
-    BufferedInputStream bis = mock(BufferedInputStream.class);
-    ObjectInputStream ois = mock(ObjectInputStream.class);
-    Loader loader = mock(Loader.class);
+    String expectedStoreDir = "";
     DeltaSession newSession = mock(DeltaSession.class);
     DeltaSession existingSession = mock(DeltaSession.class);
 
-    prepareMocksForLoadTest(contextPath, loader, newSession, newSessionId, existingSession,
-        catalinaBaseSystemProp, systemFileSeparator, store, expectedStoreDir, fis, bis, ois);
+    prepareMocksForLoadTest(contextPath, newSession, existingSession, expectedStoreDir);
 
-    doReturn(null).when(manager).getFileAtPath(expectedStoreDir, contextPath);
+    doReturn(null).when(manager).getFileAtPath(any(), any());
 
     manager.load();
 
@@ -262,21 +250,11 @@ public abstract class DeltaSessionManagerJUnitTest {
   public void loadDoesNotAddSessionToManagerWithValidIdAndLessRecentAccessTime()
       throws IOException, ClassNotFoundException {
     String contextPath = "contextPath";
-    String catalinaBaseSystemProp = "Catalina/Base";
-    String systemFileSeparator = "/";
-    String expectedStoreDir = catalinaBaseSystemProp + systemFileSeparator + "temp";
-    String newSessionId = "newSessionId";
-
-    File store = mock(File.class);
-    FileInputStream fis = mock(FileInputStream.class);
-    BufferedInputStream bis = mock(BufferedInputStream.class);
-    ObjectInputStream ois = mock(ObjectInputStream.class);
-    Loader loader = mock(Loader.class);
+    String expectedStoreDir = "";
     DeltaSession newSession = mock(DeltaSession.class);
     DeltaSession existingSession = mock(DeltaSession.class);
 
-    prepareMocksForLoadTest(contextPath, loader, newSession, newSessionId, existingSession,
-        catalinaBaseSystemProp, systemFileSeparator, store, expectedStoreDir, fis, bis, ois);
+    prepareMocksForLoadTest(contextPath, newSession, existingSession, expectedStoreDir);
 
     when(existingSession.getLastAccessedTime()).thenReturn(2L);
 
@@ -289,8 +267,136 @@ public abstract class DeltaSessionManagerJUnitTest {
   @Test
   public void unloadWritesSingleSessionToDiskWhenIdIsValid() throws IOException, NameResolutionException, TypeMismatchException,
       QueryInvocationTargetException, FunctionDomainException {
+    String sessionId = "sessionId";
+    DeltaSession session = mock(DeltaSession.class);
+    FileOutputStream fos = mock(FileOutputStream.class);
+    BufferedOutputStream bos = mock(BufferedOutputStream.class);
+    ObjectOutputStream oos = mock(ObjectOutputStream.class);
+
+    prepareMocksForUnloadTest(sessionId, fos, bos, oos, session);
+
+    manager.unload();
+
+    verify((StandardSession)session).writeObjectData(oos);
+  }
+
+  @Test
+  public void unloadDoesNotWriteSessionToDiskAndClosesOutputStreamsWhenOutputStreamThrowsIOException() throws IOException, NameResolutionException, TypeMismatchException,
+      QueryInvocationTargetException, FunctionDomainException {
+    String sessionId = "sessionId";
+    DeltaSession session = mock(DeltaSession.class);
+    FileOutputStream fos = mock(FileOutputStream.class);
+    BufferedOutputStream bos = mock(BufferedOutputStream.class);
+    ObjectOutputStream oos = mock(ObjectOutputStream.class);
+
+    prepareMocksForUnloadTest(sessionId, fos, bos, oos, session);
+
+    String exceptionMessage = "Output Stream IOException";
+
+    IOException exception = new IOException(exceptionMessage);
+
+    doThrow(exception).when(manager).getObjectOutputStream(bos);
+
+    assertThatThrownBy(() -> manager.unload()).isInstanceOf(IOException.class).hasMessage(exceptionMessage);
+
+    verify((StandardSession)session, times(0)).writeObjectData(oos);
+    verify(bos).close();
+    verify(fos).close();
+  }
+
+  @Test
+  public void unloadDoesNotWriteSessionToDiskAndClosesOutputStreamsWhenSessionIsWrongClass() throws IOException, NameResolutionException, TypeMismatchException,
+      QueryInvocationTargetException, FunctionDomainException {
+    String sessionId = "sessionId";
+    DeltaSession session = mock(DeltaSession.class);
+    FileOutputStream fos = mock(FileOutputStream.class);
+    BufferedOutputStream bos = mock(BufferedOutputStream.class);
+    ObjectOutputStream oos = mock(ObjectOutputStream.class);
+
+    prepareMocksForUnloadTest(sessionId, fos, bos, oos, session);
+
+    Session invalidSession = mock(Session.class, withSettings().extraInterfaces(DeltaSessionInterface.class));
+
+    doReturn(invalidSession).when(manager).findSession(sessionId);
+
+    assertThatThrownBy(() -> manager.unload()).isInstanceOf(IOException.class);
+
+    verify((StandardSession)session, times(0)).writeObjectData(oos);
+    verify(oos).close();
+  }
+
+  @Test
+  public void successfulUnloadWithClientServerSessionCachePerformsLocalDestroy() throws IOException, NameResolutionException, TypeMismatchException,
+      QueryInvocationTargetException, FunctionDomainException {
+    String sessionId = "sessionId";
+    DeltaSession session = mock(DeltaSession.class);
+    FileOutputStream fos = mock(FileOutputStream.class);
+    BufferedOutputStream bos = mock(BufferedOutputStream.class);
+    ObjectOutputStream oos = mock(ObjectOutputStream.class);
+
+    prepareMocksForUnloadTest(sessionId, fos, bos, oos, session);
+
+    when(sessionCache.isClientServer()).thenReturn(true);
+    when(session.getId()).thenReturn(sessionId);
+
+    manager.unload();
+
+    verify((StandardSession)session).writeObjectData(oos);
+    verify(operatingRegion).localDestroy(sessionId);
+  }
+
+  @Test
+  public void propertyChangeSetsMaxInactiveIntervalWithCorrectPropertyNameAndValue() {
+    String propertyName = "sessionTimeout";
+    PropertyChangeEvent event = mock(PropertyChangeEvent.class);
+    Context eventContext = mock(Context.class);
+    Integer newValue = 1;
+
+    when(event.getSource()).thenReturn(eventContext);
+    when(event.getPropertyName()).thenReturn(propertyName);
+    when(event.getNewValue()).thenReturn(newValue);
+
+    manager.propertyChange(event);
+
+    verify(manager).setMaxInactiveInterval(newValue*60);
+  }
+
+  @Test
+  public void propertyChangeDoesNotSetMaxInactiveIntervalWithIncorrectPropertyName() {
+    String propertyName = "wrong name";
+    PropertyChangeEvent event = mock(PropertyChangeEvent.class);
+    Context eventContext = mock(Context.class);
+
+    when(event.getSource()).thenReturn(eventContext);
+    when(event.getPropertyName()).thenReturn(propertyName);
+
+    manager.propertyChange(event);
+
+    verify(manager, times(0)).setMaxInactiveInterval(anyInt());
+  }
+
+  @Test
+  public void propertyChangeDoesNotSetNewMaxInactiveIntervalWithCorrectPropertyNameAndInvalidPropertyValue() {
+    String propertyName = "sessionTimeout";
+    PropertyChangeEvent event = mock(PropertyChangeEvent.class);
+    Context eventContext = mock(Context.class);
+    Integer newValue = -2;
+    Integer oldValue = DEFAULT_MAX_INACTIVE_INTERVAL;
+
+    when(event.getSource()).thenReturn(eventContext);
+    when(event.getPropertyName()).thenReturn(propertyName);
+    when(event.getNewValue()).thenReturn(newValue);
+    when(event.getOldValue()).thenReturn(oldValue);
+
+    manager.propertyChange(event);
+
+    verify(manager).setMaxInactiveInterval(oldValue);
+  }
+
+  public void prepareMocksForUnloadTest(String sessionId,FileOutputStream fos, BufferedOutputStream bos, ObjectOutputStream oos, DeltaSession session)
+      throws NameResolutionException, TypeMismatchException, QueryInvocationTargetException,
+      FunctionDomainException, IOException {
     String regionName = "regionName";
-    String sessionId1 = "sessionId1";
     String contextPath = "contextPath";
     String catalinaBaseSystemProp = "Catalina/Base";
     String systemFileSeparator = "/";
@@ -300,11 +406,7 @@ public abstract class DeltaSessionManagerJUnitTest {
     QueryService queryService = mock(QueryService.class);
     Query query = mock(Query.class);
     File store = mock(File.class);
-    FileOutputStream fos = mock(FileOutputStream.class);
-    BufferedOutputStream bos = mock(BufferedOutputStream.class);
-    ObjectOutputStream oos = mock(ObjectOutputStream.class);
     SelectResults results = new LinkedResultSet();
-    DeltaSession session = mock(DeltaSession.class);
 
     when(sessionCache.getCache()).thenReturn(cache);
     when(context.getPath()).thenReturn(contextPath);
@@ -318,22 +420,26 @@ public abstract class DeltaSessionManagerJUnitTest {
     doReturn(bos).when(manager).getBufferedOutputStream(fos);
     doReturn(oos).when(manager).getObjectOutputStream(bos);
     doReturn(regionName).when(manager).getRegionName();
-    doReturn(session).when(manager).findSession(sessionId1);
+    doReturn(session).when(manager).findSession(sessionId);
     doNothing().when(manager).writeToObjectOutputStream(any(), any());
 
-    results.add(sessionId1);
-
-    manager.unload();
-
-    verify((StandardSession)session).writeObjectData(oos);
+    results.add(sessionId);
   }
 
-
-  public void prepareMocksForLoadTest(String contextPath, Loader loader, DeltaSession newSession,
-      String newSessionId, DeltaSession existingSession, String catalinaBaseSystemProp,
-      String systemFileSeparator, File store, String expectedStoreDir,
-      FileInputStream fis, BufferedInputStream bis, ObjectInputStream ois)
+  public void prepareMocksForLoadTest(String contextPath, DeltaSession newSession,
+      DeltaSession existingSession, String expectedStoreDir)
       throws IOException, ClassNotFoundException {
+    String catalinaBaseSystemProp = "Catalina/Base";
+    String systemFileSeparator = "/";
+    expectedStoreDir = catalinaBaseSystemProp + systemFileSeparator + "temp";
+    String newSessionId = "newSessionId";
+
+    File store = mock(File.class);
+    FileInputStream fis = mock(FileInputStream.class);
+    BufferedInputStream bis = mock(BufferedInputStream.class);
+    ObjectInputStream ois = mock(ObjectInputStream.class);
+    Loader loader = mock(Loader.class);
+
     when(context.getPath()).thenReturn(contextPath);
     when(context.getLoader()).thenReturn(loader);
     when(newSession.getId()).thenReturn(newSessionId);
