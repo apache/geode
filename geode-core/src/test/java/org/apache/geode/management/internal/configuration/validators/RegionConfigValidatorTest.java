@@ -167,4 +167,57 @@ public class RegionConfigValidatorTest {
         .hasMessageContaining(
             "redundantCopies can only be set with PARTITION regions.");
   }
+
+  @Test
+  public void validateExpiration() throws Exception {
+    config.setName("test");
+    config.setType(RegionType.REPLICATE);
+    config.addExpiry(null, null, null);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Expiration type must be set.");
+    config.getExpirations().clear();
+
+    config.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, null, null);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Expiration timeInSeconds must be greater than or equal to 0.");
+    config.getExpirations().clear();
+
+    config.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, -1, null);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Expiration timeInSeconds must be greater than or equal to 0.");
+    config.getExpirations().clear();
+
+    config.addExpiry(Region.ExpirationType.UNSUPPORTED, 100, null);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Invalid Expiration type.");
+    config.getExpirations().clear();
+
+    config.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, 100,
+        Region.ExpirationAction.UNSUPPORTED);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Invalid Expiration action.");
+    config.getExpirations().clear();
+
+    config.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, 100, null);
+    config.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, 200, null);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Can not have multiple " + Region.ExpirationType.ENTRY_IDLE_TIME.name());
+    config.getExpirations().clear();
+
+    config.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, 100, null);
+    config.addExpiry(Region.ExpirationType.ENTRY_TIME_TO_LIVE, 200, null);
+    validator.validate(CacheElementOperation.CREATE, config);
+  }
 }

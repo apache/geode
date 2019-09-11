@@ -15,7 +15,11 @@
 
 package org.apache.geode.management.configuration;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -37,6 +41,8 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
   private String valueConstraint;
   private String diskStoreName;
   private Integer redundantCopies;
+
+  private List<Expiration> expirations;
 
   public Region() {}
 
@@ -66,6 +72,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
 
   public void setName(String value) {
     if (value == null) {
+      this.name = null;
       return;
     }
 
@@ -127,25 +134,75 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
     this.diskStoreName = diskStoreName;
   }
 
-  /**
-   * two regions are equal if name and type are equal.
-   */
-  @Override
-  public boolean equals(Object that) {
-    if (this == that) {
-      return true;
-    }
-    if (that == null || getClass() != that.getClass()) {
-      return false;
-    }
-    Region config = (Region) that;
-    return Objects.equals(getName(), config.getName()) &&
-        Objects.equals(getType(), config.getType());
+  public List<Expiration> getExpirations() {
+    return expirations;
   }
 
+  public void setExpirations(List<Expiration> expirations) {
+    if (expirations == null) {
+      this.expirations = null;
+      return;
+    }
+    this.expirations = expirations.stream().filter(Objects::nonNull).collect(Collectors.toList());
+  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(getName());
+  public void addExpiry(ExpirationType type, Integer timeout, ExpirationAction action) {
+    if (expirations == null) {
+      expirations = new ArrayList<>();
+    }
+    expirations.add(new Expiration(type, timeout, action));
+  }
+
+  public enum ExpirationType {
+    ENTRY_TIME_TO_LIVE,
+    ENTRY_IDLE_TIME,
+    UNSUPPORTED
+  }
+
+  public enum ExpirationAction {
+    DESTROY,
+    INVALIDATE,
+    UNSUPPORTED
+  }
+
+  public static class Expiration implements Serializable {
+    private ExpirationType type;
+    private Integer timeInSeconds;
+    private ExpirationAction action;
+
+    public Expiration() {};
+
+    public Expiration(ExpirationType type, Integer timeInSeconds, ExpirationAction action) {
+      setType(type);
+      this.timeInSeconds = timeInSeconds;
+      this.action = action;
+    }
+
+    public ExpirationType getType() {
+      return type;
+    }
+
+    public void setType(ExpirationType type) {
+      this.type = type;
+    }
+
+    public Integer getTimeInSeconds() {
+      return timeInSeconds;
+    }
+
+    /**
+     * @param timeInSeconds in seconds
+     */
+    public void setTimeInSeconds(Integer timeInSeconds) {
+      this.timeInSeconds = timeInSeconds;
+    }
+
+    public ExpirationAction getAction() {
+      return action;
+    }
+
+    public void setAction(ExpirationAction action) {
+      this.action = action;
+    }
   }
 }
