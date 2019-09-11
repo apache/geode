@@ -15,13 +15,14 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.internal.HttpService;
 
 public class CacheServiceJUnitTest {
 
@@ -41,8 +42,8 @@ public class CacheServiceJUnitTest {
 
   @Test
   public void test() {
-    MockCacheService service = cache.getService(MockCacheService.class);
-    assertEquals(cache, service.getCache());
+    HttpService service = cache.getService(HttpService.class);
+    assertThat(service).isNotNull();
   }
 
 }
