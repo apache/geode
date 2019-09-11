@@ -28,7 +28,6 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.GatewayReceiver;
@@ -89,8 +88,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
     RuntimeInfo runtimeInfo = realizer.get(cacheElement, cache);
 
     // set the membername if this is not a global runtime
-    if (cacheElement instanceof CorrespondWith
-        && !((CorrespondWith) cacheElement).isGlobalRuntime()) {
+    if (!cacheElement.isGlobalRuntime()) {
       runtimeInfo.setMemberName(context.getMemberName());
     }
 

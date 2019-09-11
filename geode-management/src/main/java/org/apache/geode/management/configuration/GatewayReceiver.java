@@ -19,8 +19,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
 
 
@@ -30,14 +28,16 @@ import org.apache.geode.management.runtime.GatewayReceiverInfo;
  * setting the bindAddress and hostname for clients are not supported by this api.
  */
 
-public class GatewayReceiver extends AbstractConfiguration implements RestfulEndpoint,
-    CorrespondWith<GatewayReceiverInfo> {
+public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo> {
+  /**
+   * Returns {@link #getGroup()} or {@link AbstractConfiguration#CLUSTER} if group is null.
+   */
   @Override
   @JsonIgnore
   public String getId() {
     String id = getGroup();
     if (isCluster(id)) {
-      id = AbstractConfiguration.CLUSTER;
+      id = CLUSTER;
     }
     return id;
   }

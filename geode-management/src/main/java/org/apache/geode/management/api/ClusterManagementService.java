@@ -37,7 +37,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the creation
    * @throws ClusterManagementRealizationException if unsuccessful
    */
-  <T extends AbstractConfiguration> ClusterManagementRealizationResult create(T config);
+  <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config);
 
   /**
    * This method will delete the element on all the applicable members in the cluster and update the
@@ -48,7 +48,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the deletion
    * @throws ClusterManagementRealizationException if unsuccessful
    */
-  <T extends AbstractConfiguration> ClusterManagementRealizationResult delete(T config);
+  <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult delete(T config);
 
   /**
    * This method will update the element on all the applicable members in the cluster and persist
@@ -59,34 +59,35 @@ public interface ClusterManagementService extends AutoCloseable {
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the update
    * @throws ClusterManagementRealizationException if unsuccessful
    */
-  <T extends AbstractConfiguration> ClusterManagementRealizationResult update(T config);
+  <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult update(T config);
 
   /**
    * This method will list instances of the element type in the cluster configuration, along with
    * additional runtime information from cluster members
    *
-   * @param config this may be used to filter the search results by id or group (check documentation
-   *        for individual element types to see if they support filtering by addition attributes)
+   * @param filter the filterable attributes are used to identify the elements to list. Any
+   *        non-filterable attributes will be ignored.
    * @return a {@link ClusterManagementListResult} holding a list of matching instances in
    *         {@link ClusterManagementListResult#getResult()}
    * @throws ClusterManagementException if unsuccessful
    */
-  <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
-      T config);
+  <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
+      T filter);
 
   /**
    * This method will list a single instance of the element type in the cluster configuration, along
    * with additional runtime information from cluster members
    *
-   * @param config this must be used to filter the search results to a single result, generally by
-   *        supplying the name (id) of the desired config element
+   * @param filter the filterable attributes are used to identify the element to return. Any
+   *        non-filterable attributes will be ignored. It is an error if the filter matches
+   *        more than one element.
    * @return a {@link ClusterManagementListResult} holding a single element in
    *         {@link ClusterManagementListResult#getResult()}
    * @throws ClusterManagementException if unsuccessful or, no matching element is found, or
    *         multiple matches are found
    */
-  <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
-      T config);
+  <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
+      T filter);
 
   /**
    * This method will launch a cluster management operation asynchronously.

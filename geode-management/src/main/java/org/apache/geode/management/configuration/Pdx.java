@@ -19,16 +19,13 @@ package org.apache.geode.management.configuration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
  * Configuration Objects for Pdx in the cache
  */
 @Experimental
-public class Pdx extends AbstractConfiguration
-    implements RestfulEndpoint, CorrespondWith<RuntimeInfo> {
+public class Pdx extends AbstractConfiguration<RuntimeInfo> {
   public static final String PDX_ID = "PDX";
   public static final String PDX_ENDPOINT = "/configurations/pdx";
 
@@ -38,6 +35,9 @@ public class Pdx extends AbstractConfiguration
   private Boolean persistent;
   private String diskStoreName;
 
+  /**
+   * Returns {@link #PDX_ID}
+   */
   @Override
   @JsonIgnore
   public String getId() {
@@ -52,12 +52,6 @@ public class Pdx extends AbstractConfiguration
   @Override
   public String getIdentityEndPoint() {
     return PDX_ENDPOINT;
-  }
-
-  public void setGroup(String group) {
-    if (!isCluster(group)) {
-      throw new IllegalArgumentException("Pdx can only be configured in cluster level.");
-    }
   }
 
   public Boolean isReadSerialized() {

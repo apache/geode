@@ -32,7 +32,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * @param <R> the type of the corresponding runtime information, e.g. RuntimeRegionInfo
  */
 @Experimental
-public class ClusterManagementListResult<T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo>
+public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R extends RuntimeInfo>
     extends ClusterManagementResult {
   /**
    * for internal use only

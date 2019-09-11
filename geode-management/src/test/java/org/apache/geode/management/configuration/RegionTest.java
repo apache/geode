@@ -22,8 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class RegionTest {
@@ -69,13 +67,7 @@ public class RegionTest {
     assertThat(regionConfig.getEndpoint()).isEqualTo("/regions");
 
     assertThat(regionConfig.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/regions/regionA");
-  }
-
-  @Test
-  public void getRuntimeClass() throws Exception {
-    assertThat(regionConfig.getRuntimeClass()).isEqualTo(RuntimeRegionInfo.class);
-    assertThat(regionConfig.hasRuntimeInfo()).isTrue();
+        .isEqualTo(AbstractConfiguration.URI_CONTEXT + "/experimental/regions/regionA");
   }
 
   @Test

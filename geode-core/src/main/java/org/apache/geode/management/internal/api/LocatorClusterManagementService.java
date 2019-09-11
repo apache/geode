@@ -18,9 +18,9 @@
 package org.apache.geode.management.internal.api;
 
 
-import static org.apache.geode.management.configuration.AbstractConfiguration.CLUSTER;
-import static org.apache.geode.management.configuration.AbstractConfiguration.isCluster;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,11 +58,10 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
-import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.GatewayReceiver;
+import org.apache.geode.management.configuration.GroupableConfiguration;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.Pdx;
@@ -129,7 +128,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends AbstractConfiguration> ClusterManagementRealizationResult create(T config) {
+  public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
@@ -140,7 +139,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     String group = config.getGroup();
     final String groupName =
-        isCluster(group) ? CLUSTER : group;
+        AbstractConfiguration.isCluster(group) ? AbstractConfiguration.CLUSTER : group;
     try {
       // first validate common attributes of all configuration object
       commonValidator.validate(CacheElementOperation.CREATE, config);
@@ -191,14 +190,14 @@ public class LocatorClusterManagementService implements ClusterManagementService
     });
 
     // add the config object which includes the HATEOAS information of the element created
-    if (result.isSuccessful() && config instanceof RestfulEndpoint) {
-      result.setUri(((RestfulEndpoint) config).getUri());
+    if (result.isSuccessful()) {
+      result.setUri(config.getUri());
     }
     return assertSuccessful(result);
   }
 
   @Override
-  public <T extends AbstractConfiguration> ClusterManagementRealizationResult delete(
+  public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult delete(
       T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
@@ -271,13 +270,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends AbstractConfiguration> ClusterManagementRealizationResult update(
+  public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult update(
       T config) {
     throw new NotImplementedException("Not implemented");
   }
 
   @Override
-  public <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
+  public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T filter) {
     ClusterManagementListResult<T, R> result = new ClusterManagementListResult<>();
 
@@ -301,10 +300,16 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
       for (String group : groups) {
         CacheConfig currentPersistedConfig =
-            persistenceService.getCacheConfig(isCluster(group) ? CLUSTER : group, true);
+            persistenceService.getCacheConfig(
+                AbstractConfiguration.isCluster(group) ? AbstractConfiguration.CLUSTER : group,
+                true);
         List<T> listInGroup = manager.list(filter, currentPersistedConfig);
-        if (!isCluster(group)) {
-          listInGroup.forEach(t -> t.setGroup(group));
+        if (!AbstractConfiguration.isCluster(group)) {
+          listInGroup.forEach(t -> {
+            if (t instanceof GroupableConfiguration) {
+              ((GroupableConfiguration<?>) t).setGroup(group);
+            }
+          });
         }
         resultList.addAll(listInGroup);
       }
@@ -312,7 +317,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     // gather the runtime info for each configuration objects
     List<ConfigurationResult<T, R>> responses = new ArrayList<>();
-    boolean hasRuntimeInfo = filter.hasRuntimeInfo();
+    boolean hasRuntimeInfo = hasRuntimeInfo(filter.getClass());
 
     for (T element : resultList) {
       ConfigurationResult<T, R> response = new ConfigurationResult<>(element);
@@ -354,7 +359,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
+  public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config) {
     ClusterManagementListResult<T, R> list = list(config);
     List<ConfigurationResult<T, R>> result = list.getResult();
@@ -423,7 +428,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
         operationInstance.getFutureResult(), operationInstance.getOperationStart(),
         operationInstance.getFutureOperationEnded(), operationInstance.getOperator());
-    result.setUri(RestfulEndpoint.URI_CONTEXT + RestfulEndpoint.URI_VERSION
+    result.setUri(AbstractConfiguration.URI_CONTEXT + AbstractConfiguration.URI_VERSION
         + operationInstance.getOperation().getEndpoint() + "/" + operationInstance.getId());
     return result;
   }
@@ -518,4 +523,25 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     return (List<R>) rc.getResult();
   }
+
+
+  /**
+   * for internal use only
+   */
+  @VisibleForTesting
+  Class<?> getRuntimeClass(Class<?> configClass) {
+    Type genericSuperclass = configClass.getGenericSuperclass();
+
+    if (genericSuperclass instanceof ParameterizedType) {
+      return (Class<?>) ((ParameterizedType) genericSuperclass).getActualTypeArguments()[0];
+    }
+
+    return null;
+  }
+
+  @VisibleForTesting
+  boolean hasRuntimeInfo(Class<?> configClass) {
+    return !RuntimeInfo.class.equals(getRuntimeClass(configClass));
+  }
+
 }
