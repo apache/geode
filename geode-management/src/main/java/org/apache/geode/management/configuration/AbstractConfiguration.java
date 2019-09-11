@@ -23,9 +23,28 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
+/**
+ * This class represents either a configuration or a filter.
+ * <p>
+ * As a configuration of a managed entity it can be used to
+ * either {@linkplain ClusterManagementService#create(AbstractConfiguration) create},
+ * {@linkplain ClusterManagementService#update(AbstractConfiguration) update},
+ * or {@linkplain ClusterManagementService#delete(AbstractConfiguration) delete} it,
+ * or to describe it in the result of
+ * {@linkplain ClusterManagementService#list(AbstractConfiguration) list}
+ * or {@linkplain ClusterManagementService#get(AbstractConfiguration) get}.
+ * <p>
+ * As a filter as input to {@linkplain ClusterManagementService#list(AbstractConfiguration) list}
+ * or {@linkplain ClusterManagementService#get(AbstractConfiguration) get}
+ * it can be used to specify what entities to return.
+ *
+ * @param <R> the RuntimeInfo that corresponds to this configuration. Each non-abstract subclass
+ *        needs to supply this when it extends this class.
+ */
 @Experimental
 public abstract class AbstractConfiguration<R extends RuntimeInfo>
     implements Identifiable<String>, JsonSerializable {
@@ -120,8 +139,8 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
   }
 
   /**
-   * this is to indicate when we need to go gather runtime information for this configuration,
-   * should we go to all members in the group, or just any member in the group
+   * Returns true if the RuntimeInfo will be the same on all members;
+   * false if each member can have different RuntimeInfo.
    */
   @JsonIgnore
   public boolean isGlobalRuntime() {
