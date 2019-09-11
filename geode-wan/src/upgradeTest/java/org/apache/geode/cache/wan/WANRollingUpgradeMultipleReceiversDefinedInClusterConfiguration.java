@@ -95,7 +95,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     // saved in cluster configuration and multiple receivers are not supported starting in 140.
     // Note: This comparison works because '130' < '140'.
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(version -> (version.compareTo(VersionManager.GEODE_140) >= 0));
+    result.removeIf(version -> (version.compareTo("1.4.0") >= 0));
     if (result.size() < 1) {
       throw new RuntimeException("No older versions of Geode were found to test against");
     }
