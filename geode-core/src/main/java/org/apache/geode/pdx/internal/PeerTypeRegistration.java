@@ -217,8 +217,6 @@ public class PeerTypeRegistration implements TypeRegistration {
     if (!getIdToType().isEmpty()) {
       verifyConfiguration();
     }
-
-    buildReverseMapsFromRegion();
   }
 
   protected DistributedLockService getLockService() {

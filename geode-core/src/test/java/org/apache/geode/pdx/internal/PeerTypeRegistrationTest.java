@@ -177,14 +177,11 @@ public class PeerTypeRegistrationTest {
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(distributionManager.getCancelCriterion()).thenReturn(cancelCriterion);
 
-    // buildReverseMapsFromRegion() is called during initialization of the PeerTypeRegistration, so
-    // we expect to see one invocation here
     peerTypeRegistration.initialize();
-    verify(peerTypeRegistration, times(1)).buildReverseMapsFromRegion();
 
     PdxType newType = mock(PdxType.class);
     peerTypeRegistration.defineType(newType);
 
-    verify(peerTypeRegistration, times(1)).buildReverseMapsFromRegion();
+    verify(peerTypeRegistration, times(0)).buildReverseMapsFromRegion();
   }
 }
