@@ -268,7 +268,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
         VersionTag<?> tag = removeAllPRData[i].versionTag;
         versionTags.add(tag);
         removeAllPRData[i].versionTag = null;
-        removeAllPRData[i].toData(out, context);
+        removeAllPRData[i].serializeTo(out, context);
         removeAllPRData[i].versionTag = tag;
         // RemoveAllEntryData's toData did not serialize eventID to save
         // performance for DR, but in PR,

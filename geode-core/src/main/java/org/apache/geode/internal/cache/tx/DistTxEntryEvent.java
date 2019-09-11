@@ -189,7 +189,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
       VersionTag<?> tag = removeAllData[i].versionTag;
       versionTags.add(tag);
       removeAllData[i].versionTag = null;
-      context.getSerializer().invokeToData(removeAllData[i], out);
+      removeAllData[i].serializeTo(out, context);
       removeAllData[i].versionTag = tag;
     }
     out.writeBoolean(hasTags);
