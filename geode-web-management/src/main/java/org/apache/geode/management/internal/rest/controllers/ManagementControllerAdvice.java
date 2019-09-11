@@ -14,14 +14,29 @@
  */
 package org.apache.geode.management.internal.rest.controllers;
 
+import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
+
+import java.nio.charset.Charset;
+import java.util.List;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean;
+import org.springframework.http.server.ServerHttpRequest;
+import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementException;
@@ -33,8 +48,48 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 
 @ControllerAdvice
-public class ManagementControllerAdvice {
+public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   private static final Logger logger = LogService.getLogger();
+
+  @Autowired
+  private Jackson2ObjectMapperFactoryBean objectMapperFactory;
+
+  @Override
+  public boolean supports(MethodParameter returnType, Class converterType) {
+    // only invoke our beforeBodyWrite for conversions to JSON (not String, etc)
+    return AbstractJackson2HttpMessageConverter.class.isAssignableFrom(converterType);
+  }
+
+  @Override
+  public Object beforeBodyWrite(Object body, MethodParameter returnType,
+      MediaType selectedContentType, Class selectedConverterType,
+      ServerHttpRequest request, ServerHttpResponse response) {
+    List<String> values = request.getHeaders().get(INCLUDE_CLASS_HEADER);
+    boolean includeClass = values != null && values.contains("true");
+
+    try {
+      ObjectMapper objectMapper = objectMapperFactory.getObject();
+      String json = objectMapper.writeValueAsString(body);
+      if (!includeClass) {
+        json = removeClassFromJsonText(json);
+      }
+      response.getHeaders().add(HttpHeaders.CONTENT_TYPE,
+          "application/json; charset=" + Charset.defaultCharset().toString());
+      response.getBody().write(json.getBytes());
+      response.close();
+      return null;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  static String removeClassFromJsonText(String json) {
+    // remove entire key and object if class was the only attribute present
+    // otherwise remove just the class attribute
+    return json
+        .replaceAll("\"[^\"]*\":\\{\"class\":\"[^\"]*\"},?", "")
+        .replaceAll("\"class\":\"[^\"]*\",", "");
+  }
 
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ClusterManagementResult> internalError(final Exception e) {

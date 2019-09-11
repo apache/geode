@@ -16,6 +16,9 @@
 package org.apache.geode.management.internal;
 
 
+import static org.apache.geode.management.configuration.AbstractConfiguration.URI_VERSION;
+import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
+
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
@@ -23,6 +26,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
@@ -72,8 +77,15 @@ public class ClientClusterManagementService implements ClusterManagementService 
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return assertSuccessful(restTemplate
-        .postForEntity(endPoint, config, ClusterManagementRealizationResult.class)
+        .exchange(endPoint, HttpMethod.POST, makeEntity(config),
+            ClusterManagementRealizationResult.class)
         .getBody());
+  }
+
+  static <T> HttpEntity<T> makeEntity(T config) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.add(INCLUDE_CLASS_HEADER, "true");
+    return new HttpEntity<>(config, headers);
   }
 
   @Override
@@ -84,7 +96,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
     return assertSuccessful(restTemplate
         .exchange(uri + "?group={group}",
             HttpMethod.DELETE,
-            null,
+            makeEntity(null),
             ClusterManagementRealizationResult.class,
             config.getGroup())
         .getBody());
@@ -102,7 +114,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
       T config) {
     String endPoint = getEndpoint(config);
     return assertSuccessful(restTemplate
-        .getForEntity(endPoint + "/?id={id}&group={group}",
+        .exchange(endPoint + "/?id={id}&group={group}", HttpMethod.GET, makeEntity(config),
             ClusterManagementListResult.class, config.getId(), config.getGroup())
         .getBody());
   }
@@ -113,7 +125,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
       T config) {
 
     return assertSuccessful(restTemplate
-        .getForEntity(getIdentityEndPoint(config), ClusterManagementListResult.class)
+        .exchange(getIdentityEndPoint(config), HttpMethod.GET, makeEntity(config),
+            ClusterManagementListResult.class)
         .getBody());
   }
 
@@ -124,10 +137,10 @@ public class ClientClusterManagementService implements ClusterManagementService 
     final ClusterManagementOperationResult result;
 
     // make the REST call to start the operation
-    result =
-        assertSuccessful(
-            restTemplate.postForEntity(AbstractConfiguration.URI_VERSION + op.getEndpoint(),
-                op, ClusterManagementOperationResult.class).getBody());
+    result = assertSuccessful(restTemplate
+        .exchange(URI_VERSION + op.getEndpoint(), HttpMethod.POST, makeEntity(op),
+            ClusterManagementOperationResult.class)
+        .getBody());
 
     // our restTemplate requires the url to be modified to start from "/experimental"
     return reAnimate(result);
@@ -154,9 +167,10 @@ public class ClientClusterManagementService implements ClusterManagementService 
     final ClusterManagementListOperationsResult<V> result;
 
     // make the REST call to list in-progress operations
-    result = assertSuccessful(
-        restTemplate.getForEntity(AbstractConfiguration.URI_VERSION + opType.getEndpoint(),
-            ClusterManagementListOperationsResult.class).getBody());
+    result = assertSuccessful(restTemplate
+        .exchange(URI_VERSION + opType.getEndpoint(), HttpMethod.GET,
+            makeEntity(null), ClusterManagementListOperationsResult.class)
+        .getBody());
 
     return new ClusterManagementListOperationsResult<>(
         result.getResult().stream().map(this::reAnimate).collect(Collectors.toList()));
@@ -175,7 +189,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
       throw new IllegalArgumentException(
           "unable to construct the uri with the current configuration.");
     }
-    return AbstractConfiguration.URI_VERSION + endpoint;
+    return URI_VERSION + endpoint;
   }
 
   private String getIdentityEndPoint(AbstractConfiguration config) {
@@ -184,7 +198,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
       throw new IllegalArgumentException(
           "unable to construct the uri with the current configuration.");
     }
-    return AbstractConfiguration.URI_VERSION + uri;
+    return URI_VERSION + uri;
   }
 
   private <T extends ClusterManagementResult> T assertSuccessful(T result) {
@@ -196,7 +210,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   public boolean isConnected() {
     try {
-      return restTemplate.getForEntity(AbstractConfiguration.URI_VERSION + "/ping", String.class)
+      return restTemplate.getForEntity(URI_VERSION + "/ping", String.class)
           .getBody().equals("pong");
     } catch (Exception e) {
       return false;
