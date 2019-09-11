@@ -124,4 +124,9 @@ public class AsyncEventQueueMBean extends NotificationBroadcasterSupport
   public void stopMonitor() {
     bridge.stopMonitor();
   }
+
+  @Override
+  public boolean isDispatchingPaused() {
+    return bridge.isDispatchingPaused();
+  }
 }
