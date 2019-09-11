@@ -30,8 +30,6 @@ import java.util.function.BiConsumer;
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 
-import org.apache.geode.internal.serialization.Version;
-
 /**
  * VersionManager loads the class-paths for all of the releases of Geode configured for
  * backward-compatibility testing in the geode-core build.gradle file.
@@ -41,11 +39,7 @@ import org.apache.geode.internal.serialization.Version;
  * see Host.getVM(String, int)
  */
 public class VersionManager {
-  public static final String CURRENT_VERSION = "000";
-  public static final String GEODE_110 = "110";
-  public static final String GEODE_120 = "120";
-  public static final String GEODE_130 = "130";
-  public static final String GEODE_140 = "140";
+  public static final String CURRENT_VERSION = "0.0.0";
 
   private static VersionManager instance;
 
@@ -127,6 +121,25 @@ public class VersionManager {
   }
 
   /**
+   * Remove the dots from a version string. "1.2.0" -> "120"
+   */
+  public String versionWithNoDots(String s) {
+    StringBuilder b = new StringBuilder(10);
+    int length = s.length();
+    for (int i = 0; i < length; i++) {
+      char ch = s.charAt(i);
+      if (ch != '.') {
+        // leave off any trailing stuff like "-incubating"
+        if (!Character.isDigit(ch)) {
+          break;
+        }
+        b.append(ch);
+      }
+    }
+    return b.toString();
+  }
+
+  /**
    * Returns a list of older versions available for testing
    */
   public List<String> getVersions() {
@@ -153,13 +166,13 @@ public class VersionManager {
     readVersionsFile(fileName, (version, path) -> {
       Optional<String> parsedVersion = parseVersion(version);
       if (parsedVersion.isPresent()) {
-        if (parsedVersion.get().equals("140")
+        if (parsedVersion.get().equals("1.4.0")
             && SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
           // Serialization filtering was added in 140, but the support for them in java 9+ was added
-          // in 150. As a result, 140 servers and clients will fail categorically when run in
+          // in 1.5.0. As a result, 1.4.0 servers and clients will fail categorically when run in
           // Java 9+ even with the additional libs (jaxb and activation) in the classpath
           System.err.println(
-              "Geode version 140 is incompatible with Java 9 and higher.  Skipping this version.");
+              "Geode version 1.4.0 is incompatible with Java 9 and higher.  Skipping this version.");
         } else {
           classPaths.put(parsedVersion.get(), path);
           testVersions.add(parsedVersion.get());
@@ -180,12 +193,9 @@ public class VersionManager {
 
   private Optional<String> parseVersion(String version) {
     String parsedVersion = null;
-    if (version.startsWith("test") && version.length() >= "test".length()) {
-      if (version.equals("test")) {
-        parsedVersion = CURRENT_VERSION;
-      } else {
-        parsedVersion = version.substring("test".length());
-      }
+    if (version.length() > 0 && Character.isDigit(version.charAt(0))
+        && version.length() >= "1.2.3".length()) {
+      parsedVersion = version;
     }
     return Optional.ofNullable(parsedVersion);
   }
@@ -245,24 +255,5 @@ public class VersionManager {
           "Unable to retrieve Version.java's CURRENT_ORDINAL field in order to establlish the product's serialization version",
           e);
     }
-  }
-
-  /**
-   * map a VersionManager version string (like "180) to the actual name of the corresponding
-   * Version
-   */
-  public String getVersionName(String oldVersion) {
-    if (oldVersion.equals(CURRENT_VERSION)) {
-      return Version.CURRENT.getName();
-    }
-    if (!this.testVersions.contains(oldVersion)) {
-      throw new IllegalArgumentException("Unknown version of Geode: " + oldVersion);
-    }
-    for (Version v : Version.getAllVersions()) {
-      if (oldVersion.equals(v.getName().replace(".", ""))) {
-        return v.getName();
-      }
-    }
-    throw new IllegalArgumentException("Unknown version of Geode: " + oldVersion);
   }
 }

@@ -49,7 +49,7 @@ subprojects {
     compile "org.apache.geode:geode-rebalancer:${oldGeodeVersion}"
   }
 
-  parent.ext.versions.setProperty(projSrcName, sourceSets.main.runtimeClasspath.asPath)
+  parent.ext.versions.setProperty(oldGeodeVersion, sourceSets.main.runtimeClasspath.asPath)
 
   def unpackDest = project.buildDir.toPath().resolve('apache-geode-'.concat(oldGeodeVersion))
 
@@ -58,7 +58,7 @@ subprojects {
   if (downloadInstall) {
     project.dependencies.add "oldInstall", "org.apache.geode:apache-geode:${oldGeodeVersion}@${archiveType}"
 
-    parent.ext.installs.setProperty(projSrcName, unpackDest.toString())
+    parent.ext.installs.setProperty(oldGeodeVersion, unpackDest.toString())
   }
   project.task("downloadAndUnzipFile") {
 

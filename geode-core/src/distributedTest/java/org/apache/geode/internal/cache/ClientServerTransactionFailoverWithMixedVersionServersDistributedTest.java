@@ -96,7 +96,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   @Before
   public void setup() throws Exception {
     host = Host.getHost(0);
-    String startingVersion = "160";
+    String startingVersion = "1.6.0";
     server1 = host.getVM(startingVersion, 0);
     server2 = host.getVM(startingVersion, 1);
     server3 = host.getVM(startingVersion, 2);
