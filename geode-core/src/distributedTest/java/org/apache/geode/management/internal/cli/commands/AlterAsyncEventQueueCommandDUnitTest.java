@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -23,6 +24,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -33,6 +35,10 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({AEQTest.class})
 public class AlterAsyncEventQueueCommandDUnitTest {
+
+  private static final int ALTERED_BATCH_SIZE = 200;
+  private static final int ALTERED_BATCH_TIME_INTERVAL = 300;
+  private static final int ALTERED_MAXIMUM_QUEUE_MEMORY = 400;
 
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -60,22 +66,25 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
-      assertThat(queue.getBatchSize()).isEqualTo(100);
-      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
-      assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
+      assertThat(queue.getBatchSize()).isEqualTo(GatewaySender.DEFAULT_BATCH_SIZE);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(queue.getMaximumQueueMemory())
+          .isEqualTo(GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY);
     });
 
-    gfsh.executeAndAssertThat("alter async-event-queue --id=queue1 " + "--batch-size=200 "
-        + "--batch-time-interval=300 " + "--max-queue-memory=400").statusIsSuccess();
+    gfsh.executeAndAssertThat("alter async-event-queue --id=queue1 --batch-size="
+        + ALTERED_BATCH_SIZE + " --batch-time-interval=" + ALTERED_BATCH_TIME_INTERVAL
+        + " --max-queue-memory=" + ALTERED_MAXIMUM_QUEUE_MEMORY).statusIsSuccess();
 
     // verify that server1's event queue still has the default value
     // without restart
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
-      assertThat(queue.getBatchSize()).isEqualTo(100);
-      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
-      assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
+      assertThat(queue.getBatchSize()).isEqualTo(GatewaySender.DEFAULT_BATCH_SIZE);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(queue.getMaximumQueueMemory())
+          .isEqualTo(GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY);
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
 
@@ -89,9 +98,9 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
-      assertThat(queue.getBatchSize()).isEqualTo(200);
-      assertThat(queue.getBatchTimeInterval()).isEqualTo(300);
-      assertThat(queue.getMaximumQueueMemory()).isEqualTo(400);
+      assertThat(queue.getBatchSize()).isEqualTo(ALTERED_BATCH_SIZE);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(ALTERED_BATCH_TIME_INTERVAL);
+      assertThat(queue.getMaximumQueueMemory()).isEqualTo(ALTERED_MAXIMUM_QUEUE_MEMORY);
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
   }
@@ -110,15 +119,17 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
-      assertThat(queue.getBatchSize()).isEqualTo(100);
-      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
+      assertThat(queue.getBatchSize()).isEqualTo(GatewaySender.DEFAULT_BATCH_SIZE);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(DEFAULT_BATCH_TIME_INTERVAL);
       assertThat(queue.isDispatchingPaused()).isTrue();
-      assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
+      assertThat(queue.getMaximumQueueMemory())
+          .isEqualTo(GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY);
     });
 
     gfsh.executeAndAssertThat(
-        "alter async-event-queue --id=queue1 --pause-event-processing=false " + "--batch-size=200 "
-            + "--batch-time-interval=300 " + "--max-queue-memory=400")
+        "alter async-event-queue --id=queue1 --pause-event-processing=false --batch-size="
+            + ALTERED_BATCH_SIZE + " --batch-time-interval=" + ALTERED_BATCH_TIME_INTERVAL
+            + " --max-queue-memory=" + ALTERED_MAXIMUM_QUEUE_MEMORY)
         .statusIsSuccess();
 
     // verify that server1's event queue still has the default value
@@ -126,9 +137,10 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
-      assertThat(queue.getBatchSize()).isEqualTo(100);
-      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
-      assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
+      assertThat(queue.getBatchSize()).isEqualTo(GatewaySender.DEFAULT_BATCH_SIZE);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(queue.getMaximumQueueMemory())
+          .isEqualTo(GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY);
       assertThat(queue.isDispatchingPaused()).isTrue();
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
@@ -143,9 +155,9 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
-      assertThat(queue.getBatchSize()).isEqualTo(200);
-      assertThat(queue.getBatchTimeInterval()).isEqualTo(300);
-      assertThat(queue.getMaximumQueueMemory()).isEqualTo(400);
+      assertThat(queue.getBatchSize()).isEqualTo(ALTERED_BATCH_SIZE);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(ALTERED_BATCH_TIME_INTERVAL);
+      assertThat(queue.getMaximumQueueMemory()).isEqualTo(ALTERED_MAXIMUM_QUEUE_MEMORY);
       assertThat(queue.isDispatchingPaused()).isFalse();
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
@@ -165,15 +177,17 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
-      assertThat(queue.getBatchSize()).isEqualTo(100);
-      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
+      assertThat(queue.getBatchSize()).isEqualTo(GatewaySender.DEFAULT_BATCH_SIZE);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(DEFAULT_BATCH_TIME_INTERVAL);
       assertThat(queue.isDispatchingPaused()).isFalse();
-      assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
+      assertThat(queue.getMaximumQueueMemory())
+          .isEqualTo(GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY);
     });
 
     gfsh.executeAndAssertThat(
-        "alter async-event-queue --id=queue1 --pause-event-processing=true " + "--batch-size=200 "
-            + "--batch-time-interval=300 " + "--max-queue-memory=400")
+        "alter async-event-queue --id=queue1 --pause-event-processing=true --batch-size="
+            + ALTERED_BATCH_SIZE + " --batch-time-interval=" + ALTERED_BATCH_TIME_INTERVAL
+            + " --max-queue-memory=" + ALTERED_MAXIMUM_QUEUE_MEMORY)
         .statusIsSuccess();
 
     // verify that server1's event queue still has the default value
@@ -181,9 +195,10 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
-      assertThat(queue.getBatchSize()).isEqualTo(100);
-      assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
-      assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
+      assertThat(queue.getBatchSize()).isEqualTo(GatewaySender.DEFAULT_BATCH_SIZE);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(DEFAULT_BATCH_TIME_INTERVAL);
+      assertThat(queue.getMaximumQueueMemory())
+          .isEqualTo(GatewaySender.DEFAULT_MAXIMUM_QUEUE_MEMORY);
       assertThat(queue.isDispatchingPaused()).isFalse();
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
@@ -198,9 +213,9 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
-      assertThat(queue.getBatchSize()).isEqualTo(200);
-      assertThat(queue.getBatchTimeInterval()).isEqualTo(300);
-      assertThat(queue.getMaximumQueueMemory()).isEqualTo(400);
+      assertThat(queue.getBatchSize()).isEqualTo(ALTERED_BATCH_SIZE);
+      assertThat(queue.getBatchTimeInterval()).isEqualTo(ALTERED_BATCH_TIME_INTERVAL);
+      assertThat(queue.getMaximumQueueMemory()).isEqualTo(ALTERED_MAXIMUM_QUEUE_MEMORY);
       assertThat(queue.isDispatchingPaused()).isTrue();
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
