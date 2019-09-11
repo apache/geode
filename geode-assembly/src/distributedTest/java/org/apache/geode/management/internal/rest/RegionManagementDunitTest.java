@@ -20,8 +20,6 @@ import static org.apache.geode.test.junit.assertions.ClusterManagementRealizatio
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.List;
-
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -96,10 +94,8 @@ public class RegionManagementDunitTest {
     config.setValueConstraint("java.lang.Integer");
     cms.create(config);
 
-    List<Region> result = cms.get(config).getConfigResult();
+    Region config1 = cms.get(config).getConfigResult();
 
-    assertThat(result).hasSize(1);
-    Region config1 = result.get(0);
     assertThat(config1.getType()).isEqualTo(RegionType.PARTITION);
     assertThat(config1.getValueConstraint()).isEqualTo("java.lang.Integer");
     assertThat(config1.getKeyConstraint()).isEqualTo("java.lang.Boolean");

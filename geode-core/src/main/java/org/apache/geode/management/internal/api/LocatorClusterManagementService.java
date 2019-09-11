@@ -17,8 +17,6 @@
 
 package org.apache.geode.management.internal.api;
 
-
-
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -48,6 +46,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementException;
+import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementOperation;
@@ -359,7 +358,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
+  public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResult<T, R> get(
       T config) {
     ClusterManagementListResult<T, R> list = list(config);
     List<ConfigurationResult<T, R>> result = list.getResult();
@@ -373,7 +372,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
       raise(StatusCode.ERROR,
           "Expect only one matching " + config.getClass().getSimpleName() + ".");
     }
-    return assertSuccessful(list);
+
+    return assertSuccessful(new ClusterManagementGetResult<>(list));
   }
 
   @Override

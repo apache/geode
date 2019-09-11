@@ -88,8 +88,8 @@ public class ListIndexManagementDUnitTest {
   @Test
   public void getRegion() {
     regionConfig.setName("region1");
-    List<Region> regions = cms.get(regionConfig).getConfigResult();
-    assertThat(regions).hasSize(1);
+    Region region = cms.get(regionConfig).getConfigResult();
+    assertThat(region).isNotNull();
   }
 
   @Test
@@ -120,10 +120,7 @@ public class ListIndexManagementDUnitTest {
     Index index = new Index();
     index.setRegionPath("region1");
     index.setName("index1");
-    ClusterManagementListResult<Index, RuntimeInfo> list = cms.get(index);
-    List<Index> result = list.getConfigResult();
-    assertThat(result).hasSize(1);
-    Index runtimeIndex = result.get(0);
+    Index runtimeIndex = cms.get(index).getConfigResult();
     assertThat(runtimeIndex.getRegionName()).isEqualTo("region1");
     assertThat(runtimeIndex.getName()).isEqualTo("index1");
     assertThat(runtimeIndex.getRegionPath()).isEqualTo("/region1");

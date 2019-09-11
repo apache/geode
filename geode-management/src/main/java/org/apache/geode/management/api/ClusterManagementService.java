@@ -75,18 +75,17 @@ public interface ClusterManagementService extends AutoCloseable {
       T filter);
 
   /**
-   * This method will list a single instance of the element type in the cluster configuration, along
+   * This method will get a single instance of the element type in the cluster configuration, along
    * with additional runtime information from cluster members
    *
    * @param filter the filterable attributes are used to identify the element to return. Any
-   *        non-filterable attributes will be ignored. It is an error if the filter matches
-   *        more than one element.
-   * @return a {@link ClusterManagementListResult} holding a single element in
-   *         {@link ClusterManagementListResult#getResult()}
+   *        non-filterable attributes will be ignored. It is an error if the filter does not match
+   *        exactly one element.
+   * @return a {@link ClusterManagementGetResult}
    * @throws ClusterManagementException if unsuccessful or, no matching element is found, or
    *         multiple matches are found
    */
-  <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
+  <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResult<T, R> get(
       T filter);
 
   /**

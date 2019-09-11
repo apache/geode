@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal;
 
-
 import static org.apache.geode.management.configuration.AbstractConfiguration.URI_VERSION;
 import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
 
@@ -32,6 +31,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.management.api.ClusterManagementException;
+import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementOperation;
@@ -48,10 +48,10 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * management service as used by a Java client.
  * <p/>
  * In order to manipulate Geode components (Regions, etc.) clients can construct instances of {@link
- * CacheElement}s and call the corresponding
- * {@link ClientClusterManagementService#create(CacheElement)},
- * {@link ClientClusterManagementService#delete(CacheElement)} or
- * {@link ClientClusterManagementService#update(CacheElement)} method. The returned {@link
+ * AbstractConfiguration}s and call the corresponding
+ * {@link ClientClusterManagementService#create(AbstractConfiguration)},
+ * {@link ClientClusterManagementService#delete(AbstractConfiguration)} or
+ * {@link ClientClusterManagementService#update(AbstractConfiguration)} method. The returned {@link
  * ClusterManagementResult} will contain all necessary information about the outcome of the call.
  * This will include the result of persisting the config as part of the cluster configuration as
  * well as creating the actual component in the cluster.
@@ -121,12 +121,12 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
+  public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResult<T, R> get(
       T config) {
 
     return assertSuccessful(restTemplate
         .exchange(getIdentityEndPoint(config), HttpMethod.GET, makeEntity(config),
-            ClusterManagementListResult.class)
+            ClusterManagementGetResult.class)
         .getBody());
   }
 
