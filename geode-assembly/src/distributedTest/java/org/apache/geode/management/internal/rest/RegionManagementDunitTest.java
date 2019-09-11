@@ -192,9 +192,7 @@ public class RegionManagementDunitTest {
     assertManagementResult(cms.create(regionConfig)).isSuccessful();
 
     assertThatThrownBy(() -> cms.create(regionConfig)).hasMessageContaining("ENTITY_EXISTS")
-        .hasMessageContaining("server-2")
-        .hasMessageContaining("server-3")
-        .hasMessageContaining("already exists on member(s)");
+        .hasMessageContaining("already exists in group group2");
 
     regionConfig.setGroup("group3");
     assertThatThrownBy(() -> cms.create(regionConfig)).hasMessageContaining("ENTITY_EXISTS")
