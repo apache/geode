@@ -127,4 +127,12 @@ public interface AsyncEventQueueMXBean {
    * Returns the number of bytes overflowed to disk for this Sender.
    */
   long getBytesOverflowedToDisk();
+
+  /**
+   * Returns the state of the event dispatcher.
+   *
+   * @return True if the dispatcher is paused, false otherwise.
+   */
+  boolean isDispatchingPaused();
+
 }
