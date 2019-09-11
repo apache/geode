@@ -39,8 +39,7 @@ public class ResumeAsyncEventQueueDispatcherCommand extends SingleGfshCommand {
       operation = ResourcePermission.Operation.MANAGE)
   public ResultModel resumeAsyncEventQueueDispatcher(
       @CliOption(key = CliStrings.RESUME_ASYNCEVENTQUEUE__ID,
-          mandatory = true, optionContext = ConverterHint.ASYNC_EVENT_QUEUE_ID,
-          help = CliStrings.RESUME_ASYNCEVENTQUEUE__ID__HELP) String queueId,
+          mandatory = true, help = CliStrings.RESUME_ASYNCEVENTQUEUE__ID__HELP) String queueId,
 
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
