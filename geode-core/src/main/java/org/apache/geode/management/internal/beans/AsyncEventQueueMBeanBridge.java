@@ -147,4 +147,8 @@ public class AsyncEventQueueMBeanBridge {
   public void stopMonitor() {
     monitor.stopListener();
   }
+
+  public boolean isDispatchingPaused() {
+    return queueImpl.isDispatchingPaused();
+  }
 }
