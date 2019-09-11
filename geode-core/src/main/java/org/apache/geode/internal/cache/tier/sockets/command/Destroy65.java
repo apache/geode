@@ -124,16 +124,17 @@ public class Destroy65 extends BaseCommand {
         }
       } else {
         // Fallback for older clients.
-        if (operationPart.getObject() == null) {
+        final Object operationObject = operationPart.getObject();
+        if (operationObject == null) {
           // native clients may send a null since the op is java-serialized.
           operation = Operation.DESTROY;
-        } else if (operationPart.getObject() instanceof Byte
-            && (Byte) operationPart.getObject() == OpType.DESTROY) {
+        } else if (operationObject instanceof Byte
+            && (Byte) operationObject == OpType.DESTROY) {
           // older native clients may send Byte object OpType.DESTROY value treated as
           // Operation.REMOVE.
           operation = Operation.REMOVE;
         } else {
-          operation = (Operation) operationPart.getObject();
+          operation = (Operation) operationObject;
         }
       }
     } catch (Exception e) {
