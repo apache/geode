@@ -46,7 +46,7 @@ public class ResumeAsyncEventQueueDispatcherFunction extends CliFunction {
     } else {
       return new CliFunctionResult(member.getId(), CliFunctionResult.StatusState.OK,
           "Async Event Queue \"" + AEQId
-              + "\" dispatching is already in progress.");
+              + "\" dispatching was not paused.");
     }
 
 
