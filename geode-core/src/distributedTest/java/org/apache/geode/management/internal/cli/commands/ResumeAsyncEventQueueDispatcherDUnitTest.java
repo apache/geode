@@ -56,8 +56,9 @@ public class ResumeAsyncEventQueueDispatcherDUnitTest {
     // verify our AEQ was created as expected
     gfsh.executeAndAssertThat(LIST_COMMAND).statusIsSuccess()
         .tableHasRowCount(1).tableHasRowWithValues("Member", "ID",
-        "Created with paused event processing", "Currently Paused", "server-1", "unpausedqueue", "false",
-        "false");
+            "Created with paused event processing", "Currently Paused", "server-1", "unpausedqueue",
+            "false",
+            "false");
 
     // Issue the resume command and confirm it reports that the queue is already dispatching
     gfsh.executeAndAssertThat(RESUME_COMMAND + " --id=unpausedqueue").statusIsSuccess()
