@@ -32,18 +32,18 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.FlowControlParams;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.LocatorStats;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ConnectionWatcher;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
@@ -105,7 +105,6 @@ public class MembershipDependenciesJUnitTest {
               .or(resideInAPackage("org.apache.geode.test.."))
 
               // TODO: Create a new stats interface for membership
-              .or(assignableTo(DMStats.class))
               .or(type(LocatorStats.class))
 
               // TODO: Figure out what to do with exceptions
@@ -114,11 +113,10 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO: Serialization needs to become its own module
               .or(type(InternalDataSerializer.class)) // still used by GMSLocator
+              .or(type(DistributionMessage.class)) // still used by GMSLocator
 
               // TODO: Membership needs its own config object
-              .or(type(DistributionConfig.class))
-              .or(type(RemoteTransportConfig.class))
-              .or(type(FlowControlParams.class))
+              .or(type(MembershipManager.class))
 
 
               // TODO: Break dependency on geode logger
@@ -143,6 +141,7 @@ public class MembershipDependenciesJUnitTest {
               .or(type(Locator.class))
               .or(type(TcpClient.class))
               .or(type(DistributionLocatorId.class))
+              .or(type(NetLocator.class))
 
               // TODO: break dependency on internal.security
               .or(type(SecurableCommunicationChannel.class))
@@ -162,6 +161,14 @@ public class MembershipDependenciesJUnitTest {
               // TODO:
               .or(type(AlertingAction.class))
 
-  );
+              // TODO: MemberIDs need a new interface for membership
+              .or(type(InternalDistributedMember.class))
+              .or(type(InternalDistributedMember[].class))
+              .or(type(DistributedMember.class))
+              .or(type(MembershipView.class))
 
+              .or(type(GMSMembershipManager.class))
+              .or(type(ClusterDistributionManager.class))
+
+  );
 }

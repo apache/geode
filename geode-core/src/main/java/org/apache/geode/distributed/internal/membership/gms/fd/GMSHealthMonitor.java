@@ -54,12 +54,12 @@ import org.jgroups.util.UUID;
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
-import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
@@ -191,7 +191,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   /**
    * Statistics about health monitor
    */
-  private DMStats stats;
+  private MembershipStatistics stats;
 
   /**
    * Interval to run the Monitor task
@@ -1416,7 +1416,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   private void sendSuspectRequest(final List<SuspectRequest> requests) {
     logger.debug("Sending suspect request for members {}", requests);
     List<GMSMember> recipients;
-    if (currentView.size() > ServiceConfig.SMALL_CLUSTER_SIZE) {
+    if (currentView.size() > MembershipConfig.SMALL_CLUSTER_SIZE) {
       HashSet<GMSMember> filter = new HashSet<>();
       for (Enumeration<GMSMember> e = suspectedMemberIds.keys(); e
           .hasMoreElements();) {
@@ -1426,7 +1426,7 @@ public class GMSHealthMonitor implements HealthMonitor {
           requests.stream().map(SuspectRequest::getSuspectMember).collect(Collectors.toList()));
       recipients =
           currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(),
-              ServiceConfig.SMALL_CLUSTER_SIZE + 1);
+              MembershipConfig.SMALL_CLUSTER_SIZE + 1);
     } else {
       recipients = currentView.getMembers();
     }
@@ -1484,7 +1484,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
   }
 
-  public DMStats getStats() {
+  public MembershipStatistics getStats() {
     return this.stats;
   }
 }

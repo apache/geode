@@ -39,14 +39,18 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 @Category({SerializationTest.class})
 public class JSONFormatterJUnitTest {
   public static final String REGION_NAME = "primitiveKVStore";
+
   private Cache cache;
+
   private Region<Object, Object> region;
 
   @Before
   public void setUp() throws Exception {
-    this.cache = new CacheFactory().set(MCAST_PORT, "0").setPdxReadSerialized(true).create();
+    this.cache = new CacheFactory().set(MCAST_PORT, "0")
+        .set("log-level", "WARN").setPdxReadSerialized(true).create();
 
-    region = cache.createRegionFactory().setDataPolicy(DataPolicy.PARTITION).create(REGION_NAME);
+    region = cache.createRegionFactory().setDataPolicy(DataPolicy.PARTITION)
+        .create(REGION_NAME);
 
   }
 
@@ -89,7 +93,8 @@ public class JSONFormatterJUnitTest {
     // 2. Get the JSON string from actualTestObject using jackson ObjectMapper.
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.setDateFormat(new SimpleDateFormat("MM/dd/yyyy"));
-    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    objectMapper
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     String json = objectMapper.writeValueAsString(expectedTestObject);
 
@@ -111,14 +116,16 @@ public class JSONFormatterJUnitTest {
   }
 
   @Test
-  public void verifyJsonToPdxInstanceConversionWithJSONFormatter() throws Exception {
+  public void verifyJsonToPdxInstanceConversionWithJSONFormatter()
+      throws Exception {
     TestObjectForJSONFormatter expectedTestObject = new TestObjectForJSONFormatter();
     expectedTestObject.defaultInitialization();
 
     // 1.gets pdxInstance using R.put() and R.get()
     region.put("501", expectedTestObject);
     Object receivedObject = region.get("501");
-    assertEquals("receivedObject is expected to be of type PdxInstance", PdxInstanceImpl.class,
+    assertEquals("receivedObject is expected to be of type PdxInstance",
+        PdxInstanceImpl.class,
         receivedObject.getClass());
 
     PdxInstance expectedPI = (PdxInstance) receivedObject;
@@ -140,7 +147,8 @@ public class JSONFormatterJUnitTest {
     assertEquals("receivedObject is expected to be of type PdxInstance",
         TestObjectForJSONFormatter.class, actualTestObject.getClass());
 
-    assertEquals("actualTestObject and expectedTestObject should be equal", expectedTestObject,
+    assertEquals("actualTestObject and expectedTestObject should be equal",
+        expectedTestObject,
         actualTestObject);
   }
 
@@ -153,7 +161,8 @@ public class JSONFormatterJUnitTest {
     int pdxTypes = 0;
 
     if (cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH) != null) {
-      pdxTypes = cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size();
+      pdxTypes = cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet()
+          .size();
     }
 
     String js = "{name:\"ValueExist\", age:14}";
@@ -197,7 +206,8 @@ public class JSONFormatterJUnitTest {
       int pdxTypes = 0;
 
       if (cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH) != null) {
-        pdxTypes = cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size();
+        pdxTypes = cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH)
+            .keySet().size();
       }
 
       String js2 = "{c:\"c' go\", bb:23, b:\"b\", age:14 }";

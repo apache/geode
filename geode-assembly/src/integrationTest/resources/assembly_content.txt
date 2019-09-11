@@ -687,10 +687,8 @@ javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
 javadoc/org/apache/geode/management/api/ConfigurationResult.html
-javadoc/org/apache/geode/management/api/CorrespondWith.html
 javadoc/org/apache/geode/management/api/JsonSerializable.html
 javadoc/org/apache/geode/management/api/RealizationResult.html
-javadoc/org/apache/geode/management/api/RestfulEndpoint.html
 javadoc/org/apache/geode/management/api/package-frame.html
 javadoc/org/apache/geode/management/api/package-summary.html
 javadoc/org/apache/geode/management/api/package-tree.html
@@ -726,6 +724,7 @@ javadoc/org/apache/geode/management/client/package-tree.html
 javadoc/org/apache/geode/management/configuration/AbstractConfiguration.html
 javadoc/org/apache/geode/management/configuration/ClassName.html
 javadoc/org/apache/geode/management/configuration/GatewayReceiver.html
+javadoc/org/apache/geode/management/configuration/GroupableConfiguration.html
 javadoc/org/apache/geode/management/configuration/Index.html
 javadoc/org/apache/geode/management/configuration/MemberConfig.html
 javadoc/org/apache/geode/management/configuration/Pdx.html

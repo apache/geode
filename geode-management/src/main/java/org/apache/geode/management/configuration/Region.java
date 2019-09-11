@@ -19,8 +19,6 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
 /**
@@ -29,8 +27,7 @@ import org.apache.geode.management.runtime.RuntimeRegionInfo;
  * for regions created using gfsh but listed using management rest api, the attributes not supported
  * by management rest api won't be shown.
  */
-public class Region extends AbstractConfiguration implements RestfulEndpoint,
-    CorrespondWith<RuntimeRegionInfo> {
+public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 
   private String name;
@@ -54,6 +51,9 @@ public class Region extends AbstractConfiguration implements RestfulEndpoint,
     return REGION_CONFIG_ENDPOINT;
   }
 
+  /**
+   * Returns {@link #getName()}.
+   */
   @Override
   @JsonIgnore
   public String getId() {

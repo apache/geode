@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class IndexTest {
   private Index index;
@@ -28,12 +27,6 @@ public class IndexTest {
   @Before
   public void before() throws Exception {
     index = new Index();
-  }
-
-  @Test
-  public void getIndexRuntimeClass() throws Exception {
-    assertThat(index.getRuntimeClass()).isEqualTo(RuntimeInfo.class);
-    assertThat(index.hasRuntimeInfo()).isFalse();
   }
 
   @Test

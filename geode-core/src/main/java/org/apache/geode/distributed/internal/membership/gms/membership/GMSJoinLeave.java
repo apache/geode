@@ -16,7 +16,7 @@ package org.apache.geode.distributed.internal.membership.gms.membership;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
-import static org.apache.geode.distributed.internal.membership.gms.ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL;
+import static org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig.MEMBER_REQUEST_COLLECTION_INTERVAL;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
@@ -53,8 +53,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
@@ -214,7 +214,7 @@ public class GMSJoinLeave implements JoinLeave {
   /**
    * timeout in receiving view acknowledgement
    */
-  private int viewAckTimeout;
+  private long viewAckTimeout;
 
   /**
    * background thread that creates new membership views
@@ -476,7 +476,7 @@ public class GMSJoinLeave implements JoinLeave {
       }
       response = joinResponse[0];
 
-      if (services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().length() > 0) {
+      if (services.getConfig().getSecurityUDPDHAlgo().length() > 0) {
         if (response != null && response.getCurrentView() != null && !isJoined) {
           // reset joinResponse[0]
           joinResponse[0] = null;
@@ -969,7 +969,7 @@ public class GMSJoinLeave implements JoinLeave {
   }
 
   private void addPublicKeysToView(GMSMembershipView view) {
-    String sDHAlgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo();
+    String sDHAlgo = services.getConfig().getSecurityUDPDHAlgo();
     if (sDHAlgo != null && !sDHAlgo.isEmpty()) {
       for (GMSMember mbr : view.getMembers()) {
         if (Objects.isNull(view.getPublicKey(mbr))) {
@@ -1120,7 +1120,7 @@ public class GMSJoinLeave implements JoinLeave {
       return findCoordinatorFromView();
     }
 
-    String dhalgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo();
+    String dhalgo = services.getConfig().getSecurityUDPDHAlgo();
     FindCoordinatorRequest request = new FindCoordinatorRequest(this.localAddress,
         state.alreadyTried, state.viewId, services.getMessenger().getPublicKey(localAddress),
         services.getMessenger().getRequestId(), dhalgo);
@@ -1279,7 +1279,7 @@ public class GMSJoinLeave implements JoinLeave {
         state.responses.clear();
       }
 
-      String dhalgo = services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo();
+      String dhalgo = services.getConfig().getSecurityUDPDHAlgo();
       if (!dhalgo.isEmpty()) {
         // Here we are sending message one-by-one to all recipients as we don't have cluster secret
         // key yet.
@@ -1692,7 +1692,7 @@ public class GMSJoinLeave implements JoinLeave {
     if (services.getConfig().areLocatorsPreferredAsCoordinators()) {
       boolean preferred = false;
       if (services.getLocator() != null || Locator.hasLocator()
-          || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty()
+          || !services.getConfig().getStartLocator().isEmpty()
           || localAddress.getVmKind() == GMSMember.LOCATOR_DM_TYPE) {
         logger
             .info("This member is hosting a locator will be preferred as a membership coordinator");
@@ -1754,7 +1754,7 @@ public class GMSJoinLeave implements JoinLeave {
       processMessage(msg);
       if (!this.isCoordinator) {
         msg.setRecipients(v.getPreferredCoordinators(Collections.emptySet(), localAddress,
-            ServiceConfig.SMALL_CLUSTER_SIZE + 1));
+            MembershipConfig.SMALL_CLUSTER_SIZE + 1));
         services.getMessenger().send(msg);
       }
     } else {
@@ -1824,9 +1824,9 @@ public class GMSJoinLeave implements JoinLeave {
   public void init(Services s) {
     this.services = s;
 
-    DistributionConfig dc = services.getConfig().getDistributionConfig();
-    if (dc.getMcastPort() != 0 && StringUtils.isBlank(dc.getLocators())
-        && StringUtils.isBlank(dc.getStartLocator())) {
+    MembershipConfig config = services.getConfig();
+    if (config.getMcastPort() != 0 && StringUtils.isBlank(config.getLocators())
+        && StringUtils.isBlank(config.getStartLocator())) {
       throw new GemFireConfigException("Multicast cannot be configured for a non-distributed cache."
           + "  Please configure the locator services for this cache using " + LOCATORS + " or "
           + START_LOCATOR + ".");
@@ -1845,23 +1845,22 @@ public class GMSJoinLeave implements JoinLeave {
     services.getMessenger().addHandler(NetworkPartitionMessage.class,
         this::processMessage);
 
-    int ackCollectionTimeout = dc.getMemberTimeout() * 2 * 12437 / 10000;
+    long ackCollectionTimeout = config.getMemberTimeout() * 2 * 12437 / 10000;
     if (ackCollectionTimeout < 1500) {
       ackCollectionTimeout = 1500;
     } else if (ackCollectionTimeout > 12437) {
       ackCollectionTimeout = 12437;
     }
-    ackCollectionTimeout = Integer
-        .getInteger(DistributionConfig.GEMFIRE_PREFIX + "VIEW_ACK_TIMEOUT", ackCollectionTimeout)
-        .intValue();
+    ackCollectionTimeout = Long
+        .getLong(DistributionConfig.GEMFIRE_PREFIX + "VIEW_ACK_TIMEOUT", ackCollectionTimeout)
+        .longValue();
     this.viewAckTimeout = ackCollectionTimeout;
 
     this.quorumRequired =
-        services.getConfig().getDistributionConfig().getEnableNetworkPartitionDetection();
+        config.getEnableNetworkPartitionDetection();
 
-    DistributionConfig dconfig = services.getConfig().getDistributionConfig();
-    String bindAddr = dconfig.getBindAddress();
-    locators = GMSUtil.parseLocators(dconfig.getLocators(), bindAddr);
+    String bindAddr = config.getBindAddress();
+    locators = GMSUtil.parseLocators(config.getLocators(), bindAddr);
     if (logger.isDebugEnabled()) {
       logger.debug("Parsed locators are {}", locators);
     }

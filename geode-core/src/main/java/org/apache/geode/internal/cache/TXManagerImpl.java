@@ -1047,7 +1047,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         updateLastOperationTime(tx);
       }
       try {
-        cleanupTransactionIfNoLongerHost(tx);
+        cleanupTransactionIfNoLongerHostCausedByFailover(tx);
       } finally {
         setTXState(null);
         tx.getLock().unlock();
@@ -1055,12 +1055,12 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  void cleanupTransactionIfNoLongerHost(TXStateProxy tx) {
+  void cleanupTransactionIfNoLongerHostCausedByFailover(TXStateProxy tx) {
     synchronized (hostedTXStates) {
       if (!hostedTXStates.containsKey(tx.getTxId())) {
         // clean up the transaction if no longer the host of the transaction
-        // this could occur when a failover command removed the transaction.
-        if (tx.isRealDealLocal()) {
+        // caused by a failover command removed the transaction.
+        if (tx.isRealDealLocal() && ((TXStateProxyImpl) tx).isRemovedCausedByFailover()) {
           ((TXStateProxyImpl) tx).getLocalRealDeal().cleanup();
         }
       }
@@ -1077,10 +1077,17 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @return the TXStateProxy
    */
   public TXStateProxy removeHostedTXState(TXId txId) {
+    return removeHostedTXState(txId, false);
+  }
+
+  public TXStateProxy removeHostedTXState(TXId txId, boolean causedByFailover) {
     synchronized (this.hostedTXStates) {
       TXStateProxy result = this.hostedTXStates.remove(txId);
       if (result != null) {
         result.close();
+        if (causedByFailover) {
+          ((TXStateProxyImpl) result).setRemovedCausedByFailover(true);
+        }
       }
       return result;
     }

@@ -58,6 +58,7 @@ import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
@@ -73,6 +74,8 @@ import org.apache.geode.management.internal.configuration.validators.RegionConfi
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
 import org.apache.geode.management.runtime.OperationResult;
+import org.apache.geode.management.runtime.RuntimeInfo;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
 public class LocatorClusterManagementServiceTest {
 
@@ -380,4 +383,13 @@ public class LocatorClusterManagementServiceTest {
     result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
   }
+
+  @Test
+  public void getRuntimeClass() throws Exception {
+    assertThat(service.getRuntimeClass(Region.class)).isEqualTo(RuntimeRegionInfo.class);
+    assertThat(service.hasRuntimeInfo(Region.class)).isTrue();
+    assertThat(service.getRuntimeClass(Index.class)).isEqualTo(RuntimeInfo.class);
+    assertThat(service.hasRuntimeInfo(Index.class)).isFalse();
+  }
+
 }

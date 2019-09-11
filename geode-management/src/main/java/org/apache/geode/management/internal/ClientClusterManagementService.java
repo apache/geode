@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal;
 
 
+import static org.apache.geode.management.configuration.AbstractConfiguration.URI_VERSION;
 import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
 
 import java.util.Date;
@@ -38,8 +39,6 @@ import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
@@ -74,7 +73,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends AbstractConfiguration> ClusterManagementRealizationResult create(T config) {
+  public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config) {
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return assertSuccessful(restTemplate
@@ -91,7 +90,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends AbstractConfiguration> ClusterManagementRealizationResult delete(
+  public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult delete(
       T config) {
     String uri = getIdentityEndPoint(config);
     return assertSuccessful(restTemplate
@@ -104,14 +103,14 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public <T extends AbstractConfiguration> ClusterManagementRealizationResult update(
+  public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult update(
       T config) {
     throw new NotImplementedException("Not Implemented");
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
+  public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T config) {
     String endPoint = getEndpoint(config);
     return assertSuccessful(restTemplate
@@ -122,8 +121,9 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
+  public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config) {
+
     return assertSuccessful(restTemplate
         .exchange(getIdentityEndPoint(config), HttpMethod.GET, makeEntity(config),
             ClusterManagementListResult.class)
@@ -138,7 +138,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
     // make the REST call to start the operation
     result = assertSuccessful(restTemplate
-        .exchange(RestfulEndpoint.URI_VERSION + op.getEndpoint(), HttpMethod.POST, makeEntity(op),
+        .exchange(URI_VERSION + op.getEndpoint(), HttpMethod.POST, makeEntity(op),
             ClusterManagementOperationResult.class)
         .getBody());
 
@@ -148,7 +148,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   private <V extends OperationResult> ClusterManagementOperationResult<V> reAnimate(
       ClusterManagementOperationResult<V> result) {
-    String uri = stripPrefix(RestfulEndpoint.URI_CONTEXT, result.getUri());
+    String uri = stripPrefix(AbstractConfiguration.URI_CONTEXT, result.getUri());
 
     // complete the future by polling the check-status REST endpoint
     CompletableFuture<Date> futureOperationEnded = new CompletableFuture<>();
@@ -168,7 +168,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
     // make the REST call to list in-progress operations
     result = assertSuccessful(restTemplate
-        .exchange(RestfulEndpoint.URI_VERSION + opType.getEndpoint(), HttpMethod.GET,
+        .exchange(URI_VERSION + opType.getEndpoint(), HttpMethod.GET,
             makeEntity(null), ClusterManagementListOperationsResult.class)
         .getBody());
 
@@ -184,31 +184,21 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   private String getEndpoint(AbstractConfiguration config) {
-    checkIsRestful(config);
-    String endpoint = ((RestfulEndpoint) config).getEndpoint();
+    String endpoint = config.getEndpoint();
     if (endpoint == null) {
       throw new IllegalArgumentException(
           "unable to construct the uri with the current configuration.");
     }
-    return RestfulEndpoint.URI_VERSION + endpoint;
+    return URI_VERSION + endpoint;
   }
 
   private String getIdentityEndPoint(AbstractConfiguration config) {
-    checkIsRestful(config);
-    String uri = ((RestfulEndpoint) config).getIdentityEndPoint();
+    String uri = config.getIdentityEndPoint();
     if (uri == null) {
       throw new IllegalArgumentException(
           "unable to construct the uri with the current configuration.");
     }
-    return RestfulEndpoint.URI_VERSION + uri;
-  }
-
-  private void checkIsRestful(AbstractConfiguration config) {
-    if (!(config instanceof RestfulEndpoint)) {
-      throw new IllegalArgumentException(
-          String.format("The config type %s does not have a RESTful endpoint defined",
-              config.getClass().getName()));
-    }
+    return URI_VERSION + uri;
   }
 
   private <T extends ClusterManagementResult> T assertSuccessful(T result) {
@@ -220,7 +210,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   public boolean isConnected() {
     try {
-      return restTemplate.getForEntity(RestfulEndpoint.URI_VERSION + "/ping", String.class)
+      return restTemplate.getForEntity(URI_VERSION + "/ping", String.class)
           .getBody().equals("pong");
     } catch (Exception e) {
       return false;

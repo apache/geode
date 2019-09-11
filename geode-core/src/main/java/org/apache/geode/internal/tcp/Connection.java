@@ -67,6 +67,7 @@ import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -1080,7 +1081,8 @@ public class Connection implements Runnable {
     return conn;
   }
 
-  private static boolean giveUpOnMember(MembershipManager mgr, DistributedMember remoteAddr) {
+  private static boolean giveUpOnMember(MembershipManager mgr,
+      DistributedMember remoteAddr) {
     return !mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress();
   }
 
@@ -1614,7 +1616,7 @@ public class Connection implements Runnable {
     ByteBuffer tmp = this.inputBuffer;
     if (tmp != null) {
       this.inputBuffer = null;
-      final DMStats stats = this.owner.getConduit().getStats();
+      final MembershipStatistics stats = this.owner.getConduit().getStats();
       getBufferPool().releaseReceiveBuffer(tmp);
     }
   }
@@ -3356,7 +3358,7 @@ public class Connection implements Runnable {
 
   private void compactOrResizeBuffer(int messageLength) {
     final int oldBufferSize = inputBuffer.capacity();
-    final DMStats stats = this.owner.getConduit().getStats();
+    final MembershipStatistics stats = this.owner.getConduit().getStats();
     int allocSize = messageLength + MSG_HEADER_BYTES;
     if (oldBufferSize < allocSize) {
       // need a bigger buffer

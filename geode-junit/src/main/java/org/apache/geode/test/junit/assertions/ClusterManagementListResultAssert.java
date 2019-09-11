@@ -25,11 +25,10 @@ import org.assertj.core.api.ListAssert;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ConfigurationResult;
-import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
-public class ClusterManagementListResultAssert<T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo>
+public class ClusterManagementListResultAssert<T extends AbstractConfiguration<R>, R extends RuntimeInfo>
     extends
     AbstractAssert<ClusterManagementListResultAssert<T, R>, ClusterManagementListResult<T, R>> {
   public ClusterManagementListResultAssert(
@@ -70,7 +69,7 @@ public class ClusterManagementListResultAssert<T extends AbstractConfiguration &
     return assertThat(getActual().getRuntimeResult());
   }
 
-  public static <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResultAssert<T, R> assertManagementListResult(
+  public static <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResultAssert<T, R> assertManagementListResult(
       ClusterManagementListResult<T, R> result) {
     return new ClusterManagementListResultAssert<>(result, ClusterManagementListResultAssert.class);
   }

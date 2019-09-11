@@ -87,8 +87,8 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
     // remove entire key and object if class was the only attribute present
     // otherwise remove just the class attribute
     return json
-        .replaceAll("\"[^\"]*\":\\{\"class\":\"[^\"]*\"\\},?", "")
-        .replaceAll("\"class\":\"[^\"]*\",?", "");
+        .replaceAll("\"[^\"]*\":\\{\"class\":\"[^\"]*\"},?", "")
+        .replaceAll("\"class\":\"[^\"]*\",", "");
   }
 
   @ExceptionHandler(Exception.class)

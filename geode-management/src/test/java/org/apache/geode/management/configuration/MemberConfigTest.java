@@ -20,8 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import org.apache.geode.management.api.RestfulEndpoint;
-
 public class MemberConfigTest {
 
   @Test
@@ -30,6 +28,6 @@ public class MemberConfigTest {
     config.setId("memberA");
     assertThat(config.getEndpoint()).isEqualTo("/members");
     assertThat(config.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/members/memberA");
+        .isEqualTo(AbstractConfiguration.URI_CONTEXT + "/experimental/members/memberA");
   }
 }

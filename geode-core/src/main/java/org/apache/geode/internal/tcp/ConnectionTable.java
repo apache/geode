@@ -43,6 +43,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.alerting.AlertingAction;
@@ -1177,7 +1178,7 @@ public class ConnectionTable {
      * @param ackSATimeout the ms ack-severe-alert-threshold, or zero
      * @return the new connection
      */
-    public synchronized Connection waitForConnect(MembershipManager mgr, long startTime,
+    public synchronized Connection waitForConnect(Membership mgr, long startTime,
         long ackTimeout, long ackSATimeout) throws IOException {
       if (connectingThread == Thread.currentThread()) {
         throw new ReenteredConnectException("This thread is already trying to connect");

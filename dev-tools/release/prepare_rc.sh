@@ -182,7 +182,16 @@ which brew >/dev/null && OPENSSL_ROOT_DIR=$(brew --prefix openssl) || OPENSSL_RO
 cd ${GEODE_NATIVE}/build
 cmake .. -DPRODUCT_VERSION=${VERSION} -DOPENSSL_ROOT_DIR=$OPENSSL_ROOT_DIR -DGEODE_ROOT=${GEODE}/geode-assembly/build/install/apache-geode
 cpack -G TGZ --config CPackSourceConfig.cmake
-gpg --armor -u ${SIGNING_KEY} -b apache-geode-native-${VERSION}-src.tar.gz
+NCTAR=apache-geode-native-${VERSION}-src.tar.gz
+mkdir repkg-temp
+cd repkg-temp
+tar xzf ../${NCTAR}
+rm ../${NCTAR}
+mv apache-geode-native apache-geode-native-${VERSION}
+tar czf ../${NCTAR} *
+cd ..
+rm -Rf repkg-temp
+gpg --armor -u ${SIGNING_KEY} -b ${NCTAR}
 set +x
 
 

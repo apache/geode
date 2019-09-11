@@ -19,12 +19,9 @@ package org.apache.geode.management.configuration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
-public class Index extends AbstractConfiguration
-    implements RestfulEndpoint, CorrespondWith<RuntimeInfo> {
+public class Index extends GroupableConfiguration<RuntimeInfo> {
 
   private String name;
   private String expression;
@@ -58,6 +55,8 @@ public class Index extends AbstractConfiguration
    * 3. /regionName alias
    * 4. /regionName.entrySet()
    * 5. /regionName.fieldName.entrySet() alias
+   * <P>
+   * Note: only the regionName portion of the path is used when filtering.
    */
   public void setRegionPath(String regionPath) {
     this.regionPath = regionPath;
@@ -90,6 +89,9 @@ public class Index extends AbstractConfiguration
     return regionName;
   }
 
+  /**
+   * Returns {@link #getName()}.
+   */
   @Override
   @JsonIgnore
   public String getId() {

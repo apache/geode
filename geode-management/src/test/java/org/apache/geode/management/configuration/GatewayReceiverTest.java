@@ -20,9 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.management.api.RestfulEndpoint;
-
-
 public class GatewayReceiverTest {
   private GatewayReceiver receiver;
 
@@ -42,10 +39,10 @@ public class GatewayReceiverTest {
   @Test
   public void getUri() {
     assertThat(receiver.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/gateways/receivers/cluster");
+        .isEqualTo(AbstractConfiguration.URI_CONTEXT + "/experimental/gateways/receivers/cluster");
 
     receiver.setGroup("group");
     assertThat(receiver.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/gateways/receivers/group");
+        .isEqualTo(AbstractConfiguration.URI_CONTEXT + "/experimental/gateways/receivers/group");
   }
 }

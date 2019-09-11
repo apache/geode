@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.management.api.RestfulEndpoint.URI_CONTEXT;
+import static org.apache.geode.management.configuration.AbstractConfiguration.URI_CONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.StringContains.containsString;

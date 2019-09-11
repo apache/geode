@@ -416,6 +416,16 @@ public class LonerDistributionManager implements DistributionManager {
     public void incSentBytes(long bytes) {}
 
     @Override
+    public long startUDPDispatchRequest() {
+      return 0;
+    }
+
+    @Override
+    public void endUDPDispatchRequest(long start) {
+
+    }
+
+    @Override
     public long getProcessedMessages() {
       return 0;
     }
@@ -465,9 +475,6 @@ public class LonerDistributionManager implements DistributionManager {
 
     @Override
     public void incMessageChannelTime(long val) {}
-
-    @Override
-    public void incUDPDispatchRequestTime(long val) {};
 
     @Override
     public long getUDPDispatchRequestTime() {

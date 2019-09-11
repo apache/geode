@@ -17,17 +17,13 @@ package org.apache.geode.rest.internal.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
 import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class ManagementRestAuthTokenIntegrationTest {
@@ -41,30 +37,20 @@ public class ManagementRestAuthTokenIntegrationTest {
       .withAutoStart();
 
   @Test
-  public void name() throws Exception {
-    String response =
-        requestUseBearerToken(
-            "http://localhost:" + locator.getHttpPort() + "/management/experimental/ping", "bar");
-
-    assertThat(response).isEqualTo("pong");
+  public void validToken() throws Exception {
+    ClusterManagementService cms = ClusterManagementServiceBuilder.buildWithHostAddress()
+        .setAuthToken(SimpleSecurityManager.VALID_TOKEN)
+        .setHostAddress("localhost", locator.getHttpPort())
+        .build();
+    assertThat(cms.isConnected()).isTrue();
   }
 
-  private static String requestUseBearerToken(String stringUrl, String bearerToken)
-      throws Exception {
-    BufferedReader reader = null;
-    URL url = new URL(stringUrl);
-    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-    connection.setRequestProperty("Authorization", "Bearer " + bearerToken);
-    connection.setDoOutput(true);
-    connection.setRequestMethod("GET");
-    reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-    String line = null;
-    StringWriter out =
-        new StringWriter(connection.getContentLength() > 0 ? connection.getContentLength() : 2048);
-    while ((line = reader.readLine()) != null) {
-      out.append(line);
-    }
-    String response = out.toString();
-    return response;
+  @Test
+  public void invalidToken() throws Exception {
+    ClusterManagementService cms = ClusterManagementServiceBuilder.buildWithHostAddress()
+        .setAuthToken("invalidToken")
+        .setHostAddress("localhost", locator.getHttpPort())
+        .build();
+    assertThat(cms.isConnected()).isFalse();
   }
 }
