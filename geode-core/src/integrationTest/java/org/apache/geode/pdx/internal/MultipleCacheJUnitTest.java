@@ -72,7 +72,7 @@ public class MultipleCacheJUnitTest {
 
     locator = Locator.startLocatorAndDS(0, locatorFolder.newFile("locator.log"), null);
     configProperties = new Properties();
-    configProperties.setProperty(LOCATORS, "locahost[" + locator.getPort() + "]");
+    configProperties.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
   }
 
   @After
