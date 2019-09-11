@@ -404,7 +404,8 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
   }
 
   private String getSrcPathFor(File file) {
-    return getSrcPathFor(file, "test");
+    return getSrcPathFor(file, "test");//.replace("build/resources/integrationTest",
+//        "src/integrationTest/resources");
   }
 
   private String getSrcPathFor(File file, String testOrMain) {
@@ -431,12 +432,17 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
         Paths.get(getModuleName(), "build", "classes", "java", "main").toString();
     System.out.println("gradleBuildDirName is " + gradleBuildDirName);
     String ideaBuildDirName = Paths.get(getModuleName(), "out", "production", "classes").toString();
+    System.out.println("ideaBuildDirName is " + ideaBuildDirName);
+    String ideaFQCNBuildDirName = Paths.get("out","production",
+        "org.apache.geode." + getModuleName() + ".main").toString();
+    System.out.println("idea build path with full package names is " + ideaFQCNBuildDirName);
     String buildDir = null;
 
     for (File entry : entries) {
       System.out.println("examining '" + entry + "'");
       if (entry.toString().endsWith(gradleBuildDirName)
-          || entry.toString().endsWith(ideaBuildDirName)) {
+          || entry.toString().endsWith(ideaBuildDirName)
+          || entry.toString().endsWith(ideaFQCNBuildDirName)) {
         buildDir = entry.toString();
         break;
       }

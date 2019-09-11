@@ -1,10 +1,10 @@
 org/apache/geode/cache/client/internal/locator/wan/LocatorJoinMessage,2
-fromData,39
-toData,33
+fromData,55
+toData,49
 
 org/apache/geode/cache/client/internal/locator/wan/RemoteLocatorJoinRequest,2
-fromData,22
-toData,19
+fromData,30
+toData,27
 
 org/apache/geode/cache/client/internal/locator/wan/RemoteLocatorJoinResponse,2
 fromData,9
@@ -23,6 +23,6 @@ fromData,11
 toData,11
 
 org/apache/geode/cache/client/internal/locator/wan/RemoteLocatorResponse,2
-fromData,12
-toData,9
+fromData,20
+toData,17
 
