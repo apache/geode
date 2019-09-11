@@ -16,8 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -114,7 +112,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
       assertThat(queue.getBatchSize()).isEqualTo(100);
       assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
-      assertTrue(queue.isDispatchingPaused());
+      assertThat(queue.isDispatchingPaused()).isTrue();
       assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
     });
 
@@ -131,7 +129,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
       assertThat(queue.getBatchSize()).isEqualTo(100);
       assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
       assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
-      assertTrue(queue.isDispatchingPaused());
+      assertThat(queue.isDispatchingPaused()).isTrue();
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
 
@@ -148,7 +146,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
       assertThat(queue.getBatchSize()).isEqualTo(200);
       assertThat(queue.getBatchTimeInterval()).isEqualTo(300);
       assertThat(queue.getMaximumQueueMemory()).isEqualTo(400);
-      assertFalse(queue.isDispatchingPaused());
+      assertThat(queue.isDispatchingPaused()).isFalse();
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
   }
@@ -169,7 +167,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
       assertThat(queue.getBatchSize()).isEqualTo(100);
       assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
-      assertFalse(queue.isDispatchingPaused());
+      assertThat(queue.isDispatchingPaused()).isFalse();
       assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
     });
 
@@ -186,7 +184,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
       assertThat(queue.getBatchSize()).isEqualTo(100);
       assertThat(queue.getBatchTimeInterval()).isEqualTo(5);
       assertThat(queue.getMaximumQueueMemory()).isEqualTo(100);
-      assertFalse(queue.isDispatchingPaused());
+      assertThat(queue.isDispatchingPaused()).isFalse();
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
 
@@ -203,7 +201,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
       assertThat(queue.getBatchSize()).isEqualTo(200);
       assertThat(queue.getBatchTimeInterval()).isEqualTo(300);
       assertThat(queue.getMaximumQueueMemory()).isEqualTo(400);
-      assertTrue(queue.isDispatchingPaused());
+      assertThat(queue.isDispatchingPaused()).isTrue();
       assertThat(cache.getAsyncEventQueue("queue2")).isNull();
     });
   }
