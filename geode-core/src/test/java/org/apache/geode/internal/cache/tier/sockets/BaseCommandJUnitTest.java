@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -27,8 +26,6 @@ import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.Operation;
-import org.apache.geode.internal.cache.OpType;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction61;
 import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunction65;
@@ -92,81 +89,5 @@ public class BaseCommandJUnitTest {
     baseCommand.setLastResultReceived(resultSender);
     verify(resultSender, times(0)).setLastResultReceived(true);
 
-  }
-
-  @Test
-  public void getOperationWhenIsBytesIsFalse_whenOperationPartIsByteAndOpTypeDestroy_thenReturnsOperationRemove()
-      throws Exception {
-    Part operationPart = mock(Part.class);
-    when(operationPart.getObject()).thenReturn(OpType.DESTROY);
-
-    Operation actualOperation = BaseCommand.getOperation(operationPart, null);
-
-    assertThat(actualOperation).isEqualTo(Operation.REMOVE);
-  }
-
-  @Test
-  public void getOperationWhenIsBytesIsFalse_whenOperationPartIsNull_thenReturnsDefaultOperation()
-      throws Exception {
-    Part operationPart = mock(Part.class);
-    when(operationPart.getObject()).thenReturn(null);
-
-    Operation defaultOperation = mock(Operation.class);
-
-    Operation actualOperation = BaseCommand.getOperation(operationPart, defaultOperation);
-
-    assertThat(actualOperation).isEqualTo(defaultOperation);
-  }
-
-  @Test
-  public void getOperationWhenIsBytesIsFalse_whenOperationPartIsOperation_thenReturnsThatOperation()
-      throws Exception {
-    Part operationPart = mock(Part.class);
-    when(operationPart.getObject()).thenReturn(Operation.CREATE);
-
-    Operation actualOperation = BaseCommand.getOperation(operationPart, null);
-
-    assertThat(actualOperation).isEqualTo(Operation.CREATE);
-  }
-
-  @Test
-  public void getOperationWhenIsBytesIsTrue_whenOperationSerializedFormIsNull_thenReturnsDefaultOperation()
-      throws Exception {
-    Part operationPart = mock(Part.class);
-    when(operationPart.isBytes()).thenReturn(true);
-    when(operationPart.getSerializedForm()).thenReturn(null);
-
-    Operation defaultOperation = mock(Operation.class);
-
-    Operation actualOperation = BaseCommand.getOperation(operationPart, defaultOperation);
-
-    assertThat(actualOperation).isEqualTo(defaultOperation);
-  }
-
-  @Test
-  public void getOperationWhenIsBytesIsTrue_whenOperationSerializedFormIsLengthZero_thenReturnsDefaultOperation()
-      throws Exception {
-    Part operationPart = mock(Part.class);
-    when(operationPart.isBytes()).thenReturn(true);
-    when(operationPart.getSerializedForm()).thenReturn(new byte[0]);
-
-    Operation defaultOperation = mock(Operation.class);
-
-    Operation actualOperation = BaseCommand.getOperation(operationPart, defaultOperation);
-
-    assertThat(actualOperation).isEqualTo(defaultOperation);
-  }
-
-  @Test
-  public void getOperationWhenIsBytesIsTrue_whenOperationSerializedFormIsValid_thenReturnsOperationFromOrdinal()
-      throws Exception {
-    Part operationPart = mock(Part.class);
-    when(operationPart.isBytes()).thenReturn(true);
-    byte[] serializedForm = {OpType.CREATE};
-    when(operationPart.getSerializedForm()).thenReturn(serializedForm);
-
-    Operation actualOperation = BaseCommand.getOperation(operationPart, null);
-
-    assertThat(actualOperation).isEqualTo(Operation.CREATE);
   }
 }
