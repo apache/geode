@@ -147,10 +147,6 @@ cache.xml example:
 
 **Note:** The `resource-manager` specification must appear after the region declarations in your cache.xml file.
 
-## <a id="set_jvm_gc_tuning_params" class="no-quick-link"></a>Set the JVM GC Tuning Parameters
-
-If your JVM allows, configure it to initiate concurrent mark-sweep (CMS) garbage collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when <%=vars.product_name%> is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
-
 ## <a id="configuring_resource_manager__section_DE1CC494C2B547B083AA00821250972A" class="no-quick-link"></a>Monitor and Tune Heap LRU Configurations
 
 In tuning the resource manager, your central focus should be keeping the member below the critical threshold. The critical threshold is provided to avoid member hangs and crashes, but because of its exception-throwing behavior for distributed updates, the time spent in critical negatively impacts the entire cluster. To stay below critical, tune so that the <%=vars.product_name%> eviction and the JVM's GC respond adequately when the eviction threshold is reached.
