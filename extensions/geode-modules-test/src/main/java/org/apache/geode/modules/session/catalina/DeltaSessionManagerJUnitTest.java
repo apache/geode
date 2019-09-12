@@ -55,6 +55,7 @@ public abstract class DeltaSessionManagerJUnitTest {
 
   protected DeltaSessionManager manager;
   protected AbstractSessionCache sessionCache;
+  protected Cache cache;
   protected Log logger;
   protected Context context;
   protected DeltaSessionStatistics managerStats;
@@ -63,6 +64,7 @@ public abstract class DeltaSessionManagerJUnitTest {
 
   public void initTest() {
     sessionCache = mock(AbstractSessionCache.class);
+    cache = mock(GemFireCacheImpl.class);
     logger = mock(Log.class);
     context = mock(Context.class);
     managerStats = mock(DeltaSessionStatistics.class);
@@ -402,7 +404,6 @@ public abstract class DeltaSessionManagerJUnitTest {
     String systemFileSeparator = "/";
     String expectedStoreDir = catalinaBaseSystemProp + systemFileSeparator + "temp";
 
-    Cache cache = mock(Cache.class);
     QueryService queryService = mock(QueryService.class);
     Query query = mock(Query.class);
     File store = mock(File.class);

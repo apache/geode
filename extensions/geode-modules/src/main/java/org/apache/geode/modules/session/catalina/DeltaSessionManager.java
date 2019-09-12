@@ -51,6 +51,7 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Query;
@@ -374,7 +375,7 @@ public abstract class DeltaSessionManager extends ManagerBase
 
   protected void initializeSessionCache() {
     // Retrieve the cache
-    GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+    GemFireCacheImpl cache = (GemFireCacheImpl) getAnyCacheInstance();
     if (cache == null) {
       throw new IllegalStateException(
           "No cache exists. Please configure either a PeerToPeerCacheLifecycleListener or ClientServerCacheLifecycleListener in the server.xml file.");
@@ -385,7 +386,17 @@ public abstract class DeltaSessionManager extends ManagerBase
         : new PeerToPeerSessionCache(this, cache);
 
     // Initialize the session cache
+    initSessionCache();
+  }
+
+  @VisibleForTesting
+  void initSessionCache() {
     this.sessionCache.initialize();
+  }
+
+  @VisibleForTesting
+  Cache getAnyCacheInstance() {
+    return CacheFactory.getAnyInstance();
   }
 
   @Override
@@ -572,7 +583,8 @@ public abstract class DeltaSessionManager extends ManagerBase
     getPipeline().addValve(jvmRouteBinderValve);
   }
 
-  protected Pipeline getPipeline() {
+  @VisibleForTesting
+  Pipeline getPipeline() {
     return getContainer().getPipeline();
   }
 

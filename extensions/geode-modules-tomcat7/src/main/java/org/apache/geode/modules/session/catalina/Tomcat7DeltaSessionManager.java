@@ -22,6 +22,8 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.util.LifecycleSupport;
 
+import org.apache.geode.annotations.VisibleForTesting;
+
 public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
 
   /**
@@ -39,7 +41,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
    */
   @Override
   public void startInternal() throws LifecycleException {
-    super.startInternal();
+    startInternalBase();
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Starting");
     }
@@ -69,7 +71,17 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
     scheduleTimerTasks();
 
     this.started.set(true);
-    this.setState(LifecycleState.STARTING);
+    this.setLifecycleState(LifecycleState.STARTING);
+  }
+
+  @VisibleForTesting
+  void setLifecycleState(LifecycleState newState) throws LifecycleException {
+    this.setState(newState);
+  }
+
+  @VisibleForTesting
+  void startInternalBase() throws LifecycleException {
+    super.startInternal();
   }
 
   /**
@@ -112,7 +124,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
       unregisterCommitSessionValve();
     }
 
-    this.setState(LifecycleState.STOPPING);
+    setLifecycleState(LifecycleState.STOPPING);
   }
 
   /**
