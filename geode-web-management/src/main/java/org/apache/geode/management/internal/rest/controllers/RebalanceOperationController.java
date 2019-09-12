@@ -50,8 +50,7 @@ public class RebalanceOperationController extends AbstractManagementController {
       @RequestBody RebalanceOperation operation) {
     ClusterManagementOperationResult<RebalanceResult> result =
         clusterManagementService.start(new RebalanceOperationWithOperator(operation));
-    return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.ACCEPTED : HttpStatus.INTERNAL_SERVER_ERROR);
+    return new ResponseEntity<>(result, HttpStatus.ACCEPTED);
   }
 
   @ApiOperation(value = "list rebalances")

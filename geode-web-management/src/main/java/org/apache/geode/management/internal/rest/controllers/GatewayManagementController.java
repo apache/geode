@@ -59,7 +59,6 @@ public class GatewayManagementController extends AbstractManagementController {
       @RequestBody GatewayReceiver gatewayReceiverConfig) {
     ClusterManagementResult result =
         clusterManagementService.create(gatewayReceiverConfig);
-    return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
+    return new ResponseEntity<>(result, HttpStatus.CREATED);
   }
 }

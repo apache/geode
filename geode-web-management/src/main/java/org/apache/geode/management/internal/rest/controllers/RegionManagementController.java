@@ -65,7 +65,7 @@ public class RegionManagementController extends AbstractManagementController {
     ClusterManagementResult result =
         clusterManagementService.create(regionConfig);
     return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.CREATED);
   }
 
   @ApiOperation(value = "list regions")
@@ -146,7 +146,7 @@ public class RegionManagementController extends AbstractManagementController {
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementListResult<Index, RuntimeInfo> getIndex(
+  public ClusterManagementGetResult<Index, RuntimeInfo> getIndex(
       @PathVariable String regionName,
       @PathVariable String id) {
     ClusterManagementListResult<Index, RuntimeInfo> result = listIndex(regionName, id);
@@ -162,7 +162,6 @@ public class RegionManagementController extends AbstractManagementController {
           new ClusterManagementResult(StatusCode.ERROR, "More than one index found."));
     }
 
-    result.setResult(indexList);
-    return result;
+    return new ClusterManagementGetResult<>(result);
   }
 }

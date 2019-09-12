@@ -47,6 +47,6 @@ public class PdxManagementController extends AbstractManagementController {
       @RequestBody Pdx pdxType) {
     ClusterManagementResult result = clusterManagementService.create(pdxType);
     return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.CREATED);
   }
 }
