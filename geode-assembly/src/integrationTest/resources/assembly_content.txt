@@ -728,6 +728,9 @@ javadoc/org/apache/geode/management/configuration/GroupableConfiguration.html
 javadoc/org/apache/geode/management/configuration/Index.html
 javadoc/org/apache/geode/management/configuration/MemberConfig.html
 javadoc/org/apache/geode/management/configuration/Pdx.html
+javadoc/org/apache/geode/management/configuration/Region.Expiration.html
+javadoc/org/apache/geode/management/configuration/Region.ExpirationAction.html
+javadoc/org/apache/geode/management/configuration/Region.ExpirationType.html
 javadoc/org/apache/geode/management/configuration/Region.html
 javadoc/org/apache/geode/management/configuration/RegionType.html
 javadoc/org/apache/geode/management/configuration/package-frame.html

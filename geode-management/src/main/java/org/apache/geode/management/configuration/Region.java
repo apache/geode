@@ -156,12 +156,22 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
   public enum ExpirationType {
     ENTRY_TIME_TO_LIVE,
     ENTRY_IDLE_TIME,
+    /**
+     * for those other types that could exist in cache.xml but not supported by management api
+     * for example: REGION_IDLE_TIME, REGION_TIME_TO_LIVE, eventually these should be removed
+     * from the product as well.
+     */
     UNSUPPORTED
   }
 
   public enum ExpirationAction {
     DESTROY,
     INVALIDATE,
+    /**
+     * for those other actions that could exist in cache.xml but not supported by management api
+     * for example: LOCAL_DESTROY, LOCAL_INVALIDATE, eventually these should be removed from the
+     * product as well.
+     */
     UNSUPPORTED
   }
 
