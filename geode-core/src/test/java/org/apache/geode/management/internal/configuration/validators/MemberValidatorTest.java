@@ -23,6 +23,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 
 import org.junit.Before;
@@ -198,7 +199,20 @@ public class MemberValidatorTest {
   }
 
   @Test
-  public void validateCreate3() throws Exception {
+  public void validateCreateWhenNoMemberFound() throws Exception {
+    cacheConfig.getRegions().add(xmlRegionConfig);
+    when(service.getCacheConfig("group1")).thenReturn(cacheConfig);
+
+    doReturn(Collections.emptySet()).when(validator).getAllServers();
+
+    regionConfig.setGroup("group1");
+    assertThatThrownBy(() -> validator.validateCreate(regionConfig, regionManager))
+        .isInstanceOf(EntityExistsException.class)
+        .hasMessageContaining("already exists in group group1");
+  }
+
+  @Test
+  public void validateCreate4() throws Exception {
     cacheConfig.getRegions().add(xmlRegionConfig);
     when(service.getCacheConfig("group1")).thenReturn(cacheConfig);
 

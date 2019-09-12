@@ -79,7 +79,7 @@ public class GatewayReceiverManagementDUnitTest {
     receiver.setGroup("group1");
     assertThatThrownBy(() -> cms.create(receiver))
         .hasMessageContaining(
-            "ENTITY_EXISTS: GatewayReceiver 'group1' already exists on member(s) server-1.");
+            "ENTITY_EXISTS: GatewayReceiver 'group1' already exists in group group1.");
 
     // try create another GWR on another group but has no server
     receiver.setStartPort(5002);
