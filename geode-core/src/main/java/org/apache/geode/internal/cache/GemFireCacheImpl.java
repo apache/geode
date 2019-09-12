@@ -1656,11 +1656,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
 
-    InternalCacheServer receiverServer = cache.gatewayReceiverServer.get();
-    Acceptor acceptor = receiverServer.getAcceptor();
-    if (acceptor != null) {
-      acceptor.emergencyClose();
-    }
+    closeGateWayReceiverServers(cache);
 
     PoolManagerImpl.emergencyClose();
 
@@ -1671,6 +1667,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     // partitionedRegions is intentionally *not* synchronized, The
     // implementation of clear() does not currently allocate objects.
     cache.partitionedRegions.clear();
+  }
+
+  private static void closeGateWayReceiverServers(GemFireCacheImpl cache) {
+    InternalCacheServer receiverServer = cache.gatewayReceiverServer.get();
+    if (receiverServer != null) {
+      Acceptor acceptor = receiverServer.getAcceptor();
+      if (acceptor != null) {
+        acceptor.emergencyClose();
+      }
+    }
   }
 
   @Override
