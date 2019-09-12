@@ -154,9 +154,10 @@ public class CompiledGroupBySelect extends CompiledSelect {
   @Override
   public SelectResults evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    SelectResults sr = super.evaluate(context);
-    return this.applyAggregateAndGroupBy(sr, context);
+    SelectResults selectResults = super.evaluate(context);
+    QueryObserverHolder.getInstance().beforeAggregationsAndGroupBy(selectResults);
 
+    return this.applyAggregateAndGroupBy(selectResults, context);
   }
 
   public SelectResults applyAggregateAndGroupBy(SelectResults baseResults, ExecutionContext context)
