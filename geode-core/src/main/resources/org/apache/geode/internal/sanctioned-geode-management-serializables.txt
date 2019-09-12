@@ -7,7 +7,10 @@ org/apache/geode/management/configuration/GroupableConfiguration,false,group:jav
 org/apache/geode/management/configuration/Index,false,expression:java/lang/String,keyIndex:java/lang/Boolean,name:java/lang/String,regionPath:java/lang/String
 org/apache/geode/management/configuration/MemberConfig,false,id:java/lang/String
 org/apache/geode/management/configuration/Pdx,false,diskStoreName:java/lang/String,ignoreUnreadFields:java/lang/Boolean,pdxSerializer:org/apache/geode/management/configuration/ClassName,persistent:java/lang/Boolean,readSerialized:java/lang/Boolean
-org/apache/geode/management/configuration/Region,false,diskStoreName:java/lang/String,keyConstraint:java/lang/String,name:java/lang/String,redundantCopies:java/lang/Integer,type:org/apache/geode/management/configuration/RegionType,valueConstraint:java/lang/String
+org/apache/geode/management/configuration/Region,false,diskStoreName:java/lang/String,expirations:java/util/List,keyConstraint:java/lang/String,name:java/lang/String,redundantCopies:java/lang/Integer,type:org/apache/geode/management/configuration/RegionType,valueConstraint:java/lang/String
+org/apache/geode/management/configuration/Region$Expiration,false,action:org/apache/geode/management/configuration/Region$ExpirationAction,timeInSeconds:java/lang/Integer,type:org/apache/geode/management/configuration/Region$ExpirationType
+org/apache/geode/management/configuration/Region$ExpirationAction,false
+org/apache/geode/management/configuration/Region$ExpirationType,false
 org/apache/geode/management/configuration/RegionType,false
 org/apache/geode/management/runtime/CacheServerInfo,true,1,bindAddress:java/lang/String,isRunning:boolean,maxConnections:int,maxThreads:int,port:int
 org/apache/geode/management/runtime/GatewayReceiverInfo,false,bindAddress:java/lang/String,connectedSenders:java/lang/String[],hostnameForSenders:java/lang/String,port:int,running:boolean,senderCount:int

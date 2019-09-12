@@ -52,6 +52,12 @@ public class MemberValidator {
     if (existingElementsAndTheirGroups.size() == 0) {
       return;
     }
+    String configGroup = AbstractConfiguration.getGroupName(config.getGroup());
+    if (existingElementsAndTheirGroups.keySet().contains(configGroup)) {
+      throw new EntityExistsException(
+          config.getClass().getSimpleName() + " '" + config.getId()
+              + "' already exists in group " + configGroup);
+    }
 
     Set<DistributedMember> membersOfExistingGroups =
         findServers(existingElementsAndTheirGroups.keySet().toArray(new String[0]));

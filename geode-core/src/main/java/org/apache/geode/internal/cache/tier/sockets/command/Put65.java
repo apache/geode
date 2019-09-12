@@ -85,7 +85,26 @@ public class Put65 extends BaseCommand {
 
     final Operation operation;
     try {
-      operation = getOperation(clientMessage.getPart(idx++), Operation.UPDATE);
+      final Part operationPart = clientMessage.getPart(idx++);
+
+      if (operationPart.isBytes()) {
+        final byte[] bytes = operationPart.getSerializedForm();
+        if (null == bytes || 0 == bytes.length) {
+          // older clients can send empty bytes for default operation.
+          operation = Operation.UPDATE;
+        } else {
+          operation = Operation.fromOrdinal(bytes[0]);
+        }
+      } else {
+
+        // Fallback for older clients.
+        if (operationPart.getObject() == null) {
+          // native clients may send a null since the op is java-serialized.
+          operation = Operation.UPDATE;
+        } else {
+          operation = (Operation) operationPart.getObject();
+        }
+      }
     } catch (Exception e) {
       writeException(clientMessage, e, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);

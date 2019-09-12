@@ -16,7 +16,11 @@
 package org.apache.geode.management.internal.configuration.converters;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
@@ -42,6 +46,34 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
           .flatMap(
               partitionAttributes -> Optional.ofNullable(partitionAttributes.getRedundantCopies()))
           .ifPresent(copies -> region.setRedundantCopies(Integer.parseInt(copies)));
+
+      RegionAttributesType.ExpirationAttributesType entryIdleTime =
+          regionAttributes.getEntryIdleTime();
+      List<Region.Expiration> expirations = new ArrayList<>();
+      if (entryIdleTime != null) {
+        expirations.add(convertFrom(Region.ExpirationType.ENTRY_IDLE_TIME, entryIdleTime));
+      }
+      RegionAttributesType.ExpirationAttributesType entryTimeToLive =
+          regionAttributes.getEntryTimeToLive();
+      if (entryTimeToLive != null) {
+        expirations.add(convertFrom(Region.ExpirationType.ENTRY_TIME_TO_LIVE, entryTimeToLive));
+      }
+
+      RegionAttributesType.ExpirationAttributesType regionIdleTime =
+          regionAttributes.getRegionIdleTime();
+      if (regionIdleTime != null) {
+        expirations.add(convertFrom(Region.ExpirationType.UNSUPPORTED, regionIdleTime));
+      }
+
+      RegionAttributesType.ExpirationAttributesType regionTimeToLive =
+          regionAttributes.getRegionTimeToLive();
+      if (regionTimeToLive != null) {
+        expirations.add(convertFrom(Region.ExpirationType.UNSUPPORTED, regionTimeToLive));
+      }
+
+      if (!expirations.isEmpty()) {
+        region.setExpirations(expirations);
+      }
     }
     return region;
   }
@@ -56,6 +88,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     RegionAttributesType attributesType =
         createRegionAttributesByType(configObject.getType().name());
 
+    attributesType.setStatisticsEnabled(true);
     attributesType.setDiskStoreName(configObject.getDiskStoreName());
     attributesType.setKeyConstraint(configObject.getKeyConstraint());
     attributesType.setValueConstraint(configObject.getValueConstraint());
@@ -67,7 +100,58 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
       partitionAttributes.setRedundantCopies(configObject.getRedundantCopies().toString());
       attributesType.setPartitionAttributes(partitionAttributes);
     }
+
+    List<Region.Expiration> expirations = configObject.getExpirations();
+    if (expirations != null) {
+      for (Region.Expiration expiration : expirations) {
+        switch (expiration.getType()) {
+          case ENTRY_IDLE_TIME:
+            attributesType.setEntryIdleTime(convertFrom(expiration));
+            break;
+          case ENTRY_TIME_TO_LIVE:
+            attributesType.setEntryTimeToLive(convertFrom(expiration));
+            break;
+        }
+      }
+    }
     return region;
+  }
+
+  RegionAttributesType.ExpirationAttributesType convertFrom(Region.Expiration expiration) {
+    RegionAttributesType.ExpirationAttributesType xmlExpiration =
+        new RegionAttributesType.ExpirationAttributesType();
+    xmlExpiration.setTimeout(expiration.getTimeInSeconds().toString());
+    // when action is null from the management api, the default action is DESTROY
+    if (expiration.getAction() == null) {
+      xmlExpiration.setAction(Region.ExpirationAction.DESTROY.name().toLowerCase());
+    } else {
+      xmlExpiration.setAction(expiration.getAction().name().toLowerCase());
+    }
+    return xmlExpiration;
+  }
+
+  Region.Expiration convertFrom(Region.ExpirationType type,
+      RegionAttributesType.ExpirationAttributesType xmlExpiration) {
+    Region.Expiration expiration = new Region.Expiration();
+    expiration.setType(type);
+    if (StringUtils.isBlank(xmlExpiration.getTimeout())) {
+      expiration.setTimeInSeconds(0);
+    } else {
+      expiration.setTimeInSeconds(Integer.parseInt(xmlExpiration.getTimeout()));
+    }
+
+    // in the xml, the default expiration action is INVALIDATE
+    if (StringUtils.isBlank(xmlExpiration.getAction())) {
+      expiration.setAction(Region.ExpirationAction.INVALIDATE);
+    } else {
+      try {
+        expiration.setAction(
+            Region.ExpirationAction.valueOf(xmlExpiration.getAction().toUpperCase()));
+      } catch (Exception e) {
+        expiration.setAction(Region.ExpirationAction.UNSUPPORTED);
+      }
+    }
+    return expiration;
   }
 
   /**

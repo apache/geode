@@ -17,6 +17,7 @@ package org.apache.geode.management.client;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,7 +30,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -38,6 +43,7 @@ import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
@@ -53,6 +59,7 @@ public class ConfigurePDXDUnitTest {
 
   private ClusterManagementService client;
   private LocatorWebContext webContext;
+  private Pdx pdxType;
 
   @Before
   public void before() {
@@ -60,30 +67,44 @@ public class ConfigurePDXDUnitTest {
     webContext = new LocatorWebContext(webApplicationContext);
     client = ClusterManagementServiceBuilder.buildWithRequestFactory()
         .setRequestFactory(webContext.getRequestFactory()).build();
-    cluster.startServerVM(1, webContext.getLocator().getPort());
+    pdxType = new Pdx();
   }
 
   @After
   public void after() throws Exception {
     // for the test to be run multiple times, we need to clean out the cluster config
-    InternalConfigurationPersistenceService cps =
-        ((PlainLocatorContextLoader) webContext.getLocator()).getLocatorStartupRule().getLocator()
-            .getConfigurationPersistenceService();
+    InternalConfigurationPersistenceService cps = getLocator().getConfigurationPersistenceService();
     cps.updateCacheConfig("cluster", config -> {
       config.setPdx(null);
       return config;
     });
   }
 
+  InternalLocator getLocator() {
+    return ((PlainLocatorContextLoader) webContext.getLocator()).getLocatorStartupRule()
+        .getLocator();
+  }
+
   @Test
-  public void configurePdx() {
-    Pdx pdxType = new Pdx();
+  public void configureWithNoServer() throws Exception {
     ClusterManagementRealizationResult result = client.create(pdxType);
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+    assertThat(result.getUri()).isEqualTo("/management/experimental/configurations/pdx");
+    assertThat(result.getMemberStatuses()).hasSize(0);
 
-    // needed to pass StressNewTest since we haven't yet implemented delete(PdxType)
-    if (result.getStatusCode() == ClusterManagementResult.StatusCode.ENTITY_EXISTS)
-      return;
+    // call create the 2nd time
+    pdxType.setDiskStoreName("diskstore");
+    assertThatThrownBy(() -> client.create(pdxType))
+        .isInstanceOf(ClusterManagementException.class)
+        .hasMessageContaining("ENTITY_EXISTS: Pdx 'PDX' already exists in group cluster");
+  }
 
+  @Test
+  public void configureWithARunningServer() {
+    MemberVM server = cluster.startServerVM(1, webContext.getLocator().getPort());
+
+    ClusterManagementRealizationResult result = client.create(pdxType);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
     assertThat(result.getUri()).isEqualTo("/management/experimental/configurations/pdx");
@@ -92,5 +113,18 @@ public class ConfigurePDXDUnitTest {
     assertThat(status.getMemberName()).isEqualTo("server-1");
     assertThat(status.getMessage()).contains(
         "Server 'server-1' needs to be restarted for this configuration change to be realized.");
+
+    InternalConfigurationPersistenceService cps = getLocator().getConfigurationPersistenceService();
+    CacheConfig cluster = cps.getCacheConfig("cluster");
+    PdxType xmlPdxType = cluster.getPdx();
+    assertThat(xmlPdxType.getDiskStoreName()).isNull();
+
+    // create the 2nd time
+    pdxType.setDiskStoreName("diskstore");
+    assertThatThrownBy(() -> client.create(pdxType))
+        .isInstanceOf(ClusterManagementException.class)
+        .hasMessageContaining("ENTITY_EXISTS: Pdx 'PDX' already exists in group cluster");
+
+    server.stop();
   }
 }

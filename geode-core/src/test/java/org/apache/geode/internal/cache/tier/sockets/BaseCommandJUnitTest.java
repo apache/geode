@@ -90,5 +90,4 @@ public class BaseCommandJUnitTest {
     verify(resultSender, times(0)).setLastResultReceived(true);
 
   }
-
 }
