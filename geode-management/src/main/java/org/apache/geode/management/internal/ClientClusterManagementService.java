@@ -74,7 +74,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   @SuppressWarnings("unchecked")
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config) {
-    String endPoint = getEndpoint(config);
+    String endPoint = URI_VERSION + config.getEndpoint();
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return assertSuccessful(restTemplate
         .exchange(endPoint, HttpMethod.POST, makeEntity(config),
@@ -92,7 +92,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @SuppressWarnings("unchecked")
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult delete(
       T config) {
-    String uri = getIdentityEndPoint(config);
+    String uri = getIdentityEndpoint(config);
     return assertSuccessful(restTemplate
         .exchange(uri + "?group={group}",
             HttpMethod.DELETE,
@@ -112,7 +112,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @SuppressWarnings("unchecked")
   public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T config) {
-    String endPoint = getEndpoint(config);
+    String endPoint = URI_VERSION + config.getEndpoint();
     return assertSuccessful(restTemplate
         .exchange(endPoint + "/?id={id}&group={group}", HttpMethod.GET, makeEntity(config),
             ClusterManagementListResult.class, config.getId(), config.getGroup())
@@ -125,7 +125,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
       T config) {
 
     return assertSuccessful(restTemplate
-        .exchange(getIdentityEndPoint(config), HttpMethod.GET, makeEntity(config),
+        .exchange(getIdentityEndpoint(config), HttpMethod.GET, makeEntity(config),
             ClusterManagementGetResult.class)
         .getBody());
   }
@@ -183,26 +183,21 @@ public class ClientClusterManagementService implements ClusterManagementService 
     return s;
   }
 
-  private String getEndpoint(AbstractConfiguration config) {
-    String endpoint = config.getEndpoint();
-    if (endpoint == null) {
-      throw new IllegalArgumentException(
-          "unable to construct the uri with the current configuration.");
-    }
-    return URI_VERSION + endpoint;
-  }
-
-  private String getIdentityEndPoint(AbstractConfiguration config) {
-    String uri = config.getIdentityEndPoint();
+  private String getIdentityEndpoint(AbstractConfiguration config) {
+    String uri = config.getIdentityEndpoint();
     if (uri == null) {
       throw new IllegalArgumentException(
-          "unable to construct the uri with the current configuration.");
+          "Unable to construct the URI with the current configuration.");
     }
     return URI_VERSION + uri;
   }
 
   private <T extends ClusterManagementResult> T assertSuccessful(T result) {
-    if (!result.isSuccessful()) {
+    if (result == null) {
+      ClusterManagementResult somethingVeryBadHappened = new ClusterManagementResult(
+          ClusterManagementResult.StatusCode.ERROR, "Unable to parse server response.");
+      throw new ClusterManagementException(somethingVeryBadHappened);
+    } else if (!result.isSuccessful()) {
       throw new ClusterManagementException(result);
     }
     return result;

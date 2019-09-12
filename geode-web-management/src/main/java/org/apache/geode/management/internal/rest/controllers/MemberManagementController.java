@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
@@ -38,6 +39,7 @@ public class MemberManagementController extends AbstractManagementController {
   @ApiOperation(value = "get member")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT + "/{id}")
+  @ResponseBody
   public ClusterManagementGetResult<MemberConfig, MemberInformation> getMember(
       @PathVariable(name = "id") String id) {
     MemberConfig config = new MemberConfig();
@@ -48,6 +50,7 @@ public class MemberManagementController extends AbstractManagementController {
   @ApiOperation(value = "list members")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT)
+  @ResponseBody
   public ClusterManagementListResult<MemberConfig, MemberInformation> listMembers(
       @RequestParam(required = false) String id, @RequestParam(required = false) String group) {
     MemberConfig filter = new MemberConfig();

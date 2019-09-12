@@ -132,14 +132,14 @@ public class ListIndexManagementDUnitTest {
     Index index = new Index();
     index.setRegionPath("region1");
     assertThatThrownBy(() -> cms.get(index)).isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("unable to construct the uri ");
+        .hasMessageContaining("Unable to construct the URI ");
   }
 
   @Test
   public void getIndexWithoutRegionNameAndIndexId() {
     Index index = new Index();
     assertThatThrownBy(() -> cms.get(index)).isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("unable to construct the uri ");
+        .hasMessageContaining("Unable to construct the URI ");
   }
 
   @Test

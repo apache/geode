@@ -16,11 +16,13 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -78,6 +80,38 @@ public class MemberManagementServiceDunitTest {
     assertThat(memberConfig.isCoordinator()).isTrue();
     assertThat(memberConfig.isServer()).isFalse();
     assertThat(memberConfig.getLocatorPort()).isEqualTo(locator.getPort());
+  }
+
+  @Test
+  public void getOneMember() {
+    MemberConfig config = new MemberConfig();
+    config.setId("locator-0");
+
+    ClusterManagementGetResult<MemberConfig, MemberInformation> result = cmsClient.get(config);
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+    assertThat(result.getRuntimeResult().size()).isEqualTo(1);
+
+    MemberInformation memberConfig = result.getRuntimeResult().get(0);
+    assertThat(memberConfig.isCoordinator()).isTrue();
+    assertThat(memberConfig.isServer()).isFalse();
+    assertThat(memberConfig.getLocatorPort()).isEqualTo(locator.getPort());
+  }
+
+  @Test
+  public void getNonExistentMember() {
+    MemberConfig config = new MemberConfig();
+    config.setId("locator-42");
+
+    assertThatThrownBy(() -> cmsClient.get(config))
+        .hasMessageContaining("ENTITY_NOT_FOUND: MemberConfig 'locator-42' does not exist.");
+  }
+
+  @Test
+  public void getImproperlySpecifiedMember() {
+    MemberConfig config = new MemberConfig();
+    assertThatThrownBy(() -> cmsClient.get(config))
+        .hasMessageContaining("Unable to construct the URI with the current configuration.");
   }
 
   @Test

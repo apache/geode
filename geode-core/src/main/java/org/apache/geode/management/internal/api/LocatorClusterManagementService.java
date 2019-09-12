@@ -363,12 +363,17 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ClusterManagementListResult<T, R> list = list(config);
     List<ConfigurationResult<T, R>> result = list.getResult();
 
-    if (result.size() == 0) {
+    int size = result.size();
+    if (config instanceof MemberConfig) {
+      size = result.get(0).getRuntimeInfo().size();
+    }
+
+    if (size == 0) {
       raise(StatusCode.ENTITY_NOT_FOUND,
           config.getClass().getSimpleName() + " '" + config.getId() + "' does not exist.");
     }
 
-    if (result.size() > 1) {
+    if (size > 1) {
       raise(StatusCode.ERROR,
           "Expect only one matching " + config.getClass().getSimpleName() + ".");
     }
