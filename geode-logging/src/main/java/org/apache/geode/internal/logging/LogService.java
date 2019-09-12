@@ -18,10 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.StackLocator;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.EntriesSet;
 import org.apache.geode.internal.logging.log4j.FastLogger;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessage;
 import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
 
@@ -68,18 +65,4 @@ public class LogService extends LogManager {
     return new FastLogger(LogManager.getLogger(name, GemFireParameterizedMessageFactory.INSTANCE));
   }
 
-  /**
-   * Returns a LogWriterLogger that is decorated with the LogWriter and LogWriterI18n methods.
-   *
-   * <p>
-   * This is the bridge to LogWriter and LogWriterI18n that we need to eventually stop using in
-   * phase 1. We will switch over from a shared LogWriterLogger instance to having every GemFire
-   * class own its own private static GemFireLogger
-   *
-   * @return The LogWriterLogger for the calling class.
-   */
-  public static LogWriterLogger createLogWriterLogger(final String name,
-      final String connectionName, final boolean isSecure) {
-    return LogWriterLogger.create(name, connectionName, isSecure);
-  }
 }

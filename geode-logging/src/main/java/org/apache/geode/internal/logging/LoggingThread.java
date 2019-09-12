@@ -20,6 +20,7 @@ package org.apache.geode.internal.logging;
  * LoggingThread instances always handle uncaught exceptions by logging them.
  */
 public class LoggingThread extends Thread {
+  private boolean treatExceptionAsFatal;
 
   /**
    * Creates a daemon thread with the given name
@@ -51,9 +52,18 @@ public class LoggingThread extends Thread {
    * @param runnable what the thread will run
    */
   public LoggingThread(final String name, final boolean isDaemon, final Runnable runnable) {
+    this(name, isDaemon, runnable, true);
+  }
+
+  public LoggingThread(final String name, final boolean isDaemon, final Runnable runnable,
+      final boolean treatExceptionAsFatal) {
     super(runnable, name);
+    this.treatExceptionAsFatal = treatExceptionAsFatal;
     setDaemon(isDaemon);
-    // TODO: fix escaping reference of this
     LoggingUncaughtExceptionHandler.setOnThread(this);
+  }
+
+  public boolean isTreatExceptionAsFatal() {
+    return treatExceptionAsFatal;
   }
 }

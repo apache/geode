@@ -34,7 +34,7 @@ public class LogWriterFactory {
   public static InternalLogWriter createLogWriterLogger(final LogConfig logConfig,
       final boolean secure) {
     String name = secure ? SECURITY_LOGGER_NAME : MAIN_LOGGER_NAME;
-    return LogService.createLogWriterLogger(name, logConfig.getName(), secure);
+    return DeprecatedLogService.createLogWriterLogger(name, logConfig.getName(), secure);
   }
 
   /**

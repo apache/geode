@@ -51,6 +51,7 @@ dependencies {
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   compile(project(':geode-core'))
   compile('org.apache.lucene:lucene-analyzers-common')

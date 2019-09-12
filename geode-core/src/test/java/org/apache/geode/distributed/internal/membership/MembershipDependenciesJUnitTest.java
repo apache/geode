@@ -31,7 +31,6 @@ import org.junit.runner.RunWith;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -46,9 +45,6 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -100,6 +96,7 @@ public class MembershipDependenciesJUnitTest {
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
+              .or(resideInAPackage("org.apache.geode.internal.logging.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
               .or(resideInAPackage("org.apache.geode.test.."))
@@ -117,15 +114,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO: Membership needs its own config object
               .or(type(MembershipManager.class))
-
-
-              // TODO: Break dependency on geode logger
-              .or(type(LogService.class))
-              .or(assignableTo(LoggingThread.class))
-              .or(type(LoggingExecutors.class))
-
-              // TODO
-              .or(type(SystemFailure.class))
 
               // TODO
               .or(assignableTo(CancelCriterion.class))

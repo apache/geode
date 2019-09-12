@@ -75,7 +75,8 @@ public class LogServiceTest {
   @Test
   public void createLogWriterLoggerReturnsFastLogger() {
     LogWriterLogger logWriterLogger =
-        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
+        DeprecatedLogService
+            .createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
 
     assertThat(logWriterLogger).isInstanceOf(FastLogger.class);
   }
@@ -83,7 +84,8 @@ public class LogServiceTest {
   @Test
   public void createLogWriterLoggerReturnsLogWriter() {
     LogWriterLogger logWriterLogger =
-        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
+        DeprecatedLogService
+            .createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
 
     assertThat(logWriterLogger).isInstanceOf(LogWriter.class);
   }
@@ -91,7 +93,8 @@ public class LogServiceTest {
   @Test
   public void createLogWriterLoggerReturnsLoggerWithSpecifiedName() {
     LogWriterLogger logWriterLogger =
-        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
+        DeprecatedLogService
+            .createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
 
     assertThat(logWriterLogger.getName()).isEqualTo(getClass().getName());
   }
@@ -99,7 +102,8 @@ public class LogServiceTest {
   @Test
   public void createLogWriterLoggerReturnsLoggerWithSpecifiedConnectionName() {
     LogWriterLogger logWriterLogger =
-        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
+        DeprecatedLogService
+            .createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
 
     assertThat(logWriterLogger.getConnectionName()).isEqualTo(testName.getMethodName());
   }
@@ -107,7 +111,8 @@ public class LogServiceTest {
   @Test
   public void createLogWriterLoggerReturnsLoggerWithGeodeMessageFactory() {
     LogWriterLogger logWriterLogger =
-        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
+        DeprecatedLogService
+            .createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
 
     MessageFactory messageFactory = logWriterLogger.getMessageFactory();
     assertThat(messageFactory).isInstanceOf(GemFireParameterizedMessageFactory.class);
@@ -116,7 +121,8 @@ public class LogServiceTest {
   @Test
   public void createLogWriterLoggerWithSecureFalseReturnsSecureLogWriter() {
     LogWriterLogger logWriterLogger =
-        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
+        DeprecatedLogService
+            .createLogWriterLogger(getClass().getName(), testName.getMethodName(), false);
 
     assertThat(logWriterLogger.isSecure()).isFalse();
   }
@@ -124,7 +130,8 @@ public class LogServiceTest {
   @Test
   public void createLogWriterLoggerWithSecureTrueReturnsSecureLogWriter() {
     LogWriterLogger logWriterLogger =
-        LogService.createLogWriterLogger(getClass().getName(), testName.getMethodName(), true);
+        DeprecatedLogService
+            .createLogWriterLogger(getClass().getName(), testName.getMethodName(), true);
 
     assertThat(logWriterLogger.isSecure()).isTrue();
   }

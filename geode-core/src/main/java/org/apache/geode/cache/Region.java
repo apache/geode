@@ -36,6 +36,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
+import org.apache.geode.internal.logging.Loggable;
 
 /**
  * Manages subregions and cached data. Each region can contain multiple subregions and entries for
@@ -140,7 +141,7 @@ import org.apache.geode.cache.snapshot.RegionSnapshotService;
  * @since GemFire 2.0
  */
 
-public interface Region<K, V> extends ConcurrentMap<K, V> {
+public interface Region<K, V> extends ConcurrentMap<K, V>, Loggable {
   /** The region name separator character. */
   char SEPARATOR_CHAR = '/';
 

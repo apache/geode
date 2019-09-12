@@ -32,6 +32,7 @@ def dependentProjectNames = [
   ':geode-serialization',
   ':geode-core',
   ':geode-cq',
+  ':geode-logging',
   ':geode-lucene',
   ':geode-memcached',
   ':geode-old-client-support',
@@ -160,6 +161,7 @@ dependencies {
   geodeArchives project(':geode-connectors')
   geodeArchives project(':geode-core')
   geodeArchives project(':geode-cq')
+  geodeArchives project(':geode-logging')
   geodeArchives project(':geode-lucene')
   geodeArchives project(':geode-management')
   geodeArchives project(':geode-memcached')
@@ -203,10 +205,12 @@ dependencies {
   integrationTestCompile(project(':geode-assembly:geode-assembly-test'))
   integrationTestCompile('org.apache.httpcomponents:httpclient')
   integrationTestCompile('javax.annotation:javax.annotation-api')
+  integrationTestImplementation(project(':geode-logging'))
 
   integrationTestRuntime('io.swagger:swagger-annotations')
 
 
+  distributedTestImplementation(project(':geode-logging'))
   distributedTestImplementation(project(':geode-serialization'))
   distributedTestCompile(project(':geode-core'))
   distributedTestCompile(project(':geode-dunit')){
@@ -258,7 +262,7 @@ dependencies {
   uiTestRuntime(project(':geode-core'))
   uiTestRuntime('org.seleniumhq.selenium:selenium-chrome-driver')
 
-
+  upgradeTestImplementation project(':geode-logging')
   upgradeTestImplementation project(':geode-serialization')
   upgradeTestCompile(project(':geode-core'))
   upgradeTestCompile(project(':geode-dunit')) {
