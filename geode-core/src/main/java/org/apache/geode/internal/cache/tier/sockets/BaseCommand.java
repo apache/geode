@@ -1448,27 +1448,4 @@ public abstract class BaseCommand implements Command {
       appendInterestResponseKey(region, riKey, entryKey, collector, servConn);
     }
   }
-
-  protected static Operation getOperation(final Part operationPart,
-      final Operation defaultOperation) throws Exception {
-
-    if (operationPart.isBytes()) {
-      final byte[] bytes = operationPart.getSerializedForm();
-      if (null == bytes || 0 == bytes.length) {
-        // older clients can send empty bytes for default operation.
-        return defaultOperation;
-      } else {
-        return Operation.fromOrdinal(bytes[0]);
-      }
-    }
-
-    // Fallback for older clients.
-    final Operation operation = (Operation) operationPart.getObject();
-    if (operation == null) {
-      // native clients may send a null since the op is java-serialized.
-      return defaultOperation;
-    }
-    return operation;
-  }
-
 }
