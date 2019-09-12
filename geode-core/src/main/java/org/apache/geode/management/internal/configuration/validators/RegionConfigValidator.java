@@ -16,6 +16,10 @@
 package org.apache.geode.management.internal.configuration.validators;
 
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.internal.cache.InternalCache;
@@ -85,6 +89,38 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
       cache.getSecurityService()
           .authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
               ResourcePermission.Target.DISK);
+    }
+
+    // validate expirations
+    List<Region.Expiration> expirations = config.getExpirations();
+    if (expirations != null) {
+      Set<Region.ExpirationType> existingTypes = new HashSet<>();
+      for (Region.Expiration expiration : expirations) {
+        validate(expiration);
+        if (existingTypes.contains(expiration.getType())) {
+          throw new IllegalArgumentException("Can not have multiple " + expiration.getType() + ".");
+        }
+        existingTypes.add(expiration.getType());
+      }
+    }
+  }
+
+  private void validate(Region.Expiration expiration) {
+    if (expiration.getType() == null) {
+      throw new IllegalArgumentException("Expiration type must be set.");
+    }
+
+    if (expiration.getType() == Region.ExpirationType.UNSUPPORTED) {
+      throw new IllegalArgumentException("Invalid Expiration type.");
+    }
+
+    if (expiration.getTimeInSeconds() == null || expiration.getTimeInSeconds() < 0) {
+      throw new IllegalArgumentException(
+          ("Expiration timeInSeconds must be greater than or equal to 0."));
+    }
+
+    if (expiration.getAction() == Region.ExpirationAction.UNSUPPORTED) {
+      throw new IllegalArgumentException("Invalid Expiration action.");
     }
   }
 }

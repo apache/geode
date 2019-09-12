@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -80,6 +81,7 @@ public class RegionConverterTest {
     assertThat(region.getKeyConstraint()).isEqualTo("bar");
     assertThat(region.getDiskStoreName()).isEqualTo("diskstore");
     assertThat(region.getRedundantCopies()).isEqualTo(2);
+    assertThat(region.getExpirations()).isNull();
   }
 
   @Test
@@ -113,6 +115,9 @@ public class RegionConverterTest {
     assertThat(regionAttributes.getValueConstraint()).isEqualTo("foo");
     assertThat(regionAttributes.getDiskStoreName()).isEqualTo("diskstore");
     assertThat(regionAttributes.getPartitionAttributes().getRedundantCopies()).isEqualTo("2");
+    assertThat(regionAttributes.isStatisticsEnabled()).isTrue();
+    assertThat(regionAttributes.getEntryIdleTime()).isNull();
+    assertThat(regionAttributes.getEntryTimeToLive()).isNull();
   }
 
   @Test
@@ -184,5 +189,101 @@ public class RegionConverterTest {
   public void createRegionAttributesByInvalidType() throws Exception {
     assertThatThrownBy(() -> converter.createRegionAttributesByType("abc"))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void convertRegionExpirationFromXml() throws Exception {
+    config.setType("REPLICATE");
+    config.setName("test");
+    RegionAttributesType attributes = new RegionAttributesType();
+    attributes.setEntryTimeToLive(
+        new RegionAttributesType.ExpirationAttributesType(10, "destroy", null, null));
+    attributes.setEntryIdleTime(
+        new RegionAttributesType.ExpirationAttributesType(100, "local-destroy", null, null));
+    attributes.setRegionIdleTime(
+        new RegionAttributesType.ExpirationAttributesType(101, "invalidate", null, null));
+    attributes.setRegionTimeToLive(
+        new RegionAttributesType.ExpirationAttributesType(102, "local-invalidate", null, null));
+
+    config.setRegionAttributes(attributes);
+
+    Region region = converter.fromXmlObject(config);
+    List<Region.Expiration> expirations = region.getExpirations();
+    assertThat(expirations).hasSize(4);
+    assertThat(expirations.get(0).getTimeInSeconds()).isEqualTo(100);
+    assertThat(expirations.get(0).getAction()).isEqualTo(Region.ExpirationAction.UNSUPPORTED);
+    assertThat(expirations.get(0).getType()).isEqualTo(Region.ExpirationType.ENTRY_IDLE_TIME);
+    assertThat(expirations.get(1).getTimeInSeconds()).isEqualTo(10);
+    assertThat(expirations.get(1).getAction()).isEqualTo(Region.ExpirationAction.DESTROY);
+    assertThat(expirations.get(1).getType()).isEqualTo(Region.ExpirationType.ENTRY_TIME_TO_LIVE);
+    assertThat(expirations.get(2).getTimeInSeconds()).isEqualTo(101);
+    assertThat(expirations.get(2).getAction()).isEqualTo(Region.ExpirationAction.INVALIDATE);
+    assertThat(expirations.get(2).getType()).isEqualTo(Region.ExpirationType.UNSUPPORTED);
+    assertThat(expirations.get(3).getTimeInSeconds()).isEqualTo(102);
+    assertThat(expirations.get(3).getAction()).isEqualTo(Region.ExpirationAction.UNSUPPORTED);
+    assertThat(expirations.get(3).getType()).isEqualTo(Region.ExpirationType.UNSUPPORTED);
+  }
+
+  @Test
+  public void convertRegionExpirationFromConfig() throws Exception {
+    region.setName("test");
+    region.setType(RegionType.REPLICATE);
+    region.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, 100, null);
+    region.addExpiry(Region.ExpirationType.ENTRY_TIME_TO_LIVE, 101,
+        Region.ExpirationAction.INVALIDATE);
+
+    RegionConfig regionConfig = converter.fromConfigObject(region);
+    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
+    assertThat(regionAttributes.getEntryIdleTime().getTimeout()).isEqualTo("100");
+    assertThat(regionAttributes.getEntryIdleTime().getAction()).isEqualTo("destroy");
+    assertThat(regionAttributes.getEntryIdleTime().getCustomExpiry()).isNull();
+    assertThat(regionAttributes.getEntryTimeToLive().getTimeout()).isEqualTo("101");
+    assertThat(regionAttributes.getEntryTimeToLive().getAction()).isEqualTo("invalidate");
+    assertThat(regionAttributes.getEntryTimeToLive().getCustomExpiry()).isNull();
+  }
+
+  @Test
+  public void convertExpirationFromConfig() throws Exception {
+    Region.Expiration expiration = new Region.Expiration();
+    expiration.setTimeInSeconds(2);
+    RegionAttributesType.ExpirationAttributesType expirationAttributes =
+        converter.convertFrom(expiration);
+    assertThat(expirationAttributes.getCustomExpiry()).isNull();
+    assertThat(expirationAttributes.getAction()).isEqualTo("destroy");
+    assertThat(expirationAttributes.getTimeout()).isEqualTo("2");
+
+    expiration.setTimeInSeconds(20);
+    expiration.setAction(Region.ExpirationAction.INVALIDATE);
+    expirationAttributes =
+        converter.convertFrom(expiration);
+    assertThat(expirationAttributes.getCustomExpiry()).isNull();
+    assertThat(expirationAttributes.getAction()).isEqualTo("invalidate");
+    assertThat(expirationAttributes.getTimeout()).isEqualTo("20");
+  }
+
+  @Test
+  public void convertExpirationFromXml() throws Exception {
+    RegionAttributesType.ExpirationAttributesType xmlConfig =
+        new RegionAttributesType.ExpirationAttributesType();
+    Region.Expiration expiration =
+        converter.convertFrom(Region.ExpirationType.ENTRY_IDLE_TIME, xmlConfig);
+    assertThat(expiration.getType()).isEqualTo(Region.ExpirationType.ENTRY_IDLE_TIME);
+    assertThat(expiration.getAction()).isEqualTo(Region.ExpirationAction.INVALIDATE);
+    assertThat(expiration.getTimeInSeconds()).isEqualTo(0);
+
+    xmlConfig.setTimeout("1000");
+    xmlConfig.setAction("destroy");
+    expiration =
+        converter.convertFrom(Region.ExpirationType.ENTRY_IDLE_TIME, xmlConfig);
+    assertThat(expiration.getType()).isEqualTo(Region.ExpirationType.ENTRY_IDLE_TIME);
+    assertThat(expiration.getAction()).isEqualTo(Region.ExpirationAction.DESTROY);
+    assertThat(expiration.getTimeInSeconds()).isEqualTo(1000);
+
+    xmlConfig.setAction("local-destroy");
+    expiration =
+        converter.convertFrom(Region.ExpirationType.ENTRY_IDLE_TIME, xmlConfig);
+    assertThat(expiration.getType()).isEqualTo(Region.ExpirationType.ENTRY_IDLE_TIME);
+    assertThat(expiration.getAction()).isEqualTo(Region.ExpirationAction.UNSUPPORTED);
+    assertThat(expiration.getTimeInSeconds()).isEqualTo(1000);
   }
 }

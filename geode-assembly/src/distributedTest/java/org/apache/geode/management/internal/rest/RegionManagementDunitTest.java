@@ -27,7 +27,10 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -217,5 +220,63 @@ public class RegionManagementDunitTest {
     regionConfig.setType(RegionType.REPLICATE_PROXY);
     assertManagementResult(cms.create(regionConfig)).isSuccessful();
 
+  }
+
+  @Test
+  public void createRegionWithExpiration() throws Exception {
+    Region region = new Region();
+    String regionName = "createRegionWithExpiration";
+    region.setName(regionName);
+    region.setType(RegionType.REPLICATE);
+    region.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, 10000, null);
+    region.addExpiry(Region.ExpirationType.ENTRY_TIME_TO_LIVE, 20000,
+        Region.ExpirationAction.INVALIDATE);
+
+    assertManagementResult(cms.create(region)).isSuccessful();
+
+    locator.invoke(() -> {
+      CacheConfig cacheConfig =
+          ClusterStartupRule.getLocator().getConfigurationPersistenceService()
+              .getCacheConfig("cluster");
+      RegionConfig regionConfig = find(cacheConfig.getRegions(), regionName);
+      RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
+      assertThat(regionAttributes.isStatisticsEnabled()).isTrue();
+      assertThat(regionAttributes.getEntryTimeToLive().getTimeout()).isEqualTo("20000");
+      assertThat(regionAttributes.getEntryTimeToLive().getAction()).isEqualTo("invalidate");
+      assertThat(regionAttributes.getEntryTimeToLive().getCustomExpiry()).isNull();
+
+      assertThat(regionAttributes.getEntryIdleTime().getTimeout()).isEqualTo("10000");
+      assertThat(regionAttributes.getEntryIdleTime().getAction()).isEqualTo("destroy");
+      assertThat(regionAttributes.getEntryIdleTime().getCustomExpiry()).isNull();
+
+      assertThat(regionAttributes.getRegionTimeToLive()).isNull();
+      assertThat(regionAttributes.getRegionIdleTime()).isNull();
+    });
+
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      org.apache.geode.cache.Region actualRegion = cache.getRegion(regionName);
+      RegionAttributes attributes = actualRegion.getAttributes();
+      assertThat(attributes.getStatisticsEnabled()).isTrue();
+      assertThat(attributes.getEntryIdleTimeout().getTimeout()).isEqualTo(10000);
+      assertThat(attributes.getEntryIdleTimeout().getAction()).isEqualTo(ExpirationAction.DESTROY);
+      assertThat(attributes.getEntryTimeToLive().getTimeout()).isEqualTo(20000);
+      assertThat(attributes.getEntryTimeToLive().getAction())
+          .isEqualTo(ExpirationAction.INVALIDATE);
+      assertThat(attributes.getRegionIdleTimeout().getTimeout()).isEqualTo(0);
+      assertThat(attributes.getRegionTimeToLive().getTimeout()).isEqualTo(0);
+      assertThat(attributes.getCustomEntryIdleTimeout()).isNull();
+      assertThat(attributes.getCustomEntryTimeToLive()).isNull();
+    });
+
+    Region regionResult = cms.get(region).getConfigResult().get(0);
+    List<Region.Expiration> expirations = regionResult.getExpirations();
+    assertThat(expirations).hasSize(2);
+    assertThat(expirations.get(0).getTimeInSeconds()).isEqualTo(10000);
+    assertThat(expirations.get(0).getAction()).isEqualTo(Region.ExpirationAction.DESTROY);
+    assertThat(expirations.get(0).getType()).isEqualTo(Region.ExpirationType.ENTRY_IDLE_TIME);
+    assertThat(expirations.get(1).getTimeInSeconds()).isEqualTo(20000);
+    assertThat(expirations.get(1).getAction()).isEqualTo(Region.ExpirationAction.INVALIDATE);
+    assertThat(expirations.get(1).getType()).isEqualTo(Region.ExpirationType.ENTRY_TIME_TO_LIVE);
   }
 }
