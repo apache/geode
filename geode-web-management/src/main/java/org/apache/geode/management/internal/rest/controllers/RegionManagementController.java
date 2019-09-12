@@ -35,11 +35,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.Region;
@@ -149,19 +147,10 @@ public class RegionManagementController extends AbstractManagementController {
   public ClusterManagementGetResult<Index, RuntimeInfo> getIndex(
       @PathVariable String regionName,
       @PathVariable String id) {
-    ClusterManagementListResult<Index, RuntimeInfo> result = listIndex(regionName, id);
-    List<ConfigurationResult<Index, RuntimeInfo>> indexList = result.getResult();
 
-    if (indexList.size() == 0) {
-      throw new ClusterManagementException(new ClusterManagementResult(StatusCode.ENTITY_NOT_FOUND,
-          "Index '" + id + "' does not exist in region '" + regionName + "'."));
-    }
-
-    if (indexList.size() > 1) {
-      throw new ClusterManagementException(
-          new ClusterManagementResult(StatusCode.ERROR, "More than one index found."));
-    }
-
-    return new ClusterManagementGetResult<>(result);
+    Index filter = new Index();
+    filter.setRegionPath(regionName);
+    filter.setName(id);
+    return clusterManagementService.get(filter);
   }
 }

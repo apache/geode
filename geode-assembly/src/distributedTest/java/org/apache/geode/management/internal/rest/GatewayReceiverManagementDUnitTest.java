@@ -16,12 +16,14 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
+import static org.apache.geode.test.junit.assertions.ClusterManagementGetResultAssert.assertManagementGetResult;
 import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
+import org.apache.geode.test.junit.assertions.ClusterManagementGetResultAssert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -116,6 +118,36 @@ public class GatewayReceiverManagementDUnitTest {
         assertThat(result.getRuntimeInfo()).hasSize(0);
       }
     }
-  }
 
+    GatewayReceiver filter1 = new GatewayReceiver();
+    filter1.setGroup("group2");
+    listAssert = assertManagementListResult(cms.list(filter1)).isSuccessful();
+    listResult = listAssert.getResult();
+    assertThat(listResult).hasSize(1);
+    assertThat(listResult.get(0).getConfiguration().getGroup()).isEqualTo("group2");
+
+    GatewayReceiver filter2 = new GatewayReceiver();
+    filter2.setGroup("group3");
+    listAssert = assertManagementListResult(cms.list(filter2)).isSuccessful();
+    listResult = listAssert.getResult();
+    assertThat(listResult).hasSize(0);
+
+    GatewayReceiver filter = new GatewayReceiver();
+    filter.setGroup("group2");
+    ClusterManagementGetResultAssert<GatewayReceiver, GatewayReceiverInfo> getAssert =
+          assertManagementGetResult(cms.get(filter)).isSuccessful();
+    ConfigurationResult<GatewayReceiver, GatewayReceiverInfo> getResult = getAssert.getResult();
+    assertThat(getResult.getConfiguration().getId()).isEqualTo("group2");
+
+    GatewayReceiver clusterFilter = new GatewayReceiver();
+    assertThatThrownBy(() -> cms.get(clusterFilter))
+            .hasMessageContaining(
+                    "ENTITY_NOT_FOUND: GatewayReceiver 'cluster' does not exist.");
+
+    GatewayReceiver noMatchesFilter = new GatewayReceiver();
+    noMatchesFilter.setGroup("groupNotFound");
+    assertThatThrownBy(() -> cms.get(noMatchesFilter))
+            .hasMessageContaining(
+                    "ENTITY_NOT_FOUND: GatewayReceiver 'groupNotFound' does not exist.");
+  }
 }

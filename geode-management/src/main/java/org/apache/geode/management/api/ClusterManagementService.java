@@ -43,8 +43,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * This method will delete the element on all the applicable members in the cluster and update the
    * configuration in the cluster configuration if persistence is enabled.
    *
-   * @param config this holds the configuration attributes of the element to be deleted on the
-   *        cluster
+   * @param config this holds the name or id of the element to be deleted on the cluster
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the deletion
    * @throws ClusterManagementRealizationException if unsuccessful
    */
@@ -54,8 +53,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * This method will update the element on all the applicable members in the cluster and persist
    * the updated configuration in the cluster configuration if persistence is enabled.
    *
-   * @param config this holds the configuration attributes of the element to be updated on the
-   *        cluster
+   * @param config this holds the name or id of the element to be updated on the cluster
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the update
    * @throws ClusterManagementRealizationException if unsuccessful
    */
@@ -78,15 +76,13 @@ public interface ClusterManagementService extends AutoCloseable {
    * This method will get a single instance of the element type in the cluster configuration, along
    * with additional runtime information from cluster members
    *
-   * @param filter the filterable attributes are used to identify the element to return. Any
-   *        non-filterable attributes will be ignored. It is an error if the filter does not match
-   *        exactly one element.
+   * @param config this holds the name or id of the element to be retrieved
    * @return a {@link ClusterManagementGetResult}
    * @throws ClusterManagementException if unsuccessful or, no matching element is found, or
    *         multiple matches are found
    */
   <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResult<T, R> get(
-      T filter);
+      T config);
 
   /**
    * This method will launch a cluster management operation asynchronously.
