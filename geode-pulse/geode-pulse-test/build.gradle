@@ -30,6 +30,7 @@ dependencies {
   }
 
   compile(project(':geode-core'))
+  compile(project(':geode-http-service'))
   compile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

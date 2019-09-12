@@ -36,6 +36,7 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -89,7 +90,8 @@ public class InternalHttpService implements HttpService {
     return true;
   }
 
-  private void createJettyServer(String bindAddress, int port, SSLConfig sslConfig) {
+  @VisibleForTesting
+  public void createJettyServer(String bindAddress, int port, SSLConfig sslConfig) {
     this.httpServer = new Server();
 
     // Add a handler collection here, so that each new context adds itself
