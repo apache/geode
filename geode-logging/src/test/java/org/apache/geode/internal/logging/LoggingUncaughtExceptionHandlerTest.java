@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler.FailureSetter;
 import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler.Implementation;
 import org.apache.geode.test.junit.categories.LoggingTest;
@@ -45,7 +44,7 @@ public class LoggingUncaughtExceptionHandlerTest {
   @Test
   public void verifyThatSetOnThreadSetsTheThreadsHandler() {
     Thread thread = new Thread();
-    Implementation handler = new Implementation(null, null);
+    Implementation handler = new Implementation(null);
 
     handler.setOnThread(thread);
 
@@ -55,7 +54,7 @@ public class LoggingUncaughtExceptionHandlerTest {
   @Test
   public void verifyThatCallingUncaughtExceptionIncreasesTheCountByOne() {
     Logger logger = mock(Logger.class);
-    Implementation handler = new Implementation(logger, null);
+    Implementation handler = new Implementation(logger);
     int count = handler.getUncaughtExceptionsCount();
 
     handler.uncaughtException(null, null);
@@ -66,7 +65,7 @@ public class LoggingUncaughtExceptionHandlerTest {
   @Test
   public void verifyThatCallingClearSetsTheCountToZero() {
     Logger logger = mock(Logger.class);
-    Implementation handler = new Implementation(logger, null);
+    Implementation handler = new Implementation(logger);
     // force the count to be non-zero
     handler.uncaughtException(null, null);
 
@@ -80,7 +79,7 @@ public class LoggingUncaughtExceptionHandlerTest {
     Logger logger = mock(Logger.class);
     Thread thread = mock(Thread.class);
     Throwable throwable = mock(Throwable.class);
-    Implementation handler = new Implementation(logger, null);
+    Implementation handler = new Implementation(logger);
 
     handler.uncaughtException(thread, throwable);
 
@@ -88,12 +87,12 @@ public class LoggingUncaughtExceptionHandlerTest {
   }
 
   @Test
-  public void verifyInfoMessageLoggedWhenUncaughtExceptionIsCalledByShutdownHookAndWithNoClassDefFoundError() {
+  public void verifyInfoMessageLoggedWhenUncaughtExceptionIsCalledWithTreatExceptionAsFatalFalse() {
     Logger logger = mock(Logger.class);
-    Thread thread = new Thread();
-    thread.setName(InternalDistributedSystem.SHUTDOWN_HOOK_NAME);
+    Thread thread = new LoggingThread("test", false, () -> {
+    }, false);
     Throwable throwable = mock(NoClassDefFoundError.class);
-    Implementation handler = new Implementation(logger, null);
+    Implementation handler = new Implementation(logger);
 
     handler.uncaughtException(thread, throwable);
 
@@ -107,12 +106,12 @@ public class LoggingUncaughtExceptionHandlerTest {
     Logger logger = mock(Logger.class);
     Thread thread = mock(Thread.class);
     VirtualMachineError error = mock(VirtualMachineError.class);
-    FailureSetter failureSettor = mock(FailureSetter.class);
-    Implementation handler = new Implementation(logger, failureSettor);
-
+    FailureSetter failureSetter = mock(FailureSetter.class);
+    Implementation handler = new Implementation(logger);
+    handler.setFailureSetter(failureSetter);
     handler.uncaughtException(thread, error);
 
-    verify(failureSettor).setFailure(error);
+    verify(failureSetter).setFailure(error);
   }
 
 }

@@ -32,8 +32,8 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.tcp.ConnectionTable;
 
 /**
@@ -52,7 +52,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     // default to inline expiry to fix bug 37115
     int nThreads = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0);
     if (nThreads > 0) {
-      executor = LoggingExecutors.newThreadPoolWithSynchronousFeed("Expiry ",
+      executor = CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("Expiry ",
           (Runnable command) -> doExpiryThread(command),
           nThreads);
     } else {

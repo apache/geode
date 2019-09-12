@@ -27,13 +27,12 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOpsProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ProtocolVersionHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 
 public class RequireVersion implements ConnectionState {
-  private static final Logger logger = LogService.getLogger(ProtobufOpsProcessor.class);
+  private static final Logger logger = LogService.getLogger();
   private final SecurityService securityService;
 
   public RequireVersion(SecurityService securityService) {

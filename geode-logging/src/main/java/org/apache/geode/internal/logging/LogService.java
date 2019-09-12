@@ -18,18 +18,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.StackLocator;
 
-import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.logging.internal.LoggingProviderLoader;
-import org.apache.geode.logging.internal.spi.LoggingProvider;
+import org.apache.geode.internal.logging.log4j.FastLogger;
+import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
 
 /**
  * Provides Log4J2 Loggers with customized optimizations for Geode:
  */
-public class LogService extends LogManager {
+public class LogService {
 
-  @Immutable
-  private static final LoggingProvider loggingProvider = new LoggingProviderLoader().load();
 
   private LogService() {
     // do not instantiate
@@ -42,15 +38,10 @@ public class LogService extends LogManager {
    */
   public static Logger getLogger() {
     String name = StackLocator.getInstance().getCallerClass(2).getName();
-    return loggingProvider.getLogger(name);
+    return getLogger(name);
   }
 
   public static Logger getLogger(String name) {
-    return loggingProvider.getLogger(name);
-  }
-
-  @VisibleForTesting
-  static LoggingProvider getLoggingProvider() {
-    return loggingProvider;
+    return new FastLogger(LogManager.getLogger(name, GemFireParameterizedMessageFactory.INSTANCE));
   }
 }

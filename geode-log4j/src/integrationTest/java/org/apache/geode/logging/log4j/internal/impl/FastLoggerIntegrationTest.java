@@ -41,12 +41,12 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.FastLogger;
 import org.apache.geode.logging.internal.Configuration;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateScope;
-import org.apache.geode.logging.log4j.internal.FastLogger;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
