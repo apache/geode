@@ -15,7 +15,7 @@
 
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.internal.ClusterDistributionManager.FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX;
+import static org.apache.geode.distributed.internal.OperationExecutors.FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
@@ -52,6 +53,28 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
 
   private static final int OFFER_TIME =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "RETRY_INTERVAL", 5000).intValue();
+
+  /**
+   * Identifier for function execution threads and any of their children
+   */
+  @MakeNotStatic()
+  private static final InheritableThreadLocal<Boolean> isFunctionExecutionThread =
+      new InheritableThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+          return Boolean.FALSE;
+        }
+      };
+
+
+  /**
+   * Is the current thread used for executing Functions?
+   */
+  public static boolean isFunctionExecutionThread() {
+    return isFunctionExecutionThread.get().booleanValue();
+  }
+
+
 
   /**
    * Create a new pool
@@ -120,7 +143,7 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
         }
 
         private boolean isFunctionExecutionThread() {
-          return ClusterDistributionManager.isFunctionExecutionThread();
+          return isFunctionExecutionThread.get();
         }
 
         /**
@@ -209,6 +232,10 @@ public class FunctionExecutionPooledExecutor extends ThreadPoolExecutor {
       this.bufferConsumer = tf.newThread(r);
       this.bufferConsumer.start();
     }
+  }
+
+  public static void setIsFunctionExecutionThread(Boolean isExecutionThread) {
+    isFunctionExecutionThread.set(isExecutionThread);
   }
 
   @Override

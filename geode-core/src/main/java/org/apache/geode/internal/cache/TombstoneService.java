@@ -161,7 +161,7 @@ public class TombstoneService {
   private TombstoneService(InternalCache cache) {
     this.replicatedTombstoneSweeper =
         new ReplicateTombstoneSweeper(cache, cache.getCachePerfStats(), cache.getCancelCriterion(),
-            cache.getDistributionManager().getWaitingThreadPool());
+            cache.getDistributionManager().getExecutors().getWaitingThreadPool());
     this.nonReplicatedTombstoneSweeper = new NonReplicateTombstoneSweeper(cache,
         cache.getCachePerfStats(), cache.getCancelCriterion());
     this.replicatedTombstoneSweeper.start();

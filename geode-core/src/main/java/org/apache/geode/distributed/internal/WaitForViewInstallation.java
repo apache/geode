@@ -53,7 +53,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
+    return OperationExecutors.WAITING_POOL_EXECUTOR;
   }
 
   @Override

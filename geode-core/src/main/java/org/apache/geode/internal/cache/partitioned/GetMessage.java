@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -126,7 +127,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         // processed in the p2p msg reader.
         if (pr.getAttributes().getDataPolicy().withPersistence()
             || !pr.getAttributes().getEvictionAttributes().getAlgorithm().isNone()) {
-          return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
+          return OperationExecutors.PARTITIONED_REGION_EXECUTOR;
         }
       } catch (PRLocallyDestroyedException ignore) {
       } catch (RuntimeException ignore) {
@@ -138,13 +139,13 @@ public class GetMessage extends PartitionMessageWithDirectReply {
       }
     }
     if (forceUseOfPRExecutor) {
-      return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
+      return OperationExecutors.PARTITIONED_REGION_EXECUTOR;
     } else if (ORDER_PR_GETS) {
-      return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
+      return OperationExecutors.PARTITIONED_REGION_EXECUTOR;
     } else {
       // Make this executor serial so that it will be processed in the p2p msg reader
       // which gives it better performance.
-      return ClusterDistributionManager.SERIAL_EXECUTOR;
+      return OperationExecutors.SERIAL_EXECUTOR;
     }
   }
 

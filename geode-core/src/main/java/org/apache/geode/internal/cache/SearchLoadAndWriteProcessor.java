@@ -1028,7 +1028,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           // send a message to this responder asking for the value
           // do this on the waiting pool in case the send blocks
           try {
-            dm.getWaitingThreadPool().execute(new Runnable() {
+            dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
               @Override
               public void run() {
                 sendValueRequest(sender);

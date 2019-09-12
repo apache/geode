@@ -19,8 +19,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.admin.GemFireHealthConfig;
@@ -230,30 +228,10 @@ public interface DistributionManager extends ReplySender {
    */
   void handleManagerDeparture(InternalDistributedMember theId, boolean crashed, String reason);
 
-  /**
-   * getThreadPool gets this distribution manager's message-processing thread pool
-   */
-  ExecutorService getThreadPool();
+  OperationExecutors getExecutors();
 
-  /**
-   * Return the high-priority message-processing executor
-   */
-  ExecutorService getHighPriorityThreadPool();
-
-  /**
-   * Return the waiting message-processing executor
-   */
-  ExecutorService getWaitingThreadPool();
-
-  /**
-   * Return the special waiting message-processing executor
-   */
-  ExecutorService getPrMetaDataCleanupThreadPool();
-
-  /**
-   * Return the executor used for function processing
-   */
-  Executor getFunctionExecutor();
+  /** returns the Threads Monitoring instance */
+  ThreadsMonitoring getThreadMonitoring();
 
   void close();
 
@@ -470,9 +448,6 @@ public interface DistributionManager extends ReplySender {
    * returns the ID of a member having the given name, or null if no such member exists
    */
   DistributedMember getMemberWithName(String name);
-
-  /** returns the Threads Monitoring instance */
-  public ThreadsMonitoring getThreadMonitoring();
 
   /**
    * Returns the {@link AlertingService}.

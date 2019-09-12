@@ -60,6 +60,7 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -864,7 +865,7 @@ public class Connection implements Runnable {
     // }
     // connectHandshake.writeUTF("["+name+"] "+Thread.currentThread().getName());
     // }
-    connectHandshake.setMessageHeader(NORMAL_MSG_TYPE, ClusterDistributionManager.STANDARD_EXECUTOR,
+    connectHandshake.setMessageHeader(NORMAL_MSG_TYPE, OperationExecutors.STANDARD_EXECUTOR,
         MsgIdGenerator.NO_MSG_ID);
     writeFully(getSocket().getChannel(), connectHandshake.getContentBuffer(), false, null);
   }
@@ -1956,7 +1957,7 @@ public class Connection implements Runnable {
       ReplyMessage.send(getRemoteAddress(), rpId, exception, dm);
     } else if (rpId != 0) {
       DistributionManager dm = this.owner.getDM();
-      dm.getWaitingThreadPool()
+      dm.getExecutors().getWaitingThreadPool()
           .execute(() -> ReplyMessage.send(getRemoteAddress(), rpId, exception, dm));
     }
   }

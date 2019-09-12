@@ -62,6 +62,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -398,8 +399,8 @@ public class InitialImageOperation {
             r.addAll(advice.empties);
             r.addAll(advice.uninitialized);
             int processorType =
-                targetReinitialized ? ClusterDistributionManager.WAITING_POOL_EXECUTOR
-                    : ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+                targetReinitialized ? OperationExecutors.WAITING_POOL_EXECUTOR
+                    : OperationExecutors.HIGH_PRIORITY_EXECUTOR;
             try {
               boolean success = sf.flush(r, recipient, processorType, true);
               if (!success) {
@@ -423,8 +424,8 @@ public class InitialImageOperation {
         r.addAll(advice.others);
         r.addAll(advice.empties);
         r.addAll(advice.uninitialized);
-        int processorType = targetReinitialized ? ClusterDistributionManager.WAITING_POOL_EXECUTOR
-            : ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+        int processorType = targetReinitialized ? OperationExecutors.WAITING_POOL_EXECUTOR
+            : OperationExecutors.HIGH_PRIORITY_EXECUTOR;
         try {
           boolean success = sf.flush(r, recipient, processorType, false);
           if (!success) {
@@ -1591,8 +1592,8 @@ public class InitialImageOperation {
 
     @Override
     public int getProcessorType() {
-      return this.targetReinitialized ? ClusterDistributionManager.WAITING_POOL_EXECUTOR
-          : ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+      return this.targetReinitialized ? OperationExecutors.WAITING_POOL_EXECUTOR
+          : OperationExecutors.HIGH_PRIORITY_EXECUTOR;
     }
 
     public boolean goWithFullGII(DistributedRegion rgn, RegionVersionVector requesterRVV) {
@@ -2283,7 +2284,7 @@ public class InitialImageOperation {
 
     @Override
     public int getProcessorType() {
-      return ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+      return OperationExecutors.HIGH_PRIORITY_EXECUTOR;
     }
 
     @Override
@@ -2559,8 +2560,8 @@ public class InitialImageOperation {
 
     @Override
     public int getProcessorType() {
-      return this.targetReinitialized ? ClusterDistributionManager.WAITING_POOL_EXECUTOR
-          : ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+      return this.targetReinitialized ? OperationExecutors.WAITING_POOL_EXECUTOR
+          : OperationExecutors.HIGH_PRIORITY_EXECUTOR;
     }
 
     @Override

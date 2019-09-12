@@ -266,7 +266,7 @@ public abstract class AbstractExecution implements InternalExecution {
       } else {
 
         final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
-        newDM.getFunctionExecutor().execute(() -> {
+        newDM.getExecutors().getFunctionExecutor().execute(() -> {
           executeFunctionLocally(fn, cx, sender, newDM);
           if (!sender.isLastResultReceived() && fn.hasResult()) {
             ((InternalResultSender) sender).setException(new FunctionException(
@@ -292,7 +292,7 @@ public abstract class AbstractExecution implements InternalExecution {
       final ResultSender sender, DistributionManager dm, final boolean isTx) {
     if (dm instanceof ClusterDistributionManager && !isTx) {
       final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
-      newDM.getFunctionExecutor().execute(() -> {
+      newDM.getExecutors().getFunctionExecutor().execute(() -> {
         executeFunctionLocally(fn, cx, sender, newDM);
         if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
           ((InternalResultSender) sender).setException(new FunctionException(

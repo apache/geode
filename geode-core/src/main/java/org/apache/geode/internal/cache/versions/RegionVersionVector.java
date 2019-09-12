@@ -339,7 +339,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
           System.identityHashCode(this));
     }
     // this could block for a while if a limit has been set on the waiting-thread-pool
-    dm.getWaitingThreadPool().execute(new Runnable() {
+    dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
       @Override
       @edu.umd.cs.findbugs.annotations.SuppressWarnings(
           value = {"UL_UNRELEASED_LOCK", "IMSE_DONT_CATCH_IMSE"})
@@ -1452,7 +1452,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     // since unlockForClear uses synchronization we need to try to execute it in another
     // thread so that membership events aren't blocked
     if (distributionManager != null) {
-      distributionManager.getWaitingThreadPool().execute(new Runnable() {
+      distributionManager.getExecutors().getWaitingThreadPool().execute(new Runnable() {
         @Override
         public void run() {
           unlockForClear(id);

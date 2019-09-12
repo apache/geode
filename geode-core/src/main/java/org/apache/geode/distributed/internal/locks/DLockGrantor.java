@@ -3590,7 +3590,7 @@ public class DLockGrantor {
           logger.trace(LogMarker.DLS_VERBOSE,
               "[DLockGrantor.memberDeparted] waiting thread pool will process id={}", id);
         }
-        distMgr.getWaitingThreadPool().execute(new Runnable() {
+        distMgr.getExecutors().getWaitingThreadPool().execute(new Runnable() {
           @Override
           public void run() {
             try {

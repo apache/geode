@@ -58,6 +58,7 @@ import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
 import org.apache.geode.distributed.internal.ShutdownMessage;
 import org.apache.geode.distributed.internal.SizeableRunnable;
@@ -2154,7 +2155,7 @@ public class GMSMembershipManager implements MembershipManager {
     // run a message through the member's serial execution queue to ensure that all of its
     // current messages have been processed
     boolean result = false;
-    OverflowQueueWithDMStats<Runnable> serialQueue = dm.getSerialQueue(idm);
+    OverflowQueueWithDMStats<Runnable> serialQueue = dm.getExecutors().getSerialQueue(idm);
     if (serialQueue != null) {
       final boolean done[] = new boolean[1];
       final FlushingMessage msg = new FlushingMessage(done);
@@ -2362,7 +2363,7 @@ public class GMSMembershipManager implements MembershipManager {
 
     @Override
     public int getProcessorType() {
-      return ClusterDistributionManager.SERIAL_EXECUTOR;
+      return OperationExecutors.SERIAL_EXECUTOR;
     }
   }
 

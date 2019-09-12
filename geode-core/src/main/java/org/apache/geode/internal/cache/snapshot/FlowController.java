@@ -31,6 +31,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ProcessorKeeper21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -268,7 +269,7 @@ public class FlowController {
 
     @Override
     public int getProcessorType() {
-      return ClusterDistributionManager.STANDARD_EXECUTOR;
+      return OperationExecutors.STANDARD_EXECUTOR;
     }
 
     @Override
@@ -326,7 +327,7 @@ public class FlowController {
 
     @Override
     public int getProcessorType() {
-      return ClusterDistributionManager.STANDARD_EXECUTOR;
+      return OperationExecutors.STANDARD_EXECUTOR;
     }
 
     @Override

@@ -37,6 +37,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DSClock;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.CachePerfStats;
@@ -131,6 +132,7 @@ public class Fakes {
     when(distributionManager.getCancelCriterion()).thenReturn(systemCancelCriterion);
     when(distributionManager.getCache()).thenReturn(cache);
     when(distributionManager.getExistingCache()).thenReturn(cache);
+    when(distributionManager.getExecutors()).thenReturn(mock(OperationExecutors.class));
 
     when(statisticsManager.createAtomicStatistics(any(), any(), anyLong())).thenReturn(stats);
     when(statisticsManager.createAtomicStatistics(any(), any())).thenReturn(stats);

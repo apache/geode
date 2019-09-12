@@ -26,6 +26,7 @@ import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -145,7 +146,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+    return OperationExecutors.HIGH_PRIORITY_EXECUTOR;
   }
 
   /**

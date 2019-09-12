@@ -24,13 +24,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -95,10 +93,9 @@ public class LonerDistributionManager implements DistributionManager {
     this.viewMembers = new ArrayList<>(allIds);
     DistributionStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
 
-    Properties nonDefault = new Properties();
-    DistributionConfigImpl distributionConfigImpl = new DistributionConfigImpl(nonDefault);
+    DistributionConfig config = system.getConfig();
 
-    if (distributionConfigImpl.getThreadMonitorEnabled()) {
+    if (config.getThreadMonitorEnabled()) {
       this.threadMonitor = new ThreadsMonitoringImpl(system);
       logger.info("[ThreadsMonitor] New Monitor object and process were created.\n");
     } else {
@@ -108,10 +105,6 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   ////////////////////// Instance Methods //////////////////////
-
-  protected void startThreads() {
-    // no threads needed
-  }
 
   protected void shutdown() {
     threadMonitor.close();
@@ -133,6 +126,8 @@ public class LonerDistributionManager implements DistributionManager {
   private static final DummyDMStats stats = new DummyDMStats();
   private final ExecutorService executor =
       LoggingExecutors.newCachedThreadPool("LonerDistributionManagerThread", false);
+
+  private final OperationExecutors executors = new LonerOperationExecutors(executor);
 
   @Override
   public long cacheTimeMillis() {
@@ -305,28 +300,8 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  public ExecutorService getThreadPool() {
-    return executor;
-  }
-
-  @Override
-  public ExecutorService getHighPriorityThreadPool() {
-    return executor;
-  }
-
-  @Override
-  public ExecutorService getWaitingThreadPool() {
-    return executor;
-  }
-
-  @Override
-  public ExecutorService getPrMetaDataCleanupThreadPool() {
-    return executor;
-  }
-
-  @Override
-  public Executor getFunctionExecutor() {
-    return executor;
+  public OperationExecutors getExecutors() {
+    return executors;
   }
 
   @Override

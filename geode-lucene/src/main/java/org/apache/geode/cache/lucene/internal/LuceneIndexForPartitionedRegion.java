@@ -56,7 +56,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   public LuceneIndexForPartitionedRegion(String indexName, String regionPath, InternalCache cache) {
     super(indexName, regionPath, cache);
-    this.waitingThreadPoolFromDM = cache.getDistributionManager().getWaitingThreadPool();
+    this.waitingThreadPoolFromDM =
+        cache.getDistributionManager().getExecutors().getWaitingThreadPool();
 
     final String statsName = indexName + "-" + regionPath;
     this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);

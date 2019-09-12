@@ -26,6 +26,7 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -69,7 +70,7 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR;
+    return OperationExecutors.REGION_FUNCTION_EXECUTION_EXECUTOR;
   }
 
   /**

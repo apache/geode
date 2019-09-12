@@ -139,7 +139,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
       final TXOriginatorRecoveryMessage msg = this;
 
       try {
-        dm.getWaitingThreadPool().execute(new Runnable() {
+        dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
           @Override
           public void run() {
             processTXOriginatorRecoveryMessage(dm, msg);

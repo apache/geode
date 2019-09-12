@@ -59,7 +59,8 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
       sender.getCancelCriterion().checkCancelInProgress(null);
     }
 
-    ExecutorService service = this.sender.getDistributionManager().getWaitingThreadPool();
+    ExecutorService service =
+        this.sender.getDistributionManager().getExecutors().getWaitingThreadPool();
     List<Future<Boolean>> callableFutures = new ArrayList<>();
     int callableCount = 0;
     long nanosRemaining = unit.toNanos(timeout);

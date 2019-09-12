@@ -225,7 +225,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
      */
     private void executeBasicProcess(final DistributionManager dm) {
       final DLockReleaseMessage msg = this;
-      dm.getWaitingThreadPool().execute(new Runnable() {
+      dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
         @Override
         public void run() {
           if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {

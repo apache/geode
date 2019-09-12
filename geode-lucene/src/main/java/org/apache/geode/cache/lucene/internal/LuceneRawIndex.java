@@ -33,7 +33,7 @@ public class LuceneRawIndex extends LuceneIndexImpl {
       mapper = new HeterogeneousLuceneSerializer();
     }
     RawLuceneRepositoryManager rawLuceneRepositoryManager = new RawLuceneRepositoryManager(this,
-        mapper, cache.getDistributionManager().getWaitingThreadPool());
+        mapper, cache.getDistributionManager().getExecutors().getWaitingThreadPool());
     return rawLuceneRepositoryManager;
   }
 
