@@ -630,7 +630,7 @@ public class PRHARedundancyProvider {
               // enforceUniqueZone property has no effect for a loner
               if (!(partitionedRegion
                   .getDistributionManager() instanceof LonerDistributionManager)) {
-                Set<InternalDistributedMember> exm = getBuddyMembersInZone(candidate, allStores);
+                List<InternalDistributedMember> exm = getBuddyMembersInZone(candidate, allStores);
                 exm.remove(candidate);
                 exm.removeAll(acceptedMembers);
                 excludedMembers.addAll(exm);
@@ -902,10 +902,10 @@ public class PRHARedundancyProvider {
    * @return set of members on the same host, not including accepted member
    * @since GemFire 5.9
    */
-  private Set<InternalDistributedMember> getBuddyMembersInZone(
+  private List<InternalDistributedMember> getBuddyMembersInZone(
       InternalDistributedMember acceptedMember, Collection<InternalDistributedMember> allStores) {
     DistributionManager dm = partitionedRegion.getDistributionManager();
-    Set<InternalDistributedMember> buddies = dm.getMembersInSameZone(acceptedMember);
+    List<InternalDistributedMember> buddies = dm.getMembersInSameZone(acceptedMember);
     buddies.retainAll(allStores);
     return buddies;
   }

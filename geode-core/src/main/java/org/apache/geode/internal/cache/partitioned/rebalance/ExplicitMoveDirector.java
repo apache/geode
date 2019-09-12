@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.partitioned.rebalance;
 
-import java.util.Set;
+import java.util.List;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -89,7 +89,7 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
     if (reason.willAccept()) {
       if (!model.moveBucket(new Move(sourceMember, targetMember, bucket))) {
         // Double check to see if the source or destination have left the DS
-        Set allMembers = ds.getDistributionManager().getDistributionManagerIdsIncludingAdmin();
+        List allMembers = ds.getDistributionManager().getDistributionManagerIdsIncludingAdmin();
         if (!allMembers.contains(sourceMember)) {
           throw new IllegalStateException(
               String.format(

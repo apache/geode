@@ -1805,7 +1805,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
   @Override
   public Set<DistributedMember> findDistributedMembers(InetAddress address) {
-    Set<InternalDistributedMember> allMembers = dm.getDistributionManagerIdsIncludingAdmin();
+    List<InternalDistributedMember> allMembers = dm.getDistributionManagerIdsIncludingAdmin();
     Set<DistributedMember> results = new HashSet<>(2);
 
     // Search through the set of all members

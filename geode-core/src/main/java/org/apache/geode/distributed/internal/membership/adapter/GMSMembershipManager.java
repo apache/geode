@@ -36,6 +36,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.Logger;
 
@@ -257,7 +258,7 @@ public class GMSMembershipManager implements MembershipManager {
    *
    * All accesses to this object are protected via {@link #latestViewLock}
    */
-  private MembershipView latestView = new MembershipView();
+  private volatile MembershipView latestView = new MembershipView();
 
   /**
    * This is the lock for protecting access to latestView
@@ -462,18 +463,18 @@ public class GMSMembershipManager implements MembershipManager {
       }
       disableMulticastForRollingUpgrade = !version.equals(Version.CURRENT);
 
-      if (newViewId < latestViewId) {
+      // Save previous view, for delta analysis
+      MembershipView priorView = latestView;
+
+      if (newViewId < priorView.getViewId()) {
         // ignore this view since it is old news
         return;
       }
 
-      // Save previous view, for delta analysis
-      MembershipView priorView = latestView;
-
       // update the view to reflect our changes, so that
       // callbacks will see the new (updated) view.
-      latestViewId = newViewId;
-      latestView = new MembershipView(newView, newView.getViewId());
+      long newlatestViewId = newViewId;
+      MembershipView newlatestView = new MembershipView(newView, newView.getViewId());
 
       // look for additions
       for (int i = 0; i < newView.getMembers().size(); i++) { // additions
@@ -598,15 +599,12 @@ public class GMSMembershipManager implements MembershipManager {
           removeWithViewLock(m, true,
               "not seen in membership view in " + this.surpriseMemberTimeout + "ms");
         } else {
-          if (!latestView.contains(entry.getKey())) {
-            latestView.add(entry.getKey());
+          if (!newlatestView.contains(entry.getKey())) {
+            newlatestView.add(entry.getKey());
           }
         }
       }
       // expire suspected members
-      /*
-       * the timeout interval for suspected members
-       */
       final long suspectMemberTimeout = 180000;
       oldestAllowed = System.currentTimeMillis() - suspectMemberTimeout;
       for (Iterator it = suspectedMembers.entrySet().iterator(); it.hasNext();) {
@@ -616,6 +614,10 @@ public class GMSMembershipManager implements MembershipManager {
           it.remove();
         }
       }
+
+      // the view is complete - let's install it
+      newlatestView.makeUnmodifiable();
+      latestView = newlatestView;
       try {
         listener.viewInstalled(latestView);
       } catch (DistributedSystemDisconnectedException se) {
@@ -668,6 +670,7 @@ public class GMSMembershipManager implements MembershipManager {
 
         MembershipView initialView = createGeodeView(services.getJoinLeave().getView());
         latestView = new MembershipView(initialView, initialView.getViewId());
+        latestView.makeUnmodifiable();
         listener.viewInstalled(latestView);
 
       } catch (RuntimeException ex) {
@@ -688,9 +691,11 @@ public class GMSMembershipManager implements MembershipManager {
   }
 
   private MembershipView createGeodeView(GMSMembershipView view) {
-    return createGeodeView(view.getCreator(), view.getViewId(), view.getMembers(),
+    MembershipView result = createGeodeView(view.getCreator(), view.getViewId(), view.getMembers(),
         view.getShutdownMembers(),
         view.getCrashedMembers());
+    result.makeUnmodifiable();
+    return result;
   }
 
   private MembershipView createGeodeView(GMSMember gmsCreator, int viewId,
@@ -903,6 +908,7 @@ public class GMSMembershipManager implements MembershipManager {
         // view.
         MembershipView newMembers = new MembershipView(latestView, latestView.getViewId());
         newMembers.add(member);
+        newMembers.makeUnmodifiable();
         latestView = newMembers;
       }
     } finally {
@@ -1285,16 +1291,8 @@ public class GMSMembershipManager implements MembershipManager {
   @Override
   public MembershipView getView() {
     // Grab the latest view under a mutex...
-    MembershipView v;
-
-    latestViewReadLock.lock();
-    v = latestView;
-    latestViewReadLock.unlock();
-
+    MembershipView v = latestView;
     MembershipView result = new MembershipView(v, v.getViewId());
-
-    v.getMembers().stream().filter(this::isShunned).forEachOrdered(result::remove);
-
     return result;
   }
 
@@ -1803,6 +1801,7 @@ public class GMSMembershipManager implements MembershipManager {
       if (latestView.contains(member)) {
         MembershipView newView = new MembershipView(latestView, latestView.getViewId());
         newView.remove(member);
+        newView.makeUnmodifiable();
         latestView = newView;
       }
     } finally {
@@ -1875,6 +1874,11 @@ public class GMSMembershipManager implements MembershipManager {
     } finally {
       latestViewWriteLock.unlock();
     }
+  }
+
+  @Override
+  public <T> T withViewLock(Function function) {
+    return (T) function.apply(this);
   }
 
   private boolean isShunnedOrNew(final InternalDistributedMember m) {
@@ -2504,8 +2508,8 @@ public class GMSMembershipManager implements MembershipManager {
     /* Service interface */
     @Override
     public void installView(GMSMembershipView v) {
-      if (latestViewId < 0 && !isConnected()) {
-        latestViewId = v.getViewId();
+      MembershipView currentView = latestView;
+      if (currentView.getViewId() < 0 && !isConnected()) {
         latestView = createGeodeView(v);
         logger.debug("MembershipManager: initial view is {}", latestView);
       } else {

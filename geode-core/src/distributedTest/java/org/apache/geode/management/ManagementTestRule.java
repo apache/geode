@@ -27,9 +27,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
@@ -234,13 +234,13 @@ public class ManagementTestRule implements MethodRule, Serializable {
     managerVM.invoke("stopManager", () -> stopManager());
   }
 
-  public Set<DistributedMember> getOtherNormalMembers() {
-    Set<DistributedMember> allMembers = new HashSet<>(getAllNormalMembers());
+  public List<DistributedMember> getOtherNormalMembers() {
+    List<DistributedMember> allMembers = new ArrayList<>(getAllNormalMembers());
     allMembers.remove(getDistributedMember());
     return allMembers;
   }
 
-  private Set<InternalDistributedMember> getAllNormalMembers() {
+  private List<InternalDistributedMember> getAllNormalMembers() {
     return getDistributionManager().getNormalDistributionManagerIds(); // excludes LOCATOR_DM_TYPE
   }
 

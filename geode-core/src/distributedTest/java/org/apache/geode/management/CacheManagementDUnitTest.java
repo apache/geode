@@ -304,7 +304,7 @@ public class CacheManagementDUnitTest implements Serializable {
   private void verifyQueryMBeans(final VM managerVM) {
     managerVM.invoke("validateQueryMBeans", () -> {
       SystemManagementService service = this.managementTestRule.getSystemManagementService();
-      Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+      List<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
       Set<ObjectName> superSet = new HashSet<>();
 
       for (DistributedMember member : otherMembers) {
@@ -329,7 +329,7 @@ public class CacheManagementDUnitTest implements Serializable {
   private void verifyGetMBeanInstance(final VM managerVM) {
     managerVM.invoke("verifyGetMBeanInstance", () -> {
       SystemManagementService service = this.managementTestRule.getSystemManagementService();
-      Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+      List<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
 
       for (DistributedMember member : otherMembers) {
         ObjectName memberMBeanName = service.getMemberMBeanName(member);
@@ -381,7 +381,7 @@ public class CacheManagementDUnitTest implements Serializable {
       assertThat(service.getLocalManager().getFederationSheduler().isShutdown()).isFalse();
 
       // Check for Proxies
-      Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+      List<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
       assertThat(otherMembers).hasSize(otherMembersCount);
 
       for (DistributedMember member : otherMembers) {
@@ -416,7 +416,7 @@ public class CacheManagementDUnitTest implements Serializable {
    */
   private void verifyConfigDataRemote(final Map<DistributedMember, DistributionConfig> configMap) {
     SystemManagementService service = this.managementTestRule.getSystemManagementService();
-    Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+    List<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
 
     for (DistributedMember member : otherMembers) {
       MemberMXBean memberMXBean = MXBeanAwaitility.awaitMemberMXBeanProxy(member, service);
@@ -582,7 +582,7 @@ public class CacheManagementDUnitTest implements Serializable {
 
   private void invokeRemoteMemberMXBeanOps() {
     SystemManagementService service = this.managementTestRule.getSystemManagementService();
-    Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+    List<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
 
     for (DistributedMember member : otherMembers) {
       MemberMXBean memberMXBean = MXBeanAwaitility.awaitMemberMXBeanProxy(member, service);

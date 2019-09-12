@@ -495,7 +495,7 @@ public class SystemAdmin {
     }
     InternalDistributedSystem ds =
         (InternalDistributedSystem) InternalDistributedSystem.connectForAdmin(props);
-    Set existingMembers = ds.getDistributionManager().getDistributionManagerIds();
+    List existingMembers = ds.getDistributionManager().getDistributionManagerIds();
     if (existingMembers.isEmpty()) {
       throw new RuntimeException("There are no members in the distributed system");
     }

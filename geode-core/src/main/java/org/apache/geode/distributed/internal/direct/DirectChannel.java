@@ -24,7 +24,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.apache.logging.log4j.Logger;
@@ -646,7 +645,7 @@ public class DirectChannel {
    */
   private void handleAckTimeout(long ackTimeout, long ackSATimeout, Connection c,
       DirectReplyProcessor processor) throws ConnectionException {
-    Set activeMembers = dm.getDistributionManagerIds();
+    List activeMembers = dm.getDistributionManagerIds();
 
     // Increment the stat
     dm.getStats().incReplyTimeouts();

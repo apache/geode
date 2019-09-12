@@ -846,7 +846,7 @@ public class PartitionedRegionHelper {
     if (prConfig == null)
       return;
 
-    Set members = partitionedRegion.getDistributionManager().getDistributionManagerIds();
+    List members = partitionedRegion.getDistributionManager().getDistributionManagerIds();
     logger.warn(
         "DATALOSS (  {}  ) :: Size of nodeList After verifyBucketNodes for bucket ID,  {}  is 0",
         callingMethod, bucketId);

@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -63,7 +64,8 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
    * @throws InterruptedException if the operation is interrupted (as by shutdown)
    * @throws ReplyException if an exception was sent back by another manager
    */
-  public void send(Set recipients, boolean multicast) throws InterruptedException, ReplyException {
+  public void send(Collection recipients, boolean multicast)
+      throws InterruptedException, ReplyException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     if (Thread.interrupted())

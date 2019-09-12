@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -199,18 +201,6 @@ public class ClusterDistributionManager implements DistributionManager {
   private MembershipManager membershipManager;
 
   /**
-   * The (non-admin-only) members of the distributed system. This is a map of memberid->memberid for
-   * fast access to canonical ID references. All accesses to this field must be synchronized on
-   * {@link #membersLock}.
-   */
-  private Map<InternalDistributedMember, InternalDistributedMember> members =
-      Collections.emptyMap();
-  /**
-   * All (admin and non-admin) members of the distributed system. All accesses to this field must be
-   * synchronized on {@link #membersLock}.
-   */
-  private Set<InternalDistributedMember> membersAndAdmin = Collections.emptySet();
-  /**
    * Map of all locator members of the distributed system. The value is a collection of locator
    * strings that are hosted in that member. All accesses to this field must be synchronized on
    * {@link #membersLock}.
@@ -225,25 +215,6 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private Map<InternalDistributedMember, Collection<String>> hostedLocatorsWithSharedConfiguration =
       Collections.emptyMap();
-
-  /**
-   * The lock held while accessing the field references to the following:<br>
-   * 1) {@link #members}<br>
-   * 2) {@link #membersAndAdmin}<br>
-   * 3) {@link #hostedLocatorsAll}<br>
-   * 4) {@link #hostedLocatorsWithSharedConfiguration}<br>
-   */
-  private final Object membersLock = new Object();
-
-  /**
-   * The lock held while writing {@link #adminConsoles}.
-   */
-  private final Object adminConsolesLock = new Object();
-  /**
-   * The ids of all known admin consoles Uses Copy on Write. Writers must sync on adminConsolesLock.
-   * Readers don't need to sync.
-   */
-  private volatile Set<InternalDistributedMember> adminConsoles = Collections.emptySet();
 
   /** a map keyed on InternalDistributedMember, to direct channels to other systems */
   // protected final Map channelMap = CFactory.createCM();
@@ -304,6 +275,8 @@ public class ClusterDistributionManager implements DistributionManager {
   private final Object shutdownMutex = new Object();
 
   private final AlertingService alertingService;
+
+  private Object membersLock = new Object();
 
   ////////////////////// Static Methods //////////////////////
 
@@ -857,7 +830,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public DistributedMember getMemberWithName(String name) {
-    for (DistributedMember id : members.values()) {
+    for (DistributedMember id : getViewMembers()) {
       if (Objects.equals(id.getName(), name)) {
         return id;
       }
@@ -881,12 +854,8 @@ public class ClusterDistributionManager implements DistributionManager {
    * distribution managers.
    */
   @Override
-  public Set<InternalDistributedMember> getDistributionManagerIds() {
-    // access to members synchronized under membersLock in order to
-    // ensure serialization
-    synchronized (membersLock) {
-      return members.keySet();
-    }
+  public List<InternalDistributedMember> getDistributionManagerIds() {
+    return getViewMembers();
   }
 
   /**
@@ -1013,12 +982,8 @@ public class ClusterDistributionManager implements DistributionManager {
    * distribution managers.
    */
   @Override
-  public Set<InternalDistributedMember> getDistributionManagerIdsIncludingAdmin() {
-    // access to members synchronized under membersLock in order to
-    // ensure serialization
-    synchronized (membersLock) {
-      return membersAndAdmin;
-    }
+  public List<InternalDistributedMember> getDistributionManagerIdsIncludingAdmin() {
+    return getViewMembers();
   }
 
 
@@ -1055,18 +1020,15 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public InternalDistributedMember getCanonicalId(DistributedMember id) {
     // the members set is copy-on-write, so it is safe to iterate over it
-    InternalDistributedMember result = members.get(id);
-    if (result == null) {
-      return (InternalDistributedMember) id;
-    }
-    return result;
+    return membershipManager.getView().getCanonicalID(
+        (InternalDistributedMember) id);
   }
 
   /**
    * Add a membership listener and return other DistributionManagerIds as an atomic operation
    */
   @Override
-  public Set<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
+  public List<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
       MembershipListener l) {
     // switched sync order to fix bug 30360
     synchronized (membersLock) {
@@ -1076,7 +1038,7 @@ public class ClusterDistributionManager implements DistributionManager {
       addMembershipListener(l);
       // Note it is ok to return the members set
       // because we will never modify the returned set.
-      return members.keySet();
+      return getViewMembers();
     }
   }
 
@@ -1545,12 +1507,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public void addAdminConsole(InternalDistributedMember theId) {
-    logger.info("New administration member detected at {}.", theId);
-    synchronized (adminConsolesLock) {
-      HashSet<InternalDistributedMember> tmp = new HashSet<>(adminConsoles);
-      tmp.add(theId);
-      adminConsoles = Collections.unmodifiableSet(tmp);
-    }
+    // no-op: new members are added to the membership manager's view
   }
 
   @Override
@@ -1589,20 +1546,15 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   @Override
-  public Set<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(MembershipListener l) {
-    MembershipManager mgr = membershipManager;
-    mgr.getViewLock().writeLock().lock();
-    try {
-      synchronized (membersLock) {
-        // Don't let the members come and go while we are adding this
-        // listener. This ensures that the listener (probably a
-        // ReplyProcessor) gets a consistent view of the members.
-        addAllMembershipListener(l);
-        return getDistributionManagerIdsIncludingAdmin();
-      }
-    } finally {
-      mgr.getViewLock().writeLock().unlock();
-    }
+  public List<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(
+      MembershipListener l) {
+    return membershipManager.withViewLock((manager) -> {
+      // Don't let the members come and go while we are adding this
+      // listener. This ensures that the listener (probably a
+      // ReplyProcessor) gets a consistent view of the members.
+      addAllMembershipListener(l);
+      return membershipManager.getView().getMembers();
+    });
   }
 
   /**
@@ -1829,47 +1781,14 @@ public class ClusterDistributionManager implements DistributionManager {
     String reason = p_reason;
     boolean result = false; // initialization shouldn't be required, but...
 
-    // Test once before acquiring the lock, fault tolerance for potentially
-    // recursive (and deadlock) conditions -- bug33626
-    // Note that it is always safe to _read_ {@link members} without locking
     if (isCurrentMember(theId)) {
-      // Destroy underlying member's resources
       reason = prettifyReason(reason);
-      synchronized (membersLock) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("DistributionManager: removing member <{}>; crashed {}; reason = {}", theId,
-              crashed, reason);
-        }
-        Map<InternalDistributedMember, InternalDistributedMember> tmp = new HashMap<>(members);
-        if (tmp.remove(theId) != null) {
-          // Note we don't modify in place. This allows reader to get snapshots
-          // without locking.
-          if (tmp.isEmpty()) {
-            tmp = Collections.emptyMap();
-          } else {
-            tmp = Collections.unmodifiableMap(tmp);
-          }
-          members = tmp;
-          result = true;
-
-        } else {
-          result = false;
-          // Don't get upset since this can happen twice due to
-          // an explicit remove followed by an implicit one caused
-          // by a JavaGroup view change
-        }
-        Set<InternalDistributedMember> tmp2 = new HashSet<>(membersAndAdmin);
-        if (tmp2.remove(theId)) {
-          if (tmp2.isEmpty()) {
-            tmp2 = Collections.emptySet();
-          } else {
-            tmp2 = Collections.unmodifiableSet(tmp2);
-          }
-          membersAndAdmin = tmp2;
-        }
-        removeHostedLocators(theId);
-      } // synchronized
-    } // if
+      if (logger.isDebugEnabled()) {
+        logger.debug("DistributionManager: removing member <{}>; crashed {}; reason = {}", theId,
+            crashed, reason);
+      }
+      removeHostedLocators(theId);
+    }
 
     redundancyZones.remove(theId);
 
@@ -1884,41 +1803,19 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    */
   private void handleManagerStartup(InternalDistributedMember theId) {
-    HashMap<InternalDistributedMember, InternalDistributedMember> tmp;
-    synchronized (membersLock) {
-      // Note test is under membersLock
-      if (members.containsKey(theId)) {
-        return; // already accounted for
-      }
-
-      // Note we don't modify in place. This allows reader to get snapshots
-      // without locking.
-      tmp = new HashMap<>(members);
-      tmp.put(theId, theId);
-      members = Collections.unmodifiableMap(tmp);
-
-      Set<InternalDistributedMember> stmp = new HashSet<>(membersAndAdmin);
-      stmp.add(theId);
-      membersAndAdmin = Collections.unmodifiableSet(stmp);
-    } // synchronized
-
+    // Note test is under membersLock
+    if (membershipManager.getView().contains(theId)) {
+      return; // already accounted for
+    }
     if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
       stats.incNodes(1);
     }
-    logger.info("Admitting member <{}>. Now there are {} non-admin member(s).",
-        theId, tmp.size());
     addMemberEvent(new MemberJoinedEvent(theId));
   }
 
   @Override
   public boolean isCurrentMember(DistributedMember id) {
-    Set m;
-    synchronized (membersLock) {
-      // access to members synchronized under membersLock in order to
-      // ensure serialization
-      m = membersAndAdmin;
-    }
-    return m.contains(id);
+    return membershipManager.getView().contains(id);
   }
 
   /**
@@ -1926,27 +1823,11 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    */
   private void handleConsoleStartup(InternalDistributedMember theId) {
-    // if we have an all listener then notify it NOW.
-    HashSet<InternalDistributedMember> tmp;
-    synchronized (membersLock) {
-      // Note test is under membersLock
-      if (membersAndAdmin.contains(theId))
-        return; // already accounted for
-
-      // Note we don't modify in place. This allows reader to get snapshots
-      // without locking.
-      tmp = new HashSet<>(membersAndAdmin);
-      tmp.add(theId);
-      membersAndAdmin = Collections.unmodifiableSet(tmp);
-    } // synchronized
-
     for (MembershipListener listener : allMembershipListeners) {
       listener.memberJoined(this, theId);
     }
     logger.info("DMMembership: Admitting new administration member < {} >.",
         theId);
-    // Note that we don't add the member to the list of admin consoles until
-    // we receive a message from them.
   }
 
   /**
@@ -1974,64 +1855,10 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   public void handleConsoleShutdown(InternalDistributedMember theId, boolean crashed,
       String reason) {
-    boolean removedConsole = false;
-    boolean removedMember = false;
-    synchronized (membersLock) {
-      // to fix bug 39747 we can only remove this member from
-      // membersAndAdmin if it is not in members.
-      // This happens when we have an admin member colocated with a normal DS.
-      // In this case we need for the normal DS to shutdown or crash.
-      if (!members.containsKey(theId)) {
-        if (logger.isDebugEnabled())
-          logger.debug("DistributionManager: removing admin member <{}>; crashed = {}; reason = {}",
-              theId, crashed, reason);
-        Set<InternalDistributedMember> tmp = new HashSet<>(membersAndAdmin);
-        if (tmp.remove(theId)) {
-          // Note we don't modify in place. This allows reader to get snapshots
-          // without locking.
-          if (tmp.isEmpty()) {
-            tmp = Collections.emptySet();
-          } else {
-            tmp = Collections.unmodifiableSet(tmp);
-          }
-          membersAndAdmin = tmp;
-          removedMember = true;
-        } else {
-          // Don't get upset since this can happen twice due to
-          // an explicit remove followed by an implicit one caused
-          // by a JavaGroup view change
-        }
-      }
-      removeHostedLocators(theId);
+    removeHostedLocators(theId);
+    for (MembershipListener listener : allMembershipListeners) {
+      listener.memberDeparted(this, theId, crashed);
     }
-    synchronized (adminConsolesLock) {
-      if (adminConsoles.contains(theId)) {
-        removedConsole = true;
-        Set<InternalDistributedMember> tmp = new HashSet<>(adminConsoles);
-        tmp.remove(theId);
-        if (tmp.isEmpty()) {
-          tmp = Collections.emptySet();
-        } else {
-          tmp = Collections.unmodifiableSet(tmp);
-        }
-        adminConsoles = tmp;
-      }
-    }
-    if (removedMember) {
-      for (MembershipListener listener : allMembershipListeners) {
-        listener.memberDeparted(this, theId, crashed);
-      }
-    }
-    if (removedConsole) {
-      String msg;
-      if (crashed) {
-        msg = "Administration member at {} crashed: {}";
-      } else {
-        msg = "Administration member at {} closed: {}";
-      }
-      logger.info(msg, new Object[] {theId, reason});
-    }
-
     redundancyZones.remove(theId);
   }
 
@@ -2394,14 +2221,16 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public Set<InternalDistributedMember> getAdminMemberSet() {
-    return adminConsoles;
+    return membershipManager.getView().getMembers().stream()
+        .filter((id) -> id.getVmKind() == ADMIN_ONLY_DM_TYPE).collect(
+            Collectors.toSet());
   }
 
   /** Returns count of members filling the specified role */
   @Override
   public int getRoleCount(Role role) {
     int count = 0;
-    Set<InternalDistributedMember> mbrs = getDistributionManagerIds();
+    List<InternalDistributedMember> mbrs = getDistributionManagerIds();
     for (InternalDistributedMember mbr : mbrs) {
       Set<Role> roles = (mbr).getRoles();
       for (Role mbrRole : roles) {
@@ -2417,7 +2246,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /** Returns true if at least one member is filling the specified role */
   @Override
   public boolean isRolePresent(Role role) {
-    Set<InternalDistributedMember> mbrs = getDistributionManagerIds();
+    List<InternalDistributedMember> mbrs = getDistributionManagerIds();
     for (InternalDistributedMember mbr : mbrs) {
       Set<Role> roles = mbr.getRoles();
       for (Role mbrRole : roles) {
@@ -2433,7 +2262,7 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public Set<Role> getAllRoles() {
     Set<Role> allRoles = new HashSet<>();
-    Set<InternalDistributedMember> mbrs = getDistributionManagerIds();
+    List<InternalDistributedMember> mbrs = getDistributionManagerIds();
     for (InternalDistributedMember mbr : mbrs) {
       allRoles.addAll(mbr.getRoles());
     }
@@ -2779,14 +2608,14 @@ public class ClusterDistributionManager implements DistributionManager {
    * @since GemFire 5.9
    */
   @Override
-  public Set<InternalDistributedMember> getMembersInThisZone() {
+  public List<InternalDistributedMember> getMembersInThisZone() {
     return getMembersInSameZone(getDistributionManagerId());
   }
 
   @Override
-  public Set<InternalDistributedMember> getMembersInSameZone(
+  public List<InternalDistributedMember> getMembersInSameZone(
       InternalDistributedMember targetMember) {
-    Set<InternalDistributedMember> buddyMembers = new HashSet<>();
+    List<InternalDistributedMember> buddyMembers = new LinkedList<>();
     if (!redundancyZones.isEmpty()) {
       synchronized (redundancyZones) {
         String targetZone = redundancyZones.get(targetMember);
@@ -2896,33 +2725,17 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   @Override
-  public Set<InternalDistributedMember> getNormalDistributionManagerIds() {
-    // access to members synchronized under membersLock in order to
-    // ensure serialization
-    synchronized (membersLock) {
-      HashSet<InternalDistributedMember> result = new HashSet<>();
-      for (InternalDistributedMember m : members.keySet()) {
-        if (m.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
-          result.add(m);
-        }
-      }
-      return result;
-    }
+  public List<InternalDistributedMember> getNormalDistributionManagerIds() {
+    return membershipManager.getView().getMembers().stream()
+        .filter((id) -> id.getVmKind() != LOCATOR_DM_TYPE).collect(
+            Collectors.toList());
   }
 
   /** test method to get the member IDs of all locators in the distributed system */
   public Set<InternalDistributedMember> getLocatorDistributionManagerIds() {
-    // access to members synchronized under membersLock in order to
-    // ensure serialization
-    synchronized (membersLock) {
-      HashSet<InternalDistributedMember> result = new HashSet<>();
-      for (InternalDistributedMember m : members.keySet()) {
-        if (m.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
-          result.add(m);
-        }
-      }
-      return result;
-    }
+    return membershipManager.getView().getMembers().stream()
+        .filter((id) -> id.getVmKind() == LOCATOR_DM_TYPE).collect(
+            Collectors.toSet());
   }
 
   @Override

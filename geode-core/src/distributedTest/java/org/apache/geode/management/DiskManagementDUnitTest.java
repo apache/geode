@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -300,7 +301,7 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   private void compactDiskStoresRemote(final VM managerVM, final int memberCount) {
     managerVM.invoke("compactDiskStoresRemote", () -> {
-      Set<DistributedMember> otherMemberSet = this.managementTestRule.getOtherNormalMembers();
+      List<DistributedMember> otherMemberSet = this.managementTestRule.getOtherNormalMembers();
       assertThat(otherMemberSet.size()).isEqualTo(memberCount);
 
       SystemManagementService service = this.managementTestRule.getSystemManagementService();

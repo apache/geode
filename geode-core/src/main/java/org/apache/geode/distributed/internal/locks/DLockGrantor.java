@@ -873,7 +873,7 @@ public class DLockGrantor {
 
     try {
       synchronized (this.grantTokens) {
-        Set members = this.dlock.getDistributionManager().getDistributionManagerIds();
+        List members = this.dlock.getDistributionManager().getDistributionManagerIds();
 
         final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS_VERBOSE);
         for (Iterator iter = tokens.iterator(); iter.hasNext();) {

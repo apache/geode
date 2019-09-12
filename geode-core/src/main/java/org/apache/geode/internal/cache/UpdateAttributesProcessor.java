@@ -192,7 +192,7 @@ public class UpdateAttributesProcessor {
      * @since GemFire 5.7
      */
     @Override
-    protected Set addListenerAndGetMembers() {
+    protected List addListenerAndGetMembers() {
       DistributionAdvisor da = UpdateAttributesProcessor.this.advisee.getDistributionAdvisor();
       if (da.useAdminMembersForDefault()) {
         return getDistributionManager().addAllMembershipListenerAndGetAllIds(this);
@@ -223,7 +223,7 @@ public class UpdateAttributesProcessor {
      * @since GemFire 5.7
      */
     @Override
-    protected Set getDistributionManagerIds() {
+    protected List getDistributionManagerIds() {
       DistributionAdvisor da = UpdateAttributesProcessor.this.advisee.getDistributionAdvisor();
       if (da.useAdminMembersForDefault()) {
         return getDistributionManager().getDistributionManagerIdsIncludingAdmin();

@@ -168,7 +168,7 @@ public class PersistentMemberManager {
     // Add a membership listener to make sure we cancel the pending
     // revoke if the sender goes away.
     // DO this outside the synch block to avoid lock ordering issues.
-    Set members = dm.addMembershipListenerAndGetDistributionManagerIds(membershipListener);
+    List members = dm.addMembershipListenerAndGetDistributionManagerIds(membershipListener);
     if (!members.contains(sender) && sender.equals(dm.getId())) {
       cancelRevoke(pattern);
       return false;

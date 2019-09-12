@@ -20,6 +20,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -69,7 +70,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
    * <p>
    * This method should block until transfer of lock grantor has completed.
    */
-  static boolean recoverLockGrantor(Set members, DLockService service, DLockGrantor newGrantor,
+  static boolean recoverLockGrantor(List members, DLockService service, DLockGrantor newGrantor,
       DistributionManager dm, InternalDistributedMember elder) {
     // proc will wait for replies from everyone including THIS member...
     DLockRecoverGrantorProcessor processor =
@@ -114,7 +115,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   // -------------------------------------------------------------------------
 
   /** Creates a new instance of DLockRecoverGrantorProcessor */
-  private DLockRecoverGrantorProcessor(DistributionManager dm, Set members,
+  private DLockRecoverGrantorProcessor(DistributionManager dm, List members,
       DLockGrantor newGrantor) {
     super(dm, members);
     this.dm = dm;

@@ -16,6 +16,7 @@
 package org.apache.geode.internal.cache;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -39,7 +40,7 @@ class PartitionedRegionBucketMgmtHelper {
     if (b.getDistributionManager().enforceUniqueZone()) {
       Set<InternalDistributedMember> hostingMembers = b.getBucketOwners();
       Set<InternalDistributedMember> buddyMembers =
-          b.getDistributionManager().getMembersInThisZone();
+          new HashSet(b.getDistributionManager().getMembersInThisZone());
       boolean disjoint = Collections.disjoint(hostingMembers, buddyMembers);
       boolean sourceIsOneThisHost = moveSource != null && buddyMembers.contains(moveSource);
       return disjoint || sourceIsOneThisHost;

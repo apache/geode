@@ -22,7 +22,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,7 +53,7 @@ public class BackupServiceTest {
     when(cache.getInternalDistributedSystem()).thenReturn(distributedSystem);
     when(distributedMember.toString()).thenReturn("member");
     when(distributionManager.addAllMembershipListenerAndGetAllIds(any()))
-        .thenReturn(new HashSet<>(Arrays.asList(sender)));
+        .thenReturn(Arrays.asList(sender));
 
     backupService = new BackupService(cache);
   }

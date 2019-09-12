@@ -20,8 +20,8 @@ import static org.apache.geode.management.internal.MBeanJMXAdapter.getLockServic
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.management.ObjectName;
 
@@ -96,7 +96,7 @@ public class DLockManagementDUnitTest implements Serializable {
 
   private void verifyProxyCleanupInManager(final VM managerVM) {
     managerVM.invoke("verifyProxyCleanupInManager", () -> {
-      Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+      List<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
       SystemManagementService service = this.managementTestRule.getSystemManagementService();
 
       for (final DistributedMember member : otherMembers) {
@@ -183,7 +183,7 @@ public class DLockManagementDUnitTest implements Serializable {
    */
   private void verifyLockServiceMXBeanInManager(final VM managerVM) throws Exception {
     managerVM.invoke("verifyLockServiceMXBeanInManager", () -> {
-      Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
+      List<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
 
       for (DistributedMember member : otherMembers) {
         LockServiceMXBean lockServiceMXBean =

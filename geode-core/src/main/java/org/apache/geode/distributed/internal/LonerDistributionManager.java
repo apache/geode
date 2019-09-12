@@ -89,7 +89,7 @@ public class LonerDistributionManager implements DistributionManager {
     this.system = system;
     this.logger = logger;
     this.localAddress = generateMemberId();
-    this.allIds = Collections.singleton(localAddress);
+    this.allIds = Collections.singletonList(localAddress);
     this.viewMembers = new ArrayList<>(allIds);
     DistributionStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
 
@@ -118,7 +118,7 @@ public class LonerDistributionManager implements DistributionManager {
 
   private final InternalDistributedMember localAddress;
 
-  private final Set<InternalDistributedMember> allIds;// = Collections.singleton(id);
+  private final List<InternalDistributedMember> allIds;
   private final List<InternalDistributedMember> viewMembers;
   private ConcurrentMap<InternalDistributedMember, InternalDistributedMember> canonicalIds =
       new ConcurrentHashMap<>();
@@ -140,12 +140,12 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  public Set<InternalDistributedMember> getDistributionManagerIds() {
+  public List<InternalDistributedMember> getDistributionManagerIds() {
     return allIds;
   }
 
   @Override
-  public Set<InternalDistributedMember> getDistributionManagerIdsIncludingAdmin() {
+  public List<InternalDistributedMember> getDistributionManagerIdsIncludingAdmin() {
     return allIds;
   }
 
@@ -211,14 +211,15 @@ public class LonerDistributionManager implements DistributionManager {
 
 
   @Override
-  public Set<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
+  public List<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
       MembershipListener l) {
     // return getOtherDistributionManagerIds();
     return allIds;
   }
 
   @Override
-  public Set<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(MembershipListener l) {
+  public List<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(
+      MembershipListener l) {
     return allIds;
   }
 
@@ -1319,7 +1320,7 @@ public class LonerDistributionManager implements DistributionManager {
    * @since GemFire 5.9
    */
   @Override
-  public Set<InternalDistributedMember> getMembersInThisZone() {
+  public List<InternalDistributedMember> getMembersInThisZone() {
     return this.allIds;
   }
 
@@ -1353,9 +1354,9 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  public Set<InternalDistributedMember> getMembersInSameZone(
+  public List<InternalDistributedMember> getMembersInSameZone(
       InternalDistributedMember acceptedMember) {
-    return Collections.singleton(acceptedMember);
+    return Collections.singletonList(acceptedMember);
   }
 
   @Override
@@ -1391,7 +1392,7 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  public Set<InternalDistributedMember> getNormalDistributionManagerIds() {
+  public List<InternalDistributedMember> getNormalDistributionManagerIds() {
     return getDistributionManagerIds();
   }
 

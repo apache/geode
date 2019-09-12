@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -776,7 +777,7 @@ public class StateFlushOperation {
     }
 
     @Override
-    protected void processActiveMembers(Set activeMembers) {
+    protected void processActiveMembers(List activeMembers) {
       super.processActiveMembers(activeMembers);
       if (!activeMembers.contains(this.targetMember)) {
         targetMemberHasLeft = true;

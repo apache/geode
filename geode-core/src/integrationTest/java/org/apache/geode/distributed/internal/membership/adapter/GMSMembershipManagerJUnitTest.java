@@ -41,7 +41,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -464,10 +463,10 @@ public class GMSMembershipManagerJUnitTest {
     when(dm.getCancelCriterion()).thenReturn(stopper);
     when(dm.getMembershipManager()).thenReturn(manager);
     when(dm.getViewMembers()).thenReturn(members);
-    when(dm.getDistributionManagerIds()).thenReturn(new HashSet(members));
+    when(dm.getDistributionManagerIds()).thenReturn(members);
     when(dm.addMembershipListenerAndGetDistributionManagerIds(any(
         org.apache.geode.distributed.internal.MembershipListener.class)))
-            .thenReturn(new HashSet(members));
+            .thenReturn(members);
 
     manager.getGMSManager().start();
     manager.getGMSManager().started();

@@ -44,8 +44,9 @@ public class MemberFunctionExecutor extends AbstractExecution {
   private ServerToClientFunctionResultSender sender;
 
   MemberFunctionExecutor(DistributedSystem distributedSystem) {
-    this(distributedSystem, ((InternalDistributedSystem) distributedSystem).getDistributionManager()
-        .getNormalDistributionManagerIds());
+    this(distributedSystem,
+        new HashSet(((InternalDistributedSystem) distributedSystem).getDistributionManager()
+            .getNormalDistributionManagerIds()));
   }
 
   MemberFunctionExecutor(DistributedSystem distributedSystem, DistributedMember distributedMember) {
