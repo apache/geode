@@ -53,7 +53,8 @@ public interface ClusterManagementService extends AutoCloseable {
    * This method will update the element on all the applicable members in the cluster and persist
    * the updated configuration in the cluster configuration if persistence is enabled.
    *
-   * @param config this holds the name or id of the element to be updated on the cluster
+   * @param config this holds the configuration attributes of the element to be updated on the
+   *        cluster, as well as the group this config belongs to
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the update
    * @throws ClusterManagementRealizationException if unsuccessful
    */

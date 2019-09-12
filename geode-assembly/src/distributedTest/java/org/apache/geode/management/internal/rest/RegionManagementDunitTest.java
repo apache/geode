@@ -20,6 +20,8 @@ import static org.apache.geode.test.junit.assertions.ClusterManagementRealizatio
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -265,7 +267,7 @@ public class RegionManagementDunitTest {
       assertThat(attributes.getCustomEntryTimeToLive()).isNull();
     });
 
-    Region regionResult = cms.get(region).getConfigResult().get(0);
+    Region regionResult = cms.get(region).getConfigResult();
     List<Region.Expiration> expirations = regionResult.getExpirations();
     assertThat(expirations).hasSize(2);
     assertThat(expirations.get(0).getTimeInSeconds()).isEqualTo(10000);

@@ -18,8 +18,6 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.management.configuration.Region.REGION_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -38,7 +36,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.runtime.RuntimeInfo;

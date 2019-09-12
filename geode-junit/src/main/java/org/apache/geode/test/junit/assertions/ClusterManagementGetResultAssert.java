@@ -15,26 +15,23 @@
 
 package org.apache.geode.test.junit.assertions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.api.ListAssert;
+import org.assertj.core.api.ObjectAssert;
+
 import org.apache.geode.management.api.ClusterManagementGetResult;
-import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.RuntimeInfo;
-import org.assertj.core.api.AbstractAssert;
-import org.assertj.core.api.Assert;
-import org.assertj.core.api.ListAssert;
-import org.assertj.core.api.ObjectAssert;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class ClusterManagementGetResultAssert<T extends AbstractConfiguration<R>, R extends RuntimeInfo>
     extends
     AbstractAssert<ClusterManagementGetResultAssert<T, R>, ClusterManagementGetResult<T, R>> {
   public ClusterManagementGetResultAssert(
-          ClusterManagementGetResult<T, R> clusterManagementResult, Class<?> selfType) {
+      ClusterManagementGetResult<T, R> clusterManagementResult, Class<?> selfType) {
     super(clusterManagementResult, selfType);
   }
 
