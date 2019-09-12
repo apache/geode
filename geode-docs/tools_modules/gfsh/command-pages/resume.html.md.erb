@@ -1,5 +1,5 @@
 ---
-title:  resume gateway-sender
+title:  resume
 ---
 
 <!--
@@ -19,9 +19,51 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Resume any gateway senders that you have paused.
+<a id="topic_resume_command"></a>
 
-Resume the gateway sender on a member or members.
+
+Modify an existing <%=vars.product_name%> resource.
+
+-   **[resume async-event-queue-dispatcher](#topic_resume_async_event_queue_dispatcher)**
+
+    Resumes dispatching of events on a specified asynchronous event queue which is currently in a paused state.
+
+-   **[resume gateway-sender](#topic_resume_gateway_sender)**
+
+    Resumes specified gateway sender that is currently in a paused state.
+
+## <a id="topic_resume_async_event_queue_dispatcher" class="no-quick-link"></a>resume async-event-queue-dispatcher
+
+Resumes dispatching of events on a specified asynchronous event queue which is currently in a paused state.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+resume async-event-queue-dispatcher --id=value [--groups=value(,value)*]
+[--members=value(,value)*]
+```
+
+<a id="concept_resume_async_event_queue_dispatcher__table_rwp_vbg_2w"></a>
+
+| Name                                           | Description                                                  |
+|------------------------------------------------|--------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-id</span>     | *Required.* ID of the Asynchronous Event Queue.          |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to resume event dispatching for this queue.   |
+| <span class="keyword parmname">\\-\\-members</span> | Name/Id of the member(s) on which to resume event dispatching for this queue. |
+
+**Example Commands:**
+
+``` pre
+resume async-event-queue-dispatcher --id=sender1-LN --groups=LN-Group1
+```
+
+## <a id="topic_resume_gateway_sender" class="no-quick-link"></a>resume gateway-sender
+
+Resumes any gateway senders that you have paused.
+
+Resumes the gateway sender on a member or members.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -39,8 +81,6 @@ resume gateway-sender --id=value [--groups=value(,value)*]
 | <span class="keyword parmname">\\-\\-id</span>     | *Required.* ID of the Gateway Sender.                        |
 | <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to resume the Gateway Sender.   |
 | <span class="keyword parmname">\\-\\-members</span> | Name/Id of the member(s) on which to resume the Gateway Sender. |
-
-<span class="tablecap">Table 1. Resume Gateway-Sender Parameters</span>
 
 **Example Commands:**
 
