@@ -68,7 +68,7 @@ public class AvgBucketNodeTest {
 
     Object result = avgBucketNode.terminate();
     assertThat(result).isInstanceOf(Object[].class);
-    assertThat(((Integer) ((Object[]) result)[0]).intValue()).isEqualTo(7);
+    assertThat(((Long) ((Object[]) result)[0]).intValue()).isEqualTo(7);
     assertThat(((Number) ((Object[]) result)[1]).intValue()).isEqualTo(28);
   }
 }

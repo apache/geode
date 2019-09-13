@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal.aggregate;
 
+import static org.apache.geode.cache.query.internal.aggregate.AbstractAggregator.downCast;
+
 import org.apache.geode.cache.query.Aggregator;
 import org.apache.geode.cache.query.QueryService;
 
@@ -21,9 +23,9 @@ import org.apache.geode.cache.query.QueryService;
  * Computes the count of the non distinct rows for replicated & PR based queries.
  */
 public class Count implements Aggregator {
-  private int count = 0;
+  private long count = 0;
 
-  int getCount() {
+  long getCount() {
     return count;
   }
 
@@ -39,6 +41,6 @@ public class Count implements Aggregator {
 
   @Override
   public Object terminate() {
-    return count;
+    return downCast(count);
   }
 }
