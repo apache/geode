@@ -26,15 +26,15 @@ Modify an existing <%=vars.product_name%> resource.
 
 -   **[resume async-event-queue-dispatcher](#topic_resume_async_event_queue_dispatcher)**
 
-    Resumes dispatching of events from the queue to the listener(s) for a specified asynchronous event queue which is currently in a paused state.
+    Resume dispatching of events from the queue to the listener(s) for a specified asynchronous event queue which is currently in a paused state.
 
 -   **[resume gateway-sender](#topic_resume_gateway_sender)**
 
-    Resumes specified gateway sender that is currently in a paused state.
+    Resume specified gateway sender that is currently in a paused state.
 
 ## <a id="topic_resume_async_event_queue_dispatcher" class="no-quick-link"></a>resume async-event-queue-dispatcher
 
-Resumes dispatching of events on a specified asynchronous event queue which is currently in a paused state.
+Resume dispatching of events on a specified asynchronous event queue which is currently in a paused state.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
@@ -56,14 +56,12 @@ resume async-event-queue-dispatcher --id=value [--groups=value(,value)*]
 **Example Commands:**
 
 ``` pre
-resume async-event-queue-dispatcher --id=sender1-LN --groups=LN-Group1
+resume async-event-queue-dispatcher --id=AEQ1 --groups=Group1
 ```
 
 ## <a id="topic_resume_gateway_sender" class="no-quick-link"></a>resume gateway-sender
 
-Resumes any gateway senders that you have paused.
-
-Resumes the gateway sender on a member or members.
+Resume a gateway sender which is currently in a paused sate.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
