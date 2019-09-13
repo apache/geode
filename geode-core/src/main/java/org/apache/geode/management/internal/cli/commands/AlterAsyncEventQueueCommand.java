@@ -68,9 +68,6 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand implements
   static final String BATCH_TIME_INTERVAL_HELP = CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL__HELP;
   static final String MAXIMUM_QUEUE_MEMORY_HELP =
       CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY__HELP;
-  static final String PAUSE_EVENT_PROCESSING = "pause-event-processing";
-  static final String PAUSE_EVENT_PROCESSING_HELP =
-      "Pause event processing when the async event queue is created";
 
   @CliCommand(value = COMMAND_NAME, help = COMMAND_HELP)
   @CliMetaData(
@@ -83,10 +80,7 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand implements
           help = BATCH_TIME_INTERVAL_HELP) Integer batchTimeInterval,
       @CliOption(key = MAX_QUEUE_MEMORY, help = MAXIMUM_QUEUE_MEMORY_HELP) Integer maxQueueMemory,
       @CliOption(key = IFEXISTS, help = IFEXISTS_HELP, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean ifExists,
-      @CliOption(key = PAUSE_EVENT_PROCESSING, help = PAUSE_EVENT_PROCESSING_HELP,
-          specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false") boolean pauseEventProcessing)
+          unspecifiedDefaultValue = "false") boolean ifExists)
       throws IOException, SAXException, ParserConfigurationException, TransformerException,
       EntityNotFoundException {
 
@@ -104,7 +98,6 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand implements
 
     CacheConfig.AsyncEventQueue aeqConfiguration = new CacheConfig.AsyncEventQueue();
     aeqConfiguration.setId(id);
-    aeqConfiguration.setPauseEventProcessing(pauseEventProcessing);
 
     if (batchSize != null) {
       aeqConfiguration.setBatchSize(batchSize + "");
@@ -169,9 +162,6 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand implements
 
         if (StringUtils.isNotBlank(aeqConfiguration.getMaximumQueueMemory())) {
           queue.setMaximumQueueMemory(aeqConfiguration.getMaximumQueueMemory());
-        }
-        if (aeqConfiguration.isPauseEventProcessing() != null) {
-          queue.setPauseEventProcessing(aeqConfiguration.isPauseEventProcessing());
         }
         aeqConfigsHaveBeenUpdated = true;
       }
