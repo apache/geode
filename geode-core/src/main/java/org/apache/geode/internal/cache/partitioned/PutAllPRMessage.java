@@ -232,7 +232,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
       final Version version = InternalDataSerializer.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.putAllPRDataSize; i++) {
-        this.putAllPRData[i] = new PutAllEntryData(in, null, i, version, bytesIn);
+        this.putAllPRData[i] = new PutAllEntryData(in, context, null, i, version, bytesIn);
       }
 
       boolean hasTags = in.readBoolean();
@@ -274,7 +274,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
         VersionTag<?> tag = putAllPRData[i].versionTag;
         versionTags.add(tag);
         putAllPRData[i].versionTag = null;
-        putAllPRData[i].toData(out);
+        putAllPRData[i].toData(out, context);
         putAllPRData[i].versionTag = tag;
         // PutAllEntryData's toData did not serialize eventID to save
         // performance for DR, but in PR,
@@ -299,8 +299,9 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected void setBooleans(short s, DataInput in) throws IOException, ClassNotFoundException {
-    super.setBooleans(s, in);
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setBooleans(s, in, context);
     this.skipCallbacks = ((s & SKIP_CALLBACKS) != 0);
   }
 

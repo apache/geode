@@ -630,8 +630,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   }
 
   @Override
-  protected void setBooleans(short s, DataInput in) throws IOException, ClassNotFoundException {
-    super.setBooleans(s, in);
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setBooleans(s, in, context);
     this.ifNew = ((s & IF_NEW) != 0);
     this.ifOld = ((s & IF_OLD) != 0);
     this.requireOldValue = ((s & REQUIRED_OLD_VAL) != 0);

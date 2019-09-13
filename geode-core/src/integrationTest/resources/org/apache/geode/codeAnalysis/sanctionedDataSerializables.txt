@@ -56,7 +56,7 @@ toData,56
 
 org/apache/geode/cache/client/internal/locator/QueueConnectionRequest,2
 fromData,41
-toData,41
+toData,49
 
 org/apache/geode/cache/client/internal/locator/QueueConnectionResponse,2
 fromData,41
@@ -67,24 +67,24 @@ fromData,9
 toData,9
 
 org/apache/geode/cache/query/internal/CqEntry,2
-fromData,17
-toData,17
+fromData,33
+toData,33
 
 org/apache/geode/cache/query/internal/CumulativeNonDistinctResults,2
-fromData,128
-toData,129
+fromData,144
+toData,145
 
 org/apache/geode/cache/query/internal/LinkedResultSet,2
-fromData,42
-toData,46
+fromData,58
+toData,62
 
 org/apache/geode/cache/query/internal/LinkedStructSet,2
-fromData,70
-toData,68
+fromData,86
+toData,84
 
 org/apache/geode/cache/query/internal/NWayMergeResults,2
-fromData,136
-toData,137
+fromData,152
+toData,153
 
 org/apache/geode/cache/query/internal/NullToken,2
 fromData,1
@@ -95,36 +95,36 @@ fromData,29
 toData,29
 
 org/apache/geode/cache/query/internal/ResultsBag,2
-fromData,108
-toData,119
+fromData,124
+toData,135
 
 org/apache/geode/cache/query/internal/ResultsCollectionWrapper,2
-fromData,55
-toData,60
+fromData,71
+toData,76
 
 org/apache/geode/cache/query/internal/ResultsSet,2
-fromData,52
-toData,73
+fromData,60
+toData,81
 
 org/apache/geode/cache/query/internal/SortedResultSet,2
-fromData,42
-toData,46
+fromData,58
+toData,62
 
 org/apache/geode/cache/query/internal/SortedStructSet,2
-fromData,59
-toData,66
+fromData,75
+toData,74
 
 org/apache/geode/cache/query/internal/StructBag,2
 fromData,17
 toData,17
 
 org/apache/geode/cache/query/internal/StructImpl,2
-fromData,74
-toData,17
+fromData,82
+toData,25
 
 org/apache/geode/cache/query/internal/StructSet,2
-fromData,60
-toData,46
+fromData,76
+toData,62
 
 org/apache/geode/cache/query/internal/Undefined,2
 fromData,1
@@ -187,8 +187,8 @@ fromData,28
 toData,25
 
 org/apache/geode/distributed/internal/StartupMessage,2
-fromData,296
-toData,333
+fromData,304
+toData,341
 
 org/apache/geode/distributed/internal/StartupResponseMessage,2
 fromData,231
@@ -228,7 +228,7 @@ toData,25
 
 org/apache/geode/distributed/internal/locks/DLockRemoteToken,2
 fromData,10
-toData,53
+toData,69
 
 org/apache/geode/distributed/internal/locks/DLockRequestProcessor$DLockRequestMessage,2
 fromData,135
@@ -818,16 +818,16 @@ fromData,14
 toData,14
 
 org/apache/geode/internal/admin/statalerts/GaugeThresholdDecoratorImpl,2
-fromData,28
-toData,22
+fromData,44
+toData,38
 
 org/apache/geode/internal/admin/statalerts/MultiAttrDefinitionImpl,2
 fromData,31
 toData,25
 
 org/apache/geode/internal/admin/statalerts/NumberThresholdDecoratorImpl,2
-fromData,25
-toData,22
+fromData,33
+toData,30
 
 org/apache/geode/internal/admin/statalerts/SingleAttrDefinitionImpl,2
 fromData,28
@@ -928,8 +928,8 @@ fromData,15
 toData,15
 
 org/apache/geode/internal/cache/DistTXPrecommitMessage$DistTXPrecommitReplyMessage,2
-fromData,18
-toData,15
+fromData,26
+toData,23
 
 org/apache/geode/internal/cache/DistTXPrecommitMessage$DistTxPrecommitResponse,2
 fromData,17
@@ -960,22 +960,22 @@ fromData,272
 toData,292
 
 org/apache/geode/internal/cache/DistributedPutAllOperation$PutAllEntryData,1
-toData,229
+toData,252
 
 org/apache/geode/internal/cache/DistributedPutAllOperation$PutAllMessage,2
-fromData,200
-toData,171
+fromData,217
+toData,188
 
 org/apache/geode/internal/cache/DistributedRegionFunctionStreamingMessage,2
 fromData,177
 toData,174
 
 org/apache/geode/internal/cache/DistributedRemoveAllOperation$RemoveAllEntryData,1
-toData,136
+toData,162
 
 org/apache/geode/internal/cache/DistributedRemoveAllOperation$RemoveAllMessage,2
-fromData,200
-toData,171
+fromData,217
+toData,188
 
 org/apache/geode/internal/cache/DistributedTombstoneOperation$TombstoneMessage,2
 fromData,128
@@ -986,8 +986,8 @@ fromData,17
 toData,17
 
 org/apache/geode/internal/cache/EntryEventImpl,2
-fromData,221
-toData,294
+fromData,277
+toData,358
 
 org/apache/geode/internal/cache/EntrySnapshot,2
 fromData,50
@@ -1012,8 +1012,8 @@ fromData,197
 toData,207
 
 org/apache/geode/internal/cache/FilterProfile$OperationMessage,2
-fromData,130
-toData,134
+fromData,138
+toData,142
 
 org/apache/geode/internal/cache/FilterRoutingInfo,4
 fromData,88
@@ -1072,20 +1072,20 @@ fromData,17
 toData,17
 
 org/apache/geode/internal/cache/InitialImageOperation$Entry,2
-fromData,89
-toData,101
+fromData,97
+toData,109
 
 org/apache/geode/internal/cache/InitialImageOperation$FilterInfoMessage,2
 fromData,231
 toData,285
 
 org/apache/geode/internal/cache/InitialImageOperation$ImageReplyMessage,2
-fromData,229
-toData,238
+fromData,237
+toData,246
 
 org/apache/geode/internal/cache/InitialImageOperation$InitialImageVersionedEntryList,2
-fromData,414
-toData,399
+fromData,422
+toData,407
 
 org/apache/geode/internal/cache/InitialImageOperation$RVVReplyMessage,2
 fromData,36
@@ -1100,8 +1100,8 @@ fromData,25
 toData,25
 
 org/apache/geode/internal/cache/InitialImageOperation$RequestImageMessage,2
-fromData,99
-toData,87
+fromData,131
+toData,119
 
 org/apache/geode/internal/cache/InitialImageOperation$RequestRVVMessage,2
 fromData,35
@@ -1127,7 +1127,7 @@ org/apache/geode/internal/cache/InvalidatePartitionedRegionMessage,4
 fromData,26
 fromDataPre_GEODE_1_9_0_0,23
 toData,23
-toDataPre_GEODE_1_9_0_0,15
+toDataPre_GEODE_1_9_0_0,23
 
 org/apache/geode/internal/cache/InvalidateRegionOperation$InvalidateRegionMessage,2
 fromData,18
@@ -1181,8 +1181,8 @@ org/apache/geode/internal/cache/QueuedOperation,1
 toData,78
 
 org/apache/geode/internal/cache/RegionEventImpl,2
-fromData,48
-toData,51
+fromData,56
+toData,59
 
 org/apache/geode/internal/cache/ReleaseClearLockMessage,2
 fromData,25
@@ -1250,7 +1250,7 @@ toData,9
 
 org/apache/geode/internal/cache/TXCommitMessage,2
 fromData,238
-toData,323
+toData,324
 
 org/apache/geode/internal/cache/TXCommitMessage$CommitProcessForLockIdMessage,2
 fromData,26
@@ -1270,7 +1270,7 @@ toData,17
 
 org/apache/geode/internal/cache/TXCommitMessage$RegionCommit,2
 fromData,164
-toData,82
+toData,86
 
 org/apache/geode/internal/cache/TXCommitMessage$RegionCommit$FarSideEntryOp,2
 fromData,171
@@ -1403,8 +1403,8 @@ fromData,69
 toData,88
 
 org/apache/geode/internal/cache/locks/TXLockIdImpl,2
-fromData,22
-toData,19
+fromData,30
+toData,27
 
 org/apache/geode/internal/cache/locks/TXLockUpdateParticipantsMessage,2
 fromData,41
@@ -1639,12 +1639,12 @@ fromData,66
 toData,66
 
 org/apache/geode/internal/cache/partitioned/PRUpdateEntryVersionMessage,2
-fromData,50
-toData,44
+fromData,74
+toData,68
 
 org/apache/geode/internal/cache/partitioned/PartitionMessage,2
-fromData,59
-toData,105
+fromData,60
+toData,113
 
 org/apache/geode/internal/cache/partitioned/PartitionedRegionFunctionStreamingMessage,2
 fromData,18
@@ -1659,8 +1659,8 @@ fromData,17
 toData,17
 
 org/apache/geode/internal/cache/partitioned/PutAllPRMessage,2
-fromData,186
-toData,200
+fromData,187
+toData,201
 
 org/apache/geode/internal/cache/partitioned/PutAllPRMessage$PutAllReplyMessage,2
 fromData,28
@@ -1687,8 +1687,8 @@ fromData,54
 toData,35
 
 org/apache/geode/internal/cache/partitioned/RemoveAllPRMessage,2
-fromData,193
-toData,200
+fromData,194
+toData,201
 
 org/apache/geode/internal/cache/partitioned/RemoveAllPRMessage$RemoveAllReplyMessage,2
 fromData,28
@@ -1782,28 +1782,28 @@ fromData,25
 toData,25
 
 org/apache/geode/internal/cache/snapshot/SnapshotPacket,2
-fromData,82
-toData,73
+fromData,90
+toData,81
 
 org/apache/geode/internal/cache/snapshot/SnapshotPacket$SnapshotRecord,2
 fromData,17
 toData,17
 
 org/apache/geode/internal/cache/tier/sockets/ClientDataSerializerMessage,2
-fromData,74
-toData,69
+fromData,82
+toData,85
 
 org/apache/geode/internal/cache/tier/sockets/ClientDenylistProcessor$ClientDenylistMessage,2
 fromData,25
 toData,25
 
 org/apache/geode/internal/cache/tier/sockets/ClientInstantiatorMessage,2
-fromData,74
-toData,69
+fromData,82
+toData,85
 
 org/apache/geode/internal/cache/tier/sockets/ClientInterestMessageImpl,2
-fromData,68
-toData,65
+fromData,84
+toData,81
 
 org/apache/geode/internal/cache/tier/sockets/ClientMarkerMessageImpl,2
 fromData,12
@@ -1826,47 +1826,47 @@ fromData,175
 toData,198
 
 org/apache/geode/internal/cache/tier/sockets/HAEventWrapper,2
-fromData,444
-toData,90
+fromData,460
+toData,106
 
 org/apache/geode/internal/cache/tier/sockets/InterestResultPolicyImpl,2
 fromData,8
 toData,11
 
 org/apache/geode/internal/cache/tier/sockets/ObjectPartList,2
-fromData,132
-toData,185
+fromData,148
+toData,201
 
 org/apache/geode/internal/cache/tier/sockets/ObjectPartList651,2
-fromData,149
-toData,207
+fromData,165
+toData,223
 
 org/apache/geode/internal/cache/tier/sockets/RemoveClientFromDenylistMessage,2
 fromData,15
 toData,15
 
 org/apache/geode/internal/cache/tier/sockets/SerializedObjectPartList,2
-fromData,149
-toData,214
+fromData,157
+toData,222
 
 org/apache/geode/internal/cache/tier/sockets/ServerInterestRegistrationMessage,2
 fromData,55
 toData,33
 
 org/apache/geode/internal/cache/tier/sockets/VersionedObjectList,4
-fromData,550
+fromData,558
 fromDataPre_GFE_8_0_0_0,7
 toDataPre_GFE_8_0_0_0,11
-toData,623
+toData,636
 
 org/apache/geode/internal/cache/tier/sockets/VersionedObjectList$Chunker,3
 fromData,10
-toData,40
+toData,41
 toDataPre_GFE_8_0_0_0,21
 
 org/apache/geode/internal/cache/tx/DistTxEntryEvent,2
-fromData,102
-toData,123
+fromData,104
+toData,125
 
 org/apache/geode/internal/cache/tx/RemoteClearMessage,2
 fromData,14
@@ -1929,12 +1929,12 @@ fromData,55
 toData,58
 
 org/apache/geode/internal/cache/tx/RemoteOperationMessage,2
-fromData,44
-toData,104
+fromData,45
+toData,112
 
 org/apache/geode/internal/cache/tx/RemotePutAllMessage,2
-fromData,226
-toData,179
+fromData,227
+toData,180
 
 org/apache/geode/internal/cache/tx/RemotePutAllMessage$PutAllReplyMessage,2
 fromData,18
@@ -1949,8 +1949,8 @@ fromData,84
 toData,95
 
 org/apache/geode/internal/cache/tx/RemoteRemoveAllMessage,2
-fromData,206
-toData,179
+fromData,207
+toData,180
 
 org/apache/geode/internal/cache/tx/RemoteRemoveAllMessage$RemoveAllReplyMessage,2
 fromData,18
@@ -2000,13 +2000,13 @@ toData,89
 
 org/apache/geode/internal/cache/wan/GatewaySenderEventImpl,4
 fromData,31
-fromDataPre_GEODE_1_9_0_0,183
+fromDataPre_GEODE_1_9_0_0,200
 toData,18
-toDataPre_GEODE_1_9_0_0,134
+toDataPre_GEODE_1_9_0_0,151
 
 org/apache/geode/internal/cache/wan/GatewaySenderQueueEntrySynchronizationOperation$GatewaySenderQueueEntrySynchronizationEntry,2
-fromData,20
-toData,17
+fromData,36
+toData,33
 
 org/apache/geode/internal/cache/wan/GatewaySenderQueueEntrySynchronizationOperation$GatewaySenderQueueEntrySynchronizationMessage,2
 fromData,33
@@ -2045,8 +2045,8 @@ fromData,1
 toData,1
 
 org/apache/geode/management/internal/JmxManagerLocatorResponse,2
-fromData,36
-toData,33
+fromData,44
+toData,41
 
 org/apache/geode/management/internal/ManagerStartupMessage,2
 fromData,17
@@ -2054,11 +2054,11 @@ toData,17
 
 org/apache/geode/management/internal/cli/functions/CliFunctionResult,6
 fromData,20
-fromDataPre_GEODE_1_6_0_0,70
-fromDataPre_GFE_8_0_0_0,31
+fromDataPre_GEODE_1_6_0_0,86
+fromDataPre_GFE_8_0_0_0,39
 toData,15
-toDataPre_GEODE_1_6_0_0,49
-toDataPre_GFE_8_0_0_0,25
+toDataPre_GEODE_1_6_0_0,65
+toDataPre_GFE_8_0_0_0,33
 
 org/apache/geode/management/internal/configuration/domain/Configuration,2
 fromData,49

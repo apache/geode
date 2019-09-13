@@ -19,7 +19,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.LuceneResultStruct;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -107,16 +106,16 @@ public class LuceneResultStructImpl<K, V>
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeObject(key, out);
-    DataSerializer.writeObject(value, out);
+    context.getSerializer().writeObject(key, out);
+    context.getSerializer().writeObject(value, out);
     out.writeFloat(score);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    key = DataSerializer.readObject(in);
-    value = DataSerializer.readObject(in);
+    key = context.getDeserializer().readObject(in);
+    value = context.getDeserializer().readObject(in);
     score = in.readFloat();
   }
 

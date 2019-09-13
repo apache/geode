@@ -374,9 +374,9 @@ public class SortedStructSet extends TreeSet
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.modifiable = in.readBoolean();
     int size = in.readInt();
-    this.structType = (StructTypeImpl) DataSerializer.readObject(in);
+    this.structType = (StructTypeImpl) context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
-      Object[] fieldValues = DataSerializer.readObject(in);
+      Object[] fieldValues = context.getDeserializer().readObject(in);
       this.addFieldValues(fieldValues);
     }
   }
@@ -387,7 +387,7 @@ public class SortedStructSet extends TreeSet
     // how do we serialize the comparator?
     out.writeBoolean(this.modifiable);
     out.writeInt(this.size());
-    DataSerializer.writeObject(this.structType, out);
+    context.getSerializer().writeObject(this.structType, out);
     for (Iterator i = this.fieldValuesIterator(); i.hasNext();) {
       Object[] fieldValues = (Object[]) i.next();
       DataSerializer.writeObjectArray(fieldValues, out);

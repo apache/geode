@@ -2008,7 +2008,7 @@ public class FilterProfile implements DataSerializableFixedID {
       } else {
         // For interest list.
         out.writeLong(this.clientID);
-        DataSerializer.writeObject(this.interest, out);
+        context.getSerializer().writeObject(this.interest, out);
       }
     }
 
@@ -2028,7 +2028,7 @@ public class FilterProfile implements DataSerializableFixedID {
         }
       } else {
         this.clientID = in.readLong();
-        this.interest = DataSerializer.readObject(in);
+        this.interest = context.getDeserializer().readObject(in);
       }
     }
 

@@ -83,7 +83,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
       throws IOException, ClassNotFoundException {
     Object name = DataSerializer.readObject(in);
     RemoteThread lesseeThread = null;
-    InternalDistributedMember lessee = (InternalDistributedMember) DataSerializer.readObject(in);
+    InternalDistributedMember lessee = DataSerializer.readObject(in);
     lesseeThread = new RemoteThread(lessee, in.readInt());
     int leaseId = in.readInt();
     long leaseExpireTime = in.readLong();
@@ -199,8 +199,8 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeObject(this.name, out);
-    DataSerializer.writeObject(this.lesseeThread.getDistributedMember(), out);
+    context.getSerializer().writeObject(this.name, out);
+    context.getSerializer().writeObject(this.lesseeThread.getDistributedMember(), out);
     out.writeInt(this.lesseeThread.getThreadId());
     out.writeInt(this.leaseId);
     out.writeLong(this.leaseExpireTime);

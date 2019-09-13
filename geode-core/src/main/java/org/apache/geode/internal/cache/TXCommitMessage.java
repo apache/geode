@@ -919,7 +919,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       if (regionsSize > 0) {
         for (int i = 0; i < this.regions.size(); i++) {
           RegionCommit rc = (RegionCommit) this.regions.get(i);
-          rc.toData(out, useShadowKey);
+          rc.toData(out, context, useShadowKey);
         }
       }
     }
@@ -1456,7 +1456,9 @@ public class TXCommitMessage extends PooledDistributionMessage
       return result.toString();
     }
 
-    private void basicToData(DataOutput out, boolean useShadowKey) throws IOException {
+    private void basicToData(DataOutput out,
+        SerializationContext context,
+        boolean useShadowKey) throws IOException {
       if (this.internalRegion != null) {
         DataSerializer.writeString(this.internalRegion.getFullPath(), out);
         if (this.internalRegion instanceof BucketRegion) {
@@ -1501,7 +1503,7 @@ public class TXCommitMessage extends PooledDistributionMessage
           DataSerializer.writeObject(this.opKeys.get(i), out);
           if (this.msg.txState != null) {
             /* we are still on tx node and have the entry state */
-            ((TXEntryState) this.opEntries.get(i)).toFarSideData(out, largeModCount,
+            ((TXEntryState) this.opEntries.get(i)).toFarSideData(out, context, largeModCount,
                 sendVersionTags, useShadowKey);
           } else {
             ((FarSideEntryOp) this.opEntries.get(i)).toData(out, largeModCount, sendVersionTags,
@@ -1512,18 +1514,19 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
 
-    public void toData(DataOutput out, boolean useShadowKey) throws IOException {
+    public void toData(DataOutput out, SerializationContext context, boolean useShadowKey)
+        throws IOException {
       if (this.preserializedBuffer != null) {
         this.preserializedBuffer.rewind();
         this.preserializedBuffer.sendTo(out);
       } else if (this.refCount > 1) {
         Version v = InternalDataSerializer.getVersionForDataStream(out);
         HeapDataOutputStream hdos = new HeapDataOutputStream(1024, v);
-        basicToData(hdos, useShadowKey);
+        basicToData(hdos, context, useShadowKey);
         this.preserializedBuffer = hdos;
         this.preserializedBuffer.sendTo(out);
       } else {
-        basicToData(out, useShadowKey);
+        basicToData(out, context, useShadowKey);
       }
     }
 

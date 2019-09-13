@@ -19,7 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Set;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.QueryException;
@@ -109,7 +108,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
       throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.callbackArg, out);
+    context.getSerializer().writeObject(this.callbackArg, out);
   }
 
   /*

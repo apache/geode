@@ -227,7 +227,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
       final Version version = InternalDataSerializer.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.removeAllPRDataSize; i++) {
-        this.removeAllPRData[i] = new RemoveAllEntryData(in, null, i, version, bytesIn);
+        this.removeAllPRData[i] = new RemoveAllEntryData(in, null, i, version, bytesIn, context);
       }
 
       boolean hasTags = in.readBoolean();
@@ -268,7 +268,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
         VersionTag<?> tag = removeAllPRData[i].versionTag;
         versionTags.add(tag);
         removeAllPRData[i].versionTag = null;
-        removeAllPRData[i].toData(out);
+        removeAllPRData[i].toData(out, context);
         removeAllPRData[i].versionTag = tag;
         // RemoveAllEntryData's toData did not serialize eventID to save
         // performance for DR, but in PR,
@@ -293,8 +293,9 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected void setBooleans(short s, DataInput in) throws IOException, ClassNotFoundException {
-    super.setBooleans(s, in);
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.setBooleans(s, in, context);
     this.skipCallbacks = ((s & SKIP_CALLBACKS) != 0);
   }
 

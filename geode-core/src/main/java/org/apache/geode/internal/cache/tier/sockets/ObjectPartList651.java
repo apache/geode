@@ -88,7 +88,7 @@ public class ObjectPartList651 extends ObjectPartList {
         Object value = this.objects.get(index);
         byte objectType = this.objectTypeArray[index];
         if (this.hasKeys) {
-          DataSerializer.writeObject(this.keys.get(index), out);
+          context.getSerializer().writeObject(this.keys.get(index), out);
         }
         if ((objectType == KEY_NOT_AT_SERVER)) {
           out.writeByte(KEY_NOT_AT_SERVER);
@@ -106,7 +106,7 @@ public class ObjectPartList651 extends ObjectPartList {
           // write the exception string for native clients
           DataSerializer.writeString(value.toString(), out);
         } else {
-          DataSerializer.writeObject(value, out);
+          context.getSerializer().writeObject(value, out);
         }
       }
     } else {
@@ -127,7 +127,7 @@ public class ObjectPartList651 extends ObjectPartList {
     if (numObjects > 0) {
       for (int index = 0; index < numObjects; ++index) {
         if (keysPresent) {
-          Object key = DataSerializer.readObject(in);
+          Object key = context.getDeserializer().readObject(in);
           this.keys.add(key);
         }
         byte objectType = in.readByte();
@@ -139,7 +139,7 @@ public class ObjectPartList651 extends ObjectPartList {
           // ignore the exception string meant for native clients
           DataSerializer.readString(in);
         } else {
-          value = DataSerializer.readObject(in);
+          value = context.getDeserializer().readObject(in);
         }
         this.objects.add(value);
       }

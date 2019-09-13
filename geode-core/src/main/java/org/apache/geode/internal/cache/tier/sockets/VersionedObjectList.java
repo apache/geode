@@ -342,10 +342,11 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    toData(out, 0, this.regionIsVersioned ? this.versionTags.size() : size(), true, true);
+    toData(out, context, 0, this.regionIsVersioned ? this.versionTags.size() : size(), true, true);
   }
 
-  void toData(DataOutput out, int startIndex, int numEntries, boolean sendKeys, boolean sendObjects)
+  void toData(DataOutput out, SerializationContext context,
+      int startIndex, int numEntries, boolean sendKeys, boolean sendObjects)
       throws IOException {
     int flags = 0;
     boolean hasObjects = false;
@@ -389,7 +390,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
       InternalDataSerializer.writeUnsignedVL(numToWrite, out);
       int index = startIndex;
       for (int i = 0; i < numToWrite; i++, index++) {
-        DataSerializer.writeObject(this.keys.get(index), out);
+        context.getSerializer().writeObject(this.keys.get(index), out);
       }
     }
     if (sendObjects && hasObjects) {
@@ -401,7 +402,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
       int idx = 0;
       int index = startIndex;
       for (int i = 0; i < numToWrite; i++, index++) {
-        writeObject(this.objects.get(index), idx++, out);
+        writeObject(this.objects.get(index), idx++, out, context);
       }
     }
     if (hasTags) {
@@ -464,7 +465,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
         logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE, "reading {} keys", size);
       }
       for (int i = 0; i < size; i++) {
-        this.keys.add(DataSerializer.readObject(in));
+        this.keys.add(context.getDeserializer().readObject(in));
       }
     }
     if (hasObjects) {
@@ -475,7 +476,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
       this.objects = new ArrayList(size);
       this.objectTypeArray = new byte[size];
       for (int i = 0; i < size; i++) {
-        readObject(i, in);
+        readObject(i, in, context);
       }
     } else {
       this.objects = new ArrayList();
@@ -514,7 +515,8 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     }
   }
 
-  private void writeObject(Object value, int index, DataOutput out) throws IOException {
+  private void writeObject(Object value, int index, DataOutput out,
+      SerializationContext context) throws IOException {
     byte objectType = this.objectTypeArray[index];
     if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE)) {
       logger.trace(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE, "writing object {} of type {}: {}",
@@ -536,13 +538,14 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
       if (this.serializeValues) {
         DataSerializer.writeObjectAsByteArray(value, out);
       } else {
-        DataSerializer.writeObject(value, out);
+        context.getSerializer().writeObject(value, out);
       }
     }
   }
 
 
-  private void readObject(int index, DataInput in) throws IOException, ClassNotFoundException {
+  private void readObject(int index, DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     Object value;
     this.objectTypeArray[index] = in.readByte();
     if (logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE)) {
@@ -558,7 +561,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     } else if (this.serializeValues) {
       value = DataSerializer.readByteArray(in);
     } else {
-      value = DataSerializer.readObject(in);
+      value = context.getDeserializer().readObject(in);
     }
     this.objects.add(value);
   }
@@ -749,7 +752,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
         SerializationContext context) throws IOException {
       int startIndex = index;
       this.index += this.chunkSize;
-      this.list.toData(out, startIndex, chunkSize, sendKeys, sendObjects);
+      this.list.toData(out, context, startIndex, chunkSize, sendKeys, sendObjects);
     }
 
     @Override

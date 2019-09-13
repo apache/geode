@@ -211,9 +211,9 @@ public class ClientInterestMessageImpl implements ClientMessage {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeObject(this.eventId, out);
+    context.getSerializer().writeObject(this.eventId, out);
     DataSerializer.writeString(this.regionName, out);
-    DataSerializer.writeObject(this.keyOfInterest, out);
+    context.getSerializer().writeObject(this.keyOfInterest, out);
     DataSerializer.writePrimitiveBoolean(this.isDurable, out);
     DataSerializer.writePrimitiveBoolean(this.forUpdatesAsInvalidates, out);
     DataSerializer.writePrimitiveInt(this.interestType, out);
@@ -224,9 +224,9 @@ public class ClientInterestMessageImpl implements ClientMessage {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.eventId = (EventID) DataSerializer.readObject(in);
+    this.eventId = (EventID) context.getDeserializer().readObject(in);
     this.regionName = DataSerializer.readString(in);
-    this.keyOfInterest = DataSerializer.readObject(in);
+    this.keyOfInterest = context.getDeserializer().readObject(in);
     this.isDurable = DataSerializer.readPrimitiveBoolean(in);
     this.forUpdatesAsInvalidates = DataSerializer.readPrimitiveBoolean(in);
     this.interestType = DataSerializer.readPrimitiveInt(in);

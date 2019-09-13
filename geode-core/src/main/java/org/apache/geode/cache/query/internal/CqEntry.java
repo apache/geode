@@ -19,7 +19,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -94,8 +93,8 @@ public class CqEntry implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.key = DataSerializer.readObject(in);
-    this.value = DataSerializer.readObject(in);
+    this.key = context.getDeserializer().readObject(in);
+    this.value = context.getDeserializer().readObject(in);
   }
 
 
@@ -107,8 +106,8 @@ public class CqEntry implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeObject(this.key, out);
-    DataSerializer.writeObject(this.value, out);
+    context.getSerializer().writeObject(this.key, out);
+    context.getSerializer().writeObject(this.value, out);
   }
 
   @Override

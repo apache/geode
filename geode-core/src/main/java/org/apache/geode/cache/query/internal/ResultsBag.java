@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.internal.ObjectIntHashMap.Entry;
 import org.apache.geode.cache.query.types.ObjectType;
@@ -139,7 +138,7 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.elementType = (ObjectType) DataSerializer.readObject(in);
+    this.elementType = (ObjectType) context.getDeserializer().readObject(in);
     this.size = in.readInt();
     assert this.size >= 0 : this.size;
     this.map = createMapForFromData();
@@ -149,7 +148,7 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
     int numLeft = this.size - this.numNulls;
 
     while (numLeft > 0) {
-      Object key = DataSerializer.readObject(in);
+      Object key = context.getDeserializer().readObject(in);
       int occurrence = in.readInt();
       this.map.put(key, occurrence);
       numLeft -= occurrence;
@@ -164,7 +163,7 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeObject(this.elementType, out);
+    context.getSerializer().writeObject(this.elementType, out);
     out.writeInt(this.size());
     this.writeNumNulls(out);
     // TODO:Asif: Should we actually pass the limit in serialization?
@@ -175,7 +174,7 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
     for (Iterator<Entry> itr = this.map.entrySet().iterator(); itr.hasNext() && numLeft > 0;) {
       Entry entry = itr.next();
       Object key = entry.getKey();
-      DataSerializer.writeObject(key, out);
+      context.getSerializer().writeObject(key, out);
       int occurrence = entry.getValue();
       if (numLeft < occurrence) {
         occurrence = numLeft;

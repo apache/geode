@@ -440,7 +440,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    ObjectType elementType = (ObjectType) DataSerializer.readObject(in);
+    ObjectType elementType = (ObjectType) context.getDeserializer().readObject(in);
     this.collectionType = new CollectionTypeImpl(NWayMergeResults.class, elementType);
     boolean isStruct = elementType.isStructType();
     this.isDistinct = DataSerializer.readPrimitiveBoolean(in);
@@ -452,7 +452,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
         Object[] fields = DataSerializer.readObjectArray(in);
         this.data.add((E) new StructImpl((StructTypeImpl) elementType, fields));
       } else {
-        E element = DataSerializer.readObject(in);
+        E element = context.getDeserializer().readObject(in);
         this.data.add(element);
       }
       --numLeft;
@@ -471,7 +471,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     boolean isStruct = this.collectionType.getElementType().isStructType();
-    DataSerializer.writeObject(this.collectionType.getElementType(), out);
+    context.getSerializer().writeObject(this.collectionType.getElementType(), out);
     DataSerializer.writePrimitiveBoolean(this.isDistinct, out);
     HeapDataOutputStream hdos = new HeapDataOutputStream(1024, null);
     LongUpdater lu = hdos.reserveLong();
@@ -483,7 +483,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
         Object[] fields = ((Struct) data).getFieldValues();
         DataSerializer.writeObjectArray(fields, out);
       } else {
-        DataSerializer.writeObject(data, hdos);
+        context.getSerializer().writeObject(data, hdos);
       }
       ++numElements;
     }

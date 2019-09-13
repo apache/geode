@@ -122,8 +122,9 @@ public class SizeMessage extends PartitionMessage {
   }
 
   @Override
-  protected void setBooleans(short s, DataInput in) throws ClassNotFoundException, IOException {
-    super.setBooleans(s, in);
+  protected void setBooleans(short s, DataInput in,
+      DeserializationContext context) throws ClassNotFoundException, IOException {
+    super.setBooleans(s, in, context);
     this.estimate = ((s & ESTIMATE) != 0);
   }
 

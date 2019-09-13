@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.objects.AbstractObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
@@ -461,9 +460,9 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     int size = in.readInt();
-    this.structType = (StructTypeImpl) DataSerializer.readObject(in);
+    this.structType = (StructTypeImpl) context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
-      this.add(DataSerializer.readObject(in));
+      this.add(context.getDeserializer().readObject(in));
     }
   }
 
@@ -471,9 +470,9 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     out.writeInt(this.size());
-    DataSerializer.writeObject(this.structType, out);
+    context.getSerializer().writeObject(this.structType, out);
     for (Iterator i = this.iterator(); i.hasNext();) {
-      DataSerializer.writeObject(i.next(), out);
+      context.getSerializer().writeObject(i.next(), out);
     }
   }
 

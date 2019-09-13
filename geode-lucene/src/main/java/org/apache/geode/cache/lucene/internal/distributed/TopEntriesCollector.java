@@ -90,13 +90,13 @@ public class TopEntriesCollector implements IndexResultCollector, DataSerializab
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     DataSerializer.writeString(name, out);
-    DataSerializer.writeObject(entries, out);
+    context.getSerializer().writeObject(entries, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     name = DataSerializer.readString(in);
-    entries = DataSerializer.readObject(in);
+    entries = context.getDeserializer().readObject(in);
   }
 }

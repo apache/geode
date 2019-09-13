@@ -2132,10 +2132,10 @@ public class InitialImageOperation {
       this.keysOnly = in.readBoolean();
       this.targetReinitialized = in.readBoolean();
       this.checkTombstoneVersions = in.readBoolean();
-      this.lostMemberVersionID = (VersionSource) DataSerializer.readObject(in);
-      this.versionVector = (RegionVersionVector) DataSerializer.readObject(in);
-      this.lostMemberID = (InternalDistributedMember) DataSerializer.readObject(in);
-      this.unfinishedKeys = (Set) DataSerializer.readObject(in);
+      this.lostMemberVersionID = (VersionSource) context.getDeserializer().readObject(in);
+      this.versionVector = (RegionVersionVector) context.getDeserializer().readObject(in);
+      this.lostMemberID = (InternalDistributedMember) context.getDeserializer().readObject(in);
+      this.unfinishedKeys = (Set) context.getDeserializer().readObject(in);
     }
 
     @Override
@@ -2147,10 +2147,10 @@ public class InitialImageOperation {
       out.writeBoolean(this.keysOnly);
       out.writeBoolean(this.targetReinitialized);
       out.writeBoolean(this.checkTombstoneVersions);
-      DataSerializer.writeObject(this.lostMemberVersionID, out);
-      DataSerializer.writeObject(this.versionVector, out);
-      DataSerializer.writeObject(this.lostMemberID, out);
-      DataSerializer.writeObject(this.unfinishedKeys, out);
+      context.getSerializer().writeObject(this.lostMemberVersionID, out);
+      context.getSerializer().writeObject(this.versionVector, out);
+      context.getSerializer().writeObject(this.lostMemberID, out);
+      context.getSerializer().writeObject(this.unfinishedKeys, out);
     }
 
     @Override
@@ -2904,7 +2904,7 @@ public class InitialImageOperation {
         gcVersions = new HashMap<VersionSource, Long>(gcVersionsLength);
       }
       for (int i = 0; i < gcVersionsLength; i++) {
-        VersionSource key = InternalDataSerializer.readObject(in);
+        VersionSource key = context.getDeserializer().readObject(in);
         long value = InternalDataSerializer.readUnsignedVL(in);
         gcVersions.put(key, value);
       }
@@ -2934,7 +2934,7 @@ public class InitialImageOperation {
       out.writeShort(gcVersions == null ? -1 : gcVersions.size());
       if (gcVersions != null) {
         for (Map.Entry<VersionSource, Long> entry : gcVersions.entrySet()) {
-          InternalDataSerializer.writeObject(entry.getKey(), out);
+          context.getSerializer().writeObject(entry.getKey(), out);
           InternalDataSerializer.writeUnsignedVL(entry.getValue(), out);
         }
       }
@@ -3084,7 +3084,7 @@ public class InitialImageOperation {
       byte flags = (this.versionTag != null) ? HAS_VERSION : 0;
       flags |= (this.versionTag instanceof DiskVersionTag) ? PERSISTENT_VERSION : 0;
       out.writeByte(flags);
-      DataSerializer.writeObject(this.key, out);
+      context.getSerializer().writeObject(this.key, out);
       if (!EntryBits.isTombstone(this.entryBits)) {
         DataSerializer.writeObjectAsByteArray(this.value, out);
       }
@@ -3102,7 +3102,7 @@ public class InitialImageOperation {
         DeserializationContext context) throws IOException, ClassNotFoundException {
       this.entryBits = in.readByte();
       byte flags = in.readByte();
-      this.key = DataSerializer.readObject(in);
+      this.key = context.getDeserializer().readObject(in);
 
       if (EntryBits.isTombstone(this.entryBits)) {
         this.value = Token.TOMBSTONE;
@@ -3323,7 +3323,7 @@ public class InitialImageOperation {
       if (hasEntries) {
         InternalDataSerializer.writeUnsignedVL(super.size(), out);
         for (int i = 0; i < super.size(); i++) {
-          DataSerializer.writeObject(super.get(i), out);
+          context.getSerializer().writeObject(super.get(i), out);
         }
       }
       if (hasTags) {
@@ -3380,7 +3380,7 @@ public class InitialImageOperation {
           logger.trace(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE, "reading {} keys", size);
         }
         for (int i = 0; i < size; i++) {
-          super.add((Entry) DataSerializer.readObject(in));
+          super.add((Entry) context.getDeserializer().readObject(in));
         }
       }
 

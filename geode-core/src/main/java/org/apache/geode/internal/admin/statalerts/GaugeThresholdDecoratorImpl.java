@@ -18,7 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
@@ -128,16 +127,16 @@ public class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out);
-    DataSerializer.writeObject(this.lowerLimit, out);
-    DataSerializer.writeObject(this.upperLimit, out);
+    context.getSerializer().writeObject(this.lowerLimit, out);
+    context.getSerializer().writeObject(this.upperLimit, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.lowerLimit = (Number) DataSerializer.readObject(in);
-    this.upperLimit = (Number) DataSerializer.readObject(in);
+    this.lowerLimit = (Number) context.getDeserializer().readObject(in);
+    this.upperLimit = (Number) context.getDeserializer().readObject(in);
   }
 
   public static final String ID = "GaugeThreshold";
