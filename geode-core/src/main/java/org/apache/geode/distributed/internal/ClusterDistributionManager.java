@@ -432,8 +432,11 @@ public class ClusterDistributionManager implements DistributionManager {
     DistributionStats.enableClockStats = system.getConfig().getEnableTimeStatistics();
 
     exceptionInThreads = false;
+    boolean finishedConstructor = false;
     try {
+
       executors = new ClusterOperationExecutors(stats, system);
+
       if (!SYNC_EVENTS) {
         memberEventThread =
             new LoggingThread("DM-MemberEventInvoker", new MemberEventInvoker());
@@ -471,8 +474,9 @@ public class ClusterDistributionManager implements DistributionManager {
       description = "Distribution manager on " + localAddress + " started at "
           + (new Date(System.currentTimeMillis())).toString();
 
+      finishedConstructor = true;
     } finally {
-      if (executors != null) {
+      if (!finishedConstructor && executors != null) {
         askThreadsToStop(); // fix for bug 42039
       }
     }
