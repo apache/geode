@@ -164,6 +164,10 @@ public class ClusterManagementSecurityRestIntegrationTest {
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(jsonPath("$.statusMessage",
             is("Successfully updated configuration for cluster.")));
+    // cleanup in order to pass stressNew
+    context.perform(delete("/experimental/regions/" + REGION)
+        .with(httpBasic("dataManage", "dataManage")))
+        .andExpect(status().is2xxSuccessful());
   }
 
   private static class TestContext {
