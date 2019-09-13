@@ -24,12 +24,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.GatewayReceiver;
@@ -52,6 +54,17 @@ public class GatewayManagementController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
+  @ApiOperation(value = "get gateway-receiver")
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
+  @RequestMapping(method = RequestMethod.GET, value = GATEWAY_RECEIVERS_ENDPOINTS + "/{id}")
+  @ResponseBody
+  public ClusterManagementGetResult<GatewayReceiver, GatewayReceiverInfo> getGatewayReceiver(
+      @PathVariable(name = "id") String id) {
+    GatewayReceiver config = new GatewayReceiver();
+    config.setGroup(id);
+    return clusterManagementService.get(config);
+  }
+
   @ApiOperation(value = "create gateway-receiver")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = GATEWAY_RECEIVERS_ENDPOINTS)
@@ -59,7 +72,6 @@ public class GatewayManagementController extends AbstractManagementController {
       @RequestBody GatewayReceiver gatewayReceiverConfig) {
     ClusterManagementResult result =
         clusterManagementService.create(gatewayReceiverConfig);
-    return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
+    return new ResponseEntity<>(result, HttpStatus.CREATED);
   }
 }

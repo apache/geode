@@ -99,10 +99,8 @@ public class RegionManagementDunitTest {
     config.setValueConstraint("java.lang.Integer");
     cms.create(config);
 
-    List<Region> result = cms.get(config).getConfigResult();
+    Region config1 = cms.get(config).getConfigResult();
 
-    assertThat(result).hasSize(1);
-    Region config1 = result.get(0);
     assertThat(config1.getType()).isEqualTo(RegionType.PARTITION);
     assertThat(config1.getValueConstraint()).isEqualTo("java.lang.Integer");
     assertThat(config1.getKeyConstraint()).isEqualTo("java.lang.Boolean");
@@ -269,7 +267,7 @@ public class RegionManagementDunitTest {
       assertThat(attributes.getCustomEntryTimeToLive()).isNull();
     });
 
-    Region regionResult = cms.get(region).getConfigResult().get(0);
+    Region regionResult = cms.get(region).getConfigResult();
     List<Region.Expiration> expirations = regionResult.getExpirations();
     assertThat(expirations).hasSize(2);
     assertThat(expirations.get(0).getTimeInSeconds()).isEqualTo(10000);

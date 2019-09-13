@@ -50,7 +50,7 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
   }
 
   @Override
-  public String getIdentityEndPoint() {
+  public String getIdentityEndpoint() {
     return PDX_ENDPOINT;
   }
 

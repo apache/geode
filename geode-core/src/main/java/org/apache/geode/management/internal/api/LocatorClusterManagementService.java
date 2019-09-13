@@ -17,8 +17,6 @@
 
 package org.apache.geode.management.internal.api;
 
-
-
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -48,6 +46,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementException;
+import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementOperation;
@@ -63,7 +62,7 @@ import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.GroupableConfiguration;
 import org.apache.geode.management.configuration.Index;
-import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -287,7 +286,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     List<T> resultList = new ArrayList<>();
 
-    if (filter instanceof MemberConfig) {
+    if (filter instanceof Member) {
       resultList.add(filter);
     } else {
       ConfigurationManager<T> manager = getConfigurationManager(filter);
@@ -330,7 +329,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
       Set<DistributedMember> members;
 
-      if (filter instanceof MemberConfig) {
+      if (filter instanceof Member) {
         members =
             memberValidator.findMembers(filter.getId(), filter.getGroup());
       } else {
@@ -359,21 +358,27 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
+  public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResult<T, R> get(
       T config) {
     ClusterManagementListResult<T, R> list = list(config);
     List<ConfigurationResult<T, R>> result = list.getResult();
 
-    if (result.size() == 0) {
+    int size = result.size();
+    if (config instanceof Member) {
+      size = result.get(0).getRuntimeInfo().size();
+    }
+
+    if (size == 0) {
       raise(StatusCode.ENTITY_NOT_FOUND,
           config.getClass().getSimpleName() + " '" + config.getId() + "' does not exist.");
     }
 
-    if (result.size() > 1) {
+    if (size > 1) {
       raise(StatusCode.ERROR,
           "Expect only one matching " + config.getClass().getSimpleName() + ".");
     }
-    return assertSuccessful(list);
+
+    return assertSuccessful(new ClusterManagementGetResult<>(list));
   }
 
   @Override

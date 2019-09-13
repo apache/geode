@@ -677,6 +677,7 @@ javadoc/org/apache/geode/management/RegionAttributesData.html
 javadoc/org/apache/geode/management/RegionMXBean.html
 javadoc/org/apache/geode/management/ServerLoadData.html
 javadoc/org/apache/geode/management/api/ClusterManagementException.html
+javadoc/org/apache/geode/management/api/ClusterManagementGetResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementListOperationsResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementListResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementOperation.html
@@ -726,7 +727,7 @@ javadoc/org/apache/geode/management/configuration/ClassName.html
 javadoc/org/apache/geode/management/configuration/GatewayReceiver.html
 javadoc/org/apache/geode/management/configuration/GroupableConfiguration.html
 javadoc/org/apache/geode/management/configuration/Index.html
-javadoc/org/apache/geode/management/configuration/MemberConfig.html
+javadoc/org/apache/geode/management/configuration/Member.html
 javadoc/org/apache/geode/management/configuration/Pdx.html
 javadoc/org/apache/geode/management/configuration/Region.Expiration.html
 javadoc/org/apache/geode/management/configuration/Region.ExpirationAction.html

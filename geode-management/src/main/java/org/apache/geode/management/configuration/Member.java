@@ -20,9 +20,9 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.runtime.MemberInformation;
 
 @Experimental
-public class MemberConfig extends GroupableConfiguration<MemberInformation> {
+public class Member extends GroupableConfiguration<MemberInformation> {
 
-  public static final String MEMBER_CONFIG_ENDPOINT = "/members";
+  public static final String MEMBER_ENDPOINT = "/members";
 
   private String id;
 
@@ -40,6 +40,6 @@ public class MemberConfig extends GroupableConfiguration<MemberInformation> {
 
   @Override
   public String getEndpoint() {
-    return MEMBER_CONFIG_ENDPOINT;
+    return MEMBER_ENDPOINT;
   }
 }

@@ -18,8 +18,6 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.management.configuration.Region.REGION_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
-import java.util.List;
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -35,11 +33,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import org.apache.geode.management.api.ClusterManagementException;
+import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
-import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.runtime.RuntimeInfo;
@@ -64,7 +60,7 @@ public class RegionManagementController extends AbstractManagementController {
     ClusterManagementResult result =
         clusterManagementService.create(regionConfig);
     return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
+        HttpStatus.CREATED);
   }
 
   @ApiOperation(value = "list regions")
@@ -87,7 +83,7 @@ public class RegionManagementController extends AbstractManagementController {
   @ApiOperation(value = "get region")
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementListResult<Region, RuntimeRegionInfo> getRegion(
+  public ClusterManagementGetResult<Region, RuntimeRegionInfo> getRegion(
       @PathVariable(name = "id") String id) {
     securityService.authorize(Resource.CLUSTER, Operation.READ, id);
     Region config = new Region();
@@ -145,23 +141,13 @@ public class RegionManagementController extends AbstractManagementController {
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementListResult<Index, RuntimeInfo> getIndex(
+  public ClusterManagementGetResult<Index, RuntimeInfo> getIndex(
       @PathVariable String regionName,
       @PathVariable String id) {
-    ClusterManagementListResult<Index, RuntimeInfo> result = listIndex(regionName, id);
-    List<ConfigurationResult<Index, RuntimeInfo>> indexList = result.getResult();
 
-    if (indexList.size() == 0) {
-      throw new ClusterManagementException(new ClusterManagementResult(StatusCode.ENTITY_NOT_FOUND,
-          "Index '" + id + "' does not exist in region '" + regionName + "'."));
-    }
-
-    if (indexList.size() > 1) {
-      throw new ClusterManagementException(
-          new ClusterManagementResult(StatusCode.ERROR, "More than one index found."));
-    }
-
-    result.setResult(indexList);
-    return result;
+    Index filter = new Index();
+    filter.setRegionPath(regionName);
+    filter.setName(id);
+    return clusterManagementService.get(filter);
   }
 }

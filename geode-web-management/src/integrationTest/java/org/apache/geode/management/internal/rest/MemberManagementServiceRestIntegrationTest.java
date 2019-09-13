@@ -84,6 +84,23 @@ public class MemberManagementServiceRestIntegrationTest {
   }
 
   @Test
+  public void getLocator() throws Exception {
+    webContext.perform(get("/experimental/members/locator-0"))
+        .andDo(print())
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.memberStatuses").doesNotExist())
+        .andExpect(jsonPath("$.statusCode", is("OK")))
+        .andExpect(jsonPath("$.result.runtimeInfo[*].memberName", contains("locator-0")))
+        .andExpect(jsonPath("$.result.runtimeInfo[0].locatorPort", greaterThan(0)))
+        .andExpect(jsonPath("$.result.runtimeInfo[0].server", is(false)))
+        .andExpect(jsonPath("$.result.runtimeInfo[0].status", is("online")))
+        .andExpect(jsonPath("$.result.runtimeInfo[0].cacheServerInfo").doesNotExist())
+        .andExpect(jsonPath("$.result.runtimeInfo[0].logFilePath", endsWith("locator-0.log")))
+        .andExpect(jsonPath("$.result.runtimeInfo[0].workingDirPath", notNullValue()))
+        .andExpect(jsonPath("$.result.runtimeInfo[0].heapUsage", greaterThan(0)));
+  }
+
+  @Test
   public void listServer() throws Exception {
     webContext.perform(get("/experimental/members")
         .param("id", "server-1"))

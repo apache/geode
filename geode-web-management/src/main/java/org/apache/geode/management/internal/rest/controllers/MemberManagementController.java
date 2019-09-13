@@ -15,25 +15,22 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.management.configuration.MemberConfig.MEMBER_CONFIG_ENDPOINT;
+import static org.apache.geode.management.configuration.Member.MEMBER_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import org.apache.geode.management.api.ClusterManagementException;
+import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
-import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
-import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.runtime.MemberInformation;
 
 @Controller("members")
@@ -41,39 +38,28 @@ import org.apache.geode.management.runtime.MemberInformation;
 public class MemberManagementController extends AbstractManagementController {
   @ApiOperation(value = "get member")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
-  @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT + "/{id}")
-  public ResponseEntity<ClusterManagementListResult<MemberConfig, MemberInformation>> getMember(
+  @RequestMapping(method = RequestMethod.GET, value = MEMBER_ENDPOINT + "/{id}")
+  @ResponseBody
+  public ClusterManagementGetResult<Member, MemberInformation> getMember(
       @PathVariable(name = "id") String id) {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     config.setId(id);
-    ClusterManagementListResult<MemberConfig, MemberInformation> result =
-        clusterManagementService.list(config);
-    if (result.getRuntimeResult().size() == 0) {
-      throw new ClusterManagementException(new ClusterManagementResult(StatusCode.ENTITY_NOT_FOUND,
-          "Member '" + config.getId() + "' does not exist."));
-    }
-
-    return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+    return clusterManagementService.get(config);
   }
 
   @ApiOperation(value = "list members")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
-  @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT)
-  public ResponseEntity<ClusterManagementListResult<MemberConfig, MemberInformation>> listMembers(
+  @RequestMapping(method = RequestMethod.GET, value = MEMBER_ENDPOINT)
+  @ResponseBody
+  public ClusterManagementListResult<Member, MemberInformation> listMembers(
       @RequestParam(required = false) String id, @RequestParam(required = false) String group) {
-    MemberConfig filter = new MemberConfig();
+    Member filter = new Member();
     if (StringUtils.isNotBlank(id)) {
       filter.setId(id);
     }
     if (StringUtils.isNotBlank(group)) {
       filter.setGroup(group);
     }
-    ClusterManagementListResult<MemberConfig, MemberInformation> result =
-        clusterManagementService.list(filter);
-
-    return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+    return clusterManagementService.list(filter);
   }
-
 }

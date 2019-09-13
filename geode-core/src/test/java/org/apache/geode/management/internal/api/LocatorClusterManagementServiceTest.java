@@ -59,7 +59,7 @@ import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Index;
-import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -196,9 +196,9 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void create_non_supportedConfigObject() {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     assertThatThrownBy(() -> service.create(config)).isInstanceOf(ClusterManagementException.class)
-        .hasMessageContaining("ILLEGAL_ARGUMENT: MemberConfig is not supported.");
+        .hasMessageContaining("ILLEGAL_ARGUMENT: Member is not supported.");
   }
 
   @Test

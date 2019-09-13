@@ -112,7 +112,7 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
    * @return {@link #getEndpoint()} + "/" + {@link #getId()}
    */
   @JsonIgnore
-  public String getIdentityEndPoint() {
+  public String getIdentityEndpoint() {
     String id = getId();
     if (StringUtils.isBlank(id))
       return null;
@@ -132,14 +132,14 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
    * <p>
    * Note that the result does not include the prefix: <code>http://hostname:port</code>
    *
-   * @return {@link #URI_CONTEXT} + {@link #URI_VERSION} + {@link #getIdentityEndPoint()}
+   * @return {@link #URI_CONTEXT} + {@link #URI_VERSION} + {@link #getIdentityEndpoint()}
    */
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   public String getUri() {
-    if (getIdentityEndPoint() == null) {
+    if (getIdentityEndpoint() == null) {
       return null;
     }
-    return URI_CONTEXT + URI_VERSION + getIdentityEndPoint();
+    return URI_CONTEXT + URI_VERSION + getIdentityEndpoint();
   }
 
   /**
@@ -150,5 +150,4 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
   public boolean isGlobalRuntime() {
     return false;
   }
-
 }
