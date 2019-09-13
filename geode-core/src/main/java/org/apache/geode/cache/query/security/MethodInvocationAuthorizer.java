@@ -39,14 +39,13 @@ public interface MethodInvocationAuthorizer {
    *
    * <b>Implementation Note</b>: both the {@link MethodDispatch} and {@link AttributeDescriptor}
    * will remember whether the method invocation is already authorized, so {@code authorize} will be
-   * called
-   * once in the lifetime of a Geode member for every new method seen while traversing the objects.
-   * Nevertheless, the implementation should be lighting fast as it will be called by the OQL engine
-   * in runtime during the query execution.
+   * called once in the lifetime of a Geode member for every new method seen while traversing the
+   * objects. Nevertheless, the implementation should be lighting fast as it will be called by the
+   * OQL engine in runtime during the query execution.
    *
    * @param method the {@link Method} that should be authorized.
    * @param target the {@link Object} on which the {@link Method} will be executed.
-   * @return {@code true} if the {@code method} can be executed on on the {@code target} instance,
+   * @return {@code true} if the {@code method} can be executed on the {@code target} instance,
    *         {@code false} otherwise.
    */
   boolean authorize(Method method, Object target);
