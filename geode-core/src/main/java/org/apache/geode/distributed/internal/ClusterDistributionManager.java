@@ -1023,8 +1023,11 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public InternalDistributedMember getCanonicalId(DistributedMember id) {
-    // the members set is copy-on-write, so it is safe to iterate over it
-    return membershipManager.getView().getCanonicalID(
+    MembershipManager m = membershipManager;
+    if (m == null) {
+      return (InternalDistributedMember) id;
+    }
+    return m.getView().getCanonicalID(
         (InternalDistributedMember) id);
   }
 
