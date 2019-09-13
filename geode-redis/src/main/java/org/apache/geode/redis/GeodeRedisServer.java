@@ -50,7 +50,6 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -64,6 +63,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -428,12 +428,13 @@ public class GeodeRedisServer {
           hLLRegion = regionFactory.create(HLL_REGION);
         }
         if ((redisMetaData = cache.getRegion(REDIS_META_DATA_REGION)) == null) {
-          AttributesFactory af = new AttributesFactory();
-          af.addCacheListener(metaListener);
-          af.setDataPolicy(DataPolicy.REPLICATE);
+          RegionAttributesCreation regionAttributesCreation = new RegionAttributesCreation();
+          regionAttributesCreation.addCacheListener(metaListener);
+          regionAttributesCreation.setDataPolicy(DataPolicy.REPLICATE);
           InternalRegionArguments ira =
               new InternalRegionArguments().setInternalRegion(true).setIsUsedForMetaRegion(true);
-          redisMetaData = gemFireCache.createVMRegion(REDIS_META_DATA_REGION, af.create(), ira);
+          redisMetaData =
+              gemFireCache.createVMRegion(REDIS_META_DATA_REGION, regionAttributesCreation, ira);
         }
       } catch (IOException | ClassNotFoundException e) {
         // only if loading snapshot, not here
