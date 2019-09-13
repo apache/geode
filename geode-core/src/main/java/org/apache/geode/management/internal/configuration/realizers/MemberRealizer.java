@@ -28,21 +28,21 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
 import org.apache.geode.management.runtime.MemberInformation;
 
-public class MemberConfigRealizer
-    implements ConfigurationRealizer<MemberConfig, MemberInformation> {
+public class MemberRealizer
+    implements ConfigurationRealizer<Member, MemberInformation> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public RealizationResult create(MemberConfig config, InternalCache cache) {
+  public RealizationResult create(Member config, InternalCache cache) {
     throw new IllegalStateException("Not supported");
   }
 
   @Override
-  public MemberInformation get(MemberConfig config, InternalCache cache) {
+  public MemberInformation get(Member config, InternalCache cache) {
     GetMemberInformationFunction getMemberInfoFunction = new GetMemberInformationFunction();
     InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
     DistributedMember member = system.getDistributedMember();
@@ -61,12 +61,12 @@ public class MemberConfigRealizer
   }
 
   @Override
-  public RealizationResult update(MemberConfig config, InternalCache cache) {
+  public RealizationResult update(Member config, InternalCache cache) {
     throw new IllegalStateException("Not supported");
   }
 
   @Override
-  public RealizationResult delete(MemberConfig config, InternalCache cache) {
+  public RealizationResult delete(Member config, InternalCache cache) {
     throw new IllegalStateException("Not supported");
   }
 

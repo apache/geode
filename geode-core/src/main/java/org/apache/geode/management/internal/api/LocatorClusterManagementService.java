@@ -62,7 +62,7 @@ import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.GroupableConfiguration;
 import org.apache.geode.management.configuration.Index;
-import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -286,7 +286,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     List<T> resultList = new ArrayList<>();
 
-    if (filter instanceof MemberConfig) {
+    if (filter instanceof Member) {
       resultList.add(filter);
     } else {
       ConfigurationManager<T> manager = getConfigurationManager(filter);
@@ -329,7 +329,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
       Set<DistributedMember> members;
 
-      if (filter instanceof MemberConfig) {
+      if (filter instanceof Member) {
         members =
             memberValidator.findMembers(filter.getId(), filter.getGroup());
       } else {
@@ -364,7 +364,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     List<ConfigurationResult<T, R>> result = list.getResult();
 
     int size = result.size();
-    if (config instanceof MemberConfig) {
+    if (config instanceof Member) {
       size = result.get(0).getRuntimeInfo().size();
     }
 

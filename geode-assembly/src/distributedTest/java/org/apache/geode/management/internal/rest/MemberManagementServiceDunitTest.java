@@ -27,7 +27,7 @@ import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
-import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -52,8 +52,8 @@ public class MemberManagementServiceDunitTest {
 
   @Test
   public void listAllMembers() {
-    MemberConfig config = new MemberConfig();
-    ClusterManagementListResult<MemberConfig, MemberInformation> result = cmsClient.list(config);
+    Member config = new Member();
+    ClusterManagementListResult<Member, MemberInformation> result = cmsClient.list(config);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
@@ -68,10 +68,10 @@ public class MemberManagementServiceDunitTest {
 
   @Test
   public void listOneMember() {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     config.setId("locator-0");
 
-    ClusterManagementListResult<MemberConfig, MemberInformation> result = cmsClient.list(config);
+    ClusterManagementListResult<Member, MemberInformation> result = cmsClient.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
     assertThat(result.getRuntimeResult().size()).isEqualTo(1);
@@ -84,10 +84,10 @@ public class MemberManagementServiceDunitTest {
 
   @Test
   public void getOneMember() {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     config.setId("locator-0");
 
-    ClusterManagementGetResult<MemberConfig, MemberInformation> result = cmsClient.get(config);
+    ClusterManagementGetResult<Member, MemberInformation> result = cmsClient.get(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
     assertThat(result.getRuntimeResult().size()).isEqualTo(1);
@@ -100,25 +100,25 @@ public class MemberManagementServiceDunitTest {
 
   @Test
   public void getNonExistentMember() {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     config.setId("locator-42");
 
     assertThatThrownBy(() -> cmsClient.get(config))
-        .hasMessageContaining("ENTITY_NOT_FOUND: MemberConfig 'locator-42' does not exist.");
+        .hasMessageContaining("ENTITY_NOT_FOUND: Member 'locator-42' does not exist.");
   }
 
   @Test
   public void getImproperlySpecifiedMember() {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     assertThatThrownBy(() -> cmsClient.get(config))
         .hasMessageContaining("Unable to construct the URI with the current configuration.");
   }
 
   @Test
   public void listNonExistentMember() {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     config.setId("locator");
-    ClusterManagementListResult<MemberConfig, MemberInformation> result = cmsClient.list(config);
+    ClusterManagementListResult<Member, MemberInformation> result = cmsClient.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.OK);

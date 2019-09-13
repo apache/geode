@@ -39,7 +39,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.internal.rest.LocatorLauncherContextLoader;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.runtime.MemberInformation;
@@ -72,8 +72,8 @@ public class MemberManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void listAllMembers() {
-    MemberConfig memberConfig = new MemberConfig();
-    ClusterManagementListResult<MemberConfig, MemberInformation> result = client.list(memberConfig);
+    Member member = new Member();
+    ClusterManagementListResult<Member, MemberInformation> result = client.list(member);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
@@ -105,9 +105,9 @@ public class MemberManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void getOneMember() {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     config.setId("server-1");
-    ClusterManagementListResult<MemberConfig, MemberInformation> result = client.list(config);
+    ClusterManagementListResult<Member, MemberInformation> result = client.list(config);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
@@ -119,9 +119,9 @@ public class MemberManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void getMemberStatus() {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     config.setId("locator-0");
-    ClusterManagementListResult<MemberConfig, MemberInformation> result = client.list(config);
+    ClusterManagementListResult<Member, MemberInformation> result = client.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
 
@@ -137,10 +137,10 @@ public class MemberManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void noMatchWithJavaAPI() {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     // look for a member with a non-existent id
     config.setId("server");
-    ClusterManagementListResult<MemberConfig, MemberInformation> result = client.list(config);
+    ClusterManagementListResult<Member, MemberInformation> result = client.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.OK);

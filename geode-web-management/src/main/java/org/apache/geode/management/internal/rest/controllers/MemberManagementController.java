@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.management.configuration.MemberConfig.MEMBER_CONFIG_ENDPOINT;
+import static org.apache.geode.management.configuration.Member.MEMBER_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
-import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.runtime.MemberInformation;
 
 @Controller("members")
@@ -38,22 +38,22 @@ import org.apache.geode.management.runtime.MemberInformation;
 public class MemberManagementController extends AbstractManagementController {
   @ApiOperation(value = "get member")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
-  @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT + "/{id}")
+  @RequestMapping(method = RequestMethod.GET, value = MEMBER_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementGetResult<MemberConfig, MemberInformation> getMember(
+  public ClusterManagementGetResult<Member, MemberInformation> getMember(
       @PathVariable(name = "id") String id) {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     config.setId(id);
     return clusterManagementService.get(config);
   }
 
   @ApiOperation(value = "list members")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
-  @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT)
+  @RequestMapping(method = RequestMethod.GET, value = MEMBER_ENDPOINT)
   @ResponseBody
-  public ClusterManagementListResult<MemberConfig, MemberInformation> listMembers(
+  public ClusterManagementListResult<Member, MemberInformation> listMembers(
       @RequestParam(required = false) String id, @RequestParam(required = false) String group) {
-    MemberConfig filter = new MemberConfig();
+    Member filter = new Member();
     if (StringUtils.isNotBlank(id)) {
       filter.setId(id);
     }

@@ -20,11 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-public class MemberConfigTest {
+public class MemberTest {
 
   @Test
   public void getUri() {
-    MemberConfig config = new MemberConfig();
+    Member config = new Member();
     config.setId("memberA");
     assertThat(config.getEndpoint()).isEqualTo("/members");
     assertThat(config.getUri())
