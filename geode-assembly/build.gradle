@@ -25,7 +25,7 @@ import java.nio.file.Paths
 // This project aggressively reaches into many other projects and must wait for those configurations
 // to be evaluated and resolved.  Evaluation depends on each of these subprojects.
 
-// This list is used in a loop to defined the /lib copySpec 
+// This list is used in a loop to defined the /lib copySpec
 def dependentProjectNames = [
   ':geode-common',
   ':geode-connectors',
@@ -260,6 +260,7 @@ dependencies {
   uiTestRuntime('org.seleniumhq.selenium:selenium-chrome-driver')
 
 
+  upgradeTestImplementation project(':geode-serialization')
   upgradeTestCompile(project(':geode-core'))
   upgradeTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
