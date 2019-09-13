@@ -83,7 +83,7 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
     }
   }
 
-  static String removeClassFromJsonText(String json) {
+  public static String removeClassFromJsonText(String json) {
     // remove entire key and object if class was the only attribute present
     // otherwise remove just the class attribute
     return json

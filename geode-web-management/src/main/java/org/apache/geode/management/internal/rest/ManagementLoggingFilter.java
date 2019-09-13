@@ -27,6 +27,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
 
+import org.apache.geode.management.internal.rest.controllers.ManagementControllerAdvice;
+
 public class ManagementLoggingFilter extends OncePerRequestFilter {
 
   // Because someone is going to want to disable this.
@@ -82,7 +84,7 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
     String responsePattern = "Management Response: Status=%s; response=%s";
     String payload = getContentAsString(wrappedResponse.getContentAsByteArray(),
         wrappedResponse.getCharacterEncoding());
-    logger.info(String.format(responsePattern, response.getStatus(), payload));
+    logger.info(String.format(responsePattern, response.getStatus(), ManagementControllerAdvice.removeClassFromJsonText(payload)));
   }
 
   private String getContentAsString(byte[] buf, String encoding) {
