@@ -29,6 +29,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerTestHelper;
 import org.apache.geode.cache.lucene.test.Customer;
+import org.apache.geode.cache.lucene.test.GrandSubCustomer;
 import org.apache.geode.cache.lucene.test.Page;
 import org.apache.geode.cache.lucene.test.Person;
 import org.apache.geode.test.junit.categories.LuceneTest;
@@ -82,6 +83,24 @@ public class FlatFormatSerializerJUnitTest {
     IndexableField[] fieldsInDoc = doc1.getFields("myHomePages.content");
     Collection<Object> results = getResultCollection(fieldsInDoc, false);
     assertEquals(2, results.size());
+    assertTrue(results.contains("Hello world no 131"));
+    assertTrue(results.contains("Hello world no 132"));
+  }
+
+  @Test
+  public void shouldIndexOnInheritedFields() {
+    String[] fields = new String[] {"myHomePages.content"};
+
+    FlatFormatSerializer serializer = new FlatFormatSerializer();
+
+    Page[] myHomePages1 = new Page[] {new Page(131), new Page(132)};
+    GrandSubCustomer customer = new GrandSubCustomer("Tommy Jackson", null, null, myHomePages1);
+    Document doc1 = SerializerTestHelper.invokeSerializer(serializer, customer, fields);
+
+    IndexableField[] fieldsInDoc = doc1.getFields("myHomePages.content");
+    Collection<Object> results = getResultCollection(fieldsInDoc, false);
+    assertEquals(2, results.size());
+    Object value = results.iterator().next();
     assertTrue(results.contains("Hello world no 131"));
     assertTrue(results.contains("Hello world no 132"));
   }
