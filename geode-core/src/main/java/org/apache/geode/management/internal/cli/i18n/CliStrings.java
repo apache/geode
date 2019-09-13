@@ -1917,17 +1917,6 @@ public class CliStrings {
   public static final String RESUME_GATEWAYSENDER__MEMBER__HELP =
       "Name/Id of the member on which to resume the Gateway Sender.";
 
-  /* resume async-event-queue */
-  public static final String RESUME_ASYNCEVENTQUEUE = "resume async-event-queue-dispatcher";
-  public static final String RESUME_ASYNCEVENTQUEUE__ID = "id";
-  public static final String RESUME_ASYNCEVENTQUEUE__HELP =
-      "Resume the processing of the events in the Async Event Queue on a member or members.";
-  public static final String RESUME_ASYNCEVENTQUEUE__ID__HELP = "ID of the Async Event Queue.";
-  public static final String RESUME_ASYNCEVENTQUEUE__GROUP__HELP =
-      "Group(s) of members on which to resume processing of the events.";
-  public static final String RESUME_ASYNCEVENTQUEUE__MEMBER__HELP =
-      "Name/Id of the member on which to resume processing of the events.";
-
   /* 'revoke missing-disk-store' command */
   public static final String REVOKE_MISSING_DISK_STORE = "revoke missing-disk-store";
   public static final String REVOKE_MISSING_DISK_STORE__HELP =
