@@ -20,13 +20,11 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpSession;
@@ -44,9 +42,9 @@ import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
-import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.LinkedResultSet;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
@@ -267,7 +265,8 @@ public abstract class DeltaSessionManagerJUnitTest {
   }
 
   @Test
-  public void unloadWritesSingleSessionToDiskWhenIdIsValid() throws IOException, NameResolutionException, TypeMismatchException,
+  public void unloadWritesSingleSessionToDiskWhenIdIsValid()
+      throws IOException, NameResolutionException, TypeMismatchException,
       QueryInvocationTargetException, FunctionDomainException {
     String sessionId = "sessionId";
     DeltaSession session = mock(DeltaSession.class);
@@ -279,11 +278,12 @@ public abstract class DeltaSessionManagerJUnitTest {
 
     manager.unload();
 
-    verify((StandardSession)session).writeObjectData(oos);
+    verify((StandardSession) session).writeObjectData(oos);
   }
 
   @Test
-  public void unloadDoesNotWriteSessionToDiskAndClosesOutputStreamsWhenOutputStreamThrowsIOException() throws IOException, NameResolutionException, TypeMismatchException,
+  public void unloadDoesNotWriteSessionToDiskAndClosesOutputStreamsWhenOutputStreamThrowsIOException()
+      throws IOException, NameResolutionException, TypeMismatchException,
       QueryInvocationTargetException, FunctionDomainException {
     String sessionId = "sessionId";
     DeltaSession session = mock(DeltaSession.class);
@@ -299,15 +299,17 @@ public abstract class DeltaSessionManagerJUnitTest {
 
     doThrow(exception).when(manager).getObjectOutputStream(bos);
 
-    assertThatThrownBy(() -> manager.unload()).isInstanceOf(IOException.class).hasMessage(exceptionMessage);
+    assertThatThrownBy(() -> manager.unload()).isInstanceOf(IOException.class)
+        .hasMessage(exceptionMessage);
 
-    verify((StandardSession)session, times(0)).writeObjectData(oos);
+    verify((StandardSession) session, times(0)).writeObjectData(oos);
     verify(bos).close();
     verify(fos).close();
   }
 
   @Test
-  public void unloadDoesNotWriteSessionToDiskAndClosesOutputStreamsWhenSessionIsWrongClass() throws IOException, NameResolutionException, TypeMismatchException,
+  public void unloadDoesNotWriteSessionToDiskAndClosesOutputStreamsWhenSessionIsWrongClass()
+      throws IOException, NameResolutionException, TypeMismatchException,
       QueryInvocationTargetException, FunctionDomainException {
     String sessionId = "sessionId";
     DeltaSession session = mock(DeltaSession.class);
@@ -317,18 +319,20 @@ public abstract class DeltaSessionManagerJUnitTest {
 
     prepareMocksForUnloadTest(sessionId, fos, bos, oos, session);
 
-    Session invalidSession = mock(Session.class, withSettings().extraInterfaces(DeltaSessionInterface.class));
+    Session invalidSession =
+        mock(Session.class, withSettings().extraInterfaces(DeltaSessionInterface.class));
 
     doReturn(invalidSession).when(manager).findSession(sessionId);
 
     assertThatThrownBy(() -> manager.unload()).isInstanceOf(IOException.class);
 
-    verify((StandardSession)session, times(0)).writeObjectData(oos);
+    verify((StandardSession) session, times(0)).writeObjectData(oos);
     verify(oos).close();
   }
 
   @Test
-  public void successfulUnloadWithClientServerSessionCachePerformsLocalDestroy() throws IOException, NameResolutionException, TypeMismatchException,
+  public void successfulUnloadWithClientServerSessionCachePerformsLocalDestroy()
+      throws IOException, NameResolutionException, TypeMismatchException,
       QueryInvocationTargetException, FunctionDomainException {
     String sessionId = "sessionId";
     DeltaSession session = mock(DeltaSession.class);
@@ -343,7 +347,7 @@ public abstract class DeltaSessionManagerJUnitTest {
 
     manager.unload();
 
-    verify((StandardSession)session).writeObjectData(oos);
+    verify((StandardSession) session).writeObjectData(oos);
     verify(operatingRegion).localDestroy(sessionId);
   }
 
@@ -360,7 +364,7 @@ public abstract class DeltaSessionManagerJUnitTest {
 
     manager.propertyChange(event);
 
-    verify(manager).setMaxInactiveInterval(newValue*60);
+    verify(manager).setMaxInactiveInterval(newValue * 60);
   }
 
   @Test
@@ -395,7 +399,8 @@ public abstract class DeltaSessionManagerJUnitTest {
     verify(manager).setMaxInactiveInterval(oldValue);
   }
 
-  public void prepareMocksForUnloadTest(String sessionId,FileOutputStream fos, BufferedOutputStream bos, ObjectOutputStream oos, DeltaSession session)
+  public void prepareMocksForUnloadTest(String sessionId, FileOutputStream fos,
+      BufferedOutputStream bos, ObjectOutputStream oos, DeltaSession session)
       throws NameResolutionException, TypeMismatchException, QueryInvocationTargetException,
       FunctionDomainException, IOException {
     String regionName = "regionName";
@@ -404,7 +409,7 @@ public abstract class DeltaSessionManagerJUnitTest {
     String systemFileSeparator = "/";
     String expectedStoreDir = catalinaBaseSystemProp + systemFileSeparator + "temp";
 
-    QueryService queryService = mock(QueryService.class);
+    InternalQueryService queryService = mock(InternalQueryService.class);
     Query query = mock(Query.class);
     File store = mock(File.class);
     SelectResults results = new LinkedResultSet();

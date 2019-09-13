@@ -92,7 +92,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
    */
   @Override
   public void stopInternal() throws LifecycleException {
-    super.stopInternal();
+    stopInternalBase();
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Stopping");
     }
@@ -125,6 +125,16 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
     }
 
     setLifecycleState(LifecycleState.STOPPING);
+  }
+
+  @VisibleForTesting
+  void stopInternalBase() throws LifecycleException {
+    super.stopInternal();
+  }
+
+  @VisibleForTesting
+  void destroyInternalBase() throws LifecycleException {
+    super.destroyInternal();
   }
 
   /**
