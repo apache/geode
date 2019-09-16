@@ -178,16 +178,20 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   protected ResultCollector executeFunction(Function function, long timeout, TimeUnit unit) {
-    if (function.hasResult()) {
-      ResultCollector rc = this.rc;
-      if (rc == null) {
-        rc = new DefaultResultCollector();
-      }
-      return executeFunction(function, rc);
-    } else {
+    if (!function.hasResult()) {
       executeFunction(function, null);
       return new NoResult();
     }
+    ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
+    ResultCollector rcToReturn = executeFunction(function, rc);
+    if (timeout > 0) {
+      try {
+        rcToReturn.getResult(timeout, unit);
+      } catch (Exception e) {
+        throw new FunctionException(e);
+      }
+    }
+    return rcToReturn;
   }
 
   private ResultCollector executeFunction(final Function function,

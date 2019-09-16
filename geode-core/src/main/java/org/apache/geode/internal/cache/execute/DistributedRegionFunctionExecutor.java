@@ -206,18 +206,20 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   protected ResultCollector executeFunction(Function function, long timeout, TimeUnit unit) {
-    if (function.hasResult()) { // have Results
-      if (this.rc == null) { // Default Result Collector
-        ResultCollector defaultCollector = new DefaultResultCollector();
-        return this.region.executeFunction(this, function, args, defaultCollector, this.filter,
-            this.sender);
-      } else { // Custome Result COllector
-        return this.region.executeFunction(this, function, args, rc, this.filter, this.sender);
-      }
-    } else { // No results
+    if (!function.hasResult()) {
       this.region.executeFunction(this, function, args, null, this.filter, this.sender);
       return new NoResult();
     }
+    ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
+    ResultCollector rcToReturn = this.region.executeFunction(this, function, args, inRc, this.filter, this.sender);
+    if (timeout > 0) {
+      try {
+        rcToReturn.getResult(timeout, unit);
+      } catch (Exception exception) {
+        throw new FunctionException(exception);
+      }
+    }
+    return rcToReturn;
   }
 
   @Override
