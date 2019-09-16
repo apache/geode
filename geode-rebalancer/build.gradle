@@ -22,7 +22,6 @@ apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  compile(project(':geode-common'))
   compile(project(':geode-core'))
   implementation(project(':geode-serialization'))
   integrationTestCompile(project(':geode-junit')) {

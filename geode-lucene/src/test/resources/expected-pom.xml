@@ -104,11 +104,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.geode</groupId>
-      <artifactId>geode-common</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.lucene</groupId>
       <artifactId>lucene-analyzers-common</artifactId>
       <scope>compile</scope>
