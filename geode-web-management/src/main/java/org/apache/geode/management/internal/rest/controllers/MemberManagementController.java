@@ -51,9 +51,8 @@ public class MemberManagementController extends AbstractManagementController {
 
   @ApiOperation(value = "list members",
       extensions = {@Extension(properties = {
-          @ExtensionProperty(name = "jqFilter", value = ".result[] | .runtimeInfo[] | {name:.memberName,status:.status}")}
-      )}
-  )
+          @ExtensionProperty(name = "jqFilter",
+              value = ".result[] | .runtimeInfo[] | {name:.memberName,status:.status}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_ENDPOINT)
   @ResponseBody

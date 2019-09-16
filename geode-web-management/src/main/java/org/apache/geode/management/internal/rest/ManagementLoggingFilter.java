@@ -84,7 +84,8 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
     String responsePattern = "Management Response: Status=%s; response=%s";
     String payload = getContentAsString(wrappedResponse.getContentAsByteArray(),
         wrappedResponse.getCharacterEncoding());
-    logger.info(String.format(responsePattern, response.getStatus(), ManagementControllerAdvice.removeClassFromJsonText(payload)));
+    logger.info(String.format(responsePattern, response.getStatus(),
+        ManagementControllerAdvice.removeClassFromJsonText(payload)));
   }
 
   private String getContentAsString(byte[] buf, String encoding) {
