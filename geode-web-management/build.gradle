@@ -106,7 +106,6 @@ dependencies {
   commonTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  commonTestCompile('javax.servlet:javax.servlet-api')
   commonTestCompile('org.springframework:spring-test')
   commonTestCompile('org.springframework:spring-webmvc')
   commonTestCompile('org.springframework.security:spring-security-test')

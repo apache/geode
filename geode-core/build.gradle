@@ -286,6 +286,10 @@ dependencies {
     ext.optional = true
   }
 
+  runtimeOnly(project(':geode-http-service')) {
+    ext.optional = true
+  }
+
   //Spring core is used by the the gfsh cli
   implementation('org.springframework:spring-core') {
     ext.optional = true
