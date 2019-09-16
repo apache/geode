@@ -272,7 +272,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
         VersionTag<?> tag = removeAllData[i].versionTag;
         versionTags.add(tag);
         removeAllData[i].versionTag = null;
-        this.removeAllData[i].toData(out, context);
+        this.removeAllData[i].serializeTo(out, context);
         this.removeAllData[i].versionTag = tag;
       }
 

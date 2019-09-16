@@ -376,7 +376,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
      * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)} <br>
      * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)} <br>
      */
-    public void toData(final DataOutput out,
+    public void serializeTo(final DataOutput out,
         SerializationContext context) throws IOException {
       Object key = this.key;
       context.getSerializer().writeObject(key, out);
@@ -1029,7 +1029,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
           VersionTag<?> tag = removeAllData[i].versionTag;
           versionTags.add(tag);
           removeAllData[i].versionTag = null;
-          this.removeAllData[i].toData(out, context);
+          this.removeAllData[i].serializeTo(out, context);
           this.removeAllData[i].versionTag = tag;
         }
 
