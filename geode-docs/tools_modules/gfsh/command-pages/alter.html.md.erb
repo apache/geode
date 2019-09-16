@@ -50,7 +50,7 @@ settings to take effect on that server.
 
 ``` pre
 alter async-event-queue --id=value [--batch-size=value] [--batch-time-interval=value]
-    [--max-queue-memory=value] [--if-exists(=value)]
+    [--max-queue-memory=value] [--if-exists(=value)] [--pause-event-processing(=value)]
 ```
 
 The required option, `--id`, identifies the async event queue to be altered.
@@ -64,6 +64,7 @@ The required option, `--id`, identifies the async event queue to be altered.
 | &#8209;&#8209;batch&#8209;time&#8209;interval | Maximum amount of time, in ms, that can elapse before a batch is delivered |
 | &#8209;&#8209;max&#8209;queue&#8209;memory | Maximum amount of memory, in megabytes, that the queue can consume before overflowing to disk |
 | &#8209;&#8209;if&#8209;exists | If the specified async event queue does not exist, gfsh responds with a message to that effect. If this parameter is true, the response is prefixed with the label "Skipping: ". Useful for scripted tests. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true. |
+| &#8209;&#8209;pause&#8209;event&#8209;processing | Specifies whether event dispatching from the queue to the listener(s) will be paused when the AsyncEventQueue is started. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true.
 
 **Example Commands:**
 
