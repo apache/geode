@@ -27,7 +27,6 @@ dependencies {
   compileOnly(platform(project(':boms:geode-all-bom')))
 
   compileOnly(project(':geode-core'))
-  compileOnly(project(':geode-common'))
   compileOnly(project(':geode-serialization'))
 
   compileOnly('javax.servlet:javax.servlet-api')
