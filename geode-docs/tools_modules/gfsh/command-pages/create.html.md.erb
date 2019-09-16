@@ -74,8 +74,9 @@ create async-event-queue --id=value --listener=value [--groups=value(,value)*]
     [--disk-synchronous(=value)?] [--max-queue-memory=value]
     [--dispatcher-threads=value] [--order-policy=value]
     [--gateway-event-filter=value(,value)*]
-    [--gateway-event-substitution-filter=value] 
-    [--listener-param=value(,value)*]
+    [--gateway-event-substitution-filter=value]
+    [--listener-param=value(,value)*] [--forward-expiration-destroy(=value)?]
+    [--pause-event-processing(=value)?]
 ```
 
 **Parameters, create async-event-queue:**
@@ -178,6 +179,11 @@ create async-event-queue --id=value --listener=value [--groups=value(,value)*]
 <tr class="odd">
 <td><span class="keyword parmname">\-\-forward-expiration-destroy</span></td>
 <td>Enables forwarding of expiration destroy operations to AsyncEventListener instances. If specified without a value, this parameter is set to “false”.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-pause-event-processing</span></td>
+<td>Specifies whether event dispatching from the queue to the listener(s) will be paused when the AsyncEventQueue is started. If specified without a value, this parameter is set to "true".</td>
 <td>false</td>
 </tr>
 </tbody>

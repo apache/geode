@@ -76,10 +76,14 @@ The following `gfsh` commands cause the configuration to be written to all locat
 -   `create disk-store`
 -   `destroy disk-store`
 -   `create async-event-queue`
+-   `alter async-event-queue`
+-   `destroy async-event-queue`
 -   `deploy jar`
 -   `undeploy jar`
 -   `create gateway-sender`
+-   `destroy gateway-sender`
 -   `create gateway-receiver`
+-   `destroy gateway-receiver`
 
 **\*** Note that the `configure pdx` command must be executed *before* starting your data members. This command does not affect any currently running members in the system. Data members (with cluster configuration enabled) that are started after running this command will pick up the new PDX configuration.
 
@@ -109,7 +113,6 @@ by using the API:
     -   `transaction-listener`
     -   `transaction-writer`
 -   Adding or removing a `TransactionListener`
--   Deleting an `AsyncEventQueue`
 -   Configuring a `GatewayConflictResolver`
 -   You cannot specify parameters and values for Java classes for the following:
     -   `gateway-listener`
