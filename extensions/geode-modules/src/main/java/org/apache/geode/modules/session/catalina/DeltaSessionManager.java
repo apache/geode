@@ -66,6 +66,9 @@ import org.apache.geode.modules.util.RegionHelper;
 public abstract class DeltaSessionManager extends ManagerBase
     implements Lifecycle, PropertyChangeListener, SessionManager {
 
+  static final String catalinaBaseSystemProperty = "catalina.base";
+  static final  String javaTempDirSystemProperty = "java.io.tmpdir";
+  static final  String fileSeparatorSystemProperty = "file.separator";
   /**
    * The number of rejected sessions.
    */
@@ -946,11 +949,11 @@ public abstract class DeltaSessionManager extends ManagerBase
    * Return a File object representing the pathname to our persistence file, if any.
    */
   private File sessionStore(String ctxPath) {
-    String storeDir = getSystemPropertyValue("catalina.base");
+    String storeDir = getSystemPropertyValue(catalinaBaseSystemProperty);
     if (storeDir == null || storeDir.isEmpty()) {
-      storeDir = getSystemPropertyValue("java.io.tmpdir");
+      storeDir = getSystemPropertyValue(javaTempDirSystemProperty);
     } else {
-      storeDir += getSystemPropertyValue("file.separator") + "temp";
+      storeDir += getSystemPropertyValue(fileSeparatorSystemProperty) + "temp";
     }
 
     return getFileAtPath(storeDir, ctxPath);
@@ -1003,6 +1006,16 @@ public abstract class DeltaSessionManager extends ManagerBase
       throws IOException, ClassNotFoundException {
     return (Integer) ois.readObject();
   }
+
+//  @VisibleForTesting
+//  void setLifecycleState(LifecycleState newState) throws LifecycleException {
+//    this.setState(newState);
+//  }
+//
+//  @VisibleForTesting
+//  void startInternalBase() throws LifecycleException {
+//    super.startInternal();
+//  }
 
   @Override
   public String toString() {

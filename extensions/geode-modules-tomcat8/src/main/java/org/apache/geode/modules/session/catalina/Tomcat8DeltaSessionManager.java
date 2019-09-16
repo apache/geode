@@ -22,6 +22,8 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.session.StandardSession;
 
+import org.apache.geode.annotations.VisibleForTesting;
+
 public class Tomcat8DeltaSessionManager extends DeltaSessionManager {
 
   /**
@@ -34,7 +36,7 @@ public class Tomcat8DeltaSessionManager extends DeltaSessionManager {
    */
   @Override
   public void startInternal() throws LifecycleException {
-    super.startInternal();
+    startInternalBase();
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Starting");
     }
@@ -64,7 +66,17 @@ public class Tomcat8DeltaSessionManager extends DeltaSessionManager {
     scheduleTimerTasks();
 
     this.started.set(true);
-    this.setState(LifecycleState.STARTING);
+    setLifecycleState(LifecycleState.STARTING);
+  }
+
+  @VisibleForTesting
+  void setLifecycleState(LifecycleState newState) throws LifecycleException {
+    this.setState(newState);
+  }
+
+  @VisibleForTesting
+  void startInternalBase() throws LifecycleException {
+    super.startInternal();
   }
 
   /**
@@ -75,7 +87,7 @@ public class Tomcat8DeltaSessionManager extends DeltaSessionManager {
    */
   @Override
   public void stopInternal() throws LifecycleException {
-    super.stopInternal();
+    stopInternalBase();
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Stopping");
     }
@@ -92,7 +104,7 @@ public class Tomcat8DeltaSessionManager extends DeltaSessionManager {
     // StandardManager expires all Sessions here.
     // All Sessions are not known by this Manager.
 
-    super.destroyInternal();
+    destroyInternalBase();
 
     // Clear any sessions to be touched
     getSessionsToTouch().clear();
@@ -107,8 +119,18 @@ public class Tomcat8DeltaSessionManager extends DeltaSessionManager {
       unregisterCommitSessionValve();
     }
 
-    this.setState(LifecycleState.STOPPING);
+    setLifecycleState(LifecycleState.STOPPING);
 
+  }
+
+  @VisibleForTesting
+  void stopInternalBase() throws LifecycleException {
+    super.stopInternal();
+  }
+
+  @VisibleForTesting
+  void destroyInternalBase() throws LifecycleException {
+    super.destroyInternal();
   }
 
   @Override

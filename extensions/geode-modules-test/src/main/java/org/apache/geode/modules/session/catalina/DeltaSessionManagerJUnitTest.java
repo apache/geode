@@ -100,17 +100,6 @@ public abstract class DeltaSessionManagerJUnitTest {
   }
 
   @Test
-  public void setContainerSetsProperContainerAndMaxInactiveInterval() {
-    Context container = mock(Context.class);
-    int containerMaxInactiveInterval = 3;
-
-    doReturn(containerMaxInactiveInterval).when(container).getSessionTimeout();
-
-    manager.setContainer(container);
-    verify(manager).setMaxInactiveInterval(containerMaxInactiveInterval * 60);
-  }
-
-  @Test
   public void findSessionsReturnsNullWhenIdIsNull() throws IOException {
     Session session = manager.findSession(null);
 
@@ -419,8 +408,8 @@ public abstract class DeltaSessionManagerJUnitTest {
     when(cache.getQueryService()).thenReturn(queryService);
     when(queryService.newQuery(anyString())).thenReturn(query);
     when(query.execute()).thenReturn(results);
-    doReturn(catalinaBaseSystemProp).when(manager).getSystemPropertyValue("catalina.base");
-    doReturn(systemFileSeparator).when(manager).getSystemPropertyValue("file.separator");
+    doReturn(catalinaBaseSystemProp).when(manager).getSystemPropertyValue(DeltaSessionManager.catalinaBaseSystemProperty);
+    doReturn(systemFileSeparator).when(manager).getSystemPropertyValue(DeltaSessionManager.fileSeparatorSystemProperty);
     doReturn(store).when(manager).getFileAtPath(expectedStoreDir, contextPath);
     doReturn(fos).when(manager).getFileOutputStream(store);
     doReturn(bos).when(manager).getBufferedOutputStream(fos);
