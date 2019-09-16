@@ -111,6 +111,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 
 | `gfsh` Command                         | Assigned `ResourcePermission`
 |----------------------------------------|----------------------------------|
+| alter async-event-queue                | CLUSTER:MANAGE:DEPLOY            |
 | alter disk-store                       | CLUSTER:MANAGE:DISK              |
 | alter region                           | DATA:MANAGE:RegionName           |
 | alter runtime                          | CLUSTER:MANAGE                   |
@@ -140,6 +141,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | describe member                        | CLUSTER:READ                     |
 | describe offline-disk-store            | CLUSTER:READ                     |
 | describe region                        | CLUSTER:READ                     |
+| destroy async-event-queue              | CLUSTER:MANAGE                   |
 | destroy disk-store                     | CLUSTER:MANAGE:DISK              |
 | destroy function                       | CLUSTER:MANAGE:DEPLOY            |
 | destroy index                          | CLUSTER:MANAGE:QUERY             |
@@ -177,6 +179,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | query                                  | DATA:READ:RegionName             |
 | rebalance                              | DATA:MANAGE                      |
 | remove                                 | DATA:WRITE:RegionName or DATA:WRITE:RegionName:Key |
+| resume async-event-queue-dispatcher    | CLUSTER:MANAGE                   |
 | resume gateway-sender                  | CLUSTER:MANAGE:GATEWAY           |
 | revoke mising-disk-store               | CLUSTER:MANAGE:DISK              |
 | search lucene                          | DATA:READ:RegionName             |
