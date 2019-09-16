@@ -50,7 +50,6 @@ import org.apache.catalina.util.CustomObjectInputStream;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -392,12 +391,10 @@ public abstract class DeltaSessionManager extends ManagerBase
     initSessionCache();
   }
 
-  @VisibleForTesting
   void initSessionCache() {
     this.sessionCache.initialize();
   }
 
-  @VisibleForTesting
   Cache getAnyCacheInstance() {
     return CacheFactory.getAnyInstance();
   }
@@ -586,7 +583,6 @@ public abstract class DeltaSessionManager extends ManagerBase
     getPipeline().addValve(jvmRouteBinderValve);
   }
 
-  @VisibleForTesting
   Pipeline getPipeline() {
     return getContainer().getPipeline();
   }
@@ -967,37 +963,30 @@ public abstract class DeltaSessionManager extends ManagerBase
     return (new File(storeDir, ctxPath.replaceAll("/", "_") + ".sessions.ser"));
   }
 
-  @VisibleForTesting
   FileInputStream getFileInputStream(File file) throws FileNotFoundException {
     return new FileInputStream(file.getAbsolutePath());
   }
 
-  @VisibleForTesting
   BufferedInputStream getBufferedInputStream(FileInputStream fis) {
     return new BufferedInputStream(fis);
   }
 
-  @VisibleForTesting
   ObjectInputStream getObjectInputStream(BufferedInputStream bis) throws IOException {
     return new ObjectInputStream(bis);
   }
 
-  @VisibleForTesting
   FileOutputStream getFileOutputStream(File file) throws FileNotFoundException {
     return new FileOutputStream(file.getAbsolutePath());
   }
 
-  @VisibleForTesting
   BufferedOutputStream getBufferedOutputStream(FileOutputStream fos) {
     return new BufferedOutputStream(fos);
   }
 
-  @VisibleForTesting
   ObjectOutputStream getObjectOutputStream(BufferedOutputStream bos) throws IOException {
     return new ObjectOutputStream(bos);
   }
 
-  @VisibleForTesting
   void writeToObjectOutputStream(ObjectOutputStream oos, List listToWrite) throws IOException {
     oos.writeObject(listToWrite.size());
   }
@@ -1006,16 +995,6 @@ public abstract class DeltaSessionManager extends ManagerBase
       throws IOException, ClassNotFoundException {
     return (Integer) ois.readObject();
   }
-
-  // @VisibleForTesting
-  // void setLifecycleState(LifecycleState newState) throws LifecycleException {
-  // this.setState(newState);
-  // }
-  //
-  // @VisibleForTesting
-  // void startInternalBase() throws LifecycleException {
-  // super.startInternal();
-  // }
 
   @Override
   public String toString() {

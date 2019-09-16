@@ -22,8 +22,6 @@ import org.apache.catalina.LifecycleState;
 import org.apache.catalina.session.StandardSession;
 import org.apache.catalina.util.LifecycleSupport;
 
-import org.apache.geode.annotations.VisibleForTesting;
-
 public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
 
   /**
@@ -74,12 +72,10 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
     this.setLifecycleState(LifecycleState.STARTING);
   }
 
-  @VisibleForTesting
   void setLifecycleState(LifecycleState newState) throws LifecycleException {
     this.setState(newState);
   }
 
-  @VisibleForTesting
   void startInternalBase() throws LifecycleException {
     super.startInternal();
   }
@@ -127,12 +123,10 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
     setLifecycleState(LifecycleState.STOPPING);
   }
 
-  @VisibleForTesting
   void stopInternalBase() throws LifecycleException {
     super.stopInternal();
   }
 
-  @VisibleForTesting
   void destroyInternalBase() throws LifecycleException {
     super.destroyInternal();
   }
