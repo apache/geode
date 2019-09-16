@@ -437,7 +437,7 @@ jobs:
         - name: concourse-metadata-resource
         outputs:
         - name: results
-      timeout: 4h
+      timeout: 8h
       ensure:
         do:
         - task: cleanup_benchmarks
