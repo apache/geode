@@ -30,6 +30,7 @@ public class GemfireCacheImplDUnitTest {
 
   @Test
   public void inAbsenceOfGatewayReceiverServerEmergencyCloseWillCloseCache() {
+
     VM node = VM.getVM(0);
 
     node.invoke(() -> {
