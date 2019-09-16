@@ -15,14 +15,20 @@
 
 package org.apache.geode.management.internal;
 
+import java.util.Arrays;
+import java.util.List;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
+import org.apache.http.Header;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicHeader;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
@@ -39,6 +45,7 @@ public class PlainClusterManagementServiceBuilder implements
   protected HostnameVerifier hostnameVerifier;
   protected String username;
   protected String password;
+  protected String authToken;
 
   public PlainClusterManagementServiceBuilder() {}
 
@@ -69,6 +76,12 @@ public class PlainClusterManagementServiceBuilder implements
     return this;
   }
 
+  @Override
+  public ClusterManagementServiceBuilder.PlainBuilder setAuthToken(String authToken) {
+    this.authToken = authToken;
+    return this;
+  }
+
   public String getUsername() {
     return username;
   }
@@ -94,7 +107,11 @@ public class PlainClusterManagementServiceBuilder implements
 
     HttpClientBuilder clientBuilder = HttpClientBuilder.create();
     // configures the clientBuilder
-    if (username != null) {
+    if (authToken != null) {
+      List<Header> defaultHeaders = Arrays.asList(
+          new BasicHeader(HttpHeaders.AUTHORIZATION, "Bearer " + authToken));
+      clientBuilder.setDefaultHeaders(defaultHeaders);
+    } else if (username != null) {
       CredentialsProvider credsProvider = new BasicCredentialsProvider();
       credsProvider.setCredentials(new AuthScope(host, port),
           new UsernamePasswordCredentials(username, password));
@@ -105,6 +122,7 @@ public class PlainClusterManagementServiceBuilder implements
     clientBuilder.setSSLHostnameVerifier(hostnameVerifier);
 
     requestFactory.setHttpClient(clientBuilder.build());
+
     restTemplate.setRequestFactory(requestFactory);
 
     return new ClientClusterManagementService(restTemplate);

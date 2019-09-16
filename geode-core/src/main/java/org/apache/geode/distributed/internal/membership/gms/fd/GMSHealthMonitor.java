@@ -54,26 +54,24 @@ import org.jgroups.util.UUID;
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
+import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
 import org.apache.geode.internal.ConnectionWatcher;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Failure Detection
@@ -85,11 +83,11 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  * we check whether this member is still alive or not. Based on that we informed probable
  * coordinators to remove that member from view.
  * <p>
- * It has {@link #suspect(InternalDistributedMember, String)} api, which can be used to initiate
+ * It has {@link #suspect(GMSMember, String)} api, which can be used to initiate
  * suspect processing for any member. First is checks whether the member is responding or not. Then
  * it informs probable coordinators to remove that member from view.
  * <p>
- * It has {@link HealthMonitor#checkIfAvailable(InternalDistributedMember, String, boolean)} api to
+ * It has {@link HealthMonitor#checkIfAvailable(GMSMember, String, boolean)} api to
  * see if that member is
  * alive. Then based on removal flag it initiates the suspect processing for that member.
  */
@@ -97,8 +95,8 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 public class GMSHealthMonitor implements HealthMonitor {
 
   private Services services;
-  private volatile NetView currentView;
-  private volatile InternalDistributedMember nextNeighbor;
+  private volatile GMSMembershipView currentView;
+  private volatile GMSMember nextNeighbor;
 
   long memberTimeout;
   private volatile boolean isStopping = false;
@@ -134,24 +132,24 @@ public class GMSHealthMonitor implements HealthMonitor {
   /**
    * this member's ID
    */
-  private InternalDistributedMember localAddress;
+  private GMSMember localAddress;
 
   /**
    * Timestamp at which we last had contact from a member
    */
-  final ConcurrentMap<InternalDistributedMember, TimeStamp> memberTimeStamps =
+  final ConcurrentMap<GMSMember, TimeStamp> memberTimeStamps =
       new ConcurrentHashMap<>();
 
   /**
    * Members currently being suspected and the view they were suspected in
    */
-  private final ConcurrentHashMap<InternalDistributedMember, NetView> suspectedMemberIds =
+  private final ConcurrentHashMap<GMSMember, GMSMembershipView> suspectedMemberIds =
       new ConcurrentHashMap<>();
 
   /**
    * Members undergoing final checks
    */
-  private final List<InternalDistributedMember> membersInFinalCheck =
+  private final List<GMSMember> membersInFinalCheck =
       Collections.synchronizedList(new ArrayList<>(30));
 
   /**
@@ -162,7 +160,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   /**
    * Members suspected in a particular view
    */
-  private final Map<NetView, Set<SuspectRequest>> suspectRequestsInView = new HashMap<>();
+  private final Map<GMSMembershipView, Set<SuspectRequest>> suspectRequestsInView = new HashMap<>();
 
   private ScheduledExecutorService scheduler;
 
@@ -193,7 +191,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   /**
    * Statistics about health monitor
    */
-  private DMStats stats;
+  private MembershipStatistics stats;
 
   /**
    * Interval to run the Monitor task
@@ -223,7 +221,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
   /***
    * This class sets start interval timestamp to record the activity of all members. That is used by
-   * {@link GMSHealthMonitor#contactedBy(InternalDistributedMember)} to record the activity of
+   * {@link GMSHealthMonitor#contactedBy(GMSMember)} to record the activity of
    * member.
    *
    * It initiates the suspect processing for next neighbour if it doesn't see any activity from that
@@ -250,7 +248,7 @@ public class GMSHealthMonitor implements HealthMonitor {
         return;
       }
 
-      InternalDistributedMember neighbour = nextNeighbor;
+      GMSMember neighbour = nextNeighbor;
 
       long currentTime = System.currentTimeMillis();
       // this is the start of interval to record member activity
@@ -260,7 +258,7 @@ public class GMSHealthMonitor implements HealthMonitor {
       long oldTimeStamp = currentTimeStamp;
       currentTimeStamp = System.currentTimeMillis();
 
-      NetView myView = GMSHealthMonitor.this.currentView;
+      GMSMembershipView myView = GMSHealthMonitor.this.currentView;
       if (myView == null) {
         return;
       }
@@ -270,7 +268,7 @@ public class GMSHealthMonitor implements HealthMonitor {
         logger.info(
             "Failure detector has noticed a JVM pause and is giving all members a heartbeat in view {}",
             currentView);
-        for (InternalDistributedMember member : myView.getMembers()) {
+        for (GMSMember member : myView.getMembers()) {
           contactedBy(member);
         }
         return;
@@ -308,13 +306,13 @@ public class GMSHealthMonitor implements HealthMonitor {
    */
   private class Response {
 
-    private DistributionMessage responseMsg;
+    private AbstractGMSMessage responseMsg;
 
-    public DistributionMessage getResponseMsg() {
+    public AbstractGMSMessage getResponseMsg() {
       return responseMsg;
     }
 
-    public void setResponseMsg(DistributionMessage responseMsg) {
+    public void setResponseMsg(AbstractGMSMessage responseMsg) {
       this.responseMsg = responseMsg;
     }
 
@@ -341,7 +339,7 @@ public class GMSHealthMonitor implements HealthMonitor {
         long uuidMSBs = in.readLong();
         GMSHealthMonitor.this.stats.incFinalCheckRequestsReceived();
         GMSHealthMonitor.this.stats.incTcpFinalCheckRequestsReceived();
-        GMSMember gmbr = (GMSMember) GMSHealthMonitor.this.localAddress.getNetMember();
+        GMSMember gmbr = localAddress;
         UUID myUUID = gmbr.getUUID();
         // during reconnect or rapid restart we will have a zero viewId but there may still
         // be an old ID in the membership view that we do not want to respond to
@@ -405,7 +403,7 @@ public class GMSHealthMonitor implements HealthMonitor {
    * Record the member activity for current time interval.
    */
   @Override
-  public void contactedBy(InternalDistributedMember sender) {
+  public void contactedBy(GMSMember sender) {
     contactedBy(sender, currentTimeStamp);
   }
 
@@ -413,7 +411,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   /**
    * Record member activity at a specified time
    */
-  private void contactedBy(InternalDistributedMember sender, long timeStamp) {
+  private void contactedBy(GMSMember sender, long timeStamp) {
     TimeStamp cTS = new TimeStamp(timeStamp);
     cTS = memberTimeStamps.putIfAbsent(sender, cTS);
     if (cTS != null && cTS.getTime() < timeStamp) {
@@ -427,7 +425,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
 
   private HeartbeatRequestMessage constructHeartbeatRequestMessage(
-      final InternalDistributedMember mbr) {
+      final GMSMember mbr) {
     final int reqId = requestId.getAndIncrement();
     final HeartbeatRequestMessage hrm = new HeartbeatRequestMessage(mbr, reqId);
     hrm.setRecipient(mbr);
@@ -435,8 +433,8 @@ public class GMSHealthMonitor implements HealthMonitor {
     return hrm;
   }
 
-  private void checkMember(final InternalDistributedMember mbr) {
-    final NetView cv = GMSHealthMonitor.this.currentView;
+  private void checkMember(final GMSMember mbr) {
+    final GMSMembershipView cv = GMSHealthMonitor.this.currentView;
 
     // as check may take time
     setNextNeighbor(cv, mbr);
@@ -465,7 +463,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
   }
 
-  private void initiateSuspicion(InternalDistributedMember mbr, String reason) {
+  private void initiateSuspicion(GMSMember mbr, String reason) {
     if (services.getJoinLeave().isMemberLeaving(mbr)) {
       return;
     }
@@ -476,7 +474,7 @@ public class GMSHealthMonitor implements HealthMonitor {
    * This method sends heartbeat request to other member and waits for member-timeout time for
    * response. If it doesn't see response then it returns false.
    */
-  private boolean doCheckMember(InternalDistributedMember member, boolean waitForResponse) {
+  private boolean doCheckMember(GMSMember member, boolean waitForResponse) {
     if (playingDead || beingSick) {
       // a member playingDead should not be sending messages to other
       // members, so we avoid sending heartbeat requests or suspect
@@ -494,7 +492,7 @@ public class GMSHealthMonitor implements HealthMonitor {
       hrm.clearRequestId();
     }
     try {
-      Set<InternalDistributedMember> membersNotReceivedMsg = this.services.getMessenger().send(hrm);
+      Set<GMSMember> membersNotReceivedMsg = this.services.getMessenger().send(hrm);
       this.stats.incHeartbeatRequestsSent();
       if (membersNotReceivedMsg != null && membersNotReceivedMsg.contains(member)) {
         // member is not part of current view.
@@ -543,7 +541,7 @@ public class GMSHealthMonitor implements HealthMonitor {
    * @param suspectMember member that does not respond to HeartbeatRequestMessage
    * @return true if successfully exchanged PING/PONG with TCP connection, otherwise false.
    */
-  boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port,
+  boolean doTCPCheckMember(GMSMember suspectMember, int port,
       boolean retryIfConnectFails) {
     Socket clientSocket = null;
     // make sure we try to check on the member for the contracted memberTimeout period
@@ -594,13 +592,13 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   // Package protected for testing purposes
-  boolean doTCPCheckMember(InternalDistributedMember suspectMember, Socket clientSocket) {
+  boolean doTCPCheckMember(GMSMember suspectMember, Socket clientSocket) {
     try {
       if (clientSocket.isConnected()) {
         clientSocket.setSoTimeout((int) services.getConfig().getMemberTimeout());
         InputStream in = clientSocket.getInputStream();
         DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-        GMSMember gmbr = (GMSMember) suspectMember.getNetMember();
+        GMSMember gmbr = suspectMember;
         writeMemberToStream(gmbr, out);
         this.stats.incFinalCheckRequestsSent();
         this.stats.incTcpFinalCheckRequestsSent();
@@ -638,7 +636,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   void writeMemberToStream(GMSMember gmbr, DataOutputStream out) throws IOException {
-    out.writeShort(Version.CURRENT_ORDINAL);
+    out.writeShort(Version.getCurrentVersion().ordinal());
     out.writeInt(gmbr.getVmViewId());
     out.writeLong(gmbr.getUuidLSBs());
     out.writeLong(gmbr.getUuidMSBs());
@@ -646,12 +644,12 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   @Override
-  public void suspect(InternalDistributedMember mbr, String reason) {
+  public void suspect(GMSMember mbr, String reason) {
     initiateSuspicion(mbr, reason);
   }
 
   @Override
-  public boolean checkIfAvailable(InternalDistributedMember mbr, String reason,
+  public boolean checkIfAvailable(GMSMember mbr, String reason,
       boolean initiateRemoval) {
     return inlineCheckIfAvailable(localAddress, currentView, initiateRemoval,
         mbr, reason);
@@ -753,9 +751,9 @@ public class GMSHealthMonitor implements HealthMonitor {
           } catch (InterruptedException e) {
             return;
           }
-          NetView v = currentView;
+          GMSMembershipView v = currentView;
           if (v != null) {
-            List<InternalDistributedMember> mbrs = v.getMembers();
+            List<GMSMember> mbrs = v.getMembers();
             int index = mbrs.indexOf(localAddress);
             if (index < 0 || mbrs.size() < 2) {
               continue;
@@ -767,8 +765,8 @@ public class GMSHealthMonitor implements HealthMonitor {
         }
       }
 
-      private void sendHeartbeats(List<InternalDistributedMember> mbrs, int startIndex) {
-        InternalDistributedMember coordinator = currentView.getCoordinator();
+      private void sendHeartbeats(List<GMSMember> mbrs, int startIndex) {
+        GMSMember coordinator = currentView.getCoordinator();
         if (coordinator != null && !coordinator.equals(localAddress)) {
           HeartbeatMessage message = new HeartbeatMessage(-1);
           message.setRecipient(coordinator);
@@ -790,7 +788,7 @@ public class GMSHealthMonitor implements HealthMonitor {
           if (index < 0) {
             index = mbrs.size() - 1;
           }
-          InternalDistributedMember mbr = mbrs.get(index);
+          GMSMember mbr = mbrs.get(index);
           if (mbr.equals(localAddress)) {
             break;
           }
@@ -818,17 +816,17 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   @Override
-  public synchronized void installView(NetView newView) {
+  public synchronized void installView(GMSMembershipView newView) {
     synchronized (suspectRequestsInView) {
       suspectRequestsInView.clear();
     }
-    for (Iterator<InternalDistributedMember> it = memberTimeStamps.keySet().iterator(); it
+    for (Iterator<GMSMember> it = memberTimeStamps.keySet().iterator(); it
         .hasNext();) {
       if (!newView.contains(it.next())) {
         it.remove();
       }
     }
-    for (Iterator<InternalDistributedMember> it = suspectedMemberIds.keySet().iterator(); it
+    for (Iterator<GMSMember> it = suspectedMemberIds.keySet().iterator(); it
         .hasNext();) {
       if (!newView.contains(it.next())) {
         it.remove();
@@ -842,7 +840,7 @@ public class GMSHealthMonitor implements HealthMonitor {
    * this method is primarily for tests. The current view should be pulled from JoinLeave or the
    * MembershipManager (which includes surprise members)
    */
-  public synchronized NetView getView() {
+  public synchronized GMSMembershipView getView() {
     return currentView;
   }
 
@@ -854,7 +852,7 @@ public class GMSHealthMonitor implements HealthMonitor {
    * It becomes null when we suspect current neighbour, during that time it watches member next to
    * suspect member.
    */
-  protected synchronized void setNextNeighbor(NetView newView, InternalDistributedMember nextTo) {
+  protected synchronized void setNextNeighbor(GMSMembershipView newView, GMSMember nextTo) {
     if (newView == null) {
       return;
     }
@@ -862,11 +860,11 @@ public class GMSHealthMonitor implements HealthMonitor {
       nextTo = localAddress;
     }
 
-    List<InternalDistributedMember> allMembers = newView.getMembers();
+    List<GMSMember> allMembers = newView.getMembers();
 
     if (allMembers.size() > 1 && suspectedMemberIds.size() >= allMembers.size() - 1) {
       boolean nonSuspectFound = false;
-      for (InternalDistributedMember member : allMembers) {
+      for (GMSMember member : allMembers) {
         if (member.equals(localAddress)) {
           continue;
         }
@@ -885,12 +883,12 @@ public class GMSHealthMonitor implements HealthMonitor {
     int index = allMembers.indexOf(nextTo);
     if (index != -1) {
       int nextNeighborIndex = (index + 1) % allMembers.size();
-      InternalDistributedMember newNeighbor = allMembers.get(nextNeighborIndex);
+      GMSMember newNeighbor = allMembers.get(nextNeighborIndex);
       if (suspectedMemberIds.containsKey(newNeighbor)) {
         setNextNeighbor(newView, newNeighbor);
         return;
       }
-      InternalDistributedMember oldNeighbor = nextNeighbor;
+      GMSMember oldNeighbor = nextNeighbor;
       if (oldNeighbor != newNeighbor) {
         logger.debug("Failure detection is now watching " + newNeighbor);
         nextNeighbor = newNeighbor;
@@ -908,7 +906,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   /** test method */
-  public InternalDistributedMember getNextNeighbor() {
+  public GMSMember getNextNeighbor() {
     return nextNeighbor;
   }
 
@@ -996,7 +994,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   /**
    * Test method - check to see if a member is under suspicion
    */
-  public boolean isSuspectMember(InternalDistributedMember m) {
+  public boolean isSuspectMember(GMSMember m) {
     return this.suspectedMemberIds.containsKey(m);
   }
 
@@ -1006,8 +1004,8 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   @Override
-  public void memberSuspected(InternalDistributedMember initiator,
-      InternalDistributedMember suspect, String reason) {
+  public void memberSuspected(GMSMember initiator,
+      GMSMember suspect, String reason) {
     synchronized (suspectRequestsInView) {
       suspectedMemberIds.put(suspect, currentView);
       Collection<SuspectRequest> requests = suspectRequestsInView.get(currentView);
@@ -1028,7 +1026,7 @@ public class GMSHealthMonitor implements HealthMonitor {
     }
   }
 
-  private void memberUnsuspected(InternalDistributedMember mbr) {
+  private void memberUnsuspected(GMSMember mbr) {
     synchronized (suspectRequestsInView) {
       if (suspectedMemberIds.remove(mbr) != null) {
         logger.info("No longer suspecting {}", mbr);
@@ -1068,7 +1066,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   @Override
-  public void setLocalAddress(InternalDistributedMember idm) {
+  public void setLocalAddress(GMSMember idm) {
     this.localAddress = idm;
   }
 
@@ -1088,12 +1086,12 @@ public class GMSHealthMonitor implements HealthMonitor {
     }
 
     // only respond if the intended recipient is this member
-    InternalDistributedMember me = localAddress;
+    GMSMember me = localAddress;
 
     if (me == null || me.getVmViewId() >= 0 && m.getTarget().equals(me)) {
       HeartbeatMessage hm = new HeartbeatMessage(m.getRequestId());
       hm.setRecipient(m.getSender());
-      Set<InternalDistributedMember> membersNotReceivedMsg = services.getMessenger().send(hm);
+      Set<GMSMember> membersNotReceivedMsg = services.getMessenger().send(hm);
       this.stats.incHeartbeatsSent();
       if (membersNotReceivedMsg != null && membersNotReceivedMsg.contains(m.getSender())) {
         logger.debug("Unable to send heartbeat to member: {}", m.getSender());
@@ -1147,7 +1145,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
     this.stats.incSuspectsReceived();
 
-    NetView cv = currentView;
+    GMSMembershipView cv = currentView;
 
     if (cv == null) {
       return;
@@ -1155,7 +1153,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
     List<SuspectRequest> suspectRequests = incomingRequest.getMembers();
 
-    InternalDistributedMember sender = incomingRequest.getSender();
+    GMSMember sender = incomingRequest.getSender();
     int viewId = sender.getVmViewId();
     if (cv.getViewId() >= viewId && !cv.contains(incomingRequest.getSender())) {
       logger.info("Membership ignoring suspect request for " + incomingRequest + " from non-member "
@@ -1193,7 +1191,7 @@ public class GMSHealthMonitor implements HealthMonitor {
       // Another process has raised suspicion - check to see if
       // this process should become the membership coordinator if
       // all current suspects are gone
-      NetView check = new NetView(cv, cv.getViewId() + 1);
+      GMSMembershipView check = new GMSMembershipView(cv, cv.getViewId() + 1);
       ArrayList<SuspectRequest> membersToCheck = new ArrayList<>();
       synchronized (suspectRequestsInView) {
         recordSuspectRequests(suspectRequests, cv);
@@ -1205,7 +1203,7 @@ public class GMSHealthMonitor implements HealthMonitor {
         }
       }
       List membersLeaving = new ArrayList();
-      for (InternalDistributedMember member : cv.getMembers()) {
+      for (GMSMember member : cv.getMembers()) {
         if (services.getJoinLeave().isMemberLeaving(member)) {
           membersLeaving.add(member);
         }
@@ -1219,7 +1217,7 @@ public class GMSHealthMonitor implements HealthMonitor {
           check,
           check.getCoordinator(), localAddress);
 
-      InternalDistributedMember coordinator = check.getCoordinator();
+      GMSMember coordinator = check.getCoordinator();
       if (coordinator != null && coordinator.equals(localAddress)) {
         // new coordinator
         logSuspectRequests(incomingRequest, sender);
@@ -1239,7 +1237,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
 
   private void logSuspectRequests(SuspectMembersMessage incomingRequest,
-      InternalDistributedMember sender) {
+      GMSMember sender) {
     for (SuspectRequest req : incomingRequest.getMembers()) {
       String who = sender.equals(localAddress) ? "myself" : sender.toString();
       logger.info("received suspect message from {} for {}: {}", who, req.getSuspectMember(),
@@ -1251,7 +1249,7 @@ public class GMSHealthMonitor implements HealthMonitor {
    * This method make sure that records suspectRequest. We need to make sure this on preferred
    * coordinators, as elder coordinator might be in suspected list next.
    */
-  private void recordSuspectRequests(List<SuspectRequest> suspectRequests, NetView cv) {
+  private void recordSuspectRequests(List<SuspectRequest> suspectRequests, GMSMembershipView cv) {
     // record suspect requests
     Set<SuspectRequest> suspectedMembers;
     synchronized (suspectRequestsInView) {
@@ -1269,11 +1267,11 @@ public class GMSHealthMonitor implements HealthMonitor {
    * available for the member (in the view) then we attempt to connect to its socket and ask if it's
    * the expected member. Otherwise we send a heartbeat request and wait for a reply.
    */
-  private void checkIfAvailable(final InternalDistributedMember initiator,
-      List<SuspectRequest> sMembers, final NetView cv) {
+  private void checkIfAvailable(final GMSMember initiator,
+      List<SuspectRequest> sMembers, final GMSMembershipView cv) {
 
     for (final SuspectRequest sr : sMembers) {
-      final InternalDistributedMember mbr = sr.getSuspectMember();
+      final GMSMember mbr = sr.getSuspectMember();
 
       if (!cv.contains(mbr) || membersInFinalCheck.contains(mbr)) {
         continue;
@@ -1298,8 +1296,8 @@ public class GMSHealthMonitor implements HealthMonitor {
     }
   }
 
-  protected boolean inlineCheckIfAvailable(final InternalDistributedMember initiator,
-      final NetView cv, boolean forceRemovalIfCheckFails, final InternalDistributedMember mbr,
+  protected boolean inlineCheckIfAvailable(final GMSMember initiator,
+      final GMSMembershipView cv, boolean forceRemovalIfCheckFails, final GMSMember mbr,
       final String reason) {
 
     if (services.getJoinLeave().isMemberLeaving(mbr)) {
@@ -1389,7 +1387,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
       if (!failed) {
         if (!isStopping && !initiator.equals(localAddress)
-            && initiator.getVersionObject().compareTo(Version.GEODE_1_3_0) >= 0) {
+            && initiator.getVersionOrdinal() >= Version.GEODE_1_4_0.ordinal()) {
           // let the sender know that it's okay to monitor this member again
           FinalCheckPassedMessage message = new FinalCheckPassedMessage(initiator, mbr);
           services.getMessenger().send(message);
@@ -1408,24 +1406,19 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   @Override
-  public void memberShutdown(DistributedMember mbr, String reason) {}
+  public void memberShutdown(GMSMember mbr, String reason) {}
 
   @Override
   public int getFailureDetectionPort() {
     return this.socketPort;
   }
 
-  @Override
-  public Collection<InternalDistributedMember> getMembersFailingAvailabilityCheck() {
-    return Collections.unmodifiableCollection(this.suspectedMemberIds.keySet());
-  }
-
   private void sendSuspectRequest(final List<SuspectRequest> requests) {
     logger.debug("Sending suspect request for members {}", requests);
-    List<InternalDistributedMember> recipients;
-    if (currentView.size() > ServiceConfig.SMALL_CLUSTER_SIZE) {
-      HashSet<InternalDistributedMember> filter = new HashSet<>();
-      for (Enumeration<InternalDistributedMember> e = suspectedMemberIds.keys(); e
+    List<GMSMember> recipients;
+    if (currentView.size() > MembershipConfig.SMALL_CLUSTER_SIZE) {
+      HashSet<GMSMember> filter = new HashSet<>();
+      for (Enumeration<GMSMember> e = suspectedMemberIds.keys(); e
           .hasMoreElements();) {
         filter.add(e.nextElement());
       }
@@ -1433,14 +1426,15 @@ public class GMSHealthMonitor implements HealthMonitor {
           requests.stream().map(SuspectRequest::getSuspectMember).collect(Collectors.toList()));
       recipients =
           currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(),
-              ServiceConfig.SMALL_CLUSTER_SIZE + 1);
+              MembershipConfig.SMALL_CLUSTER_SIZE + 1);
     } else {
       recipients = currentView.getMembers();
     }
 
     logger.trace("Sending suspect messages to {}", recipients);
     SuspectMembersMessage smm = new SuspectMembersMessage(recipients, requests);
-    Set<InternalDistributedMember> failedRecipients;
+    smm.setSender(localAddress);
+    Set<GMSMember> failedRecipients;
     try {
       failedRecipients = services.getMessenger().send(smm);
       this.stats.incSuspectsSent();
@@ -1451,6 +1445,8 @@ public class GMSHealthMonitor implements HealthMonitor {
     if (failedRecipients != null && failedRecipients.size() > 0) {
       logger.trace("Unable to send suspect message to {}", failedRecipients);
     }
+    logger.trace("Processing suspect message locally");
+    processMessage(smm);
   }
 
   private static class ConnectTimeoutTask extends TimerTask implements ConnectionWatcher {
@@ -1488,7 +1484,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
   }
 
-  public DMStats getStats() {
+  public MembershipStatistics getStats() {
     return this.stats;
   }
 }

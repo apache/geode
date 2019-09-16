@@ -95,7 +95,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     // saved in cluster configuration and multiple receivers are not supported starting in 140.
     // Note: This comparison works because '130' < '140'.
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(version -> (version.compareTo(VersionManager.GEODE_140) >= 0));
+    result.removeIf(version -> (version.compareTo("1.4.0") >= 0));
     if (result.size() < 1) {
       throw new RuntimeException("No older versions of Geode were found to test against");
     }
@@ -144,12 +144,13 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     VM locator = Host.getHost(0).getVM(oldVersion, 0);
     String hostName = NetworkUtils.getServerHostName();
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(locatorPort);
     final String locators = hostName + "[" + locatorPort + "]";
-
     // Start old locator
-    locator.invoke(() -> startLocator(locatorPort, 0,
-        locators, null, true));
+    locator.invoke(() -> {
+      DistributedTestUtils.deleteLocatorStateFile(locatorPort);
+      startLocator(locatorPort, 0,
+          locators, null, true);
+    });
 
     // Wait for configuration configuration to be ready.
     locator.invoke(

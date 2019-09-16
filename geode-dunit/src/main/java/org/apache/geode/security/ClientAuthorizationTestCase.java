@@ -73,7 +73,6 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort.Keeper;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -222,7 +221,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         authProps.setProperty(SECURITY_CLIENT_ACCESSOR, accessor);
       }
     }
-    if (Version.CURRENT_ORDINAL >= 75) {
+    if (VersionManager.getInstance().getCurrentVersionOrdinal() >= 75) {
       authProps.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           UsernamePrincipal.class.getName());
     }
@@ -827,6 +826,7 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
             } catch (NoSuchMethodException e) {
               // running an old version of Geode
             }
+
             SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps,
                 0, setupDynamicRegionFactory, NO_EXCEPTION);
           });

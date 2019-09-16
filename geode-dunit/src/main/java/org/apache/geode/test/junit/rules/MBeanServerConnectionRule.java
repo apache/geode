@@ -79,11 +79,7 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     if (config == null)
       return;
 
-    Map<String, String[]> env = new HashMap<>();
-    String user = config.user();
-    String password = config.password();
-    env.put(JMXConnector.CREDENTIALS, new String[] {user, password});
-    connect(null, portSupplier.get(), env);
+    connect(portSupplier.get(), config.user(), config.password());
   }
 
   @Override
@@ -175,6 +171,12 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
 
   public MBeanServerConnection getMBeanServerConnection() throws IOException {
     return con;
+  }
+
+  public void connect(int port, String username, String password) throws Exception {
+    Map<String, String[]> env = new HashMap<>();
+    env.put(JMXConnector.CREDENTIALS, new String[] {username, password});
+    connect(null, port, env);
   }
 
   public void connect(int jmxPort) throws Exception {

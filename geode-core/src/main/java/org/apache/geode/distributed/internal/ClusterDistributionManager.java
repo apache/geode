@@ -62,17 +62,17 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
-import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MemberFactory;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.MembershipView;
+import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.AdminConsoleDisconnectMessage;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -89,6 +89,7 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.sequencelog.MembershipLogger;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.tcp.ReenteredConnectException;
@@ -776,12 +777,17 @@ public class ClusterDistributionManager implements DistributionManager {
       // connect to the cluster
       long start = System.currentTimeMillis();
 
-      DMListener l = new DMListener(this);
-      membershipManager = MemberFactory.newMembershipManager(l, transport,
-          stats,
-          new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
-              system.getSecurityLogWriter(), system.getInternalLogWriter()),
-          system.getConfig());
+      DMListener listener = new DMListener(this);
+      membershipManager = MembershipBuilder.newMembershipBuilder(this)
+          .setAuthenticator(
+              new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
+                  system.getSecurityLogWriter(), system.getInternalLogWriter()))
+          .setStatistics(stats)
+          .setMessageListener(this::handleIncomingDMsg)
+          .setMembershipListener(listener)
+          .setConfig(new ServiceConfig(transport, system.getConfig()))
+          .setSerializer(InternalDataSerializer.getDSFIDSerializer())
+          .create();
 
       sb.append(System.currentTimeMillis() - start);
 
@@ -1107,7 +1113,7 @@ public class ClusterDistributionManager implements DistributionManager {
     try {
 
       // And the distinguished guests today are...
-      NetView v = membershipManager.getView();
+      MembershipView v = membershipManager.getView();
       logger.info("Initial (distribution manager) view, {}",
           String.valueOf(v));
 
@@ -1511,11 +1517,6 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public InternalDistributedMember getId() {
     return localAddress;
-  }
-
-  @Override
-  public long getMembershipPort() {
-    return localAddress.getPort();
   }
 
   @Override
@@ -2687,7 +2688,7 @@ public class ClusterDistributionManager implements DistributionManager {
     addMemberEvent(new MemberSuspectEvent(suspect, whoSuspected, reason));
   }
 
-  private void handleViewInstalled(NetView view) {
+  private void handleViewInstalled(MembershipView view) {
     addMemberEvent(new ViewInstalledEvent(view));
   }
 
@@ -2851,7 +2852,7 @@ public class ClusterDistributionManager implements DistributionManager {
       Collections.addAll(result, destinations);
       return result;
     }
-    return membershipManager.send(destinations, content, stats);
+    return membershipManager.send(destinations, content);
   }
 
 
@@ -3374,7 +3375,8 @@ public class ClusterDistributionManager implements DistributionManager {
    * This is the listener implementation for responding from events from the Membership Manager.
    *
    */
-  private class DMListener implements DistributedMembershipListener {
+  private class DMListener implements
+      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener {
     ClusterDistributionManager dm;
 
     DMListener(ClusterDistributionManager dm) {
@@ -3389,17 +3391,12 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    public void messageReceived(DistributionMessage message) {
-      handleIncomingDMsg(message);
-    }
-
-    @Override
-    public void newMemberConnected(InternalDistributedMember member) {
+    public void newMemberConnected(DistributedMember member) {
       // Do not elect the elder here as surprise members invoke this callback
       // without holding the view lock. That can cause a race condition and
       // subsequent deadlock (#45566). Elder selection is now done when a view
       // is installed.
-      dm.addNewMember(member);
+      dm.addNewMember((InternalDistributedMember) member);
     }
 
     @Override
@@ -3430,7 +3427,7 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    public void viewInstalled(NetView view) {
+    public void viewInstalled(MembershipView view) {
       dm.handleViewInstalled(view);
     }
 
@@ -3438,11 +3435,6 @@ public class ClusterDistributionManager implements DistributionManager {
     public void quorumLost(Set<InternalDistributedMember> failures,
         List<InternalDistributedMember> remaining) {
       dm.handleQuorumLost(failures, remaining);
-    }
-
-    @Override
-    public ClusterDistributionManager getDM() {
-      return dm;
     }
 
     @Override
@@ -3612,9 +3604,9 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   private static class ViewInstalledEvent extends MemberEvent {
-    NetView view;
+    MembershipView view;
 
-    ViewInstalledEvent(NetView view) {
+    ViewInstalledEvent(MembershipView view) {
       super(null);
       this.view = view;
     }

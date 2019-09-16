@@ -66,6 +66,7 @@ import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOpe
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * TXState is the entity that tracks the transaction state on a per thread basis, noting changes to
@@ -151,13 +152,16 @@ public class TXState implements TXStateInterface {
 
   private volatile DistributedMember proxyServer;
 
-  public TXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub) {
-    this(proxy, onBehalfOfRemoteStub, new SingleThreadJTAExecutor());
+  private final StatisticsClock statisticsClock;
+
+  public TXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub,
+      StatisticsClock statisticsClock) {
+    this(proxy, onBehalfOfRemoteStub, new SingleThreadJTAExecutor(), statisticsClock);
   }
 
   public TXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub,
-      SingleThreadJTAExecutor singleThreadJTAExecutor) {
-    this.beginTime = CachePerfStats.getStatTime();
+      SingleThreadJTAExecutor singleThreadJTAExecutor, StatisticsClock statisticsClock) {
+    this.beginTime = statisticsClock.getTime();
     this.regions = new IdentityHashMap<>();
 
     this.internalAfterConflictCheck = null;
@@ -170,6 +174,7 @@ public class TXState implements TXStateInterface {
     this.proxy = proxy;
     this.onBehalfOfRemoteStub = onBehalfOfRemoteStub;
     this.singleThreadJTAExecutor = singleThreadJTAExecutor;
+    this.statisticsClock = statisticsClock;
   }
 
   private boolean hasSeenEvent(EntryEventImpl event) {
@@ -350,14 +355,14 @@ public class TXState implements TXStateInterface {
       return;
     }
 
-    final long conflictStart = CachePerfStats.getStatTime();
+    final long conflictStart = statisticsClock.getTime();
     this.locks = createLockRequest();
     this.locks.obtain(getCache().getInternalDistributedSystem());
     // for now check account the dlock service time
     // later this stat end should be moved to a finally block
-    if (CachePerfStats.enableClockStats)
+    if (statisticsClock.isEnabled())
       this.proxy.getTxMgr().getCachePerfStats()
-          .incTxConflictCheckTime(CachePerfStats.getStatTime() - conflictStart);
+          .incTxConflictCheckTime(statisticsClock.getTime() - conflictStart);
     if (this.internalAfterReservation != null) {
       this.internalAfterReservation.run();
     }
@@ -883,15 +888,15 @@ public class TXState implements TXStateInterface {
       this.seenResults.clear();
       freePendingCallbacks();
       if (this.locks != null) {
-        final long conflictStart = CachePerfStats.getStatTime();
+        final long conflictStart = statisticsClock.getTime();
         try {
           this.locks.cleanup(getCache().getInternalDistributedSystem());
         } catch (IllegalArgumentException | IllegalMonitorStateException e) {
           exception = e;
         }
-        if (CachePerfStats.enableClockStats)
+        if (statisticsClock.isEnabled())
           this.proxy.getTxMgr().getCachePerfStats()
-              .incTxConflictCheckTime(CachePerfStats.getStatTime() - conflictStart);
+              .incTxConflictCheckTime(statisticsClock.getTime() - conflictStart);
       }
       Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
       while (it.hasNext()) {
@@ -1047,7 +1052,7 @@ public class TXState implements TXStateInterface {
   }
 
   void doBeforeCompletion() {
-    final long opStart = CachePerfStats.getStatTime();
+    final long opStart = statisticsClock.getTime();
     this.jtaLifeTime = opStart - getBeginTime();
 
     try {
@@ -1128,7 +1133,7 @@ public class TXState implements TXStateInterface {
   }
 
   void doAfterCompletionCommit() {
-    final long opStart = CachePerfStats.getStatTime();
+    final long opStart = statisticsClock.getTime();
     try {
       Assert.assertTrue(this.locks != null,
           "Gemfire Transaction afterCompletion called with illegal state.");
@@ -1148,7 +1153,7 @@ public class TXState implements TXStateInterface {
   }
 
   void doAfterCompletionRollback() {
-    final long opStart = CachePerfStats.getStatTime();
+    final long opStart = statisticsClock.getTime();
     this.jtaLifeTime = opStart - getBeginTime();
     try {
       rollback();

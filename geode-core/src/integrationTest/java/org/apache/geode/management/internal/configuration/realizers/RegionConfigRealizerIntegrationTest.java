@@ -22,12 +22,10 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
-import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
+import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class RegionConfigRealizerIntegrationTest {
@@ -36,11 +34,11 @@ public class RegionConfigRealizerIntegrationTest {
   public ServerStarterRule server = new ServerStarterRule().withAutoStart();
 
   private RegionConfigRealizer realizer;
-  private RegionConfig config;
+  private Region config;
 
   @Before
   public void setup() {
-    config = new RegionConfig();
+    config = new Region();
     realizer = new RegionConfigRealizer();
   }
 
@@ -48,10 +46,9 @@ public class RegionConfigRealizerIntegrationTest {
   public void sanityCheck() throws Exception {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
-    RegionConfigValidator.setShortcutAttributes(config);
     realizer.create(config, server.getCache());
 
-    Region<Object, Object> region = server.getCache().getRegion("test");
+    org.apache.geode.cache.Region<Object, Object> region = server.getCache().getRegion("test");
     assertThat(region).isNotNull();
     assertThat(region.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
     assertThat(region.getAttributes().getScope()).isEqualTo(Scope.DISTRIBUTED_ACK);
@@ -61,7 +58,6 @@ public class RegionConfigRealizerIntegrationTest {
   public void create2ndTime() throws Exception {
     config.setName("foo");
     config.setType(RegionType.REPLICATE);
-    RegionConfigValidator.setShortcutAttributes(config);
     realizer.create(config, server.getCache());
 
     // the 2nd time with same name and type will throw an error
@@ -73,10 +69,9 @@ public class RegionConfigRealizerIntegrationTest {
   public void deleteRegion() {
     config.setName("foo");
     config.setType(RegionType.REPLICATE);
-    RegionConfigValidator.setShortcutAttributes(config);
     realizer.create(config, server.getCache());
 
-    Region region = server.getCache().getRegion(config.getName());
+    org.apache.geode.cache.Region region = server.getCache().getRegion(config.getName());
     assertThat(region).isNotNull();
 
     realizer.delete(config, server.getCache());

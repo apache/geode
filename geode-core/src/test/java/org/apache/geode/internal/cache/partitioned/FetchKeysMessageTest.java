@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Answers.RETURNS_DEEP_STUBS;
 import static org.mockito.ArgumentMatchers.any;
@@ -75,7 +76,7 @@ public class FetchKeysMessageTest {
 
     originalTxManager = TXManagerImpl.getCurrentInstanceForTest();
     // The constructor sets the new tx manager as currentInstance
-    txManager = spy(new TXManagerImpl(mock(CachePerfStats.class), cache));
+    txManager = spy(new TXManagerImpl(mock(CachePerfStats.class), cache, disabledClock()));
     txManager.setTXState(txStateProxy);
     txManager.setDistributed(false);
 

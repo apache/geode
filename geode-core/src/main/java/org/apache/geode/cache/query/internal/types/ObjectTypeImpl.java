@@ -21,9 +21,11 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Implementation of ObjectType
@@ -98,12 +100,24 @@ public class ObjectTypeImpl implements ObjectType, DataSerializableFixedID {
   }
 
   @Override
+  public void toData(DataOutput out) throws IOException {
+    toData(out, InternalDataSerializer.createSerializationContext(out));
+  }
+
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
+  }
+
+  @Override
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.clazz = DataSerializer.readClass(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeClass(this.clazz, out);
   }
 

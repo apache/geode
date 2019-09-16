@@ -30,7 +30,7 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.HttpService;
+import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourceConstants;
@@ -128,6 +128,6 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter
   @Override
   public void setServletContext(ServletContext servletContext) {
     securityService = (SecurityService) servletContext
-        .getAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
+        .getAttribute(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
   }
 }

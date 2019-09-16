@@ -23,6 +23,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Takes delta to be evicted and tries to evict the least no of LRU entry which would make
@@ -42,12 +43,15 @@ public class RegionEvictorTask implements Runnable {
 
   private final long bytesToEvictPerTask;
 
+  private final StatisticsClock statisticsClock;
+
   RegionEvictorTask(final CachePerfStats stats, final List<LocalRegion> regions,
-      final HeapEvictor evictor, final long bytesToEvictPerTask) {
+      final HeapEvictor evictor, final long bytesToEvictPerTask, StatisticsClock statisticsClock) {
     this.stats = stats;
     this.evictor = evictor;
     this.regions = regions;
     this.bytesToEvictPerTask = bytesToEvictPerTask;
+    this.statisticsClock = statisticsClock;
   }
 
   List<LocalRegion> getRegionList() {
@@ -66,7 +70,7 @@ public class RegionEvictorTask implements Runnable {
     try {
       long totalBytesEvicted = 0;
       while (true) {
-        final long start = CachePerfStats.getStatTime();
+        final long start = statisticsClock.getTime();
         synchronized (this.regions) {
           if (this.regions.isEmpty()) {
             return;
@@ -91,7 +95,7 @@ public class RegionEvictorTask implements Runnable {
               logger.warn(String.format("Exception: %s occurred during eviction ",
                   new Object[] {e.getMessage()}), e);
             } finally {
-              long end = CachePerfStats.getStatTime();
+              long end = statisticsClock.getTime();
               this.stats.incEvictWorkTime(end - start);
             }
           }

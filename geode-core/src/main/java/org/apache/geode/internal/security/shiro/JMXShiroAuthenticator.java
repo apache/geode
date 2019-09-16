@@ -18,7 +18,9 @@ import static org.apache.geode.management.internal.security.ResourceConstants.MI
 
 import java.security.Principal;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -37,6 +39,8 @@ import org.apache.geode.security.AuthenticationFailedException;
 public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationListener {
 
   private final SecurityService securityService;
+  private final Map<String, org.apache.shiro.subject.Subject> connectedUsers =
+      new ConcurrentHashMap<>();
 
   public JMXShiroAuthenticator(SecurityService securityService) {
     this.securityService = securityService;
@@ -76,8 +80,13 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
     if (notification instanceof JMXConnectionNotification) {
       JMXConnectionNotification cxNotification = (JMXConnectionNotification) notification;
       String type = cxNotification.getType();
-      if (JMXConnectionNotification.CLOSED.equals(type)) {
-        this.securityService.logout();
+      String connectionId = cxNotification.getConnectionId();
+      if (JMXConnectionNotification.OPENED.equals(type)) {
+        connectedUsers.put(connectionId, securityService.getSubject());
+      } else if (JMXConnectionNotification.CLOSED.equals(type)) {
+        org.apache.shiro.subject.Subject subject = connectedUsers.remove(connectionId);
+        securityService.bindSubject(subject);
+        securityService.logout();
       }
     }
   }

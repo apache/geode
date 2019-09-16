@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.management.configuration.MemberConfig.MEMBER_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,7 @@ import org.apache.geode.management.runtime.MemberInformation;
 @Controller("members")
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class MemberManagementController extends AbstractManagementController {
+  @ApiOperation(value = "get member")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT + "/{id}")
   public ResponseEntity<ClusterManagementListResult<MemberConfig, MemberInformation>> getMember(
@@ -55,6 +57,7 @@ public class MemberManagementController extends AbstractManagementController {
         result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
+  @ApiOperation(value = "list members")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT)
   public ResponseEntity<ClusterManagementListResult<MemberConfig, MemberInformation>> listMembers(
@@ -62,6 +65,9 @@ public class MemberManagementController extends AbstractManagementController {
     MemberConfig filter = new MemberConfig();
     if (StringUtils.isNotBlank(id)) {
       filter.setId(id);
+    }
+    if (StringUtils.isNotBlank(group)) {
+      filter.setGroup(group);
     }
     ClusterManagementListResult<MemberConfig, MemberInformation> result =
         clusterManagementService.list(filter);

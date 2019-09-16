@@ -25,7 +25,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.Version;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
@@ -65,8 +64,10 @@ public class RollingUpgradeTracePRQuery extends RollingUpgrade2DUnitTestBase {
       props.put(DistributionConfig.LOCATORS_NAME, serverHostName + "[" + port + "]");
       invokeRunnableInVMs(invokeCreateCache(props), currentServer1, currentServer2, oldServer);
 
-      currentServer1.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
-      currentServer2.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
+      currentServer1
+          .invoke(invokeAssertVersion(VersionManager.getInstance().getCurrentVersionOrdinal()));
+      currentServer2
+          .invoke(invokeAssertVersion(VersionManager.getInstance().getCurrentVersionOrdinal()));
 
       // create region
       invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut), currentServer1, currentServer2,

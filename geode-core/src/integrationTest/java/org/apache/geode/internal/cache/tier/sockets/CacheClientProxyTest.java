@@ -33,9 +33,10 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.net.SocketCloser;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -49,7 +50,6 @@ public class CacheClientProxyTest {
 
   @Test
   public void closeSocketShouldBeAtomic() {
-
     final CacheServerStats stats = mock(CacheServerStats.class);
     doNothing().when(stats).incCurrentQueueConnections();
 
@@ -73,7 +73,7 @@ public class CacheClientProxyTest {
 
     CacheClientProxy proxy = new CacheClientProxy(ccn, socket, proxyID, true,
         Handshake.CONFLATION_DEFAULT, Version.CURRENT, 1L, true,
-        null, null);
+        null, null, mock(StatisticsClock.class));
 
     CompletableFuture<Void> result1 = executorServiceRule.runAsync(() -> proxy.close());
     CompletableFuture<Void> result2 = executorServiceRule.runAsync(() -> proxy.close());
@@ -93,5 +93,4 @@ public class CacheClientProxyTest {
       closeSocketShouldBeAtomic();
     }
   }
-
 }

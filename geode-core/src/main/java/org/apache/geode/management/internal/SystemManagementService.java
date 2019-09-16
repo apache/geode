@@ -26,6 +26,7 @@ import javax.management.ObjectName;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -35,6 +36,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.AlreadyRunningException;
 import org.apache.geode.management.AsyncEventQueueMXBean;
 import org.apache.geode.management.CacheServerMXBean;
@@ -118,6 +120,9 @@ public class SystemManagementService extends BaseManagementService {
   private final UniversalListenerContainer universalListenerContainer =
       new UniversalListenerContainer();
 
+  private final StatisticsFactory statisticsFactory;
+  private final StatisticsClock statisticsClock;
+
   public static BaseManagementService newSystemManagementService(
       InternalCacheForClientAccess cache) {
     return new SystemManagementService(cache).init();
@@ -125,7 +130,7 @@ public class SystemManagementService extends BaseManagementService {
 
   protected SystemManagementService(InternalCacheForClientAccess cache) {
     this.cache = cache;
-    this.system = (InternalDistributedSystem) cache.getDistributedSystem();
+    this.system = cache.getInternalDistributedSystem();
     // This is a safe check to ensure Management service does not start for a
     // system which is disconnected.
     // Most likely scenario when this will happen is when a cache is closed and we are at this
@@ -134,6 +139,9 @@ public class SystemManagementService extends BaseManagementService {
       throw new DistributedSystemDisconnectedException(
           "This connection to a distributed system has been disconnected.");
     }
+
+    statisticsFactory = system.getStatisticsManager();
+    statisticsClock = cache.getStatisticsClock();
 
     this.jmxAdapter = new MBeanJMXAdapter(this.system.getDistributedMember());
     this.repo = new ManagementResourceRepo();
@@ -157,7 +165,8 @@ public class SystemManagementService extends BaseManagementService {
    */
   private SystemManagementService init() {
     try {
-      this.localManager = new LocalManager(repo, system, this, cache);
+      this.localManager =
+          new LocalManager(repo, system, this, cache, statisticsFactory, statisticsClock);
       this.localManager.startManager();
       this.listener = new ManagementMembershipListener(this);
       system.getDistributionManager().addMembershipListener(listener);
@@ -342,7 +351,7 @@ public class SystemManagementService extends BaseManagementService {
     if (!isStartedAndOpen()) {
       return Collections.emptySet();
     }
-    if (cache.getDistributedSystem().getDistributedMember().equals(member)) {
+    if (system.getDistributedMember().equals(member)) {
       return jmxAdapter.getLocalGemFireMBean().keySet();
     } else {
       if (federatingManager == null) {
@@ -462,7 +471,8 @@ public class SystemManagementService extends BaseManagementService {
       }
       system.handleResourceEvent(ResourceEvent.MANAGER_CREATE, null);
       // An initialised copy of federating manager
-      federatingManager = new FederatingManager(jmxAdapter, repo, system, this, cache);
+      federatingManager = new FederatingManager(jmxAdapter, repo, system, this, cache,
+          statisticsFactory, statisticsClock);
       getInternalCache().getJmxManagerAdvisor().broadcastChange();
       return true;
     }

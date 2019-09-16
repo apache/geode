@@ -14,10 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import static org.apache.geode.internal.net.SSLConfigurationFactory.GEODE_SSL_CONFIG_PROPERTIES;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.management.AttributeNotFoundException;
@@ -44,7 +46,6 @@ import javax.management.remote.JMXConnectionNotification;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import com.healthmarketscience.rmiio.RemoteOutputStreamClient;
 import org.apache.commons.io.IOUtils;
@@ -56,6 +57,7 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.internal.ContextAwareSSLRMIClientSocketFactory;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.beans.FileUploader;
@@ -71,7 +73,7 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 public class JmxOperationInvoker implements OperationInvoker {
   private static final Logger logger = LogService.getLogger();
 
-  public static final String JMX_URL_FORMAT = "service:jmx:rmi://{0}/jndi/rmi://{0}:{1}/jmxrmi";
+  private static final String JMX_URL_FORMAT = "service:jmx:rmi://{0}/jndi/rmi://{0}:{1}/jmxrmi";
 
   // an JMX object describing the client-end of a JMX connection
   private JMXConnector connector;
@@ -99,93 +101,61 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   public JmxOperationInvoker(final String host, final int port, Properties gfProperties)
       throws Exception {
-    final Set<String> propsToClear = new TreeSet<>();
-    try {
-      this.endpoints = host + "[" + port + "]"; // Use the same syntax as the "connect" command.
+    this.endpoints = host + "[" + port + "]"; // Use the same syntax as the "connect" command.
 
-      // Modify check period from default (60 sec) to 1 sec
-      final Map<String, Object> env = new HashMap<>();
+    // Modify check period from default (60 sec) to 1 sec
+    final Map<String, Object> env = new HashMap<>();
 
-      env.put(JMXConnectionListener.CHECK_PERIOD_PROP, JMXConnectionListener.CHECK_PERIOD);
+    env.put(JMXConnectionListener.CHECK_PERIOD_PROP, JMXConnectionListener.CHECK_PERIOD);
 
-      // when not using JMXShiroAuthenticator in the integrated security, JMX own password file
-      // authentication requires the credentials been sent in String[] format.
-      // Our JMXShiroAuthenticator handles both String[] and Properties format
-      String username = gfProperties.getProperty(ResourceConstants.USER_NAME);
-      String password = gfProperties.getProperty(ResourceConstants.PASSWORD);
-      if (username != null) {
-        env.put(JMXConnector.CREDENTIALS, new String[] {username, password});
-      }
+    // when not using JMXShiroAuthenticator in the integrated security, JMX own password file
+    // authentication requires the credentials been sent in String[] format.
+    // Our JMXShiroAuthenticator handles both String[] and Properties format
+    String username = gfProperties.getProperty(ResourceConstants.USER_NAME);
+    String password = gfProperties.getProperty(ResourceConstants.PASSWORD);
+    if (username != null) {
+      env.put(JMXConnector.CREDENTIALS, new String[] {username, password});
+    }
 
-      SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(gfProperties,
-          SecurableCommunicationChannel.JMX);
+    SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(gfProperties,
+        SecurableCommunicationChannel.JMX);
 
-      if (sslConfig.isEnabled()) {
-        if (sslConfig.getKeystore() != null) {
-          System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE, sslConfig.getKeystore());
-          propsToClear.add(SSLConfigurationFactory.JAVAX_KEYSTORE);
-        }
-        if (sslConfig.getKeystorePassword() != null) {
-          System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD,
-              sslConfig.getKeystorePassword());
-          propsToClear.add(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD);
-        }
-        if (sslConfig.getKeystoreType() != null) {
-          System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE,
-              sslConfig.getKeystoreType());
-          propsToClear.add(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE);
-        }
-        if (sslConfig.getTruststore() != null) {
-          System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE, sslConfig.getTruststore());
-          propsToClear.add(SSLConfigurationFactory.JAVAX_TRUSTSTORE);
-        }
-        if (sslConfig.getTruststorePassword() != null) {
-          System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD,
-              sslConfig.getTruststorePassword());
-          propsToClear.add(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD);
-        }
-        if (sslConfig.getTruststoreType() != null) {
-          System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE,
-              sslConfig.getTruststoreType());
-          propsToClear.add(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE);
-        }
-        env.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
-      }
+    if (sslConfig.isEnabled()) {
+      StringWriter propertiesWriter = new StringWriter();
+      gfProperties.store(propertiesWriter, null);
+      System.setProperty(GEODE_SSL_CONFIG_PROPERTIES, propertiesWriter.toString());
+      env.put("com.sun.jndi.rmi.factory.socket", new ContextAwareSSLRMIClientSocketFactory());
+    }
 
-      this.url = new JMXServiceURL(MessageFormat.format(JMX_URL_FORMAT,
-          checkAndConvertToCompatibleIPv6Syntax(host), String.valueOf(port)));
-      this.connector = JMXConnectorFactory.connect(url, env);
-      this.mbsc = connector.getMBeanServerConnection();
-      this.connector.addConnectionNotificationListener(new JMXConnectionListener(this), null, null);
-      this.distributedSystemMXBeanProxy = JMX.newMXBeanProxy(mbsc,
-          MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
+    this.url = new JMXServiceURL(MessageFormat.format(JMX_URL_FORMAT,
+        checkAndConvertToCompatibleIPv6Syntax(host), String.valueOf(port)));
+    this.connector = JMXConnectorFactory.connect(url, env);
+    this.mbsc = connector.getMBeanServerConnection();
+    this.connector.addConnectionNotificationListener(new JMXConnectionListener(this), null, null);
+    this.distributedSystemMXBeanProxy = JMX.newMXBeanProxy(mbsc,
+        MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
 
-      if (this.distributedSystemMXBeanProxy == null) {
-        logger.info(
-            "DistributedSystemMXBean is not present on member with endpoints : " + this.endpoints);
+    if (this.distributedSystemMXBeanProxy == null) {
+      logger.info(
+          "DistributedSystemMXBean is not present on member with endpoints : " + this.endpoints);
+      throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
+    } else {
+      this.managerMemberObjectName = this.distributedSystemMXBeanProxy.getMemberObjectName();
+      if (this.managerMemberObjectName == null || !JMX.isMXBeanInterface(MemberMXBean.class)) {
+        logger.info("MemberMXBean with ObjectName " + this.managerMemberObjectName
+            + " is not present on member with endpoints : " + endpoints);
         throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
       } else {
-        this.managerMemberObjectName = this.distributedSystemMXBeanProxy.getMemberObjectName();
-        if (this.managerMemberObjectName == null || !JMX.isMXBeanInterface(MemberMXBean.class)) {
-          logger.info("MemberMXBean with ObjectName " + this.managerMemberObjectName
-              + " is not present on member with endpoints : " + endpoints);
-          throw new JMXConnectionException(JMXConnectionException.MANAGER_NOT_FOUND_EXCEPTION);
-        } else {
-          this.memberMXBeanProxy =
-              JMX.newMXBeanProxy(mbsc, managerMemberObjectName, MemberMXBean.class);
-          this.fileUploadMBeanProxy = JMX.newMBeanProxy(mbsc,
-              new ObjectName(ManagementConstants.OBJECTNAME__FILEUPLOADER_MBEAN),
-              FileUploaderMBean.class);
-        }
-      }
-
-      this.isConnected.set(true);
-      this.clusterId = distributedSystemMXBeanProxy.getDistributedSystemId();
-    } finally {
-      for (String propToClear : propsToClear) {
-        System.clearProperty(propToClear);
+        this.memberMXBeanProxy =
+            JMX.newMXBeanProxy(mbsc, managerMemberObjectName, MemberMXBean.class);
+        this.fileUploadMBeanProxy = JMX.newMBeanProxy(mbsc,
+            new ObjectName(ManagementConstants.OBJECTNAME__FILEUPLOADER_MBEAN),
+            FileUploaderMBean.class);
       }
     }
+
+    this.isConnected.set(true);
+    this.clusterId = distributedSystemMXBeanProxy.getDistributedSystemId();
   }
 
   @Override
@@ -263,9 +233,7 @@ public class JmxOperationInvoker implements OperationInvoker {
   }
 
   @Override
-  /**
-   * this should only returns a json representation of ResultModel
-   */
+  // this should only returns a json representation of ResultModel
   public String processCommand(final CommandRequest commandRequest) {
     List<String> stagedFilePaths = null;
 
@@ -377,7 +345,7 @@ public class JmxOperationInvoker implements OperationInvoker {
    *
    * @return for an IPv6 address returns compatible host address otherwise returns the same string
    */
-  public static String checkAndConvertToCompatibleIPv6Syntax(String hostAddress) {
+  private static String checkAndConvertToCompatibleIPv6Syntax(String hostAddress) {
     // if host string contains ":", considering it as an IPv6 Address
     // Conforming to RFC2732 - http://www.ietf.org/rfc/rfc2732.txt
     if (hostAddress.contains(":")) {
@@ -396,9 +364,8 @@ public class JmxOperationInvoker implements OperationInvoker {
  * @since GemFire 7.0
  */
 class JMXConnectionListener implements NotificationListener {
-
-  public static final String CHECK_PERIOD_PROP = "jmx.remote.x.client.connection.check.period";
-  public static final long CHECK_PERIOD = 1000L;
+  static final String CHECK_PERIOD_PROP = "jmx.remote.x.client.connection.check.period";
+  static final long CHECK_PERIOD = 1000L;
   private JmxOperationInvoker invoker;
 
   JMXConnectionListener(JmxOperationInvoker invoker) {
@@ -407,7 +374,7 @@ class JMXConnectionListener implements NotificationListener {
 
   @Override
   public void handleNotification(Notification notification, Object handback) {
-    if (JMXConnectionNotification.class.isInstance(notification)) {
+    if (notification instanceof JMXConnectionNotification) {
       JMXConnectionNotification connNotif = (JMXConnectionNotification) notification;
       if (JMXConnectionNotification.CLOSED.equals(connNotif.getType())
           || JMXConnectionNotification.FAILED.equals(connNotif.getType())) {
@@ -419,5 +386,4 @@ class JMXConnectionListener implements NotificationListener {
       }
     }
   }
-
 }

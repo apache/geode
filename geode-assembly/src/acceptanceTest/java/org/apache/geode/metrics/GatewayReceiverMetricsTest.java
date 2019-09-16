@@ -240,7 +240,7 @@ public class GatewayReceiverMetricsTest {
     @Override
     public void execute(FunctionContext<Void> context) {
       Counter eventsReceivedCounter = SimpleMetricsPublishingService.getRegistry()
-          .find("cache.gatewayreceiver.events.received")
+          .find("geode.gateway.receiver.events")
           .counter();
 
       Object result = eventsReceivedCounter == null

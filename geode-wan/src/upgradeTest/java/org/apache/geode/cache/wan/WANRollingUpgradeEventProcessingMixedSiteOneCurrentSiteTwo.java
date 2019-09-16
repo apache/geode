@@ -49,19 +49,20 @@ public class WANRollingUpgradeEventProcessingMixedSiteOneCurrentSiteTwo
     // Get mixed site locator properties
     String hostName = NetworkUtils.getServerHostName(host);
     final int site1LocatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(site1LocatorPort);
     final String site1Locators = hostName + "[" + site1LocatorPort + "]";
     final int site1DistributedSystemId = 0;
 
     // Get current site locator properties
     final int site2LocatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(site2LocatorPort);
     final String site2Locators = hostName + "[" + site2LocatorPort + "]";
     final int site2DistributedSystemId = 1;
 
     // Start mixed site locator
-    site1Locator.invoke(() -> startLocator(site1LocatorPort, site1DistributedSystemId,
-        site1Locators, site2Locators));
+    site1Locator.invoke(() -> {
+      DistributedTestUtils.deleteLocatorStateFile(site1LocatorPort);
+      startLocator(site1LocatorPort, site1DistributedSystemId,
+          site1Locators, site2Locators);
+    });
 
     // Locators before 1.4 handled configuration asynchronously.
     // We must wait for configuration configuration to be ready, or confirm that it is disabled.
@@ -72,8 +73,11 @@ public class WANRollingUpgradeEventProcessingMixedSiteOneCurrentSiteTwo
                     || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
     // Start current site locator
-    site2Locator.invoke(() -> startLocator(site2LocatorPort, site2DistributedSystemId,
-        site2Locators, site1Locators));
+    site2Locator.invoke(() -> {
+      DistributedTestUtils.deleteLocatorStateFile(site2LocatorPort);
+      startLocator(site2LocatorPort, site2DistributedSystemId,
+          site2Locators, site1Locators);
+    });
 
     // Start and configure mixed site servers
     String regionName = getName() + "_region";

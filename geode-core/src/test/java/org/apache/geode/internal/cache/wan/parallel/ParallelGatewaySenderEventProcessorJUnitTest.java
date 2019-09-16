@@ -15,7 +15,10 @@
 package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -62,6 +65,8 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
   @Test
   public void validateBatchConflationWithBatchContainingDuplicateConflatableEvents()
       throws Exception {
+    // This tests normal batch conflation.
+
     // Create a ParallelGatewaySenderEventProcessor
     AbstractGatewaySenderEventProcessor processor =
         ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
@@ -85,7 +90,7 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.UPDATE,
         "Object_13964", lastUpdateValue, lastUpdateSequenceId, lastUpdateShadowKey));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
-        "Object_13964", null, 104, 28274));
+        "Object_13964", null, 105, 28274));
 
     // Conflate the batch of events
     List<GatewaySenderEventImpl> conflatedEvents = processor.conflate(originalEvents);
@@ -104,6 +109,38 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     assertThat(gsei2.getDeserializedValue()).isEqualTo(lastUpdateValue);
     assertThat(gsei2.getEventId().getSequenceID()).isEqualTo(lastUpdateSequenceId);
     assertThat(gsei2.getShadowKey()).isEqualTo(lastUpdateShadowKey);
+  }
+
+  // See GEODE-7079: a NullPointerException was thrown whenever the queue was recovered from disk
+  // and the processor started dispatching events before the actual region was available.
+  @Test
+  public void verifyBatchConflationWithNullEventRegionDoesNowThrowException()
+      throws Exception {
+    AbstractGatewaySenderEventProcessor processor =
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+
+    List<GatewaySenderEventImpl> events = new ArrayList<GatewaySenderEventImpl>();
+
+    LocalRegion lr = mock(LocalRegion.class);
+    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getCache()).thenReturn(this.cache);
+
+    // Create two events for the same key, so that conflation will be needed. Mock the getRegion()
+    // value to return as null so we will hit the NPE if
+    // it is referenced.
+    GatewaySenderEventImpl gsei1 =
+        spy(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
+            "Object_13964", "Object_13964_1", 100, 27709));
+    doReturn(null).when(gsei1).getRegion();
+
+    GatewaySenderEventImpl gsei2 =
+        spy(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.UPDATE,
+            "Object_13964", "Object_13964_2", 101, 27822));
+    doReturn(null).when(gsei2).getRegion();
+
+    events.add(gsei1);
+    events.add(gsei2);
+    assertThatCode(() -> processor.conflate(events)).doesNotThrowAnyException();
   }
 
   @Test
@@ -195,6 +232,58 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     assertThat(originalEvents.get(1)).isEqualTo(conflatedEvents.get(1));
     assertThat(originalEvents.get(2)).isEqualTo(conflatedEvents.get(2));
     assertThat(originalEvents.get(3)).isEqualTo(conflatedEvents.get(3));
+  }
+
+  @Test
+  public void validateBatchConflationWithDuplicateNonConflatableEvents()
+      throws Exception {
+    // Duplicate non-conflatable events should not be conflated.
+    //
+    // Here is an example batch with duplicate create and destroy events on the same key from
+    // different threads:
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|6;sequenceID=6072];operation=CREATE;region=/SESSIONS;key=6079],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|6;sequenceID=6073];operation=UPDATE;region=/SESSIONS;key=6079],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|5;sequenceID=6009];operation=CREATE;region=/SESSIONS;key=1736],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|6;sequenceID=6074];operation=DESTROY;region=/SESSIONS;key=6079],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|5;sequenceID=6011];operation=DESTROY;region=/SESSIONS;key=1736],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|6;sequenceID=6087];operation=CREATE;region=/SESSIONS;key=1736],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|6;sequenceID=6089];operation=DESTROY;region=/SESSIONS;key=1736],
+
+    // Create a ParallelGatewaySenderEventProcessor
+    AbstractGatewaySenderEventProcessor processor =
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+
+    // Create mock region
+    LocalRegion lr = mock(LocalRegion.class);
+    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getCache()).thenReturn(this.cache);
+
+    // Create a batch of conflatable events with duplicate create and destroy events on the same key
+    // from different threads
+    List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
+    originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
+        "6079", "6079", 6, 6072, 0, 0));
+    originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.UPDATE,
+        "6079", "6079", 6, 6073, 0, 0));
+    originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
+        "1736", "1736", 5, 6009, 0, 0));
+    originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
+        "6079", "6079", 6, 6074, 0, 0));
+    originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
+        "1736", "1736", 5, 6011, 0, 0));
+    originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
+        "1736", "1736", 6, 6087, 0, 0));
+    originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
+        "1736", "1736", 6, 6089, 0, 0));
+    logEvents("original", originalEvents);
+
+    // Conflate the batch of events
+    List<GatewaySenderEventImpl> conflatedEvents = processor.conflate(originalEvents);
+    logEvents("conflated", conflatedEvents);
+
+    // Assert no conflation occurs
+    assertThat(conflatedEvents.size()).isEqualTo(7);
+    assertThat(originalEvents).isEqualTo(conflatedEvents);
   }
 
   private void logEvents(String message, List<GatewaySenderEventImpl> events) {

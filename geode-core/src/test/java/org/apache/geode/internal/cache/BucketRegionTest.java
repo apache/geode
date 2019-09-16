@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -49,7 +50,9 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ClientRegistrationEventQueueManager;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
 
 public class BucketRegionTest {
@@ -113,7 +116,7 @@ public class BucketRegionTest {
   public void waitUntilLockedThrowsIfFoundLockAndPartitionedRegionIsClosing() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     Integer[] keys = {1};
     doReturn(mock(LockObject.class)).when(bucketRegion).searchAndLock(keys);
     doThrow(regionDestroyedException).when(partitionedRegion)
@@ -126,7 +129,7 @@ public class BucketRegionTest {
   public void waitUntilLockedReturnsTrueIfNoOtherThreadLockedKeys() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     Integer[] keys = {1};
     doReturn(null).when(bucketRegion).searchAndLock(keys);
 
@@ -137,7 +140,7 @@ public class BucketRegionTest {
   public void basicPutEntryDoesNotReleaseLockIfKeysAndPrimaryNotLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doThrow(regionDestroyedException).when(bucketRegion).lockKeysAndPrimary(event);
 
     bucketRegion.basicPutEntry(event, 1);
@@ -149,7 +152,7 @@ public class BucketRegionTest {
   public void basicPutEntryReleaseLockIfKeysAndPrimaryLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(true).when(bucketRegion).lockKeysAndPrimary(event);
     doReturn(mock(AbstractRegionMap.class)).when(bucketRegion).getRegionMap();
 
@@ -162,7 +165,7 @@ public class BucketRegionTest {
   public void virtualPutDoesNotReleaseLockIfKeysAndPrimaryNotLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doThrow(regionDestroyedException).when(bucketRegion).lockKeysAndPrimary(event);
 
     bucketRegion.virtualPut(event, false, true, null, false, 1, true);
@@ -174,7 +177,7 @@ public class BucketRegionTest {
   public void virtualPutReleaseLockIfKeysAndPrimaryLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(true).when(bucketRegion).lockKeysAndPrimary(event);
     doReturn(true).when(bucketRegion).hasSeenEvent(event);
 
@@ -187,7 +190,7 @@ public class BucketRegionTest {
   public void basicDestroyDoesNotReleaseLockIfKeysAndPrimaryNotLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doThrow(regionDestroyedException).when(bucketRegion).lockKeysAndPrimary(event);
 
     bucketRegion.basicDestroy(event, false, null);
@@ -199,7 +202,7 @@ public class BucketRegionTest {
   public void basicDestroyReleaseLockIfKeysAndPrimaryLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(true).when(bucketRegion).lockKeysAndPrimary(event);
     doReturn(true).when(bucketRegion).hasSeenEvent(event);
 
@@ -212,7 +215,7 @@ public class BucketRegionTest {
   public void basicUpdateEntryVersionDoesNotReleaseLockIfKeysAndPrimaryNotLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doThrow(regionDestroyedException).when(bucketRegion).lockKeysAndPrimary(event);
     when(event.getRegion()).thenReturn(bucketRegion);
     doReturn(true).when(bucketRegion).hasSeenEvent(event);
@@ -227,7 +230,7 @@ public class BucketRegionTest {
   public void basicUpdateEntryVersionReleaseLockIfKeysAndPrimaryLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(true).when(bucketRegion).lockKeysAndPrimary(event);
     when(event.getRegion()).thenReturn(bucketRegion);
     doReturn(true).when(bucketRegion).hasSeenEvent(event);
@@ -242,7 +245,7 @@ public class BucketRegionTest {
   public void basicInvalidateDoesNotReleaseLockIfKeysAndPrimaryNotLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doThrow(regionDestroyedException).when(bucketRegion).lockKeysAndPrimary(event);
 
     bucketRegion.basicInvalidate(event, false, false);
@@ -254,7 +257,7 @@ public class BucketRegionTest {
   public void basicInvalidateReleaseLockIfKeysAndPrimaryLocked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(true).when(bucketRegion).lockKeysAndPrimary(event);
     doReturn(true).when(bucketRegion).hasSeenEvent(event);
 
@@ -267,7 +270,7 @@ public class BucketRegionTest {
   public void lockKeysAndPrimaryReturnFalseIfDoesNotNeedWriteLock() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).needWriteLock(event);
 
     assertThat(bucketRegion.lockKeysAndPrimary(event)).isFalse();
@@ -277,7 +280,7 @@ public class BucketRegionTest {
   public void lockKeysAndPrimaryThrowsIfWaitUntilLockedThrows() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(keys).when(bucketRegion).getKeysToBeLocked(event);
     doThrow(regionDestroyedException).when(bucketRegion).waitUntilLocked(keys);
 
@@ -288,7 +291,7 @@ public class BucketRegionTest {
   public void lockKeysAndPrimaryReleaseLockHeldIfDoLockForPrimaryThrows() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(keys).when(bucketRegion).getKeysToBeLocked(event);
     doReturn(true).when(bucketRegion).waitUntilLocked(keys);
     doThrow(new PrimaryBucketException()).when(bucketRegion).doLockForPrimary(false);
@@ -302,7 +305,7 @@ public class BucketRegionTest {
   public void lockKeysAndPrimaryReleaseLockHeldIfDoesNotLockForPrimary() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(keys).when(bucketRegion).getKeysToBeLocked(event);
     doReturn(true).when(bucketRegion).waitUntilLocked(keys);
     doReturn(true).when(bucketRegion).doLockForPrimary(false);
@@ -317,7 +320,7 @@ public class BucketRegionTest {
 
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
 
     Map regionGCVersions = new HashMap();
     Set keysRemoved = new HashSet();
@@ -333,7 +336,7 @@ public class BucketRegionTest {
   public void testDoNotNotifyClientsOfTombstoneGCNoProxy() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
 
     Map regionGCVersions = new HashMap();
     Set keysRemoved = new HashSet();
@@ -342,8 +345,9 @@ public class BucketRegionTest {
     doReturn(mock(SystemTimer.class)).when(cache).getCCPTimer();
 
     CacheClientNotifier ccn =
-        CacheClientNotifier.getInstance(cache, mock(CacheServerStats.class), 10,
-            10, mock(ConnectionListener.class), null, true);
+        CacheClientNotifier.getInstance(cache, mock(ClientRegistrationEventQueueManager.class),
+            mock(StatisticsClock.class),
+            mock(CacheServerStats.class), 10, 10, mock(ConnectionListener.class), null, true);
 
     bucketRegion.notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved, eventID, routing);
     verify(bucketRegion, never()).getFilterProfile();
@@ -356,7 +360,7 @@ public class BucketRegionTest {
   public void testNotifyClientsOfTombstoneGC() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
 
     Map regionGCVersions = new HashMap();
     Set keysRemoved = new HashSet();
@@ -365,8 +369,9 @@ public class BucketRegionTest {
     doReturn(mock(SystemTimer.class)).when(cache).getCCPTimer();
 
     CacheClientNotifier ccn =
-        CacheClientNotifier.getInstance(cache, mock(CacheServerStats.class), 10,
-            10, mock(ConnectionListener.class), null, true);
+        CacheClientNotifier.getInstance(cache, mock(ClientRegistrationEventQueueManager.class),
+            mock(StatisticsClock.class),
+            mock(CacheServerStats.class), 10, 10, mock(ConnectionListener.class), null, true);
 
     doReturn(mock(ClientProxyMembershipID.class)).when(proxy).getProxyID();
     ccn.addClientProxyToMap(proxy);
@@ -384,7 +389,7 @@ public class BucketRegionTest {
   public void invokeTXCallbacksDoesNotInvokeCallbacksIfEventIsNotGenerateCallbacks() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(false).when(event).isGenerateCallbacks();
 
@@ -398,7 +403,7 @@ public class BucketRegionTest {
   public void invokeTXCallbacksDoesNotInvokeCallbacksIfPartitionedRegionIsNotInitialized() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(true).when(event).isGenerateCallbacks();
     doReturn(false).when(partitionedRegion).isInitialized();
@@ -414,7 +419,7 @@ public class BucketRegionTest {
   public void invokeTXCallbacksIsInvoked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(true).when(event).isGenerateCallbacks();
     doReturn(true).when(partitionedRegion).isInitialized();
@@ -431,7 +436,7 @@ public class BucketRegionTest {
   public void invokeDestroyCallbacksDoesNotInvokeCallbacksIfEventIsNotGenerateCallbacks() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(false).when(event).isGenerateCallbacks();
 
@@ -445,7 +450,7 @@ public class BucketRegionTest {
   public void invokeDestroyCallbacksDoesNotInvokeCallbacksIfPartitionedRegionIsNotInitialized() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(true).when(event).isGenerateCallbacks();
     doReturn(false).when(partitionedRegion).isInitialized();
@@ -461,7 +466,7 @@ public class BucketRegionTest {
   public void invokeDestroyCallbacksIsInvoked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(true).when(event).isGenerateCallbacks();
     doReturn(true).when(partitionedRegion).isInitialized();
@@ -478,7 +483,7 @@ public class BucketRegionTest {
   public void invokeInvalidateCallbacksDoesNotInvokeCallbacksIfEventIsNotGenerateCallbacks() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(false).when(event).isGenerateCallbacks();
 
@@ -492,7 +497,7 @@ public class BucketRegionTest {
   public void invokeInvalidateCallbacksDoesNotInvokeCallbacksIfPartitionedRegionIsNotInitialized() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(true).when(event).isGenerateCallbacks();
     doReturn(false).when(partitionedRegion).isInitialized();
@@ -508,7 +513,7 @@ public class BucketRegionTest {
   public void invokeInvalidateCallbacksIsInvoked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(true).when(event).isGenerateCallbacks();
     doReturn(true).when(partitionedRegion).isInitialized();
@@ -525,7 +530,7 @@ public class BucketRegionTest {
   public void invokePutCallbacksDoesNotInvokeCallbacksIfEventIsNotGenerateCallbacks() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(false).when(event).isGenerateCallbacks();
 
@@ -539,7 +544,7 @@ public class BucketRegionTest {
   public void invokePutCallbacksDoesNotInvokeCallbacksIfPartitionedRegionIsNotInitialized() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(true).when(event).isGenerateCallbacks();
     doReturn(false).when(partitionedRegion).isInitialized();
@@ -555,7 +560,7 @@ public class BucketRegionTest {
   public void invokePutCallbacksIsInvoked() {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
-            cache, internalRegionArgs));
+            cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
     doReturn(true).when(event).isGenerateCallbacks();
     doReturn(true).when(partitionedRegion).isInitialized();

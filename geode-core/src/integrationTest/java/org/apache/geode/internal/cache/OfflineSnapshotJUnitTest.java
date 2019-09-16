@@ -51,8 +51,8 @@ public class OfflineSnapshotJUnitTest {
         Region<Integer, MyObject> region =
             rgen.createRegion(cache, ds.getName(), rt, "test" + rcount++);
         final Map<Integer, MyObject> expected = createExpected(st, 1000);
-
         region.putAll(expected);
+        removeAndInvalidateKeys(region, expected);
         cache.close();
 
         DiskStoreImpl.exportOfflineSnapshot(ds.getName(), new File[] {new File(".")},
@@ -63,6 +63,16 @@ public class OfflineSnapshotJUnitTest {
         reset();
       }
     }
+  }
+
+  private void removeAndInvalidateKeys(Region<Integer, MyObject> region,
+      Map<Integer, MyObject> expected) {
+    int removed = 5;
+    int invalidated = 7;
+    region.destroy(removed);
+    region.invalidate(invalidated);
+    expected.remove(removed);
+    expected.put(7, null);
   }
 
   @Test

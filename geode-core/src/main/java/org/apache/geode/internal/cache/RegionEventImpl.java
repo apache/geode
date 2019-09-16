@@ -27,12 +27,14 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Implementation of a region event
@@ -202,7 +204,8 @@ public class RegionEventImpl
    * Writes the contents of this message to the given output.
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeString(this.regionPath, out);
     DataSerializer.writeObject(this.callbackArgument, out);
     out.writeByte(this.op.ordinal);
@@ -214,7 +217,8 @@ public class RegionEventImpl
    * Reads the contents of this message from the given input.
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.regionPath = DataSerializer.readString(in);
     this.callbackArgument = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());

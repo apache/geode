@@ -130,6 +130,7 @@ import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.sequencelog.RegionLogger;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 
 @SuppressWarnings("deprecation")
@@ -197,8 +198,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   /** Creates a new instance of DistributedRegion */
   protected DistributedRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache, InternalRegionArguments internalRegionArgs) {
-    super(regionName, attrs, parentRegion, cache, internalRegionArgs);
+      InternalCache cache, InternalRegionArguments internalRegionArgs,
+      StatisticsClock statisticsClock) {
+    super(regionName, attrs, parentRegion, cache, internalRegionArgs, statisticsClock);
     initializationLatchAfterMemberTimeout =
         new StoppableCountDownLatch(getCancelCriterion(), 1);
     distAdvisor = createDistributionAdvisor(internalRegionArgs);
@@ -2359,7 +2361,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     // Set eventId. Required for interested clients.
     event.setNewEventId(cache.getDistributedSystem());
 
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
     validateKey(event.getKey());
     // this next step also distributes the object to other processes, if necessary
     try {

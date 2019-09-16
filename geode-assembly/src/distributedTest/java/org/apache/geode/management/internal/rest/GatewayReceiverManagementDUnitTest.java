@@ -27,11 +27,11 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -43,7 +43,7 @@ public class GatewayReceiverManagementDUnitTest {
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
   private static MemberVM locator;
-  private GatewayReceiverConfig receiver;
+  private GatewayReceiver receiver;
 
   @BeforeClass
   public static void beforeClass() {
@@ -55,7 +55,7 @@ public class GatewayReceiverManagementDUnitTest {
 
   @Before
   public void before() {
-    receiver = new GatewayReceiverConfig();
+    receiver = new GatewayReceiver();
   }
 
   @Test
@@ -64,7 +64,7 @@ public class GatewayReceiverManagementDUnitTest {
         .setHostAddress("localhost", locator.getHttpPort())
         .setCredentials("cluster", "cluster").build();
 
-    receiver.setStartPort("5000");
+    receiver.setStartPort(5000);
     receiver.setGroup("group1");
     List<RealizationResult> results =
         assertManagementResult(cms.create(receiver)).isSuccessful()
@@ -75,36 +75,36 @@ public class GatewayReceiverManagementDUnitTest {
     assertThat(results.get(0).getMemberName()).isEqualTo("server-1");
 
     // try create another GWR on the same group
-    receiver.setStartPort("5001");
+    receiver.setStartPort(5001);
     receiver.setGroup("group1");
     assertThatThrownBy(() -> cms.create(receiver))
         .hasMessageContaining(
-            "ENTITY_EXISTS: GatewayReceiverConfig 'group1' already exists on member(s) server-1.");
+            "ENTITY_EXISTS: GatewayReceiver 'group1' already exists in group group1.");
 
     // try create another GWR on another group but has no server
-    receiver.setStartPort("5002");
+    receiver.setStartPort(5002);
     receiver.setGroup("group2");
     assertManagementResult(cms.create(receiver)).isSuccessful()
         .containsStatusMessage("Successfully updated configuration for group2.")
         .hasMemberStatus().hasSize(0);
 
     // try create another GWR on another group but has a common member in another group
-    receiver.setStartPort("5003");
+    receiver.setStartPort(5003);
     receiver.setGroup(null);
     assertThatThrownBy(() -> cms.create(receiver))
         .hasMessageContaining(
-            "ENTITY_EXISTS: GatewayReceiverConfig 'cluster' already exists on member(s) server-1.");
+            "ENTITY_EXISTS: GatewayReceiver 'cluster' already exists on member(s) server-1.");
 
-    ClusterManagementListResultAssert<GatewayReceiverConfig, GatewayReceiverInfo> listAssert =
-        assertManagementListResult(cms.list(new GatewayReceiverConfig())).isSuccessful();
-    List<ConfigurationResult<GatewayReceiverConfig, GatewayReceiverInfo>> listResult =
+    ClusterManagementListResultAssert<GatewayReceiver, GatewayReceiverInfo> listAssert =
+        assertManagementListResult(cms.list(new GatewayReceiver())).isSuccessful();
+    List<ConfigurationResult<GatewayReceiver, GatewayReceiverInfo>> listResult =
         listAssert.getResult();
 
     assertThat(listResult).hasSize(2);
 
     // verify that we have two configurations, but only group1 config has a running gwr
-    for (ConfigurationResult<GatewayReceiverConfig, GatewayReceiverInfo> result : listResult) {
-      if (result.getConfig().getGroup().equals("group1")) {
+    for (ConfigurationResult<GatewayReceiver, GatewayReceiverInfo> result : listResult) {
+      if (result.getConfiguration().getGroup().equals("group1")) {
         assertThat(result.getRuntimeInfo()).hasSize(1);
         assertThat(result.getRuntimeInfo().get(0).getPort()).isGreaterThanOrEqualTo(5000);
         assertThat(result.getRuntimeInfo().get(0).getMemberName()).isEqualTo("server-1");
@@ -112,7 +112,7 @@ public class GatewayReceiverManagementDUnitTest {
         assertThat(result.getRuntimeInfo().get(0).getSenderCount()).isEqualTo(0);
         assertThat(result.getRuntimeInfo().get(0).getConnectedSenders()).hasSize(0);
       } else {
-        assertThat(result.getConfig().getGroup()).isEqualTo("group2");
+        assertThat(result.getConfiguration().getGroup()).isEqualTo("group2");
         assertThat(result.getRuntimeInfo()).hasSize(0);
       }
     }

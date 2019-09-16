@@ -35,6 +35,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * @since GemFire 7.0
@@ -43,19 +44,22 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
   private static final Logger logger = LogService.getLogger();
 
+  private static final AtomicBoolean GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY_CHECKED =
+      new AtomicBoolean(false);
+
   /**
    * Used internally to pass the attributes from this factory to the real GatewaySender it is
    * creating.
    */
-  private GatewaySenderAttributes attrs = new GatewaySenderAttributes();
+  private final GatewaySenderAttributes attrs = new GatewaySenderAttributes();
 
-  private InternalCache cache;
+  private final InternalCache cache;
 
-  private static final AtomicBoolean GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY_CHECKED =
-      new AtomicBoolean(false);
+  private final StatisticsClock statisticsClock;
 
-  public GatewaySenderFactoryImpl(InternalCache cache) {
+  public GatewaySenderFactoryImpl(InternalCache cache, StatisticsClock statisticsClock) {
     this.cache = cache;
+    this.statisticsClock = statisticsClock;
   }
 
   @Override
@@ -246,7 +250,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
                 id, this.attrs.getOrderPolicy()));
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new ParallelGatewaySenderImpl(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
@@ -260,14 +264,14 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       if (this.attrs.getAsyncEventListeners().size() > 0) {
         throw new GatewaySenderException(
             String.format(
-                "SerialGatewaySener %s cannot define a remote site because at least AsyncEventListener is already added. Both listeners and remote site cannot be defined for the same gateway sender.",
+                "SerialGatewaySender %s cannot define a remote site because at least AsyncEventListener is already added. Both listeners and remote site cannot be defined for the same gateway sender.",
                 id));
       }
       if (this.attrs.getOrderPolicy() == null && this.attrs.getDispatcherThreads() > 1) {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new SerialGatewaySenderImpl(this.cache, this.attrs);
+        sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
@@ -302,7 +306,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
       }
 
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new ParallelGatewaySenderImpl(this.cache, this.attrs);
+        sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();
@@ -316,7 +320,7 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
       if (this.cache instanceof GemFireCacheImpl) {
-        sender = new SerialGatewaySenderImpl(this.cache, this.attrs);
+        sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
           sender.start();

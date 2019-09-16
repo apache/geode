@@ -25,11 +25,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -39,8 +43,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -57,9 +59,10 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectListener;
-import org.apache.geode.distributed.internal.membership.MemberFactory;
+import org.apache.geode.distributed.internal.membership.NetLocator;
+import org.apache.geode.distributed.internal.membership.NetLocatorFactory;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.NetLocator;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.locator.PeerLocatorRequest;
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -67,9 +70,9 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
+import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.config.JAXBService;
@@ -96,6 +99,7 @@ import org.apache.geode.management.internal.configuration.handlers.SharedConfigu
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
+import org.apache.geode.security.AuthTokenEnabledComponents;
 
 /**
  * Provides the implementation of a distribution {@code Locator} as well as internal-only
@@ -604,7 +608,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       }
     }
 
-    netLocator = MemberFactory.newLocatorHandler(bindAddress, locatorsConfigValue,
+    netLocator = NetLocatorFactory.newLocatorHandler(bindAddress, locatorsConfigValue,
         locatorsAreCoordinators, networkPartitionDetectionEnabled, locatorStats, securityUDPDHAlgo,
         workingDirectory);
     handler.addHandler(PeerLocatorRequest.class, netLocator);
@@ -700,7 +704,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           (InternalDistributedSystem) DistributedSystem.connect(distributedSystemProperties);
 
       if (peerLocator) {
-        netLocator.setMembershipManager(internalDistributedSystem.getDM().getMembershipManager());
+        netLocator.setServices(
+            ((GMSMembershipManager) internalDistributedSystem.getDM().getMembershipManager())
+                .getServices());
       }
 
       internalDistributedSystem.addDisconnectListener(sys -> stop(false, false, false));
@@ -743,27 +749,31 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
 
     // Find the V2 Management rest WAR file
-    String gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
+    URI gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
     if (gemfireManagementWar == null) {
       logger.info(
           "Unable to find GemFire V2 Management REST API WAR file; the Management REST Interface for Geode will not be accessible.");
       return;
     }
 
-    Pair<String, Object> securityServiceAttribute =
-        new ImmutablePair<>(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-            internalCache.getSecurityService());
-    Pair<String, Object> clusterManagementServiceAttribute =
-        new ImmutablePair<>(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
-            clusterManagementService);
+    Map<String, Object> serviceAttributes = new HashMap<>();
+    serviceAttributes.put(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+        internalCache.getSecurityService());
+    serviceAttributes.put(InternalHttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+        clusterManagementService);
+
+    String[] authEnabledComponents = distributionConfig.getSecurityAuthTokenEnabledComponents();
+
+    boolean managementAuthTokenEnabled = Arrays.stream(authEnabledComponents)
+        .anyMatch(AuthTokenEnabledComponents::hasManagement);
+    serviceAttributes.put(InternalHttpService.AUTH_TOKEN_ENABLED_PARAM, managementAuthTokenEnabled);
 
     if (distributionConfig.getEnableManagementRestService()) {
       internalCache.getHttpService().ifPresent(x -> {
         try {
           logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
               ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
-          x.addWebApplication("/management", gemfireManagementWar, securityServiceAttribute,
-              clusterManagementServiceAttribute);
+          x.addWebApplication("/management", Paths.get(gemfireManagementWar), serviceAttributes);
         } catch (Throwable e) {
           logger.warn("Unable to start management service: {}", e.getMessage());
         }
@@ -1108,6 +1118,11 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       InternalDistributedSystem newSystem =
           (InternalDistributedSystem) system.getReconnectedSystem();
       if (newSystem != null) {
+        boolean noprevlocator = false;
+        if (!hasLocator()) {
+          setLocator(this);
+          noprevlocator = true;
+        }
         if (!tcpServerStarted) {
           if (locatorListener != null) {
             locatorListener.clearLocatorInfo();
@@ -1119,10 +1134,12 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           restartWithSystem(newSystem, GemFireCacheImpl.getInstance());
         } catch (CancelException e) {
           stoppedForReconnect = true;
+          if (noprevlocator) {
+            removeLocator(this);
+          }
           return false;
         }
 
-        setLocator(this);
         restarted = true;
       }
     }

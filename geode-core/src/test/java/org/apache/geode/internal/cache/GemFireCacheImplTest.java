@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -83,7 +85,7 @@ public class GemFireCacheImplTest {
   public void checkPurgeCCPTimer() {
     SystemTimer cacheClientProxyTimer = mock(SystemTimer.class);
 
-    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+    gemFireCacheImpl = createGemFireCacheImpl();
 
     gemFireCacheImpl.setCCPTimer(cacheClientProxyTimer);
     for (int i = 1; i < GemFireCacheImpl.PURGE_INTERVAL; i++) {
@@ -105,7 +107,7 @@ public class GemFireCacheImplTest {
     HeapEvictor heapEvictor = mock(HeapEvictor.class);
     OffHeapEvictor offHeapEvictor = mock(OffHeapEvictor.class);
 
-    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+    gemFireCacheImpl = createGemFireCacheImpl();
 
     gemFireCacheImpl.setHeapEvictor(heapEvictor);
     gemFireCacheImpl.setOffHeapEvictor(offHeapEvictor);
@@ -117,7 +119,7 @@ public class GemFireCacheImplTest {
 
   @Test
   public void registerPdxMetaDataThrowsIfInstanceNotSerializable() {
-    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+    gemFireCacheImpl = createGemFireCacheImpl();
 
     assertThatThrownBy(() -> gemFireCacheImpl.registerPdxMetaData(new Object()))
         .isInstanceOf(SerializationException.class).hasMessage("Serialization failed")
@@ -126,7 +128,7 @@ public class GemFireCacheImplTest {
 
   @Test
   public void registerPdxMetaDataThrowsIfInstanceIsNotPDX() {
-    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+    gemFireCacheImpl = createGemFireCacheImpl();
 
     assertThatThrownBy(() -> gemFireCacheImpl.registerPdxMetaData("string"))
         .isInstanceOf(SerializationException.class)
@@ -149,7 +151,7 @@ public class GemFireCacheImplTest {
         threadLatch.countDown();
         try {
           threadLatch.await();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
         }
       });
     }
@@ -562,8 +564,23 @@ public class GemFireCacheImplTest {
     assertThat(list1).isSameAs(list2);
   }
 
+  @Test
+  public void closeDoesNotCloseMeterSubregistries() {
+    MeterRegistry subregistry = spy(new SimpleMeterRegistry());
+    gemFireCacheImpl = (GemFireCacheImpl) new InternalCacheBuilder()
+        .addMeterSubregistry(subregistry)
+        .setTypeRegistry(mock(TypeRegistry.class))
+        .create(Fakes.distributedSystem());
+
+    gemFireCacheImpl.close();
+
+    assertThat(subregistry.isClosed()).isFalse();
+  }
+
   private static GemFireCacheImpl createGemFireCacheImpl() {
-    return (GemFireCacheImpl) new InternalCacheBuilder().create(Fakes.distributedSystem());
+    return (GemFireCacheImpl) new InternalCacheBuilder()
+        .setTypeRegistry(mock(TypeRegistry.class))
+        .create(Fakes.distributedSystem());
   }
 
   private static GemFireCacheImpl createGemFireCacheWithTypeRegistry() {

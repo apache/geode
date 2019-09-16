@@ -43,6 +43,7 @@ import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * A remote (serializable) implementation of <code>BridgeServer</code> that is passed between
@@ -189,6 +190,11 @@ public class RemoteBridgeServer extends AbstractCacheServer
 
   @Override
   public String[] getCombinedGroups() {
+    throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
+  }
+
+  @Override
+  public StatisticsClock getStatisticsClock() {
     throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
   }
 

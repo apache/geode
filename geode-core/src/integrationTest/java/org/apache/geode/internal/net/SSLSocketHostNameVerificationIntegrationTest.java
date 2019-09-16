@@ -49,7 +49,8 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import org.apache.geode.cache.ssl.CertStores;
-import org.apache.geode.cache.ssl.TestSSLUtils;
+import org.apache.geode.cache.ssl.CertificateBuilder;
+import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
@@ -104,16 +105,25 @@ public class SSLSocketHostNameVerificationIntegrationTest {
     IgnoredException.addIgnoredException("javax.net.ssl.SSLException: Read timed out");
 
     this.localHost = InetAddress.getLoopbackAddress();
-    TestSSLUtils.CertificateBuilder certBuilder = new TestSSLUtils.CertificateBuilder()
-        .commonName("iAmTheServer");
+
+    CertificateMaterial ca = new CertificateBuilder()
+        .commonName("Test CA")
+        .isCA()
+        .generate();
+
+    CertStores certStores = CertStores.locatorStore();
+    certStores.trust("ca", ca);
+
+    CertificateBuilder certBuilder = new CertificateBuilder()
+        .commonName("iAmTheServer")
+        .issuedBy(ca);
 
     if (addCertificateSAN) {
       certBuilder.sanDnsName(this.localHost.getHostName());
     }
 
-    CertStores certStores = CertStores.locatorStore();
-    certStores.withCertificate(certBuilder);
-    certStores.trustSelf();
+    CertificateMaterial locatorCert = certBuilder.generate();
+    certStores.withCertificate("locator", locatorCert);
 
     this.distributionConfig =
         new DistributionConfigImpl(

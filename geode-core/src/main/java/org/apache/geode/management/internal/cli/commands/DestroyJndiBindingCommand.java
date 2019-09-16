@@ -15,6 +15,9 @@
 package org.apache.geode.management.internal.cli.commands;
 
 
+import static org.apache.geode.lang.Identifiable.find;
+import static org.apache.geode.lang.Identifiable.remove;
+
 import java.util.List;
 import java.util.Set;
 
@@ -22,7 +25,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
@@ -61,7 +63,7 @@ public class DestroyJndiBindingCommand extends SingleGfshCommand {
     if (service != null) {
       List<JndiBindingsType.JndiBinding> bindings =
           service.getCacheConfig("cluster").getJndiBindings();
-      JndiBindingsType.JndiBinding binding = CacheElement.findElement(bindings, jndiName);
+      JndiBindingsType.JndiBinding binding = find(bindings, jndiName);
       // fail fast when CC is running and if required binding not found assuming that
       // when CC is running then every configuration goes through CC
       if (binding == null) {
@@ -86,7 +88,7 @@ public class DestroyJndiBindingCommand extends SingleGfshCommand {
 
   @Override
   public boolean updateConfigForGroup(String group, CacheConfig config, Object element) {
-    CacheElement.removeElement(config.getJndiBindings(), (String) element);
+    remove(config.getJndiBindings(), (String) element);
     return true;
   }
 }

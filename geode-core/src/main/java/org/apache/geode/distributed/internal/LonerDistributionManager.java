@@ -49,7 +49,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.alerting.NullAlertingService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -59,6 +58,7 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A <code>LonerDistributionManager</code> is a dm that never communicates with anyone else.
@@ -257,11 +257,6 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  public long getMembershipPort() {
-    return 0;
-  }
-
-  @Override
   public InternalDistributedSystem getSystem() {
     return this.system;
   }
@@ -421,6 +416,16 @@ public class LonerDistributionManager implements DistributionManager {
     public void incSentBytes(long bytes) {}
 
     @Override
+    public long startUDPDispatchRequest() {
+      return 0;
+    }
+
+    @Override
+    public void endUDPDispatchRequest(long start) {
+
+    }
+
+    @Override
     public long getProcessedMessages() {
       return 0;
     }
@@ -470,9 +475,6 @@ public class LonerDistributionManager implements DistributionManager {
 
     @Override
     public void incMessageChannelTime(long val) {}
-
-    @Override
-    public void incUDPDispatchRequestTime(long val) {};
 
     @Override
     public long getUDPDispatchRequestTime() {

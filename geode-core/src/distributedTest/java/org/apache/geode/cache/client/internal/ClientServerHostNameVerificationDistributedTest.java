@@ -23,6 +23,7 @@ import java.net.InetAddress;
 import java.security.GeneralSecurityException;
 import java.util.Properties;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,7 +37,8 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.ssl.CertStores;
-import org.apache.geode.cache.ssl.TestSSLUtils.CertificateBuilder;
+import org.apache.geode.cache.ssl.CertificateBuilder;
+import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -48,6 +50,16 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class ClientServerHostNameVerificationDistributedTest {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
+
+  private CertificateMaterial ca;
+
+  @Before
+  public void setup() {
+    ca = new CertificateBuilder()
+        .commonName("Test CA")
+        .isCA()
+        .generate();
+  }
 
   private static void createServerRegion() {
     RegionFactory factory =
@@ -64,23 +76,29 @@ public class ClientServerHostNameVerificationDistributedTest {
 
   @Test
   public void connectionSuccessfulWhenHostNameOfLocatorAndServer() throws Exception {
-    CertificateBuilder locatorCertificate = new CertificateBuilder()
+    CertificateMaterial locatorCertificate = new CertificateBuilder()
         .commonName("locator")
+        .issuedBy(ca)
         // ClusterStartupRule uses 'localhost' as locator host
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
         .sanIpAddress(InetAddress.getLocalHost())
-        .sanIpAddress(InetAddress.getByName("0.0.0.0")); // to pass on windows
+        .sanIpAddress(InetAddress.getByName("0.0.0.0")) // to pass on windows
+        .generate();
 
-    CertificateBuilder serverCertificate = new CertificateBuilder()
+    CertificateMaterial serverCertificate = new CertificateBuilder()
         .commonName("server")
+        .issuedBy(ca)
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
-        .sanIpAddress(InetAddress.getLocalHost());
+        .sanIpAddress(InetAddress.getLocalHost())
+        .generate();
 
-    CertificateBuilder clientCertificate = new CertificateBuilder()
-        .commonName("client");
+    CertificateMaterial clientCertificate = new CertificateBuilder()
+        .commonName("client")
+        .issuedBy(ca)
+        .generate();
 
     validateClientConnection(locatorCertificate, serverCertificate, clientCertificate, true, true,
         true,
@@ -90,14 +108,20 @@ public class ClientServerHostNameVerificationDistributedTest {
   @Test
   public void expectConnectionFailureWhenNoHostNameInLocatorKey() throws Exception {
 
-    CertificateBuilder locatorCertificate = new CertificateBuilder()
-        .commonName("locator");
+    CertificateMaterial locatorCertificate = new CertificateBuilder()
+        .commonName("locator")
+        .issuedBy(ca)
+        .generate();
 
-    CertificateBuilder serverCertificate = new CertificateBuilder()
-        .commonName("server");
+    CertificateMaterial serverCertificate = new CertificateBuilder()
+        .commonName("server")
+        .issuedBy(ca)
+        .generate();
 
-    CertificateBuilder clientCertificate = new CertificateBuilder()
-        .commonName("client");
+    CertificateMaterial clientCertificate = new CertificateBuilder()
+        .commonName("client")
+        .issuedBy(ca)
+        .generate();
 
     validateClientConnection(locatorCertificate, serverCertificate, clientCertificate, false, false,
         true,
@@ -107,16 +131,22 @@ public class ClientServerHostNameVerificationDistributedTest {
   @Test
   public void expectConnectionFailureWhenWrongHostNameInLocatorKey() throws Exception {
 
-    CertificateBuilder locatorCertificate = new CertificateBuilder()
+    CertificateMaterial locatorCertificate = new CertificateBuilder()
         .commonName("locator")
-        .sanDnsName("example.com");;
+        .sanDnsName("example.com")
+        .issuedBy(ca)
+        .generate();
 
-    CertificateBuilder serverCertificate = new CertificateBuilder()
+    CertificateMaterial serverCertificate = new CertificateBuilder()
         .commonName("server")
-        .sanDnsName("example.com");;
+        .sanDnsName("example.com")
+        .issuedBy(ca)
+        .generate();
 
-    CertificateBuilder clientCertificate = new CertificateBuilder()
-        .commonName("client");
+    CertificateMaterial clientCertificate = new CertificateBuilder()
+        .commonName("client")
+        .issuedBy(ca)
+        .generate();
 
     validateClientConnection(locatorCertificate, serverCertificate, clientCertificate, false, false,
         true,
@@ -125,54 +155,55 @@ public class ClientServerHostNameVerificationDistributedTest {
 
   @Test
   public void expectConnectionFailureWhenNoHostNameInServerKey() throws Exception {
-    CertificateBuilder locatorCertificateWithSan = new CertificateBuilder()
+    CertificateMaterial locatorCertificateWithSan = new CertificateBuilder()
         .commonName("locator")
+        .issuedBy(ca)
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getCanonicalHostName())
-        .sanIpAddress(InetAddress.getLocalHost());
+        .sanIpAddress(InetAddress.getLocalHost())
+        .generate();
 
-    CertificateBuilder serverCertificateWithNoSan = new CertificateBuilder()
-        .commonName("server");
+    CertificateMaterial serverCertificateWithNoSan = new CertificateBuilder()
+        .commonName("server")
+        .issuedBy(ca)
+        .generate();
 
-    CertificateBuilder clientCertificate = new CertificateBuilder()
-        .commonName("client");
+    CertificateMaterial clientCertificate = new CertificateBuilder()
+        .commonName("client")
+        .issuedBy(ca)
+        .generate();
 
     validateClientConnection(locatorCertificateWithSan, serverCertificateWithNoSan,
         clientCertificate, false, false, true,
         NoAvailableServersException.class);
   }
 
-  private void validateClientConnection(CertificateBuilder locatorCertificate,
-      CertificateBuilder serverCertificate, CertificateBuilder clientCertificate,
+  private void validateClientConnection(CertificateMaterial locatorCertificate,
+      CertificateMaterial serverCertificate, CertificateMaterial clientCertificate,
       boolean enableHostNameVerficiationForLocator, boolean enableHostNameVerificationForServer,
       boolean enableHostNameVerificationForClient,
       Class<? extends Throwable> expectedExceptionOnClient)
       throws GeneralSecurityException, IOException {
     CertStores locatorStore = CertStores.locatorStore();
-    locatorStore.withCertificate(locatorCertificate);
+    locatorStore.withCertificate("locator", locatorCertificate);
+    locatorStore.trust("ca", ca);
 
     CertStores serverStore = CertStores.serverStore();
-    serverStore.withCertificate(serverCertificate);
+    serverStore.withCertificate("server", serverCertificate);
+    serverStore.trust("ca", ca);
 
     CertStores clientStore = CertStores.clientStore();
-    clientStore.withCertificate(clientCertificate);
+    clientStore.withCertificate("client", clientCertificate);
+    clientStore.trust("ca", ca);
 
     Properties locatorSSLProps = locatorStore
-        .trustSelf()
-        .trust(clientStore.alias(), clientStore.certificate())
-        .trust(serverStore.alias(), serverStore.certificate())
         .propertiesWith(ALL, true, enableHostNameVerficiationForLocator);
 
     Properties serverSSLProps = serverStore
-        .trustSelf()
-        .trust(locatorStore.alias(), locatorStore.certificate())
-        .trust(clientStore.alias(), clientStore.certificate())
         .propertiesWith(ALL, true, enableHostNameVerificationForServer);
 
     Properties clientSSLProps = clientStore
-        .trust(locatorStore.alias(), locatorStore.certificate())
-        .trust(serverStore.alias(), serverStore.certificate())
         .propertiesWith(ALL, true, enableHostNameVerificationForClient);
 
     // create a cluster

@@ -220,7 +220,6 @@ public class DistributedRule extends AbstractDistributedRule {
       // 2. Instead, please add to the after() of your test or your rule.
 
       disconnectFromDS();
-
       // keep alphabetized to detect duplicate lines
       CacheCreation.clearThreadLocals();
       CacheServerTestUtil.clearCacheReference();

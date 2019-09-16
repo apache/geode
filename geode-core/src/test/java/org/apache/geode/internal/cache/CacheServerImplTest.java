@@ -43,6 +43,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -88,8 +89,9 @@ public class CacheServerImplTest {
   @Test
   public void createdAcceptorIsGatewayEndpoint() throws IOException {
     OverflowAttributes overflowAttributes = mock(OverflowAttributes.class);
-    InternalCacheServer server = new CacheServerImpl(cache, securityService, new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
+    InternalCacheServer server = new CacheServerImpl(cache, securityService,
+        StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     Acceptor acceptor = server.createAcceptor(overflowAttributes);
@@ -99,8 +101,9 @@ public class CacheServerImplTest {
 
   @Test
   public void getGroups_returnsSpecifiedGroup() {
-    InternalCacheServer server = new CacheServerImpl(cache, securityService, new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
+    InternalCacheServer server = new CacheServerImpl(cache, securityService,
+        StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
     String specifiedGroup = "group0";
 
@@ -112,8 +115,9 @@ public class CacheServerImplTest {
 
   @Test
   public void getGroups_returnsMultipleSpecifiedGroups() {
-    InternalCacheServer server = new CacheServerImpl(cache, securityService, new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
+    InternalCacheServer server = new CacheServerImpl(cache, securityService,
+        StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
     String specifiedGroup1 = "group1";
     String specifiedGroup2 = "group2";
@@ -129,8 +133,9 @@ public class CacheServerImplTest {
   public void getCombinedGroups_includesMembershipGroup() {
     String membershipGroup = "group-m0";
     when(config.getGroups()).thenReturn(membershipGroup);
-    InternalCacheServer server = new CacheServerImpl(cache, securityService, new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
+    InternalCacheServer server = new CacheServerImpl(cache, securityService,
+        StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     assertThat(server.getCombinedGroups())
@@ -144,8 +149,9 @@ public class CacheServerImplTest {
     String membershipGroup3 = "group-m3";
     when(config.getGroups())
         .thenReturn(membershipGroup1 + "," + membershipGroup2 + "," + membershipGroup3);
-    InternalCacheServer server = new CacheServerImpl(cache, securityService, new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
+    InternalCacheServer server = new CacheServerImpl(cache, securityService,
+        StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     assertThat(server.getCombinedGroups())
@@ -159,8 +165,9 @@ public class CacheServerImplTest {
     String membershipGroup3 = "group-m3";
     when(config.getGroups())
         .thenReturn(membershipGroup1 + "," + membershipGroup2 + "," + membershipGroup3);
-    InternalCacheServer server = new CacheServerImpl(cache, securityService, new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
+    InternalCacheServer server = new CacheServerImpl(cache, securityService,
+        StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
     String specifiedGroup1 = "group1";
     String specifiedGroup2 = "group2";
@@ -175,8 +182,9 @@ public class CacheServerImplTest {
 
   @Test
   public void startNotifiesResourceEventCacheServerStart() throws IOException {
-    InternalCacheServer server = new CacheServerImpl(cache, securityService, new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
+    InternalCacheServer server = new CacheServerImpl(cache, securityService,
+        StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     server.start();
@@ -186,8 +194,9 @@ public class CacheServerImplTest {
 
   @Test
   public void stopNotifiesResourceEventCacheServerStart() throws IOException {
-    InternalCacheServer server = new CacheServerImpl(cache, securityService, new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
+    InternalCacheServer server = new CacheServerImpl(cache, securityService,
+        StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
     server.start();
 

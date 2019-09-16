@@ -24,7 +24,6 @@ import java.util.Properties;
 import org.junit.Test;
 
 
-
 public class DeclarableTypeTest {
 
   @Test

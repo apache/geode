@@ -19,6 +19,7 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 public class AsyncEventQueueStats extends GatewaySenderStats {
@@ -42,7 +43,8 @@ public class AsyncEventQueueStats extends GatewaySenderStats {
    * @param asyncQueueId The id of the <code>AsyncEventQueue</code> used to generate the name of the
    *        <code>Statistics</code>
    */
-  public AsyncEventQueueStats(StatisticsFactory f, String asyncQueueId) {
-    super(f, asyncQueueId, type);
+  public AsyncEventQueueStats(StatisticsFactory f, String asyncQueueId,
+      StatisticsClock statisticsClock) {
+    super(f, "asyncEventQueueStats-", asyncQueueId, type, statisticsClock);
   }
 }

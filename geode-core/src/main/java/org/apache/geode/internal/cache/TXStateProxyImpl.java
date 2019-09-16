@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.tx.ClientTXStateStub;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class TXStateProxyImpl implements TXStateProxy {
   private static final Logger logger = LogService.getLogger();
@@ -77,26 +78,36 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   private final InternalCache cache;
   private long lastOperationTimeFromClient;
+  private final StatisticsClock statisticsClock;
+
+  private boolean removedCausedByFailover = false;
 
   public TXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id,
-      InternalDistributedMember clientMember) {
+      InternalDistributedMember clientMember, StatisticsClock statisticsClock) {
     this.cache = cache;
     this.txMgr = managerImpl;
     this.txId = id;
     this.isJTA = false;
     this.onBehalfOfClientMember = clientMember;
+    this.statisticsClock = statisticsClock;
   }
 
-  public TXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id, boolean isjta) {
+  public TXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id, boolean isjta,
+      StatisticsClock statisticsClock) {
     this.cache = cache;
     this.txMgr = managerImpl;
     this.txId = id;
     this.isJTA = isjta;
+    this.statisticsClock = statisticsClock;
   }
 
   @Override
   public ReentrantLock getLock() {
     return this.lock;
+  }
+
+  protected StatisticsClock getStatisticsClock() {
+    return statisticsClock;
   }
 
   boolean isJTA() {
@@ -124,7 +135,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   public TXStateInterface getRealDeal(KeyInfo key, InternalRegion r) {
     if (this.realDeal == null) {
       if (r == null) { // TODO: stop gap to get tests working
-        this.realDeal = new TXState(this, false);
+        this.realDeal = new TXState(this, false, statisticsClock);
       } else {
         // Code to keep going forward
         if (r.hasServerProxy()) {
@@ -143,7 +154,7 @@ public class TXStateProxyImpl implements TXStateProxy {
           r.waitOnInitialization(r.getInitializationLatchBeforeGetInitialImage());
           target = r.getOwnerForKey(key);
           if (target == null || target.equals(this.txMgr.getDM().getId())) {
-            this.realDeal = new TXState(this, false);
+            this.realDeal = new TXState(this, false, statisticsClock);
           } else {
             this.realDeal = new PeerTXStateStub(this, target, onBehalfOfClientMember);
           }
@@ -161,7 +172,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     if (this.realDeal == null) {
       this.target = t;
       if (target.equals(getCache().getDistributedSystem().getDistributedMember())) {
-        this.realDeal = new TXState(this, false);
+        this.realDeal = new TXState(this, false, statisticsClock);
       } else {
         /*
          * txtodo: // what to do!! We don't know if this is client or server!!!
@@ -194,6 +205,14 @@ public class TXStateProxyImpl implements TXStateProxy {
     if (isJTA()) {
       throw new IllegalStateException(errmsg);
     }
+  }
+
+  boolean isRemovedCausedByFailover() {
+    return removedCausedByFailover;
+  }
+
+  void setRemovedCausedByFailover(boolean removedCausedByFailover) {
+    this.removedCausedByFailover = removedCausedByFailover;
   }
 
   @Override

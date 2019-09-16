@@ -18,6 +18,7 @@ package org.apache.geode.distributed.internal.membership.gms.locator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,8 +26,15 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
+import org.apache.geode.internal.serialization.Version;
 
 public class GMSLocatorIntegrationTest {
 
@@ -34,16 +42,33 @@ public class GMSLocatorIntegrationTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private TcpServer tcpServer;
-  private NetView view;
+  private GMSMembershipView view;
   private GMSLocator gmsLocator;
+  Services services;
+  private JoinLeave joinLeave;
+  private Messenger messenger;
 
   @Before
   public void setUp() {
     tcpServer = mock(TcpServer.class);
-    view = new NetView();
+    view = new GMSMembershipView();
+    services = mock(Services.class);
+    DSFIDSerializer serializer = new DSFIDSerializerImpl();
+    Services.registerSerializables(serializer);
+    when(services.getSerializer()).thenReturn(serializer);
+    Version current = Version.CURRENT; // force Version static initialization to set
+    // Version
+
+    joinLeave = mock(JoinLeave.class);
+    when(services.getJoinLeave()).thenReturn(joinLeave);
+    messenger = mock(Messenger.class);
+    when(services.getMessenger()).thenReturn(messenger);
+    when(messenger.getMemberID()).thenReturn(new GMSMember("localhost", 8080));
+
     gmsLocator =
         new GMSLocator(null, null, false, false, new LocatorStats(), "",
             temporaryFolder.getRoot().toPath());
+    gmsLocator.setServices(services);
   }
 
   @Test
@@ -53,14 +78,14 @@ public class GMSLocatorIntegrationTest {
 
   @Test
   public void initDefinesViewFileInSpecifiedDirectory() {
-    gmsLocator.init(tcpServer);
+    gmsLocator.init(String.valueOf(tcpServer.getPort()));
 
     assertThat(gmsLocator.getViewFile()).isNotNull();
   }
 
   @Test
   public void installViewCreatesViewFileInSpecifiedDirectory() {
-    gmsLocator.init(tcpServer);
+    gmsLocator.init(String.valueOf(tcpServer.getPort()));
 
     gmsLocator.installView(view);
 

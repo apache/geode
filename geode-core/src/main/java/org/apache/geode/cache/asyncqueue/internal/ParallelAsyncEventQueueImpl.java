@@ -16,6 +16,7 @@ package org.apache.geode.cache.asyncqueue.internal;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -38,18 +39,20 @@ import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySen
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
 
   private static final Logger logger = LogService.getLogger();
 
-  public ParallelAsyncEventQueueImpl(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+  public ParallelAsyncEventQueueImpl(InternalCache cache, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, GatewaySenderAttributes attrs) {
+    super(cache, statisticsClock, attrs);
     if (!(this.cache instanceof CacheCreation)) {
       // this sender lies underneath the AsyncEventQueue. Need to have
       // AsyncEventQueueStats
-      this.statistics = new AsyncEventQueueStats(cache.getDistributedSystem(),
-          AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(id));
+      this.statistics = new AsyncEventQueueStats(statisticsFactory,
+          AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(id), statisticsClock);
     }
     this.isForInternalUse = true;
   }
@@ -78,6 +81,9 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
        */
       eventProcessor =
           new ConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj());
+      if (startEventProcessorInPausedState) {
+        pauseEvenIfProcessorStopped();
+      }
       eventProcessor.start();
       waitForRunningStatus();
 

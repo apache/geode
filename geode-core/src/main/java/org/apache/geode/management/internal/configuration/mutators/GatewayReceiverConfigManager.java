@@ -20,44 +20,41 @@ import java.util.List;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.configuration.GatewayReceiver;
+import org.apache.geode.management.internal.configuration.converters.GatewayReceiverConverter;
 
 public class GatewayReceiverConfigManager
-    implements ConfigurationManager<GatewayReceiverConfig> {
-  private final InternalCache cache;
+    implements ConfigurationManager<GatewayReceiver> {
 
-  public GatewayReceiverConfigManager(InternalCache cache) {
-    this.cache = cache;
-  }
-
+  private final GatewayReceiverConverter converter = new GatewayReceiverConverter();
 
   @Override
-  public void add(GatewayReceiverConfig config, CacheConfig existing) {
-    existing.setGatewayReceiver(config);
+  public void add(GatewayReceiver config, CacheConfig existing) {
+    existing.setGatewayReceiver(converter.fromConfigObject(config));
   }
 
   @Override
-  public void update(GatewayReceiverConfig config, CacheConfig existing) {
-    existing.setGatewayReceiver(config);
+  public void update(GatewayReceiver config, CacheConfig existing) {
+    existing.setGatewayReceiver(converter.fromConfigObject(config));
   }
 
   @Override
-  public void delete(GatewayReceiverConfig config, CacheConfig existing) {
+  public void delete(GatewayReceiver config, CacheConfig existing) {
     existing.setGatewayReceiver(null);
   }
 
   @Override
-  public List<GatewayReceiverConfig> list(GatewayReceiverConfig filterConfig,
+  public List<GatewayReceiver> list(GatewayReceiver filterConfig,
       CacheConfig existing) {
     GatewayReceiverConfig gatewayReceiver = existing.getGatewayReceiver();
     if (gatewayReceiver == null) {
       return Collections.emptyList();
     }
-    return Collections.singletonList(gatewayReceiver);
+    return Collections.singletonList(converter.fromXmlObject(gatewayReceiver));
   }
 
   @Override
-  public GatewayReceiverConfig get(String id, CacheConfig existing) {
-    return existing.getGatewayReceiver();
+  public GatewayReceiver get(String id, CacheConfig existing) {
+    return converter.fromXmlObject(existing.getGatewayReceiver());
   }
 }

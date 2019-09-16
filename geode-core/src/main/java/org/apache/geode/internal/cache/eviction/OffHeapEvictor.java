@@ -20,6 +20,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.offheap.MemoryAllocator;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends an eviction event
@@ -33,8 +34,8 @@ public class OffHeapEvictor extends HeapEvictor {
 
   private long bytesToEvictWithEachBurst;
 
-  public OffHeapEvictor(final InternalCache cache) {
-    super(cache, EVICTOR_THREAD_NAME);
+  public OffHeapEvictor(final InternalCache cache, StatisticsClock statisticsClock) {
+    super(cache, EVICTOR_THREAD_NAME, statisticsClock);
     calculateEvictionBurst();
   }
 

@@ -24,7 +24,8 @@ import java.io.IOException;
 
 import jline.console.ConsoleReader;
 import org.junit.Test;
-import sun.misc.Signal;
+
+import org.apache.geode.unsafe.internal.sun.misc.Signal;
 
 /**
  * Unit tests for {@link GfshSignalHandler}.

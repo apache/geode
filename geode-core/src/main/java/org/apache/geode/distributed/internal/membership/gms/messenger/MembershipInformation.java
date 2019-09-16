@@ -20,7 +20,7 @@ import java.util.Set;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 
-import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 
 /**
  * Class MembershipInformation is used to pass membership data from a GMS that was
@@ -28,11 +28,11 @@ import org.apache.geode.distributed.DistributedMember;
  */
 public class MembershipInformation {
   private final JChannel channel;
-  private final Set<DistributedMember> membershipIdentifiers;
+  private final Set<GMSMember> membershipIdentifiers;
   private final Queue<Message> queuedMessages;
 
   protected MembershipInformation(JChannel channel,
-      Set<DistributedMember> oldMembershipIdentifiers,
+      Set<GMSMember> oldMembershipIdentifiers,
       Queue<Message> queuedMessages) {
 
     this.channel = channel;
@@ -44,7 +44,7 @@ public class MembershipInformation {
     return channel;
   }
 
-  public Set<DistributedMember> getMembershipIdentifiers() {
+  public Set<GMSMember> getMembershipIdentifiers() {
     return membershipIdentifiers;
   }
 

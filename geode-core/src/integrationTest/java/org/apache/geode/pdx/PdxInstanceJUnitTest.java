@@ -12,14 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.pdx;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -28,7 +26,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,11 +36,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -52,19 +48,19 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 @Category({SerializationTest.class})
 public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
 
-  private GemFireCacheImpl c;
+  private GemFireCacheImpl cache;
   private int allFieldCount;
 
   @Before
   public void setUp() {
     // make it a loner
-    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
+    cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
         .set(DISTRIBUTED_SYSTEM_ID, "255").setPdxReadSerialized(true).create();
   }
 
   @After
   public void tearDown() {
-    this.c.close();
+    cache.close();
   }
 
   @Test
@@ -84,183 +80,164 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    assertEquals(Arrays.asList(new String[] {"field1", "field2", "field3"}),
-        instance.getFieldNames());
-    assertEquals(instance.getField("field2"), Integer.valueOf(53));
-    assertEquals(instance.getField("field1"), Boolean.FALSE);
+    assertThat(instance.getFieldNames()).containsExactly("field1", "field2", "field3");
+    assertThat(instance.getField("field2")).isEqualTo(53);
+    assertThat(instance.getField("field1")).isEqualTo(false);
     PdxInstance fieldInstance = (PdxInstance) instance.getField("field3");
-    assertEquals(Arrays.asList(new String[] {"afield"}), fieldInstance.getFieldNames());
-    assertEquals("hello", fieldInstance.getField("afield"));
+    assertThat(fieldInstance.getFieldNames()).containsExactly("afield");
+    assertThat(fieldInstance.getField("afield")).isEqualTo("hello");
   }
 
   @Test
   public void testHashCodeAndEqualsSameType() throws IOException, ClassNotFoundException {
     PdxInstance instance = getAllFields(0);
-    assertEquals(instance, getAllFields(0));
-    assertEquals(instance.hashCode(), getAllFields(0).hashCode());
+    assertThat(instance).isEqualTo(getAllFields(0));
+    assertThat(instance.hashCode()).isEqualTo(getAllFields(0).hashCode());
 
     for (int i = 1; i < allFieldCount + 1; i++) {
       PdxInstance other = getAllFields(i);
-      assertFalse("One field " + i + " hashcode have been unequal but were equal"
-          + instance.getField("field" + (i - 1)) + ", " + other.getField("field" + (i - 1)) + ", "
-          + instance + ", " + other, instance.equals(other));
+      assertThat(instance.equals(other))
+          .withFailMessage("One field " + i + " hashcode have been unequal but were equal"
+              + instance.getField("field" + (i - 1)) + ", " + other.getField("field" + (i - 1))
+              + ", "
+              + instance + ", " + other)
+          .isFalse();
       // Technically, this could be true. If this asserts fails I guess we can just change the test.
-      assertFalse(
-          "One field " + i + " hashcode have been unequal but were equal" + instance + ", " + other,
-          instance.hashCode() == other.hashCode());
+      assertThat(instance.hashCode()).withFailMessage(
+          "One field " + i + " hashcode have been unequal but were equal" + instance + ", " + other)
+          .isNotEqualTo(other.hashCode());
     }
   }
 
   @Test
-  public void testEquals() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testEquals", false, this.c);
+  public void testEquals() {
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testEquals", false, cache);
     c.writeInt("intField", 37);
     PdxInstance pi = c.create();
-    assertEquals(false, pi.equals(null));
-    assertEquals(false, pi.equals(new Date(37)));
-    c = PdxInstanceFactoryImpl.newCreator("testEquals", false, this.c);
+    assertThat(pi.equals(null)).isFalse();
+    assertThat(pi.equals(new Date(37))).isFalse();
+    c = PdxInstanceFactoryImpl.newCreator("testEquals", false, cache);
     c.writeInt("intField", 37);
     c.writeInt("intField2", 38);
     PdxInstance pi2 = c.create();
-    pi.hashCode();
-    pi2.hashCode();
-    assertEquals(false, pi.equals(pi2));
-    assertEquals(false, pi2.equals(pi));
+    assertThat(pi.hashCode()).isNotEqualTo(pi2.hashCode());
+    assertThat(pi.equals(pi2)).isFalse();
+    assertThat(pi2.equals(pi)).isFalse();
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new Date());
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", null);
     pi2 = c.create();
-    pi.hashCode();
-    pi2.hashCode();
-    assertEquals(false, pi.equals(pi2));
-    assertEquals(false, pi2.equals(pi));
+    assertThat(pi.hashCode()).isNotEqualTo(pi2.hashCode());
+    assertThat(pi.equals(pi2)).isFalse();
+    assertThat(pi2.equals(pi)).isFalse();
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new int[] {1});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new byte[] {(byte) 1});
     pi2 = c.create();
-    pi.hashCode();
-    pi2.hashCode();
-    assertEquals(false, pi.equals(pi2));
-    assertEquals(false, pi2.equals(pi));
+    assertThat(pi.hashCode()).isNotEqualTo(pi2.hashCode());
+    assertThat(pi.equals(pi2)).isFalse();
+    assertThat(pi2.equals(pi)).isFalse();
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new int[] {1});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new int[] {2});
     pi2 = c.create();
-    pi.hashCode();
-    pi2.hashCode();
-    assertEquals(false, pi.equals(pi2));
-    assertEquals(false, pi2.equals(pi));
+    assertThat(pi.hashCode()).isNotEqualTo(pi2.hashCode());
+    assertThat(pi.equals(pi2)).isFalse();
+    assertThat(pi2.equals(pi)).isFalse();
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new int[] {1});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new int[] {1});
     pi2 = c.create();
-    assertEquals(pi.hashCode(), pi2.hashCode());
-    assertEquals(true, pi.equals(pi2));
-    assertEquals(true, pi2.equals(pi));
+    assertThat(pi.hashCode()).isEqualTo(pi2.hashCode());
+    assertThat(pi.equals(pi2)).isTrue();
+    assertThat(pi2.equals(pi)).isTrue();
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new int[] {1});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new Date());
     pi2 = c.create();
-    pi.hashCode();
-    pi2.hashCode();
-    assertEquals(false, pi.equals(pi2));
-    assertEquals(false, pi2.equals(pi));
+    assertThat(pi.hashCode()).isNotEqualTo(pi2.hashCode());
+    assertThat(pi.equals(pi2)).isFalse();
+    assertThat(pi2.equals(pi)).isFalse();
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new Date[] {new Date(1)});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new Date[] {new Date(2)});
     pi2 = c.create();
-    pi.hashCode();
-    pi2.hashCode();
-    assertEquals(false, pi.equals(pi2));
-    assertEquals(false, pi2.equals(pi));
+    assertThat(pi.hashCode()).isNotEqualTo(pi2.hashCode());
+    assertThat(pi.equals(pi2)).isFalse();
+    assertThat(pi2.equals(pi)).isFalse();
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new Date[] {new Date(1)});
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", new Date[] {new Date(1)});
     pi2 = c.create();
-    assertEquals(pi.hashCode(), pi2.hashCode());
-    assertEquals(true, pi.equals(pi2));
-    assertEquals(true, pi2.equals(pi));
+    assertThat(pi.hashCode()).isEqualTo(pi2.hashCode());
+    assertThat(pi.equals(pi2)).isTrue();
+    assertThat(pi2.equals(pi)).isTrue();
 
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", MyEnum.ONE);
     pi = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, this.c);
+    c = PdxInstanceFactoryImpl.newCreator("testEqualsOF", false, cache);
     c.writeObject("objField", MyEnum.ONE);
     pi2 = c.create();
-    assertEquals(pi.hashCode(), pi2.hashCode());
-    assertEquals(true, pi.equals(pi2));
-    assertEquals(true, pi2.equals(pi));
-
+    assertThat(pi.hashCode()).isEqualTo(pi2.hashCode());
+    assertThat(pi.equals(pi2)).isTrue();
+    assertThat(pi2.equals(pi)).isTrue();
   }
 
   public enum MyEnum {
     ONE, TWO
-  };
+  }
 
   public enum MyComplexEnum {
     ONE {},
     TWO {}
-  };
+  }
 
+  @Test
   public void testPdxComplexEnum() {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testPdxEnum", false, this.c);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testPdxEnum", false, cache);
     c.writeObject("enumField", MyComplexEnum.ONE);
     PdxInstance pi = c.create();
     Object f = pi.getField("enumField");
-    if (f instanceof PdxInstanceEnumInfo) {
-      PdxInstanceEnumInfo e = (PdxInstanceEnumInfo) f;
-      assertEquals("ONE", e.getName());
-      GemFireCacheImpl theCache = (GemFireCacheImpl) getCache();
-      if (theCache == null) {
-        throw new CacheClosedException(
-            "PDX registry is unavailable because the Cache has been closed.");
-      }
-      theCache.getPdxRegistry().flushCache();
-      assertEquals(MyComplexEnum.ONE, e.getObject());
-    } else {
-      fail("Expected enumField to be a PdxInstanceEnumInfo but it was a " + f.getClass());
-    }
+    assertThat(f).isInstanceOf(PdxInstanceEnumInfo.class);
+    PdxInstanceEnumInfo e = (PdxInstanceEnumInfo) f;
+    assertThat(e.getName()).isEqualTo("ONE");
+    cache.getPdxRegistry().flushCache();
+    assertThat(e.getObject()).isEqualTo(MyComplexEnum.ONE);
   }
 
+  @Test
   public void testPdxSimpleEnum() {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testPdxEnum", false, this.c);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testPdxEnum", false, cache);
     c.writeObject("enumField", MyEnum.ONE);
     PdxInstance pi = c.create();
     Object f = pi.getField("enumField");
-    if (f instanceof PdxInstanceEnumInfo) {
-      PdxInstanceEnumInfo e = (PdxInstanceEnumInfo) f;
-      assertEquals("ONE", e.getName());
-      GemFireCacheImpl theCache = (GemFireCacheImpl) getCache();
-      if (theCache == null) {
-        throw new CacheClosedException(
-            "PDX registry is unavailable because the Cache has been closed.");
-      }
-      theCache.getPdxRegistry().flushCache();
-      assertEquals(MyEnum.ONE, e.getObject());
-    } else {
-      fail("Expected enumField to be a PdxInstanceEnumInfo but it was a " + f.getClass());
-    }
+    assertThat(f).isInstanceOf(PdxInstanceEnumInfo.class);
+    PdxInstanceEnumInfo e = (PdxInstanceEnumInfo) f;
+    assertThat(e.getName()).isEqualTo("ONE");
+    cache.getPdxRegistry().flushCache();
+    assertThat(e.getObject()).isEqualTo(MyEnum.ONE);
   }
 
   @Test
@@ -280,8 +257,8 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
     });
 
     // These are different classes, so they shouldn't match.
-    assertFalse(instance1.equals(instance2));
-    assertFalse(instance1.isIdentityField("field1"));
+    assertThat(instance1.equals(instance2)).isFalse();
+    assertThat(instance1.isIdentityField("field1")).isFalse();
   }
 
   @Test
@@ -293,8 +270,8 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
     PdxSerializable serializable2 = getSeparateClassLoadedPdx(false);
     PdxInstance instance2 = getPdx(serializable2);
 
-    assertEquals(instance1, instance2);
-    assertEquals(instance1.hashCode(), instance2.hashCode());
+    assertThat(instance2).isEqualTo(instance1);
+    assertThat(instance2.hashCode()).isEqualTo(instance1.hashCode());
   }
 
   @Test
@@ -317,10 +294,10 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
       }
     }));
 
-    assertEquals(instance1, instance2);
-    assertEquals(instance1.hashCode(), instance2.hashCode());
-    assertFalse(instance1.isIdentityField("field1"));
-    assertTrue(instance1.isIdentityField("field2"));
+    assertThat(instance2).isEqualTo(instance1);
+    assertThat(instance2.hashCode()).isEqualTo(instance1.hashCode());
+    assertThat(instance1.isIdentityField("field1")).isFalse();
+    assertThat(instance1.isIdentityField("field2")).isTrue();
   }
 
   // This is hack to make sure the classnames are the same
@@ -339,36 +316,35 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
       IllegalAccessException, InvocationTargetException {
     ClassLoader parent = Thread.currentThread().getContextClassLoader();
     ClassLoader loader1 = new NonDelegatingLoader(parent);
-    Class clazz1 = loader1.loadClass(getClass().getPackage().getName() + ".SeparateClassloaderPdx");
-    Constructor constructor = clazz1.getConstructor(boolean.class);
+    Class<?> clazz1 =
+        loader1.loadClass(getClass().getPackage().getName() + ".SeparateClassloaderPdx");
+    Constructor<?> constructor = clazz1.getConstructor(boolean.class);
     constructor.setAccessible(true);
-    PdxSerializable serializable =
-        (PdxSerializable) constructor.newInstance(Boolean.valueOf(field1First));
-    return serializable;
+    return (PdxSerializable) constructor.newInstance(field1First);
   }
 
-  public PdxInstance getAllFields(final int change) throws IOException, ClassNotFoundException {
-    PdxInstance instance = getPdx(new TestPdx() {
+  private PdxInstance getAllFields(final int change) throws IOException, ClassNotFoundException {
+    return getPdx(new TestPdx() {
       @Override
       public void toData(PdxWriter out) {
         int x = 0;
         Number serializable1 = new BigInteger("1234");
         Number serializable2 = new BigInteger("1235");
-        Collection collection1 = new ArrayList();
+        Collection<Number> collection1 = new ArrayList<>();
         collection1.add(serializable1);
         collection1.add(serializable2);
-        Collection collection2 = new ArrayList();
+        Collection<Number> collection2 = new ArrayList<>();
         collection2.add(serializable2);
         collection2.add(serializable1);
         SimpleClass testPdx1 = new SimpleClass(5, (byte) 5);
         SimpleClass testPdx2 = new SimpleClass(6, (byte) 6);
-        HashMap map1 = new HashMap();
-        HashMap map2 = new HashMap();
+        HashMap<Number, Number> map1 = new HashMap<>();
+        HashMap<Number, Number> map2 = new HashMap<>();
         map2.put(serializable1, serializable2);
 
 
         out.writeChar("field" + x++, change == x ? 'c' : 'd');
-        out.writeBoolean("field" + x++, change == x ? true : false);
+        out.writeBoolean("field" + x++, change == x);
         out.writeByte("field" + x++, (byte) (change == x ? 0x5 : 0x6));
         out.writeShort("field" + x++, (short) (change == x ? 7 : 8));
         out.writeInt("field" + x++, change == x ? 9 : 10);
@@ -407,8 +383,6 @@ public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
         allFieldCount = x;
       }
     });
-
-    return instance;
   }
 
   private PdxInstance getPdx(PdxSerializable toData) throws IOException, ClassNotFoundException {

@@ -26,8 +26,6 @@ dependencies {
   compile('com.fasterxml.jackson.core:jackson-core')
   compile('com.fasterxml.jackson.core:jackson-annotations')
   compile('org.springframework:spring-web')
-  compile('javax.xml.bind:jaxb-api')
-  compile('javax.xml.bind:jaxb-api')
   compile('org.apache.httpcomponents:httpclient')
 
   compileOnly(project(':geode-common')) {

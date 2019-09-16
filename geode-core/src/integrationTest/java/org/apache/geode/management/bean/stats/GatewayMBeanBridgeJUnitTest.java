@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.bean.stats;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -40,7 +41,7 @@ public class GatewayMBeanBridgeJUnitTest extends MBeanStatsTestCase {
 
   @Override
   public void init() {
-    senderStats = new GatewaySenderStats(system, "test");
+    senderStats = new GatewaySenderStats(system, "gatewaySenderStats-", "test", disabledClock());
 
     sender = Mockito.mock(AbstractGatewaySender.class);
     Mockito.when(sender.getStatistics()).thenReturn(senderStats);

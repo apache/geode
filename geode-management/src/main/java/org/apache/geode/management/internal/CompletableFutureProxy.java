@@ -14,12 +14,15 @@
  */
 package org.apache.geode.management.internal;
 
+import static org.apache.geode.management.internal.ClientClusterManagementService.makeEntity;
+
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.annotations.Experimental;
@@ -105,7 +108,8 @@ public class CompletableFutureProxy<V extends OperationResult> extends Completab
   @SuppressWarnings("unchecked")
   private ClusterManagementOperationStatusResult<V> requestStatus() {
     return restTemplate
-        .getForEntity(uri, ClusterManagementOperationStatusResult.class)
+        .exchange(uri, HttpMethod.GET, makeEntity(null),
+            ClusterManagementOperationStatusResult.class)
         .getBody();
   }
 }

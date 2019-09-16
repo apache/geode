@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -44,6 +45,7 @@ import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VMVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class DistributedRegionJUnitTest
     extends AbstractDistributedRegionJUnitTest {
@@ -52,11 +54,11 @@ public class DistributedRegionJUnitTest
   protected void setInternalRegionArguments(InternalRegionArguments ira) {}
 
   @Override
-  protected DistributedRegion createAndDefineRegion(
-      boolean isConcurrencyChecksEnabled,
-      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
+  protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
+      RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache,
+      StatisticsClock statisticsClock) {
     DistributedRegion region = new DistributedRegion("testRegion", ra, null,
-        cache, ira);
+        cache, ira, disabledClock());
     if (isConcurrencyChecksEnabled) {
       region.enableConcurrencyChecks();
     }
@@ -222,9 +224,7 @@ public class DistributedRegionJUnitTest
     byte[] memId = {1, 2, 3};
     long threadId = 1;
     long retrySeqId = 1;
-    ThreadIdentifier tid = new ThreadIdentifier(memId, threadId);
     EventID retryEventID = new EventID(memId, threadId, retrySeqId);
-    boolean skipCallbacks = true;
 
     final EventIDHolder clientEvent = new EventIDHolder(retryEventID);
     clientEvent.setOperation(Operation.UPDATE);

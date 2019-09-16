@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A variant of the ObjectPartList which deserializes the values as byte arrays of serialized
@@ -40,7 +42,8 @@ public class SerializedObjectPartList extends ObjectPartList651 {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeBoolean(this.hasKeys);
     if (this.objectTypeArray != null) {
       int numObjects = this.objects.size();
@@ -78,7 +81,8 @@ public class SerializedObjectPartList extends ObjectPartList651 {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     boolean keysPresent = in.readBoolean();
     if (keysPresent) {
       this.keys = new ArrayList();

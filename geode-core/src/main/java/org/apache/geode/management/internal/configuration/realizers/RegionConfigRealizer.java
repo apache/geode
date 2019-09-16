@@ -27,7 +27,6 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
@@ -38,15 +37,18 @@ import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
+import org.apache.geode.management.internal.configuration.converters.RegionConverter;
 import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
 public class RegionConfigRealizer
-    implements ConfigurationRealizer<RegionConfig, RuntimeRegionInfo> {
-  public RegionConfigRealizer() {}
+    implements ConfigurationRealizer<Region, RuntimeRegionInfo> {
+
+  private final RegionConverter converter = new RegionConverter();
 
   /**
    * this is used to create only root regions.
@@ -54,10 +56,9 @@ public class RegionConfigRealizer
    * @param regionConfig the name in the regionConfig can not contain sub-regions.
    */
   @Override
-  public RealizationResult create(RegionConfig regionConfig, InternalCache cache) {
-    RegionFactory factory = getRegionFactory(cache, regionConfig.getRegionAttributes());
-    factory.create(regionConfig.getName());
-    return new RealizationResult().setMessage("Region successfully created.");
+  public RealizationResult create(Region regionConfig, InternalCache cache) {
+    RegionConfig xmlConfig = converter.fromConfigObject(regionConfig);
+    return create(xmlConfig, regionConfig.getName(), cache);
   }
 
   /**
@@ -79,7 +80,7 @@ public class RegionConfigRealizer
       return new RealizationResult().setMessage("Region successfully created.");
     }
 
-    Region parentRegion = cache.getRegion(parentRegionPath);
+    org.apache.geode.cache.Region parentRegion = cache.getRegion(parentRegionPath);
     factory.createSubregion(parentRegion, regionName);
     return new RealizationResult().setMessage("Region successfully created.");
   }
@@ -296,8 +297,8 @@ public class RegionConfigRealizer
 
 
   @Override
-  public RuntimeRegionInfo get(RegionConfig config, InternalCache cache) {
-    Region<Object, Object> region = cache.getRegion("/" + config.getName());
+  public RuntimeRegionInfo get(Region config, InternalCache cache) {
+    org.apache.geode.cache.Region<Object, Object> region = cache.getRegion("/" + config.getName());
     if (region == null) {
       return null;
     }
@@ -309,13 +310,13 @@ public class RegionConfigRealizer
 
 
   @Override
-  public RealizationResult update(RegionConfig config, InternalCache cache) {
+  public RealizationResult update(Region config, InternalCache cache) {
     throw new NotImplementedException("Not implemented");
   }
 
   @Override
-  public RealizationResult delete(RegionConfig config, InternalCache cache) {
-    Region region = cache.getRegion(config.getName());
+  public RealizationResult delete(Region config, InternalCache cache) {
+    org.apache.geode.cache.Region region = cache.getRegion(config.getName());
     if (region == null) {
       // Since we are trying to delete this region, we can return early
       return new RealizationResult().setMessage("Region does not exist.");

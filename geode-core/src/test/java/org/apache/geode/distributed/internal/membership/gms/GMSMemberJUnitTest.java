@@ -34,10 +34,12 @@ import org.jgroups.util.UUID;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({SecurityTest.class})
@@ -160,21 +162,6 @@ public class GMSMemberJUnitTest {
     assertEquals(-1, member1.compareTo(member2));
   }
 
-  /**
-   * Makes sure a NPE is not thrown
-   */
-  @Test
-  public void testNoNPEWhenSetAttributesWithNull() {
-    GMSMember member = new GMSMember();
-    member.setAttributes(null);
-    MemberAttributes attrs = member.getAttributes();
-    MemberAttributes invalid = MemberAttributes.INVALID;
-    assertEquals(attrs.getVmKind(), invalid.getVmKind());
-    assertEquals(attrs.getPort(), invalid.getPort());
-    assertEquals(attrs.getVmViewId(), invalid.getVmViewId());
-    assertEquals(attrs.getName(), invalid.getName());
-  }
-
   @Test
   public void testGetUUIDReturnsNullWhenUUIDIs0() {
     GMSMember member = new GMSMember();
@@ -203,26 +190,31 @@ public class GMSMemberJUnitTest {
   @Test
   public void testGMSMemberBackwardCompatibility() throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    MemberAttributes attributes = new MemberAttributes(10, 20, 1, 2, "member", null, null);
     GMSMember member = new GMSMember();
-    member.setAttributes(attributes);
     DataOutput dataOutput = new DataOutputStream(baos);
-    member.writeEssentialData(dataOutput);
+    SerializationContext serializationContext = InternalDataSerializer.getDSFIDSerializer()
+        .createSerializationContext(dataOutput);
+    member.writeEssentialData(dataOutput, serializationContext);
 
     // vmKind should be transmitted to a member with the current version
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     DataInput dataInput = new DataInputStream(bais);
+    DeserializationContext deserializationContext = InternalDataSerializer.getDSFIDSerializer()
+        .createDeserializationContext(dataInput);
     GMSMember newMember = new GMSMember();
-    newMember.readEssentialData(dataInput);
-    assertEquals(1, newMember.getVmKind());
+    newMember.readEssentialData(dataInput, deserializationContext);
+    assertEquals(member.getVmKind(), newMember.getVmKind());
 
     // vmKind should not be transmitted to a member with version GFE_90 or earlier
     dataOutput = new HeapDataOutputStream(Version.GFE_90);
-    member.writeEssentialData(dataOutput);
+    member.writeEssentialData(dataOutput, serializationContext);
     bais = new ByteArrayInputStream(baos.toByteArray());
-    dataInput = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_90);
+    DataInputStream stream = new DataInputStream(bais);
+    deserializationContext =
+        InternalDataSerializer.createDeserializationContext(stream);
+    dataInput = new VersionedDataInputStream(stream, Version.GFE_90);
     newMember = new GMSMember();
-    newMember.readEssentialData(dataInput);
+    newMember.readEssentialData(dataInput, deserializationContext);
     assertEquals(0, newMember.getVmKind());
   }
 

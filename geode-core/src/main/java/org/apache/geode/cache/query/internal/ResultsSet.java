@@ -33,9 +33,11 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 // @todo probably should assert element type when elements added
 /**
@@ -140,7 +142,8 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     int size = in.readInt();
     ObjectTypeImpl clt = new ObjectTypeImpl();
     InternalDataSerializer.invokeFromData(clt, in);
@@ -151,7 +154,8 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(size());
     ObjectTypeImpl ctImpl = (ObjectTypeImpl) this.getCollectionType().getElementType();
     Assert.assertTrue(ctImpl != null, "ctImpl can not be null");

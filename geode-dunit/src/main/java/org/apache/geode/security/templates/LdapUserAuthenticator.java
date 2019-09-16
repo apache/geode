@@ -89,7 +89,7 @@ public class LdapUserAuthenticator implements Authenticator {
     }
 
     final Properties env = new Properties();
-    env.put(Context.INITIAL_CONTEXT_FACTORY, com.sun.jndi.ldap.LdapCtxFactory.class.getName());
+    env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
     env.put(Context.PROVIDER_URL, this.ldapUrlScheme + this.ldapServer + '/' + this.baseDomainName);
     env.put(Context.SECURITY_PRINCIPAL, "uid=" + userName + "," + this.baseDomainName);
     env.put(Context.SECURITY_CREDENTIALS, password);

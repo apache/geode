@@ -29,16 +29,17 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * This tests the rolling upgrade for locators with different GOSSIPVERSION.
@@ -95,7 +96,7 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
     locator0.invoke("Starting first locator on port " + port0, () -> {
       try {
         TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.TESTVERSION - 100,
-            Version.CURRENT_ORDINAL);
+            VersionManager.getInstance().getCurrentVersionOrdinal());
 
         Locator.startLocatorAndDS(port0, logFile0, props);
       } catch (IOException e) {
@@ -107,7 +108,7 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
     member.invoke("Start a member", () -> {
       disconnectFromDS();
       TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.TESTVERSION - 100,
-          Version.CURRENT_ORDINAL);
+          VersionManager.getInstance().getCurrentVersionOrdinal());
       InternalDistributedSystem.connect(props);
     });
 
@@ -130,7 +131,7 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
       TcpServer.TESTVERSION -= 100;
       TcpServer.OLDTESTVERSION -= 100;
       TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.TESTVERSION,
-          Version.CURRENT_ORDINAL);
+          VersionManager.getInstance().getCurrentVersionOrdinal());
       TcpServer.getGossipVersionMapForTestOnly().put(TcpServer.OLDTESTVERSION,
           Version.GFE_57.ordinal());
 
@@ -138,7 +139,7 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
 
       // Start a gossip client to connect to first locator "locator0".
       FindCoordinatorRequest req = new FindCoordinatorRequest(
-          new InternalDistributedMember(SocketCreator.getLocalHost(), 1234));
+          new GMSMember("localhost", 1234));
       FindCoordinatorResponse response;
 
       response = (FindCoordinatorResponse) new TcpClient()

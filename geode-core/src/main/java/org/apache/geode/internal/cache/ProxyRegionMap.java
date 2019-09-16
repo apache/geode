@@ -31,9 +31,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.eviction.EvictionList;
@@ -44,6 +42,8 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 
 /**

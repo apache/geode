@@ -17,14 +17,10 @@ package org.apache.geode.management.configuration;
 
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.MemberInformation;
 
 @Experimental
-public class MemberConfig extends CacheElement implements RestfulEndpoint,
-    CorrespondWith<MemberInformation> {
+public class MemberConfig extends GroupableConfiguration<MemberInformation> {
 
   public static final String MEMBER_CONFIG_ENDPOINT = "/members";
 
@@ -34,6 +30,9 @@ public class MemberConfig extends CacheElement implements RestfulEndpoint,
     this.id = id;
   }
 
+  /**
+   * Returns the value set by {@link #setId(String)}.
+   */
   @Override
   public String getId() {
     return id;

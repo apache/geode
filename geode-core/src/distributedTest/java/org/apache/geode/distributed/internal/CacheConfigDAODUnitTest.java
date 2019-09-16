@@ -23,8 +23,8 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 

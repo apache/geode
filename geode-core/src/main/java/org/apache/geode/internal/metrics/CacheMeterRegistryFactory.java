@@ -14,22 +14,34 @@
  */
 package org.apache.geode.internal.metrics;
 
+
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
+import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
 public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory {
 
   @Override
   public CompositeMeterRegistry create(int systemId, String memberName, String hostName) {
-    CompositeMeterRegistry registry = new CompositeMeterRegistry();
+    JvmGcMetrics gcMetricsBinder = new JvmGcMetrics();
+    GeodeCompositeMeterRegistry registry = new GeodeCompositeMeterRegistry(gcMetricsBinder);
 
     MeterRegistry.Config registryConfig = registry.config();
-    registryConfig.commonTags("cluster.id", String.valueOf(systemId));
-    registryConfig.commonTags("member.name", memberName == null ? "" : memberName);
-    registryConfig.commonTags("host.name", hostName == null ? "" : hostName);
+    registryConfig.commonTags("cluster", String.valueOf(systemId));
+    registryConfig.commonTags("member", memberName == null ? "" : memberName);
+    registryConfig.commonTags("host", hostName == null ? "" : hostName);
 
+    gcMetricsBinder.bindTo(registry);
     new JvmMemoryMetrics().bindTo(registry);
+    new JvmThreadMetrics().bindTo(registry);
+    new ProcessorMetrics().bindTo(registry);
+    new UptimeMetrics().bindTo(registry);
+    new FileDescriptorMetrics().bindTo(registry);
 
     return registry;
   }

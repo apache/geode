@@ -34,13 +34,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
@@ -75,7 +75,7 @@ public class ClientClusterManagementServiceDUnitTest {
 
   @After
   public void deleteAllRegions() {
-    List<RegionConfig> regions = client.list(new RegionConfig())
+    List<Region> regions = client.list(new Region())
         .getConfigResult();
 
     regions.forEach(r -> {
@@ -83,7 +83,7 @@ public class ClientClusterManagementServiceDUnitTest {
       client.delete(r);
     });
 
-    List<RegionConfig> moreRegions = client.list(new RegionConfig())
+    List<Region> moreRegions = client.list(new Region())
         .getConfigResult();
     assertThat(moreRegions).isEmpty();
   }
@@ -91,7 +91,7 @@ public class ClientClusterManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void createAndDeleteRegion() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.REPLICATE);
 
@@ -102,8 +102,8 @@ public class ClientClusterManagementServiceDUnitTest {
     assertManagementResult(deleteResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
 
-    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> listResult =
-        client.list(new RegionConfig());
+    ClusterManagementListResult<Region, RuntimeRegionInfo> listResult =
+        client.list(new Region());
     assertManagementListResult(listResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK)
         .hasConfigurations()
@@ -113,7 +113,7 @@ public class ClientClusterManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void createAndDeleteRegionOnGroup() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("customer");
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
@@ -126,8 +126,8 @@ public class ClientClusterManagementServiceDUnitTest {
     assertManagementResult(deleteResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
 
-    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> listResult =
-        client.list(new RegionConfig());
+    ClusterManagementListResult<Region, RuntimeRegionInfo> listResult =
+        client.list(new Region());
     assertManagementListResult(listResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK)
         .hasConfigurations()
@@ -137,7 +137,7 @@ public class ClientClusterManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void createSameRegionOnDifferentGroup() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("test");
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
@@ -152,13 +152,13 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setGroup("group2");
     assertThatThrownBy(() -> client.create(region))
         .hasMessageContaining(
-            "ENTITY_EXISTS: RegionConfig 'test' already exists on member(s) server-3.");
+            "ENTITY_EXISTS: Region 'test' already exists on member(s) server-3.");
   }
 
   @Test
   @WithMockUser
   public void deleteRegionCreatedOnMultipleGroups() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("test");
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
@@ -178,7 +178,7 @@ public class ClientClusterManagementServiceDUnitTest {
 
     assertManagementResult(deleteResult).isSuccessful();
 
-    List<RuntimeRegionInfo> listResult = client.list(new RegionConfig())
+    List<RuntimeRegionInfo> listResult = client.list(new Region())
         .getRuntimeResult();
 
     assertThat(listResult).hasSize(0);
@@ -188,7 +188,7 @@ public class ClientClusterManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void deleteRegionCreatedOnPartialGroups() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("test");
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
@@ -205,7 +205,7 @@ public class ClientClusterManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void deleteUnknownRegion() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("unknown");
 
     assertThatThrownBy(() -> client.delete(region)).hasMessageContaining("ENTITY_NOT_FOUND");
@@ -214,7 +214,7 @@ public class ClientClusterManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void deleteRegionOnSpecificGroup() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("region1");
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
@@ -239,12 +239,12 @@ public class ClientClusterManagementServiceDUnitTest {
     assertManagementResult(result)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
 
-    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> listResult =
-        client.list(new RegionConfig());
+    ClusterManagementListResult<Region, RuntimeRegionInfo> listResult =
+        client.list(new Region());
     assertManagementListResult(listResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK)
         .hasConfigurations()
-        .extracting(RegionConfig::getId)
+        .extracting(Region::getId)
         .containsExactly("region1");
   }
 

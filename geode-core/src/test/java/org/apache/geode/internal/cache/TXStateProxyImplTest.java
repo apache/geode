@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -33,9 +34,8 @@ public class TXStateProxyImplTest {
 
   private InternalCache cache;
   private LocalRegion region;
-  String key = "testkey";
-  TXStateProxyImpl tx;
-  LocalRegionDataView view;
+  private String key = "testkey";
+  private LocalRegionDataView view;
   private TXId txId;
   private TXManagerImpl txManager;
   private DistributedSystem system;
@@ -74,7 +74,7 @@ public class TXStateProxyImplTest {
     when(view.getKeyForIterator(regionEntryKeyInfo, region, rememberReads, allowTombstones))
         .thenCallRealMethod();
 
-    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false);
+    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false, disabledClock());
 
     Object key1 = tx.getKeyForIterator(regionEntryKeyInfo, region, rememberReads, allowTombstones);
     assertThat(key1.equals(key)).isTrue();
@@ -85,13 +85,13 @@ public class TXStateProxyImplTest {
 
   @Test
   public void getCacheReturnsInjectedCache() {
-    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false);
+    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false, disabledClock());
     assertThat(tx.getCache()).isSameAs(cache);
   }
 
   @Test
   public void isOverTransactionTimeoutLimitReturnsTrueIfHavingRecentOperation() {
-    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false, disabledClock()));
     doReturn(0L).when(tx).getLastOperationTimeFromClient();
     doReturn(1001L).when(tx).getCurrentTime();
     when(txManager.getTransactionTimeToLive()).thenReturn(1);
@@ -101,7 +101,7 @@ public class TXStateProxyImplTest {
 
   @Test
   public void isOverTransactionTimeoutLimitReturnsFalseIfNotHavingRecentOperation() {
-    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false, disabledClock()));
     doReturn(0L).when(tx).getLastOperationTimeFromClient();
     doReturn(1000L).when(tx).getCurrentTime();
     when(txManager.getTransactionTimeToLive()).thenReturn(1);
@@ -111,7 +111,7 @@ public class TXStateProxyImplTest {
 
   @Test
   public void setTargetWillSetTargetToItselfAndSetTXStateIfRealDealIsNull() {
-    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false, disabledClock()));
     assertThat(tx.hasRealDeal()).isFalse();
     assertThat(tx.getTarget()).isNull();
 
@@ -123,7 +123,7 @@ public class TXStateProxyImplTest {
 
   @Test
   public void setTargetWillSetTXStateStubIfTargetIsDifferentFromLocalMember() {
-    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false, disabledClock()));
     assertThat(tx.hasRealDeal()).isFalse();
     assertThat(tx.getTarget()).isNull();
     DistributedMember remoteMember = mock(InternalDistributedMember.class);
@@ -137,8 +137,8 @@ public class TXStateProxyImplTest {
 
   @Test
   public void setTargetToItSelfIfRealDealIsTXStateAndTargetIsSameAsLocalMember() {
-    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
-    tx.setLocalTXState(new TXState(tx, true));
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false, disabledClock()));
+    tx.setLocalTXState(new TXState(tx, true, disabledClock()));
     assertThat(tx.isRealDealLocal()).isTrue();
     assertThat(tx.getTarget()).isNull();
 
@@ -150,8 +150,8 @@ public class TXStateProxyImplTest {
 
   @Test(expected = AssertionError.class)
   public void setTargetThrowsIfIfRealDealIsTXStateAndTargetIsDifferentFromLocalMember() {
-    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false));
-    tx.setLocalTXState(new TXState(tx, true));
+    TXStateProxyImpl tx = spy(new TXStateProxyImpl(cache, txManager, txId, false, disabledClock()));
+    tx.setLocalTXState(new TXState(tx, true, disabledClock()));
     assertThat(tx.getTarget()).isNull();
     DistributedMember remoteMember = mock(InternalDistributedMember.class);
 

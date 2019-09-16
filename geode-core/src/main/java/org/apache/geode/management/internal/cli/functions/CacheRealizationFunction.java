@@ -24,16 +24,15 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.GatewayReceiverConfig;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.AbstractConfiguration;
+import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
 import org.apache.geode.management.internal.configuration.realizers.GatewayReceiverRealizer;
@@ -47,14 +46,14 @@ public class CacheRealizationFunction implements InternalFunction<List> {
   private static final Map<Class, ConfigurationRealizer> realizers = new HashMap<>();
 
   static {
-    realizers.put(RegionConfig.class, new RegionConfigRealizer());
-    realizers.put(GatewayReceiverConfig.class, new GatewayReceiverRealizer());
+    realizers.put(Region.class, new RegionConfigRealizer());
+    realizers.put(GatewayReceiver.class, new GatewayReceiverRealizer());
     realizers.put(MemberConfig.class, new MemberConfigRealizer());
   }
 
   @Override
   public void execute(FunctionContext<List> context) {
-    CacheElement cacheElement = (CacheElement) context.getArguments().get(0);
+    AbstractConfiguration cacheElement = (AbstractConfiguration) context.getArguments().get(0);
     CacheElementOperation operation = (CacheElementOperation) context.getArguments().get(1);
     InternalCache cache = (InternalCache) context.getCache();
 
@@ -80,8 +79,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
   }
 
   public RuntimeInfo executeGet(FunctionContext<List> context,
-      InternalCache cache,
-      CacheElement cacheElement) {
+      InternalCache cache, AbstractConfiguration cacheElement) {
     ConfigurationRealizer realizer = realizers.get(cacheElement.getClass());
 
     if (realizer == null) {
@@ -90,8 +88,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
     RuntimeInfo runtimeInfo = realizer.get(cacheElement, cache);
 
     // set the membername if this is not a global runtime
-    if (cacheElement instanceof CorrespondWith
-        && !((CorrespondWith) cacheElement).isGlobalRuntime()) {
+    if (!cacheElement.isGlobalRuntime()) {
       runtimeInfo.setMemberName(context.getMemberName());
     }
 
@@ -99,8 +96,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
   }
 
   public RealizationResult executeUpdate(FunctionContext<List> context,
-      InternalCache cache,
-      CacheElement cacheElement,
+      InternalCache cache, AbstractConfiguration cacheElement,
       CacheElementOperation operation) {
 
     ConfigurationRealizer realizer = realizers.get(cacheElement.getClass());

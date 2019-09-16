@@ -62,7 +62,6 @@ import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.cache.client.internal.RegisterDataSerializersOp;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.security.generator.CredentialGenerator;
@@ -281,7 +280,7 @@ public abstract class ClientAuthenticationTestCase extends JUnit4DistributedTest
 
       // Try to register a PDX type with the server
       client1.invoke("register a PDX type", () -> {
-        HeapDataOutputStream outputStream = new HeapDataOutputStream(100, Version.CURRENT);
+        HeapDataOutputStream outputStream = new HeapDataOutputStream(new byte[100]);
         try {
           DataSerializer.writeObject(new Employee(106l, "David", "Copperfield"), outputStream);
           throw new Error("operation should have been rejected");

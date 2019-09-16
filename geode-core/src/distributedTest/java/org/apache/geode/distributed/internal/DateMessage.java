@@ -23,7 +23,9 @@ import java.util.Date;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This message simply contains a date
@@ -78,15 +80,17 @@ public class DateMessage extends SerialDistributionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.date, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
 
-    super.fromData(in);
+    super.fromData(in, context);
     this.date = (Date) DataSerializer.readObject(in);
   }
 

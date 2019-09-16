@@ -56,6 +56,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -108,6 +109,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.ConnectionStats;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallbackAdapter;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
@@ -1159,6 +1161,15 @@ public class WANTestBase extends DistributedTestCase {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     GatewaySenderStats statistics = sender.getStatistics();
     return statistics.getSecondaryEventQueueSize();
+  }
+
+  public static void checkConnectionStats(String senderId) {
+    AbstractGatewaySender sender =
+        (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
+    assertNotNull(sender);
+
+    Collection statsCollection = sender.getProxy().getEndpointManager().getAllStats().values();
+    assertTrue(statsCollection.iterator().next() instanceof ConnectionStats);
   }
 
   public static List<Integer> getSenderStats(String senderId, final int expectedQueueSize) {

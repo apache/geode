@@ -31,12 +31,15 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Usage: DeposePrimaryBucketResponse response = DeposePrimaryBucketMessage.send(
@@ -89,7 +92,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
   }
 
   public DeposePrimaryBucketMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, InternalDataSerializer.createDeserializationContext(in));
   }
 
   @Override
@@ -125,14 +128,16 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bucketId = in.readInt();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.bucketId);
   }
 
@@ -145,7 +150,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
 
     public DeposePrimaryBucketReplyMessage(DataInput in)
         throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, InternalDataSerializer.createDeserializationContext(in));
     }
 
     private DeposePrimaryBucketReplyMessage(int processorId, ReplyException re) {
@@ -190,8 +195,9 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
     }
 
     @Override
@@ -200,8 +206,9 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
     }
 
     @Override

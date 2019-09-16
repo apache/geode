@@ -62,14 +62,22 @@ To modify your war or ear file manually, make the following updates:
     -   slf4j-jdk14 jar
 -   Add the following jar files from the `$GEODE/lib` directory to the `WEB-INF/lib` directory of the war, where `$GEODE` is set to the <%=vars.product_name%> product installation:
     -   antlr jar
+    -   commons-io jar
+    -   commons-lang jar
+    -   commons-validator jar
     -   fastutil jar
+    -   geode-commons jar
     -   geode-core jar
     -   geode-json jar
+    -   geode-management jar
+    -   geode-serialization jar
     -   javax.transaction-api jar
     -   jgroups jar
     -   log4j-api jar
     -   log4j-core jar
     -   log4j-jul jar
+    -   micrometer-core jar
+    -   shiro-core jar
 
 If you are deploying an ear file:
 
@@ -189,18 +197,3 @@ Running on: /192.0.2.0, 8 cpu(s), x86_64 Mac OS X 10.11.4
 ```
 
 Information is also logged within the <%=vars.product_name%> log file, which by default is named `gemfire_modules.<date>.log`.
-
-## <a id="weblogic_setting_up_the_module__section_E0E0E5A1C9484D4AA13878273F16A920" class="no-quick-link"></a>Configuring Non-Sticky Session Replication
-
-Some situations require sessions to be 'non-sticky', which means that client requests can be directed to any server in a cluster of application servers instead of the same server each time. To achieve this, you must configure your deployment as described for the following topologies.
-
-**Peer-to-Peer**
-
-No additional configuration is required.
-
-**Client-Server**
-
-For client-server topologies, the local client cache must be empty. Ensure that the filter property `gemfire.cache.enable_local_cache=false` is set. This effectively sets the local client cache to be a **PROXY** cache.
-
-**Note:**
-Non-sticky sessions affect performance because sessions need to be re-created every time a request hits a different server. This may not be noticeable when the session attributes are small, but may become more evident as the session attributes increase in size and/or number.

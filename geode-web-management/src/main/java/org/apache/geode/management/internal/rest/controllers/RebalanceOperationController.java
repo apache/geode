@@ -20,6 +20,7 @@ import static org.apache.geode.management.operation.RebalanceOperation.REBALANCE
 
 import java.util.Optional;
 
+import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,7 @@ import org.apache.geode.management.runtime.RebalanceResult;
 @Controller("rebalanceOperation")
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class RebalanceOperationController extends AbstractManagementController {
+  @ApiOperation(value = "start rebalance")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = REBALANCE_ENDPOINT)
   public ResponseEntity<ClusterManagementOperationResult<RebalanceResult>> startRebalance(
@@ -52,6 +54,7 @@ public class RebalanceOperationController extends AbstractManagementController {
         result.isSuccessful() ? HttpStatus.ACCEPTED : HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
+  @ApiOperation(value = "list rebalances")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.GET, value = REBALANCE_ENDPOINT)
   @ResponseBody
@@ -59,6 +62,7 @@ public class RebalanceOperationController extends AbstractManagementController {
     return clusterManagementService.list(new RebalanceOperation());
   }
 
+  @ApiOperation(value = "check rebalance")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.GET, value = REBALANCE_ENDPOINT + "/{id}")
   @ResponseBody

@@ -41,6 +41,9 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -57,18 +60,24 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializable;
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SerializationException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.SizeableRunnable;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -120,7 +129,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
     // construct a member ID that will represent a departed member
     InternalDistributedMember member =
-        new InternalDistributedMember("localhost", 12345, "", "", NORMAL_DM_TYPE, null, null);
+        new InternalDistributedMember("localhost", 12345, "", "", NORMAL_DM_TYPE, null,
+            null);
 
     // schedule a message in order to create a queue for the fake member
     ClusterDistributionManager distributionManager =
@@ -321,6 +331,37 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     });
   }
 
+  @Test(timeout = 600_000)
+  public void failedMessageReceivedBeforeStartupShouldNotDeadlock() {
+
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
+
+
+    // Install a membership listener which will send a message to
+    // any new member that joins. The message will fail to deserialize, triggering
+    // a failure reply
+    vm0.invoke(() -> {
+      InternalDistributedSystem system = getSystem();
+      DistributionManager dm = system.getDM();
+      dm.addMembershipListener(new MembershipListener() {
+        @Override
+        public void memberJoined(DistributionManager distributionManager,
+            InternalDistributedMember id) {
+          FunctionService.onMember(id).execute(new FailDeserializationFunction());
+        }
+      });
+    });
+
+    vm1.invoke(() -> {
+      IgnoredException.addIgnoredException(SerializationException.class);
+
+      // Join the the system. This will trigger the above membership listener. If
+      // the failed serialization causes a deadlock, this method will hang
+      getSystem();
+    });
+  }
+
   /**
    * Tests that configuring a distributed system with a cache-xml-file of "" does not initialize a
    * cache.
@@ -423,4 +464,27 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  /**
+   * A function that cannot be deserialized, used for failure handling
+   */
+  public static class FailDeserializationFunction
+      implements org.apache.geode.cache.execute.Function,
+      DataSerializable {
+    @Override
+    public void execute(FunctionContext context) {
+
+    }
+
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      throw new ClassNotFoundException("Fake class not found");
+
+    }
+  }
 }

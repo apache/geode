@@ -15,7 +15,7 @@
 package org.apache.geode.internal.logging;
 
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
-import static org.apache.geode.internal.logging.ProviderAgentLoader.DefaultProvider.DEFAULT_PROVIDER_AGENT_NAME;
+import static org.apache.geode.internal.logging.DefaultProviderChecker.DEFAULT_PROVIDER_AGENT_NAME;
 
 import java.util.ServiceLoader;
 
@@ -51,7 +51,7 @@ public class ProviderAgentLoader {
   private final AvailabilityChecker availabilityChecker;
 
   public ProviderAgentLoader() {
-    this(new DefaultProvider());
+    this(new DefaultProviderChecker());
   }
 
   @VisibleForTesting
@@ -132,26 +132,4 @@ public class ProviderAgentLoader {
     boolean isAvailable();
   }
 
-  static class DefaultProvider implements AvailabilityChecker {
-
-    /**
-     * The default {@code ProviderAgent} is {@code Log4jAgent}.
-     */
-    static final String DEFAULT_PROVIDER_AGENT_NAME =
-        "org.apache.geode.internal.logging.log4j.Log4jAgent";
-
-    static final String DEFAULT_PROVIDER_CLASS_NAME = "org.apache.logging.log4j.core.Logger";
-
-    @Override
-    public boolean isAvailable() {
-      try {
-        ClassPathLoader.getLatest().forName(DEFAULT_PROVIDER_CLASS_NAME);
-        LOGGER.info("Log4j Core is available");
-        return true;
-      } catch (ClassNotFoundException | ClassCastException e) {
-        LOGGER.info("Unable to find Log4j Core");
-      }
-      return false;
-    }
-  }
 }

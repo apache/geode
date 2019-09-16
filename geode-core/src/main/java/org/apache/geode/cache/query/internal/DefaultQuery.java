@@ -51,13 +51,13 @@ import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PRQueryProcessor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Thread-safe implementation of org.apache.persistence.query.Query
@@ -127,6 +127,7 @@ public class DefaultQuery implements Query {
   // to prevent objects from getting deserialized
   private boolean keepSerialized = false;
 
+  private final StatisticsClock statisticsClock;
 
   /**
    * Caches the fields not found in any Pdx version. This threadlocal will be cleaned up after query
@@ -175,6 +176,7 @@ public class DefaultQuery implements Query {
     }
     this.traceOn = compiler.isTraceRequested() || QUERY_VERBOSE;
     this.cache = cache;
+    statisticsClock = cache.getStatisticsClock();
     this.stats = new DefaultQueryStatistics();
   }
 
@@ -316,7 +318,7 @@ public class DefaultQuery implements Query {
   }
 
   private Object executeOnServer(Object[] parameters) {
-    long startTime = CachePerfStats.getStatTime();
+    long startTime = statisticsClock.getTime();
     Object result = null;
     try {
       if (this.proxyCache != null) {
@@ -328,7 +330,7 @@ public class DefaultQuery implements Query {
       result = this.serverProxy.query(this.queryString, parameters);
     } finally {
       UserAttributes.userAttributes.set(null);
-      long endTime = CachePerfStats.getStatTime();
+      long endTime = statisticsClock.getTime();
       updateStatistics(endTime - startTime);
     }
     return result;
@@ -409,7 +411,7 @@ public class DefaultQuery implements Query {
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     QueryObserver observer = QueryObserverHolder.getInstance();
 
-    long startTime = CachePerfStats.getStatTime();
+    long startTime = statisticsClock.getTime();
     TXStateProxy tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).pauseTransaction();
     try {
       observer.startQuery(this);
@@ -436,7 +438,7 @@ public class DefaultQuery implements Query {
       return results;
     } finally {
       observer.endQuery();
-      long endTime = CachePerfStats.getStatTime();
+      long endTime = statisticsClock.getTime();
       updateStatistics(endTime - startTime);
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();

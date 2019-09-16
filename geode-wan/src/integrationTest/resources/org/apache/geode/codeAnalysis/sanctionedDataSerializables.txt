@@ -1,6 +1,6 @@
 org/apache/geode/cache/client/internal/locator/wan/LocatorJoinMessage,2
-fromData,38
-toData,32
+fromData,39
+toData,33
 
 org/apache/geode/cache/client/internal/locator/wan/RemoteLocatorJoinRequest,2
 fromData,22

@@ -20,8 +20,8 @@ import java.io.IOException;
 
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataSerializable;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * RVV exceptions are part of a RegionVersionVector. They are held by RegionVersionHolders.
@@ -71,6 +71,12 @@ abstract class RVVException
   long nextVersion;
 
 
+  /**
+   * Create an exception to represent missing versions
+   *
+   * @param previousVersion The previous version before the first missing version
+   * @param nextVersion The next received version after the last missing version
+   */
   static RVVException createException(long previousVersion, long nextVersion) {
     return createException(previousVersion, nextVersion, 0);
   }

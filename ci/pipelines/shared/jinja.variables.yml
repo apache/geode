@@ -18,14 +18,14 @@
 benchmarks:
   baseline_branch: develop/highwater
   baseline_version: ''
-  branch: develop
+  benchmark_branch: develop
 
 build_test:
   ARTIFACT_SLUG: build
-  CALL_STACK_TIMEOUT: '1800'
+  CALL_STACK_TIMEOUT: '600'
   CPUS: '8'
   DUNIT_PARALLEL_FORKS: '4'
-  EXECUTE_TEST_TIMEOUT: 10m
+  EXECUTE_TEST_TIMEOUT: 20m
   GRADLE_TASK: build
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
@@ -67,10 +67,10 @@ repository:
 
 tests:
 - ARTIFACT_SLUG: unittestfiles
-  CALL_STACK_TIMEOUT: '1800'
+  CALL_STACK_TIMEOUT: '1200'
   CPUS: '8'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 10m
+  EXECUTE_TEST_TIMEOUT: 30m
   GRADLE_TASK: test
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'true'
@@ -81,7 +81,7 @@ tests:
   CALL_STACK_TIMEOUT: '1800'
   CPUS: '8'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 45m
+  EXECUTE_TEST_TIMEOUT: 1h
   GRADLE_TASK: acceptanceTest
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
@@ -96,7 +96,7 @@ tests:
   GRADLE_TASK: distributedTest
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
-  RAM: '180'
+  RAM: '250'
   name: Distributed
 - ARTIFACT_SLUG: integrationtestfiles
   CALL_STACK_TIMEOUT: '1500'

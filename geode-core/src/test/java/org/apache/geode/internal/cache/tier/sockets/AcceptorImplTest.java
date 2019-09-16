@@ -14,10 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.util.Collections.emptyList;
 import static org.apache.geode.cache.server.CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS;
 import static org.apache.geode.cache.server.CacheServer.DEFAULT_SOCKET_BUFFER_SIZE;
 import static org.apache.geode.cache.server.CacheServer.DEFAULT_TCP_NO_DELAY;
 import static org.apache.geode.internal.cache.tier.sockets.AcceptorImpl.MINIMUM_MAX_CONNECTIONS;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -29,7 +31,6 @@ import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.net.ServerSocket;
 import java.net.SocketAddress;
-import java.util.Collections;
 import java.util.Properties;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -96,8 +97,8 @@ public class AcceptorImplTest {
         DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache, MINIMUM_MAX_CONNECTIONS, 0,
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
         null, DEFAULT_TCP_NO_DELAY, serverConnectionFactory, 1000, securityService,
-        () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, false, Collections.emptyList());
+        () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
+        (a, b, c) -> clientHealthMonitor, false, emptyList(), disabledClock());
 
     assertThat(acceptor.isGatewayReceiver()).isFalse();
   }
@@ -114,8 +115,8 @@ public class AcceptorImplTest {
         DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache, MINIMUM_MAX_CONNECTIONS, 0,
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
         null, DEFAULT_TCP_NO_DELAY, serverConnectionFactory, 1000, securityService,
-        () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, true, Collections.emptyList());
+        () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
+        (a, b, c) -> clientHealthMonitor, true, emptyList(), disabledClock());
 
     assertThat(acceptor.isGatewayReceiver()).isTrue();
   }

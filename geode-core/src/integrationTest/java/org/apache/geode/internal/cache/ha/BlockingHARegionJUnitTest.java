@@ -18,6 +18,7 @@ import static java.lang.Thread.sleep;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.ha.HARegionQueue.BLOCKING_HA_QUEUE;
 import static org.apache.geode.internal.cache.ha.HARegionQueue.getHARegionQueueInstance;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.test.dunit.ThreadUtils.join;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -72,7 +73,7 @@ public class BlockingHARegionJUnitTest {
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(1);
     HARegionQueue hrq = HARegionQueue.getHARegionQueueInstance("BlockingHARegionJUnitTest_Region",
-        cache, harqa, HARegionQueue.BLOCKING_HA_QUEUE, false);
+        cache, harqa, HARegionQueue.BLOCKING_HA_QUEUE, false, disabledClock());
     hrq.setPrimary(true);// fix for 40314 - capacity constraint is checked for primary only.
     Thread thread1 = new DoPuts(hrq, 1000);
     Thread thread2 = new DoTake(hrq, 1000);
@@ -105,7 +106,8 @@ public class BlockingHARegionJUnitTest {
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(1);
     final HARegionQueue hrq = getHARegionQueueInstance(
-        "BlockingHARegionJUnitTest_Region", cache, harqa, BLOCKING_HA_QUEUE, false);
+        "BlockingHARegionJUnitTest_Region", cache, harqa, BLOCKING_HA_QUEUE, false,
+        disabledClock());
     hrq.setPrimary(true);// fix for 40314 - capacity constraint is checked for primary only.
     final Thread thread1 = new DoPuts(hrq, 2);
     thread1.start();
@@ -176,7 +178,8 @@ public class BlockingHARegionJUnitTest {
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(10000);
     final HARegionQueue hrq = getHARegionQueueInstance(
-        "BlockingHARegionJUnitTest_Region", cache, harqa, BLOCKING_HA_QUEUE, false);
+        "BlockingHARegionJUnitTest_Region", cache, harqa, BLOCKING_HA_QUEUE, false,
+        disabledClock());
     hrq.setPrimary(true);// fix for 40314 - capacity constraint is checked for primary only.
     Thread thread1 = new DoPuts(hrq, 20000, 1);
     Thread thread2 = new DoPuts(hrq, 20000, 2);
@@ -246,7 +249,8 @@ public class BlockingHARegionJUnitTest {
     HARegionQueueAttributes harqa = new HARegionQueueAttributes();
     harqa.setBlockingQueueCapacity(10000);
     final HARegionQueue hrq = getHARegionQueueInstance(
-        "BlockingHARegionJUnitTest_Region", cache, harqa, BLOCKING_HA_QUEUE, false);
+        "BlockingHARegionJUnitTest_Region", cache, harqa, BLOCKING_HA_QUEUE, false,
+        disabledClock());
     Thread thread1 = new DoPuts(hrq, 40000, 1);
     Thread thread2 = new DoPuts(hrq, 40000, 2);
     Thread thread3 = new DoPuts(hrq, 40000, 3);
@@ -336,7 +340,8 @@ public class BlockingHARegionJUnitTest {
       harqa.setBlockingQueueCapacity(1);
       harqa.setExpiryTime(180);
       final HARegionQueue hrq = HARegionQueue.getHARegionQueueInstance(
-          "BlockingHARegionJUnitTest_Region", cache, harqa, HARegionQueue.BLOCKING_HA_QUEUE, false);
+          "BlockingHARegionJUnitTest_Region", cache, harqa, HARegionQueue.BLOCKING_HA_QUEUE, false,
+          disabledClock());
       hrq.setPrimary(true);// fix for 40314 - capacity constraint is checked for primary only.
       final EventID id1 = new EventID(new byte[] {1}, 1, 2); // violation
       final EventID ignore = new EventID(new byte[] {1}, 1, 1); //

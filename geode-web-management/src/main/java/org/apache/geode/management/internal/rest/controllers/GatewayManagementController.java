@@ -15,9 +15,10 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.cache.configuration.GatewayReceiverConfig.GATEWAY_RECEIVERS_ENDPOINTS;
+import static org.apache.geode.management.configuration.GatewayReceiver.GATEWAY_RECEIVERS_ENDPOINTS;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,31 +30,33 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
+
 
 @Controller("gatewayManagement")
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class GatewayManagementController extends AbstractManagementController {
-
+  @ApiOperation(value = "list gateway-receivers")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = GATEWAY_RECEIVERS_ENDPOINTS)
   @ResponseBody
-  public ClusterManagementListResult<GatewayReceiverConfig, GatewayReceiverInfo> listGatewayReceivers(
+  public ClusterManagementListResult<GatewayReceiver, GatewayReceiverInfo> listGatewayReceivers(
       @RequestParam(required = false) String group) {
-    GatewayReceiverConfig filter = new GatewayReceiverConfig();
+    GatewayReceiver filter = new GatewayReceiver();
     if (StringUtils.isNotBlank(group)) {
       filter.setGroup(group);
     }
     return clusterManagementService.list(filter);
   }
 
+  @ApiOperation(value = "create gateway-receiver")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = GATEWAY_RECEIVERS_ENDPOINTS)
   public ResponseEntity<ClusterManagementResult> createGatewayReceiver(
-      @RequestBody GatewayReceiverConfig gatewayReceiverConfig) {
+      @RequestBody GatewayReceiver gatewayReceiverConfig) {
     ClusterManagementResult result =
         clusterManagementService.create(gatewayReceiverConfig);
     return new ResponseEntity<>(result,

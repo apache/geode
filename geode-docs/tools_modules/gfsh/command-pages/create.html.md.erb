@@ -894,7 +894,7 @@ If this option is specified without a value or is specified with a value of <cod
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-entry-idle-time-expiration</span></td>
-<td>How long the region's entries can remain in the cache without being accessed.</td>
+<td>How long, in seconds, the region's entries can remain in the cache without being accessed.</td>
 <td>no expiration</td>
 </tr>
 <tr class="even">
@@ -904,7 +904,7 @@ If this option is specified without a value or is specified with a value of <cod
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-entry-time-to-live-expiration</span></td>
-<td>How long the region's entries can remain in the cache without being accessed or updated. The default is no expiration of this type.</td>
+<td>How long, in seconds, the region's entries can remain in the cache without being accessed or updated. The default is no expiration of this type.</td>
 <td>no expiration</td>
 </tr>
 <tr class="even">
@@ -924,22 +924,22 @@ If this option is specified without a value or is specified with a value of <cod
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-region-idle-time-expiration</span></td>
-<td>How long the region can remain in the cache without being accessed. The default is no expiration of this type.</td>
+<td>How long, in seconds, the region can remain in the cache without its entries being accessed. The default is no expiration of this type.</td>
 <td></td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-region-idle-time-expiration-action </span></td>
-<td>Action to be taken on a region that has exceeded the idle expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate.</td>
+<td><span class="keyword parmname">\-\-region-idle-time-expiration-action</span></td>
+<td>Action to be taken on a region that has exceeded the idle expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate. The destroy and local-destroy actions destroy the region. The invalidate and local-invalidate actions leave the region in place, but invalidate all of its entries.</td>
 <td> </td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">\-\-region-time-to-live-expiration </span></td>
-<td>How long the region can remain in the cache without being accessed or updated. The default is no expiration of this type.</td>
+<td><span class="keyword parmname">\-\-region-time-to-live-expiration</span></td>
+<td>How long, in seconds, the region can remain in the cache without its entries being accessed or updated. The default is no expiration of this type.</td>
 <td>no expiration</td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-region-time-to-live-expiration-action</span></td>
-<td>Action to be taken on a region that has exceeded the TTL expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate.</td>
+<td>Action to be taken on a region that has exceeded the TTL expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate. The destroy and local-destroy actions destroy the region. The invalidate and local-invalidate actions leave the region in place, but invalidate all of its entries.</td>
 <td> </td>
 </tr>
 <tr class="odd">

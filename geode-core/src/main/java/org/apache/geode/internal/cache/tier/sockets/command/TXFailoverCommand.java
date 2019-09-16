@@ -126,7 +126,7 @@ public class TXFailoverCommand extends BaseCommand {
           writeException(clientMessage, new TransactionDataNodeHasDepartedException(
               "Could not find transaction host for " + txId), false, serverConnection);
           serverConnection.setAsTrue(RESPONDED);
-          mgr.removeHostedTXState(txId);
+          mgr.removeHostedTXState(txId, true);
           return;
         }
       }

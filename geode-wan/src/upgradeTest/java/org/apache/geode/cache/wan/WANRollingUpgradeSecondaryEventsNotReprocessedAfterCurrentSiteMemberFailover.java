@@ -47,13 +47,13 @@ public class WANRollingUpgradeSecondaryEventsNotReprocessedAfterCurrentSiteMembe
     // Get old site locator properties
     String hostName = NetworkUtils.getServerHostName(host);
     final int site1LocatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(site1LocatorPort);
+    site1Locator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(site1LocatorPort));
     final String site1Locators = hostName + "[" + site1LocatorPort + "]";
     final int site1DistributedSystemId = 0;
 
     // Get current site locator properties
     final int site2LocatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(site2LocatorPort);
+    site2Locator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(site2LocatorPort));
     final String site2Locators = hostName + "[" + site2LocatorPort + "]";
     final int site2DistributedSystemId = 1;
 

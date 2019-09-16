@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
@@ -217,6 +218,31 @@ public class CacheLifecycleMetricsSessionTest {
     metricsSession.cacheClosed(mock(InternalCache.class));
 
     verify(theCacheLifecycle).removeListener(same(metricsSession));
+  }
+
+  @Test
+  public void cacheClosedClosesCompositeMeterRegistry() {
+    CacheLifecycle theCacheLifecycle = mock(CacheLifecycle.class);
+    CompositeMeterRegistry theCompositeRegistry = spy(compositeRegistry);
+    metricsSession =
+        new CacheLifecycleMetricsSession(theCacheLifecycle, theCompositeRegistry,
+            Collections.emptyList());
+
+    metricsSession.cacheClosed(mock(InternalCache.class));
+
+    verify(theCompositeRegistry).close();
+  }
+
+  @Test
+  public void cacheClosedDoesNotCloseSubregistries() {
+    metricsSession = new CacheLifecycleMetricsSession(mock(CacheLifecycle.class), compositeRegistry,
+        Collections.emptyList());
+    MeterRegistry theSubregistry = spy(new SimpleMeterRegistry());
+    metricsSession.addSubregistry(theSubregistry);
+
+    metricsSession.cacheClosed(mock(InternalCache.class));
+
+    assertThat(theSubregistry.isClosed()).isFalse();
   }
 
   @Test

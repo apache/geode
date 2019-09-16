@@ -43,7 +43,7 @@ public class RollingUpgradeRollSingleLocatorWithMultipleServersReplicatedRegion
     RegionShortcut shortcut = RegionShortcut.REPLICATE;
 
     int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(1);
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts[0]);
+    locator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts[0]));
 
     // configure all class loaders for each vm
 

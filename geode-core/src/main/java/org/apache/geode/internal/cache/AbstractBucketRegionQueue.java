@@ -42,6 +42,7 @@ import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySen
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 public abstract class AbstractBucketRegionQueue extends BucketRegion {
   protected static final Logger logger = LogService.getLogger();
@@ -68,8 +69,9 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   private final ConcurrentHashSet<Object> failedBatchRemovalMessageKeys = new ConcurrentHashSet<>();
 
   AbstractBucketRegionQueue(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache, InternalRegionArguments internalRegionArgs) {
-    super(regionName, attrs, parentRegion, cache, internalRegionArgs);
+      InternalCache cache, InternalRegionArguments internalRegionArgs,
+      StatisticsClock statisticsClock) {
+    super(regionName, attrs, parentRegion, cache, internalRegionArgs, statisticsClock);
     this.gatewaySenderStats =
         this.getPartitionedRegion().getParallelGatewaySender().getStatistics();
   }
@@ -348,7 +350,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     }
 
     boolean didPut = false;
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
     // Value will always be an instanceof GatewaySenderEventImpl which
     // is never stored offheap so this EntryEventImpl values will never be off-heap.
     // So the value that ends up being stored in this region is a GatewaySenderEventImpl

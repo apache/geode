@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.bean.stats;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.enabledClock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -23,6 +24,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DiskRegionStats;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.internal.beans.DiskRegionBridge;
 import org.apache.geode.management.internal.beans.PartitionedRegionBridge;
 import org.apache.geode.management.internal.beans.RegionMBeanBridge;
@@ -36,21 +38,18 @@ import org.apache.geode.test.junit.categories.JMXTest;
 public class RegionStatsJUnitTest extends MBeanStatsTestCase {
 
   private RegionMBeanBridge bridge;
-
   private PartitionedRegionBridge parBridge;
-
   private DiskRegionBridge diskBridge;
-
   private CachePerfStats cachePerfStats;
-
   private PartitionedRegionStats partitionedRegionStats;
-
   private DiskRegionStats diskRegionStats;
+  private StatisticsClock statisticsClock;
 
   @Override
   protected void init() {
-    cachePerfStats = new CachePerfStats(system);
-    partitionedRegionStats = new PartitionedRegionStats(system, "/tests");
+    statisticsClock = enabledClock();
+    cachePerfStats = new CachePerfStats(system, statisticsClock);
+    partitionedRegionStats = new PartitionedRegionStats(system, "/tests", statisticsClock);
     diskRegionStats = new DiskRegionStats(system, "test-disk");
 
     bridge = new RegionMBeanBridge(cachePerfStats);
@@ -84,7 +83,7 @@ public class RegionStatsJUnitTest extends MBeanStatsTestCase {
 
   @Test
   public void testDiskCounters() throws InterruptedException {
-    final long startTime = CachePerfStats.getStatTime();
+    final long startTime = statisticsClock.getTime();
 
     diskRegionStats.incNumEntriesInVM(10);
     diskRegionStats.incNumOverflowOnDisk(15);
@@ -97,8 +96,8 @@ public class RegionStatsJUnitTest extends MBeanStatsTestCase {
     assertEquals(10, getTotalDiskEntriesInVM());
     assertEquals(15, getTotalEntriesOnlyOnDisk());
 
-    diskRegionStats.endWrite(startTime, CachePerfStats.getStatTime());
-    diskRegionStats.endRead(startTime, CachePerfStats.getStatTime(), 1000);
+    diskRegionStats.endWrite(startTime, statisticsClock.getTime());
+    diskRegionStats.endRead(startTime, statisticsClock.getTime(), 1000);
 
     sample();
 
@@ -111,7 +110,7 @@ public class RegionStatsJUnitTest extends MBeanStatsTestCase {
 
   @Test
   public void testTimeBasedCounters() throws InterruptedException {
-    final long startTime = CachePerfStats.getStatTime();
+    final long startTime = statisticsClock.getTime();
 
     cachePerfStats.startCacheListenerCall();
     cachePerfStats.startCacheWriterCall();

@@ -32,6 +32,8 @@ public class ClusterManagementServiceBuilder {
       org.apache.geode.management.client.ClusterManagementServiceBuilder.Builder {
     GeodeBuilder setCredentials(String username, String password);
 
+    GeodeBuilder setAuthToken(String authToken);
+
     GeodeBuilder setCache(GemFireCache cache);
   }
 }

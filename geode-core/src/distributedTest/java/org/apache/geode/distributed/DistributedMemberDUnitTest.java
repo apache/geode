@@ -27,6 +27,8 @@ import static org.apache.geode.test.dunit.Assert.assertNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -46,9 +48,11 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -260,10 +264,17 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     assertTrue(system == basicGetSystem()); // senders will use basicGetSystem()
     InternalDistributedMember internalDistributedMember = system.getDistributedMember();
 
-    GMSMember gmsMember = new GMSMember((GMSMember) internalDistributedMember.getNetMember());
-    assertTrue(gmsMember.equals(internalDistributedMember.getNetMember()));
+    GMSMember gmsMember =
+        new GMSMember(((GMSMemberAdapter) internalDistributedMember.getNetMember()).getGmsMember());
+    assertEquals(gmsMember,
+        ((GMSMemberAdapter) internalDistributedMember.getNetMember()).getGmsMember());
     gmsMember.setName(null);
-    InternalDistributedMember partialID = new InternalDistributedMember(gmsMember);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(100);
+    new InternalDistributedMember(new GMSMemberAdapter(gmsMember)).writeEssentialData(outputStream);
+    DataInputStream dataInputStream =
+        new DataInputStream(new ByteArrayInputStream(outputStream.toByteArray()));
+    InternalDistributedMember partialID =
+        InternalDistributedMember.readEssentialData(dataInputStream);
     return partialID;
   }
 
@@ -300,7 +311,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     message.setSender(partialID);
 
     GMSMembershipManager manager =
-        (GMSMembershipManager) MembershipManagerHelper.getMembershipManager(basicGetSystem());
+        (GMSMembershipManager) MembershipManagerHelper.getMembership(basicGetSystem());
     manager.replacePartialIdentifierInMessage(message);
 
     assertFalse(message.getSender().isPartial());

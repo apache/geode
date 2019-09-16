@@ -97,8 +97,9 @@ public class QRegion implements SelectResults {
 
     ResultsCollectionWrapper res = null;
     if (context.getBucketList() != null && region instanceof PartitionedRegion) {
+      PartitionedRegion partitionedRegion = (PartitionedRegion) region;
       LocalDataSet localData =
-          new LocalDataSet(((PartitionedRegion) region), new HashSet(context.getBucketList()));
+          new LocalDataSet(partitionedRegion, new HashSet(context.getBucketList()));
       this.region = localData;
       if (includeKeys) {
         res = new ResultsCollectionWrapper(TypeUtils.getObjectType(constraint),

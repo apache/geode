@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.lang.Identifiable.find;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -23,10 +25,10 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
@@ -113,10 +115,10 @@ public class DestroyRegionCommand extends GfshCommand {
     for (String groupName : groupNames) {
       CacheConfig cacheConfig = ccService.getCacheConfig(groupName);
       if (cacheConfig != null) {
-        RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
+        RegionConfig regionConfig = find(cacheConfig.getRegions(), regionName);
         if (regionConfig != null) {
-          CacheElement element =
-              CacheElement.findElement(regionConfig.getCustomRegionElements(), "jdbc-mapping");
+          Identifiable element =
+              find(regionConfig.getCustomRegionElements(), "jdbc-mapping");
           if (element != null) {
             throw new IllegalStateException("Cannot destroy region \"" + regionName
                 + "\" because JDBC mapping exists. Use \"destroy jdbc-mapping\" first.");

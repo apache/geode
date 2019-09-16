@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+
 import java.util.List;
 
 import org.apache.geode.CancelCriterion;
@@ -33,7 +35,7 @@ public class ParallelAsyncEventQueueCreation extends AbstractGatewaySender
     implements GatewaySender {
 
   public ParallelAsyncEventQueueCreation(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+    super(cache, disabledClock(), attrs);
   }
 
   @Override

@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 import org.apache.geode.internal.cache.tx.DistTxKeyInfo;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * TxState on a data node VM
@@ -59,8 +60,9 @@ public class DistTXState extends TXState {
 
   private boolean updatingTxStateDuringPreCommit = false;
 
-  public DistTXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub) {
-    super(proxy, onBehalfOfRemoteStub);
+  public DistTXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub,
+      StatisticsClock statisticsClock) {
+    super(proxy, onBehalfOfRemoteStub, statisticsClock);
   }
 
   @Override

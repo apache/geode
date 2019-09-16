@@ -1,5 +1,6 @@
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.lang.Identifiable.find;
 import static org.apache.geode.management.builder.ClusterManagementServiceBuilder.buildWithCache;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -9,15 +10,14 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -58,7 +58,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegion() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
 
@@ -74,7 +74,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegionWithNullGroup() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("orders");
     region.setType(RegionType.PARTITION);
 
@@ -89,7 +89,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegionWithInvalidName() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("__test");
 
     assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("ILLEGAL_ARGUMENT");
@@ -97,7 +97,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegionWithGroup() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("company");
     region.setType(RegionType.PARTITION);
     region.setGroup(groupA);
@@ -116,8 +116,8 @@ public class ClientClusterManagementServiceDunitTest {
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
       CacheConfig clusterCacheConfig = persistenceService.getCacheConfig("cluster", true);
       CacheConfig groupACacheConfig = persistenceService.getCacheConfig("group-a");
-      assertThat(CacheElement.findElement(clusterCacheConfig.getRegions(), "company")).isNull();
-      assertThat(CacheElement.findElement(groupACacheConfig.getRegions(), "company")).isNotNull();
+      assertThat(find(clusterCacheConfig.getRegions(), "company")).isNull();
+      assertThat(find(groupACacheConfig.getRegions(), "company")).isNotNull();
     });
   }
 

@@ -153,7 +153,8 @@ public class QueryDataFunction implements Function, InternalEntity {
             for (BucketRegion bRegion : localPrimaryBucketRegions) {
               localPrimaryBucketSet.add(bRegion.getId());
             }
-            LocalDataSet lds = new LocalDataSet(parRegion, localPrimaryBucketSet);
+            LocalDataSet lds =
+                new LocalDataSet(parRegion, localPrimaryBucketSet);
             DefaultQuery query = (DefaultQuery) cache.getQueryService().newQuery(queryString);
             final ExecutionContext executionContext = new QueryExecutionContext(null, cache, query);
             results = lds.executeQuery(query, executionContext, null, localPrimaryBucketSet);

@@ -25,6 +25,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -33,20 +35,27 @@ import org.junit.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import org.apache.geode.cache.Operation;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.fake.Fakes;
 
 public class SerialGatewaySenderEventProcessorJUnitTest {
 
   private AbstractGatewaySender sender;
 
   private TestSerialGatewaySenderEventProcessor processor;
+
+  private GemFireCacheImpl cache;
 
   private static final Logger logger = LogService.getLogger();
 
@@ -55,6 +64,9 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     this.sender = mock(AbstractGatewaySender.class);
     this.processor =
         new TestSerialGatewaySenderEventProcessor(this.sender, "ny", null);
+    this.cache = Fakes.cache();
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(this.cache.getDistributedSystem()).thenReturn(ids);
   }
 
   @Test
@@ -222,6 +234,140 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
     logger.info("UnprocessedTokens: " + unProcessedTokens);
     assertThat(unProcessedTokens).contains("threadID=0x3010000|3;sequenceID=3");
     assertThat(unProcessedTokens).contains("threadID=4;sequenceID=4");
+  }
+
+  @Test
+  public void validateBatchConflationWithDuplicateConflatableEvents()
+      throws Exception {
+    // This tests normal batch conflation
+
+    // Create mock region
+    List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
+    LocalRegion lr = mock(LocalRegion.class);
+    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getCache()).thenReturn(this.cache);
+
+    // Configure conflation
+    when(this.sender.isBatchConflationEnabled()).thenReturn(true);
+    when(sender.getStatistics()).thenReturn(mock(GatewaySenderStats.class));
+
+    // Create a batch of conflatable events with duplicate update events
+    Object lastUpdateValue = "Object_13964_5";
+    long lastUpdateSequenceId = 104;
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13964", "Object_13964_1", 1, 100));
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.UPDATE,
+        "Object_13964", "Object_13964_2", 1, 101));
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.UPDATE,
+        "Object_13964", "Object_13964_3", 1, 102));
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.UPDATE,
+        "Object_13964", "Object_13964_4", 1, 103));
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.UPDATE,
+        "Object_13964", lastUpdateValue, 1, lastUpdateSequenceId));
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.DESTROY,
+        "Object_13964", null, 1, 105));
+
+    // Conflate the batch of events
+    List<GatewaySenderEventImpl> conflatedEvents = processor.conflate(originalEvents);
+
+    // Verify:
+    // - the batch contains 3 events after conflation
+    // - they are CREATE, UPDATE, and DESTROY
+    // - the UPDATE event is the correct one
+    assertThat(conflatedEvents.size()).isEqualTo(3);
+    GatewaySenderEventImpl gsei1 = conflatedEvents.get(0);
+    assertThat(gsei1.getOperation()).isEqualTo(Operation.CREATE);
+    GatewaySenderEventImpl gsei2 = conflatedEvents.get(1);
+    assertThat(gsei2.getOperation()).isEqualTo(Operation.UPDATE);
+    GatewaySenderEventImpl gsei3 = conflatedEvents.get(2);
+    assertThat(gsei3.getOperation()).isEqualTo(Operation.DESTROY);
+    assertThat(gsei2.getDeserializedValue()).isEqualTo(lastUpdateValue);
+    assertThat(gsei2.getEventId().getSequenceID()).isEqualTo(lastUpdateSequenceId);
+  }
+
+  @Test
+  public void validateBatchConflationWithDuplicateNonConflatableEvents()
+      throws Exception {
+    // Duplicate non-conflatable events should not be conflated.
+    //
+    // Here is an example batch with duplicate create and destroy events on the same key from
+    // different threads:
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|6;sequenceID=6072];operation=CREATE;region=/SESSIONS;key=6079],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|6;sequenceID=6073];operation=UPDATE;region=/SESSIONS;key=6079],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|5;sequenceID=6009];operation=CREATE;region=/SESSIONS;key=1736],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|6;sequenceID=6074];operation=DESTROY;region=/SESSIONS;key=6079],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|5;sequenceID=6011];operation=DESTROY;region=/SESSIONS;key=1736],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|6;sequenceID=6087];operation=CREATE;region=/SESSIONS;key=1736],
+    // GatewaySenderEventImpl[id=EventID[id=31bytes;threadID=0x30004|6;sequenceID=6089];operation=DESTROY;region=/SESSIONS;key=1736],
+
+    // Create mock region
+    LocalRegion lr = mock(LocalRegion.class);
+    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getCache()).thenReturn(this.cache);
+
+    // Configure conflation
+    when(this.sender.isBatchConflationEnabled()).thenReturn(true);
+    when(sender.getStatistics()).thenReturn(mock(GatewaySenderStats.class));
+
+    // Create a batch of conflatable events with duplicate create and destroy events on the same key
+    // from different threads
+    List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.CREATE,
+        "6079", "6079", 6, 6072));
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.UPDATE,
+        "6079", "6079", 6, 6073));
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.CREATE,
+        "1736", "1736", 5, 6009));
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.DESTROY,
+        "6079", "6079", 6, 6074));
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.DESTROY,
+        "1736", "1736", 5, 6011));
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.CREATE,
+        "1736", "1736", 6, 6087));
+    originalEvents.add(createGatewaySenderEvent(lr, Operation.DESTROY,
+        "1736", "1736", 6, 6089));
+    logEvents("original", originalEvents);
+
+    // Conflate the batch of event
+    List<GatewaySenderEventImpl> conflatedEvents = processor.conflate(originalEvents);
+    logEvents("conflated", conflatedEvents);
+
+    // Assert no conflation occurs
+    assertThat(conflatedEvents.size()).isEqualTo(7);
+    assertThat(originalEvents).isEqualTo(conflatedEvents);
+  }
+
+  private void logEvents(String message, List<GatewaySenderEventImpl> events) {
+    StringBuilder builder = new StringBuilder();
+    builder.append("The list contains the following ").append(events.size()).append(" ")
+        .append(message).append(" events:");
+    for (GatewaySenderEventImpl event : events) {
+      builder.append("\t\n").append(event.toSmallString());
+    }
+    System.out.println(builder);
+  }
+
+  private GatewaySenderEventImpl createGatewaySenderEvent(LocalRegion lr, Operation operation,
+      Object key, Object value, long threadId, long sequenceId)
+      throws Exception {
+    when(lr.getKeyInfo(key, value, null)).thenReturn(new KeyInfo(key, null, null));
+    EntryEventImpl eei = EntryEventImpl.create(lr, operation, key, value, null, false, null);
+    eei.setEventId(new EventID(new byte[16], threadId, sequenceId));
+    GatewaySenderEventImpl gsei =
+        new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true);
+    return gsei;
+  }
+
+  private EnumListenerEvent getEnumListenerEvent(Operation operation) {
+    EnumListenerEvent ele = null;
+    if (operation.isCreate()) {
+      ele = EnumListenerEvent.AFTER_CREATE;
+    } else if (operation.isUpdate()) {
+      ele = EnumListenerEvent.AFTER_UPDATE;
+    } else if (operation.isDestroy()) {
+      ele = EnumListenerEvent.AFTER_DESTROY;
+    }
+    return ele;
   }
 
   private EventID handlePrimaryEvent() {

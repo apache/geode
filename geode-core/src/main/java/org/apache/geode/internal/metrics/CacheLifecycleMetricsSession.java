@@ -101,6 +101,8 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
     for (MeterRegistry downstream : new HashSet<>(registry.getRegistries())) {
       removeSubregistry(downstream);
     }
+
+    registry.close();
   }
 
   @VisibleForTesting

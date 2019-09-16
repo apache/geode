@@ -20,39 +20,23 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.GatewayReceiverConfig;
+import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.internal.CacheElementOperation;
 
 public class GatewayReceiverConfigValidatorTest {
 
-  private GatewayReceiverConfig receiver;
+  private GatewayReceiver receiver;
   private GatewayReceiverConfigValidator validator;
 
   @Before
   public void before() throws Exception {
-    receiver = new GatewayReceiverConfig();
+    receiver = new GatewayReceiver();
     validator = new GatewayReceiverConfigValidator();
   }
 
   @Test
-  public void bindAddress() throws Exception {
-    receiver.setBindAddress("mbpro");
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, receiver))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Cannot set bindAddress");
-  }
-
-  @Test
-  public void hostName() throws Exception {
-    receiver.setHostnameForSenders("mbpro");
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, receiver))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Cannot set hostname");
-  }
-
-  @Test
   public void startPort() throws Exception {
-    receiver.setStartPort("6000");
+    receiver.setStartPort(6000);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, receiver))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Start port 6000 must be less than the end port 5500");
@@ -60,7 +44,7 @@ public class GatewayReceiverConfigValidatorTest {
 
   @Test
   public void endPort() throws Exception {
-    receiver.setEndPort("4000");
+    receiver.setEndPort(4000);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, receiver))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Start port 5000 must be less than the end port 4000");
@@ -68,8 +52,8 @@ public class GatewayReceiverConfigValidatorTest {
 
   @Test
   public void startPortEndPort() throws Exception {
-    receiver.setStartPort("2000");
-    receiver.setEndPort("1900");
+    receiver.setStartPort(2000);
+    receiver.setEndPort(1900);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, receiver))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Start port 2000 must be less than the end port 1900");

@@ -53,7 +53,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -81,6 +80,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.GemFireSecurityException;
 
 public abstract class BaseCommand implements Command {
@@ -1448,27 +1448,4 @@ public abstract class BaseCommand implements Command {
       appendInterestResponseKey(region, riKey, entryKey, collector, servConn);
     }
   }
-
-  protected static Operation getOperation(final Part operationPart,
-      final Operation defaultOperation) throws Exception {
-
-    if (operationPart.isBytes()) {
-      final byte[] bytes = operationPart.getSerializedForm();
-      if (null == bytes || 0 == bytes.length) {
-        // older clients can send empty bytes for default operation.
-        return defaultOperation;
-      } else {
-        return Operation.fromOrdinal(bytes[0]);
-      }
-    }
-
-    // Fallback for older clients.
-    final Operation operation = (Operation) operationPart.getObject();
-    if (operation == null) {
-      // native clients may send a null since the op is java-serialized.
-      return defaultOperation;
-    }
-    return operation;
-  }
-
 }

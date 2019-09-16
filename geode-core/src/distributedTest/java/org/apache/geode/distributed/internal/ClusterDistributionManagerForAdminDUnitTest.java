@@ -16,7 +16,6 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.InetAddress;
@@ -46,6 +45,7 @@ import org.apache.geode.internal.admin.GfManagerAgentConfig;
 import org.apache.geode.internal.admin.GfManagerAgentFactory;
 import org.apache.geode.internal.admin.StatResource;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -236,17 +236,16 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
   }
 
   private void populateCache() {
-    AttributesFactory attributesFactory = new AttributesFactory();
-    attributesFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-
-    RegionAttributes regionAttributes = attributesFactory.create();
-
     for (int i = 0; i < Host.getHostCount(); i++) {
       Host host = Host.getHost(i);
 
       for (int j = 0; j < host.getVMCount(); j++) {
         VM vm = host.getVM(j);
         vm.invoke(() -> {
+          AttributesFactory attributesFactory = new AttributesFactory();
+          attributesFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+
+          RegionAttributes regionAttributes = attributesFactory.create();
           createRegion("cdm-testSubRegion1", regionAttributes);
           createRegion("cdm-testSubRegion2", regionAttributes);
           createRegion("cdm-testSubRegion3", regionAttributes);
@@ -309,5 +308,9 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
   private InternalDistributedMember remoteGetJavaGroupsIdForVM() {
     InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
     return system.getDistributionManager().getDistributionManagerId();
+  }
+
+  private InternalLogWriter getLogWriter() {
+    return (InternalLogWriter) getSystem().getLogWriter();
   }
 }

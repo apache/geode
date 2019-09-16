@@ -23,6 +23,8 @@ import java.io.IOException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatResource;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular distribution manager to add a statistic listener.
@@ -62,15 +64,17 @@ public class AddStatListenerRequest extends AdminRequest {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeLong(this.resourceId);
     out.writeUTF(this.statName);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.resourceId = in.readLong();
     this.statName = in.readUTF();
   }

@@ -77,7 +77,6 @@ import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
 import org.apache.geode.internal.cache.InternalCache;
@@ -98,6 +97,9 @@ import org.apache.geode.internal.logging.LoggingThreadFactory.ThreadInitializer;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.ArrayUtils;
 
@@ -336,6 +338,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   private final boolean isGatewayReceiver;
 
   private final List<GatewayTransportFilter> gatewayTransportFilters;
+  private final StatisticsClock statisticsClock;
 
   private final SocketCreator socketCreator;
 
@@ -380,7 +383,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
         internalCache, maxConnections, maxThreads, maximumMessageCount, messageTimeToLive,
         connectionListener, overflowAttributes, tcpNoDelay, serverConnectionFactory,
         timeLimitMillis, securityService, socketCreatorSupplier, cacheClientNotifierProvider,
-        clientHealthMonitorProvider, false, Collections.emptyList());
+        clientHealthMonitorProvider, false, Collections.emptyList(),
+        StatisticsClockFactory.disabledClock());
   }
 
   /**
@@ -389,6 +393,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
    * <p>
    * Initializes this acceptor thread to listen for connections on the given port.
    *
+   * @param gatewayReceiver the GatewayReceiver that will use this AcceptorImpl instance
+   * @param gatewayReceiverMetrics the GatewayReceiverMetrics to use for exposing metrics
    * @param port The port on which this acceptor listens for connections. If {@code 0}, a
    *        random port will be chosen.
    * @param bindHostName The ip address or host name this acceptor listens on for connections. If
@@ -400,23 +406,24 @@ public class AcceptorImpl implements Acceptor, Runnable {
    * @param maxConnections the maximum number of connections allowed in the server pool
    * @param maxThreads the maximum number of threads allowed in the server pool
    * @param securityService the SecurityService to use for authentication and authorization
-   * @param gatewayReceiver the GatewayReceiver that will use this AcceptorImpl instance
-   * @param gatewayReceiverMetrics the GatewayReceiverMetrics to use for exposing metrics
    * @param gatewayTransportFilters List of GatewayTransportFilters
    */
   AcceptorImpl(final int port, final String bindHostName, final boolean notifyBySubscription,
       final int socketBufferSize, final int maximumTimeBetweenPings,
       final InternalCache internalCache, final int maxConnections, final int maxThreads,
       final int maximumMessageCount, final int messageTimeToLive,
-      final ConnectionListener connectionListener, final OverflowAttributes overflowAttributes,
+      final ConnectionListener connectionListener,
+      final OverflowAttributes overflowAttributes,
       final boolean tcpNoDelay, final ServerConnectionFactory serverConnectionFactory,
       final long timeLimitMillis, final SecurityService securityService,
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider,
       final boolean isGatewayReceiver,
-      final List<GatewayTransportFilter> gatewayTransportFilters) throws IOException {
+      final List<GatewayTransportFilter> gatewayTransportFilters,
+      final StatisticsClock statisticsClock) throws IOException {
     this.securityService = securityService;
+    this.statisticsClock = statisticsClock;
 
     this.isGatewayReceiver = isGatewayReceiver;
     this.gatewayTransportFilters = gatewayTransportFilters;
@@ -609,8 +616,10 @@ public class AcceptorImpl implements Acceptor, Runnable {
     cache = internalCache;
     crHelper = new CachedRegionHelper(cache);
 
-    clientNotifier = cacheClientNotifierProvider.get(internalCache, stats, maximumMessageCount,
-        messageTimeToLive, this.connectionListener, overflowAttributes, isGatewayReceiver());
+    clientNotifier =
+        cacheClientNotifierProvider.get(internalCache, new ClientRegistrationEventQueueManager(),
+            statisticsClock, stats, maximumMessageCount,
+            messageTimeToLive, this.connectionListener, overflowAttributes, isGatewayReceiver());
 
     this.socketBufferSize = socketBufferSize;
 
@@ -1072,8 +1081,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
             } catch (ClosedChannelException cce) {
               // for bug bug 38474
               finishCon(sc);
-            } catch (IOException | RuntimeException ex) {
-
+            } catch (RuntimeException ex) {
               finishCon(sc);
               logger.warn("ignoring", ex);
             }

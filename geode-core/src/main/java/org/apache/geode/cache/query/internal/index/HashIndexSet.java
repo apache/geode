@@ -314,7 +314,7 @@ public class HashIndexSet implements Set {
 
     long start = -1L;
     if (this.cacheStats != null) {
-      start = this.cacheStats.getStatTime();
+      start = this.cacheStats.getTime();
       this.cacheStats.incQueryResultsHashCollisions();
     }
     try {

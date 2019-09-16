@@ -86,7 +86,8 @@ public class ClientAuthDUnitTest {
 
     // for older version of client when we did not implement lazy initialization of the pool, the
     // authentication error will happen at this step.
-    if (Arrays.asList("100", "110", "111", "120", "130", "140").contains(clientVersion)) {
+    if (Arrays.asList("1.0.0-incubating", "1.1.0", "1.1.1", "1.2.0", "1.3.0", "1.4.0")
+        .contains(clientVersion)) {
       assertThatThrownBy(
           () -> lsRule.startClientVM(0, clientVersion,
               c -> c.withCredential("test", "invalidPassword")

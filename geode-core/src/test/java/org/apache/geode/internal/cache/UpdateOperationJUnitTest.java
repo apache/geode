@@ -29,9 +29,10 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 
 public class UpdateOperationJUnitTest {
-  EntryEventImpl event;
-  UpdateOperation.UpdateMessage message;
-  DistributedRegion region;
+
+  private EntryEventImpl event;
+  private UpdateOperation.UpdateMessage message;
+  private DistributedRegion region;
 
   @Before
   public void setup() {
@@ -39,6 +40,8 @@ public class UpdateOperationJUnitTest {
     region = mock(DistributedRegion.class);
     RegionAttributes attr = mock(RegionAttributes.class);
     CachePerfStats stats = mock(CachePerfStats.class);
+    InternalCache cache = mock(InternalCache.class);
+
     when(event.isOriginRemote()).thenReturn(false);
     when(stats.endPut(anyLong(), eq(false))).thenReturn(0L);
 
@@ -50,6 +53,8 @@ public class UpdateOperationJUnitTest {
     when(region.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
     when(region.getConcurrencyChecksEnabled()).thenReturn(true);
     when(region.getCachePerfStats()).thenReturn(stats);
+    when(region.getCache()).thenReturn(cache);
+    // when(cache.getStatisticsClock()).thenReturn(disabledClock());
     when(attr.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
     when(event.getOperation()).thenReturn(Operation.CREATE);
   }

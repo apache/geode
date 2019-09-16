@@ -15,13 +15,10 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.cache.configuration.RegionConfig.REGION_CONFIG_ENDPOINT;
+import static org.apache.geode.management.configuration.Region.REGION_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -38,12 +35,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.api.ConfigurationResult;
+import org.apache.geode.management.configuration.Index;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -53,7 +51,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class RegionManagementController extends AbstractManagementController {
 
-  @ApiOperation(value = "create regions")
+  @ApiOperation(value = "create region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -62,20 +60,21 @@ public class RegionManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = REGION_CONFIG_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> createRegion(
-      @RequestBody RegionConfig regionConfig) {
+      @RequestBody Region regionConfig) {
     ClusterManagementResult result =
         clusterManagementService.create(regionConfig);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
+  @ApiOperation(value = "list regions")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT)
   @ResponseBody
-  public ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> listRegion(
+  public ClusterManagementListResult<Region, RuntimeRegionInfo> listRegion(
       @RequestParam(required = false) String id,
       @RequestParam(required = false) String group) {
-    RegionConfig filter = new RegionConfig();
+    Region filter = new Region();
     if (StringUtils.isNotBlank(id)) {
       filter.setName(id);
     }
@@ -85,23 +84,25 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
+  @ApiOperation(value = "get region")
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> getRegion(
+  public ClusterManagementListResult<Region, RuntimeRegionInfo> getRegion(
       @PathVariable(name = "id") String id) {
     securityService.authorize(Resource.CLUSTER, Operation.READ, id);
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName(id);
     return clusterManagementService.get(config);
   }
 
+  @ApiOperation(value = "delete region")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.DELETE, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
   public ClusterManagementResult deleteRegion(
       @PathVariable(name = "id") String id,
       @RequestParam(required = false) String group) {
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName(id);
     if (StringUtils.isNotBlank(group)) {
       config.setGroup(group);
@@ -109,46 +110,46 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.delete(config);
   }
 
+  @ApiOperation(value = "list region indexes")
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> listIndex(
+  public ClusterManagementListResult<Index, RuntimeInfo> listIndex(
       @PathVariable String regionName,
-      @RequestParam(required = false) String id) {
+      @RequestParam(required = false, name = "id") String indexName) {
 
-    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> result0 = getRegion(regionName);
-    RegionConfig regionConfig = result0.getResult().get(0).getConfig();
-
-    // only send the index information back
-    List<RegionConfig.Index> indexList = regionConfig.getIndexes().stream().map(e -> {
-      if (StringUtils.isNotBlank(id) && !e.getId().equals(id)) {
-        return null;
-      }
-      e.setRegionName(regionName);
-      return e;
-    }).filter(Objects::nonNull).collect(Collectors.toList());
-
-    List<ConfigurationResult<RegionConfig.Index, RuntimeInfo>> responses = new ArrayList<>();
-    for (RegionConfig.Index index : indexList) {
-      responses.add(new ConfigurationResult<>(index));
+    Index filter = new Index();
+    filter.setRegionPath(regionName);
+    if (StringUtils.isNotBlank(indexName)) {
+      filter.setName(indexName);
     }
-
-    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> result =
-        new ClusterManagementListResult<>();
-    result.setResult(responses);
-    return result;
+    return clusterManagementService.list(filter);
   }
 
+  @ApiOperation(value = "list indexes")
+  @RequestMapping(method = RequestMethod.GET, value = "/indexes")
+  @ResponseBody
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
+  public ClusterManagementListResult<Index, RuntimeInfo> listAllIndex(
+      @RequestParam(required = false, name = "id") String indexName) {
+    Index filter = new Index();
+    if (StringUtils.isNotBlank(indexName)) {
+      filter.setName(indexName);
+    }
+    return clusterManagementService.list(filter);
+  }
+
+  @ApiOperation(value = "get index")
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> getIndex(
+  public ClusterManagementListResult<Index, RuntimeInfo> getIndex(
       @PathVariable String regionName,
       @PathVariable String id) {
-    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> result = listIndex(regionName, id);
-    List<ConfigurationResult<RegionConfig.Index, RuntimeInfo>> indexList = result.getResult();
+    ClusterManagementListResult<Index, RuntimeInfo> result = listIndex(regionName, id);
+    List<ConfigurationResult<Index, RuntimeInfo>> indexList = result.getResult();
 
     if (indexList.size() == 0) {
       throw new ClusterManagementException(new ClusterManagementResult(StatusCode.ENTITY_NOT_FOUND,

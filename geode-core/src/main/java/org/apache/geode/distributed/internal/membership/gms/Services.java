@@ -14,32 +14,60 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.FINAL_CHECK_PASSED_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_REQ;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_RESP;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.GET_VIEW_REQ;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.GET_VIEW_RESP;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.GMSMEMBER;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.HEARTBEAT_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.HEARTBEAT_RESPONSE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.INSTALL_VIEW_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_RESPONSE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETVIEW;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.SUSPECT_MEMBERS_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.VIEW_ACK_MESSAGE;
+
 import java.util.Timer;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
+import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
+import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
+import org.apache.geode.distributed.internal.membership.gms.locator.GetViewRequest;
+import org.apache.geode.distributed.internal.membership.gms.locator.GetViewResponse;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
 
 @SuppressWarnings("ConstantConditions")
 public class Services {
@@ -51,9 +79,10 @@ public class Services {
   private final HealthMonitor healthMon;
   private final Messenger messenger;
   private final Authenticator auth;
-  private final ServiceConfig config;
-  private final DMStats stats;
+  private final MembershipConfig config;
+  private final MembershipStatistics stats;
   private final Stopper cancelCriterion;
+  private final DSFIDSerializer serializer;
 
   private volatile boolean stopping;
   private volatile boolean stopped;
@@ -93,29 +122,61 @@ public class Services {
     this.healthMon = null;
     this.messenger = null;
     this.auth = null;
+    this.serializer = null;
   }
 
-  public Services(DistributedMembershipListener listener,
-      RemoteTransportConfig transport, DMStats stats,
-      final Authenticator authenticator, DistributionConfig config) {
+  public Services(Manager membershipManager, MembershipStatistics stats,
+      final Authenticator authenticator, MembershipConfig membershipConfig,
+      DSFIDSerializer serializer) {
     this.cancelCriterion = new Stopper();
     this.stats = stats;
-    this.config = new ServiceConfig(transport, config);
-    this.manager = new GMSMembershipManager(listener);
+    this.config = membershipConfig;
+    this.manager = membershipManager;
     this.joinLeave = new GMSJoinLeave();
     this.healthMon = new GMSHealthMonitor();
     this.messenger = new JGroupsMessenger();
     this.auth = authenticator;
+    this.serializer = serializer;
+    registerSerializables(serializer);
   }
 
-  protected void init() {
+  @VisibleForTesting
+  public static void registerSerializables(DSFIDSerializer serializer) {
+    serializer.registerDSFID(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
+    serializer.registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
+    serializer.registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
+    serializer.registerDSFID(HEARTBEAT_REQUEST, HeartbeatRequestMessage.class);
+    serializer.registerDSFID(HEARTBEAT_RESPONSE, HeartbeatMessage.class);
+    serializer.registerDSFID(SUSPECT_MEMBERS_MESSAGE, SuspectMembersMessage.class);
+    serializer.registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
+    serializer.registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
+    serializer.registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
+    serializer.registerDSFID(GMSMEMBER, GMSMember.class);
+    serializer.registerDSFID(NETVIEW, GMSMembershipView.class);
+    serializer.registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
+    serializer.registerDSFID(GET_VIEW_RESP, GetViewResponse.class);
+    serializer.registerDSFID(FIND_COORDINATOR_REQ, FindCoordinatorRequest.class);
+    serializer.registerDSFID(FIND_COORDINATOR_RESP, FindCoordinatorResponse.class);
+    serializer.registerDSFID(JOIN_RESPONSE, JoinResponseMessage.class);
+    serializer.registerDSFID(JOIN_REQUEST, JoinRequestMessage.class);
+
+  }
+
+  /**
+   * Initialize services - do this before invoking start()
+   */
+  public void init() {
     this.messenger.init(this);
     this.manager.init(this);
     this.joinLeave.init(this);
     this.healthMon.init(this);
   }
 
-  protected void start() {
+  /**
+   * Start services - this will start everything up and join the cluster.
+   * Invoke init() before this method.
+   */
+  public void start() {
     boolean started = false;
     try {
       logger.info("Starting membership services");
@@ -144,12 +205,6 @@ public class Services {
     this.joinLeave.started();
     this.healthMon.started();
     this.manager.started();
-    InternalLocator l = (InternalLocator) org.apache.geode.distributed.Locator.getLocator();
-    if (l != null && l.getLocatorHandler() != null) {
-      if (l.getLocatorHandler().setMembershipManager((MembershipManager) this.manager)) {
-        this.locator = (Locator) l.getLocatorHandler();
-      }
-    }
     logger.debug("All membership services have been started");
     try {
       this.manager.joinDistributedSystem();
@@ -159,7 +214,7 @@ public class Services {
     }
   }
 
-  public void setLocalAddress(InternalDistributedMember address) {
+  public void setLocalAddress(GMSMember address) {
     this.messenger.setLocalAddress(address);
     this.joinLeave.setLocalAddress(address);
     this.healthMon.setLocalAddress(address);
@@ -199,7 +254,6 @@ public class Services {
     }
     logger.info("Stopping membership services");
     this.stopping = true;
-    config.setIsReconnecting(false);
     try {
       this.timer.cancel();
     } finally {
@@ -228,7 +282,7 @@ public class Services {
     return this.auth;
   }
 
-  public void installView(NetView v) {
+  public void installView(GMSMembershipView v) {
     if (this.locator != null) {
       this.locator.installView(v);
     }
@@ -237,8 +291,8 @@ public class Services {
     this.manager.installView(v);
   }
 
-  public void memberSuspected(InternalDistributedMember initiator,
-      InternalDistributedMember suspect, String reason) {
+  public void memberSuspected(GMSMember initiator,
+      GMSMember suspect, String reason) {
     try {
       this.joinLeave.memberSuspected(initiator, suspect, reason);
     } finally {
@@ -274,7 +328,7 @@ public class Services {
     return this.healthMon;
   }
 
-  public ServiceConfig getConfig() {
+  public MembershipConfig getConfig() {
     return this.config;
   }
 
@@ -282,7 +336,7 @@ public class Services {
     return this.messenger;
   }
 
-  public DMStats getStatistics() {
+  public MembershipStatistics getStatistics() {
     return this.stats;
   }
 
@@ -303,7 +357,11 @@ public class Services {
   }
 
   public boolean isAutoReconnectEnabled() {
-    return !getConfig().getDistributionConfig().getDisableAutoReconnect();
+    return !getConfig().getDisableAutoReconnect();
+  }
+
+  public DSFIDSerializer getSerializer() {
+    return this.serializer;
   }
 
   public class Stopper extends CancelCriterion {

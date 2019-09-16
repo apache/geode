@@ -37,6 +37,7 @@ import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
@@ -47,30 +48,32 @@ public class ServerBuilderTest {
 
   private InternalCache cache;
   private SecurityService securityService;
+  private StatisticsClock statisticsClock;
 
   @Before
   public void setUp() {
     cache = mock(InternalCache.class);
     securityService = mock(SecurityService.class);
+    statisticsClock = mock(StatisticsClock.class);
   }
 
   @Test
   public void sendResourceEventsIsTrueByDefault() {
-    ServerBuilder builder = new ServerBuilder(cache, securityService);
+    ServerBuilder builder = new ServerBuilder(cache, securityService, statisticsClock);
 
     assertThat(builder.isSendResourceEvents()).isTrue();
   }
 
   @Test
   public void includeMemberGroupsIsTrueByDefault() {
-    ServerBuilder builder = new ServerBuilder(cache, securityService);
+    ServerBuilder builder = new ServerBuilder(cache, securityService, statisticsClock);
 
     assertThat(builder.isIncludeMemberGroups()).isTrue();
   }
 
   @Test
   public void socketCreatorIsForServerByDefault() {
-    ServerBuilder builder = new ServerBuilder(cache, securityService);
+    ServerBuilder builder = new ServerBuilder(cache, securityService, statisticsClock);
 
     assertThat(builder.getSocketCreatorSupplier()).isSameAs(SERVER.getSupplier());
   }
@@ -80,7 +83,7 @@ public class ServerBuilderTest {
     GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
     when(gatewayReceiver.getGatewayTransportFilters())
         .thenReturn(singletonList(mock(GatewayTransportFilter.class)));
-    ServerBuilder builder = new ServerBuilder(cache, securityService);
+    ServerBuilder builder = new ServerBuilder(cache, securityService, statisticsClock);
 
     builder.forGatewayReceiver(gatewayReceiver);
 
@@ -92,7 +95,7 @@ public class ServerBuilderTest {
     GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
     when(gatewayReceiver.getGatewayTransportFilters())
         .thenReturn(singletonList(mock(GatewayTransportFilter.class)));
-    ServerBuilder builder = new ServerBuilder(cache, securityService);
+    ServerBuilder builder = new ServerBuilder(cache, securityService, statisticsClock);
 
     builder.forGatewayReceiver(gatewayReceiver);
 
@@ -104,7 +107,7 @@ public class ServerBuilderTest {
     GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
     when(gatewayReceiver.getGatewayTransportFilters())
         .thenReturn(singletonList(mock(GatewayTransportFilter.class)));
-    ServerBuilder builder = new ServerBuilder(cache, securityService);
+    ServerBuilder builder = new ServerBuilder(cache, securityService, statisticsClock);
 
     builder.forGatewayReceiver(gatewayReceiver);
 
@@ -115,7 +118,7 @@ public class ServerBuilderTest {
   public void setCacheClientNotifierProviderReplacesCacheClientNotifierProvider() {
     CacheClientNotifierProvider cacheClientNotifierProvider =
         mock(CacheClientNotifierProvider.class);
-    ServerBuilder builder = new ServerBuilder(cache, securityService);
+    ServerBuilder builder = new ServerBuilder(cache, securityService, statisticsClock);
 
     builder.setCacheClientNotifierProvider(cacheClientNotifierProvider);
 
@@ -126,7 +129,7 @@ public class ServerBuilderTest {
   public void setClientHealthMonitorProviderReplacesClientHealthMonitorProvider() {
     ClientHealthMonitorProvider clientHealthMonitorProvider =
         mock(ClientHealthMonitorProvider.class);
-    ServerBuilder builder = new ServerBuilder(cache, securityService);
+    ServerBuilder builder = new ServerBuilder(cache, securityService, statisticsClock);
 
     builder.setClientHealthMonitorProvider(clientHealthMonitorProvider);
 
@@ -137,7 +140,7 @@ public class ServerBuilderTest {
   public void setCacheServerAdvisorProviderReplacesCacheServerAdvisorProvider() {
     Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider =
         a -> mock(CacheServerAdvisor.class);
-    ServerBuilder builder = new ServerBuilder(cache, securityService);
+    ServerBuilder builder = new ServerBuilder(cache, securityService, statisticsClock);
 
     builder.setCacheServerAdvisorProvider(cacheServerAdvisorProvider);
 

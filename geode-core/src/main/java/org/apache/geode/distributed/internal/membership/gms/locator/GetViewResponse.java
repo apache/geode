@@ -18,16 +18,17 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 public class GetViewResponse implements DataSerializableFixedID {
 
-  private NetView view;
+  private GMSMembershipView view;
 
-  public GetViewResponse(NetView view) {
+  public GetViewResponse(GMSMembershipView view) {
     this.view = view;
   }
 
@@ -35,7 +36,7 @@ public class GetViewResponse implements DataSerializableFixedID {
     // no-arg constructor for serialization
   }
 
-  public NetView getView() {
+  public GMSMembershipView getView() {
     return view;
   }
 
@@ -50,13 +51,15 @@ public class GetViewResponse implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(view, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeObject(view, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    view = DataSerializer.readObject(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    view = (GMSMembershipView) context.getDeserializer().readObject(in);
   }
 
 }

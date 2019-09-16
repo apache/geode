@@ -18,11 +18,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
-public class HeartbeatMessage extends HighPriorityDistributionMessage {
+public class HeartbeatMessage extends AbstractGMSMessage {
   /**
    * RequestId identifies the HeartbeatRequestMessage for which this is a response. If it is < 0
    * this is a periodic heartbeat message.
@@ -46,11 +46,6 @@ public class HeartbeatMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  public void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool");
-  }
-
-  @Override
   public String toString() {
     return getClass().getSimpleName() + " [requestId=" + requestId + "]";
   }
@@ -61,12 +56,14 @@ public class HeartbeatMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(requestId);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     requestId = in.readInt();
   }
 }

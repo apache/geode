@@ -69,6 +69,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.AsyncEventQueueMBean;
 import org.apache.geode.management.internal.beans.GatewaySenderMBean;
@@ -876,7 +877,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       final RegionAttributes<Long, AsyncEvent> ra = factory.create();
       try {
         SerialGatewaySenderQueueMetaRegion meta =
-            new SerialGatewaySenderQueueMetaRegion(this.regionName, ra, null, gemCache, sender);
+            new SerialGatewaySenderQueueMetaRegion(this.regionName, ra, null, gemCache, sender,
+                sender.getStatisticsClock());
         try {
           this.region = gemCache.createVMRegion(this.regionName, ra,
               new InternalRegionArguments().setInternalMetaRegion(meta).setDestroyLockFlag(true)
@@ -1116,11 +1118,13 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     AbstractGatewaySender sender = null;
 
     protected SerialGatewaySenderQueueMetaRegion(String regionName, RegionAttributes attrs,
-        LocalRegion parentRegion, InternalCache cache, AbstractGatewaySender sender) {
+        LocalRegion parentRegion, InternalCache cache, AbstractGatewaySender sender,
+        StatisticsClock statisticsClock) {
       super(regionName, attrs, parentRegion, cache,
           new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
               .setSnapshotInputStream(null).setImageTarget(null)
-              .setIsUsedForSerialGatewaySenderQueue(true).setSerialGatewaySender(sender));
+              .setIsUsedForSerialGatewaySenderQueue(true).setSerialGatewaySender(sender),
+          statisticsClock);
       this.sender = sender;
     }
 

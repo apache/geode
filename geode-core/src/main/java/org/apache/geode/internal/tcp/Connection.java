@@ -67,12 +67,12 @@ import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
@@ -80,6 +80,7 @@ import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.MsgReader.Header;
 import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
 
@@ -651,7 +652,8 @@ public class Connection implements Runnable {
       bb.putInt(cfg.getAsyncQueueTimeout());
       bb.putInt(cfg.getAsyncMaxQueueSize());
       // write own product version
-      Version.writeOrdinal(bb, Version.CURRENT.ordinal(), true);
+      Version
+          .writeOrdinal(bb, Version.CURRENT.ordinal(), true);
       // now set the msg length into position 0
       bb.putInt(0, calcHdrSize(bb.position() - MSG_HEADER_BYTES));
       my_okHandshakeBuf = bb;
@@ -1079,7 +1081,8 @@ public class Connection implements Runnable {
     return conn;
   }
 
-  private static boolean giveUpOnMember(MembershipManager mgr, DistributedMember remoteAddr) {
+  private static boolean giveUpOnMember(MembershipManager mgr,
+      DistributedMember remoteAddr) {
     return !mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress();
   }
 
@@ -1613,7 +1616,7 @@ public class Connection implements Runnable {
     ByteBuffer tmp = this.inputBuffer;
     if (tmp != null) {
       this.inputBuffer = null;
-      final DMStats stats = this.owner.getConduit().getStats();
+      final MembershipStatistics stats = this.owner.getConduit().getStats();
       getBufferPool().releaseReceiveBuffer(tmp);
     }
   }
@@ -1947,14 +1950,14 @@ public class Connection implements Runnable {
   }
 
   private void sendFailureReply(int rpId, String exMsg, Throwable ex, boolean directAck) {
-    ReplySender dm = null;
+    ReplyException exception = new ReplyException(exMsg, ex);
     if (directAck) {
-      dm = new DirectReplySender(this);
+      ReplySender dm = new DirectReplySender(this);
+      ReplyMessage.send(getRemoteAddress(), rpId, exception, dm);
     } else if (rpId != 0) {
-      dm = this.owner.getDM();
-    }
-    if (dm != null) {
-      ReplyMessage.send(getRemoteAddress(), rpId, new ReplyException(exMsg, ex), dm);
+      DistributionManager dm = this.owner.getDM();
+      dm.getWaitingThreadPool()
+          .execute(() -> ReplyMessage.send(getRemoteAddress(), rpId, exception, dm));
     }
   }
 
@@ -3355,7 +3358,7 @@ public class Connection implements Runnable {
 
   private void compactOrResizeBuffer(int messageLength) {
     final int oldBufferSize = inputBuffer.capacity();
-    final DMStats stats = this.owner.getConduit().getStats();
+    final MembershipStatistics stats = this.owner.getConduit().getStats();
     int allocSize = messageLength + MSG_HEADER_BYTES;
     if (oldBufferSize < allocSize) {
       // need a bigger buffer

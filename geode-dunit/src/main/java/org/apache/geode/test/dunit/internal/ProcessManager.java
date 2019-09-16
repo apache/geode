@@ -192,6 +192,7 @@ class ProcessManager implements ChildVMLauncher {
     for (String module : modules) {
       classpath = removeModuleFromGradlePath(classpath, module);
       classpath = removeModuleFromEclipsePath(classpath, module);
+      classpath = removeModuleFromIntelliJPath(classpath, module);
     }
     return classpath;
   }
@@ -200,6 +201,21 @@ class ProcessManager implements ChildVMLauncher {
     String buildDir = File.separator + module + File.separator + "out" + File.separator;
 
     String mainClasses = buildDir + "production";
+    if (!classpath.contains(mainClasses)) {
+      return classpath;
+    }
+
+    classpath = removeFromPath(classpath, mainClasses);
+    return classpath;
+  }
+
+  private String removeModuleFromIntelliJPath(String classpath, String module) {
+    String mainClasses = File.separator + "out" + File.separator + "production"
+        + File.separator + "org.apache.geode." + module + ".main";
+
+    if (!classpath.contains(mainClasses)) {
+      return classpath;
+    }
 
     classpath = removeFromPath(classpath, mainClasses);
     return classpath;
@@ -234,7 +250,8 @@ class ProcessManager implements ChildVMLauncher {
     } else {
       // remove current-version product classes and resources from the classpath
       dunitClasspath =
-          removeModulesFromPath(dunitClasspath, "geode-core", "geode-cq", "geode-common",
+          removeModulesFromPath(dunitClasspath, "geode-serialization",
+              "geode-core", "geode-cq", "geode-common",
               "geode-json", "geode-lucene",
               "geode-wan");
       classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;

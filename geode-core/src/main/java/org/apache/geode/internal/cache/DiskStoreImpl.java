@@ -88,7 +88,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.backup.DiskStoreBackup;
@@ -118,6 +117,7 @@ import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.pdx.internal.EnumInfo;
@@ -3926,7 +3926,9 @@ public class DiskStoreImpl implements DiskStore {
             for (Map.Entry<Object, RecoveredEntry> re : entries.entrySet()) {
               Object key = re.getKey();
               Object value = re.getValue().getValue();
-              writer.snapshotEntry(new SnapshotRecord(key, value));
+              if (!Token.isRemoved(value)) {
+                writer.snapshotEntry(new SnapshotRecord(key, value));
+              }
             }
           }
 

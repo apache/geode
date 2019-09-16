@@ -40,7 +40,7 @@ public class WANRollingUpgradeVerifyGatewayReceiverDoesNotSendRemoveCacheServerP
 
     // Start locator
     final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(port);
+    oldLocator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(port));
     final String locators = NetworkUtils.getServerHostName(host) + "[" + port + "]";
     oldLocator.invoke(() -> startLocator(port, 0, locators, ""));
 

@@ -46,6 +46,9 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * This region is being implemented to suppress distribution of puts and to allow localDestroys on
@@ -90,10 +93,11 @@ public class HARegion extends DistributedRegion {
   private volatile HARegionQueue owningQueue;
 
   private HARegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache) {
+      InternalCache cache, StatisticsClock statisticsClock) {
     super(regionName, attrs, parentRegion, cache,
         new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
-            .setSnapshotInputStream(null).setImageTarget(null));
+            .setSnapshotInputStream(null).setImageTarget(null),
+        statisticsClock);
     this.haRegionStats = new DummyCachePerfStats();
   }
 
@@ -244,10 +248,10 @@ public class HARegion extends DistributedRegion {
    * @throws RegionExistsException if a region of the same name exists in the same Cache
    */
   public static HARegion getInstance(String regionName, InternalCache cache, HARegionQueue hrq,
-      RegionAttributes ra)
+      RegionAttributes ra, StatisticsClock statisticsClock)
       throws TimeoutException, RegionExistsException, IOException, ClassNotFoundException {
 
-    HARegion haRegion = new HARegion(regionName, ra, null, cache);
+    HARegion haRegion = new HARegion(regionName, ra, null, cache, statisticsClock);
     haRegion.setOwner(hrq);
     Region region = cache.createVMRegion(regionName, ra,
         new InternalRegionArguments().setInternalMetaRegion(haRegion).setDestroyLockFlag(true)
@@ -545,8 +549,9 @@ public class HARegion extends DistributedRegion {
        * DataInput)
        */
       @Override
-      public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-        super.fromData(in);
+      public void fromData(DataInput in,
+          DeserializationContext context) throws IOException, ClassNotFoundException {
+        super.fromData(in, context);
         int flags = in.readByte();
         hasRegisteredInterest = (flags & HAS_REGISTERED_INTEREST_BIT) != 0;
         isPrimary = (flags & IS_PRIMARY_BIT) != 0;
@@ -559,8 +564,9 @@ public class HARegion extends DistributedRegion {
        * DataOutput)
        */
       @Override
-      public void toData(DataOutput out) throws IOException {
-        super.toData(out);
+      public void toData(DataOutput out,
+          SerializationContext context) throws IOException {
+        super.toData(out, context);
         int flags = 0;
         if (hasRegisteredInterest) {
           flags |= HAS_REGISTERED_INTEREST_BIT;

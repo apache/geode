@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.management.configuration.RegionType;
 
 
 public class CacheConfigTest {

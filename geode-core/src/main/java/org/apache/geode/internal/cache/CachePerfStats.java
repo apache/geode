@@ -14,28 +14,22 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.function.LongSupplier;
-
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * CachePerfStats tracks statistics about Geode cache performance and usage.
  */
 public class CachePerfStats {
-  @MakeNotStatic
-  public static boolean enableClockStats;
-
   @Immutable
   private static final StatisticsType type;
 
@@ -622,50 +616,15 @@ public class CachePerfStats {
   /** The Statistics object that we delegate most behavior to */
   protected final Statistics stats;
 
-  private final LongSupplier clock;
+  private final StatisticsClock clock;
 
-  public CachePerfStats(StatisticsFactory factory) {
-    this(factory, "cachePerfStats");
-  }
-
-  @VisibleForTesting
-  public CachePerfStats(StatisticsFactory factory, LongSupplier clock) {
+  public CachePerfStats(StatisticsFactory factory, StatisticsClock clock) {
     this(factory, "cachePerfStats", clock);
   }
 
-  public CachePerfStats(StatisticsFactory factory, String textId) {
-    this(factory, textId, createClock());
-  }
-
-  CachePerfStats(StatisticsFactory factory, String textId, LongSupplier clock) {
-    this(createStatistics(factory, textId), clock);
-  }
-
-  private CachePerfStats(Statistics stats, LongSupplier clock) {
-    this.stats = stats;
+  public CachePerfStats(StatisticsFactory factory, String textId, StatisticsClock clock) {
+    stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
     this.clock = clock;
-  }
-
-  private static Statistics createStatistics(StatisticsFactory factory, String textId) {
-    if (factory == null) {
-      return null;
-    }
-    return factory.createAtomicStatistics(type, textId);
-  }
-
-  private static LongSupplier createClock() {
-    return enableClockStats ? NanoTimer::getTime : () -> 0;
-  }
-
-  /**
-   * Returns the current NanoTime or, if clock stats are disabled, zero.
-   *
-   * @since GemFire 5.0
-   * @deprecated Please use instance method {@link #getTime()} instead.
-   */
-  @Deprecated
-  public static long getStatTime() {
-    return enableClockStats ? NanoTimer.getTime() : 0;
   }
 
   public static StatisticsType getStatisticsType() {
@@ -681,8 +640,8 @@ public class CachePerfStats {
     return stats;
   }
 
-  protected long getTime() {
-    return clock.getAsLong();
+  public long getTime() {
+    return clock.getTime();
   }
 
   public int getLoadsCompleted() {
@@ -887,7 +846,7 @@ public class CachePerfStats {
   }
 
   public void endCompression(long startTime, long startSize, long endSize) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(compressionCompressTimeId, getTime() - startTime);
     }
     stats.incLong(compressionPreCompressedBytesId, startSize);
@@ -900,7 +859,7 @@ public class CachePerfStats {
   }
 
   public void endDecompression(long startTime) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(compressionDecompressTimeId, getTime() - startTime);
     }
   }
@@ -937,7 +896,7 @@ public class CachePerfStats {
    * @param start the timestamp taken when the operation started
    */
   public void endNetload(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(netloadTimeId, getTime() - start);
     }
     stats.incInt(netloadsInProgressId, -1);
@@ -976,7 +935,7 @@ public class CachePerfStats {
    * @param start the timestamp taken when the operation started
    */
   public void endCacheWriterCall(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(cacheWriterCallTimeId, getTime() - start);
     }
     stats.incInt(cacheWriterCallsInProgressId, -1);
@@ -1001,7 +960,7 @@ public class CachePerfStats {
    * @since GemFire 3.5
    */
   public void endCacheListenerCall(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(cacheListenerCallTimeId, getTime() - start);
     }
     stats.incInt(cacheListenerCallsInProgressId, -1);
@@ -1024,7 +983,7 @@ public class CachePerfStats {
    * @param start the timestamp taken when the operation started
    */
   public void endGetInitialImage(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(getInitialImageTimeId, getTime() - start);
     }
     stats.incInt(getInitialImagesInProgressId, -1);
@@ -1035,7 +994,7 @@ public class CachePerfStats {
    * @param start the timestamp taken when the operation started
    */
   public void endNoGIIDone(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(getInitialImageTimeId, getTime() - start);
     }
     stats.incInt(getInitialImagesInProgressId, -1);
@@ -1112,7 +1071,7 @@ public class CachePerfStats {
    * @param start the timestamp taken when the operation started
    */
   public void endGet(long start, boolean miss) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       long delta = getTime() - start;
       stats.incLong(getTimeId, delta);
     }
@@ -1130,13 +1089,13 @@ public class CachePerfStats {
     long total = 0;
     if (isUpdate) {
       stats.incLong(updatesId, 1L);
-      if (enableClockStats) {
+      if (clock.isEnabled()) {
         total = getTime() - start;
         stats.incLong(updateTimeId, total);
       }
     } else {
       stats.incLong(putsId, 1L);
-      if (enableClockStats) {
+      if (clock.isEnabled()) {
         total = getTime() - start;
         stats.incLong(putTimeId, total);
       }
@@ -1146,19 +1105,19 @@ public class CachePerfStats {
 
   public void endPutAll(long start) {
     stats.incInt(putAllsId, 1);
-    if (enableClockStats)
+    if (clock.isEnabled())
       stats.incLong(putAllTimeId, getTime() - start);
   }
 
   public void endRemoveAll(long start) {
     stats.incInt(removeAllsId, 1);
-    if (enableClockStats)
+    if (clock.isEnabled())
       stats.incLong(removeAllTimeId, getTime() - start);
   }
 
   public void endQueryExecution(long executionTime) {
     stats.incInt(queryExecutionsId, 1);
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(queryExecutionTimeId, executionTime);
     }
   }
@@ -1168,7 +1127,7 @@ public class CachePerfStats {
   }
 
   public void endQueryResultsHashCollisionProbe(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(queryResultsHashCollisionProbeTimeId, getTime() - start);
     }
   }
@@ -1252,7 +1211,7 @@ public class CachePerfStats {
 
   void endDeltaUpdate(long start) {
     stats.incInt(deltaUpdatesId, 1);
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(deltaUpdatesTimeId, getTime() - start);
     }
   }
@@ -1263,7 +1222,7 @@ public class CachePerfStats {
 
   public void endDeltaPrepared(long start) {
     stats.incInt(deltasPreparedId, 1);
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(deltasPreparedTimeId, getTime() - start);
     }
   }
@@ -1476,14 +1435,14 @@ public class CachePerfStats {
 
   public void endImport(long entryCount, long start) {
     stats.incLong(importedEntriesCountId, entryCount);
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(importTimeId, getTime() - start);
     }
   }
 
   public void endExport(long entryCount, long start) {
     stats.incLong(exportedEntriesCountId, entryCount);
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(exportTimeId, getTime() - start);
     }
   }

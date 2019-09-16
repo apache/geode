@@ -879,7 +879,8 @@ public abstract class DynamicRegionFactory {
   // the meta data
   private class LocalMetaRegion extends LocalRegion {
     protected LocalMetaRegion(RegionAttributes attrs, InternalRegionArguments ira) {
-      super(DYNAMIC_REGION_LIST_NAME, attrs, null, DynamicRegionFactory.this.cache, ira);
+      super(DYNAMIC_REGION_LIST_NAME, attrs, null, DynamicRegionFactory.this.cache, ira,
+          DynamicRegionFactory.this.cache.getStatisticsClock());
       Assert.assertTrue(attrs.getScope().isLocal());
     }
 
@@ -989,7 +990,7 @@ public abstract class DynamicRegionFactory {
   private class DistributedMetaRegion extends DistributedRegion {
     protected DistributedMetaRegion(RegionAttributes attrs) {
       super(DYNAMIC_REGION_LIST_NAME, attrs, null, DynamicRegionFactory.this.cache,
-          new InternalRegionArguments());
+          new InternalRegionArguments(), DynamicRegionFactory.this.cache.getStatisticsClock());
     }
 
     // This is an internal uses only region

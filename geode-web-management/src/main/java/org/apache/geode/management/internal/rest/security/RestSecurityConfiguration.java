@@ -36,6 +36,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 
@@ -73,22 +74,34 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
         .anyRequest().authenticated().and().csrf().disable();
 
     if (this.authProvider.getSecurityService().isIntegratedSecurity()) {
-      http.httpBasic().authenticationEntryPoint(new AuthenticationEntryPoint() {
-        @Override
-        public void commence(HttpServletRequest request, HttpServletResponse response,
-            AuthenticationException authException)
-            throws IOException, ServletException {
-          response.addHeader("WWW-Authenticate", "Basic realm=\"GEODE\"");
-          response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-          response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
-          ClusterManagementResult result =
-              new ClusterManagementResult(ClusterManagementResult.StatusCode.UNAUTHENTICATED,
-                  authException.getMessage());
-          objectMapper.writeValue(response.getWriter(), result);
-        }
-      });
+      // if auth token is enabled, add a filter to parse the request header. The filter still
+      // saves the token in the form of UsernamePasswordAuthenticationToken
+      if (authProvider.isAuthTokenEnabled()) {
+        JwtAuthenticationFilter tokenEndpointFilter = new JwtAuthenticationFilter();
+        tokenEndpointFilter.setAuthenticationSuccessHandler((request, response, authentication) -> {
+        });
+        tokenEndpointFilter.setAuthenticationFailureHandler((request, response, exception) -> {
+        });
+        http.addFilterBefore(tokenEndpointFilter, BasicAuthenticationFilter.class);
+      }
+      http.httpBasic().authenticationEntryPoint(new AuthenticationFailedHandler());
     } else {
       http.authorizeRequests().anyRequest().permitAll();
+    }
+  }
+
+  private class AuthenticationFailedHandler implements AuthenticationEntryPoint {
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+        AuthenticationException authException)
+        throws IOException, ServletException {
+      response.addHeader("WWW-Authenticate", "Basic realm=\"GEODE\"");
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+      ClusterManagementResult result =
+          new ClusterManagementResult(ClusterManagementResult.StatusCode.UNAUTHENTICATED,
+              authException.getMessage());
+      objectMapper.writeValue(response.getWriter(), result);
     }
   }
 }

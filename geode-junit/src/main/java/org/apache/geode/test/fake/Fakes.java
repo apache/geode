@@ -45,6 +45,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.TypeRegistry;
@@ -108,6 +109,8 @@ public class Fakes {
     when(cache.getQueryMonitor()).thenReturn(queryMonitor);
     when(cache.getMeterRegistry()).thenReturn(new SimpleMeterRegistry());
     when(cache.getCCPTimer()).thenReturn(mock(SystemTimer.class));
+    when(cache.getStatisticsClock()).thenReturn(mock(StatisticsClock.class));
+
     when(system.getDistributedMember()).thenReturn(member);
     when(system.getConfig()).thenReturn(config);
     when(system.getDistributionManager()).thenReturn(distributionManager);

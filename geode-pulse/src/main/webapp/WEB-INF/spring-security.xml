@@ -74,13 +74,17 @@
 	
 	<beans:bean id="gemAuthenticationProvider" 
 		class="org.apache.geode.tools.pulse.internal.security.GemFireAuthenticationProvider">
-  	</beans:bean>
+  </beans:bean>
 
+	<beans:bean id="passwordEncoder"
+	  class="org.springframework.security.crypto.password.NoOpPasswordEncoder"
+		factory-method="getInstance" />
 
 	<!-- Default user authentication -->
 	<beans:beans profile="pulse.authentication.default">
 		<authentication-manager>
 			<authentication-provider>
+				<password-encoder ref="passwordEncoder"/>
 				<user-service>
 					<user name="admin" password="admin"
 										authorities="ROLE_CLUSTER:READ,ROLE_DATA:READ"/>

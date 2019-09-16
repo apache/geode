@@ -148,11 +148,16 @@ public abstract class AbstractCommandsController {
    * @see javax.management.MBeanServer
    */
   protected MBeanServer getMBeanServer() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+    InternalCache cache = getInternalCache();
     SystemManagementService service =
         (SystemManagementService) ManagementService.getExistingManagementService(cache);
     ManagementAgent managementAgent = service.getManagementAgent();
     return managementAgent.getJmxConnectorServer().getMBeanServer();
+  }
+
+  @SuppressWarnings("deprecation")
+  private InternalCache getInternalCache() {
+    return GemFireCacheImpl.getInstance();
   }
 
   /**

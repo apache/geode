@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -79,7 +80,7 @@ public class PartitionedRegionDataStoreJUnitTest {
     PartitionedRegion pr = null;
     pr = (PartitionedRegion) cache.createRegion("PR2", ra);
     paf.setLocalProperties(null).create();
-    /* PartitionedRegionDataStore prDS = */ new PartitionedRegionDataStore(pr);
+    /* PartitionedRegionDataStore prDS = */ new PartitionedRegionDataStore(pr, disabledClock());
     /*
      * PartitionedRegionHelper.removeGlobalMetadataForFailedNode(PartitionedRegion.node,
      * prDS.partitionedRegion.getRegionIdentifier(), prDS.partitionedRegion.cache);

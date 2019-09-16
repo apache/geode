@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FIL
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -31,6 +32,7 @@ import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.transaction.NotSupportedException;
+import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
@@ -41,6 +43,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.jta.CacheUtils;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -205,8 +208,9 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
       utx.begin();
+      assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
       utx.setTransactionTimeout(2);
-      Thread.sleep(6000);
+      waitUntilTransactionTimeout(utx);
       try {
         utx.commit();
       } catch (Exception e) {
@@ -223,14 +227,20 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  private static void waitUntilTransactionTimeout(UserTransaction utx) {
+    GeodeAwaitility.await().pollInSameThread()
+        .until(() -> utx.getStatus() == Status.STATUS_NO_TRANSACTION);
+  }
+
   public static void runTest2() throws Exception {
     boolean exceptionOccurred = false;
     try {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
       utx.begin();
+      assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
       utx.setTransactionTimeout(2);
-      Thread.sleep(6000);
+      waitUntilTransactionTimeout(utx);
       try {
         utx.commit();
       } catch (Exception e) {
@@ -251,8 +261,9 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
     utx.begin();
+    assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
     utx.setTransactionTimeout(sleeptime);
-    Thread.sleep(sleeptime * 2000);
+    waitUntilTransactionTimeout(utx);
     try {
       utx.commit();
     } catch (Exception e) {

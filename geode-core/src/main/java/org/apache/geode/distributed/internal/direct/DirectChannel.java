@@ -36,6 +36,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -44,6 +45,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.logging.LogService;
@@ -71,6 +73,7 @@ public class DirectChannel {
 
   /** this is the conduit used for communications */
   private final transient TCPConduit conduit;
+  private final ClusterDistributionManager dm;
 
   private volatile boolean disconnected = true;
 
@@ -78,7 +81,7 @@ public class DirectChannel {
   private volatile boolean disconnectCompleted = true;
 
   /** this is the DistributionManager, most of the time */
-  private final DirectChannelListener receiver;
+  private final MessageListener receiver;
 
   private final InetAddress address;
 
@@ -108,10 +111,13 @@ public class DirectChannel {
     return conduit.getCancelCriterion();
   }
 
-  public DirectChannel(MembershipManager mgr, DirectChannelListener listener, DistributionConfig dc)
+  public DirectChannel(MembershipManager mgr, MessageListener listener,
+      ClusterDistributionManager dm)
       throws ConnectionException {
     this.receiver = listener;
+    this.dm = dm;
 
+    DistributionConfig dc = dm.getConfig();
     this.address = initAddress(dc);
     boolean isBindAddress = dc.getBindAddress() != null;
     try {
@@ -214,9 +220,8 @@ public class DirectChannel {
    * Returns true if calling thread owns its own communication resources.
    */
   boolean threadOwnsResources() {
-    DistributionManager d = getDM();
-    if (d != null) {
-      return d.getSystem().threadOwnsResources() && !AlertingAction.isThreadAlerting();
+    if (dm != null) {
+      return dm.getSystem().threadOwnsResources() && !AlertingAction.isThreadAlerting();
     }
     return false;
 
@@ -235,7 +240,8 @@ public class DirectChannel {
    * @throws ConnectExceptions if message could not be send to its <code>destination</code>
    * @throws NotSerializableException If the msg cannot be serialized
    */
-  private int sendToOne(final MembershipManager mgr, InternalDistributedMember[] p_destinations,
+  private int sendToOne(final MembershipManager mgr,
+      InternalDistributedMember[] p_destinations,
       final DistributionMessage msg, long ackWaitThreshold, long ackSAThreshold)
       throws ConnectExceptions, NotSerializableException {
     return sendToMany(mgr, p_destinations, msg, ackWaitThreshold, ackSAThreshold);
@@ -254,7 +260,8 @@ public class DirectChannel {
    * @throws ConnectExceptions if message could not be send to its <code>destination</code>
    * @throws NotSerializableException If the msg cannot be serialized
    */
-  private int sendToMany(final MembershipManager mgr, InternalDistributedMember[] p_destinations,
+  private int sendToMany(final MembershipManager mgr,
+      InternalDistributedMember[] p_destinations,
       final DistributionMessage msg, long ackWaitThreshold, long ackSAThreshold)
       throws ConnectExceptions, NotSerializableException {
     InternalDistributedMember destinations[] = p_destinations;
@@ -605,7 +612,6 @@ public class DirectChannel {
    * Returns null if no stats available.
    */
   public DMStats getDMStats() {
-    DistributionManager dm = getDM();
     if (dm != null) {
       return dm.getStats(); // fix for bug#34004
     } else {
@@ -619,7 +625,6 @@ public class DirectChannel {
    * @since GemFire 4.2.2
    */
   public DistributionConfig getDMConfig() {
-    DistributionManager dm = getDM();
     if (dm != null) {
       return dm.getConfig();
     } else {
@@ -631,7 +636,7 @@ public class DirectChannel {
    * Returns null if no dm available.
    */
   public DistributionManager getDM() {
-    return this.receiver.getDM();
+    return dm;
   }
 
   /**
@@ -641,7 +646,6 @@ public class DirectChannel {
    */
   private void handleAckTimeout(long ackTimeout, long ackSATimeout, Connection c,
       DirectReplyProcessor processor) throws ConnectionException {
-    DistributionManager dm = getDM();
     Set activeMembers = dm.getDistributionManagerIds();
 
     // Increment the stat
@@ -757,7 +761,7 @@ public class DirectChannel {
   }
 
   /** returns the receiver to which this DirectChannel is delivering messages */
-  protected DirectChannelListener getReceiver() {
+  protected MessageListener getReceiver() {
     return receiver;
   }
 

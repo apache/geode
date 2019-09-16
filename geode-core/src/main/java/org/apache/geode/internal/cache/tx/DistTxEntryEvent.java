@@ -21,9 +21,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryData;
@@ -33,6 +31,10 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 public class DistTxEntryEvent extends EntryEventImpl {
 
@@ -69,7 +71,8 @@ public class DistTxEntryEvent extends EntryEventImpl {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeObject(this.eventID, out);
     DataSerializer.writeObject(this.getRegion().getFullPath(), out);
     out.writeByte(this.op.ordinal);
@@ -97,7 +100,8 @@ public class DistTxEntryEvent extends EntryEventImpl {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.eventID = (EventID) DataSerializer.readObject(in);
     this.regionName = DataSerializer.readString(in);
     this.op = Operation.fromOrdinal(in.readByte());

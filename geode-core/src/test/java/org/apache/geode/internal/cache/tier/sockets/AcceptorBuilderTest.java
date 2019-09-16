@@ -36,6 +36,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheCli
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
@@ -288,6 +289,18 @@ public class AcceptorBuilderTest {
   }
 
   @Test
+  public void forServerSetsStatisticsClockFromServer() {
+    InternalCacheServer server = mock(InternalCacheServer.class);
+    StatisticsClock statisticsClock = mock(StatisticsClock.class);
+    when(server.getStatisticsClock()).thenReturn(statisticsClock);
+    AcceptorBuilder builder = new AcceptorBuilder();
+
+    builder.forServer(server);
+
+    assertThat(builder.getStatisticsClock()).isEqualTo(statisticsClock);
+  }
+
+  @Test
   public void setCacheReplacesCacheFromServer() {
     InternalCacheServer server = mock(InternalCacheServer.class);
     InternalCache cacheFromServer = mock(InternalCache.class, "fromServer");
@@ -375,5 +388,19 @@ public class AcceptorBuilderTest {
 
     assertThat(builder.getClientHealthMonitorProvider())
         .isEqualTo(clientHealthMonitorProviderFromSetter);
+  }
+
+  @Test
+  public void setStatisticsClockReplacesStatisticsClockFromServer() {
+    InternalCacheServer server = mock(InternalCacheServer.class);
+    StatisticsClock statisticsClockFromServer = mock(StatisticsClock.class, "fromServer");
+    when(server.getStatisticsClock()).thenReturn(statisticsClockFromServer);
+    AcceptorBuilder builder = new AcceptorBuilder();
+    builder.forServer(server);
+    StatisticsClock statisticsClockFromSetter = mock(StatisticsClock.class, "fromSetter");
+
+    builder.setStatisticsClock(statisticsClockFromSetter);
+
+    assertThat(builder.getStatisticsClock()).isEqualTo(statisticsClockFromSetter);
   }
 }

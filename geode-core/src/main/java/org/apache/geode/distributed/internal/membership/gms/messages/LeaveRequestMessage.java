@@ -17,27 +17,28 @@ package org.apache.geode.distributed.internal.membership.gms.messages;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.List;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.Version;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
-public class LeaveRequestMessage extends HighPriorityDistributionMessage implements HasMemberID {
-  private InternalDistributedMember memberID;
+public class LeaveRequestMessage extends AbstractGMSMessage implements HasMemberID {
+  private GMSMember memberID;
   private String reason;
 
-  public LeaveRequestMessage(Collection<InternalDistributedMember> coords,
-      InternalDistributedMember id, String reason) {
+  public LeaveRequestMessage(List<GMSMember> coords,
+      GMSMember id, String reason) {
     super();
     setRecipients(coords);
     this.memberID = id;
     this.reason = reason;
   }
 
-  public LeaveRequestMessage(InternalDistributedMember coord, InternalDistributedMember id,
+  public LeaveRequestMessage(GMSMember coord, GMSMember id,
       String reason) {
     super();
     setRecipient(coord);
@@ -55,12 +56,7 @@ public class LeaveRequestMessage extends HighPriorityDistributionMessage impleme
   }
 
   @Override
-  public void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool");
-  }
-
-  @Override
-  public InternalDistributedMember getMemberID() {
+  public GMSMember getMemberID() {
     return memberID;
   }
 
@@ -74,15 +70,17 @@ public class LeaveRequestMessage extends HighPriorityDistributionMessage impleme
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(memberID, out);
-    DataSerializer.writeString(reason, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    GMSUtil.writeMemberID(memberID, out, context);
+    StaticSerialization.writeString(reason, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    memberID = DataSerializer.readObject(in);
-    reason = DataSerializer.readString(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    memberID = GMSUtil.readMemberID(in, context);
+    reason = StaticSerialization.readString(in);
   }
 
   @Override

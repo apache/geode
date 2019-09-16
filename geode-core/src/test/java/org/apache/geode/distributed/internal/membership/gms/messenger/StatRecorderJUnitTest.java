@@ -16,7 +16,6 @@ package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
@@ -38,13 +37,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.LonerDistributionManager.DummyDMStats;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -56,12 +52,12 @@ public class StatRecorderJUnitTest {
   private Protocol mockDownProtocol;
   private Protocol mockUpProtocol;
   private StatRecorder recorder;
-  private MyStats stats;
+  private MembershipStatistics stats;
   private Services services;
 
   @Before
   public void setUp() throws Exception {
-    stats = new MyStats();
+    stats = mock(MembershipStatistics.class);
 
     // create a StatRecorder that has mock up/down protocols and stats
     mockDownProtocol = mock(Protocol.class);
@@ -87,20 +83,17 @@ public class StatRecorderJUnitTest {
 
     Event evt = new Event(Event.MSG, msg);
     recorder.up(evt);
-    assertTrue("stats.ucastMessagesReceived =" + stats.ucastMessagesReceived,
-        stats.ucastMessagesReceived == 1);
-    assertEquals(stats.ucastMessageBytesReceived, 150);
+    verify(stats).incUcastReadBytes(150);
 
     recorder.down(evt);
-    assertTrue("stats.ucastMessagesSent =" + stats.ucastMessagesSent, stats.ucastMessagesSent == 1);
-    assertEquals(stats.ucastMessageBytesSent, 150);
+    verify(stats).incUcastWriteBytes(150);
 
     msg = mock(Message.class);
     when(msg.getHeader(any(Short.class))).thenReturn(Header.createXmitReqHeader());
     when(msg.size()).thenReturn(150L);
     evt = new Event(Event.MSG, msg);
     recorder.down(evt);
-    assertTrue("stats.ucastRetransmits =" + stats.ucastRetransmits, stats.ucastRetransmits == 1);
+    verify(stats).incUcastRetransmits();
   }
 
 
@@ -141,28 +134,24 @@ public class StatRecorderJUnitTest {
 
     Event evt = new Event(Event.MSG, msg);
     recorder.up(evt);
-    assertTrue("mcastMessagesReceived = " + stats.mcastMessagesReceived,
-        stats.mcastMessagesReceived == 1);
-    assertEquals(stats.mcastMessageBytesReceived, 150);
+    verify(stats).incMcastReadBytes(150);
 
     recorder.down(evt);
-    assertTrue("mcastMessagesSent = " + stats.mcastMessagesSent, stats.mcastMessagesSent == 1);
-    assertEquals(stats.mcastMessageBytesSent, 150);
+    verify(stats).incMcastWriteBytes(150);
 
     msg = mock(Message.class);
     when(msg.size()).thenReturn(150L);
     when(msg.getHeader(any(Short.class))).thenReturn(NakAckHeader2.createXmitRequestHeader(null));
     evt = new Event(Event.MSG, msg);
     recorder.down(evt);
-    assertTrue("mcastRetransmitRequests = " + stats.mcastRetransmitRequests,
-        stats.mcastRetransmitRequests == 1);
+    verify(stats).incMcastRetransmitRequests();
 
     msg = mock(Message.class);
     when(msg.size()).thenReturn(150L);
     when(msg.getHeader(any(Short.class))).thenReturn(NakAckHeader2.createXmitResponseHeader());
     evt = new Event(Event.MSG, msg);
     recorder.down(evt);
-    assertTrue("mcastRetransmits = " + stats.mcastRetransmits, stats.mcastRetransmits == 1);
+    verify(stats).incMcastRetransmits();
   }
 
   /**
@@ -172,19 +161,16 @@ public class StatRecorderJUnitTest {
   @Test
   public void messengerStackHoldsStatRecorder() throws Exception {
     Services mockServices = mock(Services.class);
-    ServiceConfig mockConfig = mock(ServiceConfig.class);
-    when(mockServices.getConfig()).thenReturn(mockConfig);
 
     // first test to see if the non-multicast stack has the recorder installed
     Properties nonDefault = new Properties();
     nonDefault.put(MCAST_PORT, "0");
     nonDefault.put(LOCATORS, "localhost[12345]");
-    DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
-    when(mockConfig.getDistributionConfig()).thenReturn(config);
+    MembershipConfig mockConfig = mock(MembershipConfig.class);
+    when(mockConfig.getMembershipPortRange()).thenReturn(new int[] {0, 10});
+    when(mockConfig.getSecurityUDPDHAlgo()).thenReturn("");
+    when(mockServices.getConfig()).thenReturn(mockConfig);
 
-    RemoteTransportConfig transport =
-        new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
-    when(mockConfig.getTransport()).thenReturn(transport);
 
     JGroupsMessenger messenger = new JGroupsMessenger();
     messenger.init(mockServices);
@@ -193,69 +179,12 @@ public class StatRecorderJUnitTest {
     assertTrue(jgroupsConfig.contains("gms.messenger.StatRecorder"));
 
     // now test to see if the multicast stack has the recorder installed
-    nonDefault.put(MCAST_PORT, "12345");
-    config = new DistributionConfigImpl(nonDefault);
-    transport = new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
-    when(mockConfig.getDistributionConfig()).thenReturn(config);
-    when(mockConfig.getTransport()).thenReturn(transport);
+    when(mockConfig.getMcastPort()).thenReturn(12345);
+    when(mockServices.getConfig()).thenReturn(mockConfig);
+
+
     messenger = new JGroupsMessenger();
     messenger.init(mockServices);
     assertTrue(jgroupsConfig.contains("gms.messenger.StatRecorder"));
   }
-
-  private static class MyStats extends DummyDMStats {
-
-    public int ucastMessagesReceived;
-    public int ucastMessageBytesReceived;
-    public int ucastMessagesSent;
-    public int ucastMessageBytesSent;
-    public int ucastRetransmits;
-
-    public int mcastMessagesReceived;
-    public int mcastMessageBytesReceived;
-    public int mcastMessagesSent;
-    public int mcastMessageBytesSent;
-    public int mcastRetransmits;
-    public int mcastRetransmitRequests;
-
-    @Override
-    public void incUcastReadBytes(int i) {
-      ucastMessagesReceived++;
-      ucastMessageBytesReceived += i;
-    }
-
-    @Override
-    public void incUcastWriteBytes(int i) {
-      ucastMessagesSent++;
-      ucastMessageBytesSent += i;
-    }
-
-    @Override
-    public void incUcastRetransmits() {
-      ucastRetransmits++;
-    }
-
-    @Override
-    public void incMcastReadBytes(int i) {
-      mcastMessagesReceived++;
-      mcastMessageBytesReceived += i;
-    }
-
-    @Override
-    public void incMcastWriteBytes(int i) {
-      mcastMessagesSent++;
-      mcastMessageBytesSent += i;
-    }
-
-    @Override
-    public void incMcastRetransmits() {
-      mcastRetransmits++;
-    }
-
-    @Override
-    public void incMcastRetransmitRequests() {
-      mcastRetransmitRequests++;
-    }
-  }
-
 }

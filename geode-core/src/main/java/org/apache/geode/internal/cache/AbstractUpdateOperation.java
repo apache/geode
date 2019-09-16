@@ -36,10 +36,12 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Common code for both UpdateOperation and DistributedPutAllOperation.
@@ -137,7 +139,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
         if (logger.isDebugEnabled()) {
           logger.debug("doPutOrCreate: attempting to update or create entry");
         }
-        final long startPut = CachePerfStats.getStatTime();
+        final long startPut = rgn.getCachePerfStats().getTime();
         final boolean isBucket = rgn.isUsedForPartitionedRegionBucket();
         if (isBucket) {
           BucketRegion br = (BucketRegion) rgn;
@@ -169,7 +171,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
       // from this message.
       if (doUpdate) {
         if (!ev.isLocalInvalid()) {
-          final long startPut = CachePerfStats.getStatTime();
+          final long startPut = rgn.getCachePerfStats().getTime();
           boolean overwriteDestroyed = ev.getOperation().isCreate();
           final boolean isBucket = rgn.isUsedForPartitionedRegionBucket();
           if (isBucket) {
@@ -297,14 +299,16 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.lastModified = in.readLong();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeLong(this.lastModified);
     }
 

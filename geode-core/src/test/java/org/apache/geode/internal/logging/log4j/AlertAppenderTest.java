@@ -15,9 +15,13 @@
 package org.apache.geode.internal.logging.log4j;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import org.apache.logging.log4j.Level;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,6 +54,11 @@ public class AlertAppenderTest {
 
     alertAppender = new AlertAppender(testName.getMethodName(), null, null);
     asAlertingProvider = alertAppender;
+  }
+
+  @After
+  public void tearDown() {
+    AlertAppender.setInstance(null);
   }
 
   @Test
@@ -163,5 +172,22 @@ public class AlertAppenderTest {
 
     assertThat(alertAppender.getAlertListeners()).containsExactly(listener1, listener2,
         listener3);
+  }
+
+  @Test
+  public void stopSessionIfRunningDoesNotThrowIfReferenceIsNull() {
+    AlertAppender.setInstance(null);
+
+    assertThatCode(AlertAppender::stopSessionIfRunning).doesNotThrowAnyException();
+  }
+
+  @Test
+  public void stopSessionIfRunningStopCurrentInstance() {
+    alertAppender = spy(alertAppender);
+    AlertAppender.setInstance(alertAppender);
+
+    AlertAppender.stopSessionIfRunning();
+
+    verify(alertAppender).stopSession();
   }
 }

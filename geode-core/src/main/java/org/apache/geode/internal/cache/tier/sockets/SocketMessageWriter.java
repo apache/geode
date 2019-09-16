@@ -25,7 +25,7 @@ import org.apache.geode.Instantiator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 public class SocketMessageWriter {
   private static final int CLIENT_PING_TASK_PERIOD =

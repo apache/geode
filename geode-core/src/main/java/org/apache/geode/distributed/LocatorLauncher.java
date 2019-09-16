@@ -72,6 +72,7 @@ import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
 import org.apache.geode.internal.process.ControllableProcess;
 import org.apache.geode.internal.process.FileAlreadyExistsException;
+import org.apache.geode.internal.process.FileControllableProcess;
 import org.apache.geode.internal.process.MBeanInvocationFailedException;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessController;
@@ -667,8 +668,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       INSTANCE.compareAndSet(null, this);
 
       try {
-        this.process = new ControllableProcess(this.controlHandler, new File(getWorkingDirectory()),
-            ProcessType.LOCATOR, isForcing());
+        this.process =
+            new FileControllableProcess(this.controlHandler, new File(getWorkingDirectory()),
+                ProcessType.LOCATOR, isForcing());
 
         assertPortAvailable(getBindAddress(), getPort());
 

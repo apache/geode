@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.configuration.mutators;
 
+import static org.apache.geode.lang.Identifiable.find;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -21,9 +22,8 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class RegionConfigMutatorIntegrationTest {
@@ -32,11 +32,11 @@ public class RegionConfigMutatorIntegrationTest {
   public LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
 
   private RegionConfigManager mutator;
-  private RegionConfig config;
+  private Region config;
 
   @Before
   public void before() throws Exception {
-    config = new RegionConfig();
+    config = new Region();
     mutator = new RegionConfigManager();
   }
 
@@ -48,6 +48,6 @@ public class RegionConfigMutatorIntegrationTest {
         locator.getLocator().getConfigurationPersistenceService().getCacheConfig("cluster", true);
 
     mutator.add(config, cacheConfig);
-    assertThat(CacheElement.findElement(cacheConfig.getRegions(), config.getId())).isNotNull();
+    assertThat(find(cacheConfig.getRegions(), config.getId())).isNotNull();
   }
 }

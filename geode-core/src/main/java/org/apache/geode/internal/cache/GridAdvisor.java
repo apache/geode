@@ -30,6 +30,8 @@ import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Used to share code with BridgeServerAdvisor and ControllerAdvisor
@@ -356,15 +358,17 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(this.host, out);
       DataSerializer.writePrimitiveInt(this.port, out);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.host = DataSerializer.readString(in);
       this.port = DataSerializer.readPrimitiveInt(in);
       finishInit();

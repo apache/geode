@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.lang.Identifiable.exists;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,13 +25,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -69,7 +68,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
   }
 
   private void makeRestCallAndVerifyResult(String regionName) throws Exception {
-    RegionConfig regionConfig = new RegionConfig();
+    Region regionConfig = new Region();
     regionConfig.setName(regionName);
     regionConfig.setType(RegionType.REPLICATE);
     ObjectMapper mapper = new ObjectMapper();
@@ -86,7 +85,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
 
     // make sure region is created
     server.invoke(() -> {
-      Region region = ClusterStartupRule.getCache().getRegion(regionName);
+      org.apache.geode.cache.Region region = ClusterStartupRule.getCache().getRegion(regionName);
       assertThat(region).isNotNull();
     });
 
@@ -95,7 +94,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
       CacheConfig cacheConfig =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService()
               .getCacheConfig("cluster");
-      assertThat(CacheElement.exists(cacheConfig.getRegions(), regionName)).isTrue();
+      assertThat(exists(cacheConfig.getRegions(), regionName)).isTrue();
     });
 
   }

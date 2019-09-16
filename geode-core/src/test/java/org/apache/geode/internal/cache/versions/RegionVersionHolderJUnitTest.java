@@ -1580,10 +1580,10 @@ public class RegionVersionHolderJUnitTest {
         assertEquals(100, vh4.getVersion());
         compareWithBitSet(bs1, vh4);
 
-        // use vh1 to overwrite vh2
-        vh1.version = 105;
-        vh1.addException(100, 106);
-        assertTrue(vh2.sameAs(vh1));
+        // Make sure vh2 is still valid after the clone() call
+        assertEquals(105, vh2.version);
+        assertEquals(100, vh2.getVersion());
+        compareWithBitSet(bs1, vh2);
         validateExceptions(vh2);
       }
     } finally {

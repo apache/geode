@@ -17,13 +17,13 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 
 import org.junit.Before;
@@ -31,10 +31,11 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
@@ -43,7 +44,8 @@ public class MemberValidatorTest {
   private InternalCache cache;
   private ConfigurationPersistenceService service;
   private RegionConfigManager regionManager;
-  private RegionConfig regionConfig;
+  private Region regionConfig;
+  private RegionConfig xmlRegionConfig;
   private CacheConfig cacheConfig;
   private MemberValidator validator;
 
@@ -51,8 +53,7 @@ public class MemberValidatorTest {
   public void before() throws Exception {
     cache = mock(InternalCache.class);
     service = mock(ConfigurationPersistenceService.class);
-    regionManager = mock(RegionConfigManager.class);
-    when(regionManager.get(any(), any())).thenCallRealMethod();
+    regionManager = new RegionConfigManager();
     validator = spy(new MemberValidator(cache, service));
 
     DistributedMember member1 = mock(DistributedMember.class);
@@ -78,18 +79,25 @@ public class MemberValidatorTest {
     doReturn(new HashSet<>(Arrays.asList(member1, member2, member3, member4, member5)))
         .when(validator).getAllServers();
 
+    doReturn(new HashSet<>(Arrays.asList(member1, member2, member3, member4, member5)))
+        .when(validator).getAllServersAndLocators();
+
     when(service.getGroups())
         .thenReturn(new HashSet<>(Arrays.asList("cluster", "group1", "group2", "group3")));
 
-    regionConfig = new RegionConfig();
+    regionConfig = new Region();
     regionConfig.setName("test");
     regionConfig.setType(RegionType.REPLICATE);
     cacheConfig = new CacheConfig();
+
+    xmlRegionConfig = new RegionConfig();
+    xmlRegionConfig.setName("test");
+    xmlRegionConfig.setType("REPLICATE");
   }
 
   @Test
-  public void findMembers() throws Exception {
-    assertThat(validator.findServers(null))
+  public void findServers() throws Exception {
+    assertThat(validator.findServers())
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
     assertThat(validator.findServers(new String[] {}))
@@ -108,8 +116,51 @@ public class MemberValidatorTest {
   }
 
   @Test
+  public void findMembers() throws Exception {
+    assertThat(validator.findMembers(null)).flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+
+    assertThat(validator.findMembers(null, new String[] {}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {null}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {"cluster"}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {"Cluster"}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {"CLUSTER"}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {""}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+
+    assertThat(validator.findMembers("member1")).flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1");
+
+    assertThat(validator.findMembers("member1", "group1"))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1");
+
+    assertThat(validator.findMembers(null, "group1")).flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member2", "member4");
+
+    assertThat(validator.findMembers(null, "group1", "cluster"))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+
+    assertThat(validator.findMembers(null, "group1", "group2"))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member2", "member3", "member4");
+  }
+
+  @Test
   public void findGroupsWithThisElement() throws Exception {
-    cacheConfig.getRegions().add(regionConfig);
+    cacheConfig.getRegions().add(xmlRegionConfig);
     when(service.getCacheConfig("cluster")).thenReturn(cacheConfig);
     assertThat(validator.findGroupsWithThisElement(regionConfig.getId(), regionManager))
         .containsExactly("cluster");
@@ -126,7 +177,7 @@ public class MemberValidatorTest {
 
   @Test
   public void validateCreate1() throws Exception {
-    cacheConfig.getRegions().add(regionConfig);
+    cacheConfig.getRegions().add(xmlRegionConfig);
     when(service.getCacheConfig("cluster")).thenReturn(cacheConfig);
 
     regionConfig.setGroup("group1");
@@ -138,7 +189,7 @@ public class MemberValidatorTest {
 
   @Test
   public void validateCreate2() throws Exception {
-    cacheConfig.getRegions().add(regionConfig);
+    cacheConfig.getRegions().add(xmlRegionConfig);
     when(service.getCacheConfig("group1")).thenReturn(cacheConfig);
 
     regionConfig.setGroup("group2");
@@ -148,8 +199,21 @@ public class MemberValidatorTest {
   }
 
   @Test
-  public void validateCreate3() throws Exception {
-    cacheConfig.getRegions().add(regionConfig);
+  public void validateCreateWhenNoMemberFound() throws Exception {
+    cacheConfig.getRegions().add(xmlRegionConfig);
+    when(service.getCacheConfig("group1")).thenReturn(cacheConfig);
+
+    doReturn(Collections.emptySet()).when(validator).getAllServers();
+
+    regionConfig.setGroup("group1");
+    assertThatThrownBy(() -> validator.validateCreate(regionConfig, regionManager))
+        .isInstanceOf(EntityExistsException.class)
+        .hasMessageContaining("already exists in group group1");
+  }
+
+  @Test
+  public void validateCreate4() throws Exception {
+    cacheConfig.getRegions().add(xmlRegionConfig);
     when(service.getCacheConfig("group1")).thenReturn(cacheConfig);
 
     regionConfig.setGroup("group3");

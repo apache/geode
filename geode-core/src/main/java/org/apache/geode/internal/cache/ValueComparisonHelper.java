@@ -19,9 +19,9 @@ import java.util.Arrays;
 
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxSerializationException;

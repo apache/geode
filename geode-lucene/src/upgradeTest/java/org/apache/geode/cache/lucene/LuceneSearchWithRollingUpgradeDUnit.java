@@ -48,9 +48,9 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -82,7 +82,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     // Lucene Compatibility checks start with Apache Geode v1.2.0
     // Removing the versions older than v1.2.0
-    result.removeIf(s -> Integer.parseInt(s) < 120);
+    result.removeIf(s -> Integer.parseInt(VersionManager.getInstance().versionWithNoDots(s)) < 120);
     if (result.size() < 1) {
       throw new RuntimeException("No older versions of Geode were found to test against");
     } else {

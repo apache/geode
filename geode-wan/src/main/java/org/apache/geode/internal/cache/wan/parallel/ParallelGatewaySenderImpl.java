@@ -36,6 +36,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderPro
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * @since GemFire 7.0
@@ -44,8 +45,9 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   private static final Logger logger = LogService.getLogger();
 
-  public ParallelGatewaySenderImpl(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+  public ParallelGatewaySenderImpl(InternalCache cache, StatisticsClock statisticsClock,
+      GatewaySenderAttributes attrs) {
+    super(cache, statisticsClock, attrs);
   }
 
   @Override
@@ -72,6 +74,9 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
        */
       eventProcessor =
           new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj());
+      if (isStartEventProcessorInPausedState()) {
+        this.pauseEvenIfProcessorStopped();
+      }
       eventProcessor.start();
       waitForRunningStatus();
 

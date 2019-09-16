@@ -24,16 +24,11 @@ public class PdxConverter extends ConfigurationConverter<Pdx, PdxType> {
   @Override
   protected Pdx fromNonNullXmlObject(PdxType xmlObject) {
     Pdx pdx = new Pdx();
-    if (xmlObject.isReadSerialized() != null) {
-      pdx.setReadSerialized(xmlObject.isReadSerialized());
-    }
+
+    pdx.setReadSerialized(xmlObject.isReadSerialized());
     pdx.setDiskStoreName(xmlObject.getDiskStoreName());
-    if (xmlObject.isIgnoreUnreadFields() != null) {
-      pdx.setIgnoreUnreadFields(xmlObject.isIgnoreUnreadFields());
-    }
-    if (xmlObject.isPersistent() != null) {
-      pdx.setPersistent(xmlObject.isPersistent());
-    }
+    pdx.setIgnoreUnreadFields(xmlObject.isIgnoreUnreadFields());
+    pdx.setPersistent(xmlObject.isPersistent());
     pdx.setPdxSerializer(converter.fromXmlObject(xmlObject.getPdxSerializer()));
     return pdx;
   }

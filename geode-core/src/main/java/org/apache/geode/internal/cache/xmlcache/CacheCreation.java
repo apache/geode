@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.xmlcache;
 import static java.lang.String.format;
 import static org.apache.geode.internal.logging.LogWriterFactory.toSecurityLogWriter;
 import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,6 +78,7 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqServiceStatistics;
@@ -121,7 +123,6 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.ExpirationScheduler;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
@@ -157,6 +158,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.pdx.JSONFormatter;
@@ -552,6 +554,9 @@ public class CacheCreation implements InternalCache {
       AsyncEventQueueFactoryImpl asyncQueueFactory =
           (AsyncEventQueueFactoryImpl) cache.createAsyncEventQueueFactory();
       asyncQueueFactory.configureAsyncEventQueue(asyncEventQueueCreation);
+      if (asyncEventQueueCreation.isDispatchingPaused()) {
+        asyncQueueFactory.pauseEventDispatching();
+      }
 
       AsyncEventQueue asyncEventQueue = cache.getAsyncEventQueue(asyncEventQueueCreation.getId());
       if (asyncEventQueue == null) {
@@ -2424,6 +2429,11 @@ public class CacheCreation implements InternalCache {
   @Override
   public void saveCacheXmlForReconnect() {
     throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
+  public StatisticsClock getStatisticsClock() {
+    return disabledClock();
   }
 
   CacheTransactionManagerCreation getCacheTransactionManagerCreation() {

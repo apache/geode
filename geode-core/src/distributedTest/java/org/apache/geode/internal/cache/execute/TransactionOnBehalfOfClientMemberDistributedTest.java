@@ -101,9 +101,6 @@ public class TransactionOnBehalfOfClientMemberDistributedTest implements Seriali
     cacheRule.getOrCreateCache().createRegionFactory(RegionShortcut.PARTITION)
         .setPartitionAttributes(partitionAttributes).create(regionName);
 
-    TXManagerImpl txManager = cacheRule.getCache().getTxManager();
-    txManager.setTransactionTimeToLiveForTest(4);
-
     CacheServer server = cacheRule.getCache().addCacheServer();
     server.setPort(0);
     server.start();

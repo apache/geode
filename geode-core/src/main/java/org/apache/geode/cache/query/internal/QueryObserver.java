@@ -17,6 +17,7 @@ package org.apache.geode.cache.query.internal;
 import java.util.Collection;
 import java.util.Set;
 
+import org.apache.geode.cache.query.Aggregator;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.SelectResults;
@@ -282,4 +283,15 @@ public interface QueryObserver {
    */
   void orderByColumnsEqual();
 
+  /**
+   * Invoked after the CompiledSelect has been evaluated but before applying the aggregate
+   * functions and group by.
+   *
+   * @param selectResults The result set before applying the aggregations.
+   *
+   * @see Aggregator
+   * @see CompiledGroupBySelect
+   */
+  default void beforeAggregationsAndGroupBy(
+      @SuppressWarnings("unused") SelectResults selectResults) {}
 }

@@ -22,7 +22,7 @@ import java.nio.ByteBuffer;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.JvmSizeUtils;
-import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
+import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
 
 /**
  * This class supports allocating and freeing large amounts of addressable memory (i.e. slabs). It
@@ -31,14 +31,14 @@ import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
  */
 public class AddressableMemoryManager {
   @Immutable
-  private static final UnsafeWrapper unsafe;
+  private static final Unsafe unsafe;
   private static final int ARRAY_BYTE_BASE_OFFSET;
   private static final String reason;
   static {
-    UnsafeWrapper tmp = null;
+    Unsafe tmp = null;
     String tmpReason = null;
     try {
-      tmp = new UnsafeWrapper();
+      tmp = new Unsafe();
     } catch (RuntimeException ignore) {
       tmpReason = ignore.toString();
     } catch (Error ignore) {

@@ -42,6 +42,7 @@ import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends an eviction event
@@ -87,6 +88,8 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   private final AtomicBoolean isRunning = new AtomicBoolean(true);
 
+  private final StatisticsClock statisticsClock;
+
   private volatile int testAbortAfterLoopCount = Integer.MAX_VALUE;
 
   /*
@@ -102,11 +105,12 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
   private volatile int numEvictionLoopsCompleted = 0;
   private volatile int numFastLoops;
 
-  public HeapEvictor(final InternalCache cache) {
-    this(cache, EVICTOR_THREAD_NAME);
+  public HeapEvictor(final InternalCache cache, StatisticsClock statisticsClock) {
+    this(cache, EVICTOR_THREAD_NAME, statisticsClock);
   }
 
-  public HeapEvictor(final InternalCache cache, final String threadName) {
+  public HeapEvictor(final InternalCache cache, final String threadName,
+      StatisticsClock statisticsClock) {
     this.cache = cache;
 
     if (!DISABLE_HEAP_EVICTOR_THREAD_POOL) {
@@ -117,6 +121,8 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
       // disabled
       this.evictorThreadPool = null;
     }
+
+    this.statisticsClock = statisticsClock;
   }
 
   protected InternalCache cache() {
@@ -236,7 +242,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
       regionsForSingleTask.add(region);
       if (mustEvict()) {
         executeInThreadPool(new RegionEvictorTask(cache.getCachePerfStats(), regionsForSingleTask,
-            this, bytesToEvictPerTask));
+            this, bytesToEvictPerTask, statisticsClock));
       } else {
         break;
       }
@@ -264,7 +270,8 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
         List<LocalRegion> regionList = new ArrayList<>(1);
         regionList.add(region);
         RegionEvictorTask task =
-            new RegionEvictorTask(cache.getCachePerfStats(), regionList, this, bytesToEvictPerTask);
+            new RegionEvictorTask(cache.getCachePerfStats(), regionList, this, bytesToEvictPerTask,
+                statisticsClock);
         evictorTaskSet.add(task);
       }
       for (RegionEvictorTask regionEvictorTask : evictorTaskSet) {
@@ -286,7 +293,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
         count++;
       }
       evictorTaskSet.add(new RegionEvictorTask(cache.getCachePerfStats(), regionsForSingleTask,
-          this, bytesToEvictPerTask));
+          this, bytesToEvictPerTask, statisticsClock));
     }
 
     // Add leftover regions to last task

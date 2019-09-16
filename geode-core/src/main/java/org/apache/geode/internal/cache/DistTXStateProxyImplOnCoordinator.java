@@ -35,6 +35,7 @@ import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistClientTXStateStub;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
@@ -52,13 +53,13 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   private HashMap<String, ArrayList<DistTxThinEntryState>> txEntryEventMap = null;
 
   public DistTXStateProxyImplOnCoordinator(InternalCache cache, TXManagerImpl managerImpl, TXId id,
-      InternalDistributedMember clientMember) {
-    super(cache, managerImpl, id, clientMember);
+      InternalDistributedMember clientMember, StatisticsClock statisticsClock) {
+    super(cache, managerImpl, id, clientMember, statisticsClock);
   }
 
   public DistTXStateProxyImplOnCoordinator(InternalCache cache, TXManagerImpl managerImpl, TXId id,
-      boolean isjta) {
-    super(cache, managerImpl, id, isjta);
+      boolean isjta, StatisticsClock statisticsClock) {
+    super(cache, managerImpl, id, isjta, statisticsClock);
   }
 
   /*
@@ -159,7 +160,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
                 DistTXCoordinatorInterface newTxStub = null;
                 if (currentNode.equals(dm)) {
                   // [DISTTX] TODO add a test case for this condition?
-                  newTxStub = new DistTXStateOnCoordinator(this, false);
+                  newTxStub = new DistTXStateOnCoordinator(this, false, getStatisticsClock());
                 } else {
                   newTxStub = new DistPeerTXStateStub(this, dm, onBehalfOfClientMember);
                 }
@@ -316,7 +317,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
     if (this.realDeal == null) {
       // assert (r != null);
       if (r == null) { // TODO: stop gap to get tests working
-        this.realDeal = new DistTXStateOnCoordinator(this, false);
+        this.realDeal = new DistTXStateOnCoordinator(this, false, getStatisticsClock());
         target = this.txMgr.getDM().getId();
       } else {
         // Code to keep going forward
@@ -334,7 +335,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         } else {
           // (r != null) code block above
           if (target == null || target.equals(this.txMgr.getDM().getId())) {
-            this.realDeal = new DistTXStateOnCoordinator(this, false);
+            this.realDeal = new DistTXStateOnCoordinator(this, false, getStatisticsClock());
           } else {
             this.realDeal = new DistPeerTXStateStub(this, target, onBehalfOfClientMember);
           }

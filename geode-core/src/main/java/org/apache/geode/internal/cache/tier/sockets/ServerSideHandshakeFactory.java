@@ -27,11 +27,12 @@ import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.VersionException;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
+import org.apache.geode.internal.serialization.Version;
 
 class ServerSideHandshakeFactory {
   private static final Logger logger = LogService.getLogger();
@@ -71,8 +72,11 @@ class ServerSideHandshakeFactory {
       }
       Version clientVersion = null;
       try {
-        clientVersion = Version.fromOrdinal(clientVersionOrdinal, true);
-      } catch (UnsupportedVersionException uve) {
+        clientVersion = Version.fromOrdinal(clientVersionOrdinal);
+        if (CommandInitializer.getCommands(clientVersion) == null) {
+          throw new UnsupportedVersionException("Client version {} is not supported");
+        }
+      } catch (UnsupportedSerializationVersionException uve) {
         // Allows higher version of wan site to connect to server
         if (isWan) {
           return currentServerVersion;

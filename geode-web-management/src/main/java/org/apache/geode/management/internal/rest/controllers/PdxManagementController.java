@@ -36,10 +36,11 @@ import org.apache.geode.management.configuration.Pdx;
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class PdxManagementController extends AbstractManagementController {
 
-  @ApiOperation(value = "configure PDX")
+  @ApiOperation(value = "configure pdx")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
+      @ApiResponse(code = 409, message = "Entity already exists."),
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = PDX_ENDPOINT)

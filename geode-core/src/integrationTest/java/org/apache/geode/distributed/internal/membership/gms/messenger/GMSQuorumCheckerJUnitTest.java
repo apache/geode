@@ -40,22 +40,22 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class GMSQuorumCheckerJUnitTest {
 
-  private InternalDistributedMember[] mockMembers;
+  private GMSMember[] mockMembers;
   private JChannel channel;
   private JGAddress address;
 
   @Before
   public void initMocks() {
-    mockMembers = new InternalDistributedMember[12];
+    mockMembers = new GMSMember[12];
     for (int i = 0; i < mockMembers.length; i++) {
-      mockMembers[i] = new InternalDistributedMember("localhost", 8888 + i);
+      mockMembers[i] = new GMSMember("localhost", 8888 + i);
     }
     channel = mock(JChannel.class);
     address = mock(JGAddress.class);
@@ -68,7 +68,7 @@ public class GMSQuorumCheckerJUnitTest {
 
   @Test
   public void testQuorumCheckerAllRespond() throws Exception {
-    NetView view = prepareView();
+    GMSMembershipView view = prepareView();
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
       pongResponders.add(mockMembers[i].getPort());
@@ -88,7 +88,7 @@ public class GMSQuorumCheckerJUnitTest {
 
   @Test
   public void testQuorumCheckerMajorityRespond() throws Exception {
-    NetView view = prepareView();
+    GMSMembershipView view = prepareView();
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length - 1; i++) {
       pongResponders.add(mockMembers[i].getPort());
@@ -105,7 +105,7 @@ public class GMSQuorumCheckerJUnitTest {
 
   @Test
   public void testQuorumCheckerNotEnoughWeightForQuorum() throws Exception {
-    NetView view = prepareView();
+    GMSMembershipView view = prepareView();
     Set<Integer> pongResponders = new HashSet<>();
     pongResponders.add(mockMembers[0].getPort());
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
@@ -120,7 +120,7 @@ public class GMSQuorumCheckerJUnitTest {
 
   @Test
   public void testQuorumCheckerNoQuorumNoResponders() throws Exception {
-    NetView view = prepareView();
+    GMSMembershipView view = prepareView();
     Set<Integer> pongResponders = new HashSet<Integer>();
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
@@ -134,7 +134,7 @@ public class GMSQuorumCheckerJUnitTest {
 
   @Test
   public void testQuorumChecker10Servers2Locators4ServersLost() throws Exception {
-    NetView view = prepareView();
+    GMSMembershipView view = prepareView();
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
@@ -161,7 +161,7 @@ public class GMSQuorumCheckerJUnitTest {
 
   @Test
   public void testQuorumChecker10Servers2Locators4ServersAnd1LocatorLost() throws Exception {
-    NetView view = prepareView();
+    GMSMembershipView view = prepareView();
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
@@ -192,7 +192,7 @@ public class GMSQuorumCheckerJUnitTest {
   @Test
   public void testQuorumChecker10Servers2Locators5ServersAnd2LocatorsButNotLeadMemberLost()
       throws Exception {
-    NetView view = prepareView();
+    GMSMembershipView view = prepareView();
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
@@ -225,7 +225,7 @@ public class GMSQuorumCheckerJUnitTest {
   @Test
   public void testQuorumChecker10Servers2Locators5ServerAnd1LocatorWithLeadMemberLost()
       throws Exception {
-    NetView view = prepareView();
+    GMSMembershipView view = prepareView();
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
@@ -256,7 +256,7 @@ public class GMSQuorumCheckerJUnitTest {
   @Test
   public void testQuorumChecker2Servers2LocatorsLeadMemberLost() throws Exception {
     int numMembers = 4;
-    NetView view = prepareView(numMembers);
+    GMSMembershipView view = prepareView(numMembers);
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
@@ -280,7 +280,7 @@ public class GMSQuorumCheckerJUnitTest {
   @Test
   public void testQuorumChecker2Servers2LocatorsLeadMemberAnd1LocatorLost() throws Exception {
     int numMembers = 4;
-    NetView view = prepareView(numMembers);
+    GMSMembershipView view = prepareView(numMembers);
     mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
@@ -302,19 +302,19 @@ public class GMSQuorumCheckerJUnitTest {
     assertSame(view.getMembers().size(), answerer.getPingCount());
   }
 
-  private NetView prepareView() {
+  private GMSMembershipView prepareView() {
     return prepareView(mockMembers.length);
   }
 
-  private NetView prepareView(int numMembers) {
+  private GMSMembershipView prepareView(int numMembers) {
     int viewId = 1;
-    List<InternalDistributedMember> mbrs = new LinkedList<>();
+    List<GMSMember> mbrs = new LinkedList<>();
     for (int i = 0; i < numMembers; i++) {
       mbrs.add(mockMembers[i]);
     }
 
     // prepare the view
-    NetView netView = new NetView(mockMembers[0], viewId, mbrs);
+    GMSMembershipView netView = new GMSMembershipView(mockMembers[0], viewId, mbrs);
     return netView;
   }
 

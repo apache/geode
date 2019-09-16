@@ -38,7 +38,7 @@ import org.apache.geode.cache.query.internal.ResultsCollectionWrapper;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * An authorization implementation for testing that checks for authorization information in

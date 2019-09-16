@@ -22,18 +22,14 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.ManagerLogWriter;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.test.dunit.log4j.LogWriterLogger;
 
 /**
- * <code>LogWriterUtils</code> provides static utility methods to access a <code>LogWriter</code>
+ * {@code LogWriterUtils} provides static utility methods to access a <code>LogWriter</code>
  * within a test.
  *
- * These methods can be used directly: <code>LogWriterUtils.getLogWriter(...)</code>, however, they
+ * These methods can be used directly: {@code LogWriterUtils.getLogWriter(...)}, however, they
  * are intended to be referenced through static import:
  *
  * <pre>
@@ -44,7 +40,7 @@ import org.apache.geode.internal.logging.log4j.LogWriterLogger;
  *
  * Extracted from DistributedTestCase.
  *
- * @deprecated Please use a <code>Logger</code> from {@link LogService#getLogger()} instead.
+ * @deprecated Please use a {@code Logger} from {@link LogService#getLogger()} instead.
  */
 @Deprecated
 public class LogWriterUtils {
@@ -52,42 +48,17 @@ public class LogWriterUtils {
   private static final Logger logger = LogService.getLogger();
   private static final LogWriterLogger oldLogger = LogWriterLogger.create(logger);
 
-  protected LogWriterUtils() {}
-
-  /**
-   * Returns a <code>LogWriter</code> for logging information
-   *
-   * @deprecated Please use a <code>Logger</code> from {@link LogService#getLogger()} instead.
-   */
-  public static InternalLogWriter getLogWriter() {
-    return LogWriterUtils.oldLogger;
+  protected LogWriterUtils() {
+    // nothing
   }
 
   /**
-   * Creates a new LogWriter and adds it to the config properties. The config can then be used to
-   * connect to DistributedSystem, thus providing early access to the LogWriter before connecting.
-   * This call does not connect to the DistributedSystem. It simply creates and returns the
-   * LogWriter that will eventually be used by the DistributedSystem that connects using config.
+   * Returns a {@code LogWriter} for logging information
    *
-   * @param properties the DistributedSystem config properties to add LogWriter to
-   * @return early access to the DistributedSystem LogWriter
-   * @deprecated Please use a <code>Logger</code> from {@link LogService#getLogger()} instead.
+   * @deprecated Please use a {@code Logger} from {@link LogService#getLogger()} instead.
    */
-  public static LogWriter createLogWriter(final Properties properties) {
-    Properties nonDefault = properties;
-    if (nonDefault == null) {
-      nonDefault = new Properties();
-    }
-    DistributedTestUtils.addHydraProperties(nonDefault);
-
-    DistributionConfig dc = new DistributionConfigImpl(nonDefault);
-    LogWriter logger = LogWriterFactory.createLogWriterLogger(/* isLoner */
-        dc, false/* isSecurityLog */);
-
-    // if config was non-null, then these will be added to it...
-    nonDefault.put(DistributionConfig.LOG_WRITER_NAME, logger);
-
-    return logger;
+  public static LogWriter getLogWriter() {
+    return oldLogger;
   }
 
   /**
@@ -100,7 +71,7 @@ public class LogWriterUtils {
     Properties dsProperties = DUnitEnv.get().getDistributedSystemProperties();
     String result = dsProperties.getProperty(LOG_LEVEL);
     if (result == null) {
-      result = ManagerLogWriter.levelToString(DistributionConfig.DEFAULT_LOG_LEVEL);
+      result = LogWriterLogger.levelToString(DistributionConfig.DEFAULT_LOG_LEVEL);
     }
     return result;
   }

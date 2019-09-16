@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
@@ -54,7 +55,7 @@ public class TXFailoverCommandTest {
 
     int uniqueId = 1;
     TXId txId = new TXId(client, uniqueId);
-    TXStateProxyImpl proxy = new TXStateProxyImpl(cache, txManager, txId, null);
+    TXStateProxyImpl proxy = new TXStateProxyImpl(cache, txManager, txId, null, disabledClock());
 
     when(cache.getCacheTransactionManager()).thenReturn(txManager);
     when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));

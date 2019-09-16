@@ -28,15 +28,16 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.cache.UnsupportedVersionException;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DSFIDNotFoundException;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DSFIDNotFoundException;
+import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 
@@ -473,9 +474,9 @@ public class ReplyProcessor21 implements MembershipListener {
     final short versionOrdinal = ex.getProductVersionOrdinal();
     String versionStr = null;
     try {
-      Version version = Version.fromOrdinal(versionOrdinal, false);
+      Version version = Version.fromOrdinal(versionOrdinal);
       versionStr = version.toString();
-    } catch (UnsupportedVersionException e) {
+    } catch (UnsupportedSerializationVersionException e) {
     }
     if (versionStr == null) {
       versionStr = "Ordinal=" + versionOrdinal;
@@ -1118,7 +1119,8 @@ public class ReplyProcessor21 implements MembershipListener {
           cause);
     } else if (suspectThem) {
       if (suspectMembers != null && suspectMembers.size() > 0) {
-        getDistributionManager().getMembershipManager().suspectMembers(suspectMembers,
+        getDistributionManager().getMembershipManager().suspectMembers(
+            (Set<DistributedMember>) (Set<?>) suspectMembers,
             "Failed to respond within ack-wait-threshold");
       }
     }

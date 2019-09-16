@@ -20,26 +20,20 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 import org.apache.geode.distributed.DurableClientAttributes;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 /**
- * This is the SPI for the basic element of membership provided in the GemFire system.
+ * This is the SPI for the basic element of membership provided in Geode.
  *
  *
  */
 public interface NetMember extends Comparable<NetMember> {
-
-  void setAttributes(MemberAttributes args);
-
-  MemberAttributes getAttributes();
 
   InetAddress getInetAddress();
 
   int getPort();
 
   void setPort(int p);
-
-  boolean isMulticastAddress();
 
   short getVersionOrdinal();
 
@@ -110,9 +104,12 @@ public interface NetMember extends Comparable<NetMember> {
   /** compare data that is not known to DistributedMember instances */
   int compareAdditionalData(NetMember other);
 
-  /**
-   * Return a unique string id for this member which is immutable and will not change during the
-   * life of this member.
-   */
-  String getUniqueId();
+  void setDurableTimeout(int newValue);
+
+  void setHostName(String hostName);
+
+  String getHostName();
+
+  /** is this a partial ID created without full identifier information? */
+  boolean isPartial();
 }

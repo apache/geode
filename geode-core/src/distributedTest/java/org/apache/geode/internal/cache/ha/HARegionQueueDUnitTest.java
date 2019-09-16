@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.ha;
 import static java.lang.Thread.yield;
 import static org.apache.geode.internal.cache.ha.HARegionQueue.NON_BLOCKING_HA_QUEUE;
 import static org.apache.geode.internal.cache.ha.HARegionQueue.getHARegionQueueInstance;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -219,7 +220,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
             hrqa.setExpiryTime(300);
             try {
               hrq = HARegionQueue.getHARegionQueueInstance("testregion1", cache, hrqa,
-                  HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+                  HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
               // Do 1000 putand 100 take in a separate thread
               hrq.put(new ConflatableObject(new Long(1), new Long(1),
                   new EventID(new byte[] {0}, 1, 1), false, "dummy"));
@@ -281,7 +282,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         .thenAnswer(AdditionalAnswers.returnsSecondArg());
 
     HARegion.getInstance("HARegionQueueDUnitTest_region", (GemFireCacheImpl) cache, harq,
-        factory.create());
+        factory.create(), disabledClock());
   }
 
   private static void createRegionQueue() throws Exception {
@@ -292,7 +293,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
      * factory.setDataPolicy(DataPolicy.REPLICATE);
      */
     hrq = HARegionQueue.getHARegionQueueInstance("HARegionQueueDUnitTest_region", cache,
-        HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+        HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
     EventID id1 = new EventID(new byte[] {1}, 1, 1);
     EventID id2 = new EventID(new byte[] {1}, 1, 2);
     ConflatableObject c1 =
@@ -313,7 +314,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     HARegionQueueAttributes harqAttr = new HARegionQueueAttributes();
     harqAttr.setExpiryTime(3);
     hrq = HARegionQueue.getHARegionQueueInstance("HARegionQueueDUnitTest_region", cache, harqAttr,
-        HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+        HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
   }
 
   private static void clearRegion() {
@@ -592,10 +593,10 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
         try {
           if (createBlockingQueue) {
             hrq = HARegionQueue.getHARegionQueueInstance("testregion1", cache, hrqa,
-                HARegionQueue.BLOCKING_HA_QUEUE, false);
+                HARegionQueue.BLOCKING_HA_QUEUE, false, disabledClock());
           } else {
             hrq = HARegionQueue.getHARegionQueueInstance("testregion1", cache, hrqa,
-                HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+                HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
           }
         } catch (Exception e) {
           throw new AssertionError(e);
@@ -777,7 +778,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
             try {
               hrq = HARegionQueue.getHARegionQueueInstance(
                   "testNPEDueToHARegionQueueEscapeInConstructor", cache, hrqa,
-                  HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+                  HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
               // changing OP_COUNT to 20 makes no difference in test time
               final int OP_COUNT = 200;
               // Do 1000 putand 100 take in a separate thread
@@ -824,7 +825,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
             try {
               hrq = HARegionQueue.getHARegionQueueInstance(
                   "testNPEDueToHARegionQueueEscapeInConstructor", cache, hrqa,
-                  HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+                  HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
             } catch (Exception e) {
               throw new AssertionError(e);
             }
@@ -955,7 +956,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     HARegionQueueAttributes attrs = new HARegionQueueAttributes();
     attrs.setExpiryTime(1);
     hrq = getHARegionQueueInstance("HARegionQueueDUnitTest_region", cache, attrs,
-        NON_BLOCKING_HA_QUEUE, false);
+        NON_BLOCKING_HA_QUEUE, false, disabledClock());
     // wait until we have a dead
     // server
     WaitCriterion ev = new WaitCriterion() {
@@ -987,7 +988,7 @@ public class HARegionQueueDUnitTest extends JUnit4DistributedTestCase {
     cache = test.createCache();
 
     hrq = HARegionQueue.getHARegionQueueInstance("HARegionQueueDUnitTest_region", cache,
-        HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+        HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
 
     assertEquals(2, hrq.size());
 

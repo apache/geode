@@ -32,10 +32,10 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.assertj.core.api.ListAssert;
 
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 
 public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpResponse> {
   private static final Logger logger = LogService.getLogger();
@@ -79,14 +79,14 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
   }
 
   @SuppressWarnings("unchecked")
-  public <R extends CacheElement> ClusterManagementResult getClusterManagementResult()
+  public <R extends AbstractConfiguration> ClusterManagementResult getClusterManagementResult()
       throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     return mapper.readValue(responseBody, ClusterManagementResult.class);
   }
 
   @SuppressWarnings("unchecked")
-  public <R extends CacheElement> ClusterManagementRealizationResult getClusterManagementRealizationResult()
+  public <R extends AbstractConfiguration> ClusterManagementRealizationResult getClusterManagementRealizationResult()
       throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     return mapper.readValue(responseBody, ClusterManagementRealizationResult.class);

@@ -19,7 +19,10 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.URI;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.AlreadyBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -27,6 +30,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -44,16 +48,15 @@ import javax.management.remote.rmi.RMIServerImpl;
 
 import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -170,7 +173,7 @@ public class ManagementAgent {
     }
 
     // Find the Management rest WAR file
-    final String adminRestWar = agentUtil.findWarLocation("geode-web");
+    final URI adminRestWar = agentUtil.findWarLocation("geode-web");
     if (adminRestWar == null) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -179,7 +182,7 @@ public class ManagementAgent {
     }
 
     // Find the Pulse WAR file
-    final String pulseWar = agentUtil.findWarLocation("geode-pulse");
+    final URI pulseWar = agentUtil.findWarLocation("geode-pulse");
 
     if (pulseWar == null) {
       final String message =
@@ -203,17 +206,15 @@ public class ManagementAgent {
         final String bindAddress = this.config.getHttpServiceBindAddress();
         final int port = this.config.getHttpServicePort();
 
-        Pair<String, Object> securityServiceAttr =
-            new ImmutablePair<>(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-                securityService);
-        Pair<String, Object> sslConfigAttr =
-            new ImmutablePair<>(HttpService.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
-                createSslProps());
+        Map<String, Object> serviceAttributes = new HashMap<>();
+        serviceAttributes.put(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+            securityService);
 
         // if jmx manager is running, admin rest should be available, either on locator or server
         if (agentUtil.isAnyWarFileAvailable(adminRestWar)) {
-          httpService.addWebApplication("/gemfire", adminRestWar, securityServiceAttr);
-          httpService.addWebApplication("/geode-mgmt", adminRestWar, securityServiceAttr);
+          Path adminRestWarPath = Paths.get(adminRestWar);
+          httpService.addWebApplication("/gemfire", adminRestWarPath, serviceAttributes);
+          httpService.addWebApplication("/geode-mgmt", adminRestWarPath, serviceAttributes);
         }
 
         // if jmx manager is running, pulse should be available, either on locator or server
@@ -229,7 +230,11 @@ public class ManagementAgent {
               .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
           System.setProperty(PULSE_USESSL_MANAGER, jmxSocketCreator.useSSL() + "");
           System.setProperty(PULSE_USESSL_LOCATOR, locatorSocketCreator.useSSL() + "");
-          httpService.addWebApplication("/pulse", pulseWar, securityServiceAttr, sslConfigAttr);
+
+          serviceAttributes.put(InternalHttpService.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
+              createSslProps());
+
+          httpService.addWebApplication("/pulse", Paths.get(pulseWar), serviceAttributes);
 
           managerBean.setPulseURL("http://".concat(getHost(bindAddress)).concat(":")
               .concat(String.valueOf(port)).concat("/pulse/"));

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -149,7 +150,7 @@ public class ParallelGatewaySenderHelper {
 
     // Create BucketRegionQueue
     return new BucketRegionQueue(
-        queueRegion.getBucketName(bucketId), attributes, parentRegion, cache, ira);
+        queueRegion.getBucketName(bucketId), attributes, parentRegion, cache, ira, disabledClock());
   }
 
   public static String getRegionQueueName(String gatewaySenderId) {

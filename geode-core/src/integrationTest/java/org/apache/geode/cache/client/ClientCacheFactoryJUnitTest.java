@@ -56,14 +56,15 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.ClientCacheCreation;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
@@ -345,7 +346,7 @@ public class ClientCacheFactoryJUnitTest {
     clientCache = new ClientCacheFactory().create();
     InternalDistributedMember memberID =
         (InternalDistributedMember) clientCache.getDistributedSystem().getDistributedMember();
-    GMSMember gmsID = (GMSMember) memberID.getNetMember();
+    GMSMember gmsID = ((GMSMemberAdapter) memberID.getNetMember()).getGmsMember();
     memberID.setVersionObjectForTest(Version.GFE_82);
     assertThat(memberID.getVersionObject()).isEqualTo(Version.GFE_82);
 
@@ -354,14 +355,15 @@ public class ClientCacheFactoryJUnitTest {
     DataSerializer.writeObject(clientID, out);
 
     DataInputStream in =
-        new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()), Version.CURRENT);
+        new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()),
+            Version.CURRENT);
     ClientProxyMembershipID newID = DataSerializer.readObject(in);
     InternalDistributedMember newMemberID =
         (InternalDistributedMember) newID.getDistributedMember();
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.GFE_82);
     assertThat(newID.getClientVersion()).isEqualTo(Version.GFE_82);
 
-    GMSMember newGmsID = (GMSMember) newMemberID.getNetMember();
+    GMSMember newGmsID = ((GMSMemberAdapter) newMemberID.getNetMember()).getGmsMember();
     assertThat(newGmsID.getUuidLSBs()).isEqualTo(0);
     assertThat(newGmsID.getUuidMSBs()).isEqualTo(0);
 
@@ -371,13 +373,14 @@ public class ClientCacheFactoryJUnitTest {
     out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(clientID, out);
 
-    in = new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()), Version.CURRENT);
+    in = new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()),
+        Version.CURRENT);
     newID = DataSerializer.readObject(in);
     newMemberID = (InternalDistributedMember) newID.getDistributedMember();
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.CURRENT);
     assertThat(newID.getClientVersion()).isEqualTo(Version.CURRENT);
 
-    newGmsID = (GMSMember) newMemberID.getNetMember();
+    newGmsID = ((GMSMemberAdapter) newMemberID.getNetMember()).getGmsMember();
     assertThat(newGmsID.getUuidLSBs()).isEqualTo(gmsID.getUuidLSBs());
     assertThat(newGmsID.getUuidMSBs()).isEqualTo(gmsID.getUuidMSBs());
   }

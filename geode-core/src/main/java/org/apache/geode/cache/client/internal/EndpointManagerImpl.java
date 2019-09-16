@@ -33,7 +33,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 
 public class EndpointManagerImpl implements EndpointManager {
   private static final Logger logger = LogService.getLogger();
@@ -181,16 +180,16 @@ public class EndpointManagerImpl implements EndpointManager {
   private synchronized ConnectionStats getStats(ServerLocation location) {
     ConnectionStats stats = statMap.get(location);
     if (stats == null) {
-      String statName = poolName + "-" + location.toString();
       PoolImpl pool = (PoolImpl) PoolManager.find(poolName);
       if (pool != null) {
         if (pool.getGatewaySender() != null) {
-          stats = new ConnectionStats(new DummyStatisticsFactory(), statName,
-              poolStats/* , this.gatewayStats */);
+          String statName = pool.getGatewaySender().getId() + "-" + location.toString();
+          stats = new ConnectionStats(ds, "GatewaySender", statName, this.poolStats);
         }
       }
       if (stats == null) {
-        stats = new ConnectionStats(ds, statName, poolStats);
+        String statName = poolName + "-" + location.toString();
+        stats = new ConnectionStats(ds, "Client", statName, poolStats);
       }
       statMap.put(location, stats);
     }

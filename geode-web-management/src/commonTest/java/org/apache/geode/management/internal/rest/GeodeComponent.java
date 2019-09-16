@@ -29,4 +29,8 @@ public interface GeodeComponent {
   SecurityService getSecurityService();
 
   ClusterManagementService getClusterManagementService();
+
+  default boolean isAuthTokenEnabled() {
+    return false;
+  }
 }

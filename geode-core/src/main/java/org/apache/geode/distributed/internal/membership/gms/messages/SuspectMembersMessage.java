@@ -20,16 +20,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.Version;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
-public class SuspectMembersMessage extends HighPriorityDistributionMessage {
+public class SuspectMembersMessage extends AbstractGMSMessage {
   final List<SuspectRequest> suspectRequests;
 
-  public SuspectMembersMessage(List<InternalDistributedMember> recipients, List<SuspectRequest> s) {
+  public SuspectMembersMessage(List<GMSMember> recipients, List<SuspectRequest> s) {
     super();
     setRecipients(recipients);
     this.suspectRequests = s;
@@ -43,11 +44,6 @@ public class SuspectMembersMessage extends HighPriorityDistributionMessage {
   @Override
   public int getDSFID() {
     return SUSPECT_MEMBERS_MESSAGE;
-  }
-
-  @Override
-  public void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 
   public List<SuspectRequest> getMembers() {
@@ -65,12 +61,13 @@ public class SuspectMembersMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     if (suspectRequests != null) {
       out.writeInt(suspectRequests.size());
       for (SuspectRequest sr : suspectRequests) {
-        DataSerializer.writeObject(sr.getSuspectMember(), out);
-        DataSerializer.writeString(sr.getReason(), out);
+        GMSUtil.writeMemberID(sr.getSuspectMember(), out, context);
+        StaticSerialization.writeString(sr.getReason(), out);
       }
     } else {
       out.writeInt(0);
@@ -78,11 +75,12 @@ public class SuspectMembersMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     int size = in.readInt();
     for (int i = 0; i < size; i++) {
       SuspectRequest sr = new SuspectRequest(
-          (InternalDistributedMember) DataSerializer.readObject(in), DataSerializer.readString(in));
+          GMSUtil.readMemberID(in, context), StaticSerialization.readString(in));
       suspectRequests.add(sr);
     }
   }

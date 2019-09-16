@@ -18,13 +18,17 @@ package org.apache.geode.tools.pulse.tests.rules;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.junit.rules.ExternalResource;
 
+import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.HttpService;
+import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.tests.Server;
 
@@ -77,8 +81,8 @@ public class ServerRule extends ExternalResource {
         String.valueOf(Boolean.TRUE));
 
     int httpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    jetty = new HttpService(LOCALHOST, httpPort, new SSLConfig());
-    jetty.addWebApplication(PULSE_CONTEXT, getPulseWarPath());
+    jetty = new InternalHttpService(LOCALHOST, httpPort, new SSLConfig());
+    jetty.addWebApplication(PULSE_CONTEXT, getPulseWarPath(), new HashMap<>());
     pulseURL = "http://" + LOCALHOST + ":" + httpPort + PULSE_CONTEXT;
   }
 
@@ -90,7 +94,7 @@ public class ServerRule extends ExternalResource {
     jetty.stop();
   }
 
-  private String getPulseWarPath() throws IOException {
+  private Path getPulseWarPath() throws IOException {
     String warPath;
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
     InputStream inputStream = classLoader.getResourceAsStream("GemFireVersion.properties");
@@ -101,7 +105,7 @@ public class ServerRule extends ExternalResource {
     String propFilePath = classLoader.getResource("GemFireVersion.properties").getPath();
     warPath =
         propFilePath.substring(0, propFilePath.indexOf("generated-resources")) + "libs/" + warPath;
-    return warPath;
+    return Paths.get(warPath);
   }
 
 }

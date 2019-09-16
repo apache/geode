@@ -36,7 +36,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.Locator.getLocator;
-import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getMembershipManager;
+import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getMembership;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -91,8 +91,9 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem.Reconnect
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -187,7 +188,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       dsProperties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
       dsProperties.put(LOCATORS, "localHost[" + locatorPort + "]");
       dsProperties.put(MCAST_PORT, "0");
-      dsProperties.put(MEMBER_TIMEOUT, "1000");
+      dsProperties.put(MEMBER_TIMEOUT, "2000");
       dsProperties.put(LOG_LEVEL, "info");
       dsProperties.put(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
       dsProperties.put("security-username", "clusterManage");
@@ -251,7 +252,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         GMSMembershipManager mgr = (GMSMembershipManager) MembershipManagerHelper
-            .getMembershipManager(Locator.getLocator().getDistributedSystem());
+            .getMembership(Locator.getLocator().getDistributedSystem());
         mgr.disableDisconnectOnQuorumLossForTesting();
       }
     });
@@ -319,7 +320,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     final int locPort = locatorPort;
     final int secondLocPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort);
+    Invoke
+        .invokeInEveryVM(() -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));
 
 
     final String xmlFileLoc = (new File(".")).getAbsolutePath();
@@ -418,8 +420,11 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
               cache = ((InternalLocator) locator).getCache();
               system = cache.getInternalDistributedSystem();
               assertTrue(
-                  ((GMSMembershipManager) getMembershipManager(system))
-                      .getServices().getMessenger().isOldMembershipIdentifier(dm));
+                  ((GMSMembershipManager) getMembership(system))
+                      .getServices().getMessenger()
+                      .isOldMembershipIdentifier(
+                          ((GMSMemberAdapter) ((InternalDistributedMember) dm).getNetMember())
+                              .getGmsMember()));
               return ds.getReconnectedSystem().getDistributedMember();
             } catch (InterruptedException e) {
               System.err.println("interrupted while waiting for reconnect");
@@ -469,8 +474,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     forceDisconnect(vm1);
     newdm = waitForReconnect(vm1);
     assertNotSame("expected a reconnect to occur in member", evenNewerdm, newdm);
-    DistributedTestUtils.deleteLocatorStateFile(locPort);
-    DistributedTestUtils.deleteLocatorStateFile(secondLocPort);
+    Invoke
+        .invokeInEveryVM(() -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));
   }
 
   private DistributedMember getDMID(VM vm) {
@@ -525,7 +530,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             }
             assertTrue("expected system to be reconnected", ds.getReconnectedSystem() != null);
             int oldViewId =
-                getMembershipManager(ds).getLocalMember().getVmViewId();
+                getMembership(ds).getLocalMember().getVmViewId();
             int newViewId =
                 ((InternalDistributedMember) ds.getReconnectedSystem().getDistributedMember())
                     .getVmViewId();
@@ -549,7 +554,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     final int locPort = locatorPort;
     final int secondLocPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort);
+    Invoke
+        .invokeInEveryVM(() -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));
 
     final String xmlFileLoc = (new File(".")).getAbsolutePath();
 
@@ -634,8 +640,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           gfshThread = null;
         }
       });
-      DistributedTestUtils.deleteLocatorStateFile(locPort);
-      DistributedTestUtils.deleteLocatorStateFile(secondLocPort);
+      Invoke.invokeInEveryVM(
+          () -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));
     }
   }
 

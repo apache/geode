@@ -84,6 +84,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.size.SingleObjectSizer;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
 import org.apache.geode.management.ManagementService;
@@ -359,7 +360,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         }
 
         ParallelGatewaySenderQueueMetaRegion meta =
-            new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, sender);
+            new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, sender,
+                sender.getStatisticsClock());
 
         try {
           prQ = (PartitionedRegion) cache.createVMRegion(prQName, ra,
@@ -1789,12 +1791,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     AbstractGatewaySender sender = null;
 
     public ParallelGatewaySenderQueueMetaRegion(String regionName, RegionAttributes attrs,
-        LocalRegion parentRegion, InternalCache cache, AbstractGatewaySender pgSender) {
+        LocalRegion parentRegion, InternalCache cache, AbstractGatewaySender pgSender,
+        StatisticsClock statisticsClock) {
       super(regionName, attrs, parentRegion, cache,
           new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
               .setSnapshotInputStream(null).setImageTarget(null)
               .setIsUsedForParallelGatewaySenderQueue(true)
-              .setParallelGatewaySender((AbstractGatewaySender) pgSender));
+              .setParallelGatewaySender((AbstractGatewaySender) pgSender),
+          statisticsClock);
       this.sender = (AbstractGatewaySender) pgSender;
 
     }
@@ -1855,7 +1859,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     ParallelGatewaySenderQueueMetaRegion newMetataRegion(InternalCache cache, final String prQName,
         final RegionAttributes ra, AbstractGatewaySender sender) {
       ParallelGatewaySenderQueueMetaRegion meta =
-          new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, sender);
+          new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, sender,
+              sender.getStatisticsClock());
       return meta;
     }
   }

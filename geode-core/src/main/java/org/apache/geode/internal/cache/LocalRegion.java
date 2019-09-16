@@ -158,7 +158,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
@@ -214,6 +213,8 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
@@ -531,20 +532,24 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   protected LocalRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache, InternalRegionArguments internalRegionArgs) throws DiskAccessException {
-    this(regionName, attrs, parentRegion, cache, internalRegionArgs, new LocalRegionDataView());
+      InternalCache cache, InternalRegionArguments internalRegionArgs,
+      StatisticsClock statisticsClock) throws DiskAccessException {
+    this(regionName, attrs, parentRegion, cache, internalRegionArgs, new LocalRegionDataView(),
+        statisticsClock);
   }
 
   protected LocalRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
       InternalCache cache, InternalRegionArguments internalRegionArgs,
-      InternalDataView internalDataView) throws DiskAccessException {
+      InternalDataView internalDataView, StatisticsClock statisticsClock)
+      throws DiskAccessException {
     this(regionName, attrs, parentRegion, cache, internalRegionArgs, internalDataView,
         RegionMapFactory::createVM, new DefaultServerRegionProxyConstructor(),
         new DefaultEntryEventFactory(), poolName -> (PoolImpl) PoolManager.find(poolName),
         (LocalRegion region) -> new RegionPerfStats(
             cache.getInternalDistributedSystem().getStatisticsManager(),
             "RegionStats-" + regionName, cache.getCachePerfStats(),
-            region, cache.getMeterRegistry()));
+            region, cache.getMeterRegistry(), statisticsClock),
+        statisticsClock);
   }
 
   @VisibleForTesting
@@ -553,9 +558,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       InternalDataView internalDataView, RegionMapConstructor regionMapConstructor,
       ServerRegionProxyConstructor serverRegionProxyConstructor,
       EntryEventFactory entryEventFactory, PoolFinder poolFinder,
-      java.util.function.Function<LocalRegion, RegionPerfStats> regionPerfStatsFactory)
+      java.util.function.Function<LocalRegion, RegionPerfStats> regionPerfStatsFactory,
+      StatisticsClock statisticsClock)
       throws DiskAccessException {
-    super(cache, attrs, regionName, internalRegionArgs, poolFinder);
+    super(cache, attrs, regionName, internalRegionArgs, poolFinder, statisticsClock);
 
     this.regionMapConstructor = regionMapConstructor;
     this.entryEventFactory = entryEventFactory;
@@ -915,21 +921,21 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               internalRegionArgs.setUserAttribute(pr.getUserAttribute());
               if (pr.isShadowPR()) {
                 newRegion = new BucketRegionQueue(subregionName, regionAttributes, this, cache,
-                    internalRegionArgs);
+                    internalRegionArgs, getStatisticsClock());
               } else {
                 newRegion = new BucketRegion(subregionName, regionAttributes, this, cache,
-                    internalRegionArgs);
+                    internalRegionArgs, getStatisticsClock());
               }
             } else if (regionAttributes.getPartitionAttributes() != null) {
               newRegion = new PartitionedRegion(subregionName, regionAttributes, this, cache,
-                  internalRegionArgs);
+                  internalRegionArgs, getStatisticsClock());
             } else {
               boolean local = regionAttributes.getScope().isLocal();
               newRegion = local
                   ? new LocalRegion(subregionName, regionAttributes, this, cache,
-                      internalRegionArgs)
+                      internalRegionArgs, getStatisticsClock())
                   : new DistributedRegion(subregionName, regionAttributes, this, cache,
-                      internalRegionArgs);
+                      internalRegionArgs, getStatisticsClock());
             }
             Object previousValue = subregions.putIfAbsent(subregionName, newRegion);
 
@@ -1036,7 +1042,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public void create(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, EntryExistsException, CacheWriterException {
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
     @Released
     EntryEventImpl event = newCreateEntryEvent(key, value, aCallbackArgument);
     try {
@@ -1608,7 +1614,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public Object put(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, CacheWriterException {
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
     @Released
     EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
     try {
@@ -2817,7 +2823,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     RegionEntry re = null;
     if (value != null && !isMemoryThresholdReachedForLoad()) {
 
-      long startPut = CachePerfStats.getStatTime();
+      long startPut = getStatisticsClock().getTime();
       validateKey(key);
       Operation op;
       if (isCreate) {
@@ -5046,7 +5052,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
       ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
       long tailKey) {
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
     entries.txApplyPut(putOp, key, newValue, didDestroy, transactionId, event, eventId,
         aCallbackArgument, pendingCallbacks, filterRoutingInfo, bridgeContext, txEntryState,
         versionTag, tailKey);
@@ -5101,7 +5107,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     EventID eventId = clientEvent.getEventId();
     Object theCallbackArg = callbackArg;
 
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
 
     @Released
     final EntryEventImpl event =
@@ -5169,7 +5175,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     EventID eventID = clientEvent.getEventId();
     Object theCallbackArg = callbackArg;
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
 
     @Released
     final EntryEventImpl event = entryEventFactory.create(this, Operation.UPDATE, key,
@@ -5249,7 +5255,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     concurrencyConfigurationCheck(event.getVersionTag());
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
 
     // Generate EventID as it is possible that client is a cache server
     // in hierarchical cache
@@ -8648,7 +8654,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           // The following basicPutEntry needs to be done
           // even if we do not have storage so that the
           // correct events will be delivered to any callbacks we have.
-          long startPut = CachePerfStats.getStatTime();
+          long startPut = getStatisticsClock().getTime();
           validateKey(key);
 
           @Released
@@ -8747,7 +8753,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       ClientProxyMembershipID memberId, EventID eventId, boolean skipCallbacks, Object callbackArg)
       throws TimeoutException, CacheWriterException {
 
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
 
     @Released
     final EntryEventImpl event =
@@ -8783,7 +8789,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       ArrayList<VersionTag> retryVersions, ClientProxyMembershipID memberId, EventID eventId,
       Object callbackArg) throws TimeoutException, CacheWriterException {
 
-    long startOp = CachePerfStats.getStatTime();
+    long startOp = getStatisticsClock().getTime();
 
     @Released
     final EntryEventImpl event =
@@ -8809,7 +8815,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   // TODO: return value is never used
   public VersionedObjectList basicImportPutAll(Map map, boolean skipCallbacks) {
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
 
     @Released
     EntryEventImpl event = entryEventFactory.create(this, Operation.PUTALL_CREATE, null, null, null,
@@ -8832,7 +8838,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public void putAll(Map map, Object aCallbackArgument) {
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
     final DistributedPutAllOperation putAllOp = newPutAllOperation(map, aCallbackArgument);
     if (putAllOp != null) {
       try {
@@ -8858,7 +8864,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public void removeAll(Collection keys, Object aCallbackArgument) {
-    long startOp = CachePerfStats.getStatTime();
+    long startOp = getStatisticsClock().getTime();
     DistributedRemoveAllOperation operation = newRemoveAllOperation(keys, aCallbackArgument);
     if (operation != null) {
       try {
@@ -10362,7 +10368,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @throws PartitionedRegionStorageException if the operation could not be completed.
    */
   public Object putIfAbsent(Object key, Object value, Object callbackArgument) {
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
 
     checkIfConcurrentMapOpsAllowed();
     validateArguments(key, value, callbackArgument);
@@ -10470,7 +10476,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       throw new NullPointerException();
     }
 
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
     validateArguments(key, newValue, callbackArg);
     checkReadiness();
     checkForLimitedOrNoAccess();
@@ -10523,7 +10529,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * TODO: callbackArg is always null but this method is for callbacks??
    */
   private Object replaceWithCallbackArgument(Object key, Object value, Object callbackArg) {
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
 
     checkIfConcurrentMapOpsAllowed();
 
@@ -10570,7 +10576,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       throws TimeoutException, EntryExistsException, CacheWriterException {
 
     EventID eventId = clientEvent.getEventId();
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
 
     @Released
     final EntryEventImpl event =
@@ -10646,7 +10652,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       throws TimeoutException, EntryExistsException, CacheWriterException {
 
     EventID eventId = clientEvent.getEventId();
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
 
     @Released
     final EntryEventImpl event =
@@ -10704,7 +10710,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       throws TimeoutException, EntryExistsException, CacheWriterException {
 
     EventID eventId = clientEvent.getEventId();
-    long startPut = CachePerfStats.getStatTime();
+    long startPut = getStatisticsClock().getTime();
 
     @Released
     final EntryEventImpl event =

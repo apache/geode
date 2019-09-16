@@ -19,25 +19,25 @@ package org.apache.geode.management.configuration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
  * Configuration Objects for Pdx in the cache
  */
 @Experimental
-public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith<RuntimeInfo> {
+public class Pdx extends AbstractConfiguration<RuntimeInfo> {
   public static final String PDX_ID = "PDX";
   public static final String PDX_ENDPOINT = "/configurations/pdx";
 
-  private boolean readSerialized;
+  private Boolean readSerialized;
   private ClassName pdxSerializer;
-  private boolean ignoreUnreadFields;
-  private boolean persistent;
+  private Boolean ignoreUnreadFields;
+  private Boolean persistent;
   private String diskStoreName;
 
+  /**
+   * Returns {@link #PDX_ID}
+   */
   @Override
   @JsonIgnore
   public String getId() {
@@ -54,17 +54,11 @@ public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith
     return PDX_ENDPOINT;
   }
 
-  public void setGroup(String group) {
-    if (group != null && !CLUSTER.equals(group)) {
-      throw new IllegalArgumentException("Pdx can only be configured in cluster level.");
-    }
-  }
-
-  public boolean isReadSerialized() {
+  public Boolean isReadSerialized() {
     return readSerialized;
   }
 
-  public void setReadSerialized(boolean readSerialized) {
+  public void setReadSerialized(Boolean readSerialized) {
     this.readSerialized = readSerialized;
   }
 
@@ -76,19 +70,19 @@ public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith
     this.pdxSerializer = pdxSerializer;
   }
 
-  public boolean isIgnoreUnreadFields() {
+  public Boolean isIgnoreUnreadFields() {
     return ignoreUnreadFields;
   }
 
-  public void setIgnoreUnreadFields(boolean ignoreUnreadFields) {
+  public void setIgnoreUnreadFields(Boolean ignoreUnreadFields) {
     this.ignoreUnreadFields = ignoreUnreadFields;
   }
 
-  public boolean isPersistent() {
+  public Boolean isPersistent() {
     return persistent;
   }
 
-  public void setPersistent(boolean persistent) {
+  public void setPersistent(Boolean persistent) {
     this.persistent = persistent;
   }
 

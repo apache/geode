@@ -36,6 +36,7 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.alerting.AlertLevel;
@@ -337,7 +338,20 @@ public class AlertAppender extends AbstractAppender
     return listeners;
   }
 
-  public static AlertAppender getInstance() {
+  @VisibleForTesting
+  static AlertAppender getInstance() {
     return instanceRef.get();
+  }
+
+  @VisibleForTesting
+  static void setInstance(AlertAppender alertAppender) {
+    instanceRef.set(alertAppender);
+  }
+
+  public static void stopSessionIfRunning() {
+    AlertAppender instance = instanceRef.get();
+    if (instance != null) {
+      instance.stopSession();
+    }
   }
 }

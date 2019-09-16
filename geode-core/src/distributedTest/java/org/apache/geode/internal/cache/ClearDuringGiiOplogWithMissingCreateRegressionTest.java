@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,15 +39,14 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
- * Bug37377 DUNIT Test: The Clear operation during a GII in progress can leave a Entry in the Oplog
+ * Regression test: The Clear operation during a GII in progress can leave a Entry in the Oplog
  * due to a race condition wherein the clearFlag getting set after the entry gets written to the
  * disk, The Test verifies the existence of the scenario.
  *
  * <p>
- * TRAC #37377: Clear operation with GII in progress may result in a deleted entry to be logged in
+ * Bug: Clear operation with GII in progress may result in a deleted entry to be logged in
  * the oplog without accompanying create
  */
-
 public class ClearDuringGiiOplogWithMissingCreateRegressionTest extends CacheTestCase {
 
   private static final int PUT_COUNT = 10000;
@@ -148,7 +148,8 @@ public class ClearDuringGiiOplogWithMissingCreateRegressionTest extends CacheTes
 
     DistributedRegion distRegion = new DistributedRegion(regionName, factory.create(), null,
         getCache(), new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
-            .setSnapshotInputStream(null).setImageTarget(null));
+            .setSnapshotInputStream(null).setImageTarget(null),
+        disabledClock());
 
     distRegion.entries.setEntryFactory(new TestableDiskRegionEntryFactory());
 

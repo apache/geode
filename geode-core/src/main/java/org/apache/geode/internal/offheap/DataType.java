@@ -19,11 +19,10 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
-import org.apache.geode.internal.ByteArrayDataInput;
-import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DSCODE;
 
 /**
  * Determines the data type of the bytes in an off-heap MemoryBlock. This is used by the tests for
@@ -43,19 +42,22 @@ public class DataType {
     }
     try {
       if (header == DSCODE.DS_FIXED_ID_BYTE.toByte()) {
-        return "org.apache.geode.internal.DataSerializableFixedID:"
-            + DSFIDFactory.create(in.readByte(), in).getClass().getName();
+        return "org.apache.geode.internal.serialization.DataSerializableFixedID:"
+            + InternalDataSerializer.getDSFIDFactory().create(in.readByte(), in).getClass()
+                .getName();
       }
       if (header == DSCODE.DS_FIXED_ID_SHORT.toByte()) {
-        return "org.apache.geode.internal.DataSerializableFixedID:"
-            + DSFIDFactory.create(in.readShort(), in).getClass().getName();
+        return "org.apache.geode.internal.serialization.DataSerializableFixedID:"
+            + InternalDataSerializer.getDSFIDFactory().create(in.readShort(), in).getClass()
+                .getName();
       }
       if (header == DSCODE.DS_FIXED_ID_INT.toByte()) {
-        return "org.apache.geode.internal.DataSerializableFixedID:"
-            + DSFIDFactory.create(in.readInt(), in).getClass().getName();
+        return "org.apache.geode.internal.serialization.DataSerializableFixedID:"
+            + InternalDataSerializer.getDSFIDFactory().create(in.readInt(), in).getClass()
+                .getName();
       }
       if (header == DSCODE.DS_NO_FIXED_ID.toByte()) {
-        return "org.apache.geode.internal.DataSerializableFixedID:"
+        return "org.apache.geode.internal.serialization.DataSerializableFixedID:"
             + DataSerializer.readClass(in).getName();
       }
       if (header == DSCODE.NULL.toByte()) {

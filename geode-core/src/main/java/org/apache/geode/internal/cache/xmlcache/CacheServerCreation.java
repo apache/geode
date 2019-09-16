@@ -34,6 +34,7 @@ import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Represents a {@link CacheServer} that is created declaratively.
@@ -307,6 +308,11 @@ public class CacheServerCreation extends AbstractCacheServer {
 
   @Override
   public String[] getCombinedGroups() {
+    throw new UnsupportedOperationException("Shouldn't be invoked");
+  }
+
+  @Override
+  public StatisticsClock getStatisticsClock() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 }

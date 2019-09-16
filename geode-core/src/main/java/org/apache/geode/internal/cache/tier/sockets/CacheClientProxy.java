@@ -68,10 +68,8 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheDistributionAdvisee;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
 import org.apache.geode.internal.cache.ClientServerObserver;
@@ -100,6 +98,9 @@ import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.security.AccessControl;
 
 /**
@@ -315,6 +316,7 @@ public class CacheClientProxy implements ClientSession {
   private final Object drainsInProgressLock = new Object();
 
   private final SecurityService securityService;
+  private final StatisticsClock statisticsClock;
 
   /**
    * Constructor.
@@ -328,7 +330,8 @@ public class CacheClientProxy implements ClientSession {
   protected CacheClientProxy(CacheClientNotifier ccn, Socket socket,
       ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation,
       Version clientVersion, long acceptorId, boolean notifyBySubscription,
-      SecurityService securityService, Subject subject) throws CacheException {
+      SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
+      throws CacheException {
 
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     this._cacheClientNotifier = ccn;
@@ -338,7 +341,8 @@ public class CacheClientProxy implements ClientSession {
     this._messageTimeToLive = ccn.getMessageTimeToLive();
     this._acceptorId = acceptorId;
     this.notifyBySubscription = notifyBySubscription;
-    StatisticsFactory factory = this._cache.getDistributedSystem();
+    StatisticsFactory factory = this._cache.getInternalDistributedSystem().getStatisticsManager();
+    this.statisticsClock = statisticsClock;
     this._statistics =
         new CacheClientProxyStats(factory, "id_" + this.proxyID.getDistributedMember().getId()
             + "_at_" + this._remoteHostAddress + ":" + this._socket.getPort());
@@ -1704,7 +1708,7 @@ public class CacheClientProxy implements ClientSession {
   }
 
   MessageDispatcher createMessageDispatcher(String name) {
-    return new MessageDispatcher(this, name);
+    return new MessageDispatcher(this, name, statisticsClock);
   }
 
   protected void startOrResumeMessageDispatcher(boolean processedMarker) {
@@ -2225,7 +2229,8 @@ public class CacheClientProxy implements ClientSession {
      *        messages
      * @param name thread name for this dispatcher
      */
-    protected MessageDispatcher(CacheClientProxy proxy, String name) throws CacheException {
+    protected MessageDispatcher(CacheClientProxy proxy, String name,
+        StatisticsClock statisticsClock) throws CacheException {
       super(name);
 
       this._proxy = proxy;
@@ -2252,7 +2257,7 @@ public class CacheClientProxy implements ClientSession {
         this._messageQueue = HARegionQueue.getHARegionQueueInstance(getProxy().getHARegionName(),
             getCache(), harq, HARegionQueue.BLOCKING_HA_QUEUE, createDurableQueue,
             proxy._cacheClientNotifier.getHaContainer(), proxy.getProxyID(),
-            this._proxy.clientConflation, this._proxy.isPrimary(), canHandleDelta);
+            this._proxy.clientConflation, this._proxy.isPrimary(), canHandleDelta, statisticsClock);
         // Check if interests were registered during HARegion GII.
         if (this._proxy.hasRegisteredInterested()) {
           this._messageQueue.setHasRegisteredInterest(true);

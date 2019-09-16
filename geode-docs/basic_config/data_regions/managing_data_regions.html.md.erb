@@ -155,22 +155,12 @@ For run-time region creation, you need to use the API.
 
 Region creation is subject to attribute consistency checks, both internal to the cache and, if the region is not local, between all caches where the region is defined.
 
-1.  
+1.  Use a region shortcut to create your region factory. 
+  - In peers and servers, use `org.apache.geode.cache.RegionFactory`.
+  - In clients, use `org.apache.geode.cache.client.ClientRegionFactory`.
 
-    Use a region shortcut to create your region factory. 
-    -   
-
-        In peers and servers, use `org.apache.geode.cache.RegionFactory`.
-    -   
-
-        In clients, use `org.apache.geode.cache.client.ClientRegionFactory`.
-
-2.  
-
-    (Optional) Use the region factory to further configure your region. 
-3.  
-
-    Create your region from the configured region factory. 
+2.  (Optional) Use the region factory to further configure your region. 
+3.  Create your region from the configured region factory. 
 
 
 ### API Examples

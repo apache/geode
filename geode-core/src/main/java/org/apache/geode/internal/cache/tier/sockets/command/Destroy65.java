@@ -28,6 +28,7 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.EventIDHolder;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.OpType;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.tier.Command;
@@ -111,7 +112,31 @@ public class Destroy65 extends BaseCommand {
 
     final Operation operation;
     try {
-      operation = getOperation(clientMessage.getPart(3), Operation.DESTROY);
+      final Part operationPart = clientMessage.getPart(3);
+
+      if (operationPart.isBytes()) {
+        final byte[] bytes = operationPart.getSerializedForm();
+        if (null == bytes || 0 == bytes.length) {
+          // older clients can send empty bytes for default operation.
+          operation = Operation.DESTROY;
+        } else {
+          operation = Operation.fromOrdinal(bytes[0]);
+        }
+      } else {
+        // Fallback for older clients.
+        final Object operationObject = operationPart.getObject();
+        if (operationObject == null) {
+          // native clients may send a null since the op is java-serialized.
+          operation = Operation.DESTROY;
+        } else if (operationObject instanceof Byte
+            && (Byte) operationObject == OpType.DESTROY) {
+          // older native clients may send Byte object OpType.DESTROY value treated as
+          // Operation.REMOVE.
+          operation = Operation.REMOVE;
+        } else {
+          operation = (Operation) operationObject;
+        }
+      }
     } catch (Exception e) {
       writeException(clientMessage, e, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);

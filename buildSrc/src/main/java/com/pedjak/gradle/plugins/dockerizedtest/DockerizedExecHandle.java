@@ -26,7 +26,6 @@ import java.io.PipedOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -160,13 +159,13 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     this.timeoutMillis = timeoutMillis;
     this.daemon = daemon;
     this.executor = executor;
-    this.lock = new ReentrantLock();
-    this.stateChanged = lock.newCondition();
-    this.state = ExecHandleState.INIT;
     this.buildCancellationToken = buildCancellationToken;
     this.testExtension = testExtension;
+    lock = new ReentrantLock();
+    stateChanged = lock.newCondition();
+    state = ExecHandleState.INIT;
     shutdownHookAction = new ExecHandleShutdownHookAction(this);
-    broadcast = new ListenerBroadcast<ExecHandleListener>(ExecHandleListener.class);
+    broadcast = new ListenerBroadcast<>(ExecHandleListener.class);
     broadcast.addAll(listeners);
   }
 
@@ -214,7 +213,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     try {
       LOGGER.debug("Changing state to: {}", state);
       this.state = state;
-      this.stateChanged.signalAll();
+      stateChanged.signalAll();
     } finally {
       lock.unlock();
     }
@@ -223,7 +222,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
   private boolean stateIn(ExecHandleState... states) {
     lock.lock();
     try {
-      return Arrays.asList(states).contains(this.state);
+      return Arrays.asList(states).contains(state);
     } finally {
       lock.unlock();
     }
@@ -235,7 +234,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     ExecHandleState currentState;
     lock.lock();
     try {
-      currentState = this.state;
+      currentState = state;
     } finally {
       lock.unlock();
     }
@@ -254,7 +253,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
     lock.lock();
     try {
       setState(newState);
-      this.execResult = newResult;
+      execResult = newResult;
     } finally {
       lock.unlock();
     }
@@ -330,8 +329,8 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
             format("Cannot abort process '%s' because it is not in started or detached state",
                 displayName));
       }
-      this.execHandleRunner.abortProcess();
-      this.waitForFinish();
+      execHandleRunner.abortProcess();
+      waitForFinish();
     } finally {
       lock.unlock();
     }
@@ -427,7 +426,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
   public Process runContainer() {
     try {
       DockerClient client = testExtension.getClient();
-      CreateContainerCmd createCmd = client.createContainerCmd(testExtension.getImage().toString())
+      CreateContainerCmd createCmd = client.createContainerCmd(testExtension.getImage())
           .withTty(false)
           .withStdinOpen(true)
           .withWorkingDir(directory.getAbsolutePath());
@@ -439,7 +438,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
         createCmd.withUser(user);
       }
       bindVolumes(createCmd);
-      List<String> cmdLine = new ArrayList<String>();
+      List<String> cmdLine = new ArrayList<>();
       cmdLine.add(command);
       cmdLine.addAll(arguments);
       createCmd.withCmd(cmdLine);
@@ -482,7 +481,7 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
   }
 
   private List<String> getEnv() {
-    List<String> env = new ArrayList<String>();
+    List<String> env = new ArrayList<>();
     for (Map.Entry<String, String> e : environment.entrySet()) {
       env.add(e.getKey() + "=" + e.getValue());
     }
@@ -490,10 +489,11 @@ public class DockerizedExecHandle implements ExecHandle, ProcessSettings {
   }
 
   private void bindVolumes(CreateContainerCmd cmd) {
-    List<Volume> volumes = new ArrayList<Volume>();
-    List<Bind> binds = new ArrayList<Bind>();
-    for (Iterator it = testExtension.getVolumes().entrySet().iterator(); it.hasNext(); ) {
-      Map.Entry<Object, Object> e = (Map.Entry<Object, Object>) it.next();
+    List<Volume> volumes = new ArrayList<>();
+    List<Bind> binds = new ArrayList<>();
+    for (Object o : testExtension.getVolumes().entrySet()) {
+      @SuppressWarnings("unchecked")
+      Map.Entry<Object, Object> e = (Map.Entry<Object, Object>) o;
       Volume volume = new Volume(e.getValue().toString());
       Bind bind = new Bind(e.getKey().toString(), volume);
       binds.add(bind);

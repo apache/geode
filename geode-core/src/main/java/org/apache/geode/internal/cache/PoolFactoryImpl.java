@@ -57,7 +57,7 @@ public class PoolFactoryImpl implements PoolFactory {
    */
   private PoolAttributes attributes = new PoolAttributes();
 
-  private List<HostAddress> locatorAddresses = new ArrayList<>();
+  private final List<HostAddress> locatorAddresses = new ArrayList<>();
 
   /**
    * The cache that created this factory

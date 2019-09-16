@@ -89,10 +89,10 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -102,6 +102,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -162,7 +163,7 @@ public class LocatorDUnitTest implements Serializable {
     port2 = ports[1];
     port3 = ports[2];
     port4 = ports[3];
-    deleteLocatorStateFile(port1, port2, port3, port4);
+    Invoke.invokeInEveryVM(() -> deleteLocatorStateFile(port1, port2, port3, port4));
   }
 
   @After
@@ -178,11 +179,13 @@ public class LocatorDUnitTest implements Serializable {
     }
 
     // delete locator state files so they don't accidentally get used by other tests
-    for (int port : new int[] {port1, port2, port3, port4}) {
-      if (port > 0) {
-        deleteLocatorStateFile(port);
+    Invoke.invokeInEveryVM(() -> {
+      for (int port : new int[] {port1, port2, port3, port4}) {
+        if (port > 0) {
+          deleteLocatorStateFile(port);
+        }
       }
-    }
+    });
   }
 
   private static DUnitBlackboard getBlackboard() {
@@ -308,11 +311,11 @@ public class LocatorDUnitTest implements Serializable {
 
     system = getConnectedDistributedSystem(properties);
     System.out.println("done connecting distributed system.  Membership view is "
-        + MembershipManagerHelper.getMembershipManager(system).getView());
+        + MembershipManagerHelper.getMembership(system).getView());
 
     assertThat(MembershipManagerHelper.getCoordinator(system))
         .describedAs("should be the coordinator").isEqualTo(system.getDistributedMember());
-    NetView view = MembershipManagerHelper.getMembershipManager(system).getView();
+    MembershipView view = MembershipManagerHelper.getMembership(system).getView();
     logger.info("view after becoming coordinator is " + view);
     assertThat(system.getDistributedMember())
         .describedAs("should not be the first member in the view (" + view + ")")
@@ -547,7 +550,7 @@ public class LocatorDUnitTest implements Serializable {
 
     // after disconnecting the first vm, the second one should become the leader
     vm1.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-    MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem1);
+    MembershipManagerHelper.getMembership(system).waitForDeparture(mem1);
     waitForMemberToBecomeLeadMemberOfDistributedSystem(mem2, system);
 
     properties.setProperty("name", "vm1");
@@ -555,15 +558,15 @@ public class LocatorDUnitTest implements Serializable {
     waitForMemberToBecomeLeadMemberOfDistributedSystem(mem2, system);
 
     vm2.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-    MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem2);
+    MembershipManagerHelper.getMembership(system).waitForDeparture(mem2);
     waitForMemberToBecomeLeadMemberOfDistributedSystem(mem3, system);
 
     vm1.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-    MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem1);
+    MembershipManagerHelper.getMembership(system).waitForDeparture(mem1);
     waitForMemberToBecomeLeadMemberOfDistributedSystem(mem3, system);
 
     vm3.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-    MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem3);
+    MembershipManagerHelper.getMembership(system).waitForDeparture(mem3);
     waitForMemberToBecomeLeadMemberOfDistributedSystem(null, system);
   }
 
@@ -759,7 +762,7 @@ public class LocatorDUnitTest implements Serializable {
         addIgnoredException(ForcedDisconnectException.class);
 
         hook = new TestHook();
-        MembershipManagerHelper.getMembershipManager(system).registerTestHook(hook);
+        MembershipManagerHelper.getMembership(system).registerTestHook(hook);
         try {
           MembershipManagerHelper.crashDistributedSystem(system);
         } finally {
@@ -794,7 +797,7 @@ public class LocatorDUnitTest implements Serializable {
 
       @Override
       public void run() {
-        MembershipManager mmgr = MembershipManagerHelper.getMembershipManager(system);
+        Membership mmgr = MembershipManagerHelper.getMembership(system);
 
         // check for shutdown cause in MembershipManager. Following call should
         // throw DistributedSystemDisconnectedException which should have cause as
@@ -1133,7 +1136,7 @@ public class LocatorDUnitTest implements Serializable {
     return (InternalDistributedMember) MembershipManagerHelper.getCoordinator(system);
   }
 
-  private NetView getView() {
+  private MembershipView getView() {
     return system.getDistributionManager().getMembershipManager().getView();
   }
 

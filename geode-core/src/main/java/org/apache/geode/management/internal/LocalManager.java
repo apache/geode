@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireException;
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -45,6 +46,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.ManagementException;
 
 /**
@@ -72,19 +74,20 @@ public class LocalManager extends Manager {
    * This map holds all the components which are eligible for federation. Although filters might
    * prevent any of the component from getting federated.
    */
-  private Map<ObjectName, FederationComponent> federatedComponentMap;
+  private final Map<ObjectName, FederationComponent> federatedComponentMap;
 
-  private Object lock = new Object();
+  private final Object lock = new Object();
 
-  private SystemManagementService service;
+  private final SystemManagementService service;
 
   /**
    * @param repo management resource repo
    * @param system internal distributed system
    */
   public LocalManager(ManagementResourceRepo repo, InternalDistributedSystem system,
-      SystemManagementService service, InternalCache cache) {
-    super(repo, system, cache);
+      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock) {
+    super(repo, system, cache, statisticsFactory, statisticsClock);
     this.service = service;
     this.federatedComponentMap = new ConcurrentHashMap<ObjectName, FederationComponent>();
   }
@@ -115,13 +118,9 @@ public class LocalManager extends Manager {
         internalArgs.setIsUsedForMetaRegion(true);
 
         // Create anonymous stats holder for Management Regions
-        final HasCachePerfStats monitoringRegionStats = new HasCachePerfStats() {
-          @Override
-          public CachePerfStats getCachePerfStats() {
-            return new CachePerfStats(cache.getDistributedSystem(),
-                "RegionStats-managementRegionStats");
-          }
-        };
+        final HasCachePerfStats monitoringRegionStats =
+            () -> new CachePerfStats(cache.getDistributedSystem(),
+                "RegionStats-managementRegionStats", statisticsClock);
 
         internalArgs.setCachePerfStatsHolder(monitoringRegionStats);
 
@@ -145,8 +144,7 @@ public class LocalManager extends Manager {
         RegionAttributes<NotificationKey, Notification> notifRegionAttrs =
             notificationRegionAttributeFactory.create();
 
-        String appender = MBeanJMXAdapter
-            .getUniqueIDForMember(cache.getDistributedSystem().getDistributedMember());
+        String appender = MBeanJMXAdapter.getUniqueIDForMember(system.getDistributedMember());
 
         boolean monitoringRegionCreated = false;
         boolean notifRegionCreated = false;
@@ -192,7 +190,7 @@ public class LocalManager extends Manager {
         managementTask.run();
         // All local resources are created for the ManagementTask
         // Now Management tasks can proceed.
-        int updateRate = cache.getInternalDistributedSystem().getConfig().getJmxManagerUpdateRate();
+        int updateRate = system.getConfig().getJmxManagerUpdateRate();
         singleThreadFederationScheduler.scheduleAtFixedRate(managementTask, updateRate, updateRate,
             TimeUnit.MILLISECONDS);
 
@@ -296,7 +294,7 @@ public class LocalManager extends Manager {
    */
   private class ManagementTask implements Runnable {
 
-    private Map<String, FederationComponent> replicaMap;
+    private final Map<String, FederationComponent> replicaMap;
 
     public ManagementTask(Map<ObjectName, FederationComponent> federatedComponentMap)
         throws ManagementException {

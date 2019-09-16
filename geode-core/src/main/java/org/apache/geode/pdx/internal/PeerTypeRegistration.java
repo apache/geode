@@ -12,12 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.pdx.internal;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -66,17 +66,23 @@ public class PeerTypeRegistration implements TypeRegistration {
   private static final int MAX_TRANSACTION_FAILURES = 10;
 
   public static final String LOCK_SERVICE_NAME = "__PDX";
+  private static final String LOCK_NAME = "PDX_LOCK";
 
   public static final String REGION_NAME = "PdxTypes";
   public static final String REGION_FULL_PATH = "/" + REGION_NAME;
-  public static final int PLACE_HOLDER_FOR_TYPE_ID = 0xFFFFFF;
-  public static final int PLACE_HOLDER_FOR_DS_ID = 0xFF000000;
 
-  private int dsId;
-  private final int maxTypeId;
-  private volatile DistributedLockService dls;
+  @VisibleForTesting
+  public static final int PLACE_HOLDER_FOR_TYPE_ID = 0xFFFFFF;
+  private static final int PLACE_HOLDER_FOR_DS_ID = 0xFF000000;
+  private static final int MAX_TYPE_ID = 0xFFFFFF;
+
+  private final TypeRegistrationStatistics statistics;
+
+  private final int typeIdPrefix;
   private final Object dlsLock = new Object();
-  private InternalCache cache;
+  private final InternalCache cache;
+
+  private volatile DistributedLockService dls;
 
   /**
    * The region where the PDX metadata is stored. Because this region is transactional for our
@@ -85,41 +91,40 @@ public class PeerTypeRegistration implements TypeRegistration {
    */
   private Region<Object/* Integer or EnumCode */, Object/* PdxType or enum info */> idToType;
 
-  /**
-   * This map serves two purposes. It lets us look up an id based on a type, if we previously found
-   * that type in the region. And, if a type is present in this map, that means we read the type
-   * while holding the dlock, which means the type was distributed to all members.
-   */
-  private Map<PdxType, Integer> typeToId =
-      Collections.synchronizedMap(new HashMap<PdxType, Integer>());
-
-  private Map<EnumInfo, EnumId> enumToId =
-      Collections.synchronizedMap(new HashMap<EnumInfo, EnumId>());
+  private PeerTypeRegistrationReverseMap reverseMap = new PeerTypeRegistrationReverseMap();
 
   private final Map<String, CopyOnWriteHashSet<PdxType>> classToType = new CopyOnWriteHashMap<>();
 
   private volatile boolean typeRegistryInUse = false;
 
-  public PeerTypeRegistration(InternalCache cache) {
+  public PeerTypeRegistration(final InternalCache cache) {
     this.cache = cache;
 
-    int distributedSystemId =
-        cache.getInternalDistributedSystem().getDistributionManager().getDistributedSystemId();
+    final InternalDistributedSystem internalDistributedSystem =
+        cache.getInternalDistributedSystem();
+    typeIdPrefix = getDistributedSystemId(internalDistributedSystem) << 24;
+    statistics =
+        new TypeRegistrationStatistics(internalDistributedSystem.getStatisticsManager(), this);
+  }
+
+  private static int getDistributedSystemId(
+      final InternalDistributedSystem internalDistributedSystem) {
+    final int distributedSystemId =
+        internalDistributedSystem.getDistributionManager().getDistributedSystemId();
     if (distributedSystemId == -1) {
-      distributedSystemId = 0;
+      return 0;
     }
-    this.dsId = distributedSystemId << 24;
-    this.maxTypeId = 0xFFFFFF;
+    return distributedSystemId;
   }
 
   private Region<Object/* Integer or EnumCode */, Object/* PdxType or enum info */> getIdToType() {
-    if (this.idToType != null) {
-      return this.idToType;
+    if (idToType != null) {
+      return idToType;
     } else {
-      if (this.cache.getPdxPersistent() && this.cache.getCacheConfig().pdxDiskStoreUserSet) {
+      if (cache.getPdxPersistent() && cache.getCacheConfig().pdxDiskStoreUserSet) {
         throw new PdxInitializationException(
             "PDX registry could not be initialized because the disk store "
-                + this.cache.getPdxDiskStore() + " was not created.");
+                + cache.getPdxDiskStore() + " was not created.");
       } else {
         throw new PdxInitializationException("PDX registry was not initialized.");
       }
@@ -135,7 +140,9 @@ public class PeerTypeRegistration implements TypeRegistration {
       logger.debug("Flushing TypeRegistry");
     }
 
-    AttributesFactory<Object, Object> factory = new AttributesFactory<Object, Object>();
+    @SuppressWarnings("deprecation")
+    AttributesFactory<Object, Object> factory = getAttributesFactory();
+
     factory.setScope(Scope.DISTRIBUTED_ACK);
     if (cache.getPdxPersistent()) {
       if (cache.getCacheConfig().pdxDiskStoreUserSet) {
@@ -156,10 +163,11 @@ public class PeerTypeRegistration implements TypeRegistration {
       @Override
       public void afterCreate(EntryEvent<Object, Object> event) {
         verifyConfiguration();
-        // update a local map with the pdxtypes registered
+        // update the local map and reverse map with the pdxtypes registered
         Object value = event.getNewValue();
-        if (value instanceof PdxType) {
-          updateLocalMaps((PdxType) value);
+        Object key = event.getKey();
+        if (value != null) {
+          updateLocalAndReverseMaps(key, value);
         }
       }
     });
@@ -196,16 +204,12 @@ public class PeerTypeRegistration implements TypeRegistration {
     internalArgs.setIsUsedForMetaRegion(true);
     internalArgs.setMetaRegionWithTransactions(true);
     try {
-      this.idToType = cache.createVMRegion(REGION_NAME, regionAttrs, internalArgs);
-    } catch (IOException ex) {
-      throw new PdxInitializationException("Could not create pdx registry", ex);
-    } catch (TimeoutException ex) {
-      throw new PdxInitializationException("Could not create pdx registry", ex);
-    } catch (RegionExistsException ex) {
-      throw new PdxInitializationException("Could not create pdx registry", ex);
-    } catch (ClassNotFoundException ex) {
+      idToType = cache.createVMRegion(REGION_NAME, regionAttrs, internalArgs);
+    } catch (IOException | TimeoutException | RegionExistsException | ClassNotFoundException ex) {
       throw new PdxInitializationException("Could not create pdx registry", ex);
     }
+
+    statistics.initialize();
 
     // If there is anything in the id to type registry,
     // we should validate our configuration now.
@@ -216,51 +220,49 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   protected DistributedLockService getLockService() {
-    if (this.dls != null) {
-      return this.dls;
+    if (dls != null) {
+      return dls;
     }
-    synchronized (this.dlsLock) {
-      if (this.dls == null) {
+    synchronized (dlsLock) {
+      if (dls == null) {
         try {
-          this.dls = DLockService.create(LOCK_SERVICE_NAME,
-              this.cache.getInternalDistributedSystem(), true /* distributed */,
+          dls = DLockService.create(LOCK_SERVICE_NAME,
+              cache.getInternalDistributedSystem(), true /* distributed */,
               true /* destroyOnDisconnect */, true /* automateFreeResources */);
         } catch (IllegalArgumentException e) {
-          this.dls = DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME);
-          if (this.dls == null) {
+          dls = DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME);
+          if (dls == null) {
             throw e;
           }
         }
       }
-      return this.dls;
+      return dls;
     }
   }
-
-  private static final String LOCK_NAME = "PDX_LOCK";
 
   private int allocateTypeId(PdxType newType) {
     TXStateProxy currentState = suspendTX();
     Region<Object, Object> r = getIdToType();
 
     int id = newType.hashCode() & PLACE_HOLDER_FOR_TYPE_ID;
-    int newTypeId = id | this.dsId;
+    int newTypeId = id | typeIdPrefix;
 
     try {
-      int maxTry = maxTypeId;
+      int maxTry = MAX_TYPE_ID;
       while (r.get(newTypeId) != null) {
         maxTry--;
         if (maxTry == 0) {
           throw new InternalGemFireError(
               "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                  + maxTypeId);
+                  + MAX_TYPE_ID);
         }
 
         // Find the next available type id.
         id++;
-        if (id > this.maxTypeId) {
+        if (id > MAX_TYPE_ID) {
           id = 1;
         }
-        newTypeId = id | this.dsId;
+        newTypeId = id | typeIdPrefix;
       }
 
       return newTypeId;
@@ -274,24 +276,24 @@ public class PeerTypeRegistration implements TypeRegistration {
     Region<Object, Object> r = getIdToType();
 
     int id = ei.hashCode() & PLACE_HOLDER_FOR_TYPE_ID;
-    int newEnumId = id | this.dsId;
+    int newEnumId = id | typeIdPrefix;
     try {
-      int maxTry = this.maxTypeId;
+      int maxTry = MAX_TYPE_ID;
       // Find the next available type id.
       while (r.get(new EnumId(newEnumId)) != null) {
         maxTry--;
         if (maxTry == 0) {
           throw new InternalGemFireError(
               "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                  + this.maxTypeId);
+                  + MAX_TYPE_ID);
         }
 
         // Find the next available type id.
         id++;
-        if (id > this.maxTypeId) {
+        if (id > MAX_TYPE_ID) {
           id = 1;
         }
-        newEnumId = id | this.dsId;
+        newEnumId = id | typeIdPrefix;
       }
 
       return new EnumId(newEnumId);
@@ -349,20 +351,21 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public int defineType(PdxType newType) {
+    statistics.typeDefined();
     verifyConfiguration();
-    Integer existingId = typeToId.get(newType);
-
+    Integer existingId = reverseMap.getIdFromReverseMap(newType);
     if (existingId != null) {
       return existingId;
     }
     lock();
     try {
-      if (typeToId.isEmpty()) {
-        buildTypeToIdFromIdToType();
+      if (reverseMap.shouldReloadFromRegion(getIdToType())) {
+        buildReverseMapsFromRegion();
       }
-      // double check if my type is in region in case the typeToId map has been updated while
-      // waiting to obtain a lock
-      existingId = typeToId.get(newType);
+      reverseMap.flushPendingReverseMap();
+
+      // double check if my PdxType is in the reverse map in case it was just flushed into it
+      existingId = reverseMap.getIdFromReverseMap(newType);
       if (existingId != null) {
         return existingId;
       }
@@ -370,18 +373,23 @@ public class PeerTypeRegistration implements TypeRegistration {
       int id = allocateTypeId(newType);
       newType.setTypeId(id);
       updateIdToTypeRegion(newType);
+
       return newType.getTypeId();
     } finally {
+      // flush the reverse map for the member that introduced this new PdxType
+      reverseMap.flushPendingReverseMap();
       unlock();
     }
   }
 
   private void updateIdToTypeRegion(PdxType newType) {
     updateRegion(newType.getTypeId(), newType);
+    statistics.typeCreated();
   }
 
   private void updateIdToEnumRegion(EnumId id, EnumInfo ei) {
     updateRegion(id, ei);
+    statistics.enumCreated();
   }
 
   private void updateRegion(Object k, Object v) {
@@ -431,6 +439,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     return getById(typeId);
   }
 
+  @SuppressWarnings("unchecked")
   private <T> T getById(Object typeId) {
     verifyConfiguration();
     TXStateProxy currentState = suspendTX();
@@ -475,10 +484,10 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public void gatewaySenderStarted(GatewaySender gatewaySender) {
-    if (!typeRegistryInUse || this.idToType == null) {
+    if (!typeRegistryInUse || idToType == null) {
       return;
     }
-    checkAllowed(true, this.cache.hasPersistentRegion());
+    checkAllowed(true, cache.hasPersistentRegion());
   }
 
   @Override
@@ -490,15 +499,9 @@ public class PeerTypeRegistration implements TypeRegistration {
     checkAllowed(hasGatewaySender(), true);
   }
 
-  public boolean hasGatewaySender() {
+  private boolean hasGatewaySender() {
     Set<GatewaySender> sendersAndAsyncQueues = cache.getGatewaySenders();
-    Iterator<GatewaySender> itr = sendersAndAsyncQueues.iterator();
-    while (itr.hasNext()) {
-      GatewaySender sender = itr.next();
-      if (AsyncEventQueueImpl.isAsyncEventQueue(sender.getId())) {
-        itr.remove();
-      }
-    }
+    sendersAndAsyncQueues.removeIf(sender -> AsyncEventQueueImpl.isAsyncEventQueue(sender.getId()));
     return !sendersAndAsyncQueues.isEmpty();
   }
 
@@ -511,10 +514,8 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   void verifyConfiguration() {
-    if (typeRegistryInUse) {
-      return;
-    } else {
-      checkAllowed(hasGatewaySender(), this.cache.hasPersistentRegion());
+    if (!typeRegistryInUse) {
+      checkAllowed(hasGatewaySender(), cache.hasPersistentRegion());
 
       for (Pool pool : PoolManager.getAll().values()) {
         if (!((PoolImpl) pool).isUsedByGateway()) {
@@ -541,69 +542,46 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
-  private void buildTypeToIdFromIdToType() {
+  /**
+   * Should only be called holding the dlock
+   * This method iterates through the entire PdxTypes region and syncs the reverse map with the pdx
+   * region This is an expensive operation and should only be called during initialization. A cache
+   * listener is used to keep the reverse maps up to date.
+   */
+  void buildReverseMapsFromRegion() {
     int totalPdxTypeIdInDS = 0;
+    int totalEnumIdInDS = 0;
     TXStateProxy currentState = suspendTX();
     try {
+      reverseMap.clear();
       for (Map.Entry<Object, Object> entry : getIdToType().entrySet()) {
-        Object v = entry.getValue();
         Object k = entry.getKey();
+        Object v = entry.getValue();
         if (k instanceof EnumId) {
           EnumId id = (EnumId) k;
-          EnumInfo info = (EnumInfo) v;
-          enumToId.put(info, id);
-        } else {
-          PdxType foundType = (PdxType) v;
-          Integer id = (Integer) k;
-          int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id;
-          if (tmpDsId == this.dsId) {
-            totalPdxTypeIdInDS++;
-            if (totalPdxTypeIdInDS >= this.maxTypeId) {
+          int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id.intValue();
+          if (tmpDsId == typeIdPrefix) {
+            totalEnumIdInDS++;
+            if (totalEnumIdInDS >= MAX_TYPE_ID) {
               throw new InternalGemFireError(
-                  "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                      + this.maxTypeId);
+                  "Used up all of the PDX enum ids for this distributed system. The maximum number of PDX types is "
+                      + MAX_TYPE_ID);
             }
           }
-
-          typeToId.put(foundType, id);
-        }
-      }
-    } finally {
-      resumeTX(currentState);
-    }
-  }
-
-  /** Should be called holding the dlock */
-  private EnumId getExistingIdForEnum(EnumInfo ei) {
-    TXStateProxy currentState = suspendTX();
-    int totalEnumIdInDS = 0;
-    try {
-      EnumId result = null;
-      for (Map.Entry<Object, Object> entry : getIdToType().entrySet()) {
-        Object v = entry.getValue();
-        Object k = entry.getKey();
-        if (k instanceof EnumId) {
-          EnumId id = (EnumId) k;
-          EnumInfo info = (EnumInfo) v;
-          enumToId.put(info, id);
-          int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id.intValue();
-          if (tmpDsId == this.dsId) {
-            totalEnumIdInDS++;
-          }
-          if (ei.equals(info)) {
-            result = id;
-          }
         } else {
-          typeToId.put((PdxType) v, (Integer) k);
+          Integer id = (Integer) k;
+          int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id;
+          if (tmpDsId == typeIdPrefix) {
+            totalPdxTypeIdInDS++;
+            if (totalPdxTypeIdInDS >= MAX_TYPE_ID) {
+              throw new InternalGemFireError(
+                  "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
+                      + MAX_TYPE_ID);
+            }
+          }
         }
+        reverseMap.save(k, v);
       }
-
-      if (totalEnumIdInDS == this.maxTypeId) {
-        throw new InternalGemFireError(
-            "Used up all of the PDX enum ids for this distributed system. The maximum number of PDX types is "
-                + this.maxTypeId);
-      }
-      return result;
     } finally {
       resumeTX(currentState);
     }
@@ -625,29 +603,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public int getEnumId(Enum<?> v) {
-    verifyConfiguration();
-    EnumInfo ei = new EnumInfo(v);
-    EnumId existingId = enumToId.get(ei);
-    if (existingId != null) {
-      return existingId.intValue();
-    }
-    lock();
-    try {
-      EnumId id = getExistingIdForEnum(ei);
-      if (id != null) {
-        return id.intValue();
-      }
-
-      id = allocateEnumId(ei);
-
-      updateIdToEnumRegion(id, ei);
-
-      enumToId.put(ei, id);
-
-      return id.intValue();
-    } finally {
-      unlock();
-    }
+    return defineEnum(new EnumInfo(v));
   }
 
   @Override
@@ -674,27 +630,33 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   @Override
-  public int defineEnum(EnumInfo newInfo) {
+  public int defineEnum(final EnumInfo newInfo) {
+    statistics.enumDefined();
     verifyConfiguration();
-    EnumId existingId = enumToId.get(newInfo);
+    EnumId existingId = reverseMap.getIdFromReverseMap(newInfo);
     if (existingId != null) {
       return existingId.intValue();
     }
     lock();
     try {
-      EnumId id = getExistingIdForEnum(newInfo);
-      if (id != null) {
-        return id.intValue();
+      if (reverseMap.shouldReloadFromRegion(getIdToType())) {
+        buildReverseMapsFromRegion();
+      }
+      reverseMap.flushPendingReverseMap();
+
+      // double check if my Enum is in the reverse map in case it was just flushed into it
+      existingId = reverseMap.getIdFromReverseMap(newInfo);
+      if (existingId != null) {
+        return existingId.intValue();
       }
 
-      id = allocateEnumId(newInfo);
-
+      EnumId id = allocateEnumId(newInfo);
       updateIdToEnumRegion(id, newInfo);
-
-      enumToId.put(newInfo, id);
 
       return id.intValue();
     } finally {
+      // flush the reverse map for the member that introduced this new enumInfo
+      reverseMap.flushPendingReverseMap();
       unlock();
     }
   }
@@ -721,7 +683,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   @Override
   public Map<Integer, EnumInfo> enums() {
     // ugh, I don't think we can rely on the local map to contain all types
-    Map<Integer, EnumInfo> enums = new HashMap<Integer, EnumInfo>();
+    Map<Integer, EnumInfo> enums = new HashMap<>();
     for (Entry<Object, Object> type : getIdToType().entrySet()) {
       Object id = type.getKey();
       if (type.getValue() instanceof EnumInfo) {
@@ -734,16 +696,17 @@ public class PeerTypeRegistration implements TypeRegistration {
   /**
    * adds a PdxType for a field to a {@code className => Set<PdxType>} map
    */
-  private void updateLocalMaps(PdxType type) {
-    if (type != null) {
-      typeToId.put(type, type.getTypeId());
-      synchronized (this.classToType) {
+  private void updateLocalAndReverseMaps(Object key, Object value) {
+    reverseMap.saveToPending(key, value);
+    if (value instanceof PdxType) {
+      PdxType type = (PdxType) value;
+      synchronized (classToType) {
         if (type.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
           return; // no need to include here
         }
-        CopyOnWriteHashSet<PdxType> pdxTypeSet = this.classToType.get(type.getClassName());
+        CopyOnWriteHashSet<PdxType> pdxTypeSet = classToType.get(type.getClassName());
         if (pdxTypeSet == null) {
-          pdxTypeSet = new CopyOnWriteHashSet<PdxType>();
+          pdxTypeSet = new CopyOnWriteHashSet<>();
         }
         pdxTypeSet.add(type);
         classToType.put(type.getClassName(), pdxTypeSet);
@@ -787,12 +750,9 @@ public class PeerTypeRegistration implements TypeRegistration {
     addRemoteEnum(id, importedInfo);
   }
 
+  @Deprecated
   public static int getPdxRegistrySize() {
     InternalCache cache = GemFireCacheImpl.getExisting();
-    if (cache == null) {
-      return 0;
-    }
-
     TypeRegistry registry = cache.getPdxRegistry();
     if (registry == null) {
       return 0;
@@ -803,11 +763,22 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public int getLocalSize() {
-    return idToType.size();
+    return getIdToType().size();
+  }
+
+  @VisibleForTesting
+  @SuppressWarnings("deprecation")
+  protected AttributesFactory<Object, Object> getAttributesFactory() {
+    return new AttributesFactory<>();
   }
 
   @VisibleForTesting
   public int getTypeToIdSize() {
-    return typeToId.size();
+    return reverseMap.typeToIdSize();
+  }
+
+  @VisibleForTesting
+  public int getEnumToIdSize() {
+    return reverseMap.enumToIdSize();
   }
 }

@@ -48,9 +48,7 @@ import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.InternalCache;
@@ -61,6 +59,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
+import org.apache.geode.internal.serialization.DSCODE;
 
 /**
  * Provides an implementation for region snapshots.
@@ -234,7 +233,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       throws IOException, ClassNotFoundException {
     long count = 0;
     long bytes = 0;
-    long start = CachePerfStats.getStatTime();
+    long start = local.getCachePerfStats().getTime();
 
     // Would be interesting to use a PriorityQueue ordered on isDone()
     // but this is probably close enough in practice.
@@ -349,7 +348,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     }
 
     long count = 0;
-    long start = CachePerfStats.getStatTime();
+    long start = local.getCachePerfStats().getTime();
     SnapshotWriter writer =
         GFSnapshot.create(snapshot, region.getFullPath(), (InternalCache) region.getCache());
     try {

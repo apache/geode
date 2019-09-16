@@ -45,7 +45,8 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
     String regionType = "partitionedRedundant";
 
     int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
+    locator1.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
+    locator2.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
 
     String hostName = NetworkUtils.getServerHostName(host);
     String locatorString = getLocatorString(locatorPorts);

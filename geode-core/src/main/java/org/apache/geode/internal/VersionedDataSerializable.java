@@ -15,6 +15,7 @@
 package org.apache.geode.internal;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.serialization.SerializationVersions;
 
 /**
  * An extension of DataSerializable that can support multiple serialized forms for backward

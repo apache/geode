@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -88,7 +90,7 @@ public class PRTXJUnitTest extends TXJUnitTest {
 
     PRWithLocalOps(String regionName, RegionAttributes ra, LocalRegion parentRegion,
         GemFireCacheImpl cache, InternalRegionArguments internalRegionArgs) {
-      super(regionName, ra, parentRegion, cache, internalRegionArgs);
+      super(regionName, ra, parentRegion, cache, internalRegionArgs, disabledClock());
     }
 
     @Override

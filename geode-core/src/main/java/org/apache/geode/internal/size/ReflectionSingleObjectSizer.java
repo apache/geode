@@ -21,7 +21,7 @@ import java.lang.reflect.Modifier;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.JvmSizeUtils;
-import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
+import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
 
 /**
  * Figure out the size of an object using reflection. This class does not follow any object
@@ -34,11 +34,11 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
   public static final int OBJECT_SIZE = JvmSizeUtils.getObjectHeaderSize();
 
   @Immutable
-  private static final UnsafeWrapper unsafe;
+  private static final Unsafe unsafe;
   static {
-    UnsafeWrapper tmp = null;
+    Unsafe tmp = null;
     try {
-      tmp = new UnsafeWrapper();
+      tmp = new Unsafe();
     } catch (RuntimeException ignore) {
     } catch (Error ignore) {
     }

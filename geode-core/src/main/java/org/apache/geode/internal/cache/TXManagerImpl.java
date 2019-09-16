@@ -63,6 +63,7 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback;
@@ -182,11 +183,14 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   private int transactionTimeToLive;
 
+  private final StatisticsClock statisticsClock;
+
   /**
    * Constructor that implements the {@link CacheTransactionManager} interface. Only only one
    * instance per {@link org.apache.geode.cache.Cache}
    */
-  public TXManagerImpl(CachePerfStats cachePerfStats, InternalCache cache) {
+  public TXManagerImpl(CachePerfStats cachePerfStats, InternalCache cache,
+      StatisticsClock statisticsClock) {
     this.cache = cache;
     this.dm = ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
     this.distributionMgrId = this.dm.getDistributionManagerId();
@@ -199,6 +203,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     this.transactionTimeToLive = Integer
         .getInteger(DistributionConfig.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
     currentInstance = this;
+    this.statisticsClock = statisticsClock;
   }
 
   public static TXManagerImpl getCurrentInstanceForTest() {
@@ -352,9 +357,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
     TXStateProxyImpl proxy = null;
     if (isDistributed()) {
-      proxy = new DistTXStateProxyImplOnCoordinator(cache, this, id, null);
+      proxy = new DistTXStateProxyImplOnCoordinator(cache, this, id, null, statisticsClock);
     } else {
-      proxy = new TXStateProxyImpl(cache, this, id, null);
+      proxy = new TXStateProxyImpl(cache, this, id, null, statisticsClock);
     }
     setTXState(proxy);
     if (logger.isDebugEnabled()) {
@@ -375,9 +380,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     TXStateProxy newState = null;
 
     if (isDistributed()) {
-      newState = new DistTXStateProxyImplOnCoordinator(cache, this, id, true);
+      newState = new DistTXStateProxyImplOnCoordinator(cache, this, id, true, statisticsClock);
     } else {
-      newState = new TXStateProxyImpl(cache, this, id, true);
+      newState = new TXStateProxyImpl(cache, this, id, true, statisticsClock);
     }
     setTXState(newState);
     return newState;
@@ -419,7 +424,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     tx.checkJTA(
         "Can not commit this transaction because it is enlisted with a JTA transaction, use the JTA manager to perform the commit.");
 
-    final long opStart = CachePerfStats.getStatTime();
+    final long opStart = statisticsClock.getTime();
     final long lifeTime = opStart - tx.getBeginTime();
     try {
       setTXState(null);
@@ -448,7 +453,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   void noteCommitFailure(long opStart, long lifeTime, TXStateInterface tx) {
-    long opEnd = CachePerfStats.getStatTime();
+    long opEnd = statisticsClock.getTime();
     this.cachePerfStats.txFailure(opEnd - opStart, lifeTime, tx.getChanges());
     TransactionListener[] listeners = getListeners();
     if (tx.isFireCallbacks() && listeners.length > 0) {
@@ -479,7 +484,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   void noteCommitSuccess(long opStart, long lifeTime, TXStateInterface tx) {
-    long opEnd = CachePerfStats.getStatTime();
+    long opEnd = statisticsClock.getTime();
     this.cachePerfStats.txSuccess(opEnd - opStart, lifeTime, tx.getChanges());
     TransactionListener[] listeners = getListeners();
     if (tx.isFireCallbacks() && listeners.length > 0) {
@@ -536,7 +541,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     tx.checkJTA(
         "Can not rollback this transaction is enlisted with a JTA transaction, use the JTA manager to perform the rollback.");
 
-    final long opStart = CachePerfStats.getStatTime();
+    final long opStart = statisticsClock.getTime();
     final long lifeTime = opStart - tx.getBeginTime();
     setTXState(null);
     tx.rollback();
@@ -546,7 +551,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   void noteRollbackSuccess(long opStart, long lifeTime, TXStateInterface tx) {
-    long opEnd = CachePerfStats.getStatTime();
+    long opEnd = statisticsClock.getTime();
     this.cachePerfStats.txRollback(opEnd - opStart, lifeTime, tx.getChanges());
     TransactionListener[] listeners = getListeners();
     if (tx.isFireCallbacks() && listeners.length > 0) {
@@ -918,11 +923,13 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         val = this.hostedTXStates.get(key);
         if (val == null && msg.canStartRemoteTransaction()) {
           if (msg.isTransactionDistributed()) {
-            val = new DistTXStateProxyImplOnDatanode(cache, this, key, msg.getTXOriginatorClient());
-            val.setLocalTXState(new DistTXState(val, true));
+            val = new DistTXStateProxyImplOnDatanode(cache, this, key, msg.getTXOriginatorClient(),
+                statisticsClock);
+            val.setLocalTXState(new DistTXState(val, true, statisticsClock));
           } else {
-            val = new TXStateProxyImpl(cache, this, key, msg.getTXOriginatorClient());
-            val.setLocalTXState(new TXState(val, true));
+            val = new TXStateProxyImpl(cache, this, key, msg.getTXOriginatorClient(),
+                statisticsClock);
+            val.setLocalTXState(new TXState(val, true, statisticsClock));
             val.setTarget(cache.getDistributedSystem().getDistributedMember());
           }
           this.hostedTXStates.put(key, val);
@@ -984,10 +991,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
           // TODO: Conditionally create object based on distributed or non-distributed tx mode
           if (msg instanceof TransactionMessage
               && ((TransactionMessage) msg).isTransactionDistributed()) {
-            val = new DistTXStateProxyImplOnDatanode(cache, this, key, memberId);
+            val = new DistTXStateProxyImplOnDatanode(cache, this, key, memberId, statisticsClock);
             // val.setLocalTXState(new DistTXState(val,true));
           } else {
-            val = new TXStateProxyImpl(cache, this, key, memberId);
+            val = new TXStateProxyImpl(cache, this, key, memberId, statisticsClock);
             // val.setLocalTXState(new TXState(val,true));
           }
           this.hostedTXStates.put(key, val);
@@ -1040,7 +1047,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         updateLastOperationTime(tx);
       }
       try {
-        cleanupTransactionIfNoLongerHost(tx);
+        cleanupTransactionIfNoLongerHostCausedByFailover(tx);
       } finally {
         setTXState(null);
         tx.getLock().unlock();
@@ -1048,12 +1055,12 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  void cleanupTransactionIfNoLongerHost(TXStateProxy tx) {
+  void cleanupTransactionIfNoLongerHostCausedByFailover(TXStateProxy tx) {
     synchronized (hostedTXStates) {
       if (!hostedTXStates.containsKey(tx.getTxId())) {
         // clean up the transaction if no longer the host of the transaction
-        // this could occur when a failover command removed the transaction.
-        if (tx.isRealDealLocal()) {
+        // caused by a failover command removed the transaction.
+        if (tx.isRealDealLocal() && ((TXStateProxyImpl) tx).isRemovedCausedByFailover()) {
           ((TXStateProxyImpl) tx).getLocalRealDeal().cleanup();
         }
       }
@@ -1070,10 +1077,17 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @return the TXStateProxy
    */
   public TXStateProxy removeHostedTXState(TXId txId) {
+    return removeHostedTXState(txId, false);
+  }
+
+  public TXStateProxy removeHostedTXState(TXId txId, boolean causedByFailover) {
     synchronized (this.hostedTXStates) {
       TXStateProxy result = this.hostedTXStates.remove(txId);
       if (result != null) {
         result.close();
+        if (causedByFailover) {
+          ((TXStateProxyImpl) result).setRemovedCausedByFailover(true);
+        }
       }
       return result;
     }

@@ -39,6 +39,8 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This class represents a partition message for removing indexes. An instance of this class is send
@@ -220,16 +222,18 @@ public class RemoveIndexesMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.removeSingleIndex = in.readBoolean();
     if (this.removeSingleIndex)
       this.indexName = in.readUTF();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeBoolean(this.removeSingleIndex);
     if (this.removeSingleIndex)
       out.writeUTF(this.indexName);
@@ -458,16 +462,18 @@ public class RemoveIndexesMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        DeserializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.result = in.readBoolean();
       this.numBucketsIndexesRemoved = in.readInt();
       this.numTotalBuckets = in.readInt();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.result);
       out.writeInt(this.numBucketsIndexesRemoved);
       out.writeInt(this.numTotalBuckets);

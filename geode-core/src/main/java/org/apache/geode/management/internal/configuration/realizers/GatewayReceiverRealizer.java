@@ -24,17 +24,27 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
-import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.internal.beans.GatewayReceiverMBeanBridge;
+import org.apache.geode.management.internal.configuration.converters.GatewayReceiverConverter;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
 
 public class GatewayReceiverRealizer
-    implements ConfigurationRealizer<GatewayReceiverConfig, GatewayReceiverInfo> {
+    implements ConfigurationRealizer<GatewayReceiver, GatewayReceiverInfo> {
+
+  private GatewayReceiverConverter converter = new GatewayReceiverConverter();
 
   @Override
+  public RealizationResult create(GatewayReceiver config, InternalCache cache) {
+    return create(converter.fromConfigObject(config), cache);
+  }
+
+  /**
+   * Need to keep this method since we are using the realizer in the GatewayReceiverFunction
+   */
   public RealizationResult create(GatewayReceiverConfig config, InternalCache cache) {
     GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
 
@@ -86,22 +96,24 @@ public class GatewayReceiverRealizer
   }
 
   @Override
-  public boolean exists(GatewayReceiverConfig config, InternalCache cache) {
+  public boolean exists(GatewayReceiver config, InternalCache cache) {
     return cache.getGatewayReceivers() != null && cache.getGatewayReceivers().size() > 0;
   }
 
   @Override
-  public GatewayReceiverInfo get(GatewayReceiverConfig config, InternalCache cache) {
+  public GatewayReceiverInfo get(GatewayReceiver config, InternalCache cache) {
     if (cache.getGatewayReceivers() == null || cache.getGatewayReceivers().size() == 0) {
       return null;
     }
 
-    GatewayReceiver receiver = cache.getGatewayReceivers().iterator().next();
+    org.apache.geode.cache.wan.GatewayReceiver receiver =
+        cache.getGatewayReceivers().iterator().next();
     return generateGatewayReceiverInfo(receiver);
   }
 
   @VisibleForTesting
-  GatewayReceiverInfo generateGatewayReceiverInfo(GatewayReceiver receiver) {
+  GatewayReceiverInfo generateGatewayReceiverInfo(
+      org.apache.geode.cache.wan.GatewayReceiver receiver) {
     GatewayReceiverMBeanBridge bridge = new GatewayReceiverMBeanBridge(receiver);
     GatewayReceiverInfo info = new GatewayReceiverInfo();
     info.setBindAddress(receiver.getBindAddress());
@@ -114,12 +126,12 @@ public class GatewayReceiverRealizer
   }
 
   @Override
-  public RealizationResult update(GatewayReceiverConfig config, InternalCache cache) {
+  public RealizationResult update(GatewayReceiver config, InternalCache cache) {
     throw new NotImplementedException("Not implemented");
   }
 
   @Override
-  public RealizationResult delete(GatewayReceiverConfig config, InternalCache cache) {
+  public RealizationResult delete(GatewayReceiver config, InternalCache cache) {
     throw new NotImplementedException("Not implemented");
   }
 }

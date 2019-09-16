@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -83,7 +84,7 @@ public class LRUClearWithDiskRegionOpRegressionTest {
         .setRecreateFlag(false).setSnapshotInputStream(null).setImageTarget(null);
 
     DistributedRegion distributedRegion =
-        new DistributedRegion(regionName, regionAttributes, null, cache, args);
+        new DistributedRegion(regionName, regionAttributes, null, cache, args, disabledClock());
 
     region = cache.createVMRegion(regionName, regionAttributes,
         new InternalRegionArguments().setInternalMetaRegion(distributedRegion)

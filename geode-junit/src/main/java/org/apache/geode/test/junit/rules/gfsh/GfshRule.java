@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -60,7 +61,7 @@ public class GfshRule extends ExternalResource {
     gfsh = findGfsh();
     assertThat(gfsh).exists();
 
-    gfshExecutions = new ArrayList<>();
+    gfshExecutions = Collections.synchronizedList(new ArrayList<>());
     temporaryFolder.create();
   }
 

@@ -16,10 +16,9 @@ package org.apache.geode.management.api;
 
 import java.util.List;
 
-import org.apache.geode.cache.configuration.CacheElement;
-
 /**
- * Thrown by {@link ClusterManagementService#create(CacheElement)}, update, and delete operations
+ * Thrown by {@link ClusterManagementService#create(AbstractConfiguration)}, update, and delete
+ * operations
  * which have a possibility of "partial" failure.
  */
 public class ClusterManagementRealizationException extends ClusterManagementException {
@@ -34,7 +33,8 @@ public class ClusterManagementRealizationException extends ClusterManagementExce
   }
 
   /**
-   * A {@link ClusterManagementService#create(CacheElement)} operation may fail on all members or
+   * A {@link ClusterManagementService#create(AbstractConfiguration)} operation may fail on all
+   * members or
    * only some. This will return the per-member status.
    */
   public List<RealizationResult> getMemberStatuses() {

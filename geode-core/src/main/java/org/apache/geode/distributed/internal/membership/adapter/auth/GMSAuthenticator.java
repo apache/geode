@@ -23,9 +23,10 @@ import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurityService;
@@ -61,14 +62,14 @@ public class GMSAuthenticator implements Authenticator {
    *         failure message
    */
   @Override
-  public String authenticate(InternalDistributedMember member, Properties credentials) {
+  public String authenticate(GMSMember member, Properties credentials) {
     return authenticate(member, credentials, this.securityProps);
   }
 
   /**
    * Method is package protected to be used in testing.
    */
-  String authenticate(DistributedMember member, Properties credentials, Properties secProps) {
+  String authenticate(GMSMember member, Properties credentials, Properties secProps) {
 
     // For older systems, locator might be started without cache, so secureService may not be
     // initialized here. We need to check if the passed in secProps has peer authenticator or not at
@@ -104,7 +105,7 @@ public class GMSAuthenticator implements Authenticator {
   /**
    * Method is package protected to be used in testing.
    */
-  Principal invokeAuthenticator(Properties securityProps, DistributedMember member,
+  Principal invokeAuthenticator(Properties securityProps, GMSMember member,
       Properties credentials) throws AuthenticationFailedException {
     String authMethod = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
     org.apache.geode.security.Authenticator auth = null;
@@ -115,7 +116,8 @@ public class GMSAuthenticator implements Authenticator {
       // this.securityProps contains security-ldap-basedn but security-ldap-baseDomainName is
       // expected
       auth.init(this.securityProps, logWriter, securityLogWriter);
-      return auth.authenticate(credentials, member);
+      return auth.authenticate(credentials,
+          new InternalDistributedMember(new GMSMemberAdapter(member)));
 
     } catch (GemFireSecurityException gse) {
       throw gse;
@@ -137,7 +139,7 @@ public class GMSAuthenticator implements Authenticator {
    * @return the credentials
    */
   @Override
-  public Properties getCredentials(InternalDistributedMember member) {
+  public Properties getCredentials(GMSMember member) {
     try {
       return getCredentials(member, securityProps);
 
@@ -153,9 +155,11 @@ public class GMSAuthenticator implements Authenticator {
   /**
    * For testing only.
    */
-  Properties getCredentials(DistributedMember member, Properties secProps) {
+  Properties getCredentials(GMSMember member, Properties secProps) {
     String authMethod = secProps.getProperty(SECURITY_PEER_AUTH_INIT);
-    return Handshake.getCredentials(authMethod, secProps, member, true,
+    return Handshake.getCredentials(authMethod, secProps,
+        new InternalDistributedMember(new GMSMemberAdapter(member)),
+        true,
         logWriter,
         securityLogWriter);
   }

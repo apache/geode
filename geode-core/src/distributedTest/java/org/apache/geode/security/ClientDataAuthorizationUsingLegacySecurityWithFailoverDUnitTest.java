@@ -131,7 +131,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   @Before
   public void setup() throws Exception {
     Properties clusterMemberProperties = getVMPropertiesWithPermission("cluster,data");
-    int version = Integer.parseInt(clientVersion);
+    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
     if (version == 0 || version >= 140) {
       clusterMemberProperties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
@@ -317,7 +317,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   @Test
   public void dataWriterCannotRegisterInterestAcrossFailover() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataWrite");
-    int version = Integer.parseInt(clientVersion);
+    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
     if (version == 0 || version >= 140) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
@@ -378,7 +378,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
 
     Properties props = getVMPropertiesWithPermission(withPermission);
 
-    int version = Integer.parseInt(clientVersion);
+    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
     if (version == 0 || version >= 140) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
@@ -428,7 +428,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     // We can't sent the object filter property versions before 1.4.0 because
     // it's not a valid property, but we must set it in 140 and above to allow
     // serialization of UsernamePrincipal
-    if (clientVersion.compareTo("140") >= 0) {
+    if (clientVersion.compareTo("1.4.0") >= 0) {
       props.setProperty(SERIALIZABLE_OBJECT_FILTER, UsernamePrincipal.class.getCanonicalName());
     }
     return props;

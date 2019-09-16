@@ -16,6 +16,7 @@ package org.apache.geode.test.version;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,15 +39,21 @@ import org.apache.commons.lang3.SystemUtils;
  * see Host.getVM(String, int)
  */
 public class VersionManager {
-  public static final String CURRENT_VERSION = "000";
-  public static final String GEODE_110 = "110";
-  public static final String GEODE_120 = "120";
-  public static final String GEODE_130 = "130";
-  public static final String GEODE_140 = "140";
+  public static final String CURRENT_VERSION = "0.0.0";
 
   private static VersionManager instance;
 
   protected String loadFailure = "";
+
+  /**
+   * returns the ordinal of the Version of Geode used in this JVM. Use this
+   * instead of Version.CURRENT or Version.CURRENT_ORDINAL in test code
+   */
+  public short getCurrentVersionOrdinal() {
+    return geodeCurrentVersionOrdinal;
+  }
+
+  private short geodeCurrentVersionOrdinal = -1;
 
   protected static void init() {
     instance = new VersionManager();
@@ -54,6 +61,7 @@ public class VersionManager {
     final String installLocations = "geodeOldVersionInstalls.txt";
     instance.findVersions(fileName);
     instance.findInstalls(installLocations);
+    instance.establishGeodeVersionOrdinal();
     // System.out
     // .println("VersionManager has loaded the following classpaths:\n" + instance.classPaths);
   }
@@ -113,6 +121,25 @@ public class VersionManager {
   }
 
   /**
+   * Remove the dots from a version string. "1.2.0" -> "120"
+   */
+  public String versionWithNoDots(String s) {
+    StringBuilder b = new StringBuilder(10);
+    int length = s.length();
+    for (int i = 0; i < length; i++) {
+      char ch = s.charAt(i);
+      if (ch != '.') {
+        // leave off any trailing stuff like "-incubating"
+        if (!Character.isDigit(ch)) {
+          break;
+        }
+        b.append(ch);
+      }
+    }
+    return b.toString();
+  }
+
+  /**
    * Returns a list of older versions available for testing
    */
   public List<String> getVersions() {
@@ -139,13 +166,13 @@ public class VersionManager {
     readVersionsFile(fileName, (version, path) -> {
       Optional<String> parsedVersion = parseVersion(version);
       if (parsedVersion.isPresent()) {
-        if (parsedVersion.get().equals("140")
+        if (parsedVersion.get().equals("1.4.0")
             && SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
           // Serialization filtering was added in 140, but the support for them in java 9+ was added
-          // in 150. As a result, 140 servers and clients will fail categorically when run in
+          // in 1.5.0. As a result, 1.4.0 servers and clients will fail categorically when run in
           // Java 9+ even with the additional libs (jaxb and activation) in the classpath
           System.err.println(
-              "Geode version 140 is incompatible with Java 9 and higher.  Skipping this version.");
+              "Geode version 1.4.0 is incompatible with Java 9 and higher.  Skipping this version.");
         } else {
           classPaths.put(parsedVersion.get(), path);
           testVersions.add(parsedVersion.get());
@@ -166,12 +193,9 @@ public class VersionManager {
 
   private Optional<String> parseVersion(String version) {
     String parsedVersion = null;
-    if (version.startsWith("test") && version.length() >= "test".length()) {
-      if (version.equals("test")) {
-        parsedVersion = CURRENT_VERSION;
-      } else {
-        parsedVersion = version.substring("test".length());
-      }
+    if (version.length() > 0 && Character.isDigit(version.charAt(0))
+        && version.length() >= "1.2.3".length()) {
+      parsedVersion = version;
     }
     return Optional.ofNullable(parsedVersion);
   }
@@ -198,5 +222,38 @@ public class VersionManager {
       return props;
     }
     return props;
+  }
+
+  public void establishGeodeVersionOrdinal() {
+    Class versionClass;
+    Field currentOrdinalField;
+    // GEODE's Version class was repackaged when serialization was modularized
+    try {
+      versionClass = Class.forName("org.apache.geode.internal.Version");
+    } catch (ClassNotFoundException e) {
+      try {
+        versionClass = Class.forName("org.apache.geode.internal.serialization.Version");
+      } catch (ClassNotFoundException e2) {
+        System.out.println("classpath is " + System.getProperty("java.class.path"));
+        throw new IllegalStateException(
+            "Unable to locate Version.java in order to establish the product's serialization version",
+            e2);
+      }
+    }
+    try {
+      currentOrdinalField = versionClass.getDeclaredField("CURRENT_ORDINAL");
+    } catch (NoSuchFieldException e) {
+      throw new IllegalStateException(
+          "Unable to locate Version.java's CURRENT_ORDINAL field in order to establish the product's serialization version",
+          e);
+    }
+    currentOrdinalField.setAccessible(true);
+    try {
+      geodeCurrentVersionOrdinal = currentOrdinalField.getShort(null);
+    } catch (IllegalAccessException e) {
+      throw new IllegalStateException(
+          "Unable to retrieve Version.java's CURRENT_ORDINAL field in order to establlish the product's serialization version",
+          e);
+    }
   }
 }

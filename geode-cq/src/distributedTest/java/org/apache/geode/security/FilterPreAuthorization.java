@@ -32,7 +32,7 @@ import org.apache.geode.cache.operations.PutOperationContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * An authorization implementation for testing that changes a string value in pre-operation phase to

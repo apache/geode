@@ -1322,9 +1322,14 @@ public class DistributionStats implements DMStats {
   }
 
   @Override
-  public void incUDPDispatchRequestTime(long delta) {
+  public long startUDPDispatchRequest() {
+    return getTime();
+  }
+
+  @Override
+  public void endUDPDispatchRequest(long start) {
     if (enableClockStats) {
-      this.stats.incLong(udpDispatchRequestTimeId, delta);
+      this.stats.incLong(udpDispatchRequestTimeId, getTime() - start);
     }
   }
 
