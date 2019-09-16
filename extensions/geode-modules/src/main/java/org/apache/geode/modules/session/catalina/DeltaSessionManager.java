@@ -67,8 +67,8 @@ public abstract class DeltaSessionManager extends ManagerBase
     implements Lifecycle, PropertyChangeListener, SessionManager {
 
   static final String catalinaBaseSystemProperty = "catalina.base";
-  static final  String javaTempDirSystemProperty = "java.io.tmpdir";
-  static final  String fileSeparatorSystemProperty = "file.separator";
+  static final String javaTempDirSystemProperty = "java.io.tmpdir";
+  static final String fileSeparatorSystemProperty = "file.separator";
   /**
    * The number of rejected sessions.
    */
@@ -1007,15 +1007,15 @@ public abstract class DeltaSessionManager extends ManagerBase
     return (Integer) ois.readObject();
   }
 
-//  @VisibleForTesting
-//  void setLifecycleState(LifecycleState newState) throws LifecycleException {
-//    this.setState(newState);
-//  }
-//
-//  @VisibleForTesting
-//  void startInternalBase() throws LifecycleException {
-//    super.startInternal();
-//  }
+  // @VisibleForTesting
+  // void setLifecycleState(LifecycleState newState) throws LifecycleException {
+  // this.setState(newState);
+  // }
+  //
+  // @VisibleForTesting
+  // void startInternalBase() throws LifecycleException {
+  // super.startInternal();
+  // }
 
   @Override
   public String toString() {
