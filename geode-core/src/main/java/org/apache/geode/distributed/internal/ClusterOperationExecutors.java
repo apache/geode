@@ -679,7 +679,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
   }
 
   public void handleManagerDeparture(InternalDistributedMember theId) {
-    // Remove this manager from the serialQueueExecutor.
     if (serialQueuedExecutorPool != null) {
       serialQueuedExecutorPool.handleMemberDeparture(theId);
     }

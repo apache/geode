@@ -16,7 +16,7 @@ package org.apache.geode.distributed.internal.membership;
 
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.ReadWriteLock;
+import java.util.function.Function;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
@@ -41,12 +41,9 @@ public interface MembershipManager extends Membership {
   void postConnect();
 
   /**
-   * Returns an object that is used to sync access to the view. While this lock is held the view
-   * can't change.
-   *
-   * @since GemFire 5.7
+   * execute code with the membership view locked so that it doesn't change
    */
-  ReadWriteLock getViewLock();
+  <V> V doWithViewLocked(Function<MembershipManager, V> function);
 
   /**
    * Sanity checking, esp. for elder processing. Does the existing member (still) exist in our view?

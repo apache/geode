@@ -627,6 +627,16 @@ public class GMSMembershipManager implements MembershipManager {
     }
   }
 
+  @Override
+  public <V> V doWithViewLocked(Function<MembershipManager, V> function) {
+    latestViewReadLock.lock();
+    try {
+      return (V) function.apply(this);
+    } finally {
+      latestViewReadLock.unlock();
+    }
+  }
+
   public boolean isCleanupTimerStarted() {
     return this.cleanupTimer != null;
   }
@@ -1277,11 +1287,6 @@ public class GMSMembershipManager implements MembershipManager {
    */
   public List<StartupEvent> getStartupEvents() {
     return this.startupMessages;
-  }
-
-  @Override
-  public ReadWriteLock getViewLock() {
-    return this.latestViewLock;
   }
 
   /**

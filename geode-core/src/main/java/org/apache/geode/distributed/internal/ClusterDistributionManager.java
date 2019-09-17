@@ -1037,16 +1037,10 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public List<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
       MembershipListener l) {
-    // switched sync order to fix bug 30360
-    synchronized (membersLock) {
-      // Don't let the members come and go while we are adding this
-      // listener. This ensures that the listener (probably a
-      // ReplyProcessor) gets a consistent view of the members.
+    return membershipManager.doWithViewLocked((manager) -> {
       addMembershipListener(l);
-      // Note it is ok to return the members set
-      // because we will never modify the returned set.
-      return getViewMembers();
-    }
+      return manager.getView().getMembers();
+    });
   }
 
   private void addNewMember(InternalDistributedMember member) {
@@ -1786,20 +1780,17 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private boolean removeManager(InternalDistributedMember theId, boolean crashed, String p_reason) {
     String reason = p_reason;
-    boolean result = false; // initialization shouldn't be required, but...
 
-    if (isCurrentMember(theId)) {
-      reason = prettifyReason(reason);
-      if (logger.isDebugEnabled()) {
-        logger.debug("DistributionManager: removing member <{}>; crashed {}; reason = {}", theId,
-            crashed, reason);
-      }
-      removeHostedLocators(theId);
+    reason = prettifyReason(reason);
+    if (logger.isDebugEnabled()) {
+      logger.debug("DistributionManager: removing member <{}>; crashed {}; reason = {}", theId,
+          crashed, reason);
     }
+    removeHostedLocators(theId);
 
     redundancyZones.remove(theId);
 
-    return result;
+    return true;
   }
 
   /**
@@ -1811,9 +1802,6 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private void handleManagerStartup(InternalDistributedMember theId) {
     // Note test is under membersLock
-    if (membershipManager.getView().contains(theId)) {
-      return; // already accounted for
-    }
     if (theId.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE) {
       stats.incNodes(1);
     }
@@ -1871,8 +1859,6 @@ public class ClusterDistributionManager implements DistributionManager {
 
   void shutdownMessageReceived(InternalDistributedMember theId, String reason) {
     membershipManager.shutdownMessageReceived(theId, reason);
-    handleManagerDeparture(theId, false,
-        "shutdown message received");
   }
 
   @Override
@@ -1888,10 +1874,6 @@ public class ClusterDistributionManager implements DistributionManager {
       return;
     }
 
-    // not an admin VM...
-    if (!isCurrentMember(theId)) {
-      return; // fault tolerance
-    }
     removeUnfinishedStartup(theId, true);
 
     if (removeManager(theId, p_crashed, p_reason)) {
