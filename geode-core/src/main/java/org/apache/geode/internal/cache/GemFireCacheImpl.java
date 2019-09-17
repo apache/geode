@@ -1278,8 +1278,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (service.init(this)) {
           services.put(service.getInterface(), service);
           logger.info("Initialized cache service {}", service.getClass().getName());
-        } else {
-          logger.warn("Cache service {} failed to initialize", service.getClass().getName());
         }
       } catch (Exception ex) {
         logger.warn("Cache service " + service.getClass().getName() + " failed to initialize", ex);
