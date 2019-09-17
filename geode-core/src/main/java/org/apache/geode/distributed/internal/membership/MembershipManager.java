@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
@@ -289,4 +290,8 @@ public interface MembershipManager extends Membership {
    */
   DistributedMember getCoordinator();
 
+  /**
+   * return a list of all members excluding those in the process of shutting down
+   */
+  List<InternalDistributedMember> getMembersNotShuttingDown();
 }

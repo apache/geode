@@ -37,6 +37,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -1417,6 +1418,18 @@ public class GMSMembershipManager implements MembershipManager {
   }
 
   @Override
+  public List<InternalDistributedMember> getMembersNotShuttingDown() {
+    latestViewReadLock.lock();
+    try {
+      return latestView.getMembers().stream().filter(id -> !shutdownMembers.containsKey(id))
+          .collect(
+              Collectors.toList());
+    } finally {
+      latestViewReadLock.unlock();
+    }
+  }
+
+  @Override
   public void shutdown() {
     setShutdown();
     services.stop();
@@ -1879,11 +1892,6 @@ public class GMSMembershipManager implements MembershipManager {
     } finally {
       latestViewWriteLock.unlock();
     }
-  }
-
-  @Override
-  public <T> T withViewLock(Function function) {
-    return (T) function.apply(this);
   }
 
   private boolean isShunnedOrNew(final InternalDistributedMember m) {

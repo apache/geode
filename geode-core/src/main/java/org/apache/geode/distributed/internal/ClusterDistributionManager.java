@@ -859,7 +859,7 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   @Override
   public List<InternalDistributedMember> getDistributionManagerIds() {
-    return getViewMembers();
+    return membershipManager.getMembersNotShuttingDown();
   }
 
   /**
@@ -1039,7 +1039,7 @@ public class ClusterDistributionManager implements DistributionManager {
       MembershipListener l) {
     return membershipManager.doWithViewLocked((manager) -> {
       addMembershipListener(l);
-      return manager.getView().getMembers();
+      return manager.getMembersNotShuttingDown();
     });
   }
 
@@ -1549,12 +1549,12 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public List<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(
       MembershipListener l) {
-    return membershipManager.withViewLock((manager) -> {
+    return membershipManager.doWithViewLocked((manager) -> {
       // Don't let the members come and go while we are adding this
       // listener. This ensures that the listener (probably a
       // ReplyProcessor) gets a consistent view of the members.
       addAllMembershipListener(l);
-      return membershipManager.getView().getMembers();
+      return manager.getMembersNotShuttingDown();
     });
   }
 
@@ -1858,6 +1858,7 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   void shutdownMessageReceived(InternalDistributedMember theId, String reason) {
+    removeHostedLocators(theId);
     membershipManager.shutdownMessageReceived(theId, reason);
   }
 
@@ -2715,14 +2716,14 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public List<InternalDistributedMember> getNormalDistributionManagerIds() {
-    return membershipManager.getView().getMembers().stream()
+    return membershipManager.getMembersNotShuttingDown().stream()
         .filter((id) -> id.getVmKind() != LOCATOR_DM_TYPE).collect(
             Collectors.toList());
   }
 
   /** test method to get the member IDs of all locators in the distributed system */
   public Set<InternalDistributedMember> getLocatorDistributionManagerIds() {
-    return membershipManager.getView().getMembers().stream()
+    return membershipManager.getMembersNotShuttingDown().stream()
         .filter((id) -> id.getVmKind() == LOCATOR_DM_TYPE).collect(
             Collectors.toSet());
   }

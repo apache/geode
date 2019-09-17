@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 import java.io.NotSerializableException;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -97,5 +96,4 @@ public interface Membership {
    */
   boolean isShunned(DistributedMember m);
 
-  <T> T withViewLock(Function function);
 }
