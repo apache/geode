@@ -17,6 +17,7 @@ package org.apache.geode.alerting.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.eq;
@@ -26,6 +27,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,6 +38,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.alerting.spi.AlertLevel;
 import org.apache.geode.distributed.DistributedMember;
@@ -74,7 +79,7 @@ public class ClusterAlertMessagingTest {
   @Test
   public void sendAlertProcessesMessageIfMemberIsLocal() {
     ClusterAlertMessaging clusterAlertMessaging = spyClusterAlertMessaging(
-        mock(ClusterDistributionManager.class));
+        mock(ClusterDistributionManager.class), currentThreadExecutorService());
 
     clusterAlertMessaging.sendAlert(localMember, AlertLevel.WARNING, Instant.now(), "threadName",
         Thread.currentThread().getId(), "formattedMessage", "stackTrace");
@@ -85,7 +90,8 @@ public class ClusterAlertMessagingTest {
   @Test
   public void sendAlertSendsMessageIfMemberIsRemote() {
     DistributionManager dm = mock(ClusterDistributionManager.class);
-    ClusterAlertMessaging clusterAlertMessaging = spyClusterAlertMessaging(dm);
+    ClusterAlertMessaging clusterAlertMessaging =
+        spyClusterAlertMessaging(dm, currentThreadExecutorService());
 
     clusterAlertMessaging.sendAlert(remoteMember, AlertLevel.WARNING, Instant.now(), "threadName",
         Thread.currentThread().getId(), "formattedMessage", "stackTrace");
@@ -94,9 +100,21 @@ public class ClusterAlertMessagingTest {
   }
 
   @Test
+  public void sendAlertUsesExecutorService() {
+    ExecutorService executor = currentThreadExecutorService();
+    ClusterAlertMessaging clusterAlertMessaging =
+        spyClusterAlertMessaging(mock(ClusterDistributionManager.class), executor);
+
+    clusterAlertMessaging.sendAlert(remoteMember, AlertLevel.WARNING, Instant.now(), "threadName",
+        Thread.currentThread().getId(), "formattedMessage", "stackTrace");
+
+    verify(executor).submit(any(Runnable.class));
+  }
+
+  @Test
   public void processAlertListenerMessage_requires_ClusterDistributionManager() {
     ClusterAlertMessaging clusterAlertMessaging = spy(new ClusterAlertMessaging(system,
-        mock(DistributionManager.class), alertListenerMessageFactory));
+        mock(DistributionManager.class), alertListenerMessageFactory, mock(ExecutorService.class)));
 
     Throwable thrown = catchThrowable(
         () -> clusterAlertMessaging.processAlertListenerMessage(alertListenerMessage));
@@ -104,7 +122,8 @@ public class ClusterAlertMessagingTest {
     assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
   }
 
-  private ClusterAlertMessaging spyClusterAlertMessaging(DistributionManager distributionManager) {
+  private ClusterAlertMessaging spyClusterAlertMessaging(DistributionManager distributionManager,
+      ExecutorService executorService) {
     when(alertListenerMessageFactory.createAlertListenerMessage(any(DistributedMember.class),
         any(AlertLevel.class), any(Instant.class), anyString(), anyString(), anyLong(), anyString(),
         anyString()))
@@ -115,6 +134,18 @@ public class ClusterAlertMessagingTest {
         .thenReturn(config);
     when(system.getDistributedMember())
         .thenReturn(localMember);
-    return spy(new ClusterAlertMessaging(system, distributionManager, alertListenerMessageFactory));
+    return spy(new ClusterAlertMessaging(system, distributionManager, alertListenerMessageFactory,
+        executorService));
+  }
+
+  private ExecutorService currentThreadExecutorService() {
+    ExecutorService executor = mock(ExecutorService.class);
+    when(executor.submit(isA(Runnable.class)))
+        .thenAnswer((Answer<Future<?>>) invocation -> {
+          Runnable task = invocation.getArgument(0);
+          task.run();
+          return CompletableFuture.completedFuture(null);
+        });
+    return executor;
   }
 }
