@@ -140,13 +140,17 @@ public class FlatFormatSerializer implements LuceneSerializer {
           && SerializerUtil.supportedPrimitiveTypes().contains(clazz)) {
         return value;
       }
-      try {
-        Field field = clazz.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return field.get(value);
-      } catch (Exception e) {
-        return null;
-      }
+
+      do {
+        try {
+          Field field = clazz.getDeclaredField(fieldName);
+          field.setAccessible(true);
+          return field.get(value);
+        } catch (Exception e) {
+          clazz = clazz.getSuperclass();
+        }
+      } while (clazz != null && !clazz.equals(Object.class));
+      return null;
     }
   }
 }
