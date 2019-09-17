@@ -17,27 +17,23 @@
 
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
+apply from: "${project.projectDir}/../gradle/publish.gradle"
+
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  compile('org.awaitility:awaitility')
-  compile('junit:junit')
-  compile('org.eclipse.jetty:jetty-server')
-  compile('commons-io:commons-io')
-  compile('org.apache.commons:commons-lang3')
-  compile('mx4j:mx4j')
-  compile('mx4j:mx4j-remote') {
-    ext.optional = true
+
+  implementation('org.springframework:spring-web')
+  implementation('org.apache.httpcomponents:httpclient')
+  implementation('org.apache.logging.log4j:log4j-api')
+  implementation('org.eclipse.jetty:jetty-webapp')
+  implementation('org.eclipse.jetty:jetty-server')
+
+  compileOnly(project(':geode-core'))
+  compileOnly(project(':geode-common')) {
+    exclude module: 'junit'
   }
 
-  compile(project(':geode-core'))
-  compile(project(':geode-http-service'))
-  compile(project(':geode-junit')) {
-    exclude module: 'geode-core'
-  }
-  compileOnly(project(':geode-pulse'))
-
-  compile('org.seleniumhq.selenium:selenium-api')
-  compile('org.seleniumhq.selenium:selenium-chrome-driver')
-  compile('org.seleniumhq.selenium:selenium-support')
+  testCompile(project(':geode-core'))
+  testCompile(project(':geode-common'))
+  testCompile(project(':geode-junit'))
 }
-

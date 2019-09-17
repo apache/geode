@@ -56,7 +56,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -199,15 +198,14 @@ public class ManagementAgent {
     }
 
     try {
-      if (cache.getHttpService().isPresent()
-          && agentUtil.isAnyWarFileAvailable(adminRestWar, pulseWar)) {
-        HttpService httpService = cache.getHttpService().get();
+      HttpService httpService = cache.getService(HttpService.class);
+      if (httpService != null && agentUtil.isAnyWarFileAvailable(adminRestWar, pulseWar)) {
 
         final String bindAddress = this.config.getHttpServiceBindAddress();
         final int port = this.config.getHttpServicePort();
 
         Map<String, Object> serviceAttributes = new HashMap<>();
-        serviceAttributes.put(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+        serviceAttributes.put(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
             securityService);
 
         // if jmx manager is running, admin rest should be available, either on locator or server
@@ -231,7 +229,7 @@ public class ManagementAgent {
           System.setProperty(PULSE_USESSL_MANAGER, jmxSocketCreator.useSSL() + "");
           System.setProperty(PULSE_USESSL_LOCATOR, locatorSocketCreator.useSSL() + "");
 
-          serviceAttributes.put(InternalHttpService.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
+          serviceAttributes.put(HttpService.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
               createSslProps());
 
           httpService.addWebApplication("/pulse", Paths.get(pulseWar), serviceAttributes);

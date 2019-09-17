@@ -36,14 +36,20 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.internal.HttpService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.SSLUtil;
+import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 public class InternalHttpService implements HttpService {
 
-  public static final String AUTH_TOKEN_ENABLED_PARAM = "org.apache.geode.auth.token.enabled";
   private static final Logger logger = LogService.getLogger();
   private Server httpServer;
   private String bindAddress = "0.0.0.0";
@@ -54,20 +60,38 @@ public class InternalHttpService implements HttpService {
 
   private static final String HTTPS = "https";
 
-  public static final String SECURITY_SERVICE_SERVLET_CONTEXT_PARAM =
-      "org.apache.geode.securityService";
-
-  public static final String GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM = "org.apache.geode.sslConfig";
-  public static final String CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM =
-      "org.apache.geode.cluster.management.service";
-
   private List<WebAppContext> webApps = new ArrayList<>();
 
-  public InternalHttpService(String bindAddress, int port, SSLConfig sslConfig) {
-    if (port == 0) {
-      return;
+  @Override
+  public boolean init(Cache cache) {
+    InternalDistributedSystem distributedSystem =
+        (InternalDistributedSystem) cache.getDistributedSystem();
+    DistributionConfig systemConfig = distributedSystem.getConfig();
+
+    if (((InternalCache) cache).isClient()) {
+      return false;
     }
 
+    if (systemConfig.getHttpServicePort() == 0) {
+      logger.info("HttpService is disabled with http-service-port = 0");
+      return false;
+    }
+
+    try {
+      createJettyServer(systemConfig.getHttpServiceBindAddress(),
+          systemConfig.getHttpServicePort(),
+          SSLConfigurationFactory.getSSLConfigForComponent(systemConfig,
+              SecurableCommunicationChannel.WEB));
+    } catch (Throwable ex) {
+      logger.warn("Could not enable HttpService: {}", ex.getMessage());
+      return false;
+    }
+
+    return true;
+  }
+
+  @VisibleForTesting
+  public void createJettyServer(String bindAddress, int port, SSLConfig sslConfig) {
     this.httpServer = new Server();
 
     // Add a handler collection here, so that each new context adds itself
@@ -128,6 +152,16 @@ public class InternalHttpService implements HttpService {
     logger.info("Enabled InternalHttpService on port {}", port);
   }
 
+  @Override
+  public Class<? extends CacheService> getInterface() {
+    return HttpService.class;
+  }
+
+  @Override
+  public CacheServiceMBeanBase getMBean() {
+    return null;
+  }
+
   public Server getHttpServer() {
     return httpServer;
   }
@@ -184,7 +218,7 @@ public class InternalHttpService implements HttpService {
   }
 
   @Override
-  public void stop() {
+  public void close() {
     if (this.httpServer == null) {
       return;
     }

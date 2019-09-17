@@ -179,10 +179,6 @@ public class JdbcConnectorServiceImpl implements JdbcConnectorService {
   }
 
   @Override
-  public void init(Cache cache) {}
-
-
-  @Override
   public Class<? extends CacheService> getInterface() {
     return JdbcConnectorService.class;
   }

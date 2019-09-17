@@ -22,7 +22,7 @@ import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.context.ServletContextAware;
 
-import org.apache.geode.internal.cache.InternalHttpService;
+import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 
@@ -35,9 +35,9 @@ public class AbstractManagementController implements ServletContextAware {
   @Override
   public void setServletContext(ServletContext servletContext) {
     securityService = (SecurityService) servletContext
-        .getAttribute(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
+        .getAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM);
     clusterManagementService = (LocatorClusterManagementService) servletContext
-        .getAttribute(InternalHttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM);
+        .getAttribute(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM);
   }
 
   /**

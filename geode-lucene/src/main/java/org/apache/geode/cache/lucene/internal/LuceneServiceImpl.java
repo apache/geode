@@ -114,7 +114,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   @Override
-  public void init(final Cache cache) {
+  public boolean init(final Cache cache) {
     if (cache == null) {
       throw new IllegalStateException("cache is null");
     }
@@ -128,6 +128,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
     FunctionService.registerFunction(new IndexingInProgressFunction());
     FunctionService.registerFunction(new DumpDirectoryFiles());
     registerDataSerializables();
+
+    return true;
   }
 
   @Override

@@ -138,7 +138,6 @@ import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
@@ -223,10 +222,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.MemoryAllocator;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
@@ -599,8 +596,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final ClusterConfigurationLoader ccLoader = new ClusterConfigurationLoader();
 
-  private Optional<HttpService> httpService = Optional.ofNullable(null);
-
   private final MeterRegistry meterRegistry;
   private final Set<MeterRegistry> meterSubregistries;
 
@@ -934,22 +929,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       addRegionEntrySynchronizationListener(new GatewaySenderQueueEntrySynchronizationListener());
       backupService = new BackupService(this);
-      if (!this.isClient) {
-        if (systemConfig.getHttpServicePort() == 0) {
-          logger.info("HttpService is disabled with http-serivce-port = 0");
-          httpService = Optional.empty();
-        } else {
-          try {
-            httpService =
-                Optional.of(new InternalHttpService(systemConfig.getHttpServiceBindAddress(),
-                    systemConfig.getHttpServicePort(), SSLConfigurationFactory
-                        .getSSLConfigForComponent(systemConfig,
-                            SecurableCommunicationChannel.WEB)));
-          } catch (Throwable ex) {
-            logger.warn("Could not enable HttpService: {}", ex.getMessage());
-          }
-        }
-      }
     } // synchronized
 
     clientMetadataService = new ClientMetadataService(this);
@@ -1003,11 +982,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public Set<MeterRegistry> getMeterSubregistries() {
     return meterSubregistries;
-  }
-
-  @Override
-  public Optional<HttpService> getHttpService() {
-    return httpService;
   }
 
   @Override
@@ -1243,10 +1217,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     // This call may need to be moved inside initializeDeclarativeCache.
     jmxAdvisor.initializationGate(); // Entry to GemFire Management service
 
-    // this starts up the ManagementService, register and federate the internal beans
+    initializeServices();
+
+    // This starts up the ManagementService, registers and federates the internal beans. Since it
+    // may be starting up web services, it relies on the prior step which would have started the
+    // HttpService.
     system.handleResourceEvent(ResourceEvent.CACHE_CREATE, this);
 
-    initializeServices();
+    // Resource events, generated for started services. These events may depend on the prior
+    // CACHE_CREATE event which is why they are split out separately.
+    handleResourceEventsForCacheServices();
 
     boolean completedCacheXml = false;
     try {
@@ -1294,10 +1274,20 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private void initializeServices() {
     ServiceLoader<CacheService> loader = ServiceLoader.load(CacheService.class);
     for (CacheService service : loader) {
-      service.init(this);
-      services.put(service.getInterface(), service);
+      try {
+        if (service.init(this)) {
+          services.put(service.getInterface(), service);
+          logger.info("Initialized cache service {}", service.getClass().getName());
+        }
+      } catch (Exception ex) {
+        logger.warn("Cache service " + service.getClass().getName() + " failed to initialize", ex);
+      }
+    }
+  }
+
+  private void handleResourceEventsForCacheServices() {
+    for (CacheService service : services.values()) {
       system.handleResourceEvent(ResourceEvent.CACHE_SERVICE_CREATE, service);
-      logger.info("Initialized cache service {}", service.getClass().getName());
     }
   }
 
@@ -2178,8 +2168,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           stopServers();
 
           stopServices();
-
-          httpService.ifPresent(HttpService::stop);
 
           // no need to track PR instances since we won't create any more
           // cacheServers or gatewayHubs
@@ -3655,6 +3643,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public <T extends CacheService> T getService(Class<T> clazz) {
     return clazz.cast(services.get(clazz));
+  }
+
+  @Override
+  public <T extends CacheService> Optional<T> getOptionalService(Class<T> clazz) {
+    return Optional.ofNullable(getService(clazz));
   }
 
   @Override

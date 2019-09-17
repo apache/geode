@@ -41,7 +41,6 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
-import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.QueryMonitor;
@@ -92,6 +91,8 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Reco
   CqService getCqService();
 
   <T extends CacheService> T getService(Class<T> clazz);
+
+  <T extends CacheService> Optional<T> getOptionalService(Class<T> clazz);
 
   Collection<CacheService> getServices();
 
@@ -378,8 +379,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Reco
    * by Geode will not be accessible from the returned cache.
    */
   InternalCacheForClientAccess getCacheForProcessingClientRequests();
-
-  Optional<HttpService> getHttpService();
 
   void initialize();
 

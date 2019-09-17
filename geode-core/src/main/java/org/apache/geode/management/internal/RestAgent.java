@@ -33,7 +33,6 @@ import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
@@ -105,11 +104,11 @@ public class RestAgent {
     } else if (agentUtil.isAnyWarFileAvailable(gemfireAPIWar)) {
 
       Map<String, Object> securityServiceAttr = new HashMap<>();
-      securityServiceAttr.put(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+      securityServiceAttr.put(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
           securityService);
 
-      if (cache.getHttpService().isPresent()) {
-        HttpService httpService = cache.getHttpService().get();
+      if (cache.getOptionalService(HttpService.class).isPresent()) {
+        HttpService httpService = cache.getOptionalService(HttpService.class).get();
         Path gemfireAPIWarPath = Paths.get(gemfireAPIWar);
         httpService.addWebApplication("/gemfire-api", gemfireAPIWarPath, securityServiceAttr);
         httpService.addWebApplication("/geode", gemfireAPIWarPath, securityServiceAttr);
