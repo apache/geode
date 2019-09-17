@@ -14,31 +14,13 @@
  */
 package org.apache.geode.cache.lucene.test;
 
-import java.io.Serializable;
 import java.util.Collection;
 
-public class Customer implements Serializable {
-  protected String name;
-  protected Collection<String> phoneNumbers;
-  protected Collection<Person> contacts;
-  protected Page[] myHomePages;
-
-  public Customer(String name, Collection<String> phoneNumbers, Collection<Person> contacts,
+public class GrandSubCustomer extends SubCustomer {
+  public GrandSubCustomer(String name,
+      Collection<String> phoneNumbers,
+      Collection<Person> contacts,
       Page[] myHomePages) {
-    this.name = name;
-    this.phoneNumbers = phoneNumbers;
-    this.contacts = contacts;
-    this.myHomePages = myHomePages;
-  }
-
-  public void addContact(Person contact) {
-    this.contacts.add(contact);
-  }
-
-  @Override
-  public String toString() {
-    return this.getClass() + "[name=" + name + ",phoneNumbers=" + phoneNumbers + ",contacts="
-        + contacts
-        + ",homepage=" + myHomePages + "]";
+    super(name, phoneNumbers, contacts, myHomePages);
   }
 }
