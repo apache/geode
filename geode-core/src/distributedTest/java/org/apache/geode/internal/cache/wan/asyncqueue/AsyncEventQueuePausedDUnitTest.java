@@ -28,7 +28,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.core.ConditionTimeoutException;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -147,7 +146,6 @@ public class AsyncEventQueuePausedDUnitTest implements Serializable {
 
   }
 
-  @NotNull
   private static Integer getEventDispatchedSize() {
     Cache cache = ClusterStartupRule.getCache();
     AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue("aeqID");

@@ -117,12 +117,12 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     // create queue without start paused set
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue1 "
         + "--batch-size=1024 --max-queue-memory=512 --listener-param=param1,param2#value2 ")
-        .statusIsSuccess().tableHasRowCount(1);
+        .statusIsSuccess().tableHasRowCount("Member", 1);
 
 
     // list the queue to verify the the queue has start paused set to false
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
-        .tableHasRowCount(1).tableHasRowWithValues("Member", "ID", "Batch Size",
+        .tableHasRowCount("Member", 1).tableHasRowWithValues("Member", "ID", "Batch Size",
             "Persistent", "Disk Store", "Max Memory", "Created with paused event processing",
             "Currently Paused", "server-1",
             "queue1", "1024", "false",
@@ -131,12 +131,12 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     // create queue with start paused set
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue2 "
         + "--batch-size=1024 --max-queue-memory=512 --listener-param=param1,param2#value2 --pause-event-processing")
-        .statusIsSuccess().tableHasRowCount(1);
+        .statusIsSuccess().tableHasRowCount("Member", 1);
 
 
     // list the queue to verify the the queue has start paused set to true
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
-        .tableHasRowCount(2).tableHasRowWithValues("Member", "ID", "Batch Size",
+        .tableHasRowCount("Member", 2).tableHasRowWithValues("Member", "ID", "Batch Size",
             "Persistent", "Disk Store", "Max Memory", "Created with paused event processing",
             "Currently Paused", "server-1",
             "queue2", "1024", "false",
