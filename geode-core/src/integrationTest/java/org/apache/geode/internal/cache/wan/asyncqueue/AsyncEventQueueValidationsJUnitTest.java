@@ -159,9 +159,8 @@ public class AsyncEventQueueValidationsJUnitTest {
       String cacheXmlFileBaseName) {
     // Create cache with xml
     String cacheXmlFileName =
-        createTempFileFromResource(getClass(),
-            getClass().getSimpleName() + "." + cacheXmlFileBaseName + ".cache.xml")
-                .getAbsolutePath();
+        TestUtil.getResourcePath(getClass(),
+            getClass().getSimpleName() + "." + cacheXmlFileBaseName + ".cache.xml");
     cache = new CacheFactory().set(MCAST_PORT, "0").set(CACHE_XML_FILE, cacheXmlFileName).create();
 
     // Get AsyncEventQueue and GatewayEventFilter

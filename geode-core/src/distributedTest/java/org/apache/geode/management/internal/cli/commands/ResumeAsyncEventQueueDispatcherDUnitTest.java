@@ -50,41 +50,41 @@ public class ResumeAsyncEventQueueDispatcherDUnitTest {
     // create an AEQ with start paused set to false to verify proper behavior
     gfsh.executeAndAssertThat(CREATE_COMMAND + " --id=unpausedqueue --pause-event-processing=false")
         .statusIsSuccess()
-        .tableHasRowCount(1)
+        .tableHasRowCount("Member", 1)
         .tableHasRowWithValues("Member", "Status", "Message", "server-1", "OK", "Success");
 
     // verify our AEQ was created as expected
     gfsh.executeAndAssertThat(LIST_COMMAND).statusIsSuccess()
-        .tableHasRowCount(1).tableHasRowWithValues("Member", "ID",
+        .tableHasRowCount("Member", 1).tableHasRowWithValues("Member", "ID",
             "Created with paused event processing", "Currently Paused", "server-1", "unpausedqueue",
             "false",
             "false");
 
     // Issue the resume command and confirm it reports that the queue is already dispatching
     gfsh.executeAndAssertThat(RESUME_COMMAND + " --id=unpausedqueue").statusIsSuccess()
-        .tableHasRowCount(1)
+        .tableHasRowCount("Member", 1)
         .containsOutput("Async Event Queue \"unpausedqueue\" dispatching was not paused.");
 
     // create an AEQ with start paused set so we have a queue to unpause
     gfsh.executeAndAssertThat(CREATE_COMMAND + " --id=queue --pause-event-processing")
         .statusIsSuccess()
-        .tableHasRowCount(1)
+        .tableHasRowCount("Member", 1)
         .tableHasRowWithValues("Member", "Status", "Message", "server-1", "OK", "Success");
 
     // verify our AEQ was created as expected
     gfsh.executeAndAssertThat(LIST_COMMAND).statusIsSuccess()
-        .tableHasRowCount(2).tableHasRowWithValues("Member", "ID",
+        .tableHasRowCount("Member", 2).tableHasRowWithValues("Member", "ID",
             "Created with paused event processing", "Currently Paused", "server-1", "queue", "true",
             "true");
 
     // Issue the resume command and confirm it reports success
     gfsh.executeAndAssertThat(RESUME_COMMAND + " --id=queue").statusIsSuccess()
-        .tableHasRowCount(1)
+        .tableHasRowCount("Member", 1)
         .containsOutput("Async Event Queue \"queue\" dispatching was resumed successfully");
 
     // list the queue to verify the result
     gfsh.executeAndAssertThat(LIST_COMMAND).statusIsSuccess()
-        .tableHasRowCount(2).tableHasRowWithValues("Member", "ID",
+        .tableHasRowCount("Member", 2).tableHasRowWithValues("Member", "ID",
             "Created with paused event processing", "Currently Paused", "server-1", "queue", "true",
             "false");
   }

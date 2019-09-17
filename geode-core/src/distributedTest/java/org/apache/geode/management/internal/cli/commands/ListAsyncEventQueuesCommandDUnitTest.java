@@ -84,7 +84,7 @@ public class ListAsyncEventQueuesCommandDUnitTest {
 
     // locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue3", 1);
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
-        .tableHasRowCount("Member",6)
+        .tableHasRowCount("Member", 6)
         .tableHasRowWithValues("Member", "ID", "Created with paused event processing",
             "Currently Paused", "server-1", "queue3",
             "true", "true")
