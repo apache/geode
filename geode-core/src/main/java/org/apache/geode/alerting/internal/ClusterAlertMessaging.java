@@ -14,7 +14,10 @@
  */
 package org.apache.geode.alerting.internal;
 
+import static org.apache.geode.internal.logging.LoggingExecutors.newFixedThreadPool;
+
 import java.time.Instant;
+import java.util.concurrent.ExecutorService;
 
 import org.apache.logging.log4j.Logger;
 
@@ -35,20 +38,24 @@ public class ClusterAlertMessaging implements AlertMessaging {
   private final InternalDistributedSystem system;
   private final DistributionManager dm;
   private final AlertListenerMessageFactory alertListenerMessageFactory;
+  private final ExecutorService executor;
 
   public ClusterAlertMessaging(final InternalDistributedSystem system) {
     this(system,
         system.getDistributionManager(),
-        new AlertListenerMessageFactory());
+        new AlertListenerMessageFactory(),
+        newFixedThreadPool("AlertingMessaging Processor", true, 1));
   }
 
   @VisibleForTesting
   ClusterAlertMessaging(final InternalDistributedSystem system,
       final DistributionManager dm,
-      final AlertListenerMessageFactory alertListenerMessageFactory) {
+      final AlertListenerMessageFactory alertListenerMessageFactory,
+      final ExecutorService executor) {
     this.system = system;
     this.dm = dm;
     this.alertListenerMessageFactory = alertListenerMessageFactory;
+    this.executor = executor;
   }
 
   @Override
@@ -59,35 +66,37 @@ public class ClusterAlertMessaging implements AlertMessaging {
       final long threadId,
       final String formattedMessage,
       final String stackTrace) {
-    try {
-      String connectionName = system.getConfig().getName();
+    executor.submit(() -> {
+      try {
+        String connectionName = system.getConfig().getName();
 
-      AlertListenerMessage message =
-          alertListenerMessageFactory.createAlertListenerMessage(member, alertLevel, timestamp,
-              connectionName, threadName, threadId, formattedMessage, stackTrace);
+        AlertListenerMessage message =
+            alertListenerMessageFactory.createAlertListenerMessage(member, alertLevel, timestamp,
+                connectionName, threadName, threadId, formattedMessage, stackTrace);
 
-      if (member.equals(system.getDistributedMember())) {
-        // process in local member
-        logger.debug("Processing local alert message: {}, {}, {}, {}, {}, {}, [{}], [{}].",
-            member, alertLevel, timestamp, connectionName, threadName, threadId, formattedMessage,
-            stackTrace);
-        processAlertListenerMessage(message);
+        if (member.equals(system.getDistributedMember())) {
+          // process in local member
+          logger.debug("Processing local alert message: {}, {}, {}, {}, {}, {}, [{}], [{}].",
+              member, alertLevel, timestamp, connectionName, threadName, threadId, formattedMessage,
+              stackTrace);
+          processAlertListenerMessage(message);
 
-      } else {
-        // send to remote member
-        logger.debug("Sending remote alert message: {}, {}, {}, {}, {}, {}, [{}], [{}].",
-            member, alertLevel, timestamp, connectionName, threadName, threadId, formattedMessage,
-            stackTrace);
-        dm.putOutgoing(message);
+        } else {
+          // send to remote member
+          logger.debug("Sending remote alert message: {}, {}, {}, {}, {}, {}, [{}], [{}].",
+              member, alertLevel, timestamp, connectionName, threadName, threadId, formattedMessage,
+              stackTrace);
+          dm.putOutgoing(message);
+        }
+      } catch (ReenteredConnectException ignore) {
+        // OK. We can't send to this recipient because we're in the middle of
+        // trying to connect to it.
       }
-    } catch (ReenteredConnectException ignore) {
-      // OK. We can't send to this recipient because we're in the middle of
-      // trying to connect to it.
-    }
+    });
   }
 
   public void close() {
-    // nothing
+    executor.shutdownNow();
   }
 
   @Override
