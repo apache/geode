@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
+import static org.apache.geode.management.api.RestfulEndpoint.URI_VERSION;
 import static org.apache.geode.management.operation.RebalanceOperation.REBALANCE_ENDPOINT;
 
 import java.util.Optional;
@@ -41,7 +41,7 @@ import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
 
 @Controller("rebalanceOperation")
-@RequestMapping(MANAGEMENT_API_VERSION)
+@RequestMapping(URI_VERSION)
 public class RebalanceOperationController extends AbstractManagementController {
   @ApiOperation(value = "start rebalance")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")

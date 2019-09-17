@@ -16,7 +16,11 @@
 package org.apache.geode.management.api;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.configuration.AbstractConfiguration;
@@ -33,6 +37,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 public class ConfigurationResult<T extends AbstractConfiguration<R>, R extends RuntimeInfo> {
   private T configuration;
   private List<R> runtimeInfo = new ArrayList<>();
+  private Map<String, String> links = new LinkedHashMap<>();
 
   /**
    * for internal use only
@@ -65,6 +70,25 @@ public class ConfigurationResult<T extends AbstractConfiguration<R>, R extends R
    */
   public List<R> getRuntimeInfo() {
     return runtimeInfo;
+  }
+
+  /**
+   * Returns the HATEOAS rel links for each static configuration
+   */
+  @JsonProperty(value = "_links")
+  public Map<String, String> getLinks() {
+    if (!links.containsKey(Links.SELF)) {
+      links.putAll(Links.singleItem(configuration));
+    }
+    return links;
+  }
+
+  /**
+   * for internal use only
+   */
+  @JsonProperty(value = "_links")
+  public void setLinks(Map<String, String> links) {
+    this.links = links;
   }
 
   /**

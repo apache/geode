@@ -38,6 +38,7 @@ public class ClusterManagementListOperationsResult<V extends OperationResult>
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
   public ClusterManagementListOperationsResult(
       @JsonProperty("result") List<ClusterManagementOperationResult<V>> result) {
+    result.forEach(r -> r.setTopLevel(false));
     this.result = result;
   }
 

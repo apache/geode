@@ -15,8 +15,8 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
+import static org.apache.geode.management.api.RestfulEndpoint.URI_VERSION;
 import static org.apache.geode.management.configuration.Pdx.PDX_ENDPOINT;
-import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -33,7 +33,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.Pdx;
 
 @Controller("pdxManagement")
-@RequestMapping(MANAGEMENT_API_VERSION)
+@RequestMapping(URI_VERSION)
 public class PdxManagementController extends AbstractManagementController {
 
   @ApiOperation(value = "configure pdx")

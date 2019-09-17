@@ -27,8 +27,6 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 
 public class AbstractManagementController implements ServletContextAware {
-
-  protected static final String MANAGEMENT_API_VERSION = "/experimental";
   protected SecurityService securityService;
   protected LocatorClusterManagementService clusterManagementService;
 

@@ -148,7 +148,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   private <V extends OperationResult> ClusterManagementOperationResult<V> reAnimate(
       ClusterManagementOperationResult<V> result) {
-    String uri = stripPrefix(AbstractConfiguration.URI_CONTEXT, result.getUri());
+    String uri = stripPrefix("^.*" + AbstractConfiguration.URI_CONTEXT, result.getUri());
 
     // complete the future by polling the check-status REST endpoint
     CompletableFuture<Date> futureOperationEnded = new CompletableFuture<>();
@@ -176,11 +176,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
         result.getResult().stream().map(this::reAnimate).collect(Collectors.toList()));
   }
 
-  private static String stripPrefix(String prefix, String s) {
-    if (s.startsWith(prefix)) {
-      return s.substring(prefix.length());
-    }
-    return s;
+  private static String stripPrefix(String prefixRegex, String s) {
+    return s.replaceFirst(prefixRegex, "");
   }
 
   private String getIdentityEndpoint(AbstractConfiguration config) {

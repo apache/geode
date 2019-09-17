@@ -15,8 +15,11 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
+import static org.apache.geode.management.api.Links.SELF;
+import static org.apache.geode.management.api.RestfulEndpoint.URI_VERSION;
 import static org.apache.geode.management.configuration.Region.REGION_CONFIG_ENDPOINT;
-import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
+
+import java.util.Map;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -46,8 +49,10 @@ import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
 @Controller("regionManagement")
-@RequestMapping(MANAGEMENT_API_VERSION)
+@RequestMapping(URI_VERSION)
 public class RegionManagementController extends AbstractManagementController {
+  private static final String INDEXES = "/indexes";
+  private static final String DISKSTORES = "/diskstores";
 
   @ApiOperation(value = "create region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
@@ -82,7 +87,10 @@ public class RegionManagementController extends AbstractManagementController {
     if (StringUtils.isNotBlank(group)) {
       filter.setGroup(group);
     }
-    return clusterManagementService.list(filter);
+    ClusterManagementListResult<Region, RuntimeRegionInfo> list =
+        clusterManagementService.list(filter);
+    list.getResult().forEach(r -> addBiDirectionalDownLinks(r.getLinks(), INDEXES, DISKSTORES));
+    return list;
   }
 
   @ApiOperation(value = "get region",
@@ -96,7 +104,7 @@ public class RegionManagementController extends AbstractManagementController {
     securityService.authorize(Resource.CLUSTER, Operation.READ, id);
     Region config = new Region();
     config.setName(id);
-    return clusterManagementService.get(config);
+    return addBiDirectionalDownLinks(clusterManagementService.get(config), INDEXES, DISKSTORES);
   }
 
   @ApiOperation(value = "delete region")
@@ -119,7 +127,7 @@ public class RegionManagementController extends AbstractManagementController {
           @ExtensionProperty(name = "jqFilter",
               value = ".result[] | .configuration | {name:.name,expression:.expression}")})})
   @RequestMapping(method = RequestMethod.GET,
-      value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
+      value = REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES)
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementListResult<Index, RuntimeInfo> listIndex(
@@ -131,14 +139,14 @@ public class RegionManagementController extends AbstractManagementController {
     if (StringUtils.isNotBlank(indexName)) {
       filter.setName(indexName);
     }
-    return clusterManagementService.list(filter);
+    return addUplinks(clusterManagementService.list(filter));
   }
 
   @ApiOperation(value = "list indexes",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result[] | .configuration | {name:.name,expression:.expression,regionPath:.regionPath}")})})
-  @RequestMapping(method = RequestMethod.GET, value = "/indexes")
+  @RequestMapping(method = RequestMethod.GET, value = INDEXES)
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementListResult<Index, RuntimeInfo> listAllIndex(
@@ -147,7 +155,7 @@ public class RegionManagementController extends AbstractManagementController {
     if (StringUtils.isNotBlank(indexName)) {
       filter.setName(indexName);
     }
-    return clusterManagementService.list(filter);
+    return addUplinks(clusterManagementService.list(filter));
   }
 
   @ApiOperation(value = "get index",
@@ -155,7 +163,7 @@ public class RegionManagementController extends AbstractManagementController {
           @ExtensionProperty(name = "jqFilter",
               value = ".result | .configuration | {name:.name,expression:.expression}")})})
   @RequestMapping(method = RequestMethod.GET,
-      value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
+      value = REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{id}")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementGetResult<Index, RuntimeInfo> getIndex(
@@ -165,6 +173,35 @@ public class RegionManagementController extends AbstractManagementController {
     Index filter = new Index();
     filter.setRegionPath(regionName);
     filter.setName(id);
-    return clusterManagementService.get(filter);
+    return addBiDirectionalUpLink(clusterManagementService.get(filter));
+  }
+
+  private static <R extends ClusterManagementResult> R addBiDirectionalDownLinks(R ret,
+      String... subs) {
+    addBiDirectionalDownLinks(ret.getLinks(), subs);
+    return ret;
+  }
+
+  private static void addBiDirectionalDownLinks(Map<String, String> links, String... subs) {
+    for (String subCollection : subs) {
+      links.put(subCollection.replace("/", ""), links.get(SELF) + subCollection);
+    }
+  }
+
+  private static <R extends ClusterManagementResult> R addBiDirectionalUpLink(R ret) {
+    addBiDirectionalUpLink(ret.getLinks());
+    return ret;
+  }
+
+  private static void addBiDirectionalUpLink(Map<String, String> links) {
+    String parent = links.get(SELF).replaceFirst("/[^/]*/[^/*]*$", "");
+    String type = parent.replaceFirst("s/[^/]*$", "").replaceFirst(".*/", "");
+    links.put(type, parent);
+  }
+
+  private static ClusterManagementListResult<Index, RuntimeInfo> addUplinks(
+      ClusterManagementListResult<Index, RuntimeInfo> list) {
+    list.getResult().forEach(r -> addBiDirectionalUpLink(r.getLinks()));
+    return list;
   }
 }

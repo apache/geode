@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.operation;
 
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +26,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.api.ClusterManagementOperation;
+import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.OperationResult;
 
 /**
@@ -130,7 +134,7 @@ public class OperationHistoryManager {
    * {@link #getFutureOperationEnded()}
    */
   public static class OperationInstance<A extends ClusterManagementOperation<V>, V extends OperationResult>
-      implements Identifiable<String> {
+      implements RestfulEndpoint {
     private final CompletableFuture<V> future;
     private final String opId;
     private final A operation;
@@ -178,6 +182,18 @@ public class OperationHistoryManager {
 
     public void setOperator(String operator) {
       this.operator = operator;
+    }
+
+    /**
+     * Returns the portion of the URI, after {@link AbstractConfiguration#URI_VERSION}, that
+     * specifies the type of this instance.
+     * It is possible that more than once instance of this type can exist.
+     *
+     * @return the portion of the URI that identifies the type of this instance
+     */
+    @JsonIgnore
+    public String getEndpoint() {
+      return getOperation().getEndpoint();
     }
   }
 }

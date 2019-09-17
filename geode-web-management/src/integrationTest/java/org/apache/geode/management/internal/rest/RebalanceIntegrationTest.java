@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.management.configuration.AbstractConfiguration.URI_CONTEXT;
+import static org.apache.geode.management.api.RestfulEndpoint.URI_CONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.StringContains.containsString;
@@ -73,7 +73,7 @@ public class RebalanceIntegrationTest {
         .andExpect(status().isAccepted())
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(
-            jsonPath("$.uri",
+            jsonPath("$._links.self",
                 Matchers.containsString("/management/experimental/operations/rebalances/")))
         .andExpect(jsonPath("$.statusMessage", Matchers.containsString("Operation started")));
   }
@@ -81,7 +81,7 @@ public class RebalanceIntegrationTest {
   @Test
   public void getStatus() throws Exception {
     String json = "{}";
-    CompletableFuture<String> futureUri = new CompletableFuture<String>();
+    CompletableFuture<String> futureUri = new CompletableFuture<>();
     context.perform(post("/experimental/operations/rebalances").content(json))
         .andExpect(status().isAccepted())
         .andExpect(new ResponseBodyMatchers().containsObjectAsJson(futureUri))
@@ -101,11 +101,12 @@ public class RebalanceIntegrationTest {
     }
   }
 
-  class ResponseBodyMatchers {
-    public ResultMatcher containsObjectAsJson(CompletableFuture<String> futureUri) {
+  static class ResponseBodyMatchers {
+    ResultMatcher containsObjectAsJson(CompletableFuture<String> futureUri) {
       return mvcResult -> {
         String json = mvcResult.getResponse().getContentAsString();
-        String uri = json.replaceFirst(".*\"uri\":\"" + URI_CONTEXT, "").replaceFirst("\".*", "");
+        String uri =
+            json.replaceFirst(".*\"self\":\"[^\"]*" + URI_CONTEXT, "").replaceFirst("\".*", "");
         futureUri.complete(uri);
       };
     }
@@ -131,7 +132,8 @@ public class RebalanceIntegrationTest {
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(
             jsonPath("$.result[0].statusCode", Matchers.isOneOf("IN_PROGRESS", "ERROR", "OK")))
-        .andExpect(jsonPath("$.result[0].uri", Matchers.containsString("rebalances/")))
+        .andExpect(jsonPath("$.result[0]._links.self", Matchers.containsString("rebalances/")))
+        .andExpect(jsonPath("$.result[0]._links.['api root']").doesNotExist())
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")));
   }
 
@@ -141,7 +143,7 @@ public class RebalanceIntegrationTest {
     ClusterManagementOperationResult<RebalanceResult> result = client.start(rebalance);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusMessage())
-        .isEqualTo("Operation started.  Use the URI to check its status.");
+        .isEqualTo("Operation started.  Use _links.self to check its status.");
     assertThat(result.getResult().getStatusMessage())
         .isEqualTo("Distributed system has no regions that can be rebalanced.");
   }

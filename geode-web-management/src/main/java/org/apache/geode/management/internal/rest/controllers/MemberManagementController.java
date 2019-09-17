@@ -15,8 +15,8 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
+import static org.apache.geode.management.api.RestfulEndpoint.URI_VERSION;
 import static org.apache.geode.management.configuration.Member.MEMBER_ENDPOINT;
-import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Extension;
@@ -36,7 +36,7 @@ import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.runtime.MemberInformation;
 
 @Controller("members")
-@RequestMapping(MANAGEMENT_API_VERSION)
+@RequestMapping(URI_VERSION)
 public class MemberManagementController extends AbstractManagementController {
   @ApiOperation(value = "get member",
       extensions = {@Extension(properties = {

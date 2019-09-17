@@ -15,8 +15,8 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
+import static org.apache.geode.management.api.RestfulEndpoint.URI_VERSION;
 import static org.apache.geode.management.configuration.GatewayReceiver.GATEWAY_RECEIVERS_ENDPOINTS;
-import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +39,7 @@ import org.apache.geode.management.runtime.GatewayReceiverInfo;
 
 
 @Controller("gatewayManagement")
-@RequestMapping(MANAGEMENT_API_VERSION)
+@RequestMapping(URI_VERSION)
 public class GatewayManagementController extends AbstractManagementController {
   @ApiOperation(value = "list gateway-receivers")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")

@@ -17,17 +17,17 @@ package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.Collections;
-
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -38,21 +38,18 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
-import org.apache.geode.management.configuration.Region.Expiration;
-import org.apache.geode.management.configuration.Region.ExpirationAction;
-import org.apache.geode.management.configuration.Region.ExpirationType;
 import org.apache.geode.management.configuration.RegionType;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
-public class RegionManagementIntegrationTest {
+public class HateoasIntegrationTest {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
 
-  // needs to be used together with any BaseLocatorContextLoader
+  // needs to be used together with any LocatorContextLoader
   private LocatorWebContext context;
 
   private ClusterManagementService client;
@@ -65,41 +62,47 @@ public class RegionManagementIntegrationTest {
   }
 
   @Test
-  @WithMockUser
-  public void sanityCheck() {
+  public void listRegionHateoas() throws Exception {
     Region regionConfig = new Region();
     regionConfig.setName("customers");
-    regionConfig.setType(RegionType.PARTITION);
-    regionConfig.setDiskStoreName("diskStore");
-    regionConfig.setKeyConstraint("keyConstraint");
-    regionConfig.setValueConstraint("valueConstraint");
-    regionConfig.setRedundantCopies(1);
-    Expiration expiration = new Expiration();
-    expiration.setType(ExpirationType.ENTRY_IDLE_TIME);
-    expiration.setAction(ExpirationAction.DESTROY);
-    expiration.setTimeInSeconds(1);
-    regionConfig.setExpirations(Collections.singletonList(expiration));
+    regionConfig.setType(RegionType.REPLICATE);
 
-    assertManagementResult(client.create(regionConfig))
-        .hasStatusCode(ClusterManagementResult.StatusCode.OK);
-    assertManagementResult(client.delete(regionConfig))
-        .hasStatusCode(ClusterManagementResult.StatusCode.OK);
+    try {
+      // if run multiple times, this could either be OK or ENTITY_EXISTS
+      assertManagementResult(client.create(regionConfig))
+          .hasStatusCode(ClusterManagementResult.StatusCode.OK);
+    } catch (ClusterManagementException cme) {
+      assertThat(cme.getResult().getStatusCode())
+          .isEqualTo(ClusterManagementResult.StatusCode.ENTITY_EXISTS);
+    }
+
+    context.perform(get("/experimental/regions"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("\"_links\"")))
+        .andExpect(
+            jsonPath("$.result[0]._links.self",
+                Matchers.containsString("/experimental/regions/customers")))
+        .andExpect(
+            jsonPath("$.result[0]._links.self",
+                Matchers.containsString("http://")));
   }
 
   @Test
-  public void invalidGroup() {
-    Region regionConfig = new Region();
-    regionConfig.setName("customers");
-    regionConfig.setGroup("cluster");
-
-    assertThatThrownBy(() -> client.create(regionConfig))
-        .hasMessageContaining("ILLEGAL_ARGUMENT: 'cluster' is a reserved group name");
-  }
-
-  @Test
-  @WithMockUser
-  public void ping() throws Exception {
-    context.perform(get("/experimental/ping"))
-        .andExpect(content().string("pong"));
+  public void listRootLinks() throws Exception {
+    context.perform(get("/experimental/"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("\"_links\"")))
+        .andExpect(
+            jsonPath("$._links.swagger",
+                Matchers.containsString("swagger-ui.html")))
+        .andExpect(
+            jsonPath("$._links.docs",
+                Matchers.containsString("/docs")))
+        .andExpect(
+            jsonPath("$._links.wiki",
+                Matchers.containsString("cwiki")))
+        .andExpect(
+            jsonPath("$._links.list regions",
+                Matchers.containsString("/regions")));
   }
 }

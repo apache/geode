@@ -190,7 +190,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     // add the config object which includes the HATEOAS information of the element created
     if (result.isSuccessful()) {
-      result.setUri(config.getUri());
+      result.setUri(config);
     }
     return assertSuccessful(result);
   }
@@ -390,7 +390,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     ClusterManagementResult result = new ClusterManagementResult(
-        StatusCode.ACCEPTED, "Operation started.  Use the URI to check its status.");
+        StatusCode.ACCEPTED, "Operation started.  Use _links.self to check its status.");
 
     return assertSuccessful(toClusterManagementListOperationsResult(result, operationInstance));
   }
@@ -433,8 +433,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
         operationInstance.getFutureResult(), operationInstance.getOperationStart(),
         operationInstance.getFutureOperationEnded(), operationInstance.getOperator());
-    result.setUri(AbstractConfiguration.URI_CONTEXT + AbstractConfiguration.URI_VERSION
-        + operationInstance.getOperation().getEndpoint() + "/" + operationInstance.getId());
+    result.setUri(operationInstance);
     return result;
   }
 
@@ -465,6 +464,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (status.isDone() && !status.isCompletedExceptionally()) {
       try {
         result.setOperationEnded(operationInstance.getFutureOperationEnded().get());
+        result.setUri(operationInstance);
         result.setResult(status.get());
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
