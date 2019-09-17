@@ -427,7 +427,7 @@ public class JNDIInvoker {
   public static boolean isValidDataSource(String name) {
     Object dataSource = dataSourceMap.get(name);
 
-    if (dataSource == null || (dataSource != null && dataSource instanceof DataSource
+    if (dataSource == null || (dataSource instanceof DataSource
         && !(dataSource instanceof GemFireTransactionDataSource))) {
       return true;
     }
