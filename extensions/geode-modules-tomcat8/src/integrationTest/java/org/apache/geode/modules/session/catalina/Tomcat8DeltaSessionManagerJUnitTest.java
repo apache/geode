@@ -16,6 +16,7 @@
 package org.apache.geode.modules.session.catalina;
 
 
+import static com.sun.corba.se.impl.util.RepositoryId.cache;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
