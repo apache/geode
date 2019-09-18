@@ -65,8 +65,8 @@ import org.apache.geode.test.junit.categories.ManagementTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 /**
- * Distributed tests for {@link org.apache.geode.alerting.AlertingService} with {@link
- * DistributedSystemMXBean} in the JMX Manager without any {@code NotificationListener}s.
+ * Distributed tests for {@link AlertingService} with {@link DistributedSystemMXBean} in the JMX
+ * Manager without any {@code NotificationListener}s.
  */
 @Category({AlertingTest.class, ManagementTest.class})
 public class AlertingServiceWithoutListenerDistributedTest implements Serializable {
