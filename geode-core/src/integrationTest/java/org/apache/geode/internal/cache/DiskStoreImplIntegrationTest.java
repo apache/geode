@@ -105,7 +105,7 @@ public class DiskStoreImplIntegrationTest {
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithMaxSize_thenDiskPercentagesShouldBeZeroAnd100()
+  public void givenDiskStoreIsCreatedWithMaxSizeThenDiskPercentagesShouldBeZeroAnd100()
       throws Exception {
 
     final int ALLOWED_MARGIN = 1;
@@ -127,7 +127,7 @@ public class DiskStoreImplIntegrationTest {
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithMaxSize_whenDataIsStored_thenDiskPercentagesShouldBeModified()
+  public void givenDiskStoreIsCreatedWithMaxSizeWhenDataIsStoredThenDiskPercentagesShouldBeModified()
       throws Exception {
 
     final int ESTIMATED_USAGE_PERCENTAGE = 7; // Estimated disk percentage for NUM_ENTRIES
@@ -159,7 +159,7 @@ public class DiskStoreImplIntegrationTest {
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithDefaultSize_thenDiskPercentagesShouldNotBeAvailable()
+  public void givenDiskStoreIsCreatedWithDefaultSizeThenDiskPercentagesShouldNotBeAvailable()
       throws Exception {
 
     File[] diskDirs = new File[2];
@@ -177,7 +177,7 @@ public class DiskStoreImplIntegrationTest {
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithDefaultSize_whenDataIsStored_thenDiskPercentagesShouldNotBeAvailable()
+  public void givenDiskStoreIsCreatedWithDefaultSizeWhenDataIsStoredThenDiskPercentagesShouldNotBeAvailable()
       throws Exception {
 
     File[] diskDirs = new File[2];
@@ -199,7 +199,7 @@ public class DiskStoreImplIntegrationTest {
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithAtLeastOneDefaultSize_thenDiskPercentagesShouldNotBeAvailable()
+  public void givenDiskStoreIsCreatedWithAtLeastOneDefaultSizeThenDiskPercentagesShouldNotBeAvailable()
       throws Exception {
 
     File[] diskDirs = new File[3];
@@ -227,7 +227,7 @@ public class DiskStoreImplIntegrationTest {
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithAtLeastOneDefaultSize_whenDataIsStored_thenDiskPercentagesShouldNotBeAvailable()
+  public void givenDiskStoreIsCreatedWithAtLeastOneDefaultSizeWhenDataIsStoredThenDiskPercentagesShouldNotBeAvailable()
       throws Exception {
 
     File[] diskDirs = new File[2];
@@ -253,7 +253,7 @@ public class DiskStoreImplIntegrationTest {
   }
 
   @Test
-  public void whenMaxOplogFileDoesNotFitInDir_thenNextDirIsSelected() throws Exception {
+  public void whenMaxOplogFileDoesNotFitInDirThenNextDirIsSelected() throws Exception {
 
     File[] diskDirs = new File[3];
     diskDirs[0] = temporaryDirectory.newFolder("dir1");
