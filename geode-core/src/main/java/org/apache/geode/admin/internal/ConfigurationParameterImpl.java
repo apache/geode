@@ -15,6 +15,9 @@
 
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.internal.net.InetAddressUtils.toHostString;
+import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.toInetAddress;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -111,7 +114,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
     if (isString()) {
       return (String) this.value;
     } else if (isInetAddress()) {
-      return InetAddressUtil.toString(this.value);
+      return toHostString(this.value);
     } else if (isFile()) {
       return this.value.toString();
     } else if (isOctal()) {
@@ -222,7 +225,7 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
     }
 
     if (isInetAddress()) {
-      this.value = InetAddressUtil.toInetAddress(newValue);
+      this.value = toInetAddress(newValue);
     } else if (isFile()) {
       this.value = new File(newValue);
     } else if (isOctal()) {

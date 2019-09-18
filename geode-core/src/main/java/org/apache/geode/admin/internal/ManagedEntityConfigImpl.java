@@ -14,6 +14,8 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
+
 import java.io.File;
 import java.net.InetAddress;
 import java.net.URL;
@@ -223,7 +225,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    */
   @Override
   public void validate() {
-    if (InetAddressUtil.validateHost(this.host) == null) {
+    if (validateHost(this.host) == null) {
       throw new IllegalStateException(
           String.format("Invalid host %s", this.host));
     }

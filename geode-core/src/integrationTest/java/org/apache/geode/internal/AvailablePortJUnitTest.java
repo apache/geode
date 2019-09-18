@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.internal.net.InetAddressUtils.getLoopback;
+import static org.apache.geode.internal.net.InetAddressUtils.getLoopbackAddress;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -25,7 +27,6 @@ import java.net.ServerSocket;
 import org.junit.After;
 import org.junit.Test;
 
-import org.apache.geode.admin.internal.InetAddressUtil;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
@@ -46,10 +47,10 @@ public class AvailablePortJUnitTest {
   public void testIsPortAvailable() throws IOException {
     socket = new ServerSocket();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    socket.bind(new InetSocketAddress(InetAddressUtil.LOOPBACK, port));
+    socket.bind(new InetSocketAddress(getLoopback(), port));
 
     assertFalse(AvailablePort.isPortAvailable(port, AvailablePort.SOCKET,
-        InetAddress.getByName(InetAddressUtil.LOOPBACK_ADDRESS)));
+        InetAddress.getByName(getLoopbackAddress())));
     // Get local host will return the hostname for the server, so this should succeed, since we're
     // bound to the loopback address only.
     assertTrue(
