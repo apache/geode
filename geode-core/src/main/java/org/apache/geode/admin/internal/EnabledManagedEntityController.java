@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_E
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.net.InetAddressUtils.isLocalHost;
 
 import java.io.File;
 import java.util.Iterator;
@@ -34,7 +35,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ProcessOutputReader;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.net.InetAddressUtils;
 
 /**
  * Implements the actual administration (starting, stopping, etc.) of GemFire
@@ -170,7 +170,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
   private String arrangeRemoteCommand(InternalManagedEntity entity, String cmd) {
 
     String host = entity.getEntityConfig().getHost();
-    if (InetAddressUtils.isLocalHost(host)) {
+    if (isLocalHost(host)) {
       // No arranging necessary
       return cmd;
     }

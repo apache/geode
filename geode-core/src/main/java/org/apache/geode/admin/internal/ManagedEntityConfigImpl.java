@@ -14,6 +14,8 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
+
 import java.io.File;
 import java.net.InetAddress;
 import java.net.URL;
@@ -22,7 +24,6 @@ import java.net.UnknownHostException;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.GemFireVM;
-import org.apache.geode.internal.net.InetAddressUtils;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -224,7 +225,7 @@ public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
    */
   @Override
   public void validate() {
-    if (InetAddressUtils.validateHost(this.host) == null) {
+    if (validateHost(this.host) == null) {
       throw new IllegalStateException(
           String.format("Invalid host %s", this.host));
     }

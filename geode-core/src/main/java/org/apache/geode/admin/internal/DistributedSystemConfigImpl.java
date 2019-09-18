@@ -26,6 +26,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+import static org.apache.geode.internal.net.InetAddressUtils.toHostString;
+import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,7 +56,6 @@ import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.log4j.LogLevel;
-import org.apache.geode.internal.net.InetAddressUtils;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 
 /**
@@ -164,7 +165,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
           "DistributionConfig must not be null.");
     }
 
-    this.mcastAddress = InetAddressUtils.toString(distConfig.getMcastAddress());
+    this.mcastAddress = toHostString(distConfig.getMcastAddress());
     this.mcastPort = distConfig.getMcastPort();
     this.locators = distConfig.getLocators();
     this.membershipPortRange = getMembershipPortRangeString(distConfig.getMembershipPortRange());
@@ -920,10 +921,12 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
    * @param bindAddress host name or IP address to validate
    */
   public static boolean validateBindAddress(String bindAddress) {
-    if (bindAddress == null || bindAddress.length() == 0)
+    if (bindAddress == null || bindAddress.length() == 0) {
       return true;
-    if (InetAddressUtils.validateHost(bindAddress) == null)
+    }
+    if (validateHost(bindAddress) == null) {
       return false;
+    }
     return true;
   }
 

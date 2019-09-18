@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.toInetAddress;
 
 import java.io.File;
 import java.io.IOException;
@@ -97,7 +98,6 @@ import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.NullLoggingSession;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.net.InetAddressUtils;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 
 /**
@@ -654,8 +654,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     ConfigurationParameter[] configParms = new ConfigurationParameter[] {
         new ConfigurationParameterImpl(MCAST_PORT, Integer.valueOf(this.config.getMcastPort())),
         new ConfigurationParameterImpl(LOCATORS, this.config.getLocators()),
-        new ConfigurationParameterImpl(MCAST_ADDRESS,
-            InetAddressUtils.toInetAddress(this.config.getMcastAddress())),
+        new ConfigurationParameterImpl(MCAST_ADDRESS, toInetAddress(this.config.getMcastAddress())),
         new ConfigurationParameterImpl(DISABLE_TCP, Boolean.valueOf(this.config.getDisableTcp())),};
     member.setConfiguration(configParms);
   }
@@ -879,8 +878,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
             DistributionLocatorConfig conf = impl.getConfig();
 
-            InetAddress host1 = InetAddressUtils.toInetAddress(host);
-            InetAddress host2 = InetAddressUtils.toInetAddress(conf.getHost());
+            InetAddress host1 = toInetAddress(host);
+            InetAddress host2 = toInetAddress(conf.getHost());
             if (port == conf.getPort() && host1.equals(host2)) {
               // Already have an admin object for this locator
               continue NEXT;
@@ -893,7 +892,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
         // an admin object for it.
         InetAddress bindAddress = null;
         if (bindAddr != null) {
-          bindAddress = InetAddressUtils.toInetAddress(bindAddr);
+          bindAddress = toInetAddress(bindAddr);
         }
         DistributionLocatorConfig conf =
             DistributionLocatorConfigImpl.createConfigFor(host, port, bindAddress);
@@ -1393,7 +1392,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
       }
 
       ManagedEntityConfig conf = entity.getEntityConfig();
-      InetAddress managedHost = InetAddressUtils.toInetAddress(conf.getHost());
+      InetAddress managedHost = toInetAddress(conf.getHost());
       File managedWorkingDir = new File(conf.getWorkingDirectory());
       File managedProdDir = new File(conf.getProductDirectory());
 

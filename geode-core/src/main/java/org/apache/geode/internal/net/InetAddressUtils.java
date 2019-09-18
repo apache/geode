@@ -59,7 +59,7 @@ public class InetAddressUtils {
    *
    * @return The string version of the InetAddress minus any leading slash
    */
-  public static String toString(Object val) {
+  public static String toHostString(Object val) {
     if (val instanceof String) {
       return trimLeadingSlash((String) val);
     }
@@ -83,34 +83,10 @@ public class InetAddressUtils {
    * @throws AssertionError If conversion of host results in {@code UnknownHostException}
    */
   public static InetAddress toInetAddress(String host) {
-    if (host == null || host.isEmpty()) {
-      return null;
-    }
-
     try {
-      if (host.contains("/")) {
-        return InetAddress.getByName(host.substring(host.indexOf('/') + 1));
-      }
-
-      return InetAddress.getByName(host);
+      return toInetAddressOrThrow(host);
     } catch (UnknownHostException e) {
-      throw new AssertionError("Failed to get InetAddress: " + host);
-    }
-  }
-
-  /**
-   * Returns an {@code InetAddress} representing the local host. The checked exception
-   * {@code UnknownHostException} is captured and an AssertionError is generated instead.
-   *
-   * @return The InetAddress instance representing the local host
-   *
-   * @throws AssertionError If conversion of host results in {@code UnknownHostException}
-   */
-  private static InetAddress getLocalHost() {
-    try {
-      return SocketCreator.getLocalHost();
-    } catch (UnknownHostException e) {
-      throw new AssertionError("Failed to get local host");
+      throw new AssertionError("Failed to get InetAddress: " + host, e);
     }
   }
 
@@ -124,13 +100,8 @@ public class InetAddressUtils {
    * @return The host converted to InetAddress instance
    */
   public static String validateHost(String host) {
-    if (host == null || host.isEmpty()) {
-      return null;
-    }
-
     try {
-      InetAddress.getByName(trimLeadingSlash(host));
-      return host;
+      return validateHostOrThrow(host);
     } catch (UnknownHostException e) {
       return null;
     }
@@ -186,7 +157,7 @@ public class InetAddressUtils {
   /**
    * Returns a version of the value after removing any leading slashes
    */
-  private static String trimLeadingSlash(String value) {
+  protected static String trimLeadingSlash(String value) {
     if (value == null) {
       return "";
     }
@@ -196,5 +167,63 @@ public class InetAddressUtils {
     }
 
     return value;
+  }
+
+  /**
+   * Converts the string host to an instance of {@code InetAddress}. Returns null if the string is
+   * empty. Any leading slashes on host will be ignored.
+   *
+   * @param host The string version the InetAddress
+   *
+   * @return The host converted to InetAddress instance
+   *
+   * @throws UnknownHostException if no IP address for the {@code host} could be found
+   */
+  protected static InetAddress toInetAddressOrThrow(String host) throws UnknownHostException {
+    if (host == null || host.isEmpty()) {
+      return null;
+    }
+
+    if (host.contains("/")) {
+      return InetAddress.getByName(host.substring(host.indexOf('/') + 1));
+    }
+
+    return InetAddress.getByName(host);
+  }
+
+  /**
+   * Validates the host by making sure it can successfully be used to get an instance of
+   * InetAddress. Any leading slashes on host will be ignored. If the host string is null or empty
+   * then null is returned.
+   *
+   * @param host The string version the InetAddress
+   *
+   * @return The host converted to InetAddress instance
+   *
+   * @throws UnknownHostException if no IP address for the {@code host} could be found
+   */
+  protected static String validateHostOrThrow(String host) throws UnknownHostException {
+    if (host == null || host.isEmpty()) {
+      return null;
+    }
+
+    InetAddress.getByName(trimLeadingSlash(host));
+    return host;
+  }
+
+  /**
+   * Returns an {@code InetAddress} representing the local host. The checked exception
+   * {@code UnknownHostException} is captured and an AssertionError is generated instead.
+   *
+   * @return The InetAddress instance representing the local host
+   *
+   * @throws AssertionError If conversion of host results in {@code UnknownHostException}
+   */
+  private static InetAddress getLocalHost() {
+    try {
+      return SocketCreator.getLocalHost();
+    } catch (UnknownHostException e) {
+      throw new AssertionError("Failed to get local host", e);
+    }
   }
 }

@@ -27,6 +27,8 @@ import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_S
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_ENABLED;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_PROTOCOLS;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.internal.net.InetAddressUtils.toHostString;
+import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,7 +50,6 @@ import org.apache.geode.admin.internal.DistributedSystemConfigImpl;
 import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.admin.jmx.AgentConfig;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.net.InetAddressUtils;
 import org.apache.geode.internal.util.IOUtils;
 
 /**
@@ -1453,7 +1454,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    * Validates that systemHost can be used for an InetAddress.
    */
   private String validateSystemHost(String systemHost) {
-    return InetAddressUtils.validateHost(systemHost);
+    return validateHost(systemHost);
   }
 
   /**
@@ -1510,7 +1511,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    * httpBindAddress can be used to create a valid InetAddress.
    */
   private String validateHttpBindAddress(String val) {
-    String value = InetAddressUtils.validateHost(val);
+    String value = validateHost(val);
     if (value == null) {
       return DEFAULT_HTTP_BIND_ADDRESS;
     } else {
@@ -1536,7 +1537,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    * snmpBindAddress can be used to create a valid InetAddress.
    */
   private String validateSnmpBindAddress(String val) {
-    String value = InetAddressUtils.validateHost(val);
+    String value = validateHost(val);
     if (value == null) {
       return DEFAULT_SNMP_BIND_ADDRESS;
     } else {
@@ -1613,7 +1614,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    * rmiBindAddress can be used to create a valid InetAddress.
    */
   private String validateRmiBindAddress(String val) {
-    String value = InetAddressUtils.validateHost(val);
+    String value = validateHost(val);
     if (value == null) {
       return DEFAULT_RMI_BIND_ADDRESS;
     } else {
@@ -1717,7 +1718,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
         return "";
       }
       if (obj instanceof InetAddress) {
-        return InetAddressUtils.toString(obj);
+        return toHostString(obj);
       }
       return obj.toString();
     } else {

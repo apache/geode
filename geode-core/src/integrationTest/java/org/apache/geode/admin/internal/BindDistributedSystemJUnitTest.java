@@ -16,6 +16,7 @@ package org.apache.geode.admin.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.internal.net.InetAddressUtils.isLoopback;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
@@ -25,7 +26,6 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.net.InetAddressUtils;
 
 /**
  * Tests {@link org.apache.geode.admin.internal.AdminDistributedSystemImpl}.
@@ -63,7 +63,7 @@ public class BindDistributedSystemJUnitTest {
   public void testBindToAddressLoopback() throws Exception {
     String bindTo = "127.0.0.1";
     // make sure bindTo is the loopback... needs to be later in test...
-    assertEquals(true, InetAddressUtils.isLoopback(bindTo));
+    assertEquals(true, isLoopback(bindTo));
 
     Properties props = new Properties();
     props.setProperty(BIND_ADDRESS, bindTo);

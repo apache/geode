@@ -15,6 +15,8 @@
 package org.apache.geode.admin.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.toInetAddress;
+import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
 
 import java.net.InetAddress;
 import java.util.Properties;
@@ -23,7 +25,6 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.net.InetAddressUtils;
 
 /**
  * Provides an implementation of <code>DistributionLocatorConfig</code>.
@@ -73,7 +74,7 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
       if (bindAddress != null) {
         info = client.getInfo(bindAddress, port);
       } else {
-        info = client.getInfo(InetAddressUtils.toInetAddress(host), port);
+        info = client.getInfo(toInetAddress(host), port);
       }
       if (info == null) {
         return null;
@@ -166,7 +167,7 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
                   Integer.valueOf(MAX_PORT)}));
     }
 
-    if (this.bindAddress != null && InetAddressUtils.validateHost(this.bindAddress) == null) {
+    if (this.bindAddress != null && validateHost(this.bindAddress) == null) {
       throw new IllegalArgumentException(
           String.format("Invalid host %s",
               this.bindAddress));
