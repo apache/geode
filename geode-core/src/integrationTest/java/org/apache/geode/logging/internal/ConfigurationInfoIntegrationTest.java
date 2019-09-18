@@ -22,7 +22,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/** Integration tests for {@link org.apache.geode.logging.internal.ConfigurationInfo}. */
+/**
+ * Integration tests for {@link ConfigurationInfo}.
+ */
 @Category(LoggingTest.class)
 public class ConfigurationInfoIntegrationTest {
 

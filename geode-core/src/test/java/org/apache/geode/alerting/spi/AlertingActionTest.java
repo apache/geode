@@ -30,7 +30,9 @@ import org.junit.rules.ErrorCollector;
 
 import org.apache.geode.test.junit.categories.AlertingTest;
 
-/** Unit tests for {@link AlertingAction}. */
+/**
+ * Unit tests for {@link AlertingAction}.
+ */
 @Category(AlertingTest.class)
 public class AlertingActionTest {
 

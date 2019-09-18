@@ -48,8 +48,7 @@ import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
  * Integration tests for logging of the startup configuration. Startup configuration consists of
- * {@link org.apache.geode.logging.internal.Configuration#STARTUP_CONFIGURATION} and {@link
- * DistributionConfig#toLoggerString()}.
+ * {@link Configuration#STARTUP_CONFIGURATION} and {@link DistributionConfig#toLoggerString()}.
  */
 @Category(LoggingTest.class)
 public class StartupConfigurationLoggingIntegrationTest {
