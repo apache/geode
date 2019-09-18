@@ -18,7 +18,6 @@ import static java.net.InetAddress.getLocalHost;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.DistributedSystem.PROPERTIES_FILE_PROPERTY;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.cache.AbstractCacheServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -40,6 +39,7 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.Command;
+import org.apache.geode.internal.net.AvailablePortHelper;
 
 /**
  * Integration tests for using {@link ServerLauncher} as an in-process API within an existing JVM.
@@ -47,6 +47,8 @@ import org.apache.geode.distributed.ServerLauncher.Command;
 public class ServerLauncherBuilderIntegrationTest {
 
   private static final String CURRENT_DIRECTORY = System.getProperty("user.dir");
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -255,7 +257,7 @@ public class ServerLauncherBuilderIntegrationTest {
   @Test
   public void serverPortCanBeOverriddenBySystemProperty() {
     // given: overridden default port
-    int overriddenPort = getRandomAvailableTCPPort();
+    int overriddenPort = availablePortHelper.getRandomAvailableTCPPort();
     System.setProperty(TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(overriddenPort));
 
     // when: creating new ServerLauncher

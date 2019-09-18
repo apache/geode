@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerStartupRedundancyRecoveryNotificationTest {
@@ -50,6 +50,8 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
   @Rule
   public TestName testName = new TestName();
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private Path locatorFolder;
   private Path server1Folder;
   private Path server2Folder;
@@ -64,7 +66,7 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
     server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
     server2Folder = temporaryFolder.newFolder(SERVER_2_NAME).toPath().toAbsolutePath();
 
-    locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    locatorPort = availablePortHelper.getRandomAvailableTCPPort();
 
     String startLocatorCommand = String.join(" ",
         "start locator",

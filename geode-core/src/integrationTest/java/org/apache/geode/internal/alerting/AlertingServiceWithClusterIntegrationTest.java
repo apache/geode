@@ -16,7 +16,6 @@ package org.apache.geode.internal.alerting;
 
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.addListener;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.removeListener;
 import static org.apache.geode.internal.alerting.AlertLevel.ERROR;
@@ -48,6 +47,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.internal.AlertDetails;
 import org.apache.geode.test.junit.categories.AlertingTest;
 
@@ -58,6 +58,8 @@ import org.apache.geode.test.junit.categories.AlertingTest;
 public class AlertingServiceWithClusterIntegrationTest {
 
   private static final long TIMEOUT = getTimeout().getValueInMS();
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private InternalDistributedSystem system;
   private DistributedMember member;
@@ -85,7 +87,8 @@ public class AlertingServiceWithClusterIntegrationTest {
     messageListener = spy(AlertListenerMessage.Listener.class);
     addListener(messageListener);
 
-    String startLocator = getServerHostName() + "[" + getRandomAvailableTCPPort() + "]";
+    String startLocator =
+        getServerHostName() + "[" + availablePortHelper.getRandomAvailableTCPPort() + "]";
 
     Properties config = new Properties();
     config.setProperty(START_LOCATOR, startLocator);

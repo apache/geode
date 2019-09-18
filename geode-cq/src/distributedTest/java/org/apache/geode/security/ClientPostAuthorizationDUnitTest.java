@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -40,6 +40,8 @@ import org.apache.geode.test.junit.categories.SecurityTest;
  */
 @Category({SecurityTest.class})
 public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Test
   public void testAllPostOps() throws Exception {
@@ -66,7 +68,7 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
           buildProperties(authenticator, accessor, true, extraAuthProps, extraAuthzProps);
 
       // Get ports for the servers
-      int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+      int[] randomAvailableTCPPorts = availablePortHelper.getRandomAvailableTCPPorts(2);
       int port1 = randomAvailableTCPPorts[0];
       int port2 = randomAvailableTCPPorts[1];
 
@@ -136,7 +138,7 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
         buildProperties(authenticator, accessor, true, extraAuthProps, extraAuthzProps);
 
     // Get ports for the servers
-    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] randomAvailableTCPPorts = availablePortHelper.getRandomAvailableTCPPorts(2);
     int port1 = randomAvailableTCPPorts[0];
     int port2 = randomAvailableTCPPorts[1];
 

@@ -62,7 +62,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -74,6 +73,7 @@ import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -93,6 +93,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   private static int TEST_QUERY_TIMEOUT = 1000;
   private static final int CRITICAL_HEAP_USED = 950;
   private static final int NORMAL_HEAP_USED = 500;
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void postSetUpClientServerTestCase() throws Exception {
@@ -311,7 +313,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     final VM client = VM.getVM(1);
     final int numObjects = 200;
     try {
-      final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      final int port = availablePortHelper.getRandomAvailableTCPPort();
       startCacheServer(server, port, criticalThreshold, disabledQueryMonitorForLowMem, queryTimeout,
           regionName, createPR, 0);
 
@@ -380,7 +382,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     final VM client = VM.getVM(1);
     final int numObjects = 200;
     try {
-      final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+      final int[] port = availablePortHelper.getRandomAvailableTCPPorts(2);
       startCacheServer(server1, port[0], criticalThreshold, disabledQueryMonitorForLowMem,
           queryTimeout, regionName, createPR, 0);
       startCacheServer(server2, port[1], criticalThreshold, true, -1, regionName, createPR, 0);
@@ -439,7 +441,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     final VM client = VM.getVM(2);
     final int numObjects = 200;
     try {
-      final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+      final int[] port = availablePortHelper.getRandomAvailableTCPPorts(2);
       startCacheServer(server1, port[0], criticalThreshold, disabledQueryMonitorForLowMem,
           queryTimeout, regionName, createPR, 0);
       startCacheServer(server2, port[1], criticalThreshold, true, -1, regionName, createPR, 0);
@@ -525,7 +527,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     final VM client = VM.getVM(2);
     final int numObjects = 200;
     try {
-      final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+      final int[] port = availablePortHelper.getRandomAvailableTCPPorts(2);
       startCacheServer(server1, port[0], criticalThreshold, disabledQueryMonitorForLowMem,
           queryTimeout, regionName, createPR, 0);
       startCacheServer(server2, port[1], criticalThreshold, true, -1, regionName, createPR, 0);
@@ -618,7 +620,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     final int numObjects = 200;
 
     try {
-      final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+      final int[] port = availablePortHelper.getRandomAvailableTCPPorts(2);
       startCacheServer(server1, port[0], criticalThreshold, disabledQueryMonitorForLowMem,
           queryTimeout, regionName, createPR, 0);
       startCacheServer(server2, port[1], criticalThreshold, true, -1, regionName, createPR, 0);
@@ -689,7 +691,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     final VM server = VM.getVM(0);
     final int numObjects = 200;
     try {
-      final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      final int port = availablePortHelper.getRandomAvailableTCPPort();
       startCacheServer(server, port, criticalThreshold, disabledQueryMonitorForLowMem, queryTimeout,
           regionName, createPR, 0);
 
@@ -758,7 +760,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     final VM client = VM.getVM(1);
     final int numObjects = 200;
     try {
-      final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      final int port = availablePortHelper.getRandomAvailableTCPPort();
       startCacheServer(server, port, criticalThreshold, disabledQueryMonitorForLowMem, queryTimeout,
           regionName, createPR, 0);
       startClient(client, server, port, regionName);
@@ -785,7 +787,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     final VM server = VM.getVM(0);
     final int numObjects = 200;
     try {
-      final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      final int port = availablePortHelper.getRandomAvailableTCPPort();
       startCacheServer(server, port, criticalThreshold, disabledQueryMonitorForLowMem, queryTimeout,
           regionName, createPR, 0);
       populateData(server, regionName, numObjects);

@@ -31,7 +31,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.dunit.CloseCacheAuthorization;
 import org.apache.geode.cache.query.dunit.HelperTestCase;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.security.templates.DummyAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -45,6 +45,8 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 @Category({ClientSubscriptionTest.class})
 public class CqStateDUnitTest extends HelperTestCase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   // this test is disabled due to a 25% failure rate in
   // CI testing. See internal ticket #52229
@@ -61,7 +63,7 @@ public class CqStateDUnitTest extends HelperTestCase {
     VM serverB = host.getVM(2);
     VM client = host.getVM(3);
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
     startCacheServer(serverA, ports[0], getAuthenticatedServerProperties());
     createReplicatedRegion(serverA, regionName, null);
 

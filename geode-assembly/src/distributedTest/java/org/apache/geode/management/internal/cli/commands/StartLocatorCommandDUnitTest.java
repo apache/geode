@@ -49,7 +49,7 @@ import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -62,6 +62,8 @@ public class StartLocatorCommandDUnitTest {
 
   private static MemberVM locator;
   private static String locatorConnectionString;
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private String memberName;
 
@@ -175,7 +177,7 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithUnavailablePort() throws IOException {
-    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int locatorPort = availablePortHelper.getRandomAvailableTCPPort();
     String unexpectedMessage = "[" + locatorPort + "] as locator is currently online.";
     String expectedMessage = "java.net.BindException: Network is unreachable; port ("
         + locatorPort + ") is not available on localhost.";
@@ -198,7 +200,7 @@ public class StartLocatorCommandDUnitTest {
 
   @Test
   public void testWithAvailablePort() throws IOException {
-    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int locatorPort = availablePortHelper.getRandomAvailableTCPPort();
     String expectedMessage =
         "[" + locatorPort + "] as " + memberName + " is currently online.";
 

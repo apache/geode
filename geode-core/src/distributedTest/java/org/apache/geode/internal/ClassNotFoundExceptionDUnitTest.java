@@ -52,9 +52,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @Category({MembershipTest.class})
 public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
 
-  public ClassNotFoundExceptionDUnitTest() {
-    super();
-  }
+  private final org.apache.geode.internal.net.AvailablePortHelper availablePortHelper =
+      org.apache.geode.internal.net.AvailablePortHelper.create();
 
   @Test
   public void testDataSerializable() throws InterruptedException {
@@ -194,7 +193,7 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
         createRootRegion("testSimplePdx", af.create());
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;

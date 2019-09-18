@@ -41,7 +41,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.ServerLauncherCacheProvider;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.launchers.startuptasks.WaitForFileToExist;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.rules.ServiceJarRule;
@@ -65,6 +65,8 @@ public class ServerStartupOnlineTest {
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private Path serverFolder;
   private String serverName;
   private String startServerCommand;
@@ -78,7 +80,7 @@ public class ServerStartupOnlineTest {
     serverFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
     serverName = testName.getMethodName();
 
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
 
     int jmxHttpPort = ports[0];
     jmxRmiPort = ports[1];

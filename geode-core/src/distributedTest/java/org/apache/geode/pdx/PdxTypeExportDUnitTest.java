@@ -32,8 +32,8 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
@@ -45,10 +45,8 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class})
 public class PdxTypeExportDUnitTest extends JUnit4CacheTestCase {
-  public PdxTypeExportDUnitTest() {
-    super();
-  }
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Test
   public void testPeer() throws Exception {
@@ -105,7 +103,7 @@ public class PdxTypeExportDUnitTest extends JUnit4CacheTestCase {
         CacheFactory cf = new CacheFactory().setPdxSerializer(new MyPdxSerializer());
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
 

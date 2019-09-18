@@ -47,7 +47,7 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -69,6 +69,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
   private int cacheServerPort;
   private String hostName;
   private final Map<String, Integer> listnerMap = new HashMap<String, Integer>();
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private static final String UNREGISTER_INTEREST = "UnregisterInterest";
   private static final String REGISTER_INTEREST = "RegisterInterest";
@@ -91,7 +92,7 @@ public class InterestRegrListenerDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void createServer() throws IOException {
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    cacheServerPort = availablePortHelper.getRandomAvailableTCPPort();
     cacheServer = cache.addCacheServer();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();

@@ -43,9 +43,9 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -61,13 +61,11 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
 @Category({OQLIndexTest.class})
 public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
-  VM vm0;
-  VM vm1;
-  VM vm2;
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
 
-  public CopyOnReadIndexDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -128,7 +126,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void configureServers() throws Exception {
-    final int[] port = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    final int[] port = availablePortHelper.getRandomAvailableTCPPorts(3);
     startCacheServer(vm0, port[0]);
     startCacheServer(vm1, port[1]);
     startCacheServer(vm2, port[2]);
@@ -139,7 +137,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
   // It does puts in each server, checking instance counts of portfolio objects
   // Querying the data will result in deserialization of portfolio objects.
   // In cases where index is present, the objects will be deserialized in the cache
-  public void helpTestPRQueryOnLocalNode(final String queryString, final int numPortfolios,
+  private void helpTestPRQueryOnLocalNode(final String queryString, final int numPortfolios,
       final int numExpectedResults, final boolean hasIndex) throws Exception {
     final int numPortfoliosPerVM = numPortfolios / 2;
 
@@ -335,8 +333,10 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
   }
 
 
-  public void helpTestTransactionsOnReplicatedRegion(final String queryString,
-      final int numPortfolios, final int numExpectedResults, final boolean hasIndex)
+  private void helpTestTransactionsOnReplicatedRegion(final String queryString,
+      final int numPortfolios,
+      final int numExpectedResults,
+      final boolean hasIndex)
       throws Exception {
 
     resetInstanceCount(vm0);
@@ -666,14 +666,14 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  protected Properties getClientProps() {
+  private Properties getClientProps() {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(LOCATORS, "");
     return p;
   }
 
-  protected Properties getServerProperties() {
+  private Properties getServerProperties() {
     Properties p = new Properties();
     p.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     return p;

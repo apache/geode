@@ -48,7 +48,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -62,6 +61,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.command.Put70;
 import org.apache.geode.internal.cache.versions.VMVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
@@ -78,7 +78,9 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
   // list of expected exceptions to remove in tearDown2()
-  static List<IgnoredException> expectedExceptions = new LinkedList<IgnoredException>();
+  private static List<IgnoredException> expectedExceptions = new LinkedList<IgnoredException>();
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -581,7 +583,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
         rf.create("region");
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -637,7 +639,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
         createRootRegion("testSimplePdx", af.create());
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -657,7 +659,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
         createRootRegion("testSimplePdx", af.create());
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;

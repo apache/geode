@@ -16,10 +16,35 @@
  */
 package org.apache.geode.internal.net;
 
+import java.util.List;
+
 public interface AvailablePortHelper extends AvailablePort {
 
   static AvailablePortHelper create() {
     return new AvailablePortHelperImpl();
   }
 
+  int[] getRandomAvailableTCPPorts(int count);
+
+  int[] getRandomAvailableTCPPorts(int count, boolean useMembershipPortRange);
+
+  List<Keeper> getRandomAvailableTCPPortKeepers(int count);
+
+  int[] getRandomAvailableTCPPortRange(int count);
+
+  int[] getRandomAvailableTCPPortRange(int count, boolean useMembershipPortRange);
+
+  List<Keeper> getRandomAvailableTCPPortRangeKeepers(int count);
+
+  List<Keeper> getRandomAvailableTCPPortRangeKeepers(int count, boolean useMembershipPortRange);
+
+  int[] getRandomAvailableTCPPortsForDUnitSite(int count);
+
+  int getRandomAvailablePortForDUnitSite();
+
+  int getRandomAvailableTCPPort();
+
+  int getRandomAvailableUDPPort();
+
+  void initializeUniquePortRange(int rangeNumber);
 }

@@ -61,7 +61,7 @@ import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -79,6 +79,8 @@ public class StartServerCommandDUnitTest implements Serializable {
 
   private static MemberVM locator;
   private static String locatorConnectionString;
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private File workingDir;
   private String memberName;
@@ -116,7 +118,7 @@ public class StartServerCommandDUnitTest implements Serializable {
   public void before() throws IOException {
     workingDir = temporaryFolder.newFolder();
     memberName = testName.getMethodName();
-    serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    serverPort = availablePortHelper.getRandomAvailableTCPPort();
   }
 
   @AfterClass

@@ -93,8 +93,8 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequest
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
@@ -109,6 +109,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 public class JGroupsMessengerJUnitTest {
 
   private static final String AES_128 = "AES:128";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private Services services;
   private JGroupsMessenger messenger;
@@ -136,7 +138,7 @@ public class JGroupsMessengerJUnitTest {
     Properties nonDefault = new Properties();
     nonDefault.put(DISABLE_TCP, "true");
     nonDefault.put(MCAST_PORT,
-        enableMcast ? "" + AvailablePortHelper.getRandomAvailableUDPPort() : "0");
+        enableMcast ? "" + availablePortHelper.getRandomAvailableUDPPort() : "0");
     nonDefault.put(MCAST_TTL, "0");
     nonDefault.put(LOG_FILE, "");
     nonDefault.put(LOG_LEVEL, "fine");

@@ -34,25 +34,26 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class AuthJUnitTest {
 
   private static final String PASSWORD = "pwd";
-  Jedis jedis;
-  GeodeRedisServer server;
-  GemFireCache cache;
-  Random rand;
-  int port;
 
-  int runs = 150;
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
+  private Jedis jedis;
+  private GeodeRedisServer server;
+  private GemFireCache cache;
+  private Random rand;
+  private int port;
 
   @Before
   public void setUp() throws IOException {
     rand = new Random();
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
+    port = availablePortHelper.getRandomAvailableTCPPort();
     this.jedis = new Jedis("localhost", port, 100000);
   }
 

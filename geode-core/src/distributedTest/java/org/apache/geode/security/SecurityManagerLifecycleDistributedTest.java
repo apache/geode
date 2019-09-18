@@ -22,7 +22,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.management.ManagementService.getExistingManagementService;
 import static org.apache.geode.test.dunit.DistributedTestUtils.deleteLocatorStateFile;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
@@ -38,6 +37,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.ManagementService;
@@ -48,6 +48,8 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({SecurityTest.class})
 public class SecurityManagerLifecycleDistributedTest extends CacheTestCase {
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private String locators;
   private VM locatorVM;
 
@@ -55,7 +57,7 @@ public class SecurityManagerLifecycleDistributedTest extends CacheTestCase {
   public void setUp() throws Exception {
     locatorVM = getVM(0);
 
-    int[] ports = getRandomAvailableTCPPorts(2);
+    int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
     int locatorPort = ports[0];
     int managerPort = ports[1];
 

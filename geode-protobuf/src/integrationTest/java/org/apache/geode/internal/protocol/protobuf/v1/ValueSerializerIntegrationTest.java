@@ -39,13 +39,16 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
 public class ValueSerializerIntegrationTest {
 
   private static final String TEST_REGION = "region";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private Cache cache;
   private Socket socket;
 
@@ -63,7 +66,7 @@ public class ValueSerializerIntegrationTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int cacheServerPort = availablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 

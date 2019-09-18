@@ -59,9 +59,9 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.pdx.internal.PdxString;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -76,9 +76,12 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category({OQLQueryTest.class})
 public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
-  final String rootRegionName = "root";
-  final String regionName = "PdxTest";
-  final String regName = "/" + rootRegionName + "/" + regionName;
+
+  private final String rootRegionName = "root";
+  private final String regionName = "PdxTest";
+  private final String regName = "/" + rootRegionName + "/" + regionName;
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private static int bridgeServerPort;
 
   private static final int orderByQueryIndex = 11;
@@ -2010,7 +2013,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         Region r1 = getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = availablePortHelper.getRandomAvailablePortForDUnitSite();
         server.setPort(port);
         server.start();
         return port;
@@ -2024,7 +2027,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         Region r1 = getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = availablePortHelper.getRandomAvailablePortForDUnitSite();
         server.setPort(port);
         server.start();
         return port;

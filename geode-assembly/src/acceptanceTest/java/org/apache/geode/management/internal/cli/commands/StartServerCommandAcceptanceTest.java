@@ -29,9 +29,9 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
@@ -51,6 +51,8 @@ public class StartServerCommandAcceptanceTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Test
   public void startStandaloneServerWithParametersShouldOverrideCacheXmlConfiguration()
@@ -72,7 +74,7 @@ public class StartServerCommandAcceptanceTest {
     CacheXmlGenerator.generate(creation, pw);
     pw.close();
 
-    Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    Integer serverPort = availablePortHelper.getRandomAvailableTCPPort();
     String startServerCommand =
         "start server --max-threads=100 --max-connections=1200 --max-message-count=5000 --message-time-to-live=360 --socket-buffer-size=16384 --server-port="
             + serverPort + " --name=" + testName.getMethodName() + " --cache-xml-file="
@@ -106,7 +108,7 @@ public class StartServerCommandAcceptanceTest {
   @Test
   public void startServerWithParametersWhenClusterConfigurationServiceIsEnabledShouldOverrideDefaults()
       throws IOException {
-    Integer serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    Integer serverPort = availablePortHelper.getRandomAvailableTCPPort();
     File logFile = temporaryFolder.newFile(testName.getMethodName() + ".log");
 
     String startServerCommand =

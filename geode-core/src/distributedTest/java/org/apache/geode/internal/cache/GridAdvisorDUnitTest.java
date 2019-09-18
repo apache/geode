@@ -41,9 +41,9 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
-import org.apache.geode.internal.AvailablePort.Keeper;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.AvailablePort.Keeper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -59,6 +59,8 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
 
   private static InternalCache cache;
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   /**
    * Tests 2 controllers and 2 cache servers
    */
@@ -71,7 +73,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     VM vm2 = VM.getVM(2);
     VM vm3 = VM.getVM(3);
 
-    List<Keeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
+    List<Keeper> freeTCPPorts = availablePortHelper.getRandomAvailableTCPPortKeepers(6);
     final Keeper keeper1 = freeTCPPorts.get(0);
     final int port1 = keeper1.getPort();
     final Keeper keeper2 = freeTCPPorts.get(1);
@@ -210,7 +212,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     VM vm2 = VM.getVM(2);
     VM vm3 = VM.getVM(3);
 
-    List<Keeper> freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPortKeepers(6);
+    List<Keeper> freeTCPPorts = availablePortHelper.getRandomAvailableTCPPortKeepers(6);
     final Keeper keeper1 = freeTCPPorts.get(0);
     final int port1 = keeper1.getPort();
     final Keeper keeper2 = freeTCPPorts.get(1);

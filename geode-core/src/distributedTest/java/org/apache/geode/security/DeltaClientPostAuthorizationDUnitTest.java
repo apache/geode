@@ -35,8 +35,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DeltaTestImpl;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.TestObjectWithIdentifier;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.dunit.VM;
@@ -48,9 +48,8 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({SecurityTest.class})
 public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
-  private static final int PAUSE = 5 * 1000; // TODO: replace with Awaitility
-
-  private DeltaTestImpl[] deltas = new DeltaTestImpl[8];
+  private final DeltaTestImpl[] deltas = new DeltaTestImpl[8];
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void preSetUpClientAuthorizationTestBase() throws Exception {
@@ -87,7 +86,7 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
         buildProperties(authenticator, accessor, true, extraAuthProps, extraAuthzProps);
 
     // Get ports for the servers
-    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] randomAvailableTCPPorts = availablePortHelper.getRandomAvailableTCPPorts(2);
     int port1 = randomAvailableTCPPorts[0];
     int port2 = randomAvailableTCPPorts[1];
 

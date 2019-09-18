@@ -25,8 +25,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.ExitCode;
+import org.apache.geode.internal.net.AvailablePort;
+import org.apache.geode.internal.net.AvailablePort.Protocol;
 import org.apache.geode.internal.process.PidFile;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
@@ -34,25 +35,24 @@ import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
-// Originally created in response to GEODE-2971
-
 /**
  * See also org.apache.geode.management.internal.cli.shell.StatusLocatorExitCodeAcceptanceTest
  */
 public class StatusServerExitCodeAcceptanceTest {
+
   private static File toolsJar;
   private static final ThreePhraseGenerator nameGenerator = new ThreePhraseGenerator();
   private static final String memberControllerName = "member-controller";
+  private static final AvailablePort availablePort = AvailablePort.create();
+  private static String locatorName;
+  private static String serverName;
+  private static int locatorPort;
 
   @ClassRule
   public static GfshRule gfsh = new GfshRule();
-  private static String locatorName;
-  private static String serverName;
-
-  private static int locatorPort;
 
   @BeforeClass
-  public static void classSetup() {
+  public static void setUp() {
     File javaHome = new File(System.getProperty("java.home"));
     String toolsPath =
         javaHome.getName().equalsIgnoreCase("jre") ? "../lib/tools.jar" : "lib/tools.jar";
@@ -60,7 +60,7 @@ public class StatusServerExitCodeAcceptanceTest {
 
     locatorName = "locator-" + nameGenerator.generate('-');
     serverName = "server-" + nameGenerator.generate('-');
-    locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    locatorPort = availablePort.getRandomAvailablePort(Protocol.SOCKET);
 
     GfshExecution exec = GfshScript.of(startLocatorCommand(), startServerCommand())
         .withName(memberControllerName).awaitAtMost(2, MINUTES).execute(gfsh);

@@ -56,13 +56,15 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 @Category({SerializationTest.class})
 public class PdxRenameDUnitTest extends JUnit4CacheTestCase {
 
-  final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+  private final org.apache.geode.internal.net.AvailablePortHelper availablePortHelper =
+      org.apache.geode.internal.net.AvailablePortHelper.create();
 
   @Test
   public void testPdxRenameVersioning() throws Exception {
     final String DS_NAME = "PdxRenameDUnitTestDiskStore";
     final String DS_NAME2 = "PdxRenameDUnitTestDiskStore2";
-    final int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] locatorPorts = availablePortHelper.getRandomAvailableTCPPorts(2);
     final File f = new File(DS_NAME);
     f.mkdir();
     final File f2 = new File(DS_NAME2);

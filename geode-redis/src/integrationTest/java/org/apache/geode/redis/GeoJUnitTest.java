@@ -42,12 +42,15 @@ import redis.clients.jedis.params.geo.GeoRadiusParam;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class GeoJUnitTest {
+
+  private static final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private static Jedis jedis;
   private static GeodeRedisServer server;
   private static GemFireCache cache;
@@ -63,7 +66,7 @@ public class GeoJUnitTest {
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
     cache = cf.create();
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
+    port = availablePortHelper.getRandomAvailableTCPPort();
     server = new GeodeRedisServer("localhost", port);
 
     server.start();

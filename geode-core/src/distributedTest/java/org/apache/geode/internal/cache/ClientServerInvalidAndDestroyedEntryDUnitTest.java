@@ -43,8 +43,8 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.tier.InterestType;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -62,6 +62,8 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  */
 @Category({ClientServerTest.class})
 public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTestCase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -150,7 +152,7 @@ public class ClientServerInvalidAndDestroyedEntryDUnitTest extends JUnit4CacheTe
           server = servers.get(0);
         } else {
           server = cache.addCacheServer();
-          int port = AvailablePortHelper.getRandomAvailableTCPPort();
+          int port = availablePortHelper.getRandomAvailableTCPPort();
           server.setPort(port);
           server.setHostnameForClients("localhost");
           try {

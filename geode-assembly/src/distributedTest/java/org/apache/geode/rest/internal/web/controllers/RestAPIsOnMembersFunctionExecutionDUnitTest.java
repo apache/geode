@@ -32,7 +32,7 @@ import org.junit.runners.Parameterized;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
@@ -50,8 +50,10 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     return Arrays.asList("/geode", "/gemfire-api");
   }
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private String createCacheAndRegisterFunction(String hostName, String memberName) {
-    final int servicePort = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int servicePort = availablePortHelper.getRandomAvailableTCPPort();
 
     Properties props = new Properties();
     props.setProperty(NAME, memberName);

@@ -37,7 +37,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
@@ -51,17 +51,21 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
 public class PutIfAbsentRequestIntegrationTest {
+
   private static final String TEST_REGION = "testRegion";
   private static final Object TEST_KEY = "testKey";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private Cache cache;
   private Socket socket;
   private OutputStream outputStream;
   private ProtobufSerializationService serializationService;
   private ProtobufProtocolSerializer protobufProtocolSerializer;
+  private InputStream inputStream;
 
   @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  private InputStream inputStream;
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   private void doSetup(DataPolicy dataPolicy) throws IOException {
     System.setProperty("geode.feature-protobuf-protocol", "true");
@@ -73,7 +77,7 @@ public class PutIfAbsentRequestIntegrationTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    final int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int cacheServerPort = availablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 

@@ -15,7 +15,6 @@
 package org.apache.geode.distributed;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -40,6 +39,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.dunit.Host;
@@ -56,10 +56,11 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @Category({ClientServerTest.class})
 public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
 
-  protected static final int TIMEOUT_MILLISECONDS = 5 * 60 * 1000; // 5 minutes
+  private static final int TIMEOUT_MILLISECONDS = 5 * 60 * 1000; // 5 minutes
 
-  protected transient volatile int locatorPort;
-  protected transient volatile LocatorLauncher launcher;
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
+  private transient volatile LocatorLauncher launcher;
 
   @Override
   public final void postSetUp() throws Exception {
@@ -78,7 +79,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
     assertNotNull(dunitLocator);
     assertFalse(dunitLocator.isEmpty());
 
-    final int[] ports = getRandomAvailableTCPPorts(4);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(4);
 
     final String uniqueName = getUniqueName();
     for (int i = 0; i < 4; i++) {
@@ -307,7 +308,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  protected void waitForLocatorToStart(final LocatorLauncher launcher, int timeout, int interval,
+  private void waitForLocatorToStart(final LocatorLauncher launcher, int timeout, int interval,
       boolean throwOnTimeout) throws Exception {
     assertEventuallyTrue("waiting for process to start: " + launcher.status(),
         new Callable<Boolean>() {
@@ -323,7 +324,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
         }, timeout, interval);
   }
 
-  protected static void assertEventuallyTrue(final String message, final Callable<Boolean> callable,
+  private static void assertEventuallyTrue(final String message, final Callable<Boolean> callable,
       final int timeout, final int interval) throws Exception {
     boolean done = false;
     for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < timeout; done =

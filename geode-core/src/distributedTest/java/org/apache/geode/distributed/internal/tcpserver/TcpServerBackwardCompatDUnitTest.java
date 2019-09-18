@@ -32,7 +32,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.dunit.Invoke;
@@ -46,6 +46,8 @@ import org.apache.geode.test.version.VersionManager;
  */
 @Category({MembershipTest.class})
 public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -75,7 +77,7 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
     final VM locatorRestart0 = VM.getVM(2);
     final VM member = VM.getVM(3);
 
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
 
     // Create properties for locator0
     final int port0 = ports[0];

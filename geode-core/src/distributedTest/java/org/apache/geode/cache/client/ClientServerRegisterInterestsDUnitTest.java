@@ -43,7 +43,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -68,6 +68,8 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
   private final AtomicInteger serverPort = new AtomicInteger(0);
 
   private final Stack entryEvents = new Stack();
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private VM gemfireServerVm;
 
@@ -95,7 +97,7 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
     Host localhost = Host.getHost(0);
 
     gemfireServerVm = localhost.getVM(0);
-    serverPort.set(AvailablePortHelper.getRandomAvailableTCPPort());
+    serverPort.set(availablePortHelper.getRandomAvailableTCPPort());
 
     gemfireServerVm.invoke(new SerializableRunnable() {
       @Override

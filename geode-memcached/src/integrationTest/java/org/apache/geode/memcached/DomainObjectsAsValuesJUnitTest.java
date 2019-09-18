@@ -30,9 +30,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 
 public class DomainObjectsAsValuesJUnitTest {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private int PORT;
 
@@ -41,7 +43,7 @@ public class DomainObjectsAsValuesJUnitTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
-    PORT = AvailablePortHelper.getRandomAvailableTCPPort();
+    PORT = availablePortHelper.getRandomAvailableTCPPort();
     this.server = new GemFireMemcachedServer(PORT);
     server.start();
   }

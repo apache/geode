@@ -53,8 +53,8 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
@@ -74,6 +74,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  */
 @Category(ClientServerTest.class)
 public class CacheOperationsJUnitTest {
+
   private final String TEST_KEY = "testKey";
   private final String TEST_VALUE = "testValue";
   private final String TEST_REGION = "testRegion";
@@ -89,18 +90,20 @@ public class CacheOperationsJUnitTest {
   private final String TEST_MULTIOP_VALUE2 = "multiopValue2";
   private final String TEST_MULTIOP_VALUE3 = "multiopValue3";
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private Cache cache;
   private int cacheServerPort;
   private ProtobufSerializationService serializationService;
   private Socket socket;
   private OutputStream outputStream;
+  private ProtobufProtocolSerializer protobufProtocolSerializer;
 
   @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Rule
   public TestName testName = new TestName();
-  private ProtobufProtocolSerializer protobufProtocolSerializer;
 
   @Before
   public void setup() throws Exception {
@@ -119,7 +122,7 @@ public class CacheOperationsJUnitTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    cacheServerPort = availablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 

@@ -21,7 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import org.apache.geode.cache.query.cq.dunit.CqQueryDUnitTest;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
@@ -33,18 +33,10 @@ import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
  * This is for testing Number of clients and can be extended for relevant test addition
- *
- *
  */
-
-
 public class TestClientsDUnitTest extends ManagementTestBase {
 
-  private static final long serialVersionUID = 1L;
-
-  public TestClientsDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   public static Integer getNumOfClients() {
     final WaitCriterion waitCriteria = new WaitCriterion() {
@@ -79,7 +71,7 @@ public class TestClientsDUnitTest extends ManagementTestBase {
     initManagement(false);
     VM server = managedNodeList.get(1);
     VM client = managedNodeList.get(2);
-    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int serverPort = availablePortHelper.getRandomAvailableTCPPort();
     cqDUnitTest.createServer(server, serverPort);
     final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server.getHost());

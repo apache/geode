@@ -73,10 +73,10 @@ import org.apache.geode.distributed.internal.membership.gms.membership.HostAddre
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -85,6 +85,8 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @SuppressWarnings("deprecation")
 @Category(ClientServerTest.class)
 public class AutoConnectionSourceImplJUnitTest {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private Cache cache;
   private int port;
@@ -107,7 +109,7 @@ public class AutoConnectionSourceImplJUnitTest {
     DistributedSystem ds = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds);
     poolStats = new PoolStats(ds, "pool");
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
+    port = availablePortHelper.getRandomAvailableTCPPort();
 
     handler = new FakeHandler();
     ArrayList<ServerLocation> responseLocators = new ArrayList<>();
@@ -316,7 +318,7 @@ public class AutoConnectionSourceImplJUnitTest {
   @Test
   public void test_DiscoverLocators_whenOneLocatorWasShutdown() throws Exception {
     startFakeLocator();
-    int secondPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int secondPort = availablePortHelper.getRandomAvailableTCPPort();
     TcpServer server2 =
         new TcpServerFactory().makeTcpServer(secondPort, InetAddress.getLocalHost(), null, null,
             handler, new FakeHelper(), "tcp server", null);

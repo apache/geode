@@ -33,11 +33,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerStartupValueRecoveryNotificationTest {
-
 
   private static final String SERVER_1_NAME = "server1";
   private static final String LOCATOR_NAME = "locator";
@@ -53,6 +52,8 @@ public class ServerStartupValueRecoveryNotificationTest {
   @Rule
   public TestName testName = new TestName();
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private Path locatorFolder;
   private Path server1Folder;
   private int locatorPort;
@@ -64,7 +65,7 @@ public class ServerStartupValueRecoveryNotificationTest {
     server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
     Path diskStore1Folder = temporaryFolder.newFolder(DISKSTORE_1).toPath().toAbsolutePath();
     Path diskStore2Folder = temporaryFolder.newFolder(DISKSTORE_2).toPath().toAbsolutePath();
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
     locatorPort = ports[0];
 
     String startLocatorCommand = String.join(" ",

@@ -43,7 +43,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -61,6 +61,7 @@ public class RemoveAllCacheListenerClientServerRegressionTest extends Distribute
   private VM serverVM = null;
   private final String BB_MAILBOX_KEY = "error";
   private final String NON_EXISTENT_KEY = "nonExistentKey";
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -246,7 +247,7 @@ public class RemoveAllCacheListenerClientServerRegressionTest extends Distribute
   // ================================================================================
   private void setupGemFireCacheServer(RegionShortcut shortcut, boolean concChecks) {
     serverVM = Host.getHost(0).getVM(0);
-    serverPort.set(AvailablePortHelper.getRandomAvailableTCPPort());
+    serverPort.set(availablePortHelper.getRandomAvailableTCPPort());
     String serverName = this.getClass().getSimpleName() + "_server";
     serverVM.invoke(new SerializableRunnable() {
       @Override

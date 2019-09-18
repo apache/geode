@@ -27,7 +27,7 @@ import redis.clients.jedis.Jedis;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -42,9 +42,10 @@ import org.apache.geode.test.junit.categories.RedisTest;
 @Category({RedisTest.class})
 public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
 
-  public static final String TEST_KEY = "key";
-  public static int pushes = 200;
-  int redisPort = 6379;
+  private static final String TEST_KEY = "key";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private Host host;
   private VM server1;
   private VM server2;
@@ -62,7 +63,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
 
     int port;
 
-    protected ClientTestBase(int port) {
+    ClientTestBase(int port) {
       this.port = port;
     }
   }
@@ -78,7 +79,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
     server2 = host.getVM(1);
     client1 = host.getVM(2);
     client2 = host.getVM(3);
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
     final int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
     final SerializableCallable<Object> startRedisAdapter = new SerializableCallable<Object>() {
 
@@ -112,7 +113,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
     final Jedis jedis2 = new Jedis(localHost, server2Port, JEDIS_TIMEOUT);
     final int pushes = 20;
     class ConcListOps extends ClientTestBase {
-      protected ConcListOps(int port) {
+      private ConcListOps(int port) {
         super(port);
       }
 
@@ -152,7 +153,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
     final String sKey = TEST_KEY + "set";
 
     class ConcCreateDestroy extends ClientTestBase {
-      protected ConcCreateDestroy(int port) {
+      private ConcCreateDestroy(int port) {
         super(port);
       }
 
@@ -211,7 +212,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
 
     class ConcOps extends ClientTestBase {
 
-      protected ConcOps(int port) {
+      private ConcOps(int port) {
         super(port);
       }
 

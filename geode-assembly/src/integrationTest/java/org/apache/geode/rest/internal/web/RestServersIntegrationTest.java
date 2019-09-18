@@ -27,7 +27,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.net.AvailablePort;
+import org.apache.geode.internal.net.AvailablePort.Protocol;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
@@ -36,27 +37,27 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({RestAPITest.class})
 public class RestServersIntegrationTest {
 
+  private static final AvailablePort availablePort = AvailablePort.create();
   private static GeodeDevRestClient restClient;
 
   @ClassRule
   public static ServerStarterRule serverStarter = new ServerStarterRule().withRestService(true);
 
-
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @BeforeClass
-  public static void before() throws Exception {
+  public static void setUp() {
     assumeTrue(
         "Default port was unavailable for testing.  Please ensure the testing environment is clean.",
-        AvailablePort.isPortAvailable(DEFAULT_HTTP_SERVICE_PORT, AvailablePort.SOCKET));
+        availablePort.isPortAvailable(DEFAULT_HTTP_SERVICE_PORT, Protocol.SOCKET));
     serverStarter.startServer();
     assertThat(serverStarter.getHttpPort()).isEqualTo(DEFAULT_HTTP_SERVICE_PORT);
     restClient = new GeodeDevRestClient("localhost", serverStarter.getHttpPort());
   }
 
   @Test
-  public void testGet() throws Exception {
+  public void testGet() {
     assertResponse(restClient.doGet("/", null, null))
         .hasStatusCode(HttpStatus.SC_OK);
   }

@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.security.templates.DummyAuthenticator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -37,13 +37,14 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({SecurityTest.class})
 public class PeerSecurityWithEmbeddedLocatorDUnitTest {
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
 
-
   @Test
   public void testPeerSecurityManager() throws Exception {
-    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int locatorPort = availablePortHelper.getRandomAvailableTCPPort();
 
     Properties server0Props = new Properties();
     server0Props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
@@ -74,7 +75,7 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest {
 
   @Test
   public void testPeerAuthenticator() throws Exception {
-    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int locatorPort = availablePortHelper.getRandomAvailableTCPPort();
 
     Properties server0Props = new Properties();
     server0Props.setProperty(SECURITY_PEER_AUTHENTICATOR, DummyAuthenticator.class.getName());

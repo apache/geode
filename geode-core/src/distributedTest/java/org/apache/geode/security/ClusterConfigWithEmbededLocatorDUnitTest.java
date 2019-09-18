@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.security;
 
 import org.junit.Before;
@@ -20,7 +19,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -28,7 +27,10 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({SecurityTest.class})
 public class ClusterConfigWithEmbededLocatorDUnitTest extends JUnit4DistributedTestCase {
-  protected VM locator = null;
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
+  private VM locator = null;
 
   @Before
   public void before() throws Exception {
@@ -38,7 +40,7 @@ public class ClusterConfigWithEmbededLocatorDUnitTest extends JUnit4DistributedT
 
   @Test
   public void testEmbeddedLocator() throws Exception {
-    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int locatorPort = availablePortHelper.getRandomAvailableTCPPort();
 
     // locator started this way won't have cluster configuration running
     locator.invoke(() -> {

@@ -48,7 +48,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.cache.util.CqListenerAdapter;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -58,6 +58,8 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 @Category({ClientSubscriptionTest.class})
 public class ClientSnapshotDUnitTest extends JUnit4CacheTestCase {
+
+  private final transient AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private transient Region<Integer, MyObject> region;
 
@@ -267,7 +269,7 @@ public class ClientSnapshotDUnitTest extends JUnit4CacheTestCase {
     Cache cache = getCache(cf);
 
     CacheServer server = cache.addCacheServer();
-    final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int port = availablePortHelper.getRandomAvailableTCPPort();
     server.setPort(port);
     server.start();
 

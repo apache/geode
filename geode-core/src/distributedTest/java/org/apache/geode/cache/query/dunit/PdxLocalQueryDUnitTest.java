@@ -35,8 +35,8 @@ import org.apache.geode.cache.query.data.PositionPdx;
 import org.apache.geode.cache.query.functional.StructSetOrResultsSet;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceEnum;
@@ -53,6 +53,8 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category({OQLQueryTest.class})
 public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Test
   public void testLocalPdxQueriesVerifyNoDeserialization() throws Exception {
@@ -294,7 +296,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
         }
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = availablePortHelper.getRandomAvailablePortForDUnitSite();
         server.setPort(port);
         server.start();
         return port;
@@ -636,7 +638,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
           r1.put("key-" + i, new PortfolioPdx(i));
         }
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = availablePortHelper.getRandomAvailablePortForDUnitSite();
         server.setPort(port);
         server.start();
         return port;
@@ -649,7 +651,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
       public Object call() throws Exception {
         Region r1 = getCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = availablePortHelper.getRandomAvailablePortForDUnitSite();
         server.setPort(port);
         server.start();
         return port;

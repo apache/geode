@@ -76,9 +76,9 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DirectReplyMessage;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -103,11 +103,10 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   private static final int NUM_SERVERS = 2;
   private static final int SMALL_BUFFER_SIZE = 8000;
 
-  private static final long serialVersionUID = -3438183140385150550L;
-
   private static Cache cache;
 
   private final String regionName = "clusterTestRegion";
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private final boolean disableTcp;
   private boolean conserveSockets;
@@ -293,7 +292,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
         // for stress-tests make sure that an older-version locator doesn't try
         // to read state persisted by another run's newer-version locator
         if (usingOldVersion) {
-          port = AvailablePortHelper.getRandomAvailableTCPPort();
+          port = availablePortHelper.getRandomAvailableTCPPort();
           DistributedTestUtils.deleteLocatorStateFile(port);
         }
         return Locator.startLocatorAndDS(port, new File(""), getDistributedSystemProperties())

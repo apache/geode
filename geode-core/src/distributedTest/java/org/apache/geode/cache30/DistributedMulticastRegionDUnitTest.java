@@ -45,10 +45,10 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxSerializationException;
@@ -63,18 +63,18 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
-
 public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
-  int locatorVM = 3;
-  String mcastport = "0";
-  String mcastttl = "0";
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+  private final int locatorVM = 3;
+  private final String mcastttl = "0";
 
+  private String mcastport = "0";
   private int locatorPort;
 
   @Before
-  public void setup() {
-    mcastport = String.valueOf(AvailablePortHelper.getRandomAvailableUDPPort());
+  public void setUp() {
+    mcastport = String.valueOf(availablePortHelper.getRandomAvailableUDPPort());
   }
 
   @Override
@@ -295,7 +295,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
   protected void addDSProps(Properties p) {}
 
-  protected void validateMulticastOpsAfterRegionOps() {
+  private void validateMulticastOpsAfterRegionOps() {
     int writes = getGemfireCache().getDistributionManager().getStats().getMcastWrites();
     int reads = getGemfireCache().getDistributionManager().getStats().getMcastReads();
     assertTrue("Should have multicast writes or reads. Writes=  " + writes + " ,read= " + reads,
@@ -322,7 +322,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
   }
 
   private int startLocator() {
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(3);
     final int locatorPort = ports[0];
 
     VM locator1Vm = Host.getHost(0).getVM(locatorVM);;

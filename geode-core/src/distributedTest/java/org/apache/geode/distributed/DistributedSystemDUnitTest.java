@@ -31,10 +31,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 import static org.apache.geode.distributed.internal.ClusterDistributionManager.NORMAL_DM_TYPE;
 import static org.apache.geode.distributed.internal.ClusterDistributionManager.SERIAL_EXECUTOR;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD;
-import static org.apache.geode.internal.AvailablePort.MULTICAST;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
+import static org.apache.geode.internal.net.AvailablePort.Protocol.MULTICAST;
+import static org.apache.geode.internal.net.AvailablePort.Protocol.SOCKET;
 import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
@@ -78,6 +76,7 @@ import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.SizeableRunnable;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -89,6 +88,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @Category({MembershipTest.class})
 public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
+  private static final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private int mcastPort;
   private int locatorPort;
   private int tcpPort;
@@ -96,20 +97,20 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
   private int upperBoundOfPortRange;
 
   @Before
-  public void before() throws Exception {
+  public void setUp() throws Exception {
     disconnectAllFromDS();
 
-    this.mcastPort = getRandomAvailablePort(MULTICAST);
-    this.locatorPort = getRandomAvailablePort(SOCKET);
-    this.tcpPort = getRandomAvailablePort(SOCKET);
+    this.mcastPort = availablePortHelper.getRandomAvailablePort(MULTICAST);
+    this.locatorPort = availablePortHelper.getRandomAvailablePort(SOCKET);
+    this.tcpPort = availablePortHelper.getRandomAvailablePort(SOCKET);
 
-    int[] portRange = getRandomAvailableTCPPortRange(3, true);
+    int[] portRange = availablePortHelper.getRandomAvailableTCPPortRange(3, true);
     this.lowerBoundOfPortRange = portRange[0];
     this.upperBoundOfPortRange = portRange[portRange.length - 1];
   }
 
   @After
-  public void after() throws Exception {
+  public void tearDown() throws Exception {
     disconnectAllFromDS();
   }
 

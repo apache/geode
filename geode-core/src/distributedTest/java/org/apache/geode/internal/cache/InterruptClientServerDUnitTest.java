@@ -33,8 +33,8 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.UpdateOperation.UpdateMessage;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -45,20 +45,14 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 /**
  * Tests interrupting gemfire threads and seeing what happens
- *
  */
-
 public class InterruptClientServerDUnitTest extends JUnit4CacheTestCase {
 
   private static volatile Thread puttingThread;
   private static final long MAX_WAIT = 60 * 1000;
   private static AtomicBoolean doInterrupt = new AtomicBoolean(false);
 
-  public InterruptClientServerDUnitTest() {
-    super();
-  }
-
-
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
@@ -84,7 +78,7 @@ public class InterruptClientServerDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
 
-    int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    int port = availablePortHelper.getRandomAvailableTCPPort();
     createRegionAndServer(vm0, port);
 
     // put some data in vm0

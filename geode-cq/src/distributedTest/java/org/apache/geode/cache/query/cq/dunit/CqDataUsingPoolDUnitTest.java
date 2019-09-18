@@ -61,10 +61,10 @@ import org.apache.geode.cache.query.cq.internal.CqQueryImpl.TestHook;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -87,9 +87,10 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
-  protected CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest(); // TODO: don't
-                                                                                     // do this!
   private static final Logger logger = LogService.getLogger();
+
+  private final CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -165,7 +166,7 @@ public class CqDataUsingPoolDUnitTest extends JUnit4CacheTestCase {
     final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
 
     cqDUnitTest.createServer(server2, ports[0]);
     final int port2 = server2.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());

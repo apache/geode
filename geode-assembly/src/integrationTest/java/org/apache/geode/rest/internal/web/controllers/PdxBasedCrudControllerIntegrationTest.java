@@ -47,8 +47,8 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
@@ -67,6 +67,8 @@ public class PdxBasedCrudControllerIntegrationTest {
 
   protected static final String PORT_AND_TWO_STRINGS_FORMAT =
       "http://localhost:%1$d/geode/v1/%2$s/%3$s";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   int port = 0;
 
@@ -93,7 +95,7 @@ public class PdxBasedCrudControllerIntegrationTest {
         port = Integer
             .parseInt(StringUtils.trimWhitespace(gemfireProperties.getProperty(HTTP_SERVICE_PORT)));
       } catch (NumberFormatException ignore) {
-        int httpServicePort1 = AvailablePortHelper.getRandomAvailableTCPPort();
+        int httpServicePort1 = availablePortHelper.getRandomAvailableTCPPort();
         int httpServicePort = (httpServicePort1 > 1024 && httpServicePort1 < 65536
             ? httpServicePort1 : DEFAULT_HTTP_SERVICE_PORT);
         gemfireProperties.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpServicePort));

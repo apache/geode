@@ -43,9 +43,9 @@ import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.VMCachedDeserializable;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -88,6 +88,8 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
       "SELECT * from /" + regName + " p, p.positions.values pos" + ", /" + regName2
           + " q, q.positions.values pos",};
   private final int[] resultSize2 = {400, 5, 400, 400, 1, 400, 400, 400, 1600};
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
@@ -585,7 +587,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
           r1.put("key-" + i, ba);
         }
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = availablePortHelper.getRandomAvailablePortForDUnitSite();
         server.setPort(port);
         server.start();
         return port;
@@ -1524,7 +1526,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         ((GemFireCacheImpl) getCache()).setReadSerializedForTest(true);
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regName);
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = availablePortHelper.getRandomAvailablePortForDUnitSite();
         server.setPort(port);
         server.start();
         return port;
@@ -1615,7 +1617,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         }
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = availablePortHelper.getRandomAvailablePortForDUnitSite();
         server.setPort(port);
         server.start();
         return port;
@@ -1637,7 +1639,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         }
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = availablePortHelper.getRandomAvailablePortForDUnitSite();
         server.setPort(port);
         server.start();
         return port;

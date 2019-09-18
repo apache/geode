@@ -63,9 +63,9 @@ import org.apache.geode.distributed.internal.membership.gms.api.MembershipListen
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
@@ -73,6 +73,8 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
 
 @Category({MembershipJUnitTest.class})
 public class MembershipJUnitTest {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -121,14 +123,15 @@ public class MembershipJUnitTest {
   private List<String> doTestMultipleManagersInSameProcessWithGroups(String groups)
       throws Exception {
 
-    MembershipManager m1 = null, m2 = null;
+    MembershipManager m1 = null;
+    MembershipManager m2 = null;
     Locator l = null;
     // int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
     try {
 
       // boot up a locator
-      int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      int port = availablePortHelper.getRandomAvailableTCPPort();
       InetAddress localHost = SocketCreator.getLocalHost();
 
       // this locator will hook itself up with the first MembershipManager
@@ -277,14 +280,15 @@ public class MembershipJUnitTest {
   @Test
   public void testLocatorAndTwoServersJoinUsingDiffeHellman() throws Exception {
 
-    MembershipManager m1 = null, m2 = null;
+    MembershipManager m1 = null;
+    MembershipManager m2 = null;
     Locator l = null;
-    int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
+    int mcastPort = availablePortHelper.getRandomAvailableUDPPort();
 
     try {
 
       // boot up a locator
-      int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      int port = availablePortHelper.getRandomAvailableTCPPort();
       InetAddress localHost = SocketCreator.getLocalHost();
       Properties p = new Properties();
       p.setProperty(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");

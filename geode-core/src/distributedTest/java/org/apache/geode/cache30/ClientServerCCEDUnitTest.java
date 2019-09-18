@@ -62,7 +62,6 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.DistributedLockStats;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation.TombstoneMessage;
@@ -77,6 +76,7 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.partitioned.PRTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -94,12 +94,13 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
  * concurrency-control tests for client/server
- *
- *
  */
 @Category({ClientServerTest.class})
 public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
-  public static LocalRegion TestRegion;
+
+  private static LocalRegion TestRegion;
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Before
   public void setup() {
@@ -1036,7 +1037,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
         TestRegion = (LocalRegion) createRootRegion(regionName, af.create());
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;

@@ -33,7 +33,7 @@ import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -47,12 +47,13 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
  * This class tests the ContinuousQuery mechanism in GemFire.
- *
  */
 @Category({ClientSubscriptionTest.class})
 public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   protected CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private final String selStr = "SELECT * FROM /root/regionA";
 
@@ -949,7 +950,7 @@ public class CqResultSetUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     String poolName = "testCQFailOver";
     final String cqName = "testCQFailOver_0";

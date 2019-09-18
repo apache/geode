@@ -17,13 +17,14 @@ package org.apache.geode.distributed;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.internal.net.AvailablePortHelper;
+
 /**
- * Regression tests for stopping a JMX Manager process launched with {@link LocatorLauncher}.
+ * Regression tests for stopping a JMX Manager process launched with {@code LocatorLauncher}.
  *
  * <p>
  * Confirms fix for <bold>Locator not stopping correctly if jmx-manager-port=0</bold>
@@ -34,11 +35,13 @@ import org.junit.Test;
 public class LocatorLauncherJmxManagerRemoteRegressionTest
     extends LocatorLauncherRemoteIntegrationTestCase {
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private int jmxManagerPort;
 
   @Before
   public void before() throws Exception {
-    int[] ports = getRandomAvailableTCPPorts(3);
+    int[] ports = availablePortHelper.getRandomAvailableTCPPorts(3);
     defaultLocatorPort = ports[0];
     nonDefaultLocatorPort = ports[1];
     jmxManagerPort = ports[2];

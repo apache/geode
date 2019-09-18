@@ -37,13 +37,16 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
 public class ProtocolVersionIntegrationTest {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private Cache cache;
 
   @Rule
@@ -68,7 +71,7 @@ public class ProtocolVersionIntegrationTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int cacheServerPort = availablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 

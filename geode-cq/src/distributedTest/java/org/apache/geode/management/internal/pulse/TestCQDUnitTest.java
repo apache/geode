@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import org.apache.geode.cache.query.cq.dunit.CqQueryDUnitTest;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
@@ -32,10 +32,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
  * This is for testing continuous query.
- *
  */
-
-
 public class TestCQDUnitTest extends ManagementTestBase {
 
   private static final long serialVersionUID = 1L;
@@ -44,9 +41,7 @@ public class TestCQDUnitTest extends ManagementTestBase {
 
   protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
-  public TestCQDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   public static long getNumOfCQ() {
 
@@ -84,7 +79,7 @@ public class TestCQDUnitTest extends ManagementTestBase {
 
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
-    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int serverPort = availablePortHelper.getRandomAvailableTCPPort();
     cqDUnitTest.createServer(server, serverPort);
 
     final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());

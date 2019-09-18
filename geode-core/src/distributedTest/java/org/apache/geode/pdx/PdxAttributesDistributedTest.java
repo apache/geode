@@ -43,9 +43,9 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.SimpleClass.SimpleEnum;
 import org.apache.geode.pdx.internal.EnumId;
@@ -58,8 +58,9 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 @Category(SerializationTest.class)
 public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
 
-  private File diskDir;
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
+  private File diskDir;
   private Cache cache;
 
   @Before
@@ -386,7 +387,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
     // Test that we can become a client registry.
     {
       initCache(false, false, null);
-      int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      int port = availablePortHelper.getRandomAvailableTCPPort();
       PoolManager.createFactory().addServer("localhost", port).create("pool");
 
       Throwable thrown = catchThrowable(() -> defineAType());

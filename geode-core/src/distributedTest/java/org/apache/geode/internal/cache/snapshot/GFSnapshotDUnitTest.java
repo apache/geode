@@ -44,7 +44,7 @@ import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.cache.snapshot.SnapshotReader;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -52,8 +52,9 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
-
 public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private VM locator;
   private VM server;
@@ -73,7 +74,7 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testDataExportAndIterate() throws IOException, ClassNotFoundException {
-    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int locatorPort = availablePortHelper.getRandomAvailableTCPPort();
     String serverHostName = NetworkUtils.getServerHostName(host);
 
     Properties properties = configureCommonProperties(new Properties());

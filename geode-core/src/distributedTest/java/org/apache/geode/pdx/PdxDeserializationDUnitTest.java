@@ -37,7 +37,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -52,15 +52,11 @@ import org.apache.geode.test.junit.categories.SerializationTest;
  * A test to ensure that we do not deserialize PDX objects when we shouldn't
  *
  * This test is trying to cover all of the possible access paths.
- *
- *
  */
 @Category({SerializationTest.class})
 public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
 
-  public PdxDeserializationDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   /**
    * Test that we don't deserialize objects on a remote peer when performing operations.
@@ -353,7 +349,7 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
 
   private CacheServer createCacheServer(Cache cache) {
     CacheServer server = cache.addCacheServer();
-    server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    server.setPort(availablePortHelper.getRandomAvailableTCPPort());
     try {
       server.start();
     } catch (IOException e) {

@@ -94,9 +94,9 @@ import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
-import org.apache.geode.internal.AvailablePort.Keeper;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.AvailablePort.Keeper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
@@ -122,6 +122,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @SuppressWarnings("serial")
 public class LocatorDUnitTest implements Serializable {
   private static final Logger logger = LogService.getLogger();
+
+  private static final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   protected static volatile InternalDistributedSystem system;
   private static volatile DUnitBlackboard blackboard;
@@ -158,7 +160,7 @@ public class LocatorDUnitTest implements Serializable {
 
     hostName = NetworkUtils.getServerHostName();
 
-    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(4);
+    int ports[] = availablePortHelper.getRandomAvailableTCPPorts(4);
     port1 = ports[0];
     port2 = ports[1];
     port3 = ports[2];
@@ -1047,8 +1049,7 @@ public class LocatorDUnitTest implements Serializable {
 
   @Test
   public void testConcurrentLocatorStartup() throws Exception {
-    List<Keeper> portKeepers =
-        AvailablePortHelper.getRandomAvailableTCPPortKeepers(4);
+    List<Keeper> portKeepers = availablePortHelper.getRandomAvailableTCPPortKeepers(4);
     StringBuilder sb = new StringBuilder(100);
     for (int i = 0; i < portKeepers.size(); i++) {
       Keeper keeper = portKeepers.get(i);

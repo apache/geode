@@ -31,7 +31,7 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -45,9 +45,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUsingPoolDUnitTest {
 
-  public CqResultSetUsingPoolOptimizedExecuteDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   protected final void postSetUpCqResultSetUsingPoolDUnitTest() throws Exception {
@@ -86,7 +84,7 @@ public class CqResultSetUsingPoolOptimizedExecuteDUnitTest extends CqResultSetUs
 
     final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     String poolName = "testCQFailOver";
     final String cqName = "testCQFailOver_0";

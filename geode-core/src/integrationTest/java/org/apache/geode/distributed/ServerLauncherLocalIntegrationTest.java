@@ -21,7 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -40,6 +39,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.ServerState;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessControllerFactory;
 import org.apache.geode.internal.process.ProcessType;
 
@@ -49,6 +49,8 @@ import org.apache.geode.internal.process.ProcessType;
  * @since GemFire 8.0
  */
 public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalIntegrationTestCase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Before
   public void setUpServerLauncherLocalIntegrationTest() {
@@ -166,7 +168,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
 
   @Test
   public void startWithServerPortOverridesPortInCacheXml() {
-    int[] freePorts = getRandomAvailableTCPPorts(2);
+    int[] freePorts = availablePortHelper.getRandomAvailableTCPPorts(2);
     int cacheXmlPort = freePorts[0];
     int startPort = freePorts[1];
     givenCacheXmlFileWithServerPort(cacheXmlPort);
@@ -221,7 +223,7 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
 
   @Test
   public void startWithParametersOverridesCacheXmlConfiguration() {
-    int[] freePorts = getRandomAvailableTCPPorts(2);
+    int[] freePorts = availablePortHelper.getRandomAvailableTCPPorts(2);
     int xmlPort = freePorts[0];
     int serverPort = freePorts[1];
     int maxThreads = 100;

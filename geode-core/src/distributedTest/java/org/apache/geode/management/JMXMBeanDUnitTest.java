@@ -56,7 +56,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -76,6 +76,7 @@ public class JMXMBeanDUnitTest implements Serializable {
   private final ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
   private final transient MBeanServerConnectionRule mBeanServerConnectionRule =
       new MBeanServerConnectionRule();
+  private final transient AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Rule
   public transient RuleChain ruleChain =
@@ -136,7 +137,7 @@ public class JMXMBeanDUnitTest implements Serializable {
 
   @Before
   public void before() {
-    jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    jmxPort = availablePortHelper.getRandomAvailableTCPPort();
     locatorProperties = new Properties();
     locatorProperties.put(JMX_MANAGER_PORT, jmxPort + "");
     locatorProperties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");

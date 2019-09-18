@@ -40,7 +40,7 @@ import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -59,12 +59,8 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
-  protected CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest(); // TODO: get
-                                                                                     // rid of this!
-
-  public CqPerfUsingPoolDUnitTest() {
-    super();
-  }
+  private final CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -714,7 +710,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Create client with redundancyLevel -1
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
     String poolName1 = "testClientWithFeederAndCQ1";
     String poolName2 = "testClientWithFeederAndCQ2";
 
@@ -770,7 +766,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createServer(server1);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
     final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     // Create client with redundancyLevel -1
     String poolName1 = "testClientWithFeederAndCQ1";

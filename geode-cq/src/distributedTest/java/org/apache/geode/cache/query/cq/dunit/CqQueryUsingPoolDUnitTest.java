@@ -67,12 +67,12 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -95,6 +95,8 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  */
 @Category({ClientSubscriptionTest.class})
 public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   /** The port on which the cache server was started in this VM */
   private static int bridgeServerPort;
@@ -2379,7 +2381,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     // createClient(client, new int[] {port1, ports[0]}, host0, "-1");
 
@@ -2470,7 +2472,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
 
     createServer(server2, ports[0]);
     final int thePort2 = server2.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
@@ -2565,7 +2567,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     final int port1 = server1.invoke(() -> CqQueryUsingPoolDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     String poolName = "testFilterRegistrationDuringGII";
     createPool(client1, poolName, new String[] {host0, host0}, new int[] {port1, ports[0]}, "-1");

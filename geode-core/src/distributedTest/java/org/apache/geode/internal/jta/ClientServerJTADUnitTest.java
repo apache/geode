@@ -49,7 +49,6 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.TXCommitMessage;
 import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
@@ -57,24 +56,28 @@ import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.tx.ClientTXStateStub;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 
-
 public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
-  private static final Logger logger = LogService.getLogger();
-  private String key = "key";
-  private String value = "value";
-  private String newKey = "newKey";
-  private String newValue = "newValue";
-  private final String REGION_NAME = "testRegion";
-  final Host host = Host.getHost(0);
-  final VM server = host.getVM(0);
-  final VM client = host.getVM(1);
 
+  private static final Logger logger = LogService.getLogger();
+
+  private final String key = "key";
+  private final String value = "value";
+  private final String newKey = "newKey";
+  private final String newValue = "newValue";
+  private final String REGION_NAME = "testRegion";
+
+  private final Host host = Host.getHost(0);
+  private final VM server = host.getVM(0);
+  private final VM client = host.getVM(1);
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
@@ -146,7 +149,7 @@ public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
   private CacheServer createCacheServer(Cache cache, int maxThreads) {
     CacheServer server = cache.addCacheServer();
     server.setMaxThreads(maxThreads);
-    server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    server.setPort(availablePortHelper.getRandomAvailableTCPPort());
     try {
       server.start();
     } catch (IOException e) {
@@ -286,8 +289,9 @@ public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
 
   }
 
-  final String restoreSetOperationTransactionBehavior = "restoreSetOperationTransactionBehavior";
-  final String RESTORE_SET_OPERATION_PROPERTY =
+  private final String restoreSetOperationTransactionBehavior =
+      "restoreSetOperationTransactionBehavior";
+  private final String RESTORE_SET_OPERATION_PROPERTY =
       (System.currentTimeMillis() % 2 == 0 ? DistributionConfig.GEMFIRE_PREFIX : "geode.")
           + restoreSetOperationTransactionBehavior;
 

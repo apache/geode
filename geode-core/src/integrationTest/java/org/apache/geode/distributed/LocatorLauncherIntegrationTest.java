@@ -17,7 +17,6 @@ package org.apache.geode.distributed;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.DistributedSystem.PROPERTIES_FILE_PROPERTY;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.BDDAssertions.assertThat;
@@ -39,13 +38,16 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
+import org.apache.geode.internal.net.AvailablePortHelper;
 
 /**
- * Integration tests for using {@link LocatorLauncher} as an in-process API within an existing JVM.
+ * Integration tests for using {@code LocatorLauncher} as an in-process API within an existing JVM.
  */
 public class LocatorLauncherIntegrationTest {
 
   private static final String CURRENT_DIRECTORY = System.getProperty("user.dir");
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -239,7 +241,7 @@ public class LocatorLauncherIntegrationTest {
   @Test
   public void portCanBeOverriddenBySystemProperty() {
     // given: overridden default port
-    int overriddenPort = getRandomAvailableTCPPort();
+    int overriddenPort = availablePortHelper.getRandomAvailableTCPPort();
     System.setProperty(TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(overriddenPort));
 
     // when: creating new LocatorLauncher

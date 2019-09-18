@@ -19,7 +19,6 @@ import static java.lang.System.currentTimeMillis;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
@@ -38,6 +37,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.internal.DSClock;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -49,9 +49,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @Category({ClientServerTest.class})
 public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
 
-  public ClientServerTimeSyncDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Ignore("Bug 52327")
   @Test
@@ -78,7 +76,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
               CacheServer server = null;
               try {
                 server = cache.addCacheServer();
-                server.setPort(getRandomAvailableTCPPort());
+                server.setPort(availablePortHelper.getRandomAvailableTCPPort());
                 server.start();
               } catch (IOException e) {
                 fail("Starting cache server failed.", e);
@@ -158,7 +156,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
               CacheServer server = null;
               try {
                 server = cache.addCacheServer();
-                server.setPort(getRandomAvailableTCPPort());
+                server.setPort(availablePortHelper.getRandomAvailableTCPPort());
                 server.start();
               } catch (IOException e) {
                 fail("Starting cache server failed.", e);

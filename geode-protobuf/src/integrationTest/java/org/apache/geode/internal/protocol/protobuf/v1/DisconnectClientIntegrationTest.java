@@ -40,14 +40,18 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
 public class DisconnectClientIntegrationTest {
-  public static final String SECURITY_PRINCIPAL = "principle";
+
+  private static final String SECURITY_PRINCIPAL = "principle";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private Socket socket;
   private Cache cache;
   private SecurityManager securityManager;
@@ -70,7 +74,7 @@ public class DisconnectClientIntegrationTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int cacheServerPort = availablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 

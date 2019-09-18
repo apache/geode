@@ -33,7 +33,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -47,6 +47,8 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   @Override
   public final void postTearDownCacheTestCase() {
     Host.getHost(0).getVM(0).invoke(() -> disconnectFromDS());
@@ -59,7 +61,7 @@ public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
 
     final String hostName = NetworkUtils.getServerHostName(host);
-    final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int port = availablePortHelper.getRandomAvailableTCPPort();
     vm0.invoke(new SerializableRunnable("create cache") {
       @Override
       public void run() {

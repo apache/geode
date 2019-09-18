@@ -49,7 +49,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.SecurityManager;
@@ -57,10 +57,14 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
 public class ExecuteFunctionOnMemberIntegrationTest {
+
   private static final String TEST_REGION = "testRegion";
   private static final String TEST_FUNCTION_ID = "testFunction";
   private static final String SECURITY_PRINCIPAL = "principle";
   private static final String SERVER_NAME = "pericles";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private ProtobufSerializationService serializationService;
   private Socket socket;
   private Cache cache;
@@ -85,7 +89,7 @@ public class ExecuteFunctionOnMemberIntegrationTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int cacheServerPort = availablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 

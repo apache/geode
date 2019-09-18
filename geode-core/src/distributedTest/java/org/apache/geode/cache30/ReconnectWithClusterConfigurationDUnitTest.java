@@ -47,8 +47,8 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePort.Keeper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Disconnect;
@@ -58,6 +58,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 
 public class ReconnectWithClusterConfigurationDUnitTest implements Serializable {
 
+  private static final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
   private static final int NUM_LOCATORS = 2;
   private static final int NUM_VMS = 4;
   private static DistributedSystem system;
@@ -71,10 +72,10 @@ public class ReconnectWithClusterConfigurationDUnitTest implements Serializable 
 
   @Before
   public void setup() {
-    List<AvailablePort.Keeper> randomAvailableTCPPortKeepers =
-        AvailablePortHelper.getRandomAvailableTCPPortKeepers(NUM_LOCATORS);
+    List<Keeper> randomAvailableTCPPortKeepers =
+        availablePortHelper.getRandomAvailableTCPPortKeepers(NUM_LOCATORS);
     for (int i = 0; i < NUM_LOCATORS; i++) {
-      AvailablePort.Keeper keeper = randomAvailableTCPPortKeepers.get(i);
+      Keeper keeper = randomAvailableTCPPortKeepers.get(i);
       locatorPorts[i] = keeper.getPort();
     }
     final int[] locPorts = locatorPorts;

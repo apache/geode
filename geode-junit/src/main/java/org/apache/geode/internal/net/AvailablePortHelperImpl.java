@@ -55,6 +55,7 @@ class AvailablePortHelperImpl implements AvailablePortHelper {
   /**
    * Returns array of unique randomly available tcp ports of specified count.
    */
+  @Override
   public int[] getRandomAvailableTCPPorts(int count) {
     return getRandomAvailableTCPPorts(count, false);
   }
@@ -66,6 +67,7 @@ class AvailablePortHelperImpl implements AvailablePortHelper {
    * @param useMembershipPortRange whether to use the configured membership-port-range
    * @return the ports
    */
+  @Override
   public int[] getRandomAvailableTCPPorts(int count, boolean useMembershipPortRange) {
     List<Keeper> list = getRandomAvailableTCPPortKeepers(count, useMembershipPortRange);
     int[] ports = new int[list.size()];
@@ -78,6 +80,7 @@ class AvailablePortHelperImpl implements AvailablePortHelper {
     return ports;
   }
 
+  @Override
   public List<Keeper> getRandomAvailableTCPPortKeepers(int count) {
     return getRandomAvailableTCPPortKeepers(count, false);
   }
@@ -91,10 +94,12 @@ class AvailablePortHelperImpl implements AvailablePortHelper {
     return result;
   }
 
+  @Override
   public int[] getRandomAvailableTCPPortRange(final int count) {
     return getRandomAvailableTCPPortRange(count, false);
   }
 
+  @Override
   public int[] getRandomAvailableTCPPortRange(final int count,
       final boolean useMembershipPortRange) {
     List<Keeper> list =
@@ -109,10 +114,12 @@ class AvailablePortHelperImpl implements AvailablePortHelper {
     return ports;
   }
 
+  @Override
   public List<Keeper> getRandomAvailableTCPPortRangeKeepers(final int count) {
     return getRandomAvailableTCPPortRangeKeepers(count, false);
   }
 
+  @Override
   public List<Keeper> getRandomAvailableTCPPortRangeKeepers(final int count,
       final boolean useMembershipPortRange) {
     return getUniquePortRangeKeepers(useMembershipPortRange, Protocol.SOCKET.intLevel(), count);
@@ -127,6 +134,7 @@ class AvailablePortHelperImpl implements AvailablePortHelper {
   /**
    * Returns array of unique randomly available tcp ports of specified count.
    */
+  @Override
   public int[] getRandomAvailableTCPPortsForDUnitSite(int count) {
     int site = 1;
     String hostName = System.getProperty("hostName");
@@ -154,6 +162,7 @@ class AvailablePortHelperImpl implements AvailablePortHelper {
   /**
    * Returns array of unique randomly available tcp ports of specified count.
    */
+  @Override
   public int getRandomAvailablePortForDUnitSite() {
     return getRandomAvailableTCPPortsForDUnitSite(1)[0];
   }
@@ -162,6 +171,7 @@ class AvailablePortHelperImpl implements AvailablePortHelper {
   /**
    * Returns randomly available tcp port.
    */
+  @Override
   public int getRandomAvailableTCPPort() {
     return getRandomAvailableTCPPorts(1)[0];
   }
@@ -182,10 +192,12 @@ class AvailablePortHelperImpl implements AvailablePortHelper {
   /**
    * Returns randomly available udp port.
    */
+  @Override
   public int getRandomAvailableUDPPort() {
     return getRandomAvailableUDPPorts(1)[0];
   }
 
+  @Override
   public void initializeUniquePortRange(int rangeNumber) {
     if (rangeNumber < 0) {
       throw new RuntimeException("Range number cannot be negative.");

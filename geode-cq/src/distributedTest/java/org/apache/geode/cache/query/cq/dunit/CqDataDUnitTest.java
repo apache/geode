@@ -41,8 +41,8 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.cache30.ClientServerTestCase;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -60,16 +60,13 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 /**
  * This class tests the ContiunousQuery mechanism in GemFire. This includes the test with different
  * data activities.
- *
  */
 @Category({ClientSubscriptionTest.class})
 public class CqDataDUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
-  protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
-  public CqDataDUnitTest() {
-    super();
-  }
+  private final CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -146,7 +143,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
 
     cqDUnitTest.createServer(server2, ports[0]);
     final int port2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());

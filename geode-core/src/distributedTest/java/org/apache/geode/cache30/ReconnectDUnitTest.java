@@ -90,11 +90,11 @@ import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
+import org.apache.geode.internal.net.AvailablePort.Protocol;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -111,6 +111,9 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @SuppressWarnings("serial")
 @Category({MembershipTest.class})
 public class ReconnectDUnitTest extends JUnit4CacheTestCase {
+
+  private static final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private static int locatorPort;
   private static Locator locator;
   private static DistributedSystem savedSystem;
@@ -127,7 +130,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    locatorPort = availablePortHelper.getRandomAvailablePort(Protocol.SOCKET);
     final int locPort = locatorPort;
     getHost(0).getVM(locatorVMNumber).invoke(new SerializableRunnable("start locator") {
       @Override
@@ -311,7 +314,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
 
     final int locPort = locatorPort;
-    final int secondLocPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int secondLocPort = availablePortHelper.getRandomAvailableTCPPort();
 
     Invoke
         .invokeInEveryVM(() -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));
@@ -548,7 +551,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     DistributedMember dm, newdm;
 
     final int locPort = locatorPort;
-    final int secondLocPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int secondLocPort = availablePortHelper.getRandomAvailableTCPPort();
 
     Invoke
         .invokeInEveryVM(() -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));

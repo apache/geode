@@ -25,8 +25,8 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
@@ -42,12 +42,11 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 @Category({OQLQueryTest.class})
 public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
 
-
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   /**
    * Testing the isRemote flag which could be inconsistent when bind queries are being executed in
    * multiple threads. Bug #49662 is caused because of this inconsistent behavior.
-   *
    */
   @Test
   public void testIsRemoteFlagForRemoteQueries() throws Exception {
@@ -67,7 +66,7 @@ public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
       public Object call() throws Exception {
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+        int port = availablePortHelper.getRandomAvailablePortForDUnitSite();
         server.setPort(port);
         server.start();
         return port;

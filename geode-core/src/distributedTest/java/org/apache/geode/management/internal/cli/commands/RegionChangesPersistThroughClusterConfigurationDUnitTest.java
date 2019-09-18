@@ -33,8 +33,8 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -51,7 +51,11 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
 
-  private MemberVM locator, server1, server2;
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
+  private MemberVM locator;
+  private MemberVM server1;
+  private MemberVM server2;
 
   private static final String REGION_NAME = "testRegionSharedConfigRegion";
   private static final String REGION_PATH = "/" + REGION_NAME;
@@ -59,7 +63,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
 
   @Before
   public void setup() throws Exception {
-    int[] randomPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] randomPorts = availablePortHelper.getRandomAvailableTCPPorts(2);
     int jmxPort = randomPorts[0];
     int httpPort = randomPorts[1];
     Properties props = new Properties();
@@ -88,7 +92,6 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
         "create region --type=REPLICATE --enable-statistics=true --name=" + REGION_PATH)
         .statusIsSuccess();
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, 2);
-
   }
 
   @Test

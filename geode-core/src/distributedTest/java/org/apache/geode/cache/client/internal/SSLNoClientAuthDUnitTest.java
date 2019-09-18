@@ -50,7 +50,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -67,6 +67,8 @@ public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
   private static final String DEFAULT_STORE = "default.keystore";
 
   private static SSLNoClientAuthDUnitTest instance = new SSLNoClientAuthDUnitTest();
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Before
   public void setUp() {
@@ -121,7 +123,7 @@ public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void createServer() throws IOException {
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    cacheServerPort = availablePortHelper.getRandomAvailableTCPPort();
     cacheServer = cache.addCacheServer();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();

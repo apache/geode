@@ -53,8 +53,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -64,12 +64,18 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class StopLocatorCommandDUnitTest {
-  private static MemberVM locator;
+
   private static final String memberName = "locatorToStop";
   private static final String groupName = "locatorGroup";
+  private static final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
+  private static MemberVM locator;
   private static String locatorConnectionString;
+  private static Integer locatorPort;
+  private static Integer jmxPort;
+  private static Integer toStopJmxPort;
+
   private File workingDir;
-  private static Integer locatorPort, jmxPort, toStopJmxPort;
 
   @Rule
   public final TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -82,7 +88,7 @@ public class StopLocatorCommandDUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    jmxPort = availablePortHelper.getRandomAvailableTCPPort();
 
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, jmxPort.toString());
@@ -104,7 +110,7 @@ public class StopLocatorCommandDUnitTest {
   @Before
   public void before() throws Exception {
     workingDir = temporaryFolder.newFolder();
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] availablePorts = availablePortHelper.getRandomAvailableTCPPorts(2);
     locatorPort = availablePorts[0];
     toStopJmxPort = availablePorts[1];
 

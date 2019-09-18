@@ -24,7 +24,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.alerting.AlertLevel.NONE;
 import static org.apache.geode.internal.alerting.AlertLevel.WARNING;
 import static org.apache.geode.management.JMXNotificationType.SYSTEM_ALERT;
@@ -62,6 +61,7 @@ import org.apache.geode.internal.alerting.AlertLevel;
 import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.AlertingTest;
 import org.apache.geode.test.junit.categories.ManagementTest;
 
@@ -81,6 +81,8 @@ public class DistributedSystemMXBeanIntegrationTest {
   private static final NotificationFilter SYSTEM_ALERT_FILTER =
       notification -> notification.getType().equals(SYSTEM_ALERT);
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private String name;
   private InternalCache cache;
   private DistributedMember distributedMember;
@@ -98,7 +100,8 @@ public class DistributedSystemMXBeanIntegrationTest {
     alertMessage = "Alerting in " + testName.getMethodName();
     name = "Manager in " + testName.getMethodName();
 
-    String startLocator = getServerHostName() + "[" + getRandomAvailableTCPPort() + "]";
+    String startLocator =
+        getServerHostName() + "[" + availablePortHelper.getRandomAvailableTCPPort() + "]";
 
     Properties config = getDistributedSystemProperties();
     config.setProperty(NAME, name);

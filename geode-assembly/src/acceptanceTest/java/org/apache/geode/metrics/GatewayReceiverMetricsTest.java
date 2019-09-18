@@ -35,7 +35,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.MetricsTest;
@@ -59,6 +59,9 @@ public class GatewayReceiverMetricsTest {
   private static final String RECEIVER_SERVER_NAME = "receiver-server";
   private static final String REGION_NAME = "region";
   private static final String GFSH_COMMAND_SEPARATOR = " ";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private String senderLocatorFolder;
   private String receiverLocatorFolder;
   private String senderServerFolder;
@@ -68,7 +71,7 @@ public class GatewayReceiverMetricsTest {
 
   @Before
   public void startClusters() throws IOException {
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(8);
+    int[] ports = availablePortHelper.getRandomAvailableTCPPorts(8);
 
     receiverLocatorPort = ports[0];
     senderLocatorPort = ports[1];

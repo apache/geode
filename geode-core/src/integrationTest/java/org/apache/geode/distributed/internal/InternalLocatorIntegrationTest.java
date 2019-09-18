@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,6 +37,7 @@ import org.mockito.quality.Strictness;
 
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LoggingSession;
+import org.apache.geode.internal.net.AvailablePortHelper;
 
 public class InternalLocatorIntegrationTest {
 
@@ -46,6 +46,8 @@ public class InternalLocatorIntegrationTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private int port;
   @Mock
@@ -67,7 +69,7 @@ public class InternalLocatorIntegrationTest {
 
   @Before
   public void setUp() throws IOException {
-    port = getRandomAvailableTCPPort();
+    port = availablePortHelper.getRandomAvailableTCPPort();
     hostnameForClients = "";
     bindAddress = null;
 

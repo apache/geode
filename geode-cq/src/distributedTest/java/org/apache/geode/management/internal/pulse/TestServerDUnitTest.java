@@ -20,7 +20,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import org.apache.geode.cache.query.cq.dunit.CqQueryDUnitTest;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagementTestBase;
@@ -31,17 +31,10 @@ import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
  * This is for testing server count details from MBean
- *
  */
-
-
 public class TestServerDUnitTest extends ManagementTestBase {
 
-  private static final long serialVersionUID = 1L;
-
-  public TestServerDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   public static int getNumOfServersFromMBean() {
 
@@ -77,7 +70,7 @@ public class TestServerDUnitTest extends ManagementTestBase {
   public void testNumOfServersDUnitTest() throws Exception {
     initManagement(false);
     VM server = managedNodeList.get(1);
-    int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int serverPort = availablePortHelper.getRandomAvailableTCPPort();
     cqDUnitTest.createServer(server, serverPort);
     int serverCount =
         ((Number) managingNode.invoke(() -> TestServerDUnitTest.getNumOfServersFromMBean()))

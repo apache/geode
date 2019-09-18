@@ -39,8 +39,8 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
@@ -53,9 +53,12 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  */
 @Category(ClientServerTest.class)
 public class CacheConnectionTimeoutJUnitTest {
+
   private final String TEST_KEY = "testKey";
   private final String TEST_VALUE = "testValue";
   private final String TEST_REGION = "testRegion";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private Cache cache;
   private ProtobufSerializationService serializationService;
@@ -83,7 +86,7 @@ public class CacheConnectionTimeoutJUnitTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int cacheServerPort = availablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.setMaximumTimeBetweenPings(2000);
     cacheServer.start();

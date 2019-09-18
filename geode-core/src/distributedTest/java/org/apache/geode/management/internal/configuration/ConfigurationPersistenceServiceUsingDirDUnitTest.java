@@ -22,7 +22,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
@@ -44,10 +43,13 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4CacheTestCase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
@@ -70,7 +72,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
 
   @Test
   public void basicClusterConfigDirWithOneLocator() throws Exception {
-    final int[] ports = getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
     final int locatorCount = ports.length;
 
     for (int i = 0; i < locatorCount; i++) {
@@ -92,7 +94,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
 
   @Test
   public void basicClusterConfigDirWithTwoLocators() throws Exception {
-    final int[] ports = getRandomAvailableTCPPorts(2);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
     for (int i = 0; i < locatorCount; i++) {
@@ -114,7 +116,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
 
   @Test
   public void updateClusterConfigDirWithTwoLocatorsNoRollingServerRestart() throws Exception {
-    final int[] ports = getRandomAvailableTCPPorts(2);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
     for (int i = 0; i < locatorCount; i++) {
@@ -166,7 +168,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
 
   @Test
   public void updateClusterConfigDirWithTwoLocatorsAndRollingServerRestart() throws Exception {
-    final int[] ports = getRandomAvailableTCPPorts(2);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
     for (int i = 0; i < locatorCount; i++) {
@@ -214,7 +216,7 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
   @Test
   public void updateClusterConfigDirWithTwoLocatorsRollingRestartAndRollingServerRestart()
       throws Exception {
-    final int[] ports = getRandomAvailableTCPPorts(2);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
     final int locatorCount = ports.length;
 
     for (int i = 0; i < locatorCount; i++) {

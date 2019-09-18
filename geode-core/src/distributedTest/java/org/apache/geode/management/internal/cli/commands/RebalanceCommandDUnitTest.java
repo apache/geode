@@ -32,8 +32,8 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -56,9 +56,16 @@ public class RebalanceCommandDUnitTest {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private MemberVM locator, server1, server2;
-  private static int server1SharedRegionInitialSize, server2SharedRegionInitialSize,
-      server1Region1InitialSize, server2Region2InitialSize;
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
+  private MemberVM locator;
+  private MemberVM server1;
+  private MemberVM server2;
+
+  private static int server1SharedRegionInitialSize;
+  private static int server2SharedRegionInitialSize;
+  private static int server1Region1InitialSize;
+  private static int server2Region2InitialSize;
 
   @Before
   public void before() throws Exception {
@@ -288,7 +295,7 @@ public class RebalanceCommandDUnitTest {
   }
 
   private Properties locatorProperties() {
-    int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int jmxPort = availablePortHelper.getRandomAvailableTCPPort();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOG_LEVEL, "fine");

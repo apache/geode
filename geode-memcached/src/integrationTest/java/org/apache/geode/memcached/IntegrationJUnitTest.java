@@ -32,14 +32,16 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 
 public class IntegrationJUnitTest {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Test
   public void testGemFireProperty() throws Exception {
     Properties props = new Properties();
-    final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int port = availablePortHelper.getRandomAvailableTCPPort();
     props.setProperty(MEMCACHED_PORT, port + "");
     props.setProperty(MCAST_PORT, "0");
     CacheFactory cf = new CacheFactory(props);
@@ -61,7 +63,7 @@ public class IntegrationJUnitTest {
   @Test
   public void testMemcachedBindAddress() throws Exception {
     Properties props = new Properties();
-    final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int port = availablePortHelper.getRandomAvailableTCPPort();
     props.setProperty(MEMCACHED_PORT, port + "");
     props.setProperty(MEMCACHED_BIND_ADDRESS, "127.0.0.1");
     props.put(MCAST_PORT, "0");

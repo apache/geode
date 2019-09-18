@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -37,10 +36,10 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
@@ -53,9 +52,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @Category({ClientServerTest.class})
 public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
 
-  public AcceptorImplDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   // SleepyCacheWriter will block indefinitely.
   // Anyone who has a handle on the SleepyCacheWriter can interrupt it by calling wakeUp.
@@ -66,7 +63,7 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
     // locks the above three booleans.
     private final Object lock = new Object();
 
-    public void notifyStart() {
+    private void notifyStart() {
       synchronized (lock) {
         setOnStart = true;
       }
@@ -78,7 +75,7 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
       }
     }
 
-    public void notifyInterrupt() {
+    private void notifyInterrupt() {
       synchronized (lock) {
         setOnInterrupt = true;
       }
@@ -90,20 +87,20 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
       }
     }
 
-    public void stopWaiting() {
+    private void stopWaiting() {
       synchronized (lock) {
         this.stopWaiting = true;
         lock.notify();
       }
     }
 
-    public boolean isReadyToQuit() {
+    private boolean isReadyToQuit() {
       synchronized (lock) {
         return stopWaiting;
       }
     }
 
-    SleepyCacheWriter() {}
+    private SleepyCacheWriter() {}
 
     @Override
     public void beforeCreate(EntryEvent<K, V> event) {
@@ -150,7 +147,7 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
       regionFactory.setCacheWriter(sleepyCacheWriter);
 
       final CacheServer server = cache.addCacheServer();
-      final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      final int port = availablePortHelper.getRandomAvailableTCPPort();
       server.setPort(port);
       server.start();
 
@@ -208,7 +205,7 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
           cache.createRegionFactory(RegionShortcut.PARTITION);
 
       final CacheServer server = cache.addCacheServer();
-      final int port = AvailablePortHelper.getRandomAvailableTCPPort();
+      final int port = availablePortHelper.getRandomAvailableTCPPort();
       server.setPort(port);
       server.start();
 
@@ -234,7 +231,7 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
    *
    * @return the cache's Acceptor, if there is exactly one CacheServer. Otherwise null.
    */
-  public AcceptorImpl getAcceptorImplFromCache(GemFireCache cache) {
+  private AcceptorImpl getAcceptorImplFromCache(GemFireCache cache) {
     GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
     List<CacheServer> cacheServers = gemFireCache.getCacheServers();
     if (cacheServers.size() != 1) {

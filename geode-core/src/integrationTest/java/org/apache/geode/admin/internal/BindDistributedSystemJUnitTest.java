@@ -24,7 +24,7 @@ import org.junit.After;
 import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 
 /**
  * Tests {@link org.apache.geode.admin.internal.AdminDistributedSystemImpl}.
@@ -35,8 +35,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 @SuppressWarnings("deprecation")
 public class BindDistributedSystemJUnitTest {
 
-  private static final int RETRY_ATTEMPTS = 3;
-  private static final int RETRY_SLEEP = 100;
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private DistributedSystem system;
 
@@ -67,7 +66,7 @@ public class BindDistributedSystemJUnitTest {
     Properties props = new Properties();
     props.setProperty(BIND_ADDRESS, bindTo);
     props.setProperty(START_LOCATOR,
-        "localhost[" + AvailablePortHelper.getRandomAvailableTCPPort() + "]");
+        "localhost[" + availablePortHelper.getRandomAvailableTCPPort() + "]");
     this.system = org.apache.geode.distributed.DistributedSystem.connect(props);
 
     assertEquals(true, this.system.isConnected());

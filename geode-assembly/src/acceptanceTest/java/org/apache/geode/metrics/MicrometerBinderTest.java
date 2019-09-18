@@ -39,12 +39,14 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class MicrometerBinderTest {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private Path serverFolder;
   private ClientCache clientCache;
@@ -64,7 +66,7 @@ public class MicrometerBinderTest {
   public void startServer() throws IOException {
     serverFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
 
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
 
     int serverPort = ports[0];
     int jmxRmiPort = ports[1];

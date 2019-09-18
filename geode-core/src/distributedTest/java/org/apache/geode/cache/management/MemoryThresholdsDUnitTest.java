@@ -81,7 +81,6 @@ import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -95,6 +94,7 @@ import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatListener;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -169,6 +169,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
       "<ExpectedException action=add>" + expectedFunctionEx + "</ExpectedException>";
   final String removeExpectedFunctionExString =
       "<ExpectedException action=remove>" + expectedFunctionEx + "</ExpectedException>";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   protected final void postSetUpClientServerTestCase() throws Exception {
@@ -1388,7 +1390,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
           assertTrue(region instanceof DistributedRegion);
         }
         CacheServer cacheServer = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPorts(1)[0];
+        int port = availablePortHelper.getRandomAvailableTCPPorts(1)[0];
         cacheServer.setPort(port);
         cacheServer.setNotifyBySubscription(notifyBySubscription);
         cacheServer.start();

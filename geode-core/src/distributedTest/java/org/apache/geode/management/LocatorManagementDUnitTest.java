@@ -19,7 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_H
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.management.MXBeanAwaitility.awaitLocalLocatorMXBean;
 import static org.apache.geode.management.MXBeanAwaitility.awaitLocatorMXBeanProxy;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -36,14 +35,16 @@ import org.junit.Test;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 
 /**
  * Distributed tests for {@link LocatorMXBean}.
  */
-
 public class LocatorManagementDUnitTest extends ManagementTestBase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private VM managerVM;
   private VM locatorVM;
@@ -57,7 +58,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     locatorVM = managedNode1;
 
     hostName = Host.getHost(0).getHostName();
-    locatorPort = getRandomAvailableTCPPort();
+    locatorPort = availablePortHelper.getRandomAvailableTCPPort();
   }
 
   @After

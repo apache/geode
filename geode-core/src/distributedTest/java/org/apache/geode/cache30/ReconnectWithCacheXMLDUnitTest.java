@@ -34,7 +34,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -49,7 +49,9 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @SuppressWarnings("serial")
 public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
 
-  private String xmlProperty = DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile";
+  private final String xmlProperty =
+      DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile";
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
   private String oldPropertySetting;
 
   @Rule
@@ -85,7 +87,7 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void usesPortSpecifiedByServerLauncherParametersWithPort() {
-    ServerLauncherParameters.INSTANCE.withPort(AvailablePortHelper.getRandomAvailableTCPPort())
+    ServerLauncherParameters.INSTANCE.withPort(availablePortHelper.getRandomAvailableTCPPort())
         .withDisableDefaultServer(true);
     Cache cache = getCache();
 

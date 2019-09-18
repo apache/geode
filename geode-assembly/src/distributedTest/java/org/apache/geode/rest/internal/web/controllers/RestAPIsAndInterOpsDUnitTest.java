@@ -67,9 +67,9 @@ import org.apache.geode.cache.client.internal.LocatorTestBase;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -149,10 +149,12 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     return Arrays.asList("/geode", "/gemfire-api");
   }
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private String startBridgeServerWithRestService(final String hostName, final String[] groups,
       final String locators, final String[] regions, final ServerLoadProbe probe)
       throws IOException {
-    final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int serverPort = availablePortHelper.getRandomAvailableTCPPort();
 
     // create Cache of given VM and start HTTP service with REST APIs service
 
@@ -670,7 +672,7 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
     props.setProperty(JMX_MANAGER_START, "true");
     props.setProperty(JMX_MANAGER_PORT, "0");
 
-    final int httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int httpPort = availablePortHelper.getRandomAvailableTCPPort();
     // Set REST service related configuration
     props.setProperty(START_DEV_REST_API, "true");
     props.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");

@@ -31,7 +31,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.security.templates.DummyAuthenticator;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -40,9 +40,12 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({SecurityTest.class})
 public class PeerAuthenticatorWithCachelessLocatorDUnitTest extends JUnit4DistributedTestCase {
-  protected VM locator = null;
-  protected VM server = null;
-  protected VM server1 = null;
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
+  private VM locator = null;
+  private VM server = null;
+  private VM server1 = null;
 
   @Before
   public void before() throws Exception {
@@ -54,7 +57,7 @@ public class PeerAuthenticatorWithCachelessLocatorDUnitTest extends JUnit4Distri
 
   @Test
   public void testPeerAuthenticator() throws Exception {
-    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int locatorPort = availablePortHelper.getRandomAvailableTCPPort();
     locator.invoke(() -> {
       Properties props = new Properties();
       props.setProperty(SECURITY_PEER_AUTHENTICATOR, DummyAuthenticator.class.getName());

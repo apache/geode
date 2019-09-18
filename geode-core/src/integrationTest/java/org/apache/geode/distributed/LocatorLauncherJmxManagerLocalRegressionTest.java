@@ -19,7 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,10 +27,11 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessType;
 
 /**
- * Regression tests for stopping a JMX Manager process launched with {@link LocatorLauncher}.
+ * Regression tests for stopping a JMX Manager process launched with {@code LocatorLauncher}.
  *
  * <p>
  * Confirms fix for <bold>Locator not stopping correctly if jmx-manager-port=0</bold>
@@ -47,6 +47,8 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
    */
   private static final int AWAITILITY_USAGE_THREAD_COUNT = 1;
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private Set<Thread> initialThreads;
   private int jmxManagerPort;
 
@@ -55,7 +57,7 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
     disconnectFromDS();
     System.setProperty(ProcessType.PROPERTY_TEST_PREFIX, getUniqueName() + "-");
 
-    int[] ports = getRandomAvailableTCPPorts(3);
+    int[] ports = availablePortHelper.getRandomAvailableTCPPorts(3);
     defaultLocatorPort = ports[0];
     nonDefaultLocatorPort = ports[1];
     jmxManagerPort = ports[2];

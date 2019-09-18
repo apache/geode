@@ -32,18 +32,19 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
-
 public class PRTransactionWithSizeOperationDUnitTest extends JUnit4CacheTestCase {
-  Host host = Host.getHost(0);
-  VM dataStore1 = host.getVM(0);
-  VM dataStore2 = host.getVM(1);
-  VM client = host.getVM(2);
+
+  private final Host host = Host.getHost(0);
+  private final VM dataStore1 = host.getVM(0);
+  private final VM dataStore2 = host.getVM(1);
+  private final VM client = host.getVM(2);
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Test
   public void testSizeOpOnPRWithLocalRegionInTransaction() {
@@ -174,7 +175,7 @@ public class PRTransactionWithSizeOperationDUnitTest extends JUnit4CacheTestCase
 
   private CacheServer createCacheServer(Cache cache) throws Exception {
     CacheServer server = cache.addCacheServer();
-    server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    server.setPort(availablePortHelper.getRandomAvailableTCPPort());
     server.start();
     return server;
   }

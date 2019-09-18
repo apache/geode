@@ -45,9 +45,9 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.PdxSerializerObject;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
 import org.apache.geode.test.dunit.Host;
@@ -62,9 +62,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 @Category({SerializationTest.class})
 public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
 
-  public PdxClientServerDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Test
   public void testSimplePut() {
@@ -572,7 +570,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     rf.setValueConstraint(constraintClass);
     rf.create("testSimplePdx");
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    int port = availablePortHelper.getRandomAvailableTCPPort();
     server.setPort(port);
     server.start();
     return port;
@@ -587,7 +585,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
         af.setDataPolicy(DataPolicy.REPLICATE);
         createRootRegion("testSimplePdx", af.create());
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -635,7 +633,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
         createRootRegion("testSimplePdx", af.create());
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -655,7 +653,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
         createRootRegion("testSimplePdx", af.create());
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;
@@ -679,7 +677,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
         createRootRegion(regionName, af.create());
 
         CacheServer server = getCache().addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return port;

@@ -27,8 +27,8 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -40,14 +40,11 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
  * Test class for testing {@link CqServiceImpl#EXECUTE_QUERY_DURING_INIT} flag
- *
  */
 @Category({ClientSubscriptionTest.class})
 public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
 
-  public CqQueryOptimizedExecuteDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   protected final void postSetUpCqQueryDUnitTest() throws Exception {
@@ -257,7 +254,7 @@ public class CqQueryOptimizedExecuteDUnitTest extends CqQueryDUnitTest {
 
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     createServer(server2, ports[0]);
     final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());

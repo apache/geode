@@ -38,7 +38,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -57,6 +57,8 @@ public class StandaloneClientManagementAPIAcceptanceTest {
   public TemporaryFolder tempDir = new TemporaryFolder();
 
   private static String trustStorePath;
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Parameter
   public Boolean useSsl;
@@ -91,7 +93,7 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     File outputJar = new File(tempDir.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, new File(filePath));
 
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] availablePorts = availablePortHelper.getRandomAvailableTCPPorts(2);
     int locatorPort = availablePorts[0];
     int httpPort = availablePorts[1];
     GfshExecution startCluster =

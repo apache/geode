@@ -49,8 +49,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.dunit.Host;
@@ -74,6 +74,8 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
   protected VM vm1 = null;
   protected VM vm2 = null;
   protected VM vm3 = null;
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -119,7 +121,7 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
   String createCacheWithGroups(final String hostName, final String groups, final String context) {
     RestAPITestBase test = new RestAPITestBase();
 
-    final int servicePort = AvailablePortHelper.getRandomAvailableTCPPort();
+    final int servicePort = availablePortHelper.getRandomAvailableTCPPort();
 
     Properties props = new Properties();
 

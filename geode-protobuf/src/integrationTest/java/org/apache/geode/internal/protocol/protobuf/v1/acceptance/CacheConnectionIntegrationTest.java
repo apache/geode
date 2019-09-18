@@ -60,10 +60,10 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
@@ -97,6 +97,7 @@ public class CacheConnectionIntegrationTest {
   private static final String SSL_PROTOCOLS_VALUE = "any";
   private static final String SSL_CIPHERS_VALUE = "any";
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private Cache cache;
   private int cacheServerPort;
@@ -136,7 +137,7 @@ public class CacheConnectionIntegrationTest {
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    cacheServerPort = availablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 

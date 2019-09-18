@@ -40,8 +40,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.internal.InternalBlackboard;
 import org.apache.geode.test.dunit.internal.InternalBlackboardImpl;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -64,10 +64,16 @@ public class JMXMBeanFederationDUnitTest {
   private static final int SERVER_3_VM_INDEX = 3;
   private static int SERVER_COUNT = 2;
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private int locator1JmxPort;
   private int locator2JmxPort;
 
-  private MemberVM locator1, locator2, server1, server2, server3;
+  private MemberVM locator1;
+  private MemberVM locator2;
+  private MemberVM server1;
+  private MemberVM server2;
+  private MemberVM server3;
 
   private InternalBlackboard bb;
 
@@ -85,7 +91,7 @@ public class JMXMBeanFederationDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator1JmxPort = AvailablePortHelper.getRandomAvailableTCPPorts(LOCATOR_COUNT)[0];
+    locator1JmxPort = availablePortHelper.getRandomAvailableTCPPorts(LOCATOR_COUNT)[0];
     locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX, locator1Properties());
 
     server1 = lsRule.startServerVM(SERVER_1_VM_INDEX, locator1.getPort());
@@ -178,7 +184,7 @@ public class JMXMBeanFederationDUnitTest {
   }
 
   private Properties locator2Properties() {
-    locator2JmxPort = AvailablePortHelper.getRandomAvailableTCPPorts(LOCATOR_COUNT)[0];
+    locator2JmxPort = availablePortHelper.getRandomAvailableTCPPorts(LOCATOR_COUNT)[0];
     Properties props = new Properties();
     props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
     props.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, "" + locator2JmxPort);

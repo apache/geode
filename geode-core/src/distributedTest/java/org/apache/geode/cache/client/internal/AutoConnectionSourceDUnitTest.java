@@ -40,7 +40,8 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.net.AvailablePort;
+import org.apache.geode.internal.net.AvailablePort.Protocol;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListenerAdapter;
@@ -56,16 +57,13 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @Category({ClientServerTest.class})
 public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
 
-  protected static final Object BRIDGE_LISTENER = "BRIDGE_LISTENER";
+  private static final Object BRIDGE_LISTENER = "BRIDGE_LISTENER";
   private static final long MAX_WAIT = 60000;
+  private static final AvailablePort availablePort = AvailablePort.create();
 
   @Override
   public final void postSetUp() throws Exception {
     IgnoredException.addIgnoredException("NoAvailableLocatorsException");
-  }
-
-  public AutoConnectionSourceDUnitTest() {
-    super();
   }
 
   @Test
@@ -97,7 +95,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     try {
       vm0.invoke("StartBridgeClient",
           () -> startBridgeClient(null, getServerHostName(vm0.getHost()),
-              AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET)));
+              availablePort.getRandomAvailablePort(Protocol.SOCKET)));
       checkLocators(vm0, new InetSocketAddress[] {}, new InetSocketAddress[] {});
       putInVM(vm0, "key", "value");
       fail("Client cache should not have been able to start");
@@ -215,7 +213,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
 
-    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int locatorPort = availablePort.getRandomAvailablePort(Protocol.SOCKET);
 
     String locators = getLocatorString(getServerHostName(), locatorPort);
 

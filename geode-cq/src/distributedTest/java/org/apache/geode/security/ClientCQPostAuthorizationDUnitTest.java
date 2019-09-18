@@ -51,7 +51,7 @@ import org.apache.geode.cache.query.cq.dunit.CqQueryTestListener;
 import org.apache.geode.cache.query.cq.internal.ClientCQImpl;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -65,7 +65,8 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({SecurityTest.class})
 public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
-  private Map<String, String> cqNameToQueryStrings = new HashMap<>();
+  private final Map<String, String> cqNameToQueryStrings = new HashMap<>();
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   protected final void preSetUpClientAuthorizationTestBase() throws Exception {
@@ -174,7 +175,7 @@ public class ClientCQPostAuthorizationDUnitTest extends ClientAuthorizationTestC
     }
 
     // Get ports for the servers
-    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] randomAvailableTCPPorts = availablePortHelper.getRandomAvailableTCPPorts(2);
     int port1 = randomAvailableTCPPorts[0];
     int port2 = randomAvailableTCPPorts[1];
 

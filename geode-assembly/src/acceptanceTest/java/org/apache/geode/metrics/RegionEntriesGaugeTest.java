@@ -52,7 +52,7 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.MetricsTest;
@@ -71,6 +71,8 @@ public class RegionEntriesGaugeTest {
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private ClientCache clientCache;
   private String connectToLocatorCommand;
   private String locatorString;
@@ -81,7 +83,7 @@ public class RegionEntriesGaugeTest {
   public void startMembers() throws Exception {
     serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int[] availablePorts = availablePortHelper.getRandomAvailableTCPPorts(3);
     int locatorPort = availablePorts[0];
     int serverPort1 = availablePorts[1];
     int serverPort2 = availablePorts[2];
@@ -236,7 +238,7 @@ public class RegionEntriesGaugeTest {
     int numberOfRedundantCopies = 1;
     String regionName = "partitionedRegion";
 
-    int server3Port = AvailablePortHelper.getRandomAvailableTCPPort();
+    int server3Port = availablePortHelper.getRandomAvailableTCPPort();
 
     File folderForServer3 = temporaryFolder.newFolder("server3");
 

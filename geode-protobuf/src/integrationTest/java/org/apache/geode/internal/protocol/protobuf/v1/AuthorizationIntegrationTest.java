@@ -40,7 +40,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
@@ -64,6 +64,8 @@ public class AuthorizationIntegrationTest {
 
   private final String OQLTwoRegionTestQuery =
       "select * from /" + TEST_REGION1 + " one, /" + TEST_REGION2 + " two where one.id = two.id";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -136,7 +138,7 @@ public class AuthorizationIntegrationTest {
     cache = cacheFactory.create();
 
     cacheServer = cache.addCacheServer();
-    cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    cacheServerPort = availablePortHelper.getRandomAvailableTCPPort();
     cacheServer.setPort(cacheServerPort);
     cacheServer.start();
 

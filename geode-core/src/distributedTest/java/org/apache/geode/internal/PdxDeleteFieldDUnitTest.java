@@ -55,7 +55,9 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 @Category({SerializationTest.class})
 public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
 
-  final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
+  private final org.apache.geode.internal.net.AvailablePortHelper availablePortHelper =
+      org.apache.geode.internal.net.AvailablePortHelper.create();
 
   @Test
   public void testPdxDeleteFieldVersioning() throws Exception {
@@ -63,7 +65,7 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     final String DS_NAME2 = "PdxDeleteFieldDUnitTestDiskStore2";
 
     final Properties props = new Properties();
-    final int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] locatorPorts = availablePortHelper.getRandomAvailableTCPPorts(2);
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS,
         "localhost[" + locatorPorts[0] + "],localhost[" + locatorPorts[1] + "]");

@@ -35,7 +35,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
@@ -51,14 +51,16 @@ public class ExportLogsWithMemberGroupDistributedTest {
   @ClassRule
   public static GfshCommandRule connector = new GfshCommandRule();
 
-  protected static MemberVM locator;
-  protected static int jmxPort;
+  private static final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
+  private static MemberVM locator;
+  private static int jmxPort;
   private static int httpPort;
   private static Set<String> expectedZipEntries = new HashSet<>();
 
   @BeforeClass
   public static void beforeClass() {
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
     httpPort = ports[0];
     jmxPort = ports[1];
     Properties locatorProperties = new Properties();

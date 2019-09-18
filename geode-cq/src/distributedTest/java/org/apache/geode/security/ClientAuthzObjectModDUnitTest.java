@@ -28,7 +28,7 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.Instantiator;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyAuthzCredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
@@ -56,6 +56,8 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
       FilterPreAuthorization.class.getName() + ".create";
   private static final String POST_ACCESSOR_CREATE =
       FilterPostAuthorization.class.getName() + ".create";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   protected final void postSetUpClientAuthorizationTestBase() throws Exception {
@@ -94,7 +96,7 @@ public class ClientAuthzObjectModDUnitTest extends ClientAuthorizationTestCase {
         buildProperties(authenticator, extraProps, PRE_ACCESSOR_CREATE, POST_ACCESSOR_CREATE);
 
     // Get ports for the servers
-    int[] portsList = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] portsList = availablePortHelper.getRandomAvailableTCPPorts(2);
     int port1 = 0; // portsList[0];
     int port2 = portsList[1];
 

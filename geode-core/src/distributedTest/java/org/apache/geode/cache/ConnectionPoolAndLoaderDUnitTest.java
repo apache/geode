@@ -29,7 +29,8 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.net.AvailablePort;
+import org.apache.geode.internal.net.AvailablePort.Protocol;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -46,6 +47,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
 
   private static int bridgeServerPort;
   private boolean useLocator;
+  private AvailablePort availablePort = AvailablePort.create();
 
   @Override
   public final void preTearDownCacheTestCase() {
@@ -65,7 +67,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = availablePort.getRandomAvailablePort(Protocol.SOCKET);
     server.invoke(new SerializableCallable() {
       @Override
       public Object call() throws IOException {
@@ -147,7 +149,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(1);
 
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = availablePort.getRandomAvailablePort(Protocol.SOCKET);
     server.invoke(new SerializableCallable() {
       @Override
       public Object call() throws IOException {
@@ -249,7 +251,7 @@ public class ConnectionPoolAndLoaderDUnitTest extends JUnit4CacheTestCase {
     VM client1 = host.getVM(1);
     VM client2 = host.getVM(2);
 
-    final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int serverPort = availablePort.getRandomAvailablePort(Protocol.SOCKET);
     server.invoke(new SerializableCallable() {
       @Override
       public Object call() throws IOException {

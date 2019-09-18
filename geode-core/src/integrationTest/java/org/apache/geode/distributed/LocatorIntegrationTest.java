@@ -54,9 +54,9 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -67,6 +67,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class LocatorIntegrationTest {
 
+  private static final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   private Locator locator;
   private File tmpFile;
   private int port;
@@ -75,7 +77,7 @@ public class LocatorIntegrationTest {
   public static Collection<Object> data() {
     return Arrays.asList(new Object[] {
         (IntSupplier) () -> 0,
-        (IntSupplier) AvailablePortHelper::getRandomAvailableTCPPort});
+        (IntSupplier) availablePortHelper::getRandomAvailableTCPPort});
   }
 
   @Parameter

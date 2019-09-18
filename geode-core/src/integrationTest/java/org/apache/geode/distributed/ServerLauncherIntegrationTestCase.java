@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FIL
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.cache.AbstractCacheServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,6 +42,7 @@ import org.apache.geode.distributed.ServerLauncher.ServerState;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessType;
 
 /**
@@ -59,6 +59,8 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
   protected volatile String workingDirectory;
   protected volatile File cacheXmlFile;
 
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   @Rule
   public ErrorCollector errorCollector = new ErrorCollector();
 
@@ -68,7 +70,7 @@ public abstract class ServerLauncherIntegrationTestCase extends LauncherIntegrat
 
     workingDirectory = temporaryFolder.getRoot().getCanonicalPath();
 
-    int[] ports = getRandomAvailableTCPPorts(3);
+    int[] ports = availablePortHelper.getRandomAvailableTCPPorts(3);
     defaultServerPort = ports[0];
     nonDefaultServerPort = ports[1];
     unusedServerPort = ports[2];

@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.IncompatibleSystemException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -39,6 +39,8 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class})
 public class DistributedSystemIdDUnitTest extends JUnit4DistributedTestCase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public void preSetUp() {
@@ -127,7 +129,7 @@ public class DistributedSystemIdDUnitTest extends JUnit4DistributedTestCase {
     SerializableCallable createSystem = new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         Properties props = new Properties();
         props.setProperty(DISTRIBUTED_SYSTEM_ID, dsId);
         props.setProperty(MCAST_PORT, "0");

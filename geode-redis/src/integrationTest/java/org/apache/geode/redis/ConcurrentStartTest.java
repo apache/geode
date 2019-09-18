@@ -28,12 +28,14 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.RedisTest;
 
 @Category({RedisTest.class})
 public class ConcurrentStartTest {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   private Cache cache;
   private int numServers = 10;
@@ -72,7 +74,7 @@ public class ConcurrentStartTest {
   }
 
   private void runNServers(int n) throws InterruptedException {
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(numServers);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(numServers);
     final Thread[] threads = new Thread[n];
     for (int i = 0; i < n; i++) {
       final int j = i;

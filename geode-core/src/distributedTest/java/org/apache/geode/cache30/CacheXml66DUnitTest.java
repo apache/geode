@@ -108,8 +108,6 @@ import org.apache.geode.cache.server.ServerLoadProbeAdapter;
 import org.apache.geode.cache.server.ServerMetrics;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache.util.TransactionListenerAdapter;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.cache.DiskWriteAttributesImpl;
@@ -133,6 +131,8 @@ import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 import org.apache.geode.internal.cache.xmlcache.ResourceManagerCreation;
 import org.apache.geode.internal.cache.xmlcache.SerializerCreation;
+import org.apache.geode.internal.net.AvailablePort.Protocol;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -147,6 +147,8 @@ import org.apache.geode.test.dunit.VM;
  * @since GemFire 6.6
  */
 public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
+
+  private static final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   protected abstract String getGemFireVersion();
@@ -487,7 +489,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     }
 
     cache.getLogger().config("Eviction disk store : " + csc.getDiskStoreName());
-    bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    bs.setPort(availablePortHelper.getRandomAvailableTCPPort());
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setDataPolicy(DataPolicy.NORMAL);
     cache.createVMRegion("rootNORMAL", attrs);
@@ -515,7 +517,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     // don't set diskstore or overflowdir
     cache.getLogger().config("EvictionCapacity : " + csc.getCapacity());
     cache.getLogger().config("Eviction disk store : " + csc.getDiskStoreName());
-    bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    bs.setPort(availablePortHelper.getRandomAvailableTCPPort());
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setDataPolicy(DataPolicy.NORMAL);
     cache.createVMRegion("rootNORMAL", attrs);
@@ -2256,7 +2258,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public void testDefaultCacheServerGroups() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
-    bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    bs.setPort(availablePortHelper.getRandomAvailableTCPPort());
     bs.setGroups(CacheServer.DEFAULT_GROUPS);
     testXml(cache);
     Cache c = getCache();
@@ -2270,7 +2272,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public void testOneCacheServerGroups() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
-    bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    bs.setPort(availablePortHelper.getRandomAvailableTCPPort());
     String[] groups = new String[] {"group1"};
     bs.setGroups(groups);
     testXml(cache);
@@ -2285,7 +2287,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public void testTwoCacheServerGroups() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
-    bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    bs.setPort(availablePortHelper.getRandomAvailableTCPPort());
     String[] groups = new String[] {"group1", "group2"};
     bs.setGroups(groups);
     testXml(cache);
@@ -2300,7 +2302,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public void testDefaultCacheServerBindAddress() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
-    bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    bs.setPort(availablePortHelper.getRandomAvailableTCPPort());
     testXml(cache);
     Cache c = getCache();
     assertNotNull(c);
@@ -2313,7 +2315,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public void testCacheServerBindAddress() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
-    bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    bs.setPort(availablePortHelper.getRandomAvailableTCPPort());
     final String BA = ALIAS1;
     bs.setBindAddress(BA);
     testXml(cache);
@@ -2328,7 +2330,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public void testCacheServerHostnameForClients() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer bs = cache.addCacheServer();
-    bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    bs.setPort(availablePortHelper.getRandomAvailableTCPPort());
     final String BA = ALIAS1;
     bs.setBindAddress(BA);
     bs.setHostnameForClients("clientHostName");
@@ -2428,7 +2430,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     addIgnoredException("Socket Closed");
     getSystem();
     VM vm0 = Host.getHost(0).getVM(0);
-    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    final int port = availablePortHelper.getRandomAvailablePort(Protocol.SOCKET);
     vm0.invoke(new SerializableCallable("Create cache server") {
       @Override
       public Object call() throws IOException {
@@ -2481,7 +2483,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     cache.getLogger().config("EvictionCapacity : " + csc.getCapacity());
     csc.setOverflowDirectory("overFlow");
     cache.getLogger().config("EvictionOverflowDirectory : " + csc.getOverflowDirectory());
-    bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    bs.setPort(availablePortHelper.getRandomAvailableTCPPort());
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setDataPolicy(DataPolicy.NORMAL);
     cache.createVMRegion("rootNORMAL", attrs);
@@ -2500,7 +2502,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public void testBridgeLoadProbe() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer server = cache.addCacheServer();
-    server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    server.setPort(availablePortHelper.getRandomAvailableTCPPort());
     server.setLoadProbe(new MyLoadProbe());
 
     testXml(cache);
@@ -2514,7 +2516,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public void testLoadPollInterval() throws Exception {
     CacheCreation cache = new CacheCreation();
     CacheServer server = cache.addCacheServer();
-    server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    server.setPort(availablePortHelper.getRandomAvailableTCPPort());
     server.setLoadPollInterval(12345);
 
     testXml(cache);
@@ -2824,7 +2826,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     CacheServer bs = cache.addCacheServer();
     bs.setMaximumMessageCount(12345);
     bs.setMessageTimeToLive(56789);
-    bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    bs.setPort(availablePortHelper.getRandomAvailableTCPPort());
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setDataPolicy(DataPolicy.NORMAL);
     cache.createVMRegion("rootNORMAL", attrs);
@@ -2867,7 +2869,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     CacheServer bs = cache.addCacheServer();
     bs.setMaxThreads(37);
     bs.setMaxConnections(999);
-    bs.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    bs.setPort(availablePortHelper.getRandomAvailableTCPPort());
     RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     attrs.setDataPolicy(DataPolicy.NORMAL);
     cache.createVMRegion("rootNORMAL", attrs);

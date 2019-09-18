@@ -57,7 +57,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -71,6 +71,8 @@ import org.apache.geode.test.junit.categories.FunctionServiceTest;
 
 @Category({FunctionServiceTest.class})
 public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void preTearDown() throws Exception {
@@ -147,7 +149,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
           c.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
           if (startServer) {
             CacheServer s = c.addCacheServer();
-            s.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+            s.setPort(availablePortHelper.getRandomAvailableTCPPort());
             s.start();
           }
         } else {

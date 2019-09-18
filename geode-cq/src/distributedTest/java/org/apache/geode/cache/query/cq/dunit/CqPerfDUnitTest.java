@@ -40,8 +40,8 @@ import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -55,16 +55,13 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * This class tests the ContinuousQuery mechanism in GemFire. This includes the test with different
  * data activities.
  */
-@SuppressWarnings("SpellCheckingInspection")
 @Category({ClientSubscriptionTest.class})
 public class CqPerfDUnitTest extends JUnit4CacheTestCase {
-  private final Logger logger = LogService.getLogger();
-  @SuppressWarnings("CanBeFinal")
-  private CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
-  public CqPerfDUnitTest() {
-    super();
-  }
+  private static final Logger logger = LogService.getLogger();
+
+  private final CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Override
   public final void postSetUp() {
@@ -592,7 +589,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
     // Create client with redundancyLevel -1
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     cqDUnitTest.createClient(client1, new int[] {port1, ports[0]}, host0, "-1");
     cqDUnitTest.createClient(client2, new int[] {port1, ports[0]}, host0, "-1");
@@ -685,7 +682,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
     // Create client with redundancyLevel -1
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     cqDUnitTest.createClient(client1, new int[] {port1, ports[0]}, host0, "-1");
     cqDUnitTest.createClient(client2, new int[] {port1, ports[0]}, host0, "-1");
@@ -740,7 +737,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
     final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     cqDUnitTest.createLocalRegion(client1, new int[] {port1, ports[0]}, host0, "-1",
         cqDUnitTest.regions);

@@ -26,8 +26,9 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.ExitCode;
+import org.apache.geode.internal.net.AvailablePort;
+import org.apache.geode.internal.net.AvailablePort.Protocol;
 import org.apache.geode.internal.process.PidFile;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
@@ -39,25 +40,26 @@ import org.apache.geode.test.junit.rules.gfsh.GfshScript;
  * See also org.apache.geode.management.internal.cli.shell.StatusServerExitCodeAcceptanceTest
  */
 public class StatusLocatorExitCodeAcceptanceTest {
+
   private static File toolsJar;
   private static final ThreePhraseGenerator nameGenerator = new ThreePhraseGenerator();
   private static final String memberControllerName = "member-controller";
+  private static final AvailablePort availablePort = AvailablePort.create();
+  private static String locatorName;
+  private static int locatorPort;
 
   @ClassRule
   public static GfshRule gfsh = new GfshRule();
-  private static String locatorName;
-
-  private static int locatorPort;
 
   @BeforeClass
-  public static void classSetup() {
+  public static void setUp() {
     File javaHome = new File(System.getProperty("java.home"));
     String toolsPath =
         javaHome.getName().equalsIgnoreCase("jre") ? "../lib/tools.jar" : "lib/tools.jar";
     toolsJar = new File(javaHome, toolsPath);
 
     locatorName = "locator-" + nameGenerator.generate('-');
-    locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    locatorPort = availablePort.getRandomAvailablePort(Protocol.SOCKET);
 
     GfshExecution exec = GfshScript.of(startLocatorCommand()).withName(memberControllerName)
         .awaitAtMost(4, MINUTES).execute(gfsh);
@@ -90,7 +92,7 @@ public class StatusLocatorExitCodeAcceptanceTest {
 
   @Test
   public void statusCommandWithIncorrectPortShouldFail() {
-    int incorrectPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    int incorrectPort = availablePort.getRandomAvailablePort(Protocol.SOCKET);
     String cmd = "status locator --port=" + incorrectPort;
     GfshScript.of(cmd).withName("test-frame").awaitAtMost(1, MINUTES)
         .expectExitCode(ExitCode.FATAL.getValue()).execute(gfsh);

@@ -20,7 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.distributed.internal.InternalConfigurationPersistenceService.CLUSTER_CONFIG_DISK_DIR_PREFIX;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,6 +35,7 @@ import org.junit.rules.ErrorCollector;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
@@ -45,6 +45,8 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  * @since GemFire 8.0
  */
 public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegrationTestCase {
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   protected volatile int defaultLocatorPort;
   protected volatile int nonDefaultLocatorPort;
@@ -62,7 +64,7 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
     clusterConfigDirectory =
         temporaryFolder.newFolder(CLUSTER_CONFIG_DISK_DIR_PREFIX + getUniqueName());
 
-    int[] ports = getRandomAvailableTCPPorts(2);
+    int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
     defaultLocatorPort = ports[0];
     nonDefaultLocatorPort = ports[1];
     System.setProperty(TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(defaultLocatorPort));

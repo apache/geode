@@ -66,8 +66,8 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionService;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.pdx.PdxInstance;
@@ -100,11 +100,12 @@ public class RestInterfaceIntegrationTest {
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
-  protected static int DEFAULT_HTTP_SERVICE_PORT = 8189;
+  private static int DEFAULT_HTTP_SERVICE_PORT = 8189;
 
-  protected static final String REST_API_SERVICE_ENDPOINT =
+  private static final String REST_API_SERVICE_ENDPOINT =
       "http://localhost:%1$d/gemfire-api/v1/%2$s/%3$s";
-  protected static final String UTF_8 = "UTF-8";
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Autowired
   private Cache gemfireCache;
@@ -166,7 +167,7 @@ public class RestInterfaceIntegrationTest {
   }
 
   private int getHttpServicePort(final int defaultHttpServicePort) {
-    int httpServicePort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int httpServicePort = availablePortHelper.getRandomAvailableTCPPort();
     return (httpServicePort > 1024 && httpServicePort < 65536 ? httpServicePort
         : defaultHttpServicePort);
   }

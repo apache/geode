@@ -65,11 +65,11 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -88,6 +88,9 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @SuppressWarnings({"serial", "Convert2MethodRef"})
 public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
+
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
+
   /**
    * The port on which the cache server was started in this VM
    */
@@ -2283,7 +2286,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     // Properties props = new Properties();
     // Create client with redundancyLevel -1
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     createClient(client, new int[] {port1, ports[0]}, host0, "-1");
 
@@ -2365,7 +2368,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName();
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(2);
 
     createServer(server2, ports[0]);
     final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
@@ -2903,7 +2906,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName();
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
     createClient(client, new int[] {port1, ports[0]}, host0, "-1");
 
     // Create CQs.
@@ -2947,7 +2950,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     createServer(server1);
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName();
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     createClient(client, new int[] {port1, ports[0]}, host0, "-1");
 
@@ -2993,7 +2996,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName();
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     createClient(client, new int[] {port1, ports[0]}, host0, "-1");
 
@@ -3053,7 +3056,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName();
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
     createClient(client, new int[] {port1, ports[0]}, host0, "-1");
 
     // Create CQs.
@@ -3099,7 +3102,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
     final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName();
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    final int[] ports = availablePortHelper.getRandomAvailableTCPPorts(1);
 
     createServer(server2, ports[0]);
     final int thePort2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());

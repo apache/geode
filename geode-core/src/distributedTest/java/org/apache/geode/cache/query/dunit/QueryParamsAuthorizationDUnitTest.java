@@ -36,7 +36,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.security.templates.DummyAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Host;
@@ -54,10 +54,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 public class QueryParamsAuthorizationDUnitTest extends JUnit4CacheTestCase {
 
   private final String regName = "exampleRegion";
-
-  public QueryParamsAuthorizationDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Ignore("Bug 51079")
   @Test
@@ -74,7 +71,7 @@ public class QueryParamsAuthorizationDUnitTest extends JUnit4CacheTestCase {
       Cache cache = getCache(cf);
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regName);
       CacheServer server = cache.addCacheServer();
-      int serverPort = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
+      int serverPort = availablePortHelper.getRandomAvailablePortForDUnitSite();
       server.setPort(serverPort);
       server.start();
       return serverPort;

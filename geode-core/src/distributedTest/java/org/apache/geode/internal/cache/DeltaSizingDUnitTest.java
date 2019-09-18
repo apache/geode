@@ -30,7 +30,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -38,12 +38,9 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
-
 public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
 
-  public DeltaSizingDUnitTest() {
-    super();
-  }
+  private final AvailablePortHelper availablePortHelper = AvailablePortHelper.create();
 
   @Test
   public void testPeerWithoutCloning() throws Exception {
@@ -168,7 +165,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
         // });
         cache.createRegion("region1", attr.create());
         CacheServer server = cache.addCacheServer();
-        int port = AvailablePortHelper.getRandomAvailableTCPPort();
+        int port = availablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
         return Integer.valueOf(port);
