@@ -14,11 +14,16 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -32,6 +37,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
@@ -152,6 +158,87 @@ public class MultiRegionFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
 
     }).getResult();
   }
+
+  @Test
+  public void testMultiRegionFunctionExecution_NotTimedOut() {
+    vm0.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm0());
+    vm1.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm1());
+    vm2.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm2());
+    vm3.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm3());
+    createRegionsOnUnitControllerVm();
+    Set<Region> regions = new HashSet<Region>();
+    regions.add(PR1);
+    regions.add(PR2);
+    regions.add(RR1);
+    regions.add(RR2);
+    regions.add(LR1);
+    long timeout = 8000;
+    TimeUnit unit = TimeUnit.MILLISECONDS;
+
+    Object result = InternalFunctionService.onRegions(regions).execute(new FunctionAdapter() {
+      @Override
+      public void execute(FunctionContext context) {
+        MultiRegionFunctionContext mrContext = (MultiRegionFunctionContext) context;
+        Set<Region> regions = mrContext.getRegions();
+        Assert.assertTrue(0 != regions.size());
+        try {
+          Thread.sleep(2000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        context.getResultSender().lastResult(Boolean.TRUE);
+      }
+
+      @Override
+      public String getId() {
+        return getClass().getName();
+      }
+    }, timeout, unit).getResult();
+    List li = (ArrayList) result;
+    assertEquals(Boolean.TRUE, li.get(0));
+  }
+
+  @Test
+  public void testMultiRegionFunctionExecution_TimedOut() {
+    vm0.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm0());
+    vm1.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm1());
+    vm2.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm2());
+    vm3.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm3());
+    createRegionsOnUnitControllerVm();
+    Set<Region> regions = new HashSet<Region>();
+    regions.add(PR1);
+    regions.add(PR2);
+    regions.add(RR1);
+    regions.add(RR2);
+    regions.add(LR1);
+    long timeout = 1000;
+    TimeUnit unit = TimeUnit.MILLISECONDS;
+    assertThatThrownBy(() -> {
+      InternalFunctionService.onRegions(regions).execute(new FunctionAdapter() {
+        @Override
+        public void execute(FunctionContext context) {
+          MultiRegionFunctionContext mrContext = (MultiRegionFunctionContext) context;
+          Set<Region> regions = mrContext.getRegions();
+          Assert.assertTrue(0 != regions.size());
+          try {
+            Thread.sleep(2000);
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          context.getResultSender().lastResult(Boolean.TRUE);
+        }
+
+        @Override
+        public String getId() {
+          return getClass().getName();
+        }
+
+      }, timeout, unit);
+    }).hasCauseInstanceOf(FunctionException.class)
+        .hasMessageContaining("All results not received in time provided");
+  }
+
+
 
   @Override
   public Properties getDistributedSystemProperties() {

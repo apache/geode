@@ -183,7 +183,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
       return new NoResult();
     }
     ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
-    ResultCollector rcToReturn = executeFunction(function, rc);
+    ResultCollector rcToReturn = executeFunction(function, inRc);
     if (timeout > 0) {
       try {
         rcToReturn.getResult(timeout, unit);

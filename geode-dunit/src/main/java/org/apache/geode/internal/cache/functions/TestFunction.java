@@ -203,7 +203,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
       logger.info("Exception in executeFunctionRunningForLongTime");
     }
 
-    context.getResultSender().lastResult("Ran executeFunctionRunningForLongTime for 10000000");
+    context.getResultSender().lastResult("Ran executeFunctionRunningForLongTime for 2000");
   }
 
   private void executeFunctionBucketFilter(FunctionContext context) {

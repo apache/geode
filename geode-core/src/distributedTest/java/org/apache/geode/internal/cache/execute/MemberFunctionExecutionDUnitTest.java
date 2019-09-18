@@ -87,13 +87,44 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Test the execution of function on all memebers haveResults = true
+   * Test the execution of function on all members haveResults = true
    *
    */
   @Test
   public void testRemoteMultiKeyExecution() throws Exception {
     createDistributedSystemAndRegisterFunction();
     member1.invoke(() -> MemberFunctionExecutionDUnitTest.excuteOnMembers(new Integer(5)));
+  }
+
+  @Test
+  public void testRemoteMultiKeyExecution_NotTimedout_byId() throws Exception {
+    createDistributedSystemAndRegisterFunction();
+    member1.invoke(
+        () -> MemberFunctionExecutionDUnitTest.executeOnMembers_NotTimedout_byId(new Integer(5)));
+  }
+
+  @Test
+  public void testRemoteMultiKeyExecution_Timedout_byId() throws Exception {
+    createDistributedSystemAndRegisterFunction();
+    member1
+        .invoke(
+            () -> MemberFunctionExecutionDUnitTest.executeOnMembers_Timedout_byId(new Integer(5)));
+  }
+
+  @Test
+  public void testRemoteMultiKeyExecution_NotTimedout_byInstance() throws Exception {
+    createDistributedSystemAndRegisterFunction();
+    member1.invoke(
+        () -> MemberFunctionExecutionDUnitTest
+            .executeOnMembers_NotTimedout_byInstance(new Integer(5)));
+  }
+
+  @Test
+  public void testRemoteMultiKeyExecution_Timedout_byInstance() throws Exception {
+    createDistributedSystemAndRegisterFunction();
+    member1
+        .invoke(() -> MemberFunctionExecutionDUnitTest
+            .executeOnMembers_Timedout_byInstance(new Integer(5)));
   }
 
   @Test
@@ -342,12 +373,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  /*
-   * Execute Function
-   */
-  public static void excuteOnMembers(Integer noOfMembers) {
-    assertNotNull(ds);
-    Function function = new TestFunction(true, TestFunction.MEMBER_FUNCTION);
+  private static Execution getExecutionObject(Integer noOfMembers) {
     InternalExecution memberExcution = null;
     Execution executor = null;
     Map memArgs = new HashMap();
@@ -380,6 +406,16 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
       memberExcution = (InternalExecution) FunctionService.onMembers(memberSet);
       executor = memberExcution.withMemberMappedArgument(args);
     }
+    return executor;
+  }
+
+  /*
+   * Execute Function
+   */
+  public static void excuteOnMembers(Integer noOfMembers) {
+    assertNotNull(ds);
+    Function function = new TestFunction(true, TestFunction.MEMBER_FUNCTION);
+    Execution executor = getExecutionObject(noOfMembers);
     try {
       ResultCollector rc = executor.execute(function.getId());
       List li = (ArrayList) rc.getResult();
@@ -436,38 +472,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
   public static void excuteOnMembers_NoLastResult(Integer noOfMembers) {
     assertNotNull(ds);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_NO_LASTRESULT);
-    InternalExecution memberExcution = null;
-    Execution executor = null;
-    Map memArgs = new HashMap();
-    if (noOfMembers.intValue() == 1) { // Local VM
-      DistributedMember localmember = ds.getDistributedMember();
-      memberExcution = (InternalExecution) FunctionService.onMember(localmember);
-      memArgs.put(localmember.getId(), localmember.getId());
-      MemberMappedArgument args = new MemberMappedArgument("Key", memArgs);
-      executor = memberExcution.withMemberMappedArgument(args);
-    } else if (noOfMembers.intValue() == 5) {
-      memberExcution = (InternalExecution) FunctionService.onMembers();
-      Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());
-      Iterator iter = memberSet.iterator();
-      while (iter.hasNext()) {
-        InternalDistributedMember member = (InternalDistributedMember) iter.next();
-        memArgs.put(member.getId(), member.getId());
-      }
-      MemberMappedArgument args = new MemberMappedArgument("Key", memArgs);
-      executor = memberExcution.withMemberMappedArgument(args);
-    } else {
-      Set memberSet = new HashSet(ds.getDistributionManager().getNormalDistributionManagerIds());
-      InternalDistributedMember localVM = ds.getDistributionManager().getDistributionManagerId();
-      memberSet.remove(localVM);
-      Iterator iter = memberSet.iterator();
-      while (iter.hasNext()) {
-        InternalDistributedMember member = (InternalDistributedMember) iter.next();
-        memArgs.put(member.getId(), member.getId());
-      }
-      MemberMappedArgument args = new MemberMappedArgument("Key", memArgs);
-      memberExcution = (InternalExecution) FunctionService.onMembers(memberSet);
-      executor = memberExcution.withMemberMappedArgument(args);
-    }
+    Execution executor = getExecutionObject(noOfMembers);
     try {
       ResultCollector rc = executor.execute(function.getId());
       rc.getResult();
@@ -553,6 +558,93 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
+  /*
+   * Execute Function
+   */
+  public static void executeOnMembers_NotTimedout_byId(Integer noOfMembers) {
+    assertNotNull(ds);
+    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+    Execution executor = getExecutionObject(noOfMembers);
+    try {
+      long timeoutMs = 6000;
+      ResultCollector rc = executor.setArguments(Boolean.TRUE).execute(function.getId(), timeoutMs,
+          TimeUnit.MILLISECONDS);
+      List li = (ArrayList) rc.getResult();
+      LogWriterUtils.getLogWriter()
+          .info("MemberFunctionExecutionDUnitTest#excuteOnMembers: Result : " + li);
+      assertEquals(li.size(), noOfMembers.intValue());
+      for (Object obj : li) {
+        assertEquals(obj, "Ran executeFunctionRunningForLongTime for 2000");
+      }
+    } catch (Exception e) {
+      LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
+      e.printStackTrace();
+      Assert.fail("Test failed", e);
+    }
+  }
+
+  /*
+   * Execute Function
+   */
+  public static void executeOnMembers_Timedout_byId(Integer noOfMembers) {
+    assertNotNull(ds);
+    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+    Execution executor = getExecutionObject(noOfMembers);
+    try {
+      long timeoutMs = 1000;
+      ResultCollector rc = executor.execute(function.getId(), timeoutMs, TimeUnit.MILLISECONDS);
+      fail("Expected FunctionException: Function did not timeout");
+    } catch (Exception ex) {
+      if (!(ex.getCause() instanceof FunctionException)) {
+        Assert.fail("Function should have timed out", ex);
+      }
+    }
+  }
+
+  /*
+   * Execute Function
+   */
+  public static void executeOnMembers_NotTimedout_byInstance(Integer noOfMembers) {
+    assertNotNull(ds);
+    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+    Execution executor = getExecutionObject(noOfMembers);
+    try {
+      long timeoutMs = 6000;
+      ResultCollector rc = executor.setArguments(Boolean.TRUE).execute(function, timeoutMs,
+          TimeUnit.MILLISECONDS);
+      List li = (ArrayList) rc.getResult();
+      LogWriterUtils.getLogWriter()
+          .info("MemberFunctionExecutionDUnitTest#excuteOnMembers: Result : " + li);
+      assertEquals(li.size(), noOfMembers.intValue());
+      for (Object obj : li) {
+        assertEquals(obj, "Ran executeFunctionRunningForLongTime for 2000");
+      }
+    } catch (Exception e) {
+      LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
+      e.printStackTrace();
+      Assert.fail("Test failed", e);
+    }
+  }
+
+  /*
+   * Execute Function
+   */
+  public static void executeOnMembers_Timedout_byInstance(Integer noOfMembers) {
+    assertNotNull(ds);
+    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+    Execution executor = getExecutionObject(noOfMembers);
+    try {
+      long timeoutMs = 1000;
+      ResultCollector rc = executor.execute(function, timeoutMs, TimeUnit.MILLISECONDS);
+      fail("Expected FunctionException: Function did not timeout");
+    } catch (Exception ex) {
+      if (!(ex.getCause() instanceof FunctionException)) {
+        Assert.fail("Function should have timed out", ex);
+      }
+    }
+  }
+
+
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
@@ -603,6 +695,9 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
       FunctionService.registerFunction(new TestFunction(true, TestFunction.MEMBER_FUNCTION));
       FunctionService
           .registerFunction(new TestFunction(true, TestFunction.TEST_FUNCTION_NO_LASTRESULT));
+      FunctionService.registerFunction(
+          new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME));
+
     } catch (Exception e) {
       Assert.fail("Failed while creating the Distribued System", e);
     }

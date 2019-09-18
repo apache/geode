@@ -36,22 +36,26 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
+import org.apache.geode.internal.cache.execute.CachedResultCollector;
 import org.apache.geode.internal.cache.execute.FunctionStreamingResultCollector;
 import org.apache.geode.internal.cache.execute.InternalFunctionException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.LocalResultCollectorImpl;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultWaiter;
+import org.apache.geode.internal.cache.execute.ResultCollectorHolder;
 import org.apache.geode.internal.logging.LogService;
 
 public class PRFunctionStreamingResultCollector extends FunctionStreamingResultCollector
-    implements ResultCollector {
+    implements CachedResultCollector {
 
   private static final Logger logger = LogService.getLogger();
 
   private boolean hasResult = false;
 
   private final PartitionedRegionFunctionResultWaiter waiter;
+
+  private final ResultCollectorHolder rcHolder;
 
   /**
    * Contract of {@link ReplyProcessor21#stillWaiting()} is that it never returns true after
@@ -65,6 +69,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
     super(partitionedRegionFunctionResultWaiter, system, members, rc, functionObject, execution);
     this.waiter = partitionedRegionFunctionResultWaiter;
     this.hasResult = functionObject.hasResult();
+    rcHolder = new ResultCollectorHolder(this);
   }
 
   @Override
@@ -80,6 +85,11 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
 
   @Override
   public Object getResult() throws FunctionException {
+    return rcHolder.getResult();
+  }
+
+  @Override
+  public Object getResultInternal() throws FunctionException {
     if (this.resultCollected) {
       throw new FunctionException("Result already collected");
     }
@@ -211,6 +221,12 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
 
   @Override
   public Object getResult(long timeout, TimeUnit unit)
+      throws FunctionException, InterruptedException {
+    return rcHolder.getResult(timeout, unit);
+  }
+
+  @Override
+  public Object getResultInternal(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
     long timeoutInMillis = unit.toMillis(timeout);
     if (this.resultCollected) {

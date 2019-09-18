@@ -48,7 +48,8 @@ import org.apache.geode.internal.cache.FunctionStreamingReplyMessage;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.logging.LogService;
 
-public class FunctionStreamingResultCollector extends ReplyProcessor21 implements ResultCollector {
+public class FunctionStreamingResultCollector extends ReplyProcessor21
+    implements CachedResultCollector {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -79,6 +80,8 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
 
   protected volatile List<FunctionInvocationTargetException> fites;
 
+  private final ResultCollectorHolder rcHolder;
+
   public FunctionStreamingResultCollector(StreamingFunctionOperation streamingFunctionOperation,
       InternalDistributedSystem system, Set members, ResultCollector rc, Function function,
       AbstractExecution execution) {
@@ -93,6 +96,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
     if (rc instanceof LocalResultCollector<?, ?>) {
       ((LocalResultCollector<?, ?>) rc).setProcessor(this);
     }
+    rcHolder = new ResultCollectorHolder(this);
   }
 
   @Override
@@ -126,7 +130,12 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
   }
 
   @Override
-  public Object getResult() throws FunctionException {
+  public Object getResult()
+      throws FunctionException {
+    return rcHolder.getResult();
+  }
+
+  public Object getResultInternal() throws FunctionException {
     if (this.resultCollected) {
       throw new FunctionException(
           "Function results already collected");
@@ -239,6 +248,11 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
 
   @Override
   public Object getResult(long timeout, TimeUnit unit)
+      throws FunctionException, InterruptedException {
+    return rcHolder.getResult(timeout, unit);
+  }
+
+  public Object getResultInternal(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
     long timeoutInMillis = unit.toMillis(timeout);
     if (this.resultCollected) {

@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -33,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -49,6 +51,7 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -96,6 +99,10 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
   public static final Function function = new DistributedRegionFunction();
 
   public static final Function functionWithNoResultThrowsException = new MyFunctionException();
+
+  public static final Function longRunningFunction =
+      new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+
 
   @Override
   public final void postSetUp() throws Exception {
@@ -231,6 +238,48 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
     replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.executeFunction());
   }
 
+  @Test
+  public void testDistributedRegionFunctionExecutionOnDataPolicyReplicateNotTimedOut() {
+    createCacheInVm(); // Empty
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+
+    createPeer(DataPolicy.EMPTY);
+    populateRegion();
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
+    replicate1
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+    replicate2
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+    replicate3
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
+        .executeLongRunningFunctionNotTimedOut());
+  }
+
+  @Test
+  public void testDistributedRegionFunctionExecutionOnDataPolicyReplicateTimedOut() {
+    createCacheInVm(); // Empty
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate2.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+    replicate3.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createCacheInVm());
+
+    createPeer(DataPolicy.EMPTY);
+    populateRegion();
+    normal.invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.NORMAL));
+    replicate1
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+    replicate2
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+    replicate3
+        .invoke(() -> DistributedRegionFunctionExecutionDUnitTest.createPeer(DataPolicy.REPLICATE));
+
+    replicate1.invoke(() -> DistributedRegionFunctionExecutionDUnitTest
+        .executeLongRunningFunctionTimedOut());
+  }
 
   @Test
   public void testDistributedRegionFunctionExecutionOnDataPolicyReplicate_SendException() {
@@ -1067,6 +1116,60 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
     FunctionService.onRegion(region).withFilter(filter).execute(function).getResult();
   }
 
+  public static void executeLongRunningFunctionNotTimedOut() {
+    Set filter = new HashSet();
+    for (int i = 100; i < 120; i++) {
+      filter.add("execKey-" + i);
+    }
+    long timeout = 8000;
+    TimeUnit unit = TimeUnit.MILLISECONDS;
+    ResultCollector rc = FunctionService.onRegion(region).withFilter(filter)
+        .execute(TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME, timeout, unit);
+    List li = (ArrayList) rc.getResult();
+    assertEquals(li.get(0), "Ran executeFunctionRunningForLongTime for 2000");
+  }
+
+  public static void executeLongRunningFunctionTimedOut() {
+    Set filter = new HashSet();
+    for (int i = 100; i < 120; i++) {
+      filter.add("execKey-" + i);
+    }
+    long timeout = 1000;
+    TimeUnit unit = TimeUnit.MILLISECONDS;
+    assertThatThrownBy(() -> {
+      FunctionService.onRegion(region).withFilter(filter)
+          .execute(TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME, timeout, unit);
+    }).hasCauseInstanceOf(FunctionException.class)
+        .hasMessageContaining("All results not received in time provided");
+  }
+
+  public static void executeLongRunningFunctionNotTimedOut_byInstance() {
+    Set filter = new HashSet();
+    for (int i = 100; i < 120; i++) {
+      filter.add("execKey-" + i);
+    }
+    long timeout = 8000;
+    TimeUnit unit = TimeUnit.MILLISECONDS;
+    ResultCollector rc = FunctionService.onRegion(region).withFilter(filter)
+        .execute(longRunningFunction, timeout, unit);
+    List li = (ArrayList) rc.getResult();
+    assertEquals(li.get(0), "Ran executeFunctionRunningForLongTime for 2000");
+  }
+
+  public static void executeLongRunningFunctionTimedOut_byInstance() {
+    Set filter = new HashSet();
+    for (int i = 100; i < 120; i++) {
+      filter.add("execKey-" + i);
+    }
+    long timeout = 1000;
+    TimeUnit unit = TimeUnit.MILLISECONDS;
+    assertThatThrownBy(() -> {
+      FunctionService.onRegion(region).withFilter(filter)
+          .execute(longRunningFunction, timeout, unit);
+    }).hasCauseInstanceOf(FunctionException.class)
+        .hasMessageContaining("All results not received in time provided");
+  }
+
   public static void executeFunctionWithNoResultThrowException() {
     Set filter = new HashSet();
     for (int i = 100; i < 120; i++) {
@@ -1306,6 +1409,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
       LogWriterUtils.getLogWriter().info("Created Cache on peer");
       assertNotNull(cache);
       FunctionService.registerFunction(function);
+      FunctionService.registerFunction(longRunningFunction);
     } catch (Exception e) {
       Assert.fail(
           "DistributedRegionFunctionExecutionDUnitTest#createCache() Failed while creating the cache",

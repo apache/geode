@@ -30,6 +30,7 @@ import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -203,6 +204,84 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
   }
 
   /**
+   * Test remote execution with timeout by sending function id where timeout does not expire.
+   */
+  @Test
+  public void testRemoteSingleKeyExecution_byName_NotTimedOut() throws Exception {
+    VM accessor = getHost(0).getVM(2);
+    VM datastore = getHost(0).getVM(3);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
+    });
+
+    datastore.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(
+          new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME));
+    });
+
+    accessor.invoke(() -> {
+      Region<String, Integer> region = getPartitionedRegion(regionName);
+      region.put(STRING_KEY, 1);
+
+      Function<Boolean> function =
+          new TestFunction<>(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+      FunctionService.registerFunction(function);
+      Execution<Object, Object, List<Object>> dataSet = FunctionService.onRegion(region);
+      dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(true).execute(function.getId());
+
+      long timeout = 8000;
+      TimeUnit unit = TimeUnit.MILLISECONDS;
+      ResultCollector<Object, List<Object>> resultCollector =
+          dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(true).execute(function.getId(),
+              timeout, unit);
+
+      List li = (ArrayList) resultCollector.getResult();
+      assertEquals(li.get(0), "Ran executeFunctionRunningForLongTime for 2000");
+
+    });
+  }
+
+  /**
+   * Test remote execution with timeout by sending function id where timeout expires.
+   */
+  @Test
+  public void testRemoteSingleKeyExecution_byName_TimedOut() throws Exception {
+    VM accessor = getHost(0).getVM(2);
+    VM datastore = getHost(0).getVM(3);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
+    });
+
+    datastore.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(
+          new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME));
+    });
+
+    accessor.invoke(() -> {
+      Region<String, Integer> region = getPartitionedRegion(regionName);
+      region.put(STRING_KEY, 1);
+
+      Function<Boolean> function =
+          new TestFunction<>(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+      FunctionService.registerFunction(function);
+      Execution<Object, Object, List<Object>> dataSet = FunctionService.onRegion(region)
+          .withFilter(createKeySet(STRING_KEY)).setArguments(STRING_KEY);
+
+      long timeout = 1000;
+      TimeUnit unit = TimeUnit.MILLISECONDS;
+
+      assertThatThrownBy(() -> {
+        dataSet.execute(function.getId(), timeout, unit);
+      }).hasCauseInstanceOf(FunctionException.class)
+          .hasMessageContaining("All results not received in time provided");
+    });
+  }
+
+  /**
    * Test local execution by a datastore Function throws the FunctionInvocationTargetException. As
    * this is the case of HA then system should retry the function execution. After 5th attempt
    * function will send Boolean as last result. factory present.
@@ -307,6 +386,84 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
 
       assertThat(region.get(STRING_KEY + "1")).isEqualTo(2);
       assertThat(region.get(STRING_KEY + "2")).isEqualTo(3);
+    });
+  }
+
+  /**
+   * Test remote execution with timeout by sending function instance where timeout does not expire.
+   */
+  @Test
+  public void testRemoteSingleKeyExecution_byInstance_NotTimedOut() throws Exception {
+    VM accessor = getHost(0).getVM(2);
+    VM datastore = getHost(0).getVM(3);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
+    });
+
+    datastore.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(
+          new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME));
+    });
+
+    accessor.invoke(() -> {
+      Region<String, Integer> region = getPartitionedRegion(regionName);
+      region.put(STRING_KEY, 1);
+
+      Function<Boolean> function =
+          new TestFunction<>(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+      FunctionService.registerFunction(function);
+      Execution<Object, Object, List<Object>> dataSet = FunctionService.onRegion(region);
+      dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(true).execute(function);
+
+      long timeout = 8000;
+      TimeUnit unit = TimeUnit.MILLISECONDS;
+      ResultCollector<Object, List<Object>> resultCollector =
+          dataSet.withFilter(createKeySet(STRING_KEY)).setArguments(true).execute(function.getId(),
+              timeout, unit);
+
+      List li = (ArrayList) resultCollector.getResult();
+      assertEquals(li.get(0), "Ran executeFunctionRunningForLongTime for 2000");
+
+    });
+  }
+
+  /**
+   * Test remote execution with timeout by sending function instance where timeout expires.
+   */
+  @Test
+  public void testRemoteSingleKeyExecution_byInstance_TimedOut() throws Exception {
+    VM accessor = getHost(0).getVM(2);
+    VM datastore = getHost(0).getVM(3);
+
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
+    });
+
+    datastore.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(
+          new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME));
+    });
+
+    accessor.invoke(() -> {
+      Region<String, Integer> region = getPartitionedRegion(regionName);
+      region.put(STRING_KEY, 1);
+
+      Function<Boolean> function =
+          new TestFunction<>(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+      FunctionService.registerFunction(function);
+      Execution<Object, Object, List<Object>> dataSet = FunctionService.onRegion(region)
+          .withFilter(createKeySet(STRING_KEY)).setArguments(STRING_KEY);
+
+      long timeout = 1000;
+      TimeUnit unit = TimeUnit.MILLISECONDS;
+
+      assertThatThrownBy(() -> {
+        dataSet.execute(function, timeout, unit);
+      }).hasCauseInstanceOf(FunctionException.class)
+          .hasMessageContaining("All results not received in time provided");
     });
   }
 

@@ -94,7 +94,7 @@ public interface Execution<IN, OUT, AGG> {
   /**
    * Executes the function using its {@linkplain Function#getId() id}.
    * When executed from a client, it blocks until all results have been received
-   * or the global timeout (gemfire.CLIENT_FUNCTION_TIMEOUT Java property) has expired.
+   * or the global timeout (gemfire.CLIENT_FUNCTION_TIMEOUT Java property), if set, has expired.
    * <p>
    * {@link Function#execute(FunctionContext)} is called on the instance retrieved using
    * {@link FunctionService#getFunction(String)} on the executing member.
@@ -132,7 +132,7 @@ public interface Execution<IN, OUT, AGG> {
   /**
    * Executes the function instance provided.
    * When executed from a client, it blocks until all results have been received
-   * or the global timeout (gemfire.CLIENT_FUNCTION_TIMEOUT Java property) has expired.
+   * or the global timeout (gemfire.CLIENT_FUNCTION_TIMEOUT Java property), if set, has expired.
    * <p>
    * {@link Function#execute(FunctionContext)} is called on the de-serialized instance on the
    * executing member.
