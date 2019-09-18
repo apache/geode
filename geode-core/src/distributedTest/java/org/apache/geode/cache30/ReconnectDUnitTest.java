@@ -243,8 +243,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     locatorVm.invoke(new SerializableRunnable("disable force-disconnect") {
       @Override
       public void run() {
-        GMSMembershipManager mgr = (GMSMembershipManager)
-            getMembership(getLocator().getDistributedSystem());
+        GMSMembershipManager mgr =
+            (GMSMembershipManager) getMembership(getLocator().getDistributedSystem());
         mgr.disableDisconnectOnQuorumLossForTesting();
       }
     });
