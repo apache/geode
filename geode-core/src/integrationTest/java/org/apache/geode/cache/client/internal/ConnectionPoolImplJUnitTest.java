@@ -38,8 +38,9 @@ import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.net.AvailablePort;
+import org.apache.geode.internal.net.AvailablePort.Protocol;
+import org.apache.geode.internal.net.AvailablePortHelperImpl;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
@@ -59,7 +60,7 @@ public class ConnectionPoolImplJUnitTest {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     cache = CacheFactory.create(DistributedSystem.connect(props));
-    port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    port = AvailablePort.create().getRandomAvailablePort(Protocol.SOCKET);
   }
 
   @After
@@ -159,7 +160,7 @@ public class ConnectionPoolImplJUnitTest {
   @Test
   public void testCacheClose() throws Exception {
     PoolFactory cpf = PoolManager.createFactory();
-    cpf.addLocator("localhost", AvailablePortHelper.getRandomAvailableTCPPort());
+    cpf.addLocator("localhost", AvailablePortHelperImpl.getRandomAvailableTCPPort());
     Pool pool1 = cpf.create("pool1");
     Pool pool2 = cpf.create("pool2");
     cache.close();
@@ -172,7 +173,7 @@ public class ConnectionPoolImplJUnitTest {
   public void testExecuteOp() throws Exception {
     CacheServer server1 = cache.addCacheServer();
     CacheServer server2 = cache.addCacheServer();
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] ports = AvailablePortHelperImpl.getRandomAvailableTCPPorts(2);
     int port1 = ports[0];
     int port2 = ports[1];
     server1.setPort(port1);

@@ -48,9 +48,10 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.net.AvailablePort;
+import org.apache.geode.internal.net.AvailablePort.Protocol;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.util.ArgumentRedactor;
@@ -91,6 +92,8 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   protected static final String OPTION_PREFIX = "-";
 
   private static final String SUN_SIGNAL_API_CLASS_NAME = "sun.misc.Signal";
+
+  private static final AvailablePort AVAILABLE_PORT = AvailablePort.create();
 
   private volatile boolean debug;
 
@@ -137,7 +140,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    */
   protected static void assertPortAvailable(final InetAddress bindAddress, final int port)
       throws BindException {
-    if (!AvailablePort.isPortAvailable(port, AvailablePort.SOCKET, bindAddress)) {
+    if (!AVAILABLE_PORT.isPortAvailable(port, Protocol.SOCKET, bindAddress)) {
       throw new BindException(
           String.format("Network is unreachable; port (%1$d) is not available on %2$s.", port,
               bindAddress != null ? bindAddress.getCanonicalHostName() : "localhost"));

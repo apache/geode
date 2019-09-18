@@ -50,6 +50,8 @@ dependencies {
   compile('org.skyscreamer:jsonassert')
 
   testCompile('pl.pragmatists:JUnitParams')
+  
+  integrationTestCompile('pl.pragmatists:JUnitParams')
 
   testRuntime(project(':geode-old-versions'))
 }

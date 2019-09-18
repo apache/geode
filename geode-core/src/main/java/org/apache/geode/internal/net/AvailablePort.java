@@ -15,7 +15,6 @@
 package org.apache.geode.internal.net;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 
@@ -400,7 +399,7 @@ public interface AvailablePort {
   /**
    * This class will keep an allocated port allocated until it is used.
    */
-  class Keeper implements Serializable {
+  class Keeper implements org.apache.geode.internal.AvailablePort.Keeper {
 
     private final transient ServerSocket serverSocket;
     private final int port;
@@ -414,6 +413,7 @@ public interface AvailablePort {
       this.port = port;
     }
 
+    @Override
     public int getPort() {
       return port;
     }
@@ -421,6 +421,7 @@ public interface AvailablePort {
     /**
      * Once you call this the socket will be freed and can then be reallocated by someone else.
      */
+    @Override
     public void release() {
       try {
         if (serverSocket != null) {

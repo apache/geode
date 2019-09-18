@@ -42,7 +42,7 @@ import java.util.Random;
 
 import org.apache.geode.annotations.Immutable;
 
-public class AvailablePortImpl implements AvailablePort {
+class AvailablePortImpl implements AvailablePort {
 
   @Immutable
   private static final Random RANDOM =

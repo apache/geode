@@ -15,10 +15,10 @@
 package org.apache.geode.internal;
 
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.net.InetAddress;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.net.AvailablePort.Keeper;
 import org.apache.geode.internal.net.AvailablePort.Protocol;
 import org.apache.geode.internal.net.AvailablePort.Range;
 
@@ -26,8 +26,10 @@ import org.apache.geode.internal.net.AvailablePort.Range;
  * This class determines whether or not a given port is available and can also provide a randomly
  * selected available port.
  *
- * @deprecated Please use {@link org.apache.geode.internal.net.AvailablePort} instead.
+ * @deprecated Please use {@link org.apache.geode.internal.net.AvailablePort} instead. This version
+ *             remains only for use by rolling upgrade tests.
  */
+@Deprecated
 public class AvailablePort {
 
   @Immutable
@@ -261,5 +263,15 @@ public class AvailablePort {
       out.println("\nRandomly selected " + protocolString + " port: "
           + getRandomAvailablePort(protocol, addr) + "\n");
     }
+  }
+
+  /**
+   * This class will keep an allocated port allocated until it is used.
+   */
+  public interface Keeper extends Serializable {
+
+    int getPort();
+
+    void release();
   }
 }
