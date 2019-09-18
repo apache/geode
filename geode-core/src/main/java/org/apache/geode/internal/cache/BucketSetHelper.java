@@ -15,11 +15,9 @@
 package org.apache.geode.internal.cache;
 
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
 
 public class BucketSetHelper {
   public static int get(int[] bucketSet, int index) {
@@ -36,29 +34,33 @@ public class BucketSetHelper {
     bucketSet[0] = index;
   }
 
-  public static Set<Integer> toSet(int[] bucketArray) {
-    Set<Integer> bucketSet;
-    if (BucketSetHelper.length(bucketArray) > 0) {
-      bucketSet =
-          new HashSet(
-              Arrays.asList(
-                  ArrayUtils.toObject(Arrays.copyOfRange(bucketArray, 1, bucketArray[0] + 1))));
+  public static Set<Integer> toSet(int[] bucketSet) {
+    Set<Integer> resultSet;
+    int arrayLength = length(bucketSet);
+    if (arrayLength > 0) {
+      resultSet = new HashSet(arrayLength);
+      for (int i = 1; i <= arrayLength; i++) {
+        resultSet.add(bucketSet[i]);
+      }
     } else {
-      bucketSet = new HashSet();
+      resultSet = new HashSet();
     }
-    return bucketSet;
+    return resultSet;
   }
 
   public static int[] fromSet(Set<Integer> bucketSet) {
-    int[] bucketArray = new int[bucketSet.size() + 1];
-    bucketArray[0] = bucketSet.size();
+    int setSize = bucketSet.size();
+    int[] resultArray = new int[setSize + 1];
+    resultArray[0] = setSize;
 
-    if (bucketSet.size() > 0) {
-      System.arraycopy(ArrayUtils.toPrimitive(bucketSet.toArray(new Integer[bucketSet.size()])), 0,
-          bucketArray,
-          1, bucketSet.size());
+    if (setSize > 0) {
+      int i = 1;
+      for (Integer element : bucketSet) {
+        resultArray[i] = element;
+        i++;
+      }
     }
-    return bucketArray;
+    return resultArray;
   }
 
 }

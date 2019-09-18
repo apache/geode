@@ -26,8 +26,8 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketSetHelper;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * FunctionContext for remote/target nodes
