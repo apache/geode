@@ -149,7 +149,6 @@ javadoc/org/apache/geode/admin/package-tree.html
 javadoc/org/apache/geode/alerting/AlertingService.html
 javadoc/org/apache/geode/alerting/log4j/AlertAppender.Builder.html
 javadoc/org/apache/geode/alerting/log4j/AlertAppender.html
-javadoc/org/apache/geode/alerting/log4j/Log4jAlertingProvider.html
 javadoc/org/apache/geode/alerting/log4j/package-frame.html
 javadoc/org/apache/geode/alerting/log4j/package-summary.html
 javadoc/org/apache/geode/alerting/log4j/package-tree.html
@@ -158,8 +157,6 @@ javadoc/org/apache/geode/alerting/package-summary.html
 javadoc/org/apache/geode/alerting/package-tree.html
 javadoc/org/apache/geode/alerting/spi/AlertLevel.html
 javadoc/org/apache/geode/alerting/spi/AlertingAction.html
-javadoc/org/apache/geode/alerting/spi/AlertingProvider.html
-javadoc/org/apache/geode/alerting/spi/AlertingSession.html
 javadoc/org/apache/geode/alerting/spi/AlertingSessionListener.html
 javadoc/org/apache/geode/alerting/spi/AlertingSessionRegistry.html
 javadoc/org/apache/geode/alerting/spi/package-frame.html
