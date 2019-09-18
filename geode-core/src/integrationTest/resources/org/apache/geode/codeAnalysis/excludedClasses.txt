@@ -1,7 +1,7 @@
 org/apache/geode/GemFireCacheException
 org/apache/geode/admin/AlertLevel
+org/apache/geode/alerting/internal/AlertingSession$State
 org/apache/geode/alerting/spi/AlertLevel
-org/apache/geode/alerting/spi/AlertingSession$State
 org/apache/geode/cache/operations/internal/UpdateOnlyMap
 org/apache/geode/cache/query/internal/index/CompactRangeIndex$1
 org/apache/geode/cache/query/internal/DefaultQuery$TestHook$SPOTS
