@@ -1,5 +1,5 @@
 ---
-title: Managing Heap and Off-heap Memory
+title: Managing Heap Memory
 ---
 
 <!--
@@ -18,41 +18,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
-By default, <%=vars.product_name_long%> uses the JVM heap. <%=vars.product_name_long%> also offers an option to store data off heap. This section describes how to manage heap and off-heap memory to best support your application.
-
-## <a id="section_590DA955523246ED980E4E351FF81F71" class="no-quick-link"></a>Tuning the JVM's Garbage Collection Parameters
-
-Because <%=vars.product_name_long%> is specifically designed to manipulate data held in memory, you can optimize your application's performance by tuning the way <%=vars.product_name_long%> uses the JVM heap.
-
-See your JVM documentation for all JVM-specific settings that can be used to improve garbage collection (GC) response. At a minimum, do the following:
-
-1.  Set the initial and maximum heap switches, `-Xms` and `-Xmx`, to the same values. The `gfsh start server` options `--initial-heap` and `--max-heap` accomplish the same purpose, with the added value of providing resource manager defaults such as eviction threshold and critical threshold.
-2.  Configure your JVM for concurrent mark-sweep (CMS) garbage collection.
-3.  If your JVM allows, configure it to initiate CMS collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when <%=vars.product_name%> is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
-
-| JVM         | CMS switch flag           | CMS initiation (begin at heap % N)     |
-|-------------|---------------------------|----------------------------------------|
-| Sun HotSpot | `‑XX:+UseConcMarkSweepGC` | `‑XX:CMSInitiatingOccupancyFraction=N` |
-| JRockit     | `-Xgc:gencon`             | `-XXgcTrigger:N`                       |
-| IBM         | `-Xgcpolicy:gencon`       | N/A                                    |
-
-For the `gfsh start server` command, pass these settings with the `--J` switch, for example: `‑‑J=‑XX:+UseConcMarkSweepGC`.
-
-The following is an example of setting JVM for an application:
-
-``` pre
-$ java app.MyApplication -Xms=30m -Xmx=30m -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=60
-```
-
-**Note:** Do not use the `-XX:+UseCompressedStrings` and `-XX:+UseStringCache` JVM configuration properties when starting up servers. These JVM options can cause issues with data corruption and compatibility.
-
-Or, using `gfsh`:
-
-``` pre
-$ gfsh start server --name=app.MyApplication --initial-heap=30m --max-heap=30m \
---J=-XX:+UseConcMarkSweepGC --J=-XX:CMSInitiatingOccupancyFraction=60
-```
 
 ## <a id="how_the_resource_manager_works" class="no-quick-link"></a>Using the <%=vars.product_name%> Resource Manager
 
@@ -146,6 +111,48 @@ cache.xml example:
 ```
 
 **Note:** The `resource-manager` specification must appear after the region declarations in your cache.xml file.
+
+## <a id="tuning_jvm_gc_parameters" class="no-quick-link"></a>Tuning the JVM's Garbage Collection Parameters
+
+Because <%=vars.product_name_long%> is specifically designed to manipulate data held in memory, you can optimize your application's performance by tuning the way <%=vars.product_name_long%> uses the JVM heap.
+
+See your JVM documentation for all JVM-specific settings that can be used to improve garbage collection (GC) response. Best configuration can vary depending of the use case and JVM garbage collector used.
+
+### Concurrent mark-sweep (CMS) garbage collector
+
+It is known that using concurrent mark-sweep (CMS) garbage collection with <%=vars.product_name_long%> increases performance if the following actions are taken:
+
+1.  Set the initial and maximum heap switches, `-Xms` and `-Xmx`, to the same values. The `gfsh start server` options `--initial-heap` and `--max-heap` accomplish the same purpose, with the added value of providing resource manager defaults such as eviction threshold and critical threshold.
+2.  If your JVM allows, configure it to initiate CMS collection when heap use is at least 10% lower than your setting for the resource manager `eviction-heap-percentage`. You want the collector to be working when <%=vars.product_name%> is evicting or the evictions will not result in more free memory. For example, if the `eviction-heap-percentage` is set to 65, set your garbage collection to start when the heap use is no higher than 55%.
+
+| JVM         | CMS switch flag           | CMS initiation (begin at heap % N)     |
+|-------------|---------------------------|----------------------------------------|
+| Sun HotSpot | `‑XX:+UseConcMarkSweepGC` | `‑XX:CMSInitiatingOccupancyFraction=N` |
+| JRockit     | `-Xgc:gencon`             | `-XXgcTrigger:N`                       |
+| IBM         | `-Xgcpolicy:gencon`       | N/A                                    |
+
+For the `gfsh start server` command, pass these settings with the `--J` switch, for example: `‑‑J=‑XX:+UseConcMarkSweepGC`.
+
+The following is an example of settig Hotspot JVM for an application:
+
+``` pre
+$ java app.MyApplication -Xms=30m -Xmx=30m -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=60
+```
+
+**Note:** Do not use the `-XX:+UseCompressedStrings` and `-XX:+UseStringCache` JVM configuration properties when starting up servers. These JVM options can cause issues with data corruption and compatibility.
+
+Or, using `gfsh`:
+
+``` pre
+$ gfsh start server --name=app.MyApplication --initial-heap=30m --max-heap=30m \
+--J=-XX:+UseConcMarkSweepGC --J=-XX:CMSInitiatingOccupancyFraction=60
+```
+
+### Garbage first (G1) garbage collector
+
+Although garbage first (G1) garbage collector works effectively with <%=vars.product_name_long%>, issues could arise in some cases due to the differences between CMS and G1.
+For example, G1 by design is not able to set a maximum tenured heap size, so when this value is requested to the garbage collector, it reports the total heap maximum size. This impacts <%=vars.product_name_long%> due to the resource manager uses the maximum size of the tenured heap size to calculate the value in bytes of the eviction and critical percentages.
+Extensive testing is recommended before using G1 garbage collector. See your JVM documentation for all JVM-specific settings that can be used to improve garbage collection (GC) response.
 
 ## <a id="configuring_resource_manager__section_DE1CC494C2B547B083AA00821250972A" class="no-quick-link"></a>Monitor and Tune Heap LRU Configurations
 
