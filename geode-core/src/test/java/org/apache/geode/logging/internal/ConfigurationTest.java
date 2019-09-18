@@ -42,7 +42,9 @@ import org.apache.geode.logging.spi.LogLevelUpdateScope;
 import org.apache.geode.logging.spi.LoggingProvider;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/** Unit tests for {@link org.apache.geode.logging.internal.Configuration}. */
+/**
+ * Unit tests for {@link Configuration}.
+ */
 @Category(LoggingTest.class)
 public class ConfigurationTest {
 

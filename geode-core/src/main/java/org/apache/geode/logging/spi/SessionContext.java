@@ -14,7 +14,6 @@
  */
 package org.apache.geode.logging.spi;
 
-// TODO:KIRK: inline this to use LogConfigSupplier directly instead of SessionContext
 public interface SessionContext {
 
   LogConfigSupplier getLogConfigSupplier();

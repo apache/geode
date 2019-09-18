@@ -160,7 +160,7 @@ public class GenericAppServerContainer extends ServerContainer {
       StringBuilder sb = new StringBuilder();
       sb.append("Unable to run modify_war script, command: ").append(builder.command());
       sb.append(lineSeparator());
-      sb.append("log file: ");
+      sb.append("check log file: ");
       for (String line : readLines(modifyWarScriptLog, defaultCharset())) {
         sb.append(lineSeparator());
         sb.append(line);
