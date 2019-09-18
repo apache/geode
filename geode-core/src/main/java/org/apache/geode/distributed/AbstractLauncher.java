@@ -136,7 +136,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @param port an integer indicating the network port to listen for client network requests.
    * @throws BindException if the network address and port are not available. Address defaults to
    *         localhost (or all network interfaces on the local system) if null.
-   * @see org.apache.geode.internal.AvailablePort
+   * @see AvailablePort
    */
   protected static void assertPortAvailable(final InetAddress bindAddress, final int port)
       throws BindException {
