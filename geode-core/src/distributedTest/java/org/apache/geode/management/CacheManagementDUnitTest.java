@@ -355,7 +355,7 @@ public class CacheManagementDUnitTest implements Serializable {
 
       assertThat(service.getLocalManager().isRunning()).isTrue();
 
-      assertThat(service.getLocalManager().getFederationSheduler().isShutdown()).isFalse();
+      assertThat(service.getLocalManager().getFederationScheduler().isShutdown()).isFalse();
 
       ObjectName memberMBeanName = service.getMemberMBeanName(otherMember);
 
@@ -379,7 +379,7 @@ public class CacheManagementDUnitTest implements Serializable {
 
       assertThat(service.isManager()).isFalse();
       assertThat(service.getLocalManager().isRunning()).isTrue();
-      assertThat(service.getLocalManager().getFederationSheduler().isShutdown()).isFalse();
+      assertThat(service.getLocalManager().getFederationScheduler().isShutdown()).isFalse();
 
       // Check for Proxies
       Set<DistributedMember> otherMembers = this.managementTestRule.getOtherNormalMembers();
