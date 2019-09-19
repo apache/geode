@@ -66,6 +66,8 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
+import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
@@ -121,12 +123,9 @@ public class DefaultQueryService implements InternalQueryService {
     this.cache = cache;
     if (!cache.getSecurityService().isIntegratedSecurity() || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
       // A no-op authorizer, allow method invocation
-      this.methodInvocationAuthorizer = ((Method m, Object t) -> {
-      });
+      this.methodInvocationAuthorizer = ((Method m, Object t) -> true);
     } else {
-      this.methodInvocationAuthorizer =
-          new RestrictedMethodInvocationAuthorizer(cache.getSecurityService());
-
+      this.methodInvocationAuthorizer = new RestrictedMethodAuthorizer(cache.getSecurityService());
     }
   }
 

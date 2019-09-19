@@ -26,7 +26,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.internal.RestrictedMethodInvocationAuthorizer;
+import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.query.data.PdxTrade;
 import org.apache.geode.test.dunit.VM;
@@ -80,7 +80,7 @@ public class QuerySecurityDistinctQueryDistributedTest extends QuerySecurityBase
         assertThat(e).isInstanceOf(ServerOperationException.class);
         assertThat(e.getCause()).isInstanceOf(NotAuthorizedException.class);
         assertThat(e.getMessage()).contains(
-            RestrictedMethodInvocationAuthorizer.UNAUTHORIZED_STRING + methodName);
+            RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + methodName);
       }
     });
   }
