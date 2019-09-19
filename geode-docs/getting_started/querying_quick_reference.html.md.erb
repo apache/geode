@@ -191,7 +191,7 @@ SELECT * FROM /exampleRegion p WHERE p.ID > 0 LIMIT 2
 
 **Using MIN and MAX**
 
-See [MIN](../developing/query_select/the_select_statement.html#select_min) and [MAX](../developing/query_select/the_select_statement.html#select_max)for more information.
+See [MIN](../developing/query_select/aggregates.html#min) and [MAX](../developing/query_select/aggregates.html#max)for more information.
 
 ``` pre
 SELECT MIN(ID)
@@ -219,7 +219,7 @@ WHERE p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM'
 
 **Using AVG**
 
-See [AVG](../developing/query_select/the_select_statement.html#select_avg) for more information.
+See [AVG](../developing/query_select/aggregates.html#avg) for more information.
 
 ``` pre
 SELECT AVG(ID)
@@ -247,7 +247,7 @@ WHERE p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM'
 
 **Using COUNT**
 
-See [COUNT](../developing/query_select/the_select_statement.html#select_count) for more information.
+See [COUNT](../developing/query_select/aggregates.html#count) for more information.
 
 ``` pre
 SELECT COUNT(*)
@@ -293,7 +293,7 @@ WHERE p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM'
 
 **Using SUM**
 
-See [SUM](../developing/query_select/the_select_statement.html#select_sum) for more information.
+See [SUM](../developing/query_select/aggregates.html#sum) for more information.
 
 ``` pre
 SELECT SUM(ID)
@@ -321,7 +321,7 @@ WHERE p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM'
 
 **Using GROUP BY**
 
-See [GROUP BY](../developing/query_select/the_select_statement.html#select_groupBy) for more information.
+See [GROUP BY](../developing/query_select/aggregates.html#groupBy) for more information.
 
 ``` pre
 SELECT p.status, MAX(p.ID) 

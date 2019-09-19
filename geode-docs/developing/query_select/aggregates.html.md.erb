@@ -1,0 +1,340 @@
+---
+title:  OQL Aggregate Functions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+The aggregate functions 
+`MIN`, `MAX`, 
+`COUNT`, `COUNT` over a `DISTINCT` expression, 
+`SUM`, `SUM` over a `DISTINCT` expression, 
+`AVG`, `AVG` over a `DISTINCT` expression, and 
+`GROUP BY` are supported.
+
+The following sections provide descriptions and limitations (if any) about the aggregate functions, how do they work and how they can be used. 
+
+## <a id="groupBy"></a>GROUP BY
+You can collect data across multiple entries and group the results by one or more columns through the usage of the `GROUP BY` statement.
+It's important to note some facts about its usage:
+
+* It can group results by one or more fields.
+* It returns a single record / entry per group.
+* It must always be placed before the `ORDER BY` clause, if any.
+* It can be used in conjunction with other aggregate functions: `MIN`, `MAX`, `COUNT`, `SUM` and `AVG`.
+* It groups records using the selected fields if and only if the fields have identical data across entries.
+* It is required, whenever an aggregate function is used within a query with other selected fields, to also use `GROUP BY`.
+* If there are no other aggregate functions within the query, all fields included within a GROUP BY clause must also be part of the original projection list, and all fields included within the projection list must also be part of the `GROUP BY` clause.
+
+The following are example `GROUP BY` queries.
+
+The following `GROUP BY` query returns the maximum amount of sales per employee.
+
+``` pre
+SELECT ID, MAX(e.sales)
+FROM /employees e
+GROUP BY ID
+```
+
+The following `GROUP BY` query returns the minimum, maximum, total count, average and summation of IDs grouped by status.
+
+``` pre
+SELECT pf.status, MIN(pf.ID), MAX(pf.ID), COUNT(pf.ID), AVG(pf.ID), SUM(pf.ID)
+FROM /portfolio pf
+GROUP BY pf.status
+```
+
+## <a id="min"></a>MIN
+
+The `MIN` keyword returns the minimum or smallest value from the selected expression. The expression itself must always evaluate to `java.lang.Comparable`. The `MIN` statement returns the actual type of the selected element as its result. 
+
+The following are example `MIN` queries that return region entries (the entries implement the `java.lang.Comparable` interface).
+
+``` pre
+SELECT MIN(pf)
+FROM /exampleRegion pf
+```
+
+``` pre
+SELECT MIN(pf)
+FROM /exampleRegion
+pf WHERE pf.ID > 0
+```
+
+``` pre
+SELECT MIN(pf)
+FROM /exampleRegion pf
+WHERE pf.ID > 10 LIMIT 50
+```
+
+``` pre
+SELECT MIN(pf) 
+FROM /exampleRegion pf 
+WHERE pf.ID > 0 AND pf.status LIKE 'act%'
+```
+
+The following `MIN` query returns the lowest entry ID that matches the query's selection criteria.
+
+``` pre
+SELECT MIN(pf.ID)
+FROM /exampleRegion pf, pf.positions.values pos
+WHERE pf.ID > 0 AND pos.secId = 'IBM'
+```
+
+The following `MIN` query returns the lowest positive ID grouped by status.
+
+``` pre
+SELECT pf.status, MIN(pf.ID)
+FROM /exampleRegion pf
+WHERE pf.ID > 0
+GROUP BY pf.status
+```
+
+## <a id="max"></a>MAX
+
+The `MAX` keyword returns the maximum or highest value from the selected expression. The expression itself must always evaluate to `java.lang.Comparable`. The `MAX` statement returns the type of the selected element as its result. 
+
+The following are example `MAX` queries that return region entries (the entries implement the `java.lang.Comparable` interface).
+
+``` pre
+SELECT MAX(pf)
+FROM /exampleRegion pf
+```
+
+``` pre
+SELECT MAX(pf)
+FROM /exampleRegion
+pf WHERE pf.ID > 0
+```
+
+``` pre
+SELECT MAX(pf)
+FROM /exampleRegion pf
+WHERE pf.ID > 10 LIMIT 50
+```
+
+``` pre
+SELECT MAX(pf) 
+FROM /exampleRegion pf 
+WHERE pf.ID > 0 AND pf.status LIKE 'act%'
+```
+
+The following `MAX` query returns the highest entry ID that matches the query's selection criteria.
+
+``` pre
+SELECT MAX(pf.ID)
+FROM /exampleRegion pf, pf.positions.values pos
+WHERE pf.ID > 0 AND pos.secId = 'IBM'
+```
+
+The following `MAX` query returns the highest positive IDs grouped by status.
+
+``` pre
+SELECT pf.status, MAX(pf.ID)
+FROM /exampleRegion pf
+WHERE pf.ID > 0
+GROUP BY pf.status
+```
+
+## <a id="count"></a>COUNT
+
+The `COUNT` keyword returns the number of results that match the query selection conditions specified in the `WHERE` clause. Using `COUNT` allows you to determine the size of a results set.
+The `COUNT` statement always returns a `java.lang.Integer` or `java.lang.Long` as the result (depending on how big the value is); you should take this into consideration when executing the query: if an overflow occurs while computing the `COUNT` function because the value is higher than `Long.MAX_VALUE` (2<sup>63</sup> - 1), the result will be incorrect.
+
+The following queries are example `COUNT` queries that return region entries:
+
+``` pre
+SELECT COUNT(*)
+FROM /exampleRegion
+```
+
+``` pre
+SELECT COUNT(*)
+FROM /exampleRegion
+WHERE ID > 0
+```
+
+``` pre
+SELECT COUNT(*)
+FROM /exampleRegion
+WHERE ID > 0 LIMIT 50
+```
+
+``` pre
+SELECT COUNT(*)
+FROM /exampleRegion 
+WHERE ID > 0 AND status LIKE 'act%'
+```
+
+``` pre
+SELECT COUNT(*)
+FROM /exampleRegion 
+WHERE ID IN SET(1,2,3,4,5)
+```
+
+The following `COUNT` query returns the total number of StructTypes that match the query's selection criteria.
+
+``` pre
+SELECT COUNT(*) 
+FROM /exampleRegion p, p.positions.values pos 
+WHERE p.ID > 0 AND pos.secId 'IBM'
+```
+
+The following `COUNT` query uses the `DISTINCT` keyword and eliminates duplicates from the number of results.
+
+``` pre
+SELECT DISTINCT COUNT(*)
+FROM /exampleRegion p, p.positions.values pos
+WHERE p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM'
+```
+
+## <a id="sum"></a>SUM
+
+The `SUM` keyword returns the summation of all results that match the query selection conditions specified in the `WHERE` clause. Using `SUM` allows you to aggregate specific numeric values within a results set.
+For partitioned regions, each node's buckets compute a sum over that node and return the result to the coordinator node executing the query, which then aggregates the sums across all nodes.
+
+The `SUM` function where the `DISTINCT` modifier is applied to the expression returns the summation over the set of unique (distinct) values.
+For partitioned regions, the distinct values in a node's buckets are returned to the coordinator node, which can then calculate the sum over the values that are unique across nodes, after eliminating duplicate values that come from separate nodes.
+
+The actual expression used to calculate the aggregation should be an instance of `java.lang.Number`. The `SUM` statement always returns a `java.lang.Float` or `java.lang.Double` as the result (depending on how big the value is); you should take this into consideration when executing the query: if an overflow occurs while computing the `SUM` function because the value is higher than `Double.MAX_VALUE` ((2 - 2<sup>-52</sup>) * 2<sup>1023</sup>), the result will be incorrect.
+
+The following are example `SUM` queries that return the summation of the entries ID.
+
+``` pre
+SELECT SUM(ID)
+FROM /exampleRegion
+```
+
+``` pre
+SELECT SUM(ID)
+FROM /exampleRegion
+WHERE ID > 0
+```
+
+``` pre
+SELECT SUM(ID)
+FROM /exampleRegion
+WHERE ID > 0 LIMIT 50
+```
+
+``` pre
+SELECT SUM(ID)
+FROM /exampleRegion 
+WHERE ID > 0 AND status LIKE 'act%'
+```
+
+``` pre
+SELECT SUM(ID)
+FROM /exampleRegion 
+WHERE ID IN SET(1,2,3,4,5)
+```
+
+The following `SUM` query returns the total summation of positive IDs grouped by status.
+
+``` pre
+SELECT pf.status, SUM(pf.ID) 
+FROM /exampleRegion pf
+WHERE pf.ID > 0
+GROUP BY pf.status
+```
+
+The following `SUM` query uses the DISTINCT keyword and eliminates duplicates from the aggregation.
+
+``` pre
+SELECT SUM(DISTINCT pf.ID)
+FROM /exampleRegion pf, pf.positions.values pos
+WHERE pf.ID > 0 OR pf.status = 'active' OR pos.secId = 'IBM'
+```
+
+The following `SUM` query returns the total aggregation of positive IDs grouped by status and sorted by the aggregation result in descending order.
+
+``` pre
+SELECT pf.status, SUM(pf.ID) as sm 
+FROM /exampleRegion pf
+WHERE pf.ID > 0
+GROUP BY pf.status
+ORDER BY sm DESC
+```
+
+## <a id="avg"></a>AVG
+
+The `AVG` keyword returns the arithmetic mean of the set formed by the selected expression.
+For partitioned regions, each node's buckets provide both a sum and the number of elements to the node executing the query (coordinator), such that a correct average may be computed.
+
+The `AVG` keyword where the `DISTINCT` modifier is applied to the expression returns the arithmetic mean of the set of unique (distinct) values.
+For partitioned regions, the distinct values in a node's buckets are returned to the coordinator node, which can then calculate the average over the values that are unique across nodes, after eliminating duplicate values that come from separate nodes.
+
+The actual expression used to calculate the aggregation should be an instance of `java.lang.Number`. 
+The `AVG` statement always returns a `java.lang.Float` or `java.lang.Double` as the result (depending on how big the value is); you should take this into consideration when executing the query: if an overflow occurs while computing the `AVG` function because the value is higher than `Double.MAX_VALUE` ((2 - 2<sup>-52</sup>) * 2<sup>1023</sup>), or if an overflow occurs while computing the intermediate count because the amount of elements is higher than `Long.MAX_VALUE` (2<sup>63</sup> - 1), the result will be incorrect.  
+
+The following are example `AVG` queries that calculate the average of the entries ID.
+
+``` pre
+SELECT AVG(ID)
+FROM /exampleRegion
+```
+
+``` pre
+SELECT AVG(ID)
+FROM /exampleRegion
+WHERE ID > 0
+```
+
+``` pre
+SELECT AVG(ID)
+FROM /exampleRegion
+WHERE ID > 0 LIMIT 50
+```
+
+``` pre
+SELECT AVG(ID)
+FROM /exampleRegion 
+WHERE ID > 0 AND status LIKE 'act%'
+```
+
+``` pre
+SELECT AVG(ID)
+FROM /exampleRegion 
+WHERE ID IN SET(1,2,3,4,5)
+```
+
+The following `AVG` query returns the average of positive IDs grouped by status.
+
+``` pre
+SELECT pf.status, AVG(pf.ID) 
+FROM /exampleRegion pf
+WHERE pf.ID > 0
+GROUP BY pf.status
+```
+
+The following `AVG` query uses the `DISTINCT` keyword and eliminates duplicates from the aggregation.
+
+``` pre
+SELECT AVG(DISTINCT pf.ID)
+FROM /exampleRegion pf, pf.positions.values pos
+WHERE pf.ID > 0 OR pf.status = 'active' OR pos.secId = 'IBM'
+```
+
+The following `AVG` query returns the average of positive IDs grouped by status and sorted by the calculation result in descending order.
+
+``` pre
+SELECT pf.status, AVG(pf.ID) as sm 
+FROM /exampleRegion pf
+WHERE pf.ID > 0
+GROUP BY pf.status
+ORDER BY sm DESC
+```
