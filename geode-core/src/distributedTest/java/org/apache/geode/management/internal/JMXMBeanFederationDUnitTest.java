@@ -38,8 +38,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.internal.InternalBlackboard;
@@ -111,7 +111,7 @@ public class JMXMBeanFederationDUnitTest {
     locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
     List keyset = server3.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      DistributedMember member =
+      InternalDistributedMember member =
           InternalDistributedSystem.getConnectedInstance().getDistributedMember();
       String appender = MBeanJMXAdapter.getUniqueIDForMember(member);
       Region monitoringRegion =
