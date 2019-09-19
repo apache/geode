@@ -14,7 +14,7 @@
  */
 package org.apache.geode.logging.internal.spi;
 
-import org.apache.geode.statistics.StatisticsConfig;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 
 /**
  * Provides logging configuration and change notification services to {@link LogConfigListener}s.

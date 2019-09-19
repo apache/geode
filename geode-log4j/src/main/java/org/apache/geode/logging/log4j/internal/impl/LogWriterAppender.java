@@ -45,7 +45,7 @@ import org.apache.geode.logging.internal.spi.LogFile;
 import org.apache.geode.logging.internal.spi.LoggingSessionListener;
 import org.apache.geode.logging.internal.spi.LoggingSessionRegistry;
 import org.apache.geode.logging.internal.spi.SessionContext;
-import org.apache.geode.statistics.StatisticsConfig;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 
 @Plugin(name = LogWriterAppender.PLUGIN_NAME, category = Core.CATEGORY_NAME,
     elementType = Appender.ELEMENT_TYPE, printObject = true)

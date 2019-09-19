@@ -45,7 +45,7 @@ import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsRegistry;
 import org.apache.geode.logging.internal.spi.LogFile;
 import org.apache.geode.management.internal.beans.MemberMBeanBridge;
-import org.apache.geode.statistics.StatisticsConfig;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 

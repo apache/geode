@@ -29,7 +29,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.logging.internal.spi.LogConfig;
-import org.apache.geode.statistics.StatisticsConfig;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 
 /**
  * Integration tests for {@link ManagerLogWriterFactory}.

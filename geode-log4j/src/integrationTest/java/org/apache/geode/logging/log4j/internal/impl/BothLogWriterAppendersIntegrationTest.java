@@ -42,7 +42,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
 import org.apache.geode.logging.internal.spi.SessionContext;
-import org.apache.geode.statistics.StatisticsConfig;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.categories.SecurityTest;

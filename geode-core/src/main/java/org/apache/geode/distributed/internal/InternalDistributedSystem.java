@@ -125,7 +125,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.statistics.StatisticsConfig;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that provides internal-only
