@@ -52,13 +52,16 @@ else
     exit 1
 fi
 
+#support mac or linux date arithmetic syntax
+DEADLINE=$(date --date '+5 days' '+%a, %B %d %Y' 2>/dev/null || date -v +5d "+%a, %B %d %Y" 2>/dev/null || echo "<5 days from now>")
+
 cat << EOF
 Hello Geode dev community,
 
 This is a release candidate for Apache Geode, version ${FULL_VERSION}.
 Thanks to all the community members for their contributions to this release!
 
-Please do a review and give your feedback. The deadline is 3PM PST $(date  -v +5d "+%a, %B %d %Y").
+Please do a review and give your feedback. The deadline is 3PM PST ${DEADLINE}.
 Release notes can be found at: https://cwiki.apache.org/confluence/display/GEODE/Release+Notes#ReleaseNotes-${VERSION}
 
 Please note that we are voting upon the source tags: rel/v${FULL_VERSION}
