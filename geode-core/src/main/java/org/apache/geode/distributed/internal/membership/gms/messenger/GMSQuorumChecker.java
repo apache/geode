@@ -114,8 +114,7 @@ public class GMSQuorumChecker {
 
 
   public void resume() {
-    channel.setReceiver(null);
-    channel.setReceiver(new QuorumCheckerReceiver());
+    JGroupsMessenger.setChannelReceiver(channel, new QuorumCheckerReceiver());
   }
 
 
