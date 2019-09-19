@@ -24,8 +24,8 @@ import java.util.Set;
 
 import org.apache.logging.log4j.message.Message;
 
-import org.apache.geode.cache.EntriesCollection;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.EntriesCollection;
 
 /**
  * Handles messages that consist of a format string containing '{}' to represent each replaceable

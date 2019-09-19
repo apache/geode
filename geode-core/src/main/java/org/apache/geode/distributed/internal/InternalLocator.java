@@ -82,6 +82,7 @@ import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.logging.internal.LoggingSession;
 import org.apache.geode.logging.internal.NullLoggingSession;
 import org.apache.geode.logging.internal.spi.LogConfig;
@@ -99,7 +100,6 @@ import org.apache.geode.management.internal.configuration.messages.ClusterManage
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.security.AuthTokenEnabledComponents;
-import org.apache.geode.internal.statistics.StatisticsConfig;
 
 /**
  * Provides the implementation of a distribution {@code Locator} as well as internal-only
