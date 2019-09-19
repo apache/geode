@@ -334,7 +334,7 @@ jobs:
             - -ec
             - |
               set -ex
-              FULL_VERSION=$(cd geode && git describe --tags | sed -e 's#^rel/v##')
+              FULL_VERSION=$(cd geode-examples && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
               cd upthewaterspout-tests

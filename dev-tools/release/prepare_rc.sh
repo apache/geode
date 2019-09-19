@@ -192,6 +192,7 @@ tar czf ../${NCTAR} *
 cd ..
 rm -Rf repkg-temp
 gpg --armor -u ${SIGNING_KEY} -b ${NCTAR}
+sha512sum ${NCTAR} > ${NCTAR}.sha512
 set +x
 
 
