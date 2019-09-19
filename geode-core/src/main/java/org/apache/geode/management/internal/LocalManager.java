@@ -120,9 +120,19 @@ public class LocalManager extends Manager {
       internalArgs.setIsUsedForMetaRegion(true);
 
       // Create anonymous stats holder for Management Regions
-      final HasCachePerfStats monitoringRegionStats =
-          () -> new CachePerfStats(cache.getDistributedSystem(),
+      HasCachePerfStats monitoringRegionStats = new HasCachePerfStats() {
+
+        @Override
+        public CachePerfStats getCachePerfStats() {
+          return new CachePerfStats(cache.getDistributedSystem(),
               "RegionStats-managementRegionStats", statisticsClock);
+        }
+
+        @Override
+        public boolean hasOwnStats() {
+          return true;
+        }
+      };
 
       internalArgs.setCachePerfStatsHolder(monitoringRegionStats);
 
