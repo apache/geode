@@ -124,7 +124,7 @@ public interface Execution<IN, OUT, AGG> {
    *         ResultCollector provided in {@link Execution#withCollector(ResultCollector)}. User has
    *         to use this reference to retrieve results.
    *
-   * @since GemFire 6.0
+   * @since Geode 1.11
    */
   ResultCollector<OUT, AGG> execute(String functionId, long timeout, TimeUnit unit)
       throws FunctionException;
@@ -164,7 +164,7 @@ public interface Execution<IN, OUT, AGG> {
    *         ResultCollector provided in {@link Execution#withCollector(ResultCollector)}. User has
    *         to use this reference to retrieve results.
    *
-   * @since GemFire 6.0
+   * @since Geode 1.11
    */
   ResultCollector<OUT, AGG> execute(Function function, long timeout, TimeUnit unit)
       throws FunctionException;
