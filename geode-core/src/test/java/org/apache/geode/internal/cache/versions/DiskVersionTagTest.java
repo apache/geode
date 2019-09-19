@@ -15,19 +15,21 @@
 package org.apache.geode.internal.cache.versions;
 
 
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
 
-public class VMVersionTagTest extends AbstractVersionTagTestBase {
+public class DiskVersionTagTest extends AbstractVersionTagTestBase {
 
   @SuppressWarnings("rawtypes")
   @Override
   protected VersionTag createVersionTag() {
-    return new VMVersionTag();
+    return new DiskVersionTag();
   }
 
   @Override
   protected VersionSource createMemberID() {
-    int port = getRandomUnusedInt();
-    return new InternalDistributedMember("localhost", port);
+    int high = getRandomUnusedInt();
+    int low = getRandomUnusedInt();
+    return new DiskStoreID(high, low);
   }
+
 }
