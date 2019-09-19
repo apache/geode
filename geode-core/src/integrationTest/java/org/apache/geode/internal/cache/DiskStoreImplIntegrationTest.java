@@ -105,7 +105,7 @@ public class DiskStoreImplIntegrationTest {
   }
 
   @Test
-  public void givenDiskStoreIsCreatedWithMaxSizeThenDiskPercentagesShouldBeZeroAnd100()
+  public void givenDiskStoreIsCreatedWithMaxSizeThenDiskUsagePercentagesShouldBeZeroAndDiskFreePercentagesShouldBe100()
       throws Exception {
 
     final int ALLOWED_MARGIN = 1;
