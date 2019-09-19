@@ -44,6 +44,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.management.internal.LocalManager;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
@@ -618,9 +619,12 @@ public class CacheManagementDUnitTest implements Serializable {
 
   private void verifyNotificationsAndRegionSize(final VM memberVM1, final VM memberVM2,
       final VM memberVM3, final VM managerVM) {
-    DistributedMember member1 = this.managementTestRule.getDistributedMember(memberVM1);
-    DistributedMember member2 = this.managementTestRule.getDistributedMember(memberVM2);
-    DistributedMember member3 = this.managementTestRule.getDistributedMember(memberVM3);
+    InternalDistributedMember member1 =
+        (InternalDistributedMember) managementTestRule.getDistributedMember(memberVM1);
+    InternalDistributedMember member2 =
+        (InternalDistributedMember) managementTestRule.getDistributedMember(memberVM2);
+    InternalDistributedMember member3 =
+        (InternalDistributedMember) managementTestRule.getDistributedMember(memberVM3);
 
     String memberId1 = MBeanJMXAdapter.getUniqueIDForMember(member1);
     String memberId2 = MBeanJMXAdapter.getUniqueIDForMember(member2);
