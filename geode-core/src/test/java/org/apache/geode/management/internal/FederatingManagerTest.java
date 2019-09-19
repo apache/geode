@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -24,6 +25,7 @@ import java.net.InetAddress;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.Region;
@@ -31,8 +33,10 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.alerting.AlertLevel;
+import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.DistributedSystemMXBean;
 
@@ -73,28 +77,66 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesMonitoringRegion() throws Exception {
-    InternalDistributedMember member = member(0, 42);
+    InternalDistributedMember member = member(1, 20);
     FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
         cache, statisticsFactory, statisticsClock);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member);
 
-    verify(cacheForClientAccess).createInternalRegion(eq("_monitoringRegion_null<v0>42"), any(),
+    verify(cacheForClientAccess).createInternalRegion(eq("_monitoringRegion_null<v1>20"), any(),
         any());
   }
 
   @Test
-  public void addMemberArtifactsCreatesNotificationRegion() throws Exception {
-    InternalDistributedMember member = member(0, 42);
+  public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() throws Exception {
+    InternalDistributedMember member = member(2, 40);
     FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
         cache, statisticsFactory, statisticsClock);
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member);
 
-    verify(cacheForClientAccess).createInternalRegion(eq("_notificationRegion_null<v0>42"), any(),
+    ArgumentCaptor<InternalRegionArguments> captor =
+        ArgumentCaptor.forClass(InternalRegionArguments.class);
+    verify(cacheForClientAccess).createInternalRegion(eq("_monitoringRegion_null<v2>40"), any(),
+        captor.capture());
+
+    InternalRegionArguments internalRegionArguments = captor.getValue();
+    HasCachePerfStats hasCachePerfStats = internalRegionArguments.getCachePerfStatsHolder();
+    assertThat(hasCachePerfStats.hasOwnStats()).isTrue();
+  }
+
+  @Test
+  public void addMemberArtifactsCreatesNotificationRegion() throws Exception {
+    InternalDistributedMember member = member(3, 60);
+    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
+        cache, statisticsFactory, statisticsClock);
+    federatingManager.startManager();
+
+    federatingManager.addMemberArtifacts(member);
+
+    verify(cacheForClientAccess).createInternalRegion(eq("_notificationRegion_null<v3>60"), any(),
         any());
+  }
+
+  @Test
+  public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() throws Exception {
+    InternalDistributedMember member = member(4, 80);
+    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
+        cache, statisticsFactory, statisticsClock);
+    federatingManager.startManager();
+
+    federatingManager.addMemberArtifacts(member);
+
+    ArgumentCaptor<InternalRegionArguments> captor =
+        ArgumentCaptor.forClass(InternalRegionArguments.class);
+    verify(cacheForClientAccess).createInternalRegion(eq("_notificationRegion_null<v4>80"), any(),
+        captor.capture());
+
+    InternalRegionArguments internalRegionArguments = captor.getValue();
+    HasCachePerfStats hasCachePerfStats = internalRegionArguments.getCachePerfStatsHolder();
+    assertThat(hasCachePerfStats.hasOwnStats()).isTrue();
   }
 
   private InternalDistributedMember member(int viewId, int port) {

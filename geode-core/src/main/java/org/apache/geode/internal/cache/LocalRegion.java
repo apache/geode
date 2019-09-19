@@ -604,8 +604,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     subregions = new ConcurrentHashMap();
 
     if (internalRegionArgs.getCachePerfStatsHolder() != null) {
-      hasOwnStats = false;
-      cachePerfStats = internalRegionArgs.getCachePerfStatsHolder().getCachePerfStats();
+      HasCachePerfStats cachePerfStatsHolder = internalRegionArgs.getCachePerfStatsHolder();
+      hasOwnStats = cachePerfStatsHolder.hasOwnStats();
+      cachePerfStats = cachePerfStatsHolder.getCachePerfStats();
     } else {
       if (attrs.getPartitionAttributes() != null || isInternalRegion()
           || internalRegionArgs.isUsedForMetaRegion()) {

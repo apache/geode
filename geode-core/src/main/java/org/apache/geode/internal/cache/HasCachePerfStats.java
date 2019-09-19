@@ -18,4 +18,8 @@ package org.apache.geode.internal.cache;
 public interface HasCachePerfStats {
 
   CachePerfStats getCachePerfStats();
+
+  default boolean hasOwnStats() {
+    return false;
+  }
 }
