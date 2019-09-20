@@ -56,38 +56,42 @@ fi
 DEADLINE=$(date --date '+5 days' '+%a, %B %d %Y' 2>/dev/null || date -v +5d "+%a, %B %d %Y" 2>/dev/null || echo "<5 days from now>")
 
 cat << EOF
-Hello Geode dev community,
+Hello Geode Dev Community,
 
-This is a release candidate for Apache Geode, version ${FULL_VERSION}.
+This is a release candidate for Apache Geode version ${FULL_VERSION}.
 Thanks to all the community members for their contributions to this release!
 
-Please do a review and give your feedback including the checks performed. 
-The voting deadline is 3PM PST $(date  -v +5d "+%a, %B %d %Y").
+Please do a review and give your feedback, including the checks you performed.
 
-This candidate has passed RC Qualification checks which can be found at:
-https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-release-${VERSION//./-}-rc
+Voting deadline:
+3PM PST ${DEADLINE}.
 
-Release notes can be found at: https://cwiki.apache.org/confluence/display/GEODE/Release+Notes#ReleaseNotes-${VERSION}
+Please note that we are voting upon the source tag:
+rel/v${FULL_VERSION}
 
-Please note that we are voting upon the source tags: rel/v${FULL_VERSION}
+Release notes:
+https://cwiki.apache.org/confluence/display/GEODE/Release+Notes#ReleaseNotes-${VERSION}
 
-Apache Geode:
-https://github.com/apache/geode/tree/rel/v${FULL_VERSION}
-Apache Geode examples:
-https://github.com/apache/geode-examples/tree/rel/v${FULL_VERSION}
-Apache Geode native:
-https://github.com/apache/geode-native/tree/rel/v${FULL_VERSION}
-
-Source and binary files:
+Source and binary distributions:
 https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/
 
 Maven staging repo:
 https://repository.apache.org/content/repositories/orgapachegeode-${MAVEN}
 
+GitHub:
+https://github.com/apache/geode/tree/rel/v${FULL_VERSION}
+https://github.com/apache/geode-examples/tree/rel/v${FULL_VERSION}
+https://github.com/apache/geode-native/tree/rel/v${FULL_VERSION}
+
+Pipelines:
+https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-release-${VERSION//./-}-main
+https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-release-${VERSION//./-}-rc
+
 Geode's KEYS file containing PGP keys we use to sign the release:
 https://github.com/apache/geode/blob/develop/KEYS
 
-PS: Command to run geode-examples: ./gradlew -PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=https://repository.apache.org/content/repositories/orgapachegeode-${MAVEN} build runAll
+Command to run geode-examples:
+./gradlew -PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=https://repository.apache.org/content/repositories/orgapachegeode-${MAVEN} build runAll
 
 Regards
 $(git config --get user.name)
