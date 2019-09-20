@@ -970,9 +970,6 @@ org/apache/geode/internal/cache/DistributedRegionFunctionStreamingMessage,2
 fromData,177
 toData,174
 
-org/apache/geode/internal/cache/DistributedRemoveAllOperation$RemoveAllEntryData,1
-toData,162
-
 org/apache/geode/internal/cache/DistributedRemoveAllOperation$RemoveAllMessage,2
 fromData,217
 toData,188
@@ -1985,8 +1982,8 @@ fromData,214
 toData,245
 
 org/apache/geode/internal/cache/versions/VersionTag,2
-fromData,189
-toData,259
+fromData,225
+toData,254
 
 org/apache/geode/internal/cache/wan/GatewaySenderAdvisor$GatewaySenderProfile,4
 fromData,283
