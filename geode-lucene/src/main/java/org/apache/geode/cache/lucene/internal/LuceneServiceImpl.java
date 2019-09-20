@@ -260,7 +260,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     region.executeSynchronizedOperationOnCacheProfiles(validateIndexProfile);
 
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
-    region.updatePRConfigWithNewGatewaySender(aeqId);
+    region.updatePRConfigWithNewGatewaySenderAfterAssigningBuckets(aeqId);
     LuceneIndexImpl luceneIndex = beforeDataRegionCreated(indexName, regionPath,
         region.getAttributes(), analyzer, fieldAnalyzers, aeqId, serializer, fields);
 
