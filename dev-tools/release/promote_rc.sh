@@ -74,7 +74,7 @@ BREW_DIR=$WORKSPACE/homebrew-core
 SVN_DIR=$WORKSPACE/dist/dev/geode
 set +x
 
-if [ -d "$GEODE" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$SVN_DIR" ] ; then
+if [ -d "$GEODE" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_DIR" ] ; then
     true
 else
     echo "Please run this script from the same working directory as you initially ran prepare_rc.sh"

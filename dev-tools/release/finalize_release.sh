@@ -56,7 +56,7 @@ GEODE_NATIVE=$WORKSPACE/geode-native
 SVN_RELEASE_DIR=$WORKSPACE/dist/release/geode
 set +x
 
-if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$BREW_DIR" ] && [ -d "$SVN_RELEASE_DIR" ] ; then
+if [ -d "$GEODE" ] && [ -d "$GEODE_DEVELOP" ] && [ -d "$GEODE_EXAMPLES" ] && [ -d "$GEODE_NATIVE" ] && [ -d "$SVN_RELEASE_DIR" ] ; then
     true
 else
     echo "Please run this script from the same working directory as you initially ran prepare_rc.sh"
@@ -69,9 +69,8 @@ echo "============================================================"
 echo "Destroying pipeline"
 echo "============================================================"
 set -x
-cd ${GEODE}
+cd ${0%/*}/../../ci/pipelines/meta
 fly -t concourse.apachegeode-ci.info login --concourse-url https://concourse.apachegeode-ci.info/
-cd ci/pipelines/meta
 ./destroy_pipelines.sh
 set +x
 
