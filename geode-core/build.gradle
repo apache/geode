@@ -259,7 +259,7 @@ dependencies {
   implementation('net.sf.jopt-simple:jopt-simple')
 
   //Log4j is used everywhere
-  api('org.apache.logging.log4j:log4j-api')
+  implementation('org.apache.logging.log4j:log4j-api')
 
   //Jansi is used by the CLI (maybe? it is a runtime dependency)
   runtimeOnly('org.fusesource.jansi:jansi') {
