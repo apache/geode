@@ -54,6 +54,7 @@ public abstract class AbstractVersionTagTestBase {
   @SuppressWarnings("rawtypes")
   protected abstract VersionTag createVersionTag();
 
+  @SuppressWarnings("rawtypes")
   protected abstract VersionSource createMemberID();
 
   @SuppressWarnings("rawtypes")
@@ -69,6 +70,7 @@ public abstract class AbstractVersionTagTestBase {
     do {
       unusedInt = random.nextInt(60000);
     } while (usedInts.contains(unusedInt));
+    usedInts.add(unusedInt);
     return unusedInt;
   }
 
