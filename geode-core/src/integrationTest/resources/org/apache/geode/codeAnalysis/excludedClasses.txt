@@ -1,7 +1,7 @@
 org/apache/geode/GemFireCacheException
 org/apache/geode/admin/AlertLevel
 org/apache/geode/alerting/internal/AlertingSession$State
-org/apache/geode/alerting/spi/AlertLevel
+org/apache/geode/alerting/internal/spi/AlertLevel
 org/apache/geode/cache/operations/internal/UpdateOnlyMap
 org/apache/geode/cache/query/internal/index/CompactRangeIndex$1
 org/apache/geode/cache/query/internal/DefaultQuery$TestHook$SPOTS
@@ -61,9 +61,9 @@ org/apache/geode/internal/tcp/VersionedByteBufferInputStream
 org/apache/geode/internal/util/concurrent/StoppableReadWriteLock
 org/apache/geode/logging/internal/LogMessageRegex$Group
 org/apache/geode/logging/internal/log4j/LogWriterLogger
-org/apache/geode/logging/spi/LogLevelUpdateOccurs
-org/apache/geode/logging/spi/LogLevelUpdateScope
-org/apache/geode/logging/spi/LogWriterLevel
+org/apache/geode/logging/internal/spi/LogLevelUpdateOccurs
+org/apache/geode/logging/internal/spi/LogLevelUpdateScope
+org/apache/geode/logging/internal/spi/LogWriterLevel
 org/apache/geode/management/api/ClusterManagementException
 org/apache/geode/management/api/ClusterManagementRealizationException
 org/apache/geode/management/internal/cli/commands/ShowMetricsCommand$Category
