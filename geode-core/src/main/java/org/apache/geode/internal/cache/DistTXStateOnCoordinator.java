@@ -109,7 +109,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean auoIndicator) {
     if (logger.isDebugEnabled()) {
       // [DISTTX] TODO Remove throwable
       logger.debug(
@@ -119,7 +119,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
     }
 
     boolean returnValue = super.putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-        lastModified, overwriteDestroyed);
+        lastModified, overwriteDestroyed, auoIndicator);
 
     // putAll event is already added in postPutAll, don't add individual events
     // from the putAll operation again
@@ -350,7 +350,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
         result = putEntry(dtop, false/* ifNew */, false/* ifOld */, null/* expectedOldValue */,
             false/* requireOldValue */, 0L/* lastModified */, true/*
                                                                    * overwriteDestroyed *not* used
-                                                                   */);
+                                                                   */, false);
       }
     } else if (dtop.op.isDestroy()) {
       if (dtop.op.isRemoveAll()) {

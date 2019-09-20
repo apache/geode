@@ -44,7 +44,7 @@ public interface TXRegionStub {
   Object getEntryForIterator(KeyInfo keyInfo, boolean allowTombstone);
 
   boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
-      boolean requireOldValue, long lastModified, boolean overwriteDestroyed);
+      boolean requireOldValue, long lastModified, boolean overwriteDestroyed, boolean auoIndicator);
 
   int entryCount();
 

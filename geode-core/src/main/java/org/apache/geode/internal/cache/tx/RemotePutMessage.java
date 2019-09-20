@@ -638,7 +638,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
       try {
         result = r.getDataView().putEntry(event, this.ifNew, this.ifOld, this.expectedOldValue,
-            this.requireOldValue, this.lastModified, true);
+            this.requireOldValue, this.lastModified, true, false);
 
         if (!this.result) { // make sure the region hasn't gone away
           r.checkReadiness();

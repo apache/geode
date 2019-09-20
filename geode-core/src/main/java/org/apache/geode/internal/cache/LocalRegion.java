@@ -5032,7 +5032,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       Object expectedOldValue, boolean requireOldValue)
       throws TimeoutException, CacheWriterException {
     return getDataView().putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, 0L,
-        false);
+        false, false);
   }
 
   /**
@@ -5151,7 +5151,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // not okay to overwrite the DESTROYED token
       boolean overwriteDestroyed = false;
 
-      boolean success = basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed);
+      boolean success = basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed, false);
       clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
 
       if (success) {
@@ -5206,7 +5206,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         boolean ifOld = false; // can create a new key
         long lastModified = 0L; // use now
         boolean overwriteDestroyed = false; // not okay to overwrite the DESTROYED token
-        success = basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed);
+        success = basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed, false);
 
       } catch (ConcurrentCacheModificationException ignore) {
         // thrown by WAN conflicts
@@ -5288,7 +5288,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       boolean ifOld = false; // can create a new key
       long lastModified = 0L; // use now
       boolean overwriteDestroyed = true; // okay to overwrite the DESTROYED token
-      if (basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed)) {
+      if (basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed, false)) {
         getCachePerfStats().endPut(startPut, event.isOriginRemote());
       }
     } else {
@@ -5541,7 +5541,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *         existing entry; otherwise return true.
    */
   boolean basicUpdate(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
-      final long lastModified, final boolean overwriteDestroyed)
+      final long lastModified, final boolean overwriteDestroyed, final boolean auoIndicator)
       throws TimeoutException, CacheWriterException {
 
     // check validity of key against keyConstraint
@@ -5556,7 +5556,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     validateValue(event.basicGetNewValue());
 
     return getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified,
-        overwriteDestroyed);
+        overwriteDestroyed, auoIndicator);
   }
 
   /**
@@ -5565,7 +5565,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public boolean virtualPut(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, final long lastModified,
-      final boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      final boolean overwriteDestroyed, final boolean auoIndicator)
+      throws TimeoutException, CacheWriterException {
 
     if (!MemoryThresholds.isLowMemoryExceptionDisabled()) {
       checkIfAboveThreshold(event);
@@ -5576,7 +5577,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     try {
       oldEntry = entries.basicPut(event, lastModified, ifNew, ifOld, expectedOldValue,
-          requireOldValue, overwriteDestroyed);
+          requireOldValue, overwriteDestroyed, auoIndicator);
     } catch (ConcurrentCacheModificationException ignore) {
       // this can happen in a client cache when another thread
       // managed to slip in its version info to the region entry before this
@@ -5685,7 +5686,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       DistTXState.internalBeforeNonTXBasicPut.run();
     }
 
-    return getRegionMap().basicPut(event, lastModified, ifNew, false, null, false, false);
+    return getRegionMap().basicPut(event, lastModified, ifNew, false, null, false, false, false);
   }
 
   @Override
@@ -9504,7 +9505,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   void performPutAllEntry(EntryEventImpl event) {
-    getDataView().putEntry(event, false, false, null, false, 0L, false);
+    getDataView().putEntry(event, false, false, null, false, 0L, false, false);
   }
 
   void performRemoveAllEntry(EntryEventImpl event) {

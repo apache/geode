@@ -96,7 +96,7 @@ public class RegionMapPutTest {
   private void createInstance() {
     instance = new RegionMapPut(focusedRegionMap, internalRegion, cacheModificationLock,
         entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed, requireOldValue,
-        expectedOldValue);
+        expectedOldValue, false);
   }
 
   private RegionEntry doPut() {
@@ -1010,7 +1010,7 @@ public class RegionMapPutTest {
     when(region.lockWhenRegionIsInitializing()).thenCallRealMethod();
     RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, region, cacheModificationLock,
         entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed, requireOldValue,
-        expectedOldValue);
+        expectedOldValue, false);
 
     regionMapPut.runWhileLockedForCacheModification(() -> {
     });
@@ -1027,7 +1027,7 @@ public class RegionMapPutTest {
     when(region.lockWhenRegionIsInitializing()).thenCallRealMethod();
     RegionMapPut regionMapPut = new RegionMapPut(focusedRegionMap, region, cacheModificationLock,
         entryEventSerialization, event, ifNew, ifOld, overwriteDestroyed, requireOldValue,
-        expectedOldValue);
+        expectedOldValue, false);
 
     regionMapPut.runWhileLockedForCacheModification(() -> {
     });

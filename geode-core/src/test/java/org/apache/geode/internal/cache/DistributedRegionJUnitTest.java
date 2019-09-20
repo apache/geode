@@ -79,7 +79,7 @@ public class DistributedRegionJUnitTest
   @Override
   protected void verifyDistributeUpdate(DistributedRegion region,
       EntryEventImpl event, int cnt) {
-    region.virtualPut(event, false, false, null, false, 12345L, false);
+    region.virtualPut(event, false, false, null, false, 12345L, false, false);
     // verify the result
     if (cnt > 0) {
       verify(region, times(cnt))

@@ -288,4 +288,9 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     }
   }
 
+  @Override
+  protected boolean checkAUOActions() {
+    return false;
+  }
+
 }

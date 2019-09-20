@@ -1205,11 +1205,11 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       event.setRegion(bucketRegion);
 
       if (event.isOriginRemote()) {
-        didPut = bucketRegion.basicUpdate(event, ifNew, ifOld, lastModified, false);
+        didPut = bucketRegion.basicUpdate(event, ifNew, ifOld, lastModified, false, false);
       } else {
         // Skip yet another validation
         didPut = bucketRegion.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-            lastModified, false);
+            lastModified, false, false);
       }
       // bug 34361: don't send a reply if bucket was destroyed during the op
       bucketRegion.checkReadiness();
@@ -2241,11 +2241,11 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     try {
       event.setRegion(bucketRegion); // convert to the bucket region
       if (event.isOriginRemote()) {
-        result = bucketRegion.basicUpdate(event, ifNew, ifOld, lastModified, true);
+        result = bucketRegion.basicUpdate(event, ifNew, ifOld, lastModified, true, false);
       } else {
         // Skip validating again
         result = bucketRegion.virtualPut(event, ifNew, ifOld, null, // expectedOldValue
-            requireOldValue, lastModified, false);
+            requireOldValue, lastModified, false, false);
       }
       // if (shouldThrowExists && !posDup) {
       // throw new EntryExistsException(event.getKey().toString());

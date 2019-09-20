@@ -543,9 +543,9 @@ public abstract class TXStateStub implements TXStateInterface {
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean auoIndicator) {
     return getTXRegionStub(event.getRegion()).putEntry(event, ifNew, ifOld, expectedOldValue,
-        requireOldValue, lastModified, overwriteDestroyed);
+        requireOldValue, lastModified, overwriteDestroyed, auoIndicator);
   }
 
   /*

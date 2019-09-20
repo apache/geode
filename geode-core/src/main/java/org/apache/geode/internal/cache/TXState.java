@@ -1709,7 +1709,7 @@ public class TXState implements TXStateInterface {
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean auoIndicator) {
     validateDelta(event);
     return txPutEntry(event, ifNew, requireOldValue, true, expectedOldValue);
   }

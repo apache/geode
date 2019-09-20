@@ -145,13 +145,13 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean auoIndicator) {
     if (logger.isDebugEnabled()) {
       // [DISTTX] TODO Remove throwable
       logger.debug("DistPeerTXStateStub.putEntry " + event.getKeyInfo().getKey(), new Throwable());
     }
     boolean returnValue = super.putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-        lastModified, overwriteDestroyed);
+        lastModified, overwriteDestroyed, auoIndicator);
     addPrimaryTransactionalOperations(new DistTxEntryEvent(event));
 
     return returnValue;

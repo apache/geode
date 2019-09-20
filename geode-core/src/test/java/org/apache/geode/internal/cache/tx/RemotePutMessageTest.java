@@ -106,7 +106,7 @@ public class RemotePutMessageTest {
     InternalDataView dataView = mock(InternalDataView.class);
     when(region.getDataView()).thenReturn(dataView);
     when(dataView.putEntry(event, ifNew, ifOld, expectedOldValue, requiredOldValue, lastModified,
-        true)).thenReturn(false);
+        true, false)).thenReturn(false);
     long startTime = 0l;
     messageSpy.operateOnRegion(manager, region, startTime);
 

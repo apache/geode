@@ -212,7 +212,8 @@ class ProxyRegionMap extends BaseRegionMap {
 
   @Override
   public RegionEntry basicPut(EntryEventImpl event, long lastModified, boolean ifNew, boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue, boolean overwriteDestroyed)
+      Object expectedOldValue, boolean requireOldValue, boolean overwriteDestroyed,
+      boolean auoIndicator)
       throws CacheWriterException, TimeoutException {
     if (!event.isOriginRemote() && event.getOperation() != Operation.REPLACE) { // bug 42167 - don't
                                                                                 // convert replace

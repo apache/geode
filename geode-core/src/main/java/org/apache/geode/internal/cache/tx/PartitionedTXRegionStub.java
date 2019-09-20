@@ -362,7 +362,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean auoIndicator) {
     boolean retVal = false;
     final InternalRegion r = event.getRegion();
     PartitionedRegion pr = (PartitionedRegion) r;

@@ -78,7 +78,7 @@ public class BucketRegionJUnitTest extends DistributedRegionJUnitTest {
   protected void verifyDistributeUpdate(DistributedRegion region, EntryEventImpl event, int cnt) {
     assertTrue(region instanceof BucketRegion);
     BucketRegion br = (BucketRegion) region;
-    br.virtualPut(event, false, false, null, false, 12345L, false);
+    br.virtualPut(event, false, false, null, false, 12345L, false, false);
     // verify the result
     if (cnt > 0) {
       verify(br, times(cnt)).distributeUpdateOperation(eq(event), eq(12345L));

@@ -102,7 +102,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     }
   }
 
-  private static boolean checkIfToUpdateAfterCreateFailed(LocalRegion rgn, EntryEventImpl ev) {
+  public static boolean checkIfToUpdateAfterCreateFailed(LocalRegion rgn, EntryEventImpl ev) {
     // Try to create is failed due to found the entry exist, double check if should update
     boolean doUpdate = true;
     if (ev.oldValueIsDestroyedToken()) {
@@ -134,7 +134,6 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
   public static boolean doPutOrCreate(LocalRegion rgn, EntryEventImpl ev, long lastMod) {
     try {
       boolean updated = false;
-      boolean doUpdate = true; // start with assumption we have key and need value
       if (shouldDoRemoteCreate(rgn, ev)) {
         if (logger.isDebugEnabled()) {
           logger.debug("doPutOrCreate: attempting to update or create entry");
@@ -150,14 +149,25 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
           // then basicPut will set the blockedDestroyed flag in the event
           boolean overwriteDestroyed = ev.getOperation().isCreate();
           if (rgn.basicUpdate(ev, true /* ifNew */, false/* ifOld */, lastMod,
-              overwriteDestroyed)) {
+              overwriteDestroyed, true)) {
             rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
             // we did a create, or replayed a create event
-            doUpdate = false;
             updated = true;
-          } else { // already exists. If it was blocked by the DESTROYED token, then
-            // do no update.
-            doUpdate = checkIfToUpdateAfterCreateFailed(rgn, ev);
+          }
+          if (rgn.getVersionVector() != null && ev.getVersionTag() != null
+              && !ev.getVersionTag().isRecorded()) {
+            rgn.getVersionVector().recordVersion(
+                (InternalDistributedMember) ev.getDistributedMember(), ev.getVersionTag());
+          }
+          if (!updated) {
+            if (logger.isDebugEnabled()) {
+              logger.debug(
+                  "While processing Update message, update not performed because key was created but mirroring"
+                      +
+                      " keys only and value not in update message, OR key was not new for sender and has been"
+                      +
+                      " destroyed here");
+            }
           }
         } finally {
           if (isBucket) {
@@ -165,74 +175,48 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
             br.getPartitionedRegion().getPrStats().endApplyReplication(startPut);
           }
         }
+        return true;
       }
-
-      // If we care about the region entry being updated, get its value
-      // from this message.
-      if (doUpdate) {
-        if (!ev.isLocalInvalid()) {
-          final long startPut = rgn.getCachePerfStats().getTime();
-          boolean overwriteDestroyed = ev.getOperation().isCreate();
-          final boolean isBucket = rgn.isUsedForPartitionedRegionBucket();
+      if (!ev.isLocalInvalid()) {
+        final long startPut = rgn.getCachePerfStats().getTime();
+        boolean overwriteDestroyed = ev.getOperation().isCreate();
+        final boolean isBucket = rgn.isUsedForPartitionedRegionBucket();
+        if (isBucket) {
+          BucketRegion br = (BucketRegion) rgn;
+          br.getPartitionedRegion().getPrStats().startApplyReplication();
+        }
+        try {
+          if (rgn.basicUpdate(ev, false/* ifNew */, true/* ifOld */, lastMod,
+              overwriteDestroyed, true)) {
+            rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
+            if (logger.isTraceEnabled()) {
+              logger.trace("Processing put key {} in region {}", ev.getKey(), rgn.getFullPath());
+            }
+          } else { // key not here or blocked by DESTROYED token
+            if (rgn.getVersionVector() != null && ev.getVersionTag() != null) {
+              rgn.getVersionVector().recordVersion(
+                  (InternalDistributedMember) ev.getDistributedMember(), ev.getVersionTag());
+            }
+            if (logger.isDebugEnabled()) {
+              logger.debug(
+                  "While processing Update message, update not performed because this key is {}",
+                  (ev.oldValueIsDestroyedToken() ? "blocked by DESTROYED/TOMBSTONE token"
+                      : "not defined"));
+            }
+          }
+        } finally {
           if (isBucket) {
             BucketRegion br = (BucketRegion) rgn;
-            br.getPartitionedRegion().getPrStats().startApplyReplication();
-          }
-          try {
-            if (rgn.basicUpdate(ev, false/* ifNew */, true/* ifOld */, lastMod,
-                overwriteDestroyed)) {
-              rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
-              if (logger.isTraceEnabled()) {
-                logger.trace("Processing put key {} in region {}", ev.getKey(), rgn.getFullPath());
-              }
-              updated = true;
-            } else { // key not here or blocked by DESTROYED token
-              if (rgn.isUsedForPartitionedRegionBucket()
-                  || (rgn.getDataPolicy().withReplication() && rgn.getConcurrencyChecksEnabled())) {
-                overwriteDestroyed = true;
-                ev.makeCreate();
-                rgn.basicUpdate(ev, false /* ifNew */, false/* ifOld */, lastMod,
-                    overwriteDestroyed);
-                rgn.getCachePerfStats().endPut(startPut, ev.isOriginRemote());
-                updated = true;
-              } else {
-                if (rgn.getVersionVector() != null && ev.getVersionTag() != null) {
-                  rgn.getVersionVector().recordVersion(
-                      (InternalDistributedMember) ev.getDistributedMember(), ev.getVersionTag());
-                }
-                if (logger.isDebugEnabled()) {
-                  logger.debug(
-                      "While processing Update message, update not performed because this key is {}",
-                      (ev.oldValueIsDestroyedToken() ? "blocked by DESTROYED/TOMBSTONE token"
-                          : "not defined"));
-                }
-              }
-            }
-          } finally {
-            if (isBucket) {
-              BucketRegion br = (BucketRegion) rgn;
-              br.getPartitionedRegion().getPrStats().endApplyReplication(startPut);
-            }
-          }
-        } else { // supplied null, must be a create operation
-          if (logger.isTraceEnabled()) {
-            logger.trace("Processing create with null value provided, value not put");
+            br.getPartitionedRegion().getPrStats().endApplyReplication(startPut);
           }
         }
-      } else {
-        if (rgn.getVersionVector() != null && ev.getVersionTag() != null
-            && !ev.getVersionTag().isRecorded()) {
-          rgn.getVersionVector().recordVersion(
-              (InternalDistributedMember) ev.getDistributedMember(), ev.getVersionTag());
-        }
-        if (!updated) {
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "While processing Update message, update not performed because key was created but mirroring keys only and value not in update message, OR key was not new for sender and has been destroyed here");
-          }
+      } else { // supplied null, must be a create operation
+        if (logger.isTraceEnabled()) {
+          logger.trace("Processing create with null value provided, value not put");
         }
       }
       return true;
+
     } catch (CacheWriterException e) {
       throw new Error("CacheWriter should not be called", e);
     } catch (TimeoutException e) {

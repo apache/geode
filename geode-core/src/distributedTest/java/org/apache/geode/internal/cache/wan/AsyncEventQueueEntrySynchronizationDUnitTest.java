@@ -159,7 +159,7 @@ public class AsyncEventQueueEntrySynchronizationDUnitTest extends AsyncEventQueu
     event.setEventId(new EventID(cache.getDistributedSystem()));
 
     // Put event into region
-    br.getRegionMap().basicPut(event, timestamp, true, false, null, false, false);
+    br.getRegionMap().basicPut(event, timestamp, true, false, null, false, false, false);
   }
 
   private void startProcessingAsyncEvents(String aeqId) {

@@ -366,5 +366,9 @@ public class AbstractRegionMapPutTest {
     @Override
     protected void doAfterCompletionActions(boolean disabledEviction) {}
 
+    @Override
+    protected boolean checkAUOActions() {
+      return false;
+    }
   }
 }

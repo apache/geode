@@ -146,7 +146,7 @@ public class RRSynchronizationDUnitTest extends CacheTestCase {
       event.setNewValue(new VMCachedDeserializable("value3", 12));
       event.setVersionTag(tag);
       dr.getRegionMap().basicPut(event, System.currentTimeMillis(), true, false, null, false,
-          false);
+          false, false);
       event.release();
 
       // now create a tombstone so we can be sure these are transferred in delta-GII
@@ -159,7 +159,7 @@ public class RRSynchronizationDUnitTest extends CacheTestCase {
       event.setNewValue(Token.TOMBSTONE);
       event.setVersionTag(tag);
       dr.getRegionMap().basicPut(event, System.currentTimeMillis(), true, false, null, false,
-          false);
+          false, false);
       event.release();
 
       dr.dumpBackingMap();

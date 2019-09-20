@@ -517,7 +517,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      boolean overwriteDestroyed, boolean auoIndicator)
+      throws TimeoutException, CacheWriterException {
     boolean locked = lockKeysAndPrimary(event);
 
     try {
@@ -527,7 +528,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       if (!hasSeenEvent(event)) {
         forceSerialized(event);
         RegionEntry oldEntry = entries.basicPut(event, lastModified, ifNew, ifOld,
-            expectedOldValue, requireOldValue, overwriteDestroyed);
+            expectedOldValue, requireOldValue, overwriteDestroyed, auoIndicator);
         return oldEntry != null;
       }
       if (event.getDeltaBytes() != null && event.getRawNewValue() == null) {

@@ -586,7 +586,7 @@ public class DistTXState extends TXState {
              * getDataView()
              */
             if (!(theRegion.getDataView() instanceof TXStateInterface)) {
-              if (putEntry(ev, false, false, null, false, 0L, false)) {
+              if (putEntry(ev, false, false, null, false, 0L, false, false)) {
                 successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key, null);
               }
             } else if (theRegion.basicPut(ev, false, false, null, false)) {

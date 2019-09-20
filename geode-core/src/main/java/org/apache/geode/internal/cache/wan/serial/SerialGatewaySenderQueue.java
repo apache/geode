@@ -1207,10 +1207,11 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     @Override
     public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
         Object expectedOldValue, boolean requireOldValue, long lastModified,
-        boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+        boolean overwriteDestroyed, boolean auoIndicator)
+        throws TimeoutException, CacheWriterException {
       try {
         boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-            lastModified, overwriteDestroyed);
+            lastModified, overwriteDestroyed, auoIndicator);
         if (!success) {
           // release offheap reference if GatewaySenderEventImpl is not put into
           // the region queue

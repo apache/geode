@@ -103,7 +103,7 @@ public class ClientTXRegionStub implements TXRegionStub {
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean auoIndicator) {
     if (event.isBulkOpInProgress()) {
       // this is a put all, ignore this!
       return true;

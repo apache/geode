@@ -208,7 +208,7 @@ public class TombstoneCreationJUnitTest {
     ev.setVersionTag(tag);
     cache.getLogger()
         .info("trying to update the entry with an older event: " + region.getRegionEntry(key));
-    region.virtualPut(ev, false, true, null, false, tag.getVersionTimeStamp(), true);
+    region.virtualPut(ev, false, true, null, false, tag.getVersionTimeStamp(), true, false);
     entry = (VersionedThinRegionEntryHeap) region.getRegionEntry(key);
     region.dumpBackingMap();
     Assert.assertTrue(entry != null, "expected to find a region entry for " + key);

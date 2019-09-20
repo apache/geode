@@ -168,7 +168,7 @@ public class BucketRegionTest {
             cache, internalRegionArgs, disabledClock()));
     doThrow(regionDestroyedException).when(bucketRegion).lockKeysAndPrimary(event);
 
-    bucketRegion.virtualPut(event, false, true, null, false, 1, true);
+    bucketRegion.virtualPut(event, false, true, null, false, 1, true, false);
 
     verify(bucketRegion, never()).releaseLockForKeysAndPrimary(eq(event));
   }
@@ -181,7 +181,7 @@ public class BucketRegionTest {
     doReturn(true).when(bucketRegion).lockKeysAndPrimary(event);
     doReturn(true).when(bucketRegion).hasSeenEvent(event);
 
-    bucketRegion.virtualPut(event, false, true, null, false, 1, true);
+    bucketRegion.virtualPut(event, false, true, null, false, 1, true, false);
 
     verify(bucketRegion).releaseLockForKeysAndPrimary(eq(event));
   }

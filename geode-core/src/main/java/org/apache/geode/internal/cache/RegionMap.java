@@ -238,7 +238,8 @@ public interface RegionMap extends EvictableMap {
    * @return null if put was not done; otherwise reference to put entry
    */
   RegionEntry basicPut(EntryEventImpl event, long lastModified, boolean ifNew, boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue, boolean overwriteDestroyed)
+      Object expectedOldValue, boolean requireOldValue, boolean overwriteDestroyed,
+      boolean auoIndicator)
       throws CacheWriterException, TimeoutException;
 
   /**

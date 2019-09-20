@@ -2151,7 +2151,8 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      boolean overwriteDestroyed, boolean auoIndicator)
+      throws TimeoutException, CacheWriterException {
     final long startTime = prStats.getTime();
     boolean result = false;
     final DistributedPutAllOperation putAllOp_save = event.setPutAllOperation(null);
@@ -2243,7 +2244,7 @@ public class PartitionedRegion extends LocalRegion
      * force shared data view so that we just do the virtual op, accruing things in the put all
      * operation for later
      */
-    getSharedDataView().putEntry(event, false, false, null, false, 0L, false);
+    getSharedDataView().putEntry(event, false, false, null, false, 0L, false, false);
   }
 
   @Override

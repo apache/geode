@@ -620,11 +620,11 @@ public class TXStateProxyImpl implements TXStateProxy {
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean auoIndicator) {
     try {
       this.operationCount++;
       boolean retVal = getRealDeal(event.getKeyInfo(), event.getRegion()).putEntry(event, ifNew,
-          ifOld, expectedOldValue, requireOldValue, lastModified, overwriteDestroyed);
+          ifOld, expectedOldValue, requireOldValue, lastModified, overwriteDestroyed, auoIndicator);
       trackBucketForTx(event.getKeyInfo());
       return retVal;
     } catch (TransactionDataRebalancedException | PrimaryBucketException re) {

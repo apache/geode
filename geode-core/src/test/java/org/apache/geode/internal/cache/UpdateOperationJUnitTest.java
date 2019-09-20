@@ -47,7 +47,6 @@ public class UpdateOperationJUnitTest {
 
     message = new UpdateOperation.UpdateMessage();
     message.event = event;
-    when(region.isAllEvents()).thenReturn(true);
     when(region.getAttributes()).thenReturn(attr);
     when(region.isUsedForPartitionedRegionBucket()).thenReturn(false);
     when(region.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
@@ -65,61 +64,36 @@ public class UpdateOperationJUnitTest {
    */
   @Test
   public void createSucceedShouldNotRetryAnymore() {
-    when(region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true)))
+    when(region.isAllEvents()).thenReturn(true);
+    when(region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true), eq(true)))
         .thenReturn(true);
     message.basicOperateOnRegion(event, region);
-    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true));
-    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true));
-    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true));
+    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true),
+        eq(true));
+    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true),
+        eq(true));
+    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true),
+        eq(true));
   }
 
   /**
-   * AUO's doPutOrCreate will try with create first. If it failed with ConcurrencyConflict, should
-   * not
-   * retry update
-   */
-  @Test
-  public void createFailWithConcurrencyConflictShouldNotRetry() {
-    when(region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true)))
-        .thenReturn(false);
-    when(event.isConcurrencyConflict()).thenReturn(true);
-    message.basicOperateOnRegion(event, region);
-    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true));
-    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true));
-    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true));
-  }
-
-  /**
-   * AUO's doPutOrCreate will try with create first. If it failed, it will try update.
+   * AUO's doPutOrCreate will try update.
    * If update succeed, no more retry
    */
   @Test
   public void updateSucceedShouldNotRetryAnymore() {
-    when(region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true)))
-        .thenReturn(false);
-    when(region.basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true)))
+    when(region.isAllEvents()).thenReturn(false);
+
+    when(region.basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true), eq(true)))
         .thenReturn(true);
     message.basicOperateOnRegion(event, region);
-    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true));
-    verify(region, times(1)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true));
-    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true));
+    verify(region, times(0)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true),
+        eq(true));
+    verify(region, times(1)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true),
+        eq(true));
+    verify(region, times(0)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true),
+        eq(true));
   }
 
-  /**
-   * AUO's doPutOrCreate() will try with create, then update.
-   * If retry again, it should be an update with ifNew==false and ifOld==false
-   * It should not retry with create again
-   */
-  @Test
-  public void doPutOrCreate3rdRetryShouldBeUpdate() {
-    when(region.basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true)))
-        .thenReturn(false);
-    when(region.basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true)))
-        .thenReturn(false);
-    message.basicOperateOnRegion(event, region);
-    verify(region, times(1)).basicUpdate(eq(event), eq(true), eq(false), anyLong(), eq(true));
-    verify(region, times(1)).basicUpdate(eq(event), eq(false), eq(true), anyLong(), eq(true));
-    verify(region, times(1)).basicUpdate(eq(event), eq(false), eq(false), anyLong(), eq(true));
-  }
 
 }

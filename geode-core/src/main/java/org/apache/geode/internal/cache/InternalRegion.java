@@ -381,7 +381,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   boolean mapDestroy(EntryEventImpl event, boolean cacheWrite, boolean b, Object expectedOldValue);
 
   boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
-      boolean requireOldValue, long lastModified, boolean overwriteDestroyed);
+      boolean requireOldValue, long lastModified, boolean overwriteDestroyed, boolean auoIndicator);
 
   long postPutAllSend(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts);
 

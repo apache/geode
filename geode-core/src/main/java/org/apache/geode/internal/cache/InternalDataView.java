@@ -93,7 +93,7 @@ public interface InternalDataView {
    * @return true if operation updated existing data, otherwise false
    */
   boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
-      boolean requireOldValue, long lastModified, boolean overwriteDestroyed);
+      boolean requireOldValue, long lastModified, boolean overwriteDestroyed, boolean auoIndicator);
 
   /**
    * Put or create an entry in the data view. Called only on the farside.

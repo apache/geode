@@ -2034,12 +2034,12 @@ public abstract class AbstractRegionMap extends BaseRegionMap
   @Override
   public RegionEntry basicPut(EntryEventImpl event, final long unused, final boolean ifNew,
       final boolean ifOld, final Object expectedOldValue, // only non-null if ifOld
-      final boolean requireOldValue, final boolean overwriteDestroyed)
+      final boolean requireOldValue, final boolean overwriteDestroyed, final boolean auoIndicator)
       throws CacheWriterException, TimeoutException {
 
     final RegionMapPut regionMapPut =
         new RegionMapPut(this, _getOwner(), this, entryEventSerialization, event, ifNew, ifOld,
-            overwriteDestroyed, requireOldValue, expectedOldValue);
+            overwriteDestroyed, requireOldValue, expectedOldValue, auoIndicator);
 
     return regionMapPut.put();
   }

@@ -23,9 +23,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.internal.cache.AbstractUpdateOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventSerialization;
 import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
@@ -46,9 +48,9 @@ public class RegionMapPut extends AbstractRegionMapPut {
 
   private final CacheModificationLock cacheModificationLock;
   private final EntryEventSerialization entryEventSerialization;
-  private final boolean ifNew;
-  private final boolean ifOld;
-  private final boolean overwriteDestroyed;
+  private boolean ifNew;
+  private boolean ifOld;
+  private boolean overwriteDestroyed;
   private boolean overwritePutIfAbsent;
   private final boolean requireOldValue;
   private final boolean retrieveOldValueForDelta;
@@ -58,6 +60,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
   private final CacheWriter cacheWriter;
   private final Set netWriteRecipients;
   private final Object expectedOldValue;
+  private final boolean auoIndicator;
 
   @Released
   private Object oldValueForDelta;
@@ -65,7 +68,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
   public RegionMapPut(FocusedRegionMap focusedRegionMap, InternalRegion owner,
       CacheModificationLock cacheModificationLock, EntryEventSerialization entryEventSerialization,
       EntryEventImpl event, boolean ifNew, boolean ifOld, boolean overwriteDestroyed,
-      boolean requireOldValue, Object expectedOldValue) {
+      boolean requireOldValue, Object expectedOldValue, boolean auoIndicator) {
     super(focusedRegionMap, owner, event);
     this.cacheModificationLock = cacheModificationLock;
     this.entryEventSerialization = entryEventSerialization;
@@ -85,6 +88,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
     } else {
       this.netWriteRecipients = null;
     }
+    this.auoIndicator = auoIndicator;
   }
 
   private boolean isIfNew() {
@@ -138,6 +142,35 @@ public class RegionMapPut extends AbstractRegionMapPut {
   private void setOldValueForDelta(Object value) {
     this.oldValueForDelta = value;
   }
+
+  @Override
+  protected boolean checkAUOActions() {
+    if (!auoIndicator) {
+      return false;
+    }
+    if (isIfNew()) {
+      if (!AbstractUpdateOperation.checkIfToUpdateAfterCreateFailed((LocalRegion) getOwner(),
+          getEvent()) || getEvent().isLocalInvalid()) {
+        return false;
+      }
+      this.ifNew = false;
+      this.ifOld = true;
+      return true;
+    }
+    if (isIfOld()) {
+      if (getOwner().isUsedForPartitionedRegionBucket()
+          || (getOwner().getDataPolicy().withReplication()
+              && getOwner().getConcurrencyChecksEnabled())) {
+        getEvent().makeCreate();
+        this.ifNew = false;
+        this.ifOld = false;
+        this.overwriteDestroyed = true;
+        return true;
+      }
+    }
+    return false;
+  }
+
 
   @Override
   protected boolean isOnlyExisting() {

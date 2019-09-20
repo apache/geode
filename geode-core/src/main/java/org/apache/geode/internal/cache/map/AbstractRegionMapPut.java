@@ -136,6 +136,8 @@ public abstract class AbstractRegionMapPut {
 
   protected abstract void createOrUpdateEntry();
 
+  protected abstract boolean checkAUOActions();
+
   /**
    * Returns true if getRegionEntry should be removed from the map
    * because the put did not complete.
@@ -209,11 +211,22 @@ public abstract class AbstractRegionMapPut {
 
   private void doPutRetryingIfNeeded() {
     do {
-      if (!findAndSaveExistingEntry()) {
-        return;
-      }
-      createNewEntryIfNeeded();
-    } while (!addRegionEntryToMapAndDoPut());
+      do {
+        if (!findAndSaveExistingEntry()) {
+          return;
+        }
+        createNewEntryIfNeeded();
+      } while (!addRegionEntryToMapAndDoPut());
+    } while (checkForRetry());
+
+  }
+
+
+  private boolean checkForRetry() {
+    if (isCompleted()) {
+      return false;
+    }
+    return checkAUOActions();
   }
 
   /**

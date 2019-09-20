@@ -272,7 +272,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
     EntryEventImpl event =
         createNewEvent((DistributedRegion) region, versionTag, entry.getKey(), "value-3");
 
-    ((LocalRegion) region).basicUpdate(event, false, true, 0L, false);
+    ((LocalRegion) region).basicUpdate(event, false, true, 0L, false, false);
 
     // Verify the new stamp
     entry = region.getEntry(key);
@@ -321,7 +321,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
     EntryEventImpl event =
         createNewEvent((PartitionedRegion) region, versionTag, entry.getKey(), "value-3");
 
-    ((LocalRegion) region).basicUpdate(event, false, true, 0L, false);
+    ((LocalRegion) region).basicUpdate(event, false, true, 0L, false, false);
 
     // Verify the new stamp
     entry = region.getEntry(key);
