@@ -184,9 +184,9 @@ public class JGroupsMessenger implements Messenger {
 
   public static void setChannelReceiver(JChannel channel, Receiver r) {
     try {
-      // Channel.setReceiver() won't set a new receiver unless the field is null but that
-      // causes NPEs in receiver threads because use of the the field isn't synchronized.
-      // Attempt to use reflection to avoid having the field be null. See GEODE-7220
+      // Channel.setReceiver() will issue a warning if we try to set a new receiver
+      // and the channel already has one. Rather than set the receiver to null &
+      // then establish a new one we use reflection to set the channel receiver. See GEODE-7220
       Field receiver = Channel.class.getDeclaredField("receiver");
       receiver.setAccessible(true);
       receiver.set(channel, r);
