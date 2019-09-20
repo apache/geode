@@ -48,7 +48,7 @@ import org.apache.geode.security.ResourcePermission;
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.query.security.MethodInvocationAuthorizer
  */
-public class RestrictedMethodAuthorizer implements MethodInvocationAuthorizer {
+public final class RestrictedMethodAuthorizer implements MethodInvocationAuthorizer {
   public static final String UNAUTHORIZED_STRING = "Unauthorized access to method: ";
   @Immutable
   static final Set<String> FORBIDDEN_METHODS =
