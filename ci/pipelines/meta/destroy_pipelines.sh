@@ -80,5 +80,5 @@ function destroyPipelines {
   done
 }
 
-destroyPipelines ${PIPELINE_PREFIX}main ${PIPELINE_PREFIX}pr ${PIPELINE_PREFIX}images ${PIPELINE_PREFIX}reaper ${PIPELINE_PREFIX}metrics ${PIPELINE_PREFIX}examples ${PIPELINE_PREFIX}meta 
+destroyPipelines ${PIPELINE_PREFIX}main ${PIPELINE_PREFIX}pr ${PIPELINE_PREFIX}images ${PIPELINE_PREFIX}reaper ${PIPELINE_PREFIX}metrics ${PIPELINE_PREFIX}examples ${PIPELINE_PREFIX}meta ${PIPELINE_PREFIX}rc
 echo "Destroyed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX}main and all related pipelines"
