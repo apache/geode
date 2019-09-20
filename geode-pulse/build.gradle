@@ -100,9 +100,7 @@ dependencies {
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testImplementation(project(':geode-log4j')) {
-    exclude module: 'geode-core'
-  }
+  testImplementation(project(':geode-log4j'))
   testCompile('org.springframework:spring-test')
   testCompile('org.powermock:powermock-core')
   testCompile('org.powermock:powermock-module-junit4')
@@ -113,9 +111,7 @@ dependencies {
   integrationTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestImplementation(project(':geode-log4j')) {
-    exclude module: 'geode-core'
-  }
+  integrationTestImplementation(project(':geode-log4j'))
   integrationTestCompile(project(':geode-pulse:geode-pulse-test'))
   integrationTestCompile('org.powermock:powermock-core')
   integrationTestCompile('org.powermock:powermock-module-junit4')
@@ -127,9 +123,7 @@ dependencies {
   uiTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  uiTestImplementation(project(':geode-log4j')) {
-    exclude module: 'geode-core'
-  }
+  uiTestImplementation(project(':geode-log4j'))
   uiTestCompile(project(':geode-pulse:geode-pulse-test'))
   uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver')
 }

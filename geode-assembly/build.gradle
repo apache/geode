@@ -188,9 +188,7 @@ dependencies {
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testCompile(project(':geode-log4j')) {
-    exclude module: 'geode-core'
-  }
+  testCompile(project(':geode-log4j'))
   testRuntime(project(':geode-old-versions'))
 
 
@@ -198,9 +196,7 @@ dependencies {
 
 
   integrationTestCompile(project(':geode-core'))
-  integrationTestCompile(project(':geode-log4j')) {
-    exclude module: 'geode-core'
-  }
+  integrationTestCompile(project(':geode-log4j'))
   integrationTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
@@ -217,9 +213,7 @@ dependencies {
 
   distributedTestImplementation(project(':geode-serialization'))
   distributedTestCompile(project(':geode-core'))
-  distributedTestCompile(project(':geode-log4j')) {
-    exclude module: 'geode-core'
-  }
+  distributedTestCompile(project(':geode-log4j'))
   distributedTestCompile(project(':geode-dunit')){
     exclude module: 'geode-core'
   }

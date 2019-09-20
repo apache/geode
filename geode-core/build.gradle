@@ -350,9 +350,7 @@ dependencies {
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  integrationTestImplementation(project(':geode-log4j')) {
-    exclude module: 'geode-core'
-  }
+  integrationTestImplementation(project(':geode-log4j'))
   integrationTestCompile(project(':geode-concurrency-test'))
   integrationTestCompile('org.apache.bcel:bcel')
   integrationTestCompile('org.powermock:powermock-core')
@@ -371,9 +369,7 @@ dependencies {
   distributedTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
-  distributedTestImplementation(project(':geode-log4j')) {
-    exclude module: 'geode-core'
-  }
+  distributedTestImplementation(project(':geode-log4j'))
   distributedTestCompile('pl.pragmatists:JUnitParams')
   distributedTestCompile('com.jayway.jsonpath:json-path-assert')
   distributedTestCompile('net.openhft:compiler')
