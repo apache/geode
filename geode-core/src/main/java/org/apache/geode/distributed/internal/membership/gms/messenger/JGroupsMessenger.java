@@ -49,11 +49,13 @@ import java.util.stream.Collectors;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.Logger;
 import org.jgroups.Address;
+import org.jgroups.Channel;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 import org.jgroups.Message.Flag;
 import org.jgroups.Message.TransientFlag;
+import org.jgroups.Receiver;
 import org.jgroups.ReceiverAdapter;
 import org.jgroups.View;
 import org.jgroups.ViewId;
@@ -69,6 +71,7 @@ import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -178,6 +181,19 @@ public class JGroupsMessenger implements Messenger {
    * for deserializating and dispatching those messages to the appropriate handler
    */
   private JGroupsReceiver jgroupsReceiver;
+
+  public static void setChannelReceiver(JChannel channel, Receiver r) {
+    try {
+      // Channel.setReceiver() will issue a warning if we try to set a new receiver
+      // and the channel already has one. Rather than set the receiver to null &
+      // then establish a new one we use reflection to set the channel receiver. See GEODE-7220
+      Field receiver = Channel.class.getDeclaredField("receiver");
+      receiver.setAccessible(true);
+      receiver.set(channel, r);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      throw new InternalGemFireException("unable to establish a JGroups receiver", e);
+    }
+  }
 
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
@@ -358,9 +374,8 @@ public class JGroupsMessenger implements Messenger {
     nackack2HeaderId = ClassConfigurator.getProtocolId(NAKACK2.class);
 
     try {
-      myChannel.setReceiver(null);
       jgroupsReceiver = new JGroupsReceiver();
-      myChannel.setReceiver(jgroupsReceiver);
+      setChannelReceiver(myChannel, jgroupsReceiver);
       if (!reconnecting) {
         myChannel.connect("AG"); // Apache Geode
       }
