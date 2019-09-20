@@ -48,12 +48,15 @@ import org.apache.geode.security.ResourcePermission;
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.query.security.MethodInvocationAuthorizer
  */
-@Immutable
-public final class RestrictedMethodAuthorizer implements MethodInvocationAuthorizer {
+public class RestrictedMethodAuthorizer implements MethodInvocationAuthorizer {
   public static final String UNAUTHORIZED_STRING = "Unauthorized access to method: ";
-  static final Set<String> FORBIDDEN_METHODS = Collections.unmodifiableSet(createForbiddenList());
+  @Immutable
+  static final Set<String> FORBIDDEN_METHODS =
+      Collections.unmodifiableSet(createForbiddenList());
+  @Immutable
   static final Map<String, Set<Class>> GEODE_ALLOWED_METHODS =
       Collections.unmodifiableMap(createGeodeAcceptanceList());
+  @Immutable
   static final Map<String, Set<Class>> DEFAULT_ALLOWED_METHODS =
       Collections.unmodifiableMap(createDefaultAcceptanceList());
   final SecurityService securityService;

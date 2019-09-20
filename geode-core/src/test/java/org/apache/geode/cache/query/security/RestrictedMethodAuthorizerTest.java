@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -48,6 +47,7 @@ import java.util.concurrent.atomic.DoubleAdder;
 import java.util.concurrent.atomic.LongAccumulator;
 import java.util.concurrent.atomic.LongAdder;
 
+import org.apache.shiro.SecurityUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -87,6 +87,9 @@ public class RestrictedMethodAuthorizerTest {
     when(((InternalCache) mockCache).getSecurityService()).thenReturn(mockSecurityService);
 
     methodAuthorizer = new RestrictedMethodAuthorizer(mockCache);
+
+    // Make sure the shiro security-manager is null to avoid polluting tests.
+    SecurityUtils.setSecurityManager(null);
   }
 
   @Test
@@ -118,25 +121,30 @@ public class RestrictedMethodAuthorizerTest {
   }
 
   @Test
-  public void constructorShouldSetTheProperSecurityServiceBasedOnConfigurationOptionsForNonGeodeCreatedCacheInstances() {
+  public void constructorShouldSetTheLegacySecurityServiceForNonGeodeCreatedCacheInstancesWithDefaultProperties() {
     Cache mockCache = mock(Cache.class);
-    Properties securityProperties = new Properties();
     DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
-    when(mockDistributedSystem.getSecurityProperties()).thenReturn(securityProperties);
     when(mockCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
 
-    // Legacy Service, no custom properties.
     RestrictedMethodAuthorizer authorizerWithLegacyService =
         new RestrictedMethodAuthorizer(mockCache);
-    verify(mockDistributedSystem, times(1)).getSecurityProperties();
+    verify(mockDistributedSystem).getSecurityProperties();
     assertThat(authorizerWithLegacyService.securityService)
         .isInstanceOf(LegacySecurityService.class);
+  }
 
-    // Integrated Service, custom manager.
+  @Test
+  public void constructorShouldSetTheIntegratedSecurityServiceForNonGeodeCreatedCacheInstancesWithNonDefaultProperties() {
+    Cache mockCache = mock(Cache.class);
+    Properties securityProperties = new Properties();
     securityProperties.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+    DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+    when(mockCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
+    when(mockDistributedSystem.getSecurityProperties()).thenReturn(securityProperties);
+
     RestrictedMethodAuthorizer authorizerWithIntegratedService =
         new RestrictedMethodAuthorizer(mockCache);
-    verify(mockDistributedSystem, times(2)).getSecurityProperties();
+    verify(mockDistributedSystem).getSecurityProperties();
     assertThat(authorizerWithIntegratedService.securityService)
         .isInstanceOf(IntegratedSecurityService.class);
     assertThat(authorizerWithIntegratedService.securityService.getSecurityManager())
