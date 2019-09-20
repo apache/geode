@@ -20,9 +20,11 @@ import org.apache.geode.cache.query.internal.AttributeDescriptor;
 import org.apache.geode.cache.query.internal.MethodDispatch;
 
 /**
- * A method invocation authorizer which can determine whether a {@link java.lang.reflect.Method} is
+ * The root interface that should be implemented by method invocation authorizer instances.
+ * The authorizer is responsible for determining whether a {@link java.lang.reflect.Method} is
  * allowed to be executed on a specific {@link java.lang.Object} instance.
  * <p/>
+ *
  * Implementations of this interface must be thread-safe: multiple threads might be authorizing
  * several method invocations using the same instance at the same time.
  * <p/>
@@ -38,14 +40,15 @@ public interface MethodInvocationAuthorizer {
    * <p/>
    *
    * <b>Implementation Note</b>: both the {@link MethodDispatch} and {@link AttributeDescriptor}
-   * will remember whether the method invocation is already authorized, so {@code authorize} will be
-   * called once in the lifetime of a Geode member for every new method seen while traversing the
-   * objects. Nevertheless, the implementation should be lighting fast as it will be called by the
-   * OQL engine in runtime during the query execution.
+   * classes will remember whether the method invocation is already authorized, so that
+   * {@code authorize} will be called once in the lifetime of a Geode member for every new method
+   * seen while traversing the objects.
+   * Nevertheless, the implementation should be lighting fast as it will be called by the OQL engine
+   * in runtime during the query execution.
    *
    * @param method the {@link Method} that should be authorized.
    * @param target the {@link Object} on which the {@link Method} will be executed.
-   * @return {@code true} if the {@code method} can be executed on the {@code target} instance,
+   * @return {@code true} if the {@code method} can be executed on on the {@code target} instance,
    *         {@code false} otherwise.
    */
   boolean authorize(Method method, Object target);
