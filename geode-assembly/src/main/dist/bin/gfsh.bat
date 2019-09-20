@@ -17,9 +17,9 @@ REM limitations under the License.
 REM
 REM Environment variables:
 REM
-REM GF_JAVA - java executable path. 
+REM GF_JAVA - java executable path.
 REM
-REM JAVA_ARGS - java arguments, i.e., -Xms1024m -Xmx1024m ... 
+REM JAVA_ARGS - java arguments, i.e., -Xms1024m -Xmx1024m ...
 REM
 REM GEODE_HOME - Geode product Directory
 REM
@@ -37,7 +37,7 @@ goto done
 :gfok
 set GEODE_HOME=%gf%
 
-set GFSH_JARS=%GEODE_HOME%\lib\gfsh-dependencies.jar
+set GFSH_JARS=%GEODE_HOME%\lib\geode-gfsh.jar
 REM if a system level classpath is set, append it to the classes gfsh will need
 if defined CLASSPATH (
     set DEPENDENCIES=%GFSH_JARS%;%CLASSPATH%;%GEODE_HOME%\extensions\*

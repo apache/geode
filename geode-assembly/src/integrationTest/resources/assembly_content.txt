@@ -934,7 +934,7 @@ lib/HdrHistogram-2.1.11.jar
 lib/HikariCP-3.2.0.jar
 lib/LatencyUtils-2.0.3.jar
 lib/antlr-2.7.7.jar
-lib/classgraph-4.0.6.jar
+lib/classgraph-4.8.47.jar
 lib/commons-beanutils-1.9.3.jar
 lib/commons-codec-1.10.jar
 lib/commons-collections-3.2.2.jar
@@ -953,6 +953,7 @@ lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar
 lib/geode-cq-0.0.0.jar
 lib/geode-dependencies.jar
+lib/geode-gfsh-0.0.0.jar
 lib/geode-http-service-0.0.0.jar
 lib/geode-jca-0.0.0.rar
 lib/geode-lucene-0.0.0.jar
@@ -966,7 +967,6 @@ lib/geode-redis-0.0.0.jar
 lib/geode-serialization-0.0.0.jar
 lib/geode-unsafe-0.0.0.jar
 lib/geode-wan-0.0.0.jar
-lib/gfsh-dependencies.jar
 lib/grumpy-core-0.2.2.jar
 lib/httpclient-4.5.6.jar
 lib/httpcore-4.4.10.jar

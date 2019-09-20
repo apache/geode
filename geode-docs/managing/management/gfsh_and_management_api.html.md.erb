@@ -22,7 +22,7 @@ limitations under the License.
 You can also use management APIs to execute gfsh commands programmatically.
 
 **Note:**
-If you start the JMX Manager programmatically and wish to enable command processing, you must also add the absolute path of `gfsh-dependencies.jar` (located in `$GEMFIRE/lib` of your <%=vars.product_name%> installation) to the CLASSPATH of your application. Do not copy this library to your CLASSPATH because this library refers to other dependencies in `$GEMFIRE/lib` by a relative path. The following code samples demonstrate how to process and execute `gfsh` commands using the Java API.
+If you start the JMX Manager programmatically and wish to enable command processing, you must also add the absolute path of `geode-gfsh.jar` (located in `$GEMFIRE/lib` of your <%=vars.product_name%> installation) to the CLASSPATH of your application. Do not copy this library to your CLASSPATH because this library refers to other dependencies in `$GEMFIRE/lib` by a relative path. The following code samples demonstrate how to process and execute `gfsh` commands using the Java API.
 
 First, retrieve a CommandService instance.
 
@@ -42,12 +42,12 @@ Next, process the command and its output:
 ``` pre
 // Process the user specified command String
 Result regionListResult = commandService.processCommand("list regions");
- 
+
 // Iterate through Command Result in String form line by line
 while (regionListResult.hasNextLine()) {
    System.out.println(regionListResult.nextLine());
 }
-      
+
 ```
 
 Alternatively, instead of processing the command, you can create a CommandStatement Object from the command string which can be re-used.
@@ -58,10 +58,10 @@ CommandStatement showDeadLocksCmdStmt = commandService.createCommandStatement
     ("show dead-locks --file=deadlock-info.txt");
 Result showDeadlocksResult = showDeadLocksCmdStmt.process();
 
-// If there is a file as a part of Command Result, it can be saved 
+// If there is a file as a part of Command Result, it can be saved
 // to a specified directory
 if (showDeadlocksResult.hasIncomingFiles()) {
-    showDeadlocksResult.saveIncomingFiles(System.getProperty("user.dir") + 
+    showDeadlocksResult.saveIncomingFiles(System.getProperty("user.dir") +
                   "/commandresults");
 }
 ```

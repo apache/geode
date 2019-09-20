@@ -111,7 +111,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'commons-logging', name: 'commons-logging', version: '1.2')
         api(group: 'commons-modeler', name: 'commons-modeler', version: '2.0.1')
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
-        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.0.6')
+        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.47')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
         api(group: 'io.netty', name: 'netty-all', version: '4.1.31.Final')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))

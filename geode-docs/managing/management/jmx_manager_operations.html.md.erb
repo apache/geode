@@ -59,9 +59,9 @@ Uptime: 5 seconds
 <%=vars.product_name%> Version: <%=vars.product_version%>
 Java Version: 1.8.0_<%=vars.min_java_update%>
 Log File: /Users/username/apache-geode/locator1/locator1.log
-JVM Arguments: -Dgemfire.enable-cluster-configuration=true 
--Dgemfire.load-cluster-configuration-from-dir=false 
--Dgemfire.launcher.registerSignalHandlers=true 
+JVM Arguments: -Dgemfire.enable-cluster-configuration=true
+-Dgemfire.load-cluster-configuration-from-dir=false
+-Dgemfire.launcher.registerSignalHandlers=true
 -Djava.awt.headless=true -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
 Class-Path: /Users/username/apache-geode/lib/geode-core-1.2.0.jar
 :/Users/username/apache-geode/lib/geode-dependencies.jar
@@ -80,7 +80,7 @@ At any point, you can determine whether a node is a JMX Manager by using the Mem
 Using the Java API, any managed node that has been configured with `jmx-manager=true` can also be turned into a JMX Manager Node by invoking the ManagementService startManager() method.
 
 **Note:**
-If you start the JMX Manager programmatically and wish to enable command processing, you must also add the absolute path of `gfsh-dependencies.jar` (located in the `lib` directory of your installation) to the CLASSPATH of your application. Do not copy this library to your CLASSPATH, because this library refers to other dependencies in `lib` by a relative path.
+If you start the JMX Manager programmatically and wish to enable command processing, you must also add the absolute path of `geode-gfsh.jar` (located in the `lib` directory of your installation) to the CLASSPATH of your application. Do not copy this library to your CLASSPATH, because this library refers to other dependencies in `lib` by a relative path.
 
 ## <a id="topic_263072624B8D4CDBAD18B82E07AA44B6" class="no-quick-link"></a>Configuring a JMX Manager
 

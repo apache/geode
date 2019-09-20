@@ -32,6 +32,7 @@ def dependentProjectNames = [
   ':geode-serialization',
   ':geode-core',
   ':geode-cq',
+  ':geode-gfsh',
   ':geode-lucene',
   ':geode-memcached',
   ':geode-old-client-support',
@@ -323,7 +324,7 @@ tasks.register('defaultCacheConfig', JavaExec) {
 def cp = {
   // first add all the dependent project jars
   def jars = configurations.geodeArchives.dependencies.collect { it.dependencyProject }
-    .findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse')) }
+    .findAll { !(it.name.contains('geode-web') || it.name.contains('geode-pulse') || it.name.contains('geode-gfsh')) }
     .collect { it.jar.archiveName }
 
   // then add all the dependencies of the dependent jars
@@ -346,7 +347,6 @@ def cp = {
             it.contains('geode-dependencies') ||
             it.contains('geode-jca') ||
             it.contains('geode-web') ||
-            it.contains('gfsh-dependencies') ||
             it.contains('ra.jar') ||
 
             // spring web deps that shouldn't be here either
@@ -376,28 +376,6 @@ tasks.register('configureDepsJar') {
   }
 }
 
-tasks.register('configureGfshDepsJar') {
-  inputs.files {
-    configurations.gfshDependencies
-  }
-
-  inputs.files {
-    configureDepsJar
-  }
-
-  def output = project.buildDir.toPath().resolve('reports').resolve('gfsh_deps_jar_cp.txt')
-  outputs.file {
-    output
-  }
-  doLast {
-    def classpath = configureDepsJar.outputs.files.singleFile.text + ' ' +
-        configurations.gfshDependencies.collect { it.getName() }.findAll {
-          !it.contains('geode-all-bom')
-        }.flatten().unique().join(' ')
-    output.write(classpath)
-  }
-}
-
 // Configure the manifest contents in a separate always-running task to ensure correctness of
 // these dependency jars
 tasks.register('depsJar', Jar) {
@@ -409,19 +387,6 @@ tasks.register('depsJar', Jar) {
   doFirst {
     manifest {
       attributes("Class-Path": configureDepsJar.outputs.files.singleFile.text)
-    }
-  }
-}
-
-tasks.register('gfshDepsJar', Jar) {
-  inputs.files {
-    configureGfshDepsJar
-  }
-  description 'Assembles the jar archive that defines the gfsh classpath.'
-  archiveName 'gfsh-dependencies.jar'
-  doFirst {
-    manifest {
-      attributes("Class-Path": configureGfshDepsJar.outputs.files.singleFile.text)
     }
   }
 }
@@ -541,7 +506,6 @@ distributions {
 
         // dependency jars
         from tasks.named('depsJar')
-        from tasks.named('gfshDepsJar')
       }
 
       with copySpec {

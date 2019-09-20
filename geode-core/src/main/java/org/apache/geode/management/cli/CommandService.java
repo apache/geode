@@ -127,7 +127,7 @@ public abstract class CommandService {
       if (nonExistingDependency != null) {
         throw new DependenciesNotFoundException(
             String.format(
-                "Could not find %s library which is needed for CLI/gfsh in classpath. Internal support for CLI & gfsh is not enabled. Note: For convenience, absolute path of gfsh-dependencies.jar from lib directory of GemFire product distribution can be included in CLASSPATH of an application.",
+                "Could not find %s library which is needed for CLI/gfsh in classpath. Internal support for CLI & gfsh is not enabled. Note: For convenience, absolute path of geode-gfsh.jar from lib directory of GemFire product distribution can be included in CLASSPATH of an application.",
                 nonExistingDependency));
       }
 

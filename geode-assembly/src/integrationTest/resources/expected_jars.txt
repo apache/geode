@@ -24,7 +24,6 @@ failureaccess
 fastutil
 findbugs-annotations
 geo
-gfsh-dependencies.jar
 grumpy-core
 guava
 httpclient

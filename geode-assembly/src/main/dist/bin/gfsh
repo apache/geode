@@ -17,7 +17,7 @@
 #
 # Environment variables:
 #
-# GF_JAVA - java executable path. 
+# GF_JAVA - java executable path.
 #
 # JAVA_ARGS - java arguments, i.e., -Xms1024m -Xmx1024m ...
 #
@@ -65,17 +65,21 @@ if [ "x$WINDIR" != "x" ]; then
   fi
 fi
 
-if [ ! -f $GEODE_HOME/lib/geode-dependencies.jar ]; then
-  echo "ERROR: Could not determine GEODE_HOME location."
+if [ ! -f $GEODE_HOME/lib/geode-gfsh*.jar ]; then
+  echo "ERROR: GEODE_HOME not found, or invalid. Please set GEODE_HOME and retry."
   exit 1
 fi
 export GEODE_HOME
 
-GEODE_JARS=$GEODE_HOME/lib/gfsh-dependencies.jar
-if [ "x$CLASSPATH" != "x" ]; then
-  GEODE_JARS=$GEODE_JARS:$CLASSPATH
+GFSH_JAR=$GEODE_HOME/lib/geode-gfsh*.jar
+#if [ "x$CLASSPATH" != "x" ]; then
+#  GFSH_JAR=$GFSH_JAR:$CLASSPATH
+#fi
+if [ ${CLASSPATH+x} ]; then
+  CLASSPATH=${CLASSPATH}:"${GEODE_HOME}/extensions/*"
+else
+  CLASSPATH="${GEODE_HOME}/extensions/*"
 fi
-CLASSPATH=$GEODE_JARS:$GEODE_HOME/extensions/*
 
 #
 # Copy default .gfshrc to the home directory. Uncomment if needed.
@@ -91,13 +95,11 @@ CLASSPATH=$GEODE_JARS:$GEODE_HOME/extensions/*
 #  mkdir -p $HOME/.gemfire/gfsh
 #fi
 
-LAUNCHER=org.apache.geode.management.internal.cli.Launcher
-
 if [ "x$JAVA_ARGS" != "x" ]; then
   JAVA_ARGS="$JAVA_ARGS"
 fi
 
-if [ "x$GF_JAVA" == "x" ]; then 
+if [ "x$GF_JAVA" == "x" ]; then
     if [ "x$JAVA_HOME" != "x" ]; then
         GF_JAVA=$JAVA_HOME/bin/java
     fi
@@ -126,6 +128,6 @@ fi
 
 # This enables job control and monitoring, effectively switching on the trap
 # handler to run when the java exe exits, regardless of how (even if killed).
-set -bm
-"$GF_JAVA" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml ${JLINE_TERMINAL} -classpath "${CLASSPATH}" $JAVA_ARGS $LAUNCHER  "$@"
+set -bmx
+"$GF_JAVA" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml ${JLINE_TERMINAL} -classpath "${CLASSPATH}" $JAVA_ARGS -jar ${GFSH_JAR} "$@"
 exit $?

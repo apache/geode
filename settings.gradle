@@ -63,6 +63,7 @@ include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
+include 'geode-gfsh'
 
 ['1.0.0-incubating',
  '1.1.0',
