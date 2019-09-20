@@ -74,6 +74,16 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   GatewayReceiverImpl(final InternalCache cache, final int startPort, final int endPort,
       final int maximumTimeBetweenPings, final int socketBufferSize, final String bindAddress,
       final List<GatewayTransportFilter> gatewayTransportFilters, final String hostnameForSenders,
+      final boolean manualStart, final boolean isPortAvailableResult,
+      final int getRandomAvailablePortInRangeResult) {
+    this(cache, startPort, endPort, maximumTimeBetweenPings, socketBufferSize, bindAddress,
+        gatewayTransportFilters, hostnameForSenders, manualStart, port -> isPortAvailableResult,
+        portRange -> getRandomAvailablePortInRangeResult);
+  }
+
+  private GatewayReceiverImpl(final InternalCache cache, final int startPort, final int endPort,
+      final int maximumTimeBetweenPings, final int socketBufferSize, final String bindAddress,
+      final List<GatewayTransportFilter> gatewayTransportFilters, final String hostnameForSenders,
       final boolean manualStart, final Function<Integer, Boolean> isPortAvailableFunction,
       final Function<PortRange, Integer> getRandomAvailablePortInRangeFunction) {
     this.cache = cache;
@@ -279,13 +289,12 @@ public class GatewayReceiverImpl implements GatewayReceiver {
         .append("]").toString();
   }
 
-  @VisibleForTesting
-  static class PortRange {
+  private static class PortRange {
 
-    final int startPort;
-    final int endPort;
+    private final int startPort;
+    private final int endPort;
 
-    PortRange(int startPort, int endPort) {
+    private PortRange(int startPort, int endPort) {
       this.startPort = startPort;
       this.endPort = endPort;
     }

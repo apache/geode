@@ -62,7 +62,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void getHostOnUnstartedGatewayShouldReturnLocalHostName() throws UnknownHostException {
     GatewayReceiver gateway = new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null,
-        true, port -> true, portRange -> 2000);
+        true, true, 2000);
 
     assertThat(gateway.getHost()).isEqualTo(SocketCreator.getLocalHost().getHostName());
   }
@@ -72,7 +72,7 @@ public class GatewayReceiverImplTest {
     String theExternalAddress = "theExternalAddress";
     when(receiverServer.getExternalAddress()).thenReturn(theExternalAddress);
     GatewayReceiverImpl gateway = new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null,
-        null, true, port -> true, portRange -> 2000);
+        null, true, true, 2000);
 
     gateway.start();
 
@@ -82,7 +82,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void destroyCalledOnRunningGatewayReceiverShouldThrowGatewayReceiverException() {
     GatewayReceiverImpl gateway = new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null,
-        null, true, port -> true, portRange -> 2000);
+        null, true, true, 2000);
     when(receiverServer.isRunning()).thenReturn(true);
     gateway.start();
 
@@ -94,7 +94,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromCacheServers() {
     GatewayReceiverImpl gateway = new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null,
-        null, true, port -> true, portRange -> 2000);
+        null, true, true, 2000);
     gateway.start();
     when(receiverServer.isRunning()).thenReturn(false);
 
@@ -108,7 +108,7 @@ public class GatewayReceiverImplTest {
   @Test
   public void destroyCalledOnStoppedGatewayReceiverShouldRemoveReceiverFromReceivers() {
     GatewayReceiverImpl gateway = new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null,
-        null, true, port -> true, portRange -> 2000);
+        null, true, true, 2000);
     gateway.start();
     when(receiverServer.isRunning()).thenReturn(false);
 
@@ -121,7 +121,7 @@ public class GatewayReceiverImplTest {
   public void startShouldThrowGatewayReceiverExceptionIfIOExceptionIsThrown() throws IOException {
     doThrow(new SocketException("Address already in use")).when(receiverServer).start();
     GatewayReceiverImpl gateway = new GatewayReceiverImpl(cache, 2000, 2000, 5, 100, null, null,
-        null, true, port -> true, portRange -> 2000);
+        null, true, true, 2000);
 
     Throwable thrown = catchThrowable(() -> gateway.start());
 
@@ -136,7 +136,7 @@ public class GatewayReceiverImplTest {
   public void startShouldTryTwoPortsInPortRangeIfIOExceptionIsThrown() throws IOException {
     doThrow(new SocketException("Address already in use")).when(receiverServer).start();
     GatewayReceiverImpl gateway = new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null,
-        null, true, port -> true, portRange -> 2000);
+        null, true, true, 2000);
 
     Throwable thrown = catchThrowable(() -> gateway.start());
 
@@ -153,7 +153,7 @@ public class GatewayReceiverImplTest {
     int startPort = 2000;
     int endPort = 2100;
     GatewayReceiverImpl gateway = new GatewayReceiverImpl(cache, startPort, endPort, 5, 100, null,
-        null, null, true, port -> true, portRange -> 2000);
+        null, null, true, true, 2000);
 
     Throwable thrown = catchThrowable(() -> gateway.start());
 
@@ -172,7 +172,7 @@ public class GatewayReceiverImplTest {
     IOException ioException = new SocketException("Address already in use");
     doThrow(ioException).doThrow(ioException).doNothing().when(receiverServer).start();
     GatewayReceiverImpl gateway = new GatewayReceiverImpl(cache, 2000, 2010, 5, 100, null, null,
-        null, true, port -> true, portRange -> 2000);
+        null, true, true, 2000);
 
     gateway.start();
 
