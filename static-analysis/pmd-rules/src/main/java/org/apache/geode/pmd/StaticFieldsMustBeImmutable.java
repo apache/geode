@@ -15,6 +15,7 @@
 package org.apache.geode.pmd;
 
 import static org.apache.geode.pmd.Annotations.hasDocumentedAnnotation;
+import static org.apache.geode.pmd.Annotations.hasInmutableAnnotation;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -29,6 +30,7 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.regex.Pattern;
 import java.util.stream.StreamSupport;
 
+import net.sourceforge.pmd.lang.java.ast.ASTClassOrInterfaceDeclaration;
 import net.sourceforge.pmd.lang.java.ast.ASTFieldDeclaration;
 import net.sourceforge.pmd.lang.java.ast.ASTVariableDeclaratorId;
 import net.sourceforge.pmd.lang.java.rule.AbstractJavaRule;
@@ -61,7 +63,8 @@ public class StaticFieldsMustBeImmutable extends AbstractJavaRule {
   }
 
   private boolean isMutable(ASTFieldDeclaration node) {
-    return node.isStatic() && !hasDocumentedAnnotation(node) && hasMutableVariable(node);
+    return node.isStatic() && !hasDocumentedAnnotation(node) && hasMutableVariable(node)
+        && !hasInmutableAnnotation(node.getFirstParentOfType(ASTClassOrInterfaceDeclaration.class));
   }
 
   private boolean hasMutableVariable(ASTFieldDeclaration node) {

@@ -14,13 +14,19 @@
  */
 package org.apache.geode.pmd;
 
+import net.sourceforge.pmd.lang.java.ast.ASTClassOrInterfaceDeclaration;
 import net.sourceforge.pmd.lang.java.ast.ASTFieldDeclaration;
 
 public class Annotations {
+
   static boolean hasDocumentedAnnotation(ASTFieldDeclaration node) {
     return node.isAnnotationPresent("org.apache.geode.annotations.Immutable") ||
         node.isAnnotationPresent("org.apache.geode.annotations.internal.MakeNotStatic") ||
         node.isAnnotationPresent("org.apache.geode.annotations.internal.MakeImmutable") ||
         node.isAnnotationPresent("org.apache.geode.annotations.internal.MutableForTesting");
+  }
+
+  static boolean hasInmutableAnnotation(ASTClassOrInterfaceDeclaration node) {
+    return node.isAnnotationPresent("org.apache.geode.annotations.Immutable");
   }
 }
