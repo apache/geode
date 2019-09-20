@@ -228,7 +228,7 @@ public class TXFarSideCMTracker {
           Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
     };
     try {
-      List memberSet = dm.addMembershipListenerAndGetDistributionManagerIds(memEar);
+      Set memberSet = dm.addMembershipListenerAndGetDistributionManagerIds(memEar);
 
       // Still need to wait
       synchronized (lock) {

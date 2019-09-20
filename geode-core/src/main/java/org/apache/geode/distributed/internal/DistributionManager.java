@@ -87,13 +87,13 @@ public interface DistributionManager extends ReplySender {
    * Returns an unmodifiable set containing the identities of all of the known distribution
    * managers. As of 7.0 this includes locators since they have a cache.
    */
-  List<InternalDistributedMember> getDistributionManagerIds();
+  Set<InternalDistributedMember> getDistributionManagerIds();
 
   /**
    * Returns an unmodifiable set containing the identities of all of the known "normal" distribution
    * managers. This does not include locators or admin members.
    */
-  List<InternalDistributedMember> getNormalDistributionManagerIds();
+  Set<InternalDistributedMember> getNormalDistributionManagerIds();
 
   /**
    * Returns an unmodifiable set containing the identities of all of the known distribution managers
@@ -101,22 +101,22 @@ public interface DistributionManager extends ReplySender {
    *
    * @since GemFire 5.7
    */
-  List<InternalDistributedMember> getDistributionManagerIdsIncludingAdmin();
+  Set<InternalDistributedMember> getDistributionManagerIdsIncludingAdmin();
 
   /**
-   * Returns a private-memory list containing getDistributionManagerIds() minus our id.
+   * Returns a private-memory set containing getDistributionManagerIds() minus our id.
    */
   Set<InternalDistributedMember> getOtherDistributionManagerIds();
 
   /**
-   * Returns a private-memory list containing getNormalDistributionManagerIds() minus our id.
+   * Returns a private-memory set containing getNormalDistributionManagerIds() minus our id.
    */
   Set<InternalDistributedMember> getOtherNormalDistributionManagerIds();
 
   /**
    * Add a membership listener and return other DistributionManagerIds as an atomic operation
    */
-  List<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
+  Set<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
       MembershipListener l);
 
   /**
@@ -125,7 +125,7 @@ public interface DistributionManager extends ReplySender {
    *
    * @since GemFire 5.7
    */
-  List<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(MembershipListener l);
+  Set<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(MembershipListener l);
 
   /**
    * Returns the identity of this <code>DistributionManager</code>
@@ -308,7 +308,7 @@ public interface DistributionManager extends ReplySender {
    * @return set of {@link InternalDistributedMember} including this VM
    * @since GemFire 5.9
    */
-  List<InternalDistributedMember> getMembersInThisZone();
+  Set<InternalDistributedMember> getMembersInThisZone();
 
   /**
    * Acquire a permit to request a GII from another member
@@ -324,7 +324,7 @@ public interface DistributionManager extends ReplySender {
 
   boolean enforceUniqueZone();
 
-  List<InternalDistributedMember> getMembersInSameZone(InternalDistributedMember acceptedMember);
+  Set<InternalDistributedMember> getMembersInSameZone(InternalDistributedMember acceptedMember);
 
   boolean areInSameZone(InternalDistributedMember member1, InternalDistributedMember member2);
 

@@ -20,7 +20,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
 
 import javax.management.ObjectName;
 
@@ -59,7 +59,7 @@ public class DistributedSystemStatsDUnitTest implements Serializable {
 
       // next block awaits all memberMXBeanName to refresh (getLastUpdateTime)
       SystemManagementService service = this.managementTestRule.getSystemManagementService();
-      List<DistributedMember> otherMemberSet = this.managementTestRule.getOtherNormalMembers();
+      Set<DistributedMember> otherMemberSet = this.managementTestRule.getOtherNormalMembers();
       assertEquals(3, otherMemberSet.size());
       for (DistributedMember member : otherMemberSet) {
         MemberMXBean memberMXBean = awaitMemberMXBeanProxy(member);

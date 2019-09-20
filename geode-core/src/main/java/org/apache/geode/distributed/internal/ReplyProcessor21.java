@@ -427,7 +427,7 @@ public class ReplyProcessor21 implements MembershipListener {
     if (!removeMember(sender, false) && warn) {
       // if the member hasn't left the system, something is wrong
       final DistributionManager dm = getDistributionManager(); // fix for bug 33253
-      List ids = getDistributionManagerIds();
+      Set ids = getDistributionManagerIds();
       if (ids == null || ids.contains(sender)) {
         List viewMembers = dm.getViewMembers();
         if (system.getConfig().getMcastPort() == 0 // could be using multicast & will get responses
@@ -542,7 +542,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * @return a Set of the current members
    * @since GemFire 5.7
    */
-  protected List addListenerAndGetMembers() {
+  protected Set addListenerAndGetMembers() {
     return getDistributionManager().addMembershipListenerAndGetDistributionManagerIds(this);
   }
 
@@ -565,7 +565,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * @return a Set of the current members
    * @since GemFire 5.7
    */
-  protected List getDistributionManagerIds() {
+  protected Set getDistributionManagerIds() {
     return getDistributionManager().getDistributionManagerIds();
   }
 
@@ -574,7 +574,7 @@ public class ReplyProcessor21 implements MembershipListener {
     DistributionManager mgr = getDistributionManager();
     statStart = mgr.getStats().startReplyWait();
     synchronized (this.members) {
-      List activeMembers = addListenerAndGetMembers();
+      Set activeMembers = addListenerAndGetMembers();
       processActiveMembers(activeMembers);
     }
   }
@@ -584,7 +584,7 @@ public class ReplyProcessor21 implements MembershipListener {
    *
    * @param activeMembers the DM's current membership set
    */
-  protected void processActiveMembers(List activeMembers) {
+  protected void processActiveMembers(Set activeMembers) {
     for (int i = 0; i < this.members.length; i++) {
       if (this.members[i] != null) {
         if (!activeMembers.contains(this.members[i])) {
@@ -1063,7 +1063,7 @@ public class ReplyProcessor21 implements MembershipListener {
     if (!this.processTimeout())
       return;
 
-    List activeMembers = getDistributionManagerIds();
+    Set activeMembers = getDistributionManagerIds();
 
     // an alert that will show up in the console
     long timeout = getAckWaitThreshold();

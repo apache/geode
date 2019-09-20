@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -858,7 +857,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * distribution managers.
    */
   @Override
-  public List<InternalDistributedMember> getDistributionManagerIds() {
+  public Set<InternalDistributedMember> getDistributionManagerIds() {
     return membershipManager.getMembersNotShuttingDown();
   }
 
@@ -986,8 +985,8 @@ public class ClusterDistributionManager implements DistributionManager {
    * distribution managers.
    */
   @Override
-  public List<InternalDistributedMember> getDistributionManagerIdsIncludingAdmin() {
-    return getViewMembers();
+  public Set<InternalDistributedMember> getDistributionManagerIdsIncludingAdmin() {
+    return new HashSet<>(getViewMembers());
   }
 
 
@@ -1035,7 +1034,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * Add a membership listener and return other DistributionManagerIds as an atomic operation
    */
   @Override
-  public List<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
+  public Set<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
       MembershipListener l) {
     return membershipManager.doWithViewLocked((manager) -> {
       addMembershipListener(l);
@@ -1529,7 +1528,7 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public Set<InternalDistributedMember> getAllOtherMembers() {
     Set<InternalDistributedMember> result =
-        new HashSet<>(getDistributionManagerIdsIncludingAdmin());
+        getDistributionManagerIdsIncludingAdmin();
     result.remove(getDistributionManagerId());
     return result;
   }
@@ -1547,7 +1546,7 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   @Override
-  public List<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(
+  public Set<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(
       MembershipListener l) {
     return membershipManager.doWithViewLocked((manager) -> {
       // Don't let the members come and go while we are adding this
@@ -2220,7 +2219,7 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public int getRoleCount(Role role) {
     int count = 0;
-    List<InternalDistributedMember> mbrs = getDistributionManagerIds();
+    Set<InternalDistributedMember> mbrs = getDistributionManagerIds();
     for (InternalDistributedMember mbr : mbrs) {
       Set<Role> roles = (mbr).getRoles();
       for (Role mbrRole : roles) {
@@ -2236,7 +2235,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /** Returns true if at least one member is filling the specified role */
   @Override
   public boolean isRolePresent(Role role) {
-    List<InternalDistributedMember> mbrs = getDistributionManagerIds();
+    Set<InternalDistributedMember> mbrs = getDistributionManagerIds();
     for (InternalDistributedMember mbr : mbrs) {
       Set<Role> roles = mbr.getRoles();
       for (Role mbrRole : roles) {
@@ -2252,7 +2251,7 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public Set<Role> getAllRoles() {
     Set<Role> allRoles = new HashSet<>();
-    List<InternalDistributedMember> mbrs = getDistributionManagerIds();
+    Set<InternalDistributedMember> mbrs = getDistributionManagerIds();
     for (InternalDistributedMember mbr : mbrs) {
       allRoles.addAll(mbr.getRoles());
     }
@@ -2598,14 +2597,14 @@ public class ClusterDistributionManager implements DistributionManager {
    * @since GemFire 5.9
    */
   @Override
-  public List<InternalDistributedMember> getMembersInThisZone() {
+  public Set<InternalDistributedMember> getMembersInThisZone() {
     return getMembersInSameZone(getDistributionManagerId());
   }
 
   @Override
-  public List<InternalDistributedMember> getMembersInSameZone(
+  public Set<InternalDistributedMember> getMembersInSameZone(
       InternalDistributedMember targetMember) {
-    List<InternalDistributedMember> buddyMembers = new LinkedList<>();
+    Set<InternalDistributedMember> buddyMembers = new HashSet<>();
     if (!redundancyZones.isEmpty()) {
       synchronized (redundancyZones) {
         String targetZone = redundancyZones.get(targetMember);
@@ -2715,10 +2714,10 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   @Override
-  public List<InternalDistributedMember> getNormalDistributionManagerIds() {
+  public Set<InternalDistributedMember> getNormalDistributionManagerIds() {
     return membershipManager.getMembersNotShuttingDown().stream()
         .filter((id) -> id.getVmKind() != LOCATOR_DM_TYPE).collect(
-            Collectors.toList());
+            Collectors.toSet());
   }
 
   /** test method to get the member IDs of all locators in the distributed system */

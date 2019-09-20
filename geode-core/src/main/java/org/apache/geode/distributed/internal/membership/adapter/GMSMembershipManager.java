@@ -1418,12 +1418,12 @@ public class GMSMembershipManager implements MembershipManager {
   }
 
   @Override
-  public List<InternalDistributedMember> getMembersNotShuttingDown() {
+  public Set<InternalDistributedMember> getMembersNotShuttingDown() {
     latestViewReadLock.lock();
     try {
       return latestView.getMembers().stream().filter(id -> !shutdownMembers.containsKey(id))
           .collect(
-              Collectors.toList());
+              Collectors.toSet());
     } finally {
       latestViewReadLock.unlock();
     }

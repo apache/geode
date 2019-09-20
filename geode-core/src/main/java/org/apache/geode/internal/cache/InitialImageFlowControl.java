@@ -68,7 +68,7 @@ public class InitialImageFlowControl implements MembershipListener {
     int id = keeper.put(control);
     control.id = id;
 
-    List availableIds = dm.addMembershipListenerAndGetDistributionManagerIds(control);
+    Set availableIds = dm.addMembershipListenerAndGetDistributionManagerIds(control);
     if (!availableIds.contains(target)) {
       control.abort();
     }
@@ -125,7 +125,7 @@ public class InitialImageFlowControl implements MembershipListener {
     if (!aborted.get() && !permits.tryAcquire(timeout - timeSoFar - 1, TimeUnit.MILLISECONDS)) {
       checkCancellation();
 
-      List activeMembers = dm.getDistributionManagerIds();
+      Set activeMembers = dm.getDistributionManagerIds();
       logger.warn(
           "{} seconds have elapsed while waiting for replies: {} on {} whose current membership list is: [{}]",
           getAckWaitThreshold(), this, dm.getId(), activeMembers);
