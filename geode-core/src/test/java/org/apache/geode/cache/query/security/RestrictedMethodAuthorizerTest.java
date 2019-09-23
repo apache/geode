@@ -15,522 +15,617 @@
 package org.apache.geode.cache.query.security;
 
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.DoubleAccumulator;
+import java.util.concurrent.atomic.DoubleAdder;
+import java.util.concurrent.atomic.LongAccumulator;
+import java.util.concurrent.atomic.LongAdder;
 
+import org.apache.shiro.SecurityUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.QRegion;
 import org.apache.geode.cache.query.internal.index.DummyQRegion;
+import org.apache.geode.cache.wan.GatewayQueueEvent;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.ha.HAContainerMap;
+import org.apache.geode.internal.security.IntegratedSecurityService;
+import org.apache.geode.internal.security.LegacySecurityService;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category(SecurityTest.class)
 public class RestrictedMethodAuthorizerTest {
-  private RestrictedMethodAuthorizer methodInvocationAuthorizer =
-      new RestrictedMethodAuthorizer(null);
+  private Cache mockCache;
+  private SecurityService mockSecurityService;
+  private RestrictedMethodAuthorizer methodAuthorizer;
+
+  @Before
+  public void setUp() {
+    mockCache = mock(InternalCache.class);
+    mockSecurityService = mock(SecurityService.class);
+    when(((InternalCache) mockCache).getSecurityService()).thenReturn(mockSecurityService);
+
+    methodAuthorizer = new RestrictedMethodAuthorizer(mockCache);
+
+    // Make sure the shiro security-manager is null to avoid polluting tests.
+    SecurityUtils.setSecurityManager(null);
+  }
 
   @Test
-  public void getClassShouldNotBeAuthorized() throws Exception {
+  public void constructorShouldThrowExceptionWhenCacheIsNull() {
+    assertThatThrownBy(() -> new RestrictedMethodAuthorizer(null))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("Cache should be provided to configure the authorizer.");
+  }
+
+  @Test
+  public void constructorShouldSetTheConfiguredSecurityServiceForGeodeCreatedCacheInstances() {
+    InternalCache cache = mock(InternalCache.class);
+    SecurityService securityService = mock(SecurityService.class);
+    when(cache.getSecurityService()).thenReturn(securityService);
+
+    RestrictedMethodAuthorizer defaultAuthorizer = new RestrictedMethodAuthorizer(cache);
+    verify(cache).getSecurityService();
+    assertThat(defaultAuthorizer.securityService).isSameAs(securityService);
+  }
+
+  @Test
+  public void constructorShouldThrowExceptionForNonGeodeCreatedCacheInstancesWhenDistributedSystemIsNull() {
+    Cache cache = mock(Cache.class);
+
+    assertThatThrownBy(() -> new RestrictedMethodAuthorizer(cache))
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage(
+            "Distributed system properties should be provided to configure the authorizer.");
+  }
+
+  @Test
+  public void constructorShouldSetTheLegacySecurityServiceForNonGeodeCreatedCacheInstancesWithDefaultProperties() {
+    Cache mockCache = mock(Cache.class);
+    DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+    when(mockCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
+
+    RestrictedMethodAuthorizer authorizerWithLegacyService =
+        new RestrictedMethodAuthorizer(mockCache);
+    verify(mockDistributedSystem).getSecurityProperties();
+    assertThat(authorizerWithLegacyService.securityService)
+        .isInstanceOf(LegacySecurityService.class);
+  }
+
+  @Test
+  public void constructorShouldSetTheIntegratedSecurityServiceForNonGeodeCreatedCacheInstancesWithNonDefaultProperties() {
+    Cache mockCache = mock(Cache.class);
+    Properties securityProperties = new Properties();
+    securityProperties.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+    DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
+    when(mockCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
+    when(mockDistributedSystem.getSecurityProperties()).thenReturn(securityProperties);
+
+    RestrictedMethodAuthorizer authorizerWithIntegratedService =
+        new RestrictedMethodAuthorizer(mockCache);
+    verify(mockDistributedSystem).getSecurityProperties();
+    assertThat(authorizerWithIntegratedService.securityService)
+        .isInstanceOf(IntegratedSecurityService.class);
+    assertThat(authorizerWithIntegratedService.securityService.getSecurityManager())
+        .isInstanceOf(SimpleSecurityManager.class);
+  }
+
+  @Test
+  public void internalStructuresShouldBeAccessibleBuNotModifiable() {
+    assertThatThrownBy(() -> methodAuthorizer.getForbiddenMethods().remove("getClass"))
+        .isInstanceOf(UnsupportedOperationException.class);
+
+    assertThatThrownBy(() -> methodAuthorizer.getAllowedMethodsPerClass().remove("compareTo"))
+        .isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(() -> methodAuthorizer.getAllowedMethodsPerClass().get("compareTo")
+        .remove(Object.class)).isInstanceOf(UnsupportedOperationException.class);
+
+    assertThatThrownBy(() -> methodAuthorizer.getAllowedGeodeMethodsPerClass().remove("get"))
+        .isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(() -> methodAuthorizer.getAllowedGeodeMethodsPerClass().get("get")
+        .remove(Region.class)).isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
+  public void verifyAuthorizersUsesDefaultForbiddenList() {
+    RestrictedMethodAuthorizer authorizer1 = new RestrictedMethodAuthorizer(mockCache);
+    RestrictedMethodAuthorizer authorizer2 = new RestrictedMethodAuthorizer(mockCache);
+
+    assertThat(authorizer1.getForbiddenMethods()).isSameAs(authorizer2.getForbiddenMethods());
+    assertThat(authorizer1.getForbiddenMethods())
+        .isSameAs(RestrictedMethodAuthorizer.FORBIDDEN_METHODS);
+    assertThat(authorizer2.getForbiddenMethods())
+        .isSameAs(RestrictedMethodAuthorizer.FORBIDDEN_METHODS);
+  }
+
+  @Test
+  public void verifyAuthorizersUsesDefaultAllowedList() {
+    RestrictedMethodAuthorizer authorizer1 = new RestrictedMethodAuthorizer(mockCache);
+    RestrictedMethodAuthorizer authorizer2 = new RestrictedMethodAuthorizer(mockCache);
+
+    assertThat(authorizer1.getAllowedMethodsPerClass())
+        .isSameAs(authorizer2.getAllowedMethodsPerClass());
+    assertThat(authorizer1.getAllowedMethodsPerClass())
+        .isSameAs(RestrictedMethodAuthorizer.DEFAULT_ALLOWED_METHODS);
+    assertThat(authorizer2.getAllowedMethodsPerClass())
+        .isSameAs(RestrictedMethodAuthorizer.DEFAULT_ALLOWED_METHODS);
+  }
+
+  @Test
+  public void verifyAuthorizersUsesGeodeAllowedList() {
+    RestrictedMethodAuthorizer authorizer1 = new RestrictedMethodAuthorizer(mockCache);
+    RestrictedMethodAuthorizer authorizer2 = new RestrictedMethodAuthorizer(mockCache);
+
+    assertThat(authorizer1.getAllowedGeodeMethodsPerClass())
+        .isSameAs(authorizer2.getAllowedGeodeMethodsPerClass());
+    assertThat(authorizer1.getAllowedGeodeMethodsPerClass())
+        .isSameAs(RestrictedMethodAuthorizer.GEODE_ALLOWED_METHODS);
+    assertThat(authorizer2.getAllowedGeodeMethodsPerClass())
+        .isSameAs(RestrictedMethodAuthorizer.GEODE_ALLOWED_METHODS);
+  }
+
+  @SuppressWarnings("unchecked")
+  private void verifyGeneralObjectMethods(Class type, Object object) {
+    try {
+      Method toStringMethod = type.getMethod("toString");
+      Method equalsMethod = type.getMethod("equals", Object.class);
+      Method compareToMethod = type.getMethod("compareTo", Object.class);
+
+      assertThat(methodAuthorizer.authorize(toStringMethod, object)).isTrue();
+      assertThat(methodAuthorizer.authorize(equalsMethod, object)).isTrue();
+      assertThat(methodAuthorizer.authorize(compareToMethod, object)).isTrue();
+    } catch (NoSuchMethodException noSuchMethodException) {
+      throw new RuntimeException(noSuchMethodException);
+    }
+  }
+
+  @Test
+  public void authorizeShouldReturnFalseForNotAllowedMethods() throws Exception {
     Method method = Integer.class.getMethod("getClass");
-    assertThat(methodInvocationAuthorizer.authorize(method, 0)).isFalse();
+    assertThat(methodAuthorizer.authorize(method, 0)).isFalse();
   }
 
   @Test
-  public void toStringOnAnyObjectShouldBeAuthorized() throws Exception {
-    Method stringMethod = Object.class.getMethod("toString");
-    assertThat(methodInvocationAuthorizer.authorize(stringMethod, new Object())).isTrue();
-  }
-
-  @Test
-  public void equalsOnAnyObjectShouldBeAuthorized() throws Exception {
+  public void authorizeShouldReturnTrueForAllowedMethodsOnAnyObjectInstance()
+      throws NoSuchMethodException {
+    Method toStringMethod = Object.class.getMethod("toString");
     Method equalsMethod = Object.class.getMethod("equals", Object.class);
-    assertThat(methodInvocationAuthorizer.authorize(equalsMethod, new Object())).isTrue();
+    Method compareToMethod = Comparable.class.getMethod("compareTo", Object.class);
+
+    assertThat(methodAuthorizer.authorize(toStringMethod, new Object())).isTrue();
+    assertThat(methodAuthorizer.authorize(equalsMethod, new Object())).isTrue();
+    assertThat(methodAuthorizer.authorize(compareToMethod, new Object())).isTrue();
   }
 
   @Test
-  public void compareToOnAnyObjectShouldBeAuthorized() throws Exception {
-    Method equalsMethod = Comparable.class.getMethod("compareTo", Object.class);
-    assertThat(methodInvocationAuthorizer.authorize(equalsMethod, new Object())).isTrue();
+  public void authorizeShouldReturnTrueForAllowedMethodsOnBooleanInstances() throws Exception {
+    Method booleanValueMethod = Boolean.class.getMethod("booleanValue");
+    assertThat(methodAuthorizer.authorize(booleanValueMethod, Boolean.TRUE)).isTrue();
+    verifyGeneralObjectMethods(Boolean.class, Boolean.TRUE);
   }
 
   @Test
-  public void booleanValueOnBooleanShouldBeAuthorized() throws Exception {
-    Method booleanValue = Boolean.class.getMethod("booleanValue");
-    assertThat(methodInvocationAuthorizer.authorize(booleanValue, Boolean.TRUE)).isTrue();
+  public void authorizeShouldReturnTrueForAllowedMethodsOnNumberInstances() throws Exception {
+    List<Number> instances = new ArrayList<>();
+    instances.add(new AtomicInteger(0));
+    instances.add(new AtomicLong(0));
+    instances.add(new BigDecimal("0"));
+    instances.add(new BigInteger("0"));
+    instances.add(new Byte("0"));
+    instances.add(new Double("0d"));
+    instances.add(new DoubleAccumulator(Double::sum, 0L));
+    instances.add(new DoubleAdder());
+    instances.add(new Float("1f"));
+    instances.add(new Integer("1"));
+    instances.add(new Long("1"));
+    instances.add(new LongAccumulator(Long::sum, 0L));
+    instances.add(new LongAdder());
+    instances.add(new Short("1"));
+
+    Method byteValueMethod = Number.class.getMethod("byteValue");
+    Method doubleValueMethod = Number.class.getMethod("doubleValue");
+    Method intValueMethod = Number.class.getMethod("intValue");
+    Method floatValueMethod = Number.class.getMethod("longValue");
+    Method longValueMethod = Number.class.getMethod("floatValue");
+    Method shortValueMethod = Number.class.getMethod("shortValue");
+
+    instances.forEach((number) -> {
+      assertThat(methodAuthorizer.authorize(byteValueMethod, number)).isTrue();
+      assertThat(methodAuthorizer.authorize(doubleValueMethod, number)).isTrue();
+      assertThat(methodAuthorizer.authorize(intValueMethod, number)).isTrue();
+      assertThat(methodAuthorizer.authorize(floatValueMethod, number)).isTrue();
+      assertThat(methodAuthorizer.authorize(longValueMethod, number)).isTrue();
+      assertThat(methodAuthorizer.authorize(shortValueMethod, number)).isTrue();
+    });
   }
 
   @Test
-  public void toCharAtOnStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("charAt", int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
+  public void authorizeShouldReturnTrueForAllowedMethodsOnDateInstances() throws Exception {
+    List<Date> instances = new ArrayList<>();
+    instances.add(new Date(0));
+    instances.add(new java.sql.Date(0));
+    instances.add(new Time(0));
+    instances.add(new Timestamp(0));
+
+    Method afterMethod = Date.class.getMethod("after", Date.class);
+    Method beforeMethod = Date.class.getMethod("before", Date.class);
+    Method getTimeMethod = Date.class.getMethod("getTime");
+
+    instances.forEach((date) -> {
+      assertThat(methodAuthorizer.authorize(afterMethod, date)).isTrue();
+      assertThat(methodAuthorizer.authorize(beforeMethod, date)).isTrue();
+      assertThat(methodAuthorizer.authorize(getTimeMethod, date)).isTrue();
+      verifyGeneralObjectMethods(date.getClass(), date);
+    });
   }
 
   @Test
-  public void codePointAtStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("codePointAt", int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
+  public void authorizeShouldReturnTrueForAllowedMethodsOnTimestampInstances() throws Exception {
+    Timestamp timestamp = new Timestamp(0);
+    Method afterMethod = Timestamp.class.getMethod("after", Date.class);
+    Method beforeMethod = Timestamp.class.getMethod("before", Date.class);
+    Method getNanosMethod = Timestamp.class.getMethod("getNanos");
+    Method getTimeMethod = Timestamp.class.getMethod("getTime");
+
+    assertThat(methodAuthorizer.authorize(afterMethod, timestamp)).isTrue();
+    assertThat(methodAuthorizer.authorize(beforeMethod, timestamp)).isTrue();
+    assertThat(methodAuthorizer.authorize(getNanosMethod, timestamp)).isTrue();
+    assertThat(methodAuthorizer.authorize(getTimeMethod, timestamp)).isTrue();
+    verifyGeneralObjectMethods(Timestamp.class, timestamp);
   }
 
   @Test
-  public void codePointBeforeStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("codePointBefore", int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
+  public void authorizeShouldReturnTrueForAllowedMethodsOnStringInstances() throws Exception {
+    String string = "";
+    List<Method> stringMethods = new ArrayList<>();
+    stringMethods.add(String.class.getMethod("charAt", int.class));
+    stringMethods.add(String.class.getMethod("codePointAt", int.class));
+    stringMethods.add(String.class.getMethod("codePointBefore", int.class));
+    stringMethods.add(String.class.getMethod("codePointCount", int.class, int.class));
+    stringMethods.add(String.class.getMethod("compareToIgnoreCase", String.class));
+    stringMethods.add(String.class.getMethod("concat", String.class));
+    stringMethods.add(String.class.getMethod("contains", CharSequence.class));
+    stringMethods.add(String.class.getMethod("contentEquals", CharSequence.class));
+    stringMethods.add(String.class.getMethod("contentEquals", StringBuffer.class));
+    stringMethods.add(String.class.getMethod("endsWith", String.class));
+    stringMethods.add(String.class.getMethod("equalsIgnoreCase", String.class));
+    stringMethods.add(String.class.getMethod("getBytes"));
+    stringMethods.add(String.class.getMethod("getBytes", Charset.class));
+    stringMethods.add(String.class.getMethod("hashCode"));
+    stringMethods.add(String.class.getMethod("indexOf", int.class));
+    stringMethods.add(String.class.getMethod("indexOf", String.class));
+    stringMethods.add(String.class.getMethod("indexOf", String.class, int.class));
+    stringMethods.add(String.class.getMethod("intern"));
+    stringMethods.add(String.class.getMethod("isEmpty"));
+    stringMethods.add(String.class.getMethod("lastIndexOf", int.class));
+    stringMethods.add(String.class.getMethod("lastIndexOf", int.class, int.class));
+    stringMethods.add(String.class.getMethod("lastIndexOf", String.class));
+    stringMethods.add(String.class.getMethod("lastIndexOf", String.class, int.class));
+    stringMethods.add(String.class.getMethod("length"));
+    stringMethods.add(String.class.getMethod("matches", String.class));
+    stringMethods.add(String.class.getMethod("offsetByCodePoints", int.class, int.class));
+    stringMethods.add(String.class.getMethod("regionMatches", boolean.class, int.class,
+        String.class, int.class, int.class));
+    stringMethods.add(
+        String.class.getMethod("regionMatches", int.class, String.class, int.class, int.class));
+    stringMethods.add(String.class.getMethod("replace", char.class, char.class));
+    stringMethods.add(String.class.getMethod("replace", CharSequence.class, CharSequence.class));
+    stringMethods.add(String.class.getMethod("replaceAll", String.class, String.class));
+    stringMethods.add(String.class.getMethod("replaceFirst", String.class, String.class));
+    stringMethods.add(String.class.getMethod("split", String.class));
+    stringMethods.add(String.class.getMethod("split", String.class, int.class));
+    stringMethods.add(String.class.getMethod("startsWith", String.class));
+    stringMethods.add(String.class.getMethod("startsWith", String.class, int.class));
+    stringMethods.add(String.class.getMethod("substring", int.class));
+    stringMethods.add(String.class.getMethod("substring", int.class, int.class));
+    stringMethods.add(String.class.getMethod("toCharArray"));
+    stringMethods.add(String.class.getMethod("toLowerCase"));
+    stringMethods.add(String.class.getMethod("toUpperCase"));
+    stringMethods.add(String.class.getMethod("trim"));
+
+    stringMethods
+        .forEach(method -> assertThat(methodAuthorizer.authorize(method, string)).isTrue());
+    verifyGeneralObjectMethods(String.class, string);
   }
 
   @Test
-  public void codePointCountStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("codePointCount", int.class, int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void compareToStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("compareTo", String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void compareToIgnoreCaseStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("compareToIgnoreCase", String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void concatStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("compareTo", String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void containsStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("contains", CharSequence.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void contentEqualsStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("contentEquals", CharSequence.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void contentEqualsWithStringBufferStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("contentEquals", StringBuffer.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void endsWithOnStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("endsWith", String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void equalsIgnoreCase() throws Exception {
-    Method stringMethod = String.class.getMethod("equalsIgnoreCase", String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void getBytesOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("getBytes");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void getBytesWithCharsetOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("getBytes", Charset.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void hashCodeOnStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("hashCode");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void indexOfOnStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("indexOf", int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void indexOfWithStringOnStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("indexOf", String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void indexOfWithStringAndIntOnStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("indexOf", String.class, int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void internOnStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("intern");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void isEmpty() throws Exception {
-    Method stringMethod = String.class.getMethod("isEmpty");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void lastIndexOfWithIntOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("lastIndexOf", int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void lastIndexOfWithIntAndFronIndexOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("lastIndexOf", int.class, int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void lastIndexOfWithStringOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("lastIndexOf", String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void lastIndexOfWithStringAndFromIndexOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("lastIndexOf", String.class, int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void lengthOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("length");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void matchesOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("matches", String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void offsetByCodePointsOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("offsetByCodePoints", int.class, int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-
-  @Test
-  public void regionMatchesWith5ParamsOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("regionMatches", boolean.class, int.class,
-        String.class, int.class, int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void regionMatchesWith4ParamsOnString() throws Exception {
-    Method stringMethod =
-        String.class.getMethod("regionMatches", int.class, String.class, int.class, int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void replaceOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("replace", char.class, char.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void replaceWithCharSequenceOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("replace", CharSequence.class, CharSequence.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void replaceAllOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("replaceAll", String.class, String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void replaceFirstOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("replaceFirst", String.class, String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void splitOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("split", String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void splitWithLimitOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("split", String.class, int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void startsOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("startsWith", String.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void startsWithOffsetOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("startsWith", String.class, int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void substringOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("substring", int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void substringWithEndIndexOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("substring", int.class, int.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void toCharArrayOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("toCharArray");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void toLowerCaseOnStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("toLowerCase");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void toUpperCaseOnStringObject() throws Exception {
-    Method stringMethod = String.class.getMethod("toUpperCase");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void trimOnString() throws Exception {
-    Method stringMethod = String.class.getMethod("trim");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(stringMethod)).isTrue();
-  }
-
-  @Test
-  public void utilDateAfterMethodIsAcceptListed() throws Exception {
-    Method method = Date.class.getMethod("after", Date.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(method)).isTrue();
-  }
-
-  @Test
-  public void sqlDateAfterMethodIsAcceptListed() throws Exception {
-    Method method = java.sql.Date.class.getMethod("after", Date.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(method)).isTrue();
-  }
-
-  @Test
-  public void utilDateBeforeMethodIsAcceptListed() throws Exception {
-    Method method = Date.class.getMethod("before", Date.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(method)).isTrue();
-  }
-
-  @Test
-  public void sqlDateBeforeMethodIsAcceptListed() throws Exception {
-    Method method = java.sql.Date.class.getMethod("before", Date.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(method)).isTrue();
-  }
-
-  @Test
-  public void timestampAfterMethodIsAcceptListed() throws Exception {
-    Method method = Timestamp.class.getMethod("after", Timestamp.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(method)).isTrue();
-  }
-
-  @Test
-  public void sqlTimestampBeforeMethodIsAcceptListed() throws Exception {
-    Method method = Timestamp.class.getMethod("before", Timestamp.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(method)).isTrue();
-  }
-
-  @Test
-  public void sqlTimestampGetNanosIsAcceptListed() throws Exception {
-    Method method = Timestamp.class.getMethod("getNanos");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(method)).isTrue();
-  }
-
-  @Test
-  public void sqlTimestampGetTimeIsAcceptListed() throws Exception {
-    Method method = Timestamp.class.getMethod("getTime");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(method)).isTrue();
-  }
-
-
-  @Test
-  public void getKeyForMapEntryIsAcceptListed() throws Exception {
+  public void authorizeShouldReturnTrueForAllowedMethodsOnMapEntryInstances() throws Exception {
+    List<Map.Entry> instances = new ArrayList<>();
+    instances.add(mock(Map.Entry.class));
+    instances.add(mock(NonTXEntry.class));
+    instances.add(mock(EntrySnapshot.class));
+    instances.add(mock(Region.Entry.class));
     Method getKeyMethod = Map.Entry.class.getMethod("getKey");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(getKeyMethod)).isTrue();
-  }
-
-  @Test
-  public void getValueForMapEntryIsAcceptListed() throws Exception {
     Method getValueMethod = Map.Entry.class.getMethod("getValue");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(getValueMethod)).isTrue();
+
+    instances.forEach((mapEntry) -> {
+      assertThat(methodAuthorizer.authorize(getKeyMethod, mapEntry)).isTrue();
+      assertThat(methodAuthorizer.authorize(getValueMethod, mapEntry)).isTrue();
+    });
   }
 
   @Test
-  public void getKeyForMapEntrySnapShotIsAcceptListed() throws Exception {
-    Method getKeyMethod = EntrySnapshot.class.getMethod("getKey");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(getKeyMethod)).isTrue();
+  public void authorizeShouldReturnTrueForAllowedMethodsOnMapInstances() throws Exception {
+    Map mapInstance = mock(Map.class);
+    List<Method> mapMethods = new ArrayList<>();
+    mapMethods.add(Map.class.getMethod("containsKey", Object.class));
+    mapMethods.add(Map.class.getMethod("entrySet"));
+    mapMethods.add(Map.class.getMethod("get", Object.class));
+    mapMethods.add(Map.class.getMethod("keySet"));
+    mapMethods.add(Map.class.getMethod("values"));
+
+    mapMethods
+        .forEach(method -> assertThat(methodAuthorizer.authorize(method, mapInstance)).isTrue());
   }
 
   @Test
-  public void getValueForMapEntrySnapShotIsAcceptListed() throws Exception {
-    Method getValueMethod = EntrySnapshot.class.getMethod("getValue");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(getValueMethod)).isTrue();
+  public void authorizeShouldReturnTrueForAllowedMethodsOnQRegionInstances() throws Exception {
+    QRegion qRegionInstance = mock(QRegion.class);
+    DummyQRegion dummyQRegionInstance = mock(DummyQRegion.class);
+
+    List<Method> methods = new ArrayList<>();
+    methods.add(Map.class.getMethod("containsKey", Object.class));
+    methods.add(Map.class.getMethod("entrySet"));
+    methods.add(Map.class.getMethod("get", Object.class));
+    methods.add(Map.class.getMethod("keySet"));
+    methods.add(Map.class.getMethod("values"));
+    methods.add(QRegion.class.getMethod("getEntries"));
+    methods.add(QRegion.class.getMethod("getValues"));
+
+    methods.forEach(
+        method -> assertThat(methodAuthorizer.authorize(method, qRegionInstance)).isTrue());
+    methods.forEach(
+        method -> assertThat(methodAuthorizer.authorize(method, dummyQRegionInstance)).isTrue());
   }
 
   @Test
-  public void getKeyForNonTXEntryIsAcceptListed() throws Exception {
-    Method getKeyMethod = NonTXEntry.class.getMethod("getKey");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(getKeyMethod)).isTrue();
+  public void authorizeShouldReturnTrueForMapMethodsOnRegionInstancesWheneverTheSecurityServiceAllowsOperationsOnTheRegion()
+      throws Exception {
+    Region region = mock(Region.class);
+    Region localRegion = mock(LocalRegion.class);
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+
+    List<Method> methods = new ArrayList<>();
+    methods.add(Map.class.getMethod("containsKey", Object.class));
+    methods.add(Map.class.getMethod("entrySet"));
+    methods.add(Map.class.getMethod("get", Object.class));
+    methods.add(Map.class.getMethod("keySet"));
+    methods.add(Map.class.getMethod("values"));
+
+    methods.forEach(method -> assertThat(methodAuthorizer.authorize(method, region)).isTrue());
+    methods.forEach(method -> assertThat(methodAuthorizer.authorize(method, localRegion)).isTrue());
+    methods.forEach(
+        method -> assertThat(methodAuthorizer.authorize(method, partitionedRegion)).isTrue());
   }
 
   @Test
-  public void getValueForNonTXEntryIsAcceptListed() throws Exception {
-    Method getValueMethod = NonTXEntry.class.getMethod("getValue");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(getValueMethod)).isTrue();
+  public void authorizeShouldReturnFalseWheneverTheSecurityServiceDoesNotAllowOperationsOnTheRegion()
+      throws Exception {
+    doThrow(new NotAuthorizedException("Mock Exception")).when(mockSecurityService).authorize(
+        ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ, "testRegion");
+    Region region = mock(Region.class);
+    when(region.getName()).thenReturn("testRegion");
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+    when(partitionedRegion.getName()).thenReturn("testRegion");
+
+    List<Method> methods = new ArrayList<>();
+    methods.add(Map.class.getMethod("containsKey", Object.class));
+    methods.add(Map.class.getMethod("entrySet"));
+    methods.add(Map.class.getMethod("get", Object.class));
+    methods.add(Map.class.getMethod("keySet"));
+    methods.add(Map.class.getMethod("values"));
+
+    methods.forEach(method -> assertThat(methodAuthorizer.authorize(method, region)).isFalse());
+    methods.forEach(
+        method -> assertThat(methodAuthorizer.authorize(method, partitionedRegion)).isFalse());
   }
 
   @Test
-  public void mapMethodsForQRegionAreAcceptListed() throws Exception {
-    testMapMethods(QRegion.class);
+  public void isAllowedGeodeMethodShouldReturnFalseForNonGeodeObjectInstances() throws Exception {
+    Map mapInstance = mock(Map.class);
+    List<Method> mapMethods = new ArrayList<>();
+    mapMethods.add(Map.class.getMethod("containsKey", Object.class));
+    mapMethods.add(Map.class.getMethod("entrySet"));
+    mapMethods.add(Map.class.getMethod("get", Object.class));
+    mapMethods.add(Map.class.getMethod("keySet"));
+    mapMethods.add(Map.class.getMethod("values"));
+
+    Map.Entry mapEntryInstance = mock(Map.Entry.class);
+    List<Method> mapEntryMethods = new ArrayList<>();
+    mapEntryMethods.add(Map.Entry.class.getMethod("getKey"));
+    mapEntryMethods.add(Map.Entry.class.getMethod("getValue"));
+
+    mapMethods.forEach(
+        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, mapInstance)).isFalse());
+    mapEntryMethods.forEach(
+        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, mapEntryInstance))
+            .isFalse());
   }
 
   @Test
-  public void mapMethodsForDummyQRegionAreAcceptListed() throws Exception {
-    testMapMethods(DummyQRegion.class);
+  public void isAllowedGeodeMethodShouldReturnFalseForGeodeObjectsThatAreNotInstanceOfRegionAndRegionEntry()
+      throws Exception {
+    EntryEvent entryEvent = mock(EntryEvent.class);
+    HAContainerMap haContainerMap = mock(HAContainerMap.class);
+    GatewayQueueEvent gatewayQueueEvent = mock(GatewayQueueEvent.class);
+    PartitionedRegionDataStore partitionedRegionDataStore = mock(PartitionedRegionDataStore.class);
+
+    List<Method> queueRegionMethods = new ArrayList<>();
+    queueRegionMethods.add(QRegion.class.getMethod("getEntries"));
+    queueRegionMethods.add(QRegion.class.getMethod("getValues"));
+
+    List<Method> regionEntryMethods = new ArrayList<>();
+    regionEntryMethods.add(Region.Entry.class.getMethod("getKey"));
+    regionEntryMethods.add(Region.Entry.class.getMethod("getValue"));
+
+    List<Method> regionMethods = new ArrayList<>();
+    regionMethods.add(Region.class.getMethod("containsKey", Object.class));
+    regionMethods.add(Region.class.getMethod("entrySet"));
+    regionMethods.add(Region.class.getMethod("get", Object.class));
+    regionMethods.add(Region.class.getMethod("keySet"));
+    regionMethods.add(Region.class.getMethod("values"));
+
+    regionEntryMethods.forEach(
+        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, entryEvent)).isFalse());
+    regionEntryMethods.forEach(
+        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, gatewayQueueEvent))
+            .isFalse());
+    regionMethods
+        .forEach(method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, haContainerMap))
+            .isFalse());
+    regionMethods.forEach(method -> assertThat(
+        methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegionDataStore)).isFalse());
+    queueRegionMethods
+        .forEach(method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, haContainerMap))
+            .isFalse());
+    queueRegionMethods.forEach(method -> assertThat(
+        methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegionDataStore)).isFalse());
   }
 
   @Test
-  public void mapMethodsForPartitionedRegionAreAcceptListed() throws Exception {
-    Class<PartitionedRegion> clazz = PartitionedRegion.class;
-    Method get = clazz.getMethod("get", Object.class);
-    Method entrySet = clazz.getMethod("entrySet");
-    Method keySet = clazz.getMethod("keySet");
-    Method values = clazz.getMethod("values");
-    Method containsKey = clazz.getMethod("containsKey", Object.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(get)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(entrySet)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(keySet)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(values)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(containsKey)).isTrue();
+  public void isAllowedGeodeMethodShouldReturnTrueForRegionEntryMethods() throws Exception {
+    List<Region.Entry> regionEntryInstances = new ArrayList<>();
+    regionEntryInstances.add(mock(NonTXEntry.class));
+    regionEntryInstances.add(mock(Region.Entry.class));
+    regionEntryInstances.add(mock(EntrySnapshot.class));
+    Method getKeyMethod = Region.Entry.class.getMethod("getKey");
+    Method getValueMethod = Region.Entry.class.getMethod("getValue");
+
+    regionEntryInstances.forEach((regionEntry) -> {
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(getKeyMethod, regionEntry)).isTrue();
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(getValueMethod, regionEntry)).isTrue();
+    });
   }
 
   @Test
-  public void numberMethodsForByteAreAcceptListed() throws Exception {
-    testNumberMethods(Byte.class);
+  public void isAllowedGeodeMethodShouldReturnTrueForRegionMethodsOnRegionInstancesWheneverTheSecurityServiceAllowsOperationsOnTheRegion()
+      throws Exception {
+    Region region = mock(Region.class);
+    LocalRegion localRegion = mock(LocalRegion.class);
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+
+    List<Method> regionMethods = new ArrayList<>();
+    regionMethods.add(Region.class.getMethod("containsKey", Object.class));
+    regionMethods.add(Region.class.getMethod("entrySet"));
+    regionMethods.add(Region.class.getMethod("get", Object.class));
+    regionMethods.add(Region.class.getMethod("keySet"));
+    regionMethods.add(Region.class.getMethod("values"));
+
+    regionMethods.forEach(
+        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, region)).isTrue());
+    regionMethods.forEach(
+        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, localRegion)).isTrue());
+    regionMethods.forEach(
+        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegion))
+            .isTrue());
   }
 
   @Test
-  public void numberMethodsForDoubleAreAcceptListed() throws Exception {
-    testNumberMethods(Double.class);
+  public void isAllowedGeodeMethodShouldReturnFalseWheneverTheSecurityServiceDoesNotAllowOperationsOnTheRegion()
+      throws Exception {
+    doThrow(new NotAuthorizedException("Mock Exception")).when(mockSecurityService).authorize(
+        ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ, "testRegion");
+    Region region = mock(Region.class);
+    when(region.getName()).thenReturn("testRegion");
+    LocalRegion localRegion = mock(LocalRegion.class);
+    when(localRegion.getName()).thenReturn("testRegion");
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+    when(partitionedRegion.getName()).thenReturn("testRegion");
+
+    List<Method> regionMethods = new ArrayList<>();
+    regionMethods.add(Region.class.getMethod("containsKey", Object.class));
+    regionMethods.add(Region.class.getMethod("entrySet"));
+    regionMethods.add(Region.class.getMethod("get", Object.class));
+    regionMethods.add(Region.class.getMethod("keySet"));
+    regionMethods.add(Region.class.getMethod("values"));
+
+    regionMethods.forEach(
+        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, region)).isFalse());
+    regionMethods.forEach(
+        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, localRegion)).isFalse());
+    regionMethods.forEach(
+        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegion))
+            .isFalse());
   }
 
   @Test
-  public void numberMethodsForFloatAreAcceptListed() throws Exception {
-    testNumberMethods(Float.class);
+  public void isKnownDangerousMethodShouldReturnTrueForNonSafeMethods() throws Exception {
+    TestBean testBean = new TestBean();
+    List<Method> dangerousMethodds = new ArrayList<>();
+    dangerousMethodds.add(Object.class.getMethod("getClass"));
+    dangerousMethodds.add(TestBean.class.getMethod("readResolve"));
+    dangerousMethodds.add(TestBean.class.getMethod("readObjectNoData"));
+    dangerousMethodds.add(TestBean.class.getMethod("readObject", ObjectInputStream.class));
+    dangerousMethodds.add(TestBean.class.getMethod("writeReplace"));
+    dangerousMethodds.add(TestBean.class.getMethod("writeObject", ObjectOutputStream.class));
+
+    dangerousMethodds.forEach(
+        method -> assertThat(methodAuthorizer.isKnownDangerousMethod(method, testBean)).isTrue());
   }
 
-  @Test
-  public void numberMethodsForIntegerAreAcceptListed() throws Exception {
-    testNumberMethods(Integer.class);
-  }
+  @SuppressWarnings("unused")
+  private static class TestBean implements Serializable {
+    public Object writeReplace() throws ObjectStreamException {
+      return new TestBean();
+    }
 
-  @Test
-  public void numberMethodsForShortAreAcceptListed() throws Exception {
-    testNumberMethods(Short.class);
-  }
+    public void writeObject(ObjectOutputStream stream) throws IOException {
+      throw new IOException();
+    }
 
-  @Test
-  public void numberMethodsForBigDecimalAreAcceptListed() throws Exception {
-    testNumberMethods(BigDecimal.class);
-  }
+    public Object readResolve() throws ObjectStreamException {
+      return new TestBean();
+    }
 
-  @Test
-  public void numberMethodsForNumberAreAcceptListed() throws Exception {
-    testNumberMethods(BigInteger.class);
-  }
+    public void readObjectNoData() throws ObjectStreamException {}
 
-  @Test
-  public void numberMethodsForAtomicIntegerAreAcceptListed() throws Exception {
-    testNumberMethods(AtomicInteger.class);
+    public void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+      if (new Random().nextBoolean()) {
+        throw new IOException();
+      } else {
+        throw new ClassNotFoundException();
+      }
+    }
   }
-
-  @Test
-  public void numberMethodsForAtomicLongAreAcceptListed() throws Exception {
-    testNumberMethods(AtomicLong.class);
-  }
-
-  @Test
-  public void verifyAuthorizersUseDefaultAcceptList() {
-    RestrictedMethodAuthorizer authorizer1 =
-        new RestrictedMethodAuthorizer(null);
-    RestrictedMethodAuthorizer authorizer2 =
-        new RestrictedMethodAuthorizer(null);
-    assertThat(authorizer1.getAcceptList()).isSameAs(authorizer2.getAcceptList());
-    assertThat(authorizer1.getAcceptList())
-        .isSameAs(RestrictedMethodAuthorizer.DEFAULT_ACCEPTLIST);
-    assertThat(authorizer2.getAcceptList())
-        .isSameAs(RestrictedMethodAuthorizer.DEFAULT_ACCEPTLIST);
-  }
-
-  private void testNumberMethods(Class<?> clazz) throws NoSuchMethodException {
-    Method byteValue = clazz.getMethod("byteValue");
-    Method doubleValue = clazz.getMethod("doubleValue");
-    Method intValue = clazz.getMethod("intValue");
-    Method floatValue = clazz.getMethod("longValue");
-    Method longValue = clazz.getMethod("floatValue");
-    Method shortValue = clazz.getMethod("shortValue");
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(byteValue)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(doubleValue)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(intValue)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(floatValue)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(longValue)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(shortValue)).isTrue();
-  }
-
-  private void testMapMethods(Class<?> clazz) throws NoSuchMethodException {
-    Method get = clazz.getMethod("get", Object.class);
-    Method entrySet = clazz.getMethod("entrySet");
-    Method keySet = clazz.getMethod("keySet");
-    Method values = clazz.getMethod("values");
-    Method getEntries = clazz.getMethod("getEntries");
-    Method getValues = clazz.getMethod("getValues");
-    Method containsKey = clazz.getMethod("containsKey", Object.class);
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(get)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(entrySet)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(keySet)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(values)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(getEntries)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(getValues)).isTrue();
-    assertThat(methodInvocationAuthorizer.isAcceptlisted(containsKey)).isTrue();
-  }
-
 }

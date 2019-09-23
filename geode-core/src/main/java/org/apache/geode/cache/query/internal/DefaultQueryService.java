@@ -125,7 +125,7 @@ public class DefaultQueryService implements InternalQueryService {
       // A no-op authorizer, allow method invocation
       this.methodInvocationAuthorizer = ((Method m, Object t) -> true);
     } else {
-      this.methodInvocationAuthorizer = new RestrictedMethodAuthorizer(cache.getSecurityService());
+      this.methodInvocationAuthorizer = new RestrictedMethodAuthorizer(cache);
     }
   }
 
