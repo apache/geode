@@ -40,6 +40,10 @@ public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {
 
   @Override
   public PRLoad getLoad(PartitionedRegion pr) {
+    return getLoad(pr, false);
+  }
+
+  public PRLoad getLoad(PartitionedRegion pr, boolean failOnFirstGetPrimaryTimeout) {
     PartitionedRegionDataStore ds = pr.getDataStore();
     int configuredBucketCount = pr.getTotalNumberOfBuckets();
     PRLoad prLoad = new PRLoad(configuredBucketCount, pr.getLocalMaxMemory());
@@ -55,7 +59,9 @@ public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {
       BucketAdvisor bucketAdvisor = pr.getRegionAdvisor().getBucket(bid).getBucketAdvisor();
       // Wait for a primary to exist for this bucket, because
       // it might be this member.
-      bucketAdvisor.getPrimary();
+      if (bucketAdvisor.getPrimary() == null && failOnFirstGetPrimaryTimeout) {
+        return null;
+      }
       boolean isPrimary = pr.getRegionAdvisor().getBucket(bid).getBucketAdvisor().isPrimary();
       prLoad.addBucket(bid, bucketSize, isPrimary ? 1 : 0);
     }

@@ -88,6 +88,7 @@ import org.apache.geode.internal.cache.partitioned.PersistentBucketRecoverer;
 import org.apache.geode.internal.cache.partitioned.RecoveryRunnable;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
+import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
 import org.apache.geode.internal.cache.partitioned.rebalance.CompositeDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.FPRDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
@@ -1802,6 +1803,11 @@ public class PRHARedundancyProvider {
     return new OfflineMemberDetailsImpl(offlineMembers);
   }
 
+  public InternalPartitionDetails buildPartitionMemberDetails(boolean internal,
+      LoadProbe loadProbe) {
+    return buildPartitionMemberDetails(internal, loadProbe, false);
+  }
+
   /**
    * Creates and fills in a PartitionMemberDetails for the local member.
    *
@@ -1810,7 +1816,7 @@ public class PRHARedundancyProvider {
    * @return PartitionMemberDetails for the local member
    */
   public InternalPartitionDetails buildPartitionMemberDetails(boolean internal,
-      LoadProbe loadProbe) {
+      LoadProbe loadProbe, boolean failOnNoPrimaryCreated) {
     final PartitionedRegion pr = partitionedRegion;
 
     PartitionedRegionDataStore dataStore = pr.getDataStore();
@@ -1837,8 +1843,12 @@ public class PRHARedundancyProvider {
     InternalPartitionDetails localDetails;
     if (internal) {
       waitForPersistentBucketRecoveryOrClose();
-
-      PRLoad prLoad = loadProbe.getLoad(pr);
+      PRLoad prLoad;
+      if (loadProbe instanceof SizedBasedLoadProbe && failOnNoPrimaryCreated) {
+        prLoad = ((SizedBasedLoadProbe) loadProbe).getLoad(pr, true);
+      } else {
+        prLoad = loadProbe.getLoad(pr);
+      }
       localDetails =
           new PartitionMemberInfoImpl(localMember, pr.getLocalMaxMemory() * 1024L * 1024L, size,
               dataStore.getBucketsManaged(), dataStore.getNumberOfPrimaryBucketsManaged(), prLoad,

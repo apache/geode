@@ -105,7 +105,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
       PartitionedRegion region, long startTime) throws ForceReattemptException {
 
     PartitionMemberInfoImpl details = (PartitionMemberInfoImpl) region.getRedundancyProvider()
-        .buildPartitionMemberDetails(this.internal, this.loadProbe);
+        .buildPartitionMemberDetails(this.internal, this.loadProbe, true);
     OfflineMemberDetails offlineDetails;
     if (this.internal && this.fetchOfflineMembers) {
       offlineDetails = region.getRedundancyProvider().fetchOfflineMembers();
@@ -361,7 +361,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
      * @return set of all PartitionMemberDetails
      */
     public Set<InternalPartitionDetails> waitForResponse() {
-      waitForRepliesUninterruptibly();
+      waitForRepliesUninterruptibly(10);
       synchronized (allDetails) {
         return this.allDetails;
       }
