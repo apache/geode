@@ -19,6 +19,8 @@ import static org.apache.geode.management.configuration.Member.MEMBER_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Extension;
+import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -47,7 +49,10 @@ public class MemberManagementController extends AbstractManagementController {
     return clusterManagementService.get(config);
   }
 
-  @ApiOperation(value = "list members")
+  @ApiOperation(value = "list members",
+      extensions = {@Extension(properties = {
+          @ExtensionProperty(name = "jqFilter",
+              value = ".result[] | .runtimeInfo[] | {name:.memberName,status:.status}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_ENDPOINT)
   @ResponseBody
