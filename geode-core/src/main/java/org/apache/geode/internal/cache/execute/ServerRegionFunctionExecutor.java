@@ -16,6 +16,7 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
@@ -135,7 +136,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  protected ResultCollector executeFunction(final Function function) {
+  protected ResultCollector executeFunction(final Function function, long timeout, TimeUnit unit) {
     byte hasResult = 0;
     try {
       if (proxyCache != null) {
@@ -146,12 +147,13 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       }
 
       if (function.hasResult()) { // have Results
+        final int timeoutMs = TimeoutHelper.toMillis(timeout, unit);
         hasResult = 1;
         if (rc == null) { // Default Result Collector
           ResultCollector defaultCollector = new DefaultResultCollector();
-          return executeOnServer(function, defaultCollector, hasResult);
+          return executeOnServer(function, defaultCollector, hasResult, timeoutMs);
         } else { // Custome Result COllector
-          return executeOnServer(function, rc, hasResult);
+          return executeOnServer(function, rc, hasResult, timeoutMs);
         }
       } else { // No results
         executeOnServerNoAck(function, hasResult);
@@ -163,7 +165,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   protected ResultCollector executeFunction(final String functionId, boolean resultReq,
-      boolean isHA, boolean optimizeForWrite) {
+      boolean isHA, boolean optimizeForWrite, long timeout, TimeUnit unit) {
     try {
       if (proxyCache != null) {
         if (proxyCache.isClosed()) {
@@ -174,11 +176,13 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       byte hasResult = 0;
       if (resultReq) { // have Results
         hasResult = 1;
+        final int timeoutMs = TimeoutHelper.toMillis(timeout, unit);
         if (rc == null) { // Default Result Collector
           ResultCollector defaultCollector = new DefaultResultCollector();
-          return executeOnServer(functionId, defaultCollector, hasResult, isHA, optimizeForWrite);
+          return executeOnServer(functionId, defaultCollector, hasResult, isHA, optimizeForWrite,
+              timeoutMs);
         } else { // Custome Result COllector
-          return executeOnServer(functionId, rc, hasResult, isHA, optimizeForWrite);
+          return executeOnServer(functionId, rc, hasResult, isHA, optimizeForWrite, timeoutMs);
         }
       } else { // No results
         executeOnServerNoAck(functionId, hasResult, isHA, optimizeForWrite);
@@ -190,7 +194,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   private ResultCollector executeOnServer(Function function, ResultCollector collector,
-      byte hasResult) throws FunctionException {
+      byte hasResult, int timeoutMs) throws FunctionException {
     ServerRegionProxy srp = getServerRegionProxy();
     FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), region.getSystem());
     try {
@@ -198,7 +202,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       long start = stats.startTime();
       stats.startFunctionExecution(true);
       srp.executeFunction(function, this, collector, hasResult,
-          getTimeoutMs());
+          timeoutMs);
       stats.endFunctionExecution(start, true);
       return collector;
     } catch (FunctionException functionException) {
@@ -211,7 +215,8 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   private ResultCollector executeOnServer(String functionId, ResultCollector collector,
-      byte hasResult, boolean isHA, boolean optimizeForWrite) throws FunctionException {
+      byte hasResult, boolean isHA, boolean optimizeForWrite, int timeoutMs)
+      throws FunctionException {
 
     ServerRegionProxy srp = getServerRegionProxy();
     FunctionStats stats = FunctionStats.getFunctionStats(functionId, region.getSystem());
@@ -220,7 +225,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       long start = stats.startTime();
       stats.startFunctionExecution(true);
       srp.executeFunction(functionId, this, collector, hasResult, isHA,
-          optimizeForWrite, getTimeoutMs());
+          optimizeForWrite, timeoutMs);
       stats.endFunctionExecution(start, true);
       return collector;
     } catch (FunctionException functionException) {
@@ -343,10 +348,16 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public ResultCollector execute(final String functionName) {
+    return execute(functionName, getTimeoutMs(), TimeUnit.MILLISECONDS);
+  }
+
+  @Override
+  public ResultCollector execute(final String functionName, long timeout, TimeUnit unit) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
     }
+    int timeoutInMs = (int) TimeUnit.MILLISECONDS.convert(timeout, unit);
     isFnSerializationReqd = false;
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
@@ -374,9 +385,9 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       boolean isHA = functionAttributes[1] == 1;
       boolean hasResult = functionAttributes[0] == 1;
       boolean optimizeForWrite = functionAttributes[2] == 1;
-      return executeFunction(functionName, hasResult, isHA, optimizeForWrite);
+      return executeFunction(functionName, hasResult, isHA, optimizeForWrite, timeout, unit);
     } else {
-      return executeFunction(functionObject);
+      return executeFunction(functionObject, timeout, unit);
     }
   }
 

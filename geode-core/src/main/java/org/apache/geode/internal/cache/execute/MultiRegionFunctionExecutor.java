@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -176,17 +177,21 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  protected ResultCollector executeFunction(Function function) {
-    if (function.hasResult()) {
-      ResultCollector rc = this.rc;
-      if (rc == null) {
-        rc = new DefaultResultCollector();
-      }
-      return executeFunction(function, rc);
-    } else {
+  protected ResultCollector executeFunction(Function function, long timeout, TimeUnit unit) {
+    if (!function.hasResult()) {
       executeFunction(function, null);
       return new NoResult();
     }
+    ResultCollector inRc = (rc == null) ? new DefaultResultCollector() : rc;
+    ResultCollector rcToReturn = executeFunction(function, inRc);
+    if (timeout > 0) {
+      try {
+        rcToReturn.getResult(timeout, unit);
+      } catch (Exception e) {
+        throw new FunctionException(e);
+      }
+    }
+    return rcToReturn;
   }
 
   private ResultCollector executeFunction(final Function function,

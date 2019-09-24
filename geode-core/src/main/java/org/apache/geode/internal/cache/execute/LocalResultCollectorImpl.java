@@ -25,7 +25,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 
-public class LocalResultCollectorImpl implements LocalResultCollector {
+public class LocalResultCollectorImpl implements CachedResultCollector, LocalResultCollector {
 
   private final ResultCollector userRC;
 
@@ -43,10 +43,13 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
 
   private AbstractExecution execution = null;
 
+  private final ResultCollectorHolder rcHolder;
+
   public LocalResultCollectorImpl(Function function, ResultCollector rc, Execution execution) {
     this.function = function;
     this.userRC = rc;
     this.execution = (AbstractExecution) execution;
+    rcHolder = new ResultCollectorHolder(this);
   }
 
   @Override
@@ -104,7 +107,13 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
   }
 
   @Override
-  public Object getResult() throws FunctionException {
+  public Object getResult()
+      throws FunctionException {
+    return rcHolder.getResult();
+  }
+
+  @Override
+  public Object getResultInternal() throws FunctionException {
     if (this.resultCollected) {
       throw new FunctionException(
           "Function results already collected");
@@ -141,6 +150,12 @@ public class LocalResultCollectorImpl implements LocalResultCollector {
 
   @Override
   public Object getResult(long timeout, TimeUnit unit)
+      throws FunctionException, InterruptedException {
+    return rcHolder.getResult(timeout, unit);
+  }
+
+  @Override
+  public Object getResultInternal(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
 
     boolean resultReceived = false;

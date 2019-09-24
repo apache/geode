@@ -49,7 +49,7 @@ public class DefaultResultCollector implements ResultCollector {
   }
 
   /**
-   * Waits if necessary for the computation to complete, and then retrieves its result.<br>
+   * Returns the result of the execution if available.<br>
    * If {@link Function#hasResult()} is false, upon calling {@link ResultCollector#getResult()}
    * throws {@link FunctionException}.
    *
@@ -70,12 +70,11 @@ public class DefaultResultCollector implements ResultCollector {
   public void endResults() {}
 
   /**
-   * Waits if necessary for at most the given time for the computation to complete, and then
-   * retrieves its result, if available. <br>
+   * Returns the result of the execution if available.<br>
    * If {@link Function#hasResult()} is false, upon calling {@link ResultCollector#getResult()}
    * throws {@link FunctionException}.
    *
-   * @param timeout the maximum time to wait
+   * @param timeout the maximum time to wait (ignored)
    * @param unit the time unit of the timeout argument
    * @return Object computed result
    * @throws FunctionException if something goes wrong while retrieving the result
