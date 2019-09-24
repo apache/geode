@@ -22,7 +22,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -126,7 +128,9 @@ public class ExportStackTraceCommand extends GfshCommand {
       ps = new PrintWriter(os);
 
       for (Map.Entry<String, byte[]> entry : dumps.entrySet()) {
-        ps.append(STACK_TRACE_FOR_MEMBER).append(entry.getKey()).append(" ***")
+        ps.append(STACK_TRACE_FOR_MEMBER).append(entry.getKey()).append(" at ")
+            .append(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SS").format(new Date()))
+            .append(" ***")
             .append(System.lineSeparator());
         ps.flush();
         GZIPInputStream zipIn = new GZIPInputStream(new ByteArrayInputStream(entry.getValue()));
