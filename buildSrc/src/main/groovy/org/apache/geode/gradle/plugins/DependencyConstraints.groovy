@@ -158,6 +158,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'pl.pragmatists', name: 'JUnitParams', version: '1.1.0')
         api(group: 'redis.clients', name: 'jedis', version: '2.9.0')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
+        api(group: 'com.arakelian', name: 'java-jq', version: '0.10.1')
       }
     }
 
