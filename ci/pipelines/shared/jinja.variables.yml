@@ -54,7 +54,7 @@ java_test_versions:
   version: 11
 
 metadata:
-  initial_version: 99.99.0-build.1
+  initial_version: 1.11.0
 
 publish_artifacts:
   CPUS: '8'

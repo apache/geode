@@ -49,7 +49,6 @@ GCP_NETWORK=${GCP_NETWORK##*/}
 GCP_SUBNETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].subnetwork')
 GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
 ENV_ID=$(echo ${GCP_NETWORK} | awk -F- '{ print $1}')
-VERSION_BUCKET="concourse-${ENV_ID}-version"
 
 #echo "DEBUG INFO *****************************"
 #echo "Pipeline prefix = ${PIPELINE_PREFIX}"
@@ -81,7 +80,6 @@ upstream-fork: ${UPSTREAM_FORK}
 pipeline-prefix: "${PIPELINE_PREFIX}"
 public-pipelines: ${PUBLIC_PIPELINES}
 gcp-project: ${GCP_PROJECT}
-version-bucket: ${VERSION_BUCKET}
 artifact-bucket: ${ARTIFACT_BUCKET}
 gradle-global-args: ${GRADLE_GLOBAL_ARGS}
 maven-snapshot-bucket: ${MAVEN_SNAPSHOT_BUCKET}

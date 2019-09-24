@@ -176,33 +176,17 @@ resources:
 - name: geode-build-version
   type: semver
   source:
-    bucket: ((version-bucket))
+    bucket: ((artifact-bucket))
     driver: gcs
     initial_version: {{ metadata.initial_version }}
     json_key: ((!concourse-gcp-key))
-    key: ((pipeline-prefix))((geode-build-branch))/version
-- name: geode-passing-version
-  type: semver
-  source:
-    bucket: ((version-bucket))
-    driver: gcs
-    initial_version: {{ metadata.initial_version }}
-    json_key: ((!concourse-gcp-key))
-    key: ((pipeline-prefix))((geode-build-branch))/passing-version
-{% if repository.sanitized_fork == "apache" or repository.branch == "develop" -%}
-- name: geode-passing-sha
-  type: gcs-resource
-  source:
-    bucket: ((version-bucket))
-    json_key: ((!concourse-gcp-key))
-    regexp: ((pipeline-prefix))((geode-build-branch))/passing-sha
-{% endif -%}
+    key: semvers/((pipeline-prefix))((geode-build-branch))/version
 - name: geode-passing-tokens
   type: gcs-resource
   source:
-    bucket: ((version-bucket))
+    bucket: ((artifact-bucket))
     json_key: ((concourse-gcp-key))
-    regexp: ((pipeline-prefix))((geode-build-branch))/passing-build-tokens-(.*).json
+    regexp: semvers/((pipeline-prefix))((geode-build-branch))/passing-build-tokens-(.*).json
 - name: alpine-tools-image
   type: docker-image
   source:
@@ -215,10 +199,10 @@ resource_types:
 - name: concourse-metadata-resource
   type: docker-image
   source:
-    password: ((!docker-password))
+    password: ((docker-password))
     repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse-metadata-resource
     tag: latest
-    username: ((!docker-username))
+    username: ((docker-username))
 - name: gcs-resource
   type: docker-image
   source:
@@ -410,14 +394,6 @@ jobs:
           JSON
           echo "${GEODE_SHA}" > geode-passing-tokens/sha
   - aggregate:
-    - put: geode-passing-version
-      params:
-        file: geode-build-version/number
-{% if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
-    - put: geode-passing-sha
-      params:
-        file: geode-passing-tokens/sha
-{% endif %}
     - put: geode-passing-tokens
       params:
         file: geode-passing-tokens/*.json
