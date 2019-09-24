@@ -186,7 +186,7 @@ resources:
   source:
     bucket: ((artifact-bucket))
     json_key: ((concourse-gcp-key))
-    regexp: semvers/((pipeline-prefix))((geode-build-branch))/passing-build-tokens-(.*).json
+    versioned_file: semvers/((pipeline-prefix))((geode-build-branch))/passing-build-tokens.json
 - name: alpine-tools-image
   type: docker-image
   source:
@@ -386,7 +386,7 @@ jobs:
           popd
           GEODE_SEMVER=$(cat geode-build-version/number)
 
-          cat > geode-passing-tokens/passing-build-tokens-${GEODE_SEMVER}.json <<JSON
+          cat > geode-passing-tokens/passing-build-tokens.json <<JSON
           {
             "ref": "${GEODE_SHA}",
             "semver": "${GEODE_SEMVER}"
@@ -396,7 +396,7 @@ jobs:
   - aggregate:
     - put: geode-passing-tokens
       params:
-        file: geode-passing-tokens/*.json
+        file: geode-passing-tokens/passing-build-tokens.json
 
 - name: Benchmark
   public: true
