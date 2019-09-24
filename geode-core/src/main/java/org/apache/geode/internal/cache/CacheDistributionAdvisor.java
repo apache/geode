@@ -112,6 +112,14 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   // moved removedProfiles to DistributionAdvisor
 
+  private Set<InternalDistributedMember> adviseSetforAllEvents;
+  private int adviseAllEventsVersion = 0;
+  private boolean prevExcludeInRecovery = false;
+
+  private Set<InternalDistributedMember> adviseSetforUpdate;
+  private int adviseUpdateVersion = 0;
+
+
   /** Creates a new instance of CacheDistributionAdvisor */
   protected CacheDistributionAdvisor(CacheDistributionAdvisee region) {
     super(region);
@@ -145,14 +153,22 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
   private Set<InternalDistributedMember> adviseAllEventsOrCached(final boolean excludeInRecovery)
       throws IllegalStateException {
     getAdvisee().getCancelCriterion().checkCancelInProgress(null);
-    return adviseFilter(profile -> {
-      assert profile instanceof CacheProfile;
-      CacheProfile cp = (CacheProfile) profile;
-      if (excludeInRecovery && cp.inRecovery) {
-        return false;
-      }
-      return cp.cachedOrAllEventsWithListener();
-    });
+
+    if (adviseAllEventsVersion != profilesVersion || adviseAllEventsVersion == 0
+        || excludeInRecovery != prevExcludeInRecovery) {
+      adviseSetforAllEvents = Collections.unmodifiableSet(adviseFilter(profile -> {
+        assert profile instanceof CacheProfile;
+        CacheProfile cp = (CacheProfile) profile;
+        if (excludeInRecovery && cp.inRecovery) {
+          return false;
+        }
+        return cp.cachedOrAllEventsWithListener();
+      }));
+      adviseAllEventsVersion = profilesVersion;
+      prevExcludeInRecovery = excludeInRecovery;
+    }
+    return adviseSetforAllEvents;
+
   }
 
   /**
@@ -167,13 +183,18 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       // The new value is null so this is a create with a null value,
       // in which case we only need to distribute this message to replicates
       // or all events that are not a proxy or if a proxy has a listener
-      return adviseFilter(profile -> {
-        assert profile instanceof CacheProfile;
-        CacheProfile cp = (CacheProfile) profile;
-        DataPolicy dp = cp.dataPolicy;
-        return dp.withReplication()
-            || (cp.allEvents() && (dp.withStorage() || cp.hasCacheListener));
-      });
+      if (adviseUpdateVersion != profilesVersion || adviseUpdateVersion == 0) {
+        adviseSetforUpdate = Collections.unmodifiableSet(adviseFilter(profile -> {
+          assert profile instanceof CacheProfile;
+          CacheProfile cp = (CacheProfile) profile;
+          DataPolicy dp = cp.dataPolicy;
+          return dp.withReplication()
+              || (cp.allEvents() && (dp.withStorage() || cp.hasCacheListener));
+        }));
+        adviseUpdateVersion = profilesVersion;
+
+      }
+      return adviseSetforUpdate;
     }
   }
 
