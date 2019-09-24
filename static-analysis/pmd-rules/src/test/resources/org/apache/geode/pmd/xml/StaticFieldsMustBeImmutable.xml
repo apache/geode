@@ -56,19 +56,7 @@
     }
          ]]></code>
     </test-code>
-    <test-code>
-        <description>Should ignore classes marked as Immutable</description>
-        <expected-problems>0</expected-problems>
-        <code><![CDATA[
-        import org.apache.geode.annotations.Immutable;
-        import java.util.Map;
-        import java.util.Collections;
-    @Immutable
-    public class IsImmutable {
-      public static final Map f4 = Collections.emptyMap();
-    }
-         ]]></code>
-    </test-code>
+
     <test-code>
         <description>Should not be fooled by annotating previous field</description>
         <expected-problems>1</expected-problems>
@@ -83,6 +71,7 @@
     }
          ]]></code>
     </test-code>
+
     <test-code>
         <description>Should ingore logger </description>
         <expected-problems>0</expected-problems>
@@ -94,6 +83,7 @@
     }
          ]]></code>
     </test-code>
+
     <test-code>
         <description>Should flag primitive arrays</description>
         <expected-problems>1</expected-problems>
