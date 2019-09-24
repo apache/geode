@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({SecurityTest.class, RestAPITest.class})
-public class SwaggerVerificationIntegrationTest {
+public class DevRestSwaggerVerificationIntegrationTest {
 
   @ClassRule
   public static ServerStarterRule serverStarter = new ServerStarterRule()
@@ -52,7 +52,7 @@ public class SwaggerVerificationIntegrationTest {
 
     // Check the JSON
     JsonNode json =
-        assertResponse(client.get("/geode/experimental/api-docs")).hasStatusCode(200)
+        assertResponse(client.get("/geode/v1/api-docs")).hasStatusCode(200)
             .getJsonObject();
     assertThat(json.get("swagger").asText(), is("2.0"));
 

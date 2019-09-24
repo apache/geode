@@ -50,7 +50,7 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         .authorizeRequests()
-        .antMatchers("/ping", "/docs/**", "/swagger-ui.html", "/experimental/api-docs/**",
+        .antMatchers("/ping", "/docs/**", "/swagger-ui.html", "/v1/api-docs/**",
             "/webjars/springfox-swagger-ui/**", "/swagger-resources/**")
         .permitAll().anyRequest().authenticated().and().csrf().disable();
 
