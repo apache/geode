@@ -171,6 +171,12 @@ public class DistributionAdvisor {
   private int numActiveProfiles = 0;
 
   /**
+   * Profiles version number
+   */
+  protected volatile int profilesVersion = 0;
+
+
+  /**
    * A collection of MembershipListeners that want to be notified when a profile is added to or
    * removed from this DistributionAdvisor. The keys are membership listeners and the values are
    * Boolean.TRUE.
@@ -1314,7 +1320,7 @@ public class DistributionAdvisor {
   private synchronized boolean basicAddProfile(Profile p) {
     // don't add more than once, but replace existing profile
     // try {
-
+    profilesVersion++;
     int index = indexOfMemberId(p.getId());
     if (index >= 0) {
       Profile[] oldProfiles = profiles; // volatile read
@@ -1343,6 +1349,7 @@ public class DistributionAdvisor {
     // try {
     int i = indexOfMemberId(id);
     if (i >= 0) {
+      profilesVersion++;
       Profile profileRemoved = profiles[i];
       basicRemoveIndex(i);
       return profileRemoved;
