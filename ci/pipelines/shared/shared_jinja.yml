@@ -15,21 +15,6 @@
 # limitations under the License.
 #
 
-{%- macro alpine_tools_config() %}
-{{- docker_config() }}
-{%- endmacro %}
-
-{%- macro docker_config(repository_url) %}
-config:
-  platform: linux
-  image_resource:
-    type: docker-image
-    source:
-      username: ((!docker-username))
-      password: ((!docker-password))
-      repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
-      tag: latest
-{%- endmacro %}
 
 {%- macro github_access(public) -%}
 uri: https://github.com/((geode-fork))/((geode-repo-name)).git
@@ -41,7 +26,9 @@ password: ((github-password))
 
 {%- macro init_retry() -%}
 - task: initial-output
-  {{- docker_config()|indent(2) }}
+  image: alpine-tools-image
+  config:
+    platform: linux
     outputs:
     - name: attempts-log
     run:

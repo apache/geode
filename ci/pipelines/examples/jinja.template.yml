@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-{% from 'shared_jinja.yml' import alpine_tools_config with context %}
 {% from 'shared_jinja.yml' import github_access with context %}
 {% from 'shared_jinja.yml' import init_retry with context %}
 
@@ -71,6 +70,13 @@ resources:
 - name: 24h
   type: time
   source: {interval: 24h}
+- name: alpine-tools-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
+    tag: latest
 
 jobs:
 - name: {{examples_test.name}}
@@ -79,6 +85,7 @@ jobs:
   plan:
   - get: geode-ci
   - aggregate:
+    - get: alpine-tools-image
     - get: geode-examples
       trigger: true
     - get: 24h
@@ -87,7 +94,9 @@ jobs:
       - put: concourse-metadata-resource
       {{ init_retry()|indent(6) }}
       - task: create_instance
-        {{ alpine_tools_config()|indent(8) }}
+        image: alpine-tools-image
+        config:
+          platform: linux
           params:
             {{ common_instance_params(examples_test) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
@@ -106,7 +115,9 @@ jobs:
         timeout: 15m
         attempts: 10
       - task: rsync_code_up
-        {{ alpine_tools_config()|indent(8) }}
+        image: alpine-tools-image
+        config:
+          platform: linux
           run:
             path: geode-ci/ci/scripts/rsync_code_up.sh
           inputs:
@@ -116,7 +127,9 @@ jobs:
           - name: instance-data
         timeout: 5m
       - task: build
-        {{ alpine_tools_config()|indent(8) }}
+        image: alpine-tools-image
+        config:
+          platform: linux
           params:
             JAVA_BUILD_VERSION: {{ java_build_version.version }}
             GRADLE_TASK: {{ examples_test.GRADLE_TASK }}
@@ -133,7 +146,9 @@ jobs:
     ensure:
       do:
       - task: delete_instance
-        {{ alpine_tools_config()|indent(8) }}
+        image: alpine-tools-image
+        config:
+          platform: linux
           run:
             path: geode-ci/ci/scripts/delete_instance.sh
           inputs:
