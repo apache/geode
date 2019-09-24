@@ -17,20 +17,22 @@ package org.apache.geode.internal.cache.wan;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getAddress;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePortInRange;
+import static org.apache.geode.internal.AvailablePort.isPortAvailable;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.logging.LogService;
@@ -52,6 +54,8 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   private final boolean manualStart;
   private final List<GatewayTransportFilter> gatewayTransportFilters;
   private final String bindAddress;
+  private final Function<Integer, Boolean> isPortAvailableFunction;
+  private final Function<PortRange, Integer> getRandomAvailablePortInRangeFunction;
 
   private volatile int port;
   private volatile InternalCacheServer receiverServer;
@@ -60,6 +64,28 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       final int maximumTimeBetweenPings, final int socketBufferSize, final String bindAddress,
       final List<GatewayTransportFilter> gatewayTransportFilters, final String hostnameForSenders,
       final boolean manualStart) {
+    this(cache, startPort, endPort, maximumTimeBetweenPings, socketBufferSize, bindAddress,
+        gatewayTransportFilters, hostnameForSenders, manualStart,
+        port -> isPortAvailable(port, SOCKET, getAddress(SOCKET)),
+        portRange -> getRandomAvailablePortInRange(portRange.startPort, portRange.endPort, SOCKET));
+  }
+
+  @VisibleForTesting
+  GatewayReceiverImpl(final InternalCache cache, final int startPort, final int endPort,
+      final int maximumTimeBetweenPings, final int socketBufferSize, final String bindAddress,
+      final List<GatewayTransportFilter> gatewayTransportFilters, final String hostnameForSenders,
+      final boolean manualStart, final boolean isPortAvailableResult,
+      final int getRandomAvailablePortInRangeResult) {
+    this(cache, startPort, endPort, maximumTimeBetweenPings, socketBufferSize, bindAddress,
+        gatewayTransportFilters, hostnameForSenders, manualStart, port -> isPortAvailableResult,
+        portRange -> getRandomAvailablePortInRangeResult);
+  }
+
+  private GatewayReceiverImpl(final InternalCache cache, final int startPort, final int endPort,
+      final int maximumTimeBetweenPings, final int socketBufferSize, final String bindAddress,
+      final List<GatewayTransportFilter> gatewayTransportFilters, final String hostnameForSenders,
+      final boolean manualStart, final Function<Integer, Boolean> isPortAvailableFunction,
+      final Function<PortRange, Integer> getRandomAvailablePortInRangeFunction) {
     this.cache = cache;
     this.hostnameForSenders = hostnameForSenders;
     this.startPort = startPort;
@@ -69,6 +95,8 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     this.bindAddress = bindAddress;
     this.gatewayTransportFilters = gatewayTransportFilters;
     this.manualStart = manualStart;
+    this.isPortAvailableFunction = isPortAvailableFunction;
+    this.getRandomAvailablePortInRangeFunction = getRandomAvailablePortInRangeFunction;
   }
 
   @Override
@@ -138,7 +166,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
   }
 
   private boolean tryToStart(int port) {
-    if (!AvailablePort.isPortAvailable(port, SOCKET, getAddress(SOCKET))) {
+    if (!isPortAvailableFunction.apply(port)) {
       return false;
     }
 
@@ -202,7 +230,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     if (startPort == endPort) {
       randomPort = startPort;
     } else {
-      randomPort = getRandomAvailablePortInRange(startPort, endPort, SOCKET);
+      randomPort = getRandomAvailablePortInRangeFunction.apply(new PortRange(startPort, endPort));
     }
     return randomPort;
   }
@@ -259,5 +287,16 @@ public class GatewayReceiverImpl implements GatewayReceiver {
         .append(getSocketBufferSize()).append("; isManualStart=").append(isManualStart())
         .append("; group=").append(Arrays.toString(new String[] {GatewayReceiver.RECEIVER_GROUP}))
         .append("]").toString();
+  }
+
+  private static class PortRange {
+
+    private final int startPort;
+    private final int endPort;
+
+    private PortRange(int startPort, int endPort) {
+      this.startPort = startPort;
+      this.endPort = endPort;
+    }
   }
 }
