@@ -495,7 +495,8 @@ public class ConnectionTable {
 
     // Update the list of connections owned by this thread....
 
-    if (this.threadConnectionMap == null) {
+    ConcurrentMap cm = this.threadConnectionMap;
+    if (cm == null) {
       // This instance is being destroyed; fail the operation
       closeCon(
           "Connection table being destroyed",
@@ -503,12 +504,19 @@ public class ConnectionTable {
       return null;
     }
 
-    ArrayList al = (ArrayList) this.threadConnectionMap.get(id);
+    ArrayList al = (ArrayList) cm.get(id);
     if (al == null) {
       // First connection for this DistributedMember. Make sure list for this
       // stub is created if it isn't already there.
       al = new ArrayList();
 
+      if (this.threadConnectionMap == null) {
+        // This instance is being destroyed; fail the operation
+        closeCon(
+            "Connection table being destroyed",
+            result);
+        return null;
+      }
       // Since it's a concurrent map, we just try to put it and then
       // return whichever we got.
       Object o = this.threadConnectionMap.putIfAbsent(id, al);
