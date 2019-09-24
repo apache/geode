@@ -16,13 +16,6 @@
 #
 {% from 'shared_jinja.yml' import github_access with context %}
 ---
-image_resource: &docker-geode-build-image
-  type: docker-image
-  source:
-    username: ((!docker-username))
-    password: ((!docker-password))
-    repository: gcr.io/((gcp-project))/metric-tools
-    tag: latest
 
 resources:
 - name: once-a-day
@@ -38,23 +31,33 @@ resources:
     paths:
     - ci/*
     {{ github_access() | indent(4) }}
+- name: docker-geode-build-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/metric-tools
+    tag: latest
+
 
 {%- macro metrics_job(job_name) %}
 - name: Geode{{job_name}}Metrics
   serial: true
   public: true
   plan:
-  - get: geode-ci
-  - get: once-a-day
-    trigger: true
+  - aggregate:
+    - get: docker-geode-build-image
+    - get: geode-ci
+    - get: once-a-day
+      trigger: true
   - task: get_metrics
+    image: docker-geode-build-image
     config:
       inputs:
       - name: geode-ci
       outputs:
       - name: workspace
       platform: linux
-      image_resource: *docker-geode-build-image
       run:
         path: /usr/bin/python3
         args:

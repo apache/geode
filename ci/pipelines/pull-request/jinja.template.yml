@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-{% from 'shared_jinja.yml' import alpine_tools_config with context %}
 {% from 'shared_jinja.yml' import pipeline_prefix with context %}
 {% from 'shared_jinja.yml' import init_retry with context %}
 
@@ -51,6 +50,14 @@ resources:
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
+- name: alpine-tools-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
+    tag: latest
+
 resource_types:
 - name: gcs-resource
   type: docker-image
@@ -73,6 +80,7 @@ jobs:
   plan:
   - do:
     - aggregate:
+      - get: alpine-tools-image
       - get: geode
         trigger: true
         version: every
@@ -90,7 +98,9 @@ jobs:
         - put: concourse-metadata-resource
         {{ init_retry()|indent(8) }}
         - task: create_instance
-          {{- alpine_tools_config()|indent(10) }}
+          image: alpine-tools-image
+          config:
+            platform: linux
             params:
               CPUS: {{build_test.CPUS}}
               RAM: {{build_test.RAM}}
@@ -114,7 +124,9 @@ jobs:
           timeout: 15m
           attempts: 10
     - task: rsync_code_up
-      {{- alpine_tools_config()|indent(6) }}
+      image: alpine-tools-image
+      config:
+        platform: linux
         run:
           path: geode-ci/ci/scripts/rsync_code_up.sh
         inputs:
@@ -123,7 +135,9 @@ jobs:
         - name: instance-data
       timeout: 5m
     - task: build
-      {{- alpine_tools_config()|indent(6) }}
+      image: alpine-tools-image
+      config:
+        platform: linux
         params:
           JAVA_BUILD_VERSION: 8
           GRADLE_TASK: {{ build_test.GRADLE_TASK }}
@@ -157,7 +171,9 @@ jobs:
     ensure:
       do:
       - task: rsync_code_down
-        {{- alpine_tools_config()|indent(8) }}
+        image: alpine-tools-image
+        config:
+          platform: linux
           params:
             JAVA_BUILD_VERSION: 8
             ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
@@ -173,7 +189,9 @@ jobs:
       ensure:
         aggregate:
         - task: archive_results
-          {{- alpine_tools_config()|indent(10) }}
+          image: alpine-tools-image
+          config:
+            platform: linux
             params:
               ARTIFACT_SLUG: {{build_test.ARTIFACT_SLUG}}
               GRADLE_TASK: {{build_test.GRADLE_TASK}}
@@ -188,7 +206,9 @@ jobs:
             - name: geode-ci
             - name: geode-results
         - task: delete_instance
-          {{- alpine_tools_config()|indent(10) }}
+          image: alpine-tools-image
+          config:
+            platform: linux
             run:
               path: geode-ci/ci/scripts/delete_instance.sh
             inputs:
@@ -214,6 +234,7 @@ jobs:
   plan:
   - do:
     - aggregate:
+      - get: alpine-tools-image
       - get: geode
         trigger: true
         version: every
@@ -231,7 +252,9 @@ jobs:
         - put: concourse-metadata-resource
         {{ init_retry()|indent(8) }}
         - task: create_instance-{{java_test_version.name}}
-          {{- alpine_tools_config()|indent(10) }}
+          image: alpine-tools-image
+          config:
+            platform: linux
             params:
               CPUS: {{test.CPUS}}
               GEODE_BRANCH: {{repository.branch}}
@@ -255,7 +278,9 @@ jobs:
           timeout: 15m
           attempts: 10
     - task: rsync_code_up-{{java_test_version.name}}
-      {{- alpine_tools_config()|indent(6) }}
+      image: alpine-tools-image
+      config:
+        platform: linux
         run:
           path: geode-ci/ci/scripts/rsync_code_up.sh
         inputs:
@@ -264,7 +289,9 @@ jobs:
         - name: instance-data
       timeout: 5m
     - task: execute_tests-{{java_test_version.name}}
-      {{- alpine_tools_config()|indent(6) }}
+      image: alpine-tools-image
+      config:
+        platform: linux
         params:
           ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
           JAVA_BUILD_VERSION: {{ java_build_version.version }}
@@ -306,7 +333,9 @@ jobs:
     ensure:
       do:
       - task: rsync_code_down-{{java_test_version.name}}
-        {{- alpine_tools_config()|indent(8) }}
+        image: alpine-tools-image
+        config:
+          platform: linux
           params:
             JAVA_BUILD_VERSION: 8
             ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
@@ -322,7 +351,9 @@ jobs:
       ensure:
         aggregate:
         - task: archive-results-{{java_test_version.name}}
-          {{- alpine_tools_config()|indent(10) }}
+          image: alpine-tools-image
+          config:
+            platform: linux
             params:
               ARTIFACT_SLUG: {{test.ARTIFACT_SLUG}}
               GRADLE_TASK: {{test.GRADLE_TASK}}
@@ -337,7 +368,9 @@ jobs:
             - name: geode-ci
             - name: geode-results
         - task: delete_instance-{{java_test_version.name}}
-          {{- alpine_tools_config()|indent(10) }}
+          image: alpine-tools-image
+          config:
+            platform: linux
             run:
               path: geode-ci/ci/scripts/delete_instance.sh
             inputs:

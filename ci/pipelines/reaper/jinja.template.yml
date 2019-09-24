@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-{% from 'shared_jinja.yml' import alpine_tools_config with context %}
 
 ---
 
@@ -50,20 +49,32 @@ resources:
   source:
     filter: 'labels.time-to-live:* AND labels.time-to-live<$(($(date +%s) - 86400)) AND status:TERMINATED'
 
+- name: alpine-tools-image
+  type: docker-image
+  source:
+    username: ((docker-username))
+    password: ((docker-password))
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
+    tag: latest
+
+- name: google-cloud-sdk-image
+  type: docker-image
+  source:
+    repository: google/cloud-sdk
+    tag: alpine
+
 jobs:
 - name: stop-instance
   plan:
-  - get: stoppable-instance
-    version: every
-    trigger: true
+  - aggregate:
+    - get: google-cloud-sdk-image
+    - get: stoppable-instance
+      version: every
+      trigger: true
   - task: stop-instances
+    image: google-cloud-sdk-image
     config:
       platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: google/cloud-sdk
-          tag: alpine
       inputs:
       - name: stoppable-instance
       run:
@@ -75,17 +86,15 @@ jobs:
 
 - name: delete-instance
   plan:
-  - get: deletable-instance
-    version: every
-    trigger: true
+  - aggregate:
+    - get: google-cloud-sdk-image
+    - get: deletable-instance
+      version: every
+      trigger: true
   - task: delete-instance
+    image: google-cloud-sdk-image
     config:
       platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: google/cloud-sdk
-          tag: alpine
       inputs:
       - name: deletable-instance
       run:
@@ -97,11 +106,15 @@ jobs:
 
 - name: reap-benchmark-instances
   plan:
-  - get: four-times-a-day
-    trigger: true
-  - get: geode-benchmarks
+  - aggregate:
+    - get: alpine-tools-image
+    - get: four-times-a-day
+      trigger: true
+    - get: geode-benchmarks
   - task: reap-benchmark-instances
-    {{- alpine_tools_config()|indent(4) }}
+    image: alpine-tools-image
+    config:
+      platform: linux
       params:
         AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
         AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
