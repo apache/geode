@@ -21,27 +21,17 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.Filter;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.appender.ConsoleAppender;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
-import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
-import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
-import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
+
+import org.apache.geode.internal.logging.LogService;
 
 public class ProcessLogger {
-  private static final LoggerContext LOGGER_CONTEXT = createLoggerContext();
-  private final Logger logger;
 
+  private final Logger logger;
   private final Queue<OutputLine> outputLines = new ConcurrentLinkedQueue<>();
 
   public ProcessLogger(Process process, String name) {
-    this.logger = LOGGER_CONTEXT.getLogger(name);
+    logger = LogService.getLogger(name);
 
     StreamGobbler stdOutGobbler =
         new StreamGobbler(process.getInputStream(), this::consumeInfoMessage);
@@ -62,28 +52,6 @@ public class ProcessLogger {
     outputLines.add(OutputLine.fromStdErr(message));
   }
 
-  private static LoggerContext createLoggerContext() {
-    LogManager.shutdown();
-
-    ConfigurationBuilder<BuiltConfiguration> builder =
-        ConfigurationBuilderFactory.newConfigurationBuilder();
-    builder.setStatusLevel(Level.ERROR);
-    builder.add(builder.newFilter("ThresholdFilter", Filter.Result.ACCEPT, Filter.Result.NEUTRAL)
-        .addAttribute("level", Level.DEBUG));
-    AppenderComponentBuilder appenderBuilder = builder.newAppender("Stdout", "CONSOLE")
-        .addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT);
-    appenderBuilder.add(builder.newLayout("PatternLayout").addAttribute("pattern",
-        "[%-5level %d{HH:mm:ss.SSS z}] (%c): %msg%n%throwable"));
-    appenderBuilder.add(builder.newFilter("MarkerFilter", Filter.Result.DENY, Filter.Result.NEUTRAL)
-        .addAttribute("marker", "FLOW"));
-    builder.add(appenderBuilder);
-    builder.add(builder.newLogger("org.apache.logging.log4j", Level.ERROR)
-        .add(builder.newAppenderRef("Stdout")).addAttribute("additivity", false));
-    builder.add(builder.newRootLogger(Level.ERROR).add(builder.newAppenderRef("Stdout")));
-
-    return Configurator.initialize(builder.build());
-  }
-
   public List<String> getStdOutLines() {
     return getOutputLines(OutputLine.OutputSource.STD_OUT);
   }
@@ -98,7 +66,7 @@ public class ProcessLogger {
 
   public String getOutputText() {
     return outputLines.stream().map(OutputLine::getLine)
-        .collect(joining(SystemUtils.LINE_SEPARATOR));
+        .collect(joining(System.lineSeparator()));
   }
 
   private List<String> getOutputLines(OutputLine.OutputSource source) {
