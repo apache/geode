@@ -18,7 +18,7 @@
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply plugin: "io.spring.dependency-management"
-apply from: "${project.projectDir}/../../gradle/publish.gradle"
+apply from: "${project.projectDir}/../../gradle/publish-common.gradle"
 
 jar.enabled = false
 

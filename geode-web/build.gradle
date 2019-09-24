@@ -19,7 +19,7 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply plugin: 'war'
 
-apply from: "${project.projectDir}/../gradle/publish.gradle"
+apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 
 
 dependencies {
@@ -39,7 +39,7 @@ dependencies {
   providedCompile(platform(project(':boms:geode-all-bom')))
   providedCompile('javax.servlet:javax.servlet-api')
   providedCompile('org.apache.logging.log4j:log4j-api')
-  
+
   implementation('org.springframework:spring-webmvc')
 
   runtimeOnly('org.springframework:spring-aspects') {
@@ -69,5 +69,10 @@ distributedTest.dependsOn(war)
 integrationTest.dependsOn(war)
 
 war {
+  enabled = true
+  rootSpec.exclude("**/*commons-logging-*.jar")
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+  // this shouldn't be necessary but if it's not specified we're missing some of the jars
+  // from the runtime classpath
+  classpath configurations.runtimeClasspath
 }

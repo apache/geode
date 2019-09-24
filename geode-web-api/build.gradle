@@ -19,8 +19,9 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply plugin: 'war'
 
-apply from: "${project.projectDir}/../gradle/publish.gradle"
+apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 
+jar.enabled = false
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
@@ -97,9 +98,11 @@ sourceSets {
 }
 
 war {
+  enabled = true
   rootSpec.exclude("**/*commons-logging-*.jar")
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   // this shouldn't be necessary but if it's not specified we're missing some of the jars
   // from the runtime classpath
   classpath configurations.runtimeClasspath
 }
+

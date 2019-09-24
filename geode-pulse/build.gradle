@@ -20,8 +20,9 @@ evaluationDependsOn(':geode-core')
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply plugin: 'war'
 
-apply from: "${project.projectDir}/../gradle/publish.gradle"
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
+jar.enabled = false
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
@@ -31,7 +32,7 @@ dependencies {
   compile('org.springframework.security:spring-security-core')
   compile('javax.servlet:javax.servlet-api')
   compile('mx4j:mx4j') {
-    ext.optional = true 
+    ext.optional = true
   }
   compile('mx4j:mx4j-remote') {
     ext.optional = true
@@ -58,7 +59,7 @@ dependencies {
   compile('commons-digester:commons-digester')
   compile('org.apache.commons:commons-lang3')
   compile('org.springframework.ldap:spring-ldap-core')
-  
+
   compile('org.springframework.security:spring-security-config') {
     exclude module: 'aopalliance'
     exclude module: 'spring-expression'
@@ -169,6 +170,8 @@ artifacts {
 }
 
 war {
+  enabled = true
+  rootSpec.exclude("**/*commons-logging-*.jar")
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   classpath configurations.runtimeClasspath
 }
