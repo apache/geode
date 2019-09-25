@@ -17,7 +17,14 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -93,6 +100,42 @@ public class ExportStackTraceCommandDUnitTest {
     // make sure the file is overwritten
     files = locator.getWorkingDir().listFiles(x -> x.getName().startsWith("my_file"));
     assertThat(files.length).isEqualTo(1);
+
+    // delete this file afterwards so that we won't pollute the other tests in this class
+    files[0].delete();
+  }
+
+  @Test
+  public void exportStackTrace_check_file_content() throws IOException {
+    File stackTraceFile = new File(locator.getWorkingDir(), "my_file");
+    String stackTraceMsg = "*** Stack-trace for member server-1 at ";
+    boolean containProperlyMsg = false;
+
+    gfsh.executeAndAssertThat("export stack-traces --file=" + stackTraceFile.getAbsolutePath())
+        .statusIsSuccess().containsOutput("stack-trace(s) exported to file");
+
+    Date date = new Date();
+    String possibleMsg = stackTraceMsg + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(date);
+    date.setSeconds(date.getSeconds() - 1);
+    String anotherPossibleMsg =
+        stackTraceMsg + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(date);
+
+    List<String> expectedStrings = Arrays.asList(possibleMsg, anotherPossibleMsg);
+
+    // make sure file exists afterwards
+    File[] files = locator.getWorkingDir().listFiles(x -> x.getName().startsWith("my_file"));
+    assertThat(files.length).isEqualTo(1);
+
+    BufferedReader bufferedReader = new BufferedReader(new FileReader(stackTraceFile));
+    String firstLine = bufferedReader.readLine();
+
+    for (String message : expectedStrings) {
+      if (firstLine.contains(message)) {
+        containProperlyMsg = true;
+      }
+    }
+
+    assertThat(containProperlyMsg).isEqualTo(true);
 
     // delete this file afterwards so that we won't pollute the other tests in this class
     files[0].delete();
