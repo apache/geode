@@ -14,42 +14,36 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static java.net.InetAddress.getLocalHost;
+import static java.util.Arrays.asList;
+import static java.util.Collections.addAll;
+import static java.util.UUID.randomUUID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.mockito.quality.Strictness;
 
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.PartitionRegionConfig;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.internal.cache.partitioned.ColocatedRegionDetails;
@@ -57,270 +51,241 @@ import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.test.fake.Fakes;
 
 public class ShowMissingDiskStoresFunctionTest {
 
-  private GemFireCacheImpl cache;
-  private InternalDistributedSystem system;
-  private PartitionedRegion pr1;
-  private PartitionedRegion pr2;
-  private DistributedRegion prRoot;
-  private PartitionAttributes pa;
-  private PartitionRegionConfig prc;
-  private Logger logger;
-  private Appender mockAppender;
-  private ArgumentCaptor<LogEvent> loggingEventCaptor;
-  private FunctionContext context;
-  private TestResultSender resultSender;
-  private PersistentMemberManager memberManager;
-  private ShowMissingDiskStoresFunction smdsFunc;
+  private InternalCache cache;
+  private FunctionContext functionContext;
+  private PersistentMemberManager persistentMemberManager;
+  private PartitionedRegion region1;
+  private PartitionedRegion region2;
+  private CollectingResultSender resultSender;
+
+  private ShowMissingDiskStoresFunction showMissingDiskStoresFunction;
 
   @Rule
-  public ExpectedException expectedException = ExpectedException.none();
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
   @Before
   public void setUp() throws Exception {
-    cache = Fakes.cache();
-    system = (InternalDistributedSystem) cache.getDistributedSystem();
-    pr1 = mock(PartitionedRegion.class);
-    pr2 = mock(PartitionedRegion.class);
-    prRoot = mock(DistributedRegion.class);
-    pa = mock(PartitionAttributes.class);
-    prc = mock(PartitionRegionConfig.class);
-    cache = Fakes.cache();
-    resultSender = new TestResultSender();
-    context = new FunctionContextImpl(cache, "testFunction", null, resultSender);
-    memberManager = mock(PersistentMemberManager.class);
-    smdsFunc = new ShowMissingDiskStoresFunction();
+    cache = mock(InternalCache.class);
+    persistentMemberManager = mock(PersistentMemberManager.class);
+    region1 = mock(PartitionedRegion.class);
+    region2 = mock(PartitionedRegion.class);
+    resultSender = new CollectingResultSender();
+
+    functionContext = new FunctionContextImpl(cache, "testFunction", null, resultSender);
+    showMissingDiskStoresFunction = new ShowMissingDiskStoresFunction();
   }
 
   @Test
-  public void testExecute() throws Exception {
-    List<?> results = null;
+  public void execute_resultsContains_null_whenNoMissingDiskStores() {
+    when(cache.getPersistentMemberManager()).thenReturn(persistentMemberManager);
 
-    when(cache.getPersistentMemberManager()).thenReturn(memberManager);
+    showMissingDiskStoresFunction.execute(functionContext);
 
-    smdsFunc.execute(context);
-    results = resultSender.getResults();
-    assertNotNull(results);
+    assertThat(resultSender.getResults())
+        .as("results collection")
+        .hasSize(1);
+
+    assertThat(resultSender.getResults().get(0))
+        .as("results element [0]: null")
+        .isNull();
   }
 
   @Test
-  public void testExecuteWithNullContextThrowsRuntimeException() {
-    expectedException.expect(RuntimeException.class);
+  public void execute_throwsRuntimeException_whenFunctionContextIsNull() {
+    Throwable thrown = catchThrowable(() -> showMissingDiskStoresFunction.execute(null));
 
-    smdsFunc.execute(null);
-  }
-
-  /**
-   * Test method for
-   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
-   */
-  @Test
-  public void testExecuteWithNullCacheInstanceThrowsCacheClosedException() throws Throwable {
-    expectedException.expect(CacheClosedException.class);
-    context = new FunctionContextImpl(null, "testFunction", null, resultSender);
-    List<?> results = null;
-
-    smdsFunc.execute(context);
-    results = resultSender.getResults();
+    // NOTE: throwing RuntimeException with no message is a bad practice
+    assertThat(thrown)
+        .as("throwable thrown by execute")
+        .isInstanceOf(RuntimeException.class)
+        .hasMessage(null);
   }
 
   @Test
-  public void testExecuteWithNullGFCIResultValueIsNull() throws Throwable {
-    List<?> results = null;
+  public void execute_resultsContains_null_whenCacheIsClosed() {
+    when(cache.isClosed()).thenReturn(true);
 
-    when(cache.getPersistentMemberManager()).thenReturn(memberManager);
+    showMissingDiskStoresFunction.execute(functionContext);
 
-    smdsFunc.execute(context);
-    results = resultSender.getResults();
-    assertNotNull(results);
-    assertEquals(1, results.size());
-    assertNull(results.get(0));
+    assertThat(resultSender.getResults())
+        .as("results collection")
+        .hasSize(1);
+
+    assertThat(resultSender.getResults().get(0))
+        .as("results element [0]: null")
+        .isNull();
   }
 
   @Test
-  public void testExecuteWhenGFCIClosedResultValueIsNull() throws Throwable {
-    List<?> results = null;
+  public void execute_resultsContains_MissingDiskStores() throws UnknownHostException {
+    PersistentMemberID persistentMemberId1 = persistentMemberID("/directory1", 1, (short) 1);
+    PersistentMemberID persistentMemberId2 = persistentMemberID("/directory2", 2, (short) 2);
+    Map<String, Set<PersistentMemberID>> waitingRegions = new HashMap<>();
+    waitingRegions.put("region1", new HashSet<>(asList(persistentMemberId1, persistentMemberId2)));
 
-    when(cache.getPersistentMemberManager()).thenReturn(memberManager);
-    when(((GemFireCacheImpl) cache).isClosed()).thenReturn(true);
-    smdsFunc.execute(context);
-    results = resultSender.getResults();
-    assertNotNull(results);
+    when(cache.getPersistentMemberManager()).thenReturn(persistentMemberManager);
+    when(persistentMemberManager.getWaitingRegions()).thenReturn(waitingRegions);
+
+    showMissingDiskStoresFunction.execute(functionContext);
+
+    List<Set<?>> results = getResults(functionContext.getResultSender());
+    assertThat(results)
+        .as("results collection")
+        .hasSize(1);
+
+    assertThat(missingDiskStores(results.get(0)))
+        .as("results element [0]: missingDiskStores")
+        .hasSize(2)
+        .containsExactlyInAnyOrder(
+            new PersistentMemberPattern(persistentMemberId1),
+            new PersistentMemberPattern(persistentMemberId2));
   }
 
   @Test
-  public void testExecuteReturnsMissingDiskStores() throws Throwable {
-    List<?> results = null;
+  public void execute_resultsContains_MissingColocatedRegions() {
+    InternalDistributedMember member = distributedMember("host1", "name1");
 
-    when(cache.getPersistentMemberManager()).thenReturn(memberManager);
+    when(cache.getMyId()).thenReturn(member);
+    when(cache.getPartitionedRegions()).thenReturn(asSet(region1, region2));
+    when(cache.getPersistentMemberManager()).thenReturn(persistentMemberManager);
+    when(region1.getFullPath()).thenReturn("/pr1");
+    when(region1.getMissingColocatedChildren()).thenReturn(asList("child1", "child2"));
 
-    // Fake missing disk-stores
-    Set<PersistentMemberID> regions1 = new HashSet<PersistentMemberID>();
-    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(),
-        "/diskStore1", 1L, (short) 1));
-    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(),
-        "/diskStore2", 2L, (short) 2));
-    Map<String, Set<PersistentMemberID>> mapMember1 =
-        new HashMap<String, Set<PersistentMemberID>>();;
-    mapMember1.put("member1", regions1);
-    when(memberManager.getWaitingRegions()).thenReturn(mapMember1);
+    showMissingDiskStoresFunction.execute(functionContext);
 
-    smdsFunc.execute(context);
-    results = resultSender.getResults();
-    assertNotNull(results);
-    assertEquals(1, results.size());
-    Set<?> detailSet = (Set<?>) results.get(0);
-    assertEquals(2, detailSet.toArray().length);
-    assertTrue(detailSet.toArray()[0] instanceof PersistentMemberPattern);
-    assertTrue(detailSet.toArray()[1] instanceof PersistentMemberPattern);
-    // Results are not sorted so verify results in either order
-    if (((PersistentMemberPattern) detailSet.toArray()[0]).getDirectory().equals("/diskStore1")) {
-      assertEquals("/diskStore2",
-          ((PersistentMemberPattern) detailSet.toArray()[1]).getDirectory());
-    } else if (((PersistentMemberPattern) detailSet.toArray()[0]).getDirectory()
-        .equals("/diskStore2")) {
-      assertEquals("/diskStore1",
-          ((PersistentMemberPattern) detailSet.toArray()[1]).getDirectory());
-    }
+    List<Set<?>> results = getResults(functionContext.getResultSender());
+    assertThat(results)
+        .as("results collection")
+        .hasSize(1);
+
+    assertThat(missingColocatedRegions(results.get(0)))
+        .as("results element [0]: missingColocatedRegions")
+        .hasSize(2)
+        .containsExactlyInAnyOrder(
+            new ColocatedRegionDetails("host1", "name1", "/pr1", "child1"),
+            new ColocatedRegionDetails("host1", "name1", "/pr1", "child2"));
   }
 
   @Test
-  public void testExecuteReturnsMissingColocatedRegions() throws Throwable {
-    List<?> results = null;
+  public void execute_resultsContains_missingDiskStores_andMissingColocatedRegions()
+      throws UnknownHostException {
+    InternalDistributedMember member = distributedMember("host2", "name2");
+    PersistentMemberID persistentMemberId1 = persistentMemberID("/directory1", 1, (short) 1);
+    PersistentMemberID persistentMemberId2 = persistentMemberID("/directory2", 2, (short) 2);
+    Map<String, Set<PersistentMemberID>> waitingRegions = new HashMap<>();
+    waitingRegions.put("region2", asSet(persistentMemberId1, persistentMemberId2));
 
-    when(cache.getPersistentMemberManager()).thenReturn(memberManager);
+    when(cache.getMyId()).thenReturn(member);
+    when(cache.getPartitionedRegions()).thenReturn(asSet(region1, region2));
+    when(cache.getPersistentMemberManager()).thenReturn(persistentMemberManager);
+    when(persistentMemberManager.getWaitingRegions()).thenReturn(waitingRegions);
+    when(region2.getFullPath()).thenReturn("/pr2");
+    when(region2.getMissingColocatedChildren()).thenReturn(asList("child1", "child2"));
 
-    // Fake missing colocated regions
-    Set<PartitionedRegion> prs = new HashSet<PartitionedRegion>();
-    prs.add(pr1);
-    prs.add(pr2);
-    List<String> missing1 = new ArrayList<String>(Arrays.asList("child1", "child2"));
-    when(cache.getPartitionedRegions()).thenReturn(prs);
-    when(pr1.getMissingColocatedChildren()).thenReturn(missing1);
-    when(pr1.getFullPath()).thenReturn("/pr1");
+    showMissingDiskStoresFunction.execute(functionContext);
 
-    smdsFunc.execute(context);
-    results = resultSender.getResults();
-    assertEquals(1, results.size());
-    Set<?> detailSet = (Set<?>) results.get(0);
-    assertEquals(2, detailSet.toArray().length);
-    assertTrue(detailSet.toArray()[0] instanceof ColocatedRegionDetails);
-    assertTrue(detailSet.toArray()[1] instanceof ColocatedRegionDetails);
-    assertEquals("/pr1", ((ColocatedRegionDetails) detailSet.toArray()[0]).getParent());
-    assertEquals("/pr1", ((ColocatedRegionDetails) detailSet.toArray()[1]).getParent());
-    // Results are not sorted so verify results in either order
-    if (((ColocatedRegionDetails) detailSet.toArray()[0]).getChild().equals("child1")) {
-      assertEquals("child2", ((ColocatedRegionDetails) detailSet.toArray()[1]).getChild());
-    } else if (((ColocatedRegionDetails) detailSet.toArray()[0]).getChild().equals("child2")) {
-      assertEquals("child1", ((ColocatedRegionDetails) detailSet.toArray()[1]).getChild());
-    }
+    List<Set<?>> results = getResults(functionContext.getResultSender());
+    assertThat(results)
+        .as("results collection")
+        .hasSize(2);
+
+    // 1st element is set of missing disk stores
+    assertThat(missingDiskStores(results.get(0)))
+        .as("results element [0]: missingDiskStores")
+        .hasSize(2)
+        .containsExactlyInAnyOrder(new PersistentMemberPattern(persistentMemberId1),
+            new PersistentMemberPattern(persistentMemberId2));
+
+    // 2nd element is set of missing colocated regions
+    assertThat(missingColocatedRegions(results.get(1)))
+        .as("results element [1]: missingColocatedRegions")
+        .hasSize(2)
+        .containsExactlyInAnyOrder(
+            new ColocatedRegionDetails("host2", "name2", "/pr2", "child1"),
+            new ColocatedRegionDetails("host2", "name2", "/pr2", "child2"));
   }
 
   @Test
-  public void testExecuteReturnsMissingStoresAndRegions() throws Throwable {
-    List<?> results = null;
+  public void execute_resultsContains_exceptionCaughtByFunction() {
+    RuntimeException exceptionCaughtByFunction = new NullPointerException("message");
 
-    when(cache.getPersistentMemberManager()).thenReturn(memberManager);
+    when(cache.getPersistentMemberManager()).thenThrow(exceptionCaughtByFunction);
 
-    // Fake missing disk-stores
-    Set<PersistentMemberID> regions1 = new HashSet<PersistentMemberID>();
-    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(),
-        "/diskStore1", 1L, (short) 1));
-    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(),
-        "/diskStore2", 2L, (short) 2));
-    Map<String, Set<PersistentMemberID>> mapMember1 =
-        new HashMap<String, Set<PersistentMemberID>>();;
-    mapMember1.put("member1", regions1);
-    when(memberManager.getWaitingRegions()).thenReturn(mapMember1);
+    showMissingDiskStoresFunction.execute(functionContext);
 
-    // Fake missing colocated regions
-    Set<PartitionedRegion> prs = new HashSet<PartitionedRegion>();
-    prs.add(pr1);
-    prs.add(pr2);
-    List<String> missing1 = new ArrayList<String>(Arrays.asList("child1", "child2"));
-    when(cache.getPartitionedRegions()).thenReturn(prs);
-    when(pr1.getMissingColocatedChildren()).thenReturn(missing1);
-    when(pr1.getFullPath()).thenReturn("/pr1");
-
-    smdsFunc.execute(context);
-    results = resultSender.getResults();
-    assertEquals(2, results.size());
-    for (Object result : results) {
-      Set<?> detailSet = (Set<?>) result;
-      if (detailSet.toArray()[0] instanceof PersistentMemberPattern) {
-        assertEquals(2, detailSet.toArray().length);
-        assertTrue(detailSet.toArray()[1] instanceof PersistentMemberPattern);
-        // Results are not sorted so verify results in either order
-        if (((PersistentMemberPattern) detailSet.toArray()[0]).getDirectory()
-            .equals("/diskStore1")) {
-          assertEquals("/diskStore2",
-              ((PersistentMemberPattern) detailSet.toArray()[1]).getDirectory());
-        } else if (((PersistentMemberPattern) detailSet.toArray()[0]).getDirectory()
-            .equals("/diskStore2")) {
-          assertEquals("/diskStore1",
-              ((PersistentMemberPattern) detailSet.toArray()[1]).getDirectory());
-        }
-      } else if (detailSet.toArray()[0] instanceof ColocatedRegionDetails) {
-        assertEquals(2, detailSet.toArray().length);
-        assertTrue(detailSet.toArray()[1] instanceof ColocatedRegionDetails);
-        assertEquals("/pr1", ((ColocatedRegionDetails) detailSet.toArray()[0]).getParent());
-        assertEquals("/pr1", ((ColocatedRegionDetails) detailSet.toArray()[1]).getParent());
-        // Results are not sorted so verify results in either order
-        if (((ColocatedRegionDetails) detailSet.toArray()[0]).getChild().equals("child1")) {
-          assertEquals("child2", ((ColocatedRegionDetails) detailSet.toArray()[1]).getChild());
-        } else if (((ColocatedRegionDetails) detailSet.toArray()[0]).getChild().equals("child2")) {
-          assertEquals("child1", ((ColocatedRegionDetails) detailSet.toArray()[1]).getChild());
-        } else {
-          fail("Incorrect missing colocated region results");
-        }
-      }
-    }
+    assertThat(resultSender.getThrowable())
+        .as("throwable thrown by execute")
+        .isSameAs(exceptionCaughtByFunction);
   }
 
   @Test
-  public void testExecuteCatchesExceptions() throws Exception {
-    expectedException.expect(RuntimeException.class);
-
-    when(cache.getPersistentMemberManager()).thenThrow(new RuntimeException());
-
-    smdsFunc.execute(context);
-    List<?> results = resultSender.getResults();
+  public void getId_returnsFullyQualifiedClassName() {
+    assertThat(showMissingDiskStoresFunction.getId())
+        .as("function id")
+        .isEqualTo(ShowMissingDiskStoresFunction.class.getName());
   }
 
-  @Test
-  public void testGetId() {
-    assertEquals(ShowMissingDiskStoresFunction.class.getName(), smdsFunc.getId());
+  private static List<Set<?>> getResults(ResultSender<?> resultSender) {
+    return ((CollectingResultSender) resultSender).getResults();
   }
 
-  private static class TestResultSender implements ResultSender {
+  private static Set<PersistentMemberPattern> missingDiskStores(Set<?> results) {
+    return (Set<PersistentMemberPattern>) results;
+  }
 
-    private final List<Object> results = new LinkedList<Object>();
+  private static Set<ColocatedRegionDetails> missingColocatedRegions(Set<?> results) {
+    return (Set<ColocatedRegionDetails>) results;
+  }
 
-    private Exception t;
+  private static PersistentMemberID persistentMemberID(String directory, long timeStamp,
+      short version)
+      throws UnknownHostException {
+    return new PersistentMemberID(new DiskStoreID(randomUUID()), getLocalHost(), directory,
+        timeStamp, version);
+  }
 
-    protected List<Object> getResults() throws Exception {
-      if (t != null) {
-        throw t;
-      }
+  private static InternalDistributedMember distributedMember(String host, String name) {
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
+    when(member.getHost()).thenReturn(host);
+    when(member.getName()).thenReturn(name);
+    return member;
+  }
+
+  private static <T> Set<T> asSet(T... values) {
+    Set<T> set = new HashSet<>();
+    addAll(set, values);
+    return set;
+  }
+
+  private static class CollectingResultSender<T> implements ResultSender<Set<T>> {
+
+    private final List<Set<T>> results = new CopyOnWriteArrayList<>();
+    private final AtomicReference<Throwable> throwableRef = new AtomicReference<>();
+
+    List<Set<T>> getResults() {
       return Collections.unmodifiableList(results);
     }
 
+    Throwable getThrowable() {
+      return throwableRef.get();
+    }
+
     @Override
-    public void lastResult(final Object lastResult) {
+    public void lastResult(Set<T> lastResult) {
       results.add(lastResult);
     }
 
     @Override
-    public void sendResult(final Object oneResult) {
+    public void sendResult(Set<T> oneResult) {
       results.add(oneResult);
     }
 
     @Override
-    public void sendException(final Throwable t) {
-      this.t = (Exception) t;
+    public void sendException(Throwable t) {
+      throwableRef.set(t);
     }
   }
 }
