@@ -40,21 +40,32 @@ public class ConnectCommandAcceptanceTest {
   public GfshRule gfshDefault = new GfshRule();
 
   @Test
-  public void useCurrentGfshToConnectToOlderLocator() throws Exception {
+  public void useCurrentGfshToConnectToOlderLocator() {
     // this test can only be run with pre-9 jdk since it needs to run older version of gfsh
     assumeTrue(!SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
-    GfshScript.of("start locator").execute(gfsh130);
-    GfshExecution connect = GfshScript.of("connect").expectFailure().execute(gfshDefault);
+    GfshScript
+        .of("start locator")
+        .execute(gfsh130);
 
-    assertThat(connect.getOutputText()).contains("Cannot use a")
+    GfshExecution connect = GfshScript
+        .of("connect")
+        .expectFailure()
+        .execute(gfshDefault);
+
+    assertThat(connect.getOutputText())
+        .contains("Cannot use a")
         .contains("gfsh client to connect to this cluster.");
   }
 
   @Test
-  public void invalidHostname() throws Exception {
-    GfshExecution connect = GfshScript.of("connect --locator=l192.168.99.1[52326]").expectFailure()
+  public void invalidHostname() {
+    GfshExecution connect = GfshScript
+        .of("connect --locator=l192.168.99.1[52326]")
+        .expectFailure()
         .execute(gfshDefault);
-    assertThat(connect.getOutputText()).doesNotContain("UnknownHostException")
+
+    assertThat(connect.getOutputText())
+        .doesNotContain("UnknownHostException")
         .doesNotContain("nodename nor servname")
         .contains("can't be reached. Hostname or IP address could not be found.");
   }
