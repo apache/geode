@@ -136,7 +136,7 @@ echo "============================================================"
 set -x
 cd ${BREW_DIR}/Formula
 git pull
-git remote add myfork git@github.com:${GITHUB_USER}/homebrew-core.git
+git remote add myfork git@github.com:${GITHUB_USER}/homebrew-core.git || true
 if ! git fetch myfork ; then
     echo "Please fork https://github.com/Homebrew/homebrew-core"
     exit 1
@@ -214,4 +214,5 @@ echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-g
 echo "3. Validate docker image: docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apachegeode/geode"
 echo "4. Bulk-transition JIRA issues fixed in this release to Closed"
 echo "5. Wait overnight for apache mirror sites to sync"
-echo "6. Run ${0%/*}/finalize-release.sh -v ${VERSION}"
+echo "6. Confirm that your homebrew PR passed its PR checks and was merged to master"
+echo "7. Run ${0%/*}/finalize_release.sh -v ${VERSION}"

@@ -66,12 +66,12 @@ fi
 
 echo ""
 echo "============================================================"
-echo "Destroying pipeline"
+echo "Destroying pipelines"
 echo "============================================================"
 set -x
-cd ${0%/*}/../../ci/pipelines/meta
+cd ${GEODE}
 fly -t concourse.apachegeode-ci.info login --concourse-url https://concourse.apachegeode-ci.info/
-./destroy_pipelines.sh
+${0%/*}/../../ci/pipelines/meta/destroy_pipelines.sh
 set +x
 
 
