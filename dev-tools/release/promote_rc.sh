@@ -89,6 +89,7 @@ echo "(note: must be logged in to svn as a PMC member or this will fail)"
 echo "============================================================"
 set -x
 cd ${SVN_DIR}/../..
+svn update
 svn mv dev/geode/${FULL_VERSION} release/geode/${VERSION}
 cp dev/geode/KEYS release/geode/KEYS
 svn commit -m "Releasing Apache Geode ${VERSION} distribution"
@@ -110,12 +111,12 @@ done
 
 echo ""
 echo "============================================================"
-echo "Checking that artifacts have published to archive.apache.org..."
+echo "Checking that artifacts have published to www.apache.org..."
 echo "============================================================"
 for suffix in "" .asc .sha256 ; do
   file=apache-geode-${VERSION}.tgz
-  url=https://archive.apache.org/dist/geode/${VERSION}/${file}${suffix}
-  expectedsize=$(cd ${SVN_DIR}/../../release/geode/${VERSION}; ls -l $file | awk '{print $5}')
+  url=https://www.apache.org/dist/geode/${VERSION}/${file}${suffix}
+  expectedsize=$(cd ${SVN_DIR}/../../release/geode/${VERSION}; ls -l ${file}${suffix} | awk '{print $5}')
   actualsize=0
   while [ $expectedsize -ne $actualsize ] ; do
     while ! curl -s --output /dev/null --head --fail "$url"; do
@@ -144,7 +145,9 @@ git checkout -b apache-geode-${VERSION}
 GEODE_SHA=$(awk '{print $1}' < $WORKSPACE/dist/release/geode/${VERSION}/apache-geode-${VERSION}.tgz.sha256)
 set +x
 sed -e 's# *url ".*#  url "https://www.apache.org/dyn/closer.cgi?path=geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
-    -e 's# *mirror ".*#  mirror "https://archive.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
+    -e '/ *mirror ".*www.*/d' \
+    -e 's# *mirror ".*archive.*#  mirror "https://archive.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"\
+  mirror "https://www.apache.org/dist/geode/'"${VERSION}"'/apache-geode-'"${VERSION}"'.tgz"#' \
     -e 's/ *sha256 ".*/  sha256 "'"${GEODE_SHA}"'"/' \
     -i.bak apache-geode.rb
 rm apache-geode.rb.bak
@@ -206,9 +209,9 @@ echo "Done promoting release artifacts!"
 echo "============================================================"
 cd ${GEODE}/../..
 echo "Next steps:"
-echo "1. Click 'Release' in http://repository.apache.org/"
+echo "1. Click 'Release' in http://repository.apache.org/ (if you haven't already)"
 echo "2. Go to https://github.com/${GITHUB_USER}/homebrew-core/pull/new/apache-geode-${VERSION} and submit the pull request"
 echo "3. Validate docker image: docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apachegeode/geode"
 echo "4. Bulk-transition JIRA issues fixed in this release to Closed"
-echo "5. Wait 8-24 hours for apache mirror sites to sync"
+echo "5. Wait overnight for apache mirror sites to sync"
 echo "6. Run ${0%/*}/finalize-release.sh -v ${VERSION}"
