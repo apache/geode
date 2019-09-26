@@ -69,7 +69,8 @@ echo "============================================================"
 echo "Destroying pipelines"
 echo "============================================================"
 set -x
-DEVELOP_META=${0%/*}/../../ci/pipelines/meta
+cd ${0%/*}/../../ci/pipelines/meta
+DEVELOP_META=$(pwd)
 cd ${GEODE}
 fly -t concourse.apachegeode-ci.info login --concourse-url https://concourse.apachegeode-ci.info/
 ${DEVELOP_META}/destroy_pipelines.sh
