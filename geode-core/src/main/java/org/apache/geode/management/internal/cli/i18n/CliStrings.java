@@ -717,10 +717,6 @@ public class CliStrings {
       "disk-usage-critical-percentage";
   public static final String CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT__HELP =
       "Critical percentage for disk volume usage.";
-  public static final String CREATE_DISK_STORE__STAGE_CONFIGURATION =
-      "stage-configuration";
-  public static final String CREATE_DISK_STORE__STAGE_CONFIGURATION__HELP =
-      "Only create the cluster configuration element for the disk-store. The disk-store will be created on any future servers to join the cluster.";
   public static final String CREATE_DISK_STORE__ERROR_WHILE_CREATING_REASON_0 =
       "An error occurred while creating the disk store: \"{0}\"";
 
