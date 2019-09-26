@@ -50,7 +50,7 @@ import org.apache.geode.management.internal.cli.LogWrapper;
  * Makes use of reflection to reset private static variables on some classes to replace loggers that
  * would otherwise clutter the console.
  */
-public class GfshInitFileJUnitTest {
+public class GfshInitFileIntegrationTest {
 
   private static final String INIT_FILE_NAME = GfshConfig.DEFAULT_INIT_FILE_NAME;
   private static final boolean APPEND = true;
