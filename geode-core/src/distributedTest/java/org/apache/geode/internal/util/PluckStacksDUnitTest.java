@@ -112,7 +112,8 @@ public class PluckStacksDUnitTest extends JUnit4CacheTestCase {
     for (Object resultObj : resultList) {
       if (resultObj instanceof StackTracesPerMember) {
         StackTracesPerMember stackTracePerMember = (StackTracesPerMember) resultObj;
-        dumps.put(stackTracePerMember.getMemberNameOrId(), stackTracePerMember.getStackTraces());
+        dumps.put(stackTracePerMember.getMemberNameOrIdWithTimestamp(),
+            stackTracePerMember.getStackTraces());
       } else {
         fail("expected a stack trace but found " + resultObj);
       }
