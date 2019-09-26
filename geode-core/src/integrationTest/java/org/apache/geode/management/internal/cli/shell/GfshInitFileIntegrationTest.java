@@ -41,6 +41,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -55,6 +56,7 @@ import org.apache.geode.management.internal.cli.LogWrapper;
  * Makes use of reflection to reset private static variables on some classes to replace loggers that
  * would otherwise clutter the console.
  */
+@Ignore("Rewrite GfshInitFileIntegrationTest without using reflection to change Gfsh statics")
 public class GfshInitFileIntegrationTest {
 
   private static final int BANNER_LINE_COUNT = 1;
