@@ -116,8 +116,12 @@ public class ExportStackTraceCommandDUnitTest {
     BufferedReader bufferedReader = new BufferedReader(new FileReader(stackTraceFile));
     String firstLine = bufferedReader.readLine();
 
-    String regex = "(\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}\\:\\d{2}\\:\\d{2}\\.\\d{3})";
+    String regex = "(\\d{4}\\/\\d{2}\\/\\d{2}\\s\\d{2}\\:\\d{2}\\:\\d{2}\\.\\d{1,3})";
     boolean dateExist = Pattern.compile(regex).matcher(firstLine).find();
+
+    if (!dateExist) {
+      System.out.println("firstLine = " + firstLine);
+    }
 
     assertThat(dateExist).isEqualTo(true);
 
