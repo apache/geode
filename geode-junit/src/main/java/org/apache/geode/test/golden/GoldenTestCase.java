@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.junit.After;
 import org.junit.Before;
 
@@ -40,13 +39,13 @@ public abstract class GoldenTestCase {
   protected static final String DEBUG_PROPERTY = "golden.test.DEBUG";
   protected static final boolean DEBUG = Boolean.getBoolean(DEBUG_PROPERTY);
 
-  /** The log4j2 config used within the spawned process */
-  private static final String LOG4J2_CONFIG_URL_STRING =
+  private static final String LOG4J_CONFIGURATION_FILE_PROPERTY = "log4j.configurationFile";
+  private static final String LOG4J_CONFIG_URL_STRING =
       GoldenTestCase.class.getResource("log4j2-test.xml").toString();
   private static final String[] JVM_ARGS = new String[] {
-      "-D" + ConfigurationFactory.CONFIGURATION_FILE_PROPERTY + "=" + LOG4J2_CONFIG_URL_STRING};
+      "-D" + LOG4J_CONFIGURATION_FILE_PROPERTY + "=" + LOG4J_CONFIG_URL_STRING};
 
-  private final List<ProcessWrapper> processes = new ArrayList<ProcessWrapper>();
+  private final List<ProcessWrapper> processes = new ArrayList<>();
 
   @Before
   public final void setUpGoldenTest() throws Exception {
@@ -56,12 +55,12 @@ public abstract class GoldenTestCase {
   @After
   public final void tearDownGoldenTest() throws Exception {
     try {
-      for (ProcessWrapper process : this.processes) {
+      for (ProcessWrapper process : processes) {
         process.destroy();
         printProcessOutput(process, true);
       }
     } finally {
-      this.processes.clear();
+      processes.clear();
     }
     subTearDown();
   }
@@ -86,7 +85,7 @@ public abstract class GoldenTestCase {
       final ProcessWrapper.Builder processWrapperBuilder, final Class<?> main) {
     final ProcessWrapper processWrapper =
         processWrapperBuilder.jvmArguments(JVM_ARGS).mainClass(main).build();
-    this.processes.add(processWrapper);
+    processes.add(processWrapper);
     return processWrapper;
   }
 
