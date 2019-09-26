@@ -182,5 +182,5 @@ cd ${GEODE}/../..
 echo "Don't forget to:"
 [ -z "$DID_REMOVE" ] || echo "- Update mirror links for old releases that were removed from mirrors"
 echo "- Publish documentation to docs site"
-[ "${V##*.}" -ne 0 ] || echo "- Ask for a volunteer to Update Dependencies"
+[ "${VERSION##*.}" -ne 0 ] || echo "- Ask for a volunteer to Update Dependencies"
 echo "- Send announce email"
