@@ -44,7 +44,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateDiskStoreFunction;
 import org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -90,10 +89,7 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_DISK_STORE__DISK_USAGE_WARNING_PCT__HELP) float diskUsageWarningPercentage,
       @CliOption(key = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT,
           unspecifiedDefaultValue = "99",
-          help = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT__HELP) float diskUsageCriticalPercentage,
-      @CliOption(key = CliStrings.CREATE_DISK_STORE__STAGE_CONFIGURATION,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
-          help = CliStrings.CREATE_DISK_STORE__STAGE_CONFIGURATION__HELP) boolean stageDiskStoreConfig) {
+          help = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT__HELP) float diskUsageCriticalPercentage) {
 
     DiskStoreAttributes diskStoreAttributes = new DiskStoreAttributes();
     diskStoreAttributes.allowForceCompaction = allowForceCompaction;
@@ -125,37 +121,33 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(groups, null);
 
+    Pair<Boolean, String> validationResult;
     if (targetMembers.isEmpty()) {
-      if (!stageDiskStoreConfig) {
-        return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      } else {
-        targetMembers = findMembersIncludingLocators(groups, null);
-      }
+      validationResult = validateDiskstoreAttributes(diskStoreAttributes,
+          findMembersIncludingLocators(groups, null));
+    } else {
+      validationResult = validateDiskstoreAttributes(diskStoreAttributes, targetMembers);
     }
-
-    Pair<Boolean, String> validationResult =
-        validateDiskstoreAttributes(diskStoreAttributes, targetMembers);
     if (validationResult.getLeft().equals(Boolean.FALSE)) {
       return ResultModel.createError(validationResult.getRight());
     }
 
     ResultModel result;
     DiskStoreType diskStoreType = createDiskStoreType(name, diskStoreAttributes);
-    if (stageDiskStoreConfig) {
-      result = new ResultModel();
-      InfoResultModel infoSection = result.addInfo();
-      result.setConfigObject(diskStoreType);
+    if (targetMembers.isEmpty()) {
+      // No server members is Considered OK, just add the disk store to the cluster configuration
+      result = ResultModel.createMemberStatusResult(Collections.emptyList(), false, false);
     } else {
       List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
           new CreateDiskStoreFunction(), new Object[] {name, diskStoreAttributes}, targetMembers);
-
       result = ResultModel.createMemberStatusResult(functionResults);
-      result.setConfigObject(diskStoreType);
+    }
 
-      if (!waitForDiskStoreMBeanCreation(name, targetMembers)) {
-        result.addInfo()
-            .addLine("Did not complete waiting for Disk Store MBean proxy creation");
-      }
+    result.setConfigObject(diskStoreType);
+
+    if (!targetMembers.isEmpty() && !waitForDiskStoreMBeanCreation(name, targetMembers)) {
+      result.addInfo()
+          .addLine("Did not complete waiting for Disk Store MBean proxy creation");
     }
 
     return result;

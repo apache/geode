@@ -81,7 +81,7 @@ public class CreateDiskStoreCommandTest {
   }
 
   @Test
-  public void stageConfiguration_doesNotExecuteCreateDiskStoreFunction() {
+  public void createWithNoServerMembers_persistsConfigWithoutExecutingCreateDiskStoreFunction() {
     doReturn(Collections.emptySet()).when(command).findMembers(any(),
         any());
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command)
@@ -92,15 +92,14 @@ public class CreateDiskStoreCommandTest {
 
     ResultModel resultModel =
         gfsh.executeAndAssertThat(command,
-            "create disk-store --name=ds1 --dir=./pdx/persist --stage-configuration=true")
+            "create disk-store --name=pdx --dir=./pdx/persist")
             .statusIsSuccess().getResultModel();
     verifyDiskStoreDirConfig(resultModel, "./pdx/persist");
-
     verify(command, never()).executeAndGetFunctionResult(any(), any(), any());
   }
 
   @Test
-  public void stageConfiguration_noServers_persistsConfig() {
+  public void createWithNoServers_isIdempotent() {
     doReturn(Collections.emptySet()).when(command).findMembers(any(),
         any());
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command)
@@ -111,50 +110,14 @@ public class CreateDiskStoreCommandTest {
 
     ResultModel resultModel =
         gfsh.executeAndAssertThat(command,
-            "create disk-store --name=ds1 --dir=./pdx/persist --stage-configuration=true")
-            .statusIsSuccess().getResultModel();
-    verifyDiskStoreDirConfig(resultModel, "./pdx/persist");
-  }
-
-  @Test
-  public void stageConfiguration_withServers_persistsConfig() {
-    doReturn(Collections.emptySet()).when(command).findMembers(any(),
-        any());
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command)
-        .findMembersIncludingLocators(any(),
-            any());
-    doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
-        any());
-
-    ResultModel resultModel =
-        gfsh.executeAndAssertThat(command,
-            "create disk-store --name=ds1 --dir=./pdx/persist --stage-configuration=true")
-            .statusIsSuccess().getResultModel();
-    verifyDiskStoreDirConfig(resultModel, "./pdx/persist");
-  }
-
-  @Test
-  public void stageConfiguration_isIdempotent() {
-    doReturn(Collections.emptySet()).when(command).findMembers(any(),
-        any());
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command)
-        .findMembersIncludingLocators(any(),
-            any());
-    doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
-        any());
-
-    ResultModel resultModel =
-        gfsh.executeAndAssertThat(command,
-            "create disk-store --name=ds1 --dir=./pdx/persist --stage-configuration=true")
+            "create disk-store --name=ds1 --dir=./pdx/persist")
             .statusIsSuccess().getResultModel();
 
     verifyDiskStoreDirConfig(resultModel, "./pdx/persist");
-    DiskStoreType diskStoreType;
-    DiskDirType diskDirType;
 
     resultModel =
         gfsh.executeAndAssertThat(command,
-            "create disk-store --name=ds1 --dir=./pdx/persist --stage-configuration=true")
+            "create disk-store --name=ds1 --dir=./pdx/persist")
             .statusIsSuccess().getResultModel();
     verifyDiskStoreDirConfig(resultModel, "./pdx/persist");
   }
