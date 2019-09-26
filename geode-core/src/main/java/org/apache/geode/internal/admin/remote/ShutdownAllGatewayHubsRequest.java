@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -47,7 +48,7 @@ public class ShutdownAllGatewayHubsRequest extends DistributionMessage {
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.STANDARD_EXECUTOR;
+    return OperationExecutors.STANDARD_EXECUTOR;
   }
 
   @Override

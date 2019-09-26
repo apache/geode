@@ -28,6 +28,7 @@ import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
@@ -138,7 +139,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
     @Override
     public int getProcessorType() {
       // Set to STANDARD to keep it from being processed in-line
-      return ClusterDistributionManager.STANDARD_EXECUTOR;
+      return OperationExecutors.STANDARD_EXECUTOR;
     }
 
     @Override

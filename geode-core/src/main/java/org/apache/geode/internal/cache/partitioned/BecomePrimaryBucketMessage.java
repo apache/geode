@@ -26,6 +26,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -107,7 +108,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
   public int getProcessorType() {
     // use the waiting pool because operateOnPartitionedRegion will
     // send out a DeposePrimaryBucketMessage and wait for the reply
-    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
+    return OperationExecutors.WAITING_POOL_EXECUTOR;
   }
 
   @Override

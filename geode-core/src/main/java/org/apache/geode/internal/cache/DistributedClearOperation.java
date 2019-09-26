@@ -25,6 +25,7 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
@@ -182,7 +183,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
        * okay to run this in a non-ordered executor since the operation contains its own ordering
        * information.
        */
-      return ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+      return OperationExecutors.HIGH_PRIORITY_EXECUTOR;
     }
 
     @Override

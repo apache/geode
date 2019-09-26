@@ -283,8 +283,10 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
             }
 
             final Map<K, V> copy = new HashMap<>(buffer);
-            Future<?> f = local.getCache().getDistributionManager().getWaitingThreadPool().submit(
-                (Runnable) () -> local.basicImportPutAll(copy, !options.shouldInvokeCallbacks()));
+            Future<?> f = local.getCache().getDistributionManager().getExecutors()
+                .getWaitingThreadPool().submit(
+                    (Runnable) () -> local.basicImportPutAll(copy,
+                        !options.shouldInvokeCallbacks()));
 
             puts.addLast(f);
             buffer.clear();

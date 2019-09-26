@@ -54,6 +54,7 @@ import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
@@ -124,9 +125,11 @@ public class LuceneServiceImplJUnitTest {
     when(((StatisticsFactory) ds).createAtomicStatistics(any(), anyString()))
         .thenReturn(luceneIndexStats);
     when(cache.getRegion(anyString())).thenReturn(region);
-    when(cache.getDistributionManager()).thenReturn(mock(DistributionManager.class));
-    when(cache.getDistributionManager().getWaitingThreadPool())
-        .thenReturn(Executors.newSingleThreadExecutor());
+    DistributionManager manager = mock(DistributionManager.class);
+    when(cache.getDistributionManager()).thenReturn(manager);
+    OperationExecutors executors = mock(OperationExecutors.class);
+    when(executors.getWaitingThreadPool()).thenReturn(Executors.newSingleThreadExecutor());
+    when(manager.getExecutors()).thenReturn(executors);
 
     RegionAttributes ratts = mock(RegionAttributes.class);
     when(region.getAttributes()).thenReturn(ratts);

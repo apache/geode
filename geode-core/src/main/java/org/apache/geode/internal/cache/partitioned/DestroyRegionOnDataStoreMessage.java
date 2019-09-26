@@ -22,6 +22,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -89,7 +90,7 @@ public class DestroyRegionOnDataStoreMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
+    return OperationExecutors.WAITING_POOL_EXECUTOR;
   }
 
   @Override

@@ -19,9 +19,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
@@ -54,7 +54,7 @@ public class GMSMessageAdapter implements GMSMessage {
   @Override
   public boolean isHighPriority() {
     return geodeMessage instanceof HighPriorityDistributionMessage ||
-        geodeMessage.getProcessorType() == ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+        geodeMessage.getProcessorType() == OperationExecutors.HIGH_PRIORITY_EXECUTOR;
   }
 
   @Override

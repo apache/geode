@@ -381,15 +381,16 @@ public class PartitionedRegionHelper {
           // Fix for #45365, we don't schedule an asynchronous task until
           // we have determined the node to remove (Which includes the
           // serial number).
-          cache.getDistributionManager().getPrMetaDataCleanupThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-              cleanPartitionedRegionMetaDataForNode(cache, node1, prConf, prName);
-              if (postCleanupTask != null) {
-                postCleanupTask.run();
-              }
-            }
-          });
+          cache.getDistributionManager().getExecutors().getPrMetaDataCleanupThreadPool()
+              .execute(new Runnable() {
+                @Override
+                public void run() {
+                  cleanPartitionedRegionMetaDataForNode(cache, node1, prConf, prName);
+                  if (postCleanupTask != null) {
+                    postCleanupTask.run();
+                  }
+                }
+              });
           runPostCleanUp = false;
           return;
         }

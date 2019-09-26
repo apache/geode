@@ -190,12 +190,12 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   public boolean orderedDelivery() {
     final int processorType = getProcessorType();
     switch (processorType) {
-      case ClusterDistributionManager.SERIAL_EXECUTOR:
+      case OperationExecutors.SERIAL_EXECUTOR:
         // no need to use orderedDelivery for PR ops particularly when thread
         // does not own resources
         // case DistributionManager.PARTITIONED_REGION_EXECUTOR:
         return true;
-      case ClusterDistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR:
+      case OperationExecutors.REGION_FUNCTION_EXECUTION_EXECUTOR:
         // allow nested distributed functions to be executed from within the
         // execution of a function
         return false;
@@ -326,7 +326,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * Return the Executor in which to process this message.
    */
   protected Executor getExecutor(ClusterDistributionManager dm) {
-    return dm.getExecutor(getProcessorType(), sender);
+    return dm.getExecutors().getExecutor(getProcessorType(), sender);
   }
 
   public abstract int getProcessorType();
@@ -408,7 +408,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    */
   protected void schedule(final ClusterDistributionManager dm) {
     boolean inlineProcess = INLINE_PROCESS
-        && getProcessorType() == ClusterDistributionManager.SERIAL_EXECUTOR && !isPreciousThread();
+        && getProcessorType() == OperationExecutors.SERIAL_EXECUTOR && !isPreciousThread();
 
     boolean forceInline = this.acker != null || getInlineProcess() || Connection.isDominoThread();
 

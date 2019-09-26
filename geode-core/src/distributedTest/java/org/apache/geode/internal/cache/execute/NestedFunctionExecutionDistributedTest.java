@@ -16,8 +16,8 @@ package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
-import static org.apache.geode.distributed.internal.ClusterDistributionManager.MAX_FE_THREADS;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.distributed.internal.OperationExecutors.MAX_FE_THREADS;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
 

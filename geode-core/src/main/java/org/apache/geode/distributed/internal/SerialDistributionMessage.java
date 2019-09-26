@@ -24,7 +24,7 @@ public abstract class SerialDistributionMessage extends DistributionMessage {
   // not "final" because it's overridden in ViewMessage
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.SERIAL_EXECUTOR;
+    return OperationExecutors.SERIAL_EXECUTOR;
   }
 
 

@@ -35,7 +35,7 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
 
   @Override
   public void afterPrimary(int bucketId) {
-    dm.getWaitingThreadPool().execute(() -> {
+    dm.getExecutors().getWaitingThreadPool().execute(() -> {
       try {
         lucenePartitionRepositoryManager.computeRepository(bucketId);
       } catch (PrimaryBucketException e) {
@@ -51,7 +51,7 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
 
   @Override
   public void afterSecondary(int bucketId) {
-    dm.getWaitingThreadPool().execute(() -> {
+    dm.getExecutors().getWaitingThreadPool().execute(() -> {
       try {
         lucenePartitionRepositoryManager.computeRepository(bucketId);
       } catch (PrimaryBucketException | AlreadyClosedException e) {

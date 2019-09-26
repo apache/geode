@@ -946,7 +946,7 @@ public class CacheClientNotifier {
       InternalDistributedSystem ids =
           (InternalDistributedSystem) getCache().getDistributedSystem();
       final DistributionManager dm = ids.getDistributionManager();
-      dm.getWaitingThreadPool().execute(() -> {
+      dm.getExecutors().getWaitingThreadPool().execute(() -> {
 
         CacheDistributionAdvisor advisor =
             proxy.getHARegionQueue().getRegion().getCacheDistributionAdvisor();

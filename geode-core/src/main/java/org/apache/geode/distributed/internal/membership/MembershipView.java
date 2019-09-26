@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.UnmodifiableException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 
@@ -36,11 +37,12 @@ public class MembershipView {
   private Set<InternalDistributedMember> crashedMembers;
   private InternalDistributedMember creator;
   private Set<InternalDistributedMember> hashedMembers;
+  private volatile boolean unmodifiable;
 
 
   public MembershipView() {
-    viewId = 0;
-    members = new ArrayList<>(4);
+    viewId = -1;
+    members = new ArrayList<>(0);
     this.hashedMembers = new HashSet<>(members);
     shutdownMembers = Collections.emptySet();
     crashedMembers = new HashSet<>();
@@ -80,6 +82,10 @@ public class MembershipView {
     this.crashedMembers = crashes;
   }
 
+  public void makeUnmodifiable() {
+    unmodifiable = true;
+  }
+
   public int getViewId() {
     return this.viewId;
   }
@@ -116,16 +122,25 @@ public class MembershipView {
   }
 
   public void add(InternalDistributedMember mbr) {
+    if (unmodifiable) {
+      throw new UnmodifiableException("this membership view is not modifiable");
+    }
     this.hashedMembers.add(mbr);
     this.members.add(mbr);
   }
 
   public boolean remove(InternalDistributedMember mbr) {
+    if (unmodifiable) {
+      throw new UnmodifiableException("this membership view is not modifiable");
+    }
     this.hashedMembers.remove(mbr);
     return this.members.remove(mbr);
   }
 
   public void removeAll(Collection<InternalDistributedMember> ids) {
+    if (unmodifiable) {
+      throw new UnmodifiableException("this membership view is not modifiable");
+    }
     this.hashedMembers.removeAll(ids);
     ids.forEach(this::remove);
   }

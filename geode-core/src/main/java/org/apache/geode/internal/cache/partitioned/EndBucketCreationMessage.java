@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -82,7 +83,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
   public int getProcessorType() {
     // use the waiting pool because operateOnPartitionedRegion will
     // try to get a dlock
-    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
+    return OperationExecutors.WAITING_POOL_EXECUTOR;
   }
 
   @Override

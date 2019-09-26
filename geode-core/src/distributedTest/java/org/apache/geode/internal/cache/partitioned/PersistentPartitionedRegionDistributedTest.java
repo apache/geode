@@ -369,7 +369,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     // This should fail with a revocation failed message
     try (IgnoredException ie = addIgnoredException(RevokeFailedException.class)) {
-      vm2.invoke(() -> {
+      vm2.invoke("revoke disk store should fail", () -> {
         assertThatThrownBy(() -> {
           DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
           AdminDistributedSystem adminDS = getDistributedSystem(config);

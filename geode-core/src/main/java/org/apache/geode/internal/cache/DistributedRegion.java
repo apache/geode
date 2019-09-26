@@ -784,7 +784,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   private void asyncResumeReliability(final InternalDistributedMember id,
       final Set newlyAcquiredRoles) throws RejectedExecutionException {
     final ResumptionAction ra = getMembershipAttributes().getResumptionAction();
-    getDistributionManager().getWaitingThreadPool().execute(() -> {
+    getDistributionManager().getExecutors().getWaitingThreadPool().execute(() -> {
       try {
         if (ra.isReinitialize()) {
           if (logger.isDebugEnabled()) {

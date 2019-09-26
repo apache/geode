@@ -144,9 +144,11 @@ import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.FunctionExecutionPooledExecutor;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
 import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -1048,7 +1050,7 @@ public class PartitionedRegion extends LocalRegion
       StateFlushOperation sfo = new StateFlushOperation(getDistributionManager());
       try {
         sfo.flush(this.distAdvisor.adviseAllPRNodes(), getDistributionManager().getId(),
-            ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR, false);
+            OperationExecutors.HIGH_PRIORITY_EXECUTOR, false);
       } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
         getCancelCriterion().checkCancelInProgress(ie);
@@ -2971,7 +2973,7 @@ public class PartitionedRegion extends LocalRegion
             // given that most manipulation of values is remote (requiring serialization to send).
             // But... function execution always implies local manipulation of
             // values so keeping locally updated values in Object form should be more efficient.
-            if (!ClusterDistributionManager.isFunctionExecutionThread()) {
+            if (!FunctionExecutionPooledExecutor.isFunctionExecutionThread()) {
               // TODO: this condition may not help since BucketRegion.virtualPut calls
               // forceSerialized
               br.forceSerialized(event);

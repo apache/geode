@@ -1285,7 +1285,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
   public SharedConfigurationStatusResponse getSharedConfigurationStatus() {
     ExecutorService waitingPoolExecutor =
-        internalCache.getDistributionManager().getWaitingThreadPool();
+        internalCache.getDistributionManager().getExecutors().getWaitingThreadPool();
     Future<SharedConfigurationStatusResponse> statusFuture =
         waitingPoolExecutor.submit(new FetchSharedConfigStatus());
     SharedConfigurationStatusResponse response;

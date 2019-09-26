@@ -193,7 +193,7 @@ public class PartitionedRegionRebalanceOp {
       Map<PartitionedRegion, InternalPRInfo> detailsMap = fetchDetails(cache);
       BucketOperatorWrapper serialOperator = getBucketOperator(detailsMap);
       ParallelBucketOperator parallelOperator = new ParallelBucketOperator(MAX_PARALLEL_OPERATIONS,
-          cache.getDistributionManager().getWaitingThreadPool(), serialOperator);
+          cache.getDistributionManager().getExecutors().getWaitingThreadPool(), serialOperator);
       model = buildModel(parallelOperator, detailsMap, resourceManager);
       for (PartitionRebalanceDetailsImpl details : serialOperator.getDetailSet()) {
         details.setPartitionMemberDetailsBefore(

@@ -95,4 +95,5 @@ public interface Membership {
    * Returns true if the member is being shunned
    */
   boolean isShunned(DistributedMember m);
+
 }

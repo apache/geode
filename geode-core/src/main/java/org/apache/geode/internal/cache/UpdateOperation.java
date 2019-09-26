@@ -254,7 +254,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
           if (processor.isExpectingDirectReply()) {
             sendMessage.run();
           } else {
-            dm.getWaitingThreadPool().execute(sendMessage);
+            dm.getExecutors().getWaitingThreadPool().execute(sendMessage);
           }
           return false;
         }

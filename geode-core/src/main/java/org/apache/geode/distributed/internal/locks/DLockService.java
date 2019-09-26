@@ -444,9 +444,7 @@ public class DLockService extends DistributedLockService {
       // do NOT sync while doing recovery (because it waits for replies)
       if (needsRecovery) {
         boolean recovered =
-            DLockRecoverGrantorProcessor.recoverLockGrantor(this.dm.getDistributionManagerIds(), // include
-                                                                                                 // this
-                                                                                                 // vm
+            DLockRecoverGrantorProcessor.recoverLockGrantor(this.dm.getDistributionManagerIds(),
                 this, // this lock service
                 myGrantor, this.dm, elder); // the elder that told us to be the grantor
         if (!recovered) {
