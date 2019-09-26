@@ -1599,7 +1599,7 @@ public class TXState implements TXStateInterface {
   public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
       boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
       boolean returnTombstones, boolean retainResult, boolean createIfAbsent) {
-    TXEntryState tx = txReadEntry(keyInfo, localRegion, true, createIfAbsent);
+    TXEntryState tx = proxy.txReadEntry(keyInfo, localRegion, true, createIfAbsent);
     if (tx != null) {
       Object v = tx.getValue(keyInfo, localRegion, preferCD);
       if (!disableCopyOnRead) {
