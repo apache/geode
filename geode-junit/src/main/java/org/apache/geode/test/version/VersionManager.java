@@ -124,14 +124,19 @@ public class VersionManager {
   }
 
   /**
-   * Returns a list of older versions available for testing.
-   * Note: if you need to compare version strings use TestVersion.compare()
+   * Returns a list of older versions available for testing, sorted
+   * from oldest to newest.<br>
+   * Note: if you need to compare version strings use TestVersion.compare() or TestVersion.equals()
    */
   public List<String> getVersions() {
     checkForLoadFailure();
     return Collections.unmodifiableList(testVersions);
   }
 
+  /**
+   * returns a list of testable versions sorted from oldest to newest<br>
+   * Note: if you need to compare version strings use TestVersion.compare() or TestVersion.equals()
+   */
   public List<String> getVersionsWithoutCurrent() {
     checkForLoadFailure();
     List<String> result = new ArrayList<>(testVersions);
@@ -164,7 +169,7 @@ public class VersionManager {
         }
       }
     });
-    Collections.sort(testVersions);
+    Collections.sort(testVersions, (v1, v2) -> TestVersion.compare(v1, v2));
   }
 
   private void findInstalls(String fileName) {
