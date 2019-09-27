@@ -147,7 +147,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
   /**
    * Returns a the set of members that either want all events or are caching data.
    *
-   * @param excludeInRecovery if true then members in recovery are excluded
    */
   private Set<InternalDistributedMember> adviseAllEventsOrCached()
       throws IllegalStateException {
