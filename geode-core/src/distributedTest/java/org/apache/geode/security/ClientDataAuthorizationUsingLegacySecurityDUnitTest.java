@@ -50,6 +50,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -98,8 +99,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     // We want the cluster VMs to be super-users for ease of testing / remote invocation.
     Properties clusterMemberProperties = getVMPropertiesWithPermission("cluster,data");
 
-    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
-    if (version == 0 || version >= 140) {
+    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
       clusterMemberProperties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
@@ -145,8 +145,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
   @Test
   public void dataWriteCannotGet() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataWrite");
-    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
-    if (version == 0 || version >= 140) {
+    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
@@ -206,8 +205,7 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
   @Test
   public void dataReadCannotPut() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataRead");
-    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
-    if (version == 0 || version >= 140) {
+    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }

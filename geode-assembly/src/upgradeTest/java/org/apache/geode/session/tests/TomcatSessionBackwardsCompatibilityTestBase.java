@@ -37,6 +37,7 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -52,7 +53,7 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
   @Parameterized.Parameters
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> Integer.parseInt(VersionManager.getInstance().versionWithNoDots(s)) < 120);
+    result.removeIf(s -> TestVersion.compare(s, "1.2.0") < 0);
     if (result.size() < 1) {
       throw new RuntimeException("No older versions of Geode were found to test against");
     }
@@ -87,7 +88,13 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
 
   protected TomcatSessionBackwardsCompatibilityTestBase(String version) {
     VersionManager versionManager = VersionManager.getInstance();
-    String installLocation = versionManager.getInstall(version);
+    String installLocation = null;
+    try {
+      installLocation = versionManager.getInstall(version);
+    } finally {
+      System.out.println(
+          "BRUCE: for version " + version + " the installation directory is " + installLocation);
+    }
     oldBuild = new File(installLocation);
     oldModules = new File(installLocation + "/tools/Modules/");
   }

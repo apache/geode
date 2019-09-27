@@ -43,6 +43,7 @@ import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -64,7 +65,7 @@ public class Tomcat8ClientServerRollingUpgradeTest {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     String minimumVersion =
         SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9) ? "1.8.0" : "1.7.0";
-    result.removeIf(s -> s.compareTo(minimumVersion) < 0);
+    result.removeIf(s -> TestVersion.compare(s, minimumVersion) < 0);
     return result;
   }
 

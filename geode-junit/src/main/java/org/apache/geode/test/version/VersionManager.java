@@ -39,7 +39,7 @@ import org.apache.commons.lang3.SystemUtils;
  * see Host.getVM(String, int)
  */
 public class VersionManager {
-  public static final String CURRENT_VERSION = "0.0.0";
+  public static final String CURRENT_VERSION = "10240.0.0";
 
   private static VersionManager instance;
 
@@ -117,30 +117,15 @@ public class VersionManager {
 
 
   public String getInstall(String version) {
+    if (!installs.containsKey(version) || (installs.get(version) == null)) {
+      throw new IllegalArgumentException("unable to locate installation directory for " + version);
+    }
     return installs.get(version);
   }
 
   /**
-   * Remove the dots from a version string. "1.2.0" -> "120"
-   */
-  public String versionWithNoDots(String s) {
-    StringBuilder b = new StringBuilder(10);
-    int length = s.length();
-    for (int i = 0; i < length; i++) {
-      char ch = s.charAt(i);
-      if (ch != '.') {
-        // leave off any trailing stuff like "-incubating"
-        if (!Character.isDigit(ch)) {
-          break;
-        }
-        b.append(ch);
-      }
-    }
-    return b.toString();
-  }
-
-  /**
-   * Returns a list of older versions available for testing
+   * Returns a list of older versions available for testing.
+   * Note: if you need to compare version strings use TestVersion.compare()
    */
   public List<String> getVersions() {
     checkForLoadFailure();

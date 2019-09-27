@@ -91,6 +91,7 @@ import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -202,7 +203,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   @Test
   public void performARollingUpgrade() {
     List<String> testVersions = VersionManager.getInstance().getVersionsWithoutCurrent();
-    Collections.sort(testVersions);
+    Collections.sort(testVersions, (v1, v2) -> TestVersion.compare(v1, v2));
     String testVersion = testVersions.get(testVersions.size() - 1);
 
     // create a cluster with the previous version of Geode
