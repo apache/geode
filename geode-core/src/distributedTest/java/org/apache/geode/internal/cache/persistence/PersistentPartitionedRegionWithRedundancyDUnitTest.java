@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.partitioned;
+package org.apache.geode.internal.cache.persistence;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
@@ -143,7 +143,7 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
    */
   @Test
   public void testGetDataDelayDueToRecoveryAfterServerShutdown() throws Exception {
-    int numBuckets = 10000;
+    int numBuckets = 5000;
 
     vm0.invoke(() -> createPartitionedRegion(1, -1, 113, true));
     vm1.invoke(() -> createPartitionedRegion(1, -1, 113, true));
@@ -166,13 +166,13 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
       long timeElapsed;
       int key;
       Region<?, ?> region = getCache().getRegion(partitionedRegionName);
-      for (int i = 0; i < numBuckets / 2; i++) {
+      for (int i = 0; i < numBuckets / 5; i++) {
         key = getRandomNumberInRange(0, numBuckets - 1);
         Instant start = Instant.now();
         assertThat(region.get(key)).isEqualTo(key);
         Instant finish = Instant.now();
         timeElapsed = Duration.between(start, finish).toMillis();
-        if (timeElapsed > 200) {
+        if (timeElapsed > 250) {
           fail("Delayed get " + timeElapsed + ", for key: " + key);
         }
       }
