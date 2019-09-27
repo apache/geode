@@ -19,16 +19,16 @@ import java.io.Serializable;
 public class StackTracesPerMember implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private final String memberNameOrIdWithTimestamp;
+  private final String memberNameOrId;
   private final byte[] stackTraces;
 
-  public StackTracesPerMember(String memberNameOrIdWithTimestamp, byte[] stackTraces) {
-    this.memberNameOrIdWithTimestamp = memberNameOrIdWithTimestamp;
+  public StackTracesPerMember(String memberNameOrId, byte[] stackTraces) {
+    this.memberNameOrId = memberNameOrId;
     this.stackTraces = stackTraces;
   }
 
   public String getMemberNameOrIdWithTimestamp() {
-    return this.memberNameOrIdWithTimestamp;
+    return this.memberNameOrId;
   }
 
   public byte[] getStackTraces() {
