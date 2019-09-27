@@ -176,7 +176,7 @@ public class DistributionAdvisor {
   /**
    * Profiles version number
    */
-  protected volatile int profilesVersion = 0;
+  protected volatile long profilesVersion = 0;
 
 
   /**
@@ -1287,7 +1287,6 @@ public class DistributionAdvisor {
     // must synchronize when modifying profile array
 
     // don't add more than once, but replace existing profile
-    // try {
     profilesVersion++;
     int index = indexOfMemberId(p.getId());
     if (index >= 0) {
@@ -1314,6 +1313,8 @@ public class DistributionAdvisor {
   private synchronized Profile basicRemoveMemberId(ProfileId id) {
     // must synchronize when modifying profile array
 
+
+
     int i = indexOfMemberId(id);
     if (i >= 0) {
       profilesVersion++;
@@ -1322,6 +1323,7 @@ public class DistributionAdvisor {
       return profileRemoved;
     }
     return null;
+
   }
 
   private int indexOfMemberId(ProfileId id) {

@@ -113,11 +113,10 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
   // moved removedProfiles to DistributionAdvisor
 
   private Set<InternalDistributedMember> adviseSetforAllEvents;
-  private int adviseAllEventsVersion = 0;
-  private boolean prevExcludeInRecovery = false;
+  private long adviseAllEventsVersion = -1;
 
   private Set<InternalDistributedMember> adviseSetforUpdate;
-  private int adviseUpdateVersion = 0;
+  private long adviseUpdateVersion = -1;
 
 
   /** Creates a new instance of CacheDistributionAdvisor */
@@ -150,22 +149,22 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
    *
    * @param excludeInRecovery if true then members in recovery are excluded
    */
-  private Set<InternalDistributedMember> adviseAllEventsOrCached(final boolean excludeInRecovery)
+  private Set<InternalDistributedMember> adviseAllEventsOrCached()
       throws IllegalStateException {
     getAdvisee().getCancelCriterion().checkCancelInProgress(null);
 
-    if (adviseAllEventsVersion != profilesVersion || adviseAllEventsVersion == 0
-        || excludeInRecovery != prevExcludeInRecovery) {
+    // minimize volatile reads by copying ref to local var
+    long tempProfilesVersion = profilesVersion; // volatile read
+    if (adviseAllEventsVersion != tempProfilesVersion) {
       adviseSetforAllEvents = Collections.unmodifiableSet(adviseFilter(profile -> {
         assert profile instanceof CacheProfile;
         CacheProfile cp = (CacheProfile) profile;
-        if (excludeInRecovery && cp.inRecovery) {
+        if (cp.inRecovery) {
           return false;
         }
         return cp.cachedOrAllEventsWithListener();
       }));
-      adviseAllEventsVersion = profilesVersion;
-      prevExcludeInRecovery = excludeInRecovery;
+      adviseAllEventsVersion = tempProfilesVersion;
     }
     return adviseSetforAllEvents;
 
@@ -178,12 +177,15 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
   Set adviseUpdate(final EntryEventImpl event) throws IllegalStateException {
     if (event.hasNewValue() || event.getOperation().isPutAll()) {
       // only need to distribute it to members that want all events or cache data
-      return adviseAllEventsOrCached(true/* fixes 41147 */);
+      return adviseAllEventsOrCached();
     } else {
       // The new value is null so this is a create with a null value,
       // in which case we only need to distribute this message to replicates
       // or all events that are not a proxy or if a proxy has a listener
-      if (adviseUpdateVersion != profilesVersion || adviseUpdateVersion == 0) {
+
+      // minimize volatile reads by copying ref to local var
+      long tempProfilesVersion = profilesVersion; // volatile read
+      if (adviseUpdateVersion != tempProfilesVersion) {
         adviseSetforUpdate = Collections.unmodifiableSet(adviseFilter(profile -> {
           assert profile instanceof CacheProfile;
           CacheProfile cp = (CacheProfile) profile;
@@ -191,7 +193,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
           return dp.withReplication()
               || (cp.allEvents() && (dp.withStorage() || cp.hasCacheListener));
         }));
-        adviseUpdateVersion = profilesVersion;
+        adviseUpdateVersion = tempProfilesVersion;
 
       }
       return adviseSetforUpdate;
@@ -271,7 +273,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
    * Same as adviseGeneric except in recovery excluded.
    */
   public Set<InternalDistributedMember> adviseCacheOp() {
-    return adviseAllEventsOrCached(true);
+    return adviseAllEventsOrCached();
   }
 
   /*
