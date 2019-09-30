@@ -45,6 +45,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
+@SuppressWarnings("serial")
 public class ManagementRequestLoggingDistributedTest implements Serializable {
 
   private static LocatorLauncher locatorLauncher;
