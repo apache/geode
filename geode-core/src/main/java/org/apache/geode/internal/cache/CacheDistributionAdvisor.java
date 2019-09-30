@@ -159,7 +159,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
         if (adviseAllEventsVersion != tempProfilesVersion) {
 
           adviseSetforAllEvents = Collections.unmodifiableSet(adviseFilter(profile -> {
-            assert profile instanceof CacheProfile;
             CacheProfile cp = (CacheProfile) profile;
             if (cp.inRecovery) {
               return false;
@@ -195,7 +194,6 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
           if (adviseUpdateVersion != tempProfilesVersion) {
 
             adviseSetforUpdate = Collections.unmodifiableSet(adviseFilter(profile -> {
-              assert profile instanceof CacheProfile;
               CacheProfile cp = (CacheProfile) profile;
               DataPolicy dp = cp.dataPolicy;
               return dp.withReplication()
