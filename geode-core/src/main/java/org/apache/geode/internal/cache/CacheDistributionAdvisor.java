@@ -112,11 +112,11 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
   // moved removedProfiles to DistributionAdvisor
 
-  private Set<InternalDistributedMember> adviseSetforAllEvents;
-  private long adviseAllEventsVersion = -1;
+  private Set<InternalDistributedMember> adviseSetforAllEvents = Collections.emptySet();
+  private volatile long adviseAllEventsVersion = -1;
 
-  private Set<InternalDistributedMember> adviseSetforUpdate;
-  private long adviseUpdateVersion = -1;
+  private Set<InternalDistributedMember> adviseSetforUpdate = Collections.emptySet();
+  private volatile long adviseUpdateVersion = -1;
 
 
   /** Creates a new instance of CacheDistributionAdvisor */
@@ -155,15 +155,20 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     // minimize volatile reads by copying ref to local var
     long tempProfilesVersion = profilesVersion; // volatile read
     if (adviseAllEventsVersion != tempProfilesVersion) {
-      adviseSetforAllEvents = Collections.unmodifiableSet(adviseFilter(profile -> {
-        assert profile instanceof CacheProfile;
-        CacheProfile cp = (CacheProfile) profile;
-        if (cp.inRecovery) {
-          return false;
+      synchronized (adviseSetforAllEvents) {
+        if (adviseAllEventsVersion != tempProfilesVersion) {
+
+          adviseSetforAllEvents = Collections.unmodifiableSet(adviseFilter(profile -> {
+            assert profile instanceof CacheProfile;
+            CacheProfile cp = (CacheProfile) profile;
+            if (cp.inRecovery) {
+              return false;
+            }
+            return cp.cachedOrAllEventsWithListener();
+          }));
+          adviseAllEventsVersion = tempProfilesVersion;
         }
-        return cp.cachedOrAllEventsWithListener();
-      }));
-      adviseAllEventsVersion = tempProfilesVersion;
+      }
     }
     return adviseSetforAllEvents;
 
@@ -184,16 +189,21 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
       // minimize volatile reads by copying ref to local var
       long tempProfilesVersion = profilesVersion; // volatile read
-      if (adviseUpdateVersion != tempProfilesVersion) {
-        adviseSetforUpdate = Collections.unmodifiableSet(adviseFilter(profile -> {
-          assert profile instanceof CacheProfile;
-          CacheProfile cp = (CacheProfile) profile;
-          DataPolicy dp = cp.dataPolicy;
-          return dp.withReplication()
-              || (cp.allEvents() && (dp.withStorage() || cp.hasCacheListener));
-        }));
-        adviseUpdateVersion = tempProfilesVersion;
 
+      if (adviseUpdateVersion != tempProfilesVersion) {
+        synchronized (adviseSetforUpdate) {
+          if (adviseUpdateVersion != tempProfilesVersion) {
+
+            adviseSetforUpdate = Collections.unmodifiableSet(adviseFilter(profile -> {
+              assert profile instanceof CacheProfile;
+              CacheProfile cp = (CacheProfile) profile;
+              DataPolicy dp = cp.dataPolicy;
+              return dp.withReplication()
+                  || (cp.allEvents() && (dp.withStorage() || cp.hasCacheListener));
+            }));
+            adviseUpdateVersion = tempProfilesVersion;
+          }
+        }
       }
       return adviseSetforUpdate;
     }
