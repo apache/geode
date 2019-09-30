@@ -212,6 +212,7 @@ dependencies {
   integrationTestCompile('org.apache.httpcomponents:httpclient')
   integrationTestCompile('javax.annotation:javax.annotation-api')
 
+
   integrationTestRuntime('io.swagger:swagger-annotations')
 
 
@@ -231,6 +232,7 @@ dependencies {
   distributedTestCompile(project(':geode-web-management'))
   distributedTestCompile('org.apache.logging.log4j:log4j-core::tests')
   distributedTestCompile('org.apache.logging.log4j:log4j-core::test-sources')
+  distributedTestCompile('com.arakelian:java-jq')
 
   distributedTestRuntime(project(':extensions:geode-modules-session-internal')) {
     exclude group: 'org.apache.tomcat'
