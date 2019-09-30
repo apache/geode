@@ -113,7 +113,7 @@ public class CreateDataSourceCommandDUnitTest {
         "Failed to connect to \"mySqlDataSource\"");
 
     // aquire the jar to be used
-    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
+    final String jdbcJarName = "mysql-connector-java-8.0.17.jar";
     final String jdbcDriverClassName = "com.mysql.cj.jdbc.Driver";
     File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
     assertThat(mySqlDriverFile).exists();
