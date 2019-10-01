@@ -104,7 +104,7 @@ public class RegionConfigValidatorTest {
   @Test
   public void invalidType() throws Exception {
     config.setName("test");
-    config.setType(RegionType.UNSUPPORTED);
+    config.setType(RegionType.LEGACY);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
@@ -193,7 +193,7 @@ public class RegionConfigValidatorTest {
             "Expiration timeInSeconds must be greater than or equal to 0.");
     config.getExpirations().clear();
 
-    config.addExpiry(Region.ExpirationType.UNSUPPORTED, 100, null);
+    config.addExpiry(Region.ExpirationType.LEGACY, 100, null);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
@@ -201,7 +201,7 @@ public class RegionConfigValidatorTest {
     config.getExpirations().clear();
 
     config.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, 100,
-        Region.ExpirationAction.UNSUPPORTED);
+        Region.ExpirationAction.LEGACY);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(

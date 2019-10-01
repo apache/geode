@@ -63,7 +63,7 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
       throw new IllegalArgumentException("Region type is required.");
     }
 
-    if (config.getType() == RegionType.UNSUPPORTED) {
+    if (config.getType() == RegionType.LEGACY) {
       throw new IllegalArgumentException(("Region type is unsupported."));
     }
 
@@ -110,7 +110,7 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
       throw new IllegalArgumentException("Expiration type must be set.");
     }
 
-    if (expiration.getType() == Region.ExpirationType.UNSUPPORTED) {
+    if (expiration.getType() == Region.ExpirationType.LEGACY) {
       throw new IllegalArgumentException("Invalid Expiration type.");
     }
 
@@ -119,7 +119,7 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
           ("Expiration timeInSeconds must be greater than or equal to 0."));
     }
 
-    if (expiration.getAction() == Region.ExpirationAction.UNSUPPORTED) {
+    if (expiration.getAction() == Region.ExpirationAction.LEGACY) {
       throw new IllegalArgumentException("Invalid Expiration action.");
     }
   }

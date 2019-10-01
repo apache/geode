@@ -88,14 +88,14 @@ public class RegionConverterTest {
   public void fromXmlWithLocalType() throws Exception {
     config.setName("test");
     config.setRegionAttributes(converter.createRegionAttributesByType("LOCAL"));
-    assertThat(converter.fromXmlObject(config).getType()).isEqualTo(RegionType.UNSUPPORTED);
+    assertThat(converter.fromXmlObject(config).getType()).isEqualTo(RegionType.LEGACY);
   }
 
   @Test
   public void fromXmlWithNullType() throws Exception {
     config.setName("test");
     config.setType((String) null);
-    assertThat(converter.fromXmlObject(config).getType()).isEqualTo(RegionType.UNSUPPORTED);
+    assertThat(converter.fromXmlObject(config).getType()).isEqualTo(RegionType.LEGACY);
   }
 
   @Test
@@ -141,14 +141,14 @@ public class RegionConverterTest {
   @Test
   public void getRegionType() throws Exception {
     assertThat(converter.getRegionType("ABC", null))
-        .isEqualTo(RegionType.UNSUPPORTED);
+        .isEqualTo(RegionType.LEGACY);
 
     assertThat(converter.getRegionType("PARTITION_REDUNDANT", null))
         .isEqualTo(RegionType.PARTITION_REDUNDANT);
-    assertThat(converter.getRegionType(null, null)).isEqualTo(RegionType.UNSUPPORTED);
+    assertThat(converter.getRegionType(null, null)).isEqualTo(RegionType.LEGACY);
 
     RegionAttributesType regionAttributes = new RegionAttributesType();
-    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
+    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.LEGACY);
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
     assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.PARTITION);
@@ -179,10 +179,10 @@ public class RegionConverterTest {
         .isEqualTo(RegionType.REPLICATE_PROXY);
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
-    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
+    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.LEGACY);
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PRELOADED);
-    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
+    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.LEGACY);
   }
 
   @Test
@@ -211,17 +211,17 @@ public class RegionConverterTest {
     List<Region.Expiration> expirations = region.getExpirations();
     assertThat(expirations).hasSize(4);
     assertThat(expirations.get(0).getTimeInSeconds()).isEqualTo(100);
-    assertThat(expirations.get(0).getAction()).isEqualTo(Region.ExpirationAction.UNSUPPORTED);
+    assertThat(expirations.get(0).getAction()).isEqualTo(Region.ExpirationAction.LEGACY);
     assertThat(expirations.get(0).getType()).isEqualTo(Region.ExpirationType.ENTRY_IDLE_TIME);
     assertThat(expirations.get(1).getTimeInSeconds()).isEqualTo(10);
     assertThat(expirations.get(1).getAction()).isEqualTo(Region.ExpirationAction.DESTROY);
     assertThat(expirations.get(1).getType()).isEqualTo(Region.ExpirationType.ENTRY_TIME_TO_LIVE);
     assertThat(expirations.get(2).getTimeInSeconds()).isEqualTo(101);
     assertThat(expirations.get(2).getAction()).isEqualTo(Region.ExpirationAction.INVALIDATE);
-    assertThat(expirations.get(2).getType()).isEqualTo(Region.ExpirationType.UNSUPPORTED);
+    assertThat(expirations.get(2).getType()).isEqualTo(Region.ExpirationType.LEGACY);
     assertThat(expirations.get(3).getTimeInSeconds()).isEqualTo(102);
-    assertThat(expirations.get(3).getAction()).isEqualTo(Region.ExpirationAction.UNSUPPORTED);
-    assertThat(expirations.get(3).getType()).isEqualTo(Region.ExpirationType.UNSUPPORTED);
+    assertThat(expirations.get(3).getAction()).isEqualTo(Region.ExpirationAction.LEGACY);
+    assertThat(expirations.get(3).getType()).isEqualTo(Region.ExpirationType.LEGACY);
   }
 
   @Test
@@ -283,7 +283,7 @@ public class RegionConverterTest {
     expiration =
         converter.convertFrom(Region.ExpirationType.ENTRY_IDLE_TIME, xmlConfig);
     assertThat(expiration.getType()).isEqualTo(Region.ExpirationType.ENTRY_IDLE_TIME);
-    assertThat(expiration.getAction()).isEqualTo(Region.ExpirationAction.UNSUPPORTED);
+    assertThat(expiration.getAction()).isEqualTo(Region.ExpirationAction.LEGACY);
     assertThat(expiration.getTimeInSeconds()).isEqualTo(1000);
   }
 }
