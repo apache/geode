@@ -96,7 +96,9 @@ public class ExportStackTraceCommand extends GfshCommand {
     for (Object resultObj : resultList) {
       if (resultObj instanceof StackTracesPerMember) {
         StackTracesPerMember stackTracePerMember = (StackTracesPerMember) resultObj;
-        dumps.put(stackTracePerMember.getMemberNameOrIdWithTimestamp(),
+        String headerMessage =
+            stackTracePerMember.getMemberNameOrId() + " at " + stackTracePerMember.getTimestamp();
+        dumps.put(headerMessage,
             stackTracePerMember.getStackTraces());
       }
     }

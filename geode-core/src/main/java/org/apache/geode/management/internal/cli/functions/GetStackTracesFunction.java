@@ -37,10 +37,10 @@ public class GetStackTracesFunction implements InternalFunction {
       if (memberNameOrId == null) {
         memberNameOrId = cache.getDistributedSystem().getDistributedMember().getId();
       }
-      String memberNameOrIdWithTimestamp = memberNameOrId + " at "
-          + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SS").format(new Date());
+      String timestamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SS").format(new Date());
       StackTracesPerMember stackTracePerMember =
-          new StackTracesPerMember(memberNameOrIdWithTimestamp, OSProcess.zipStacks());
+          new StackTracesPerMember(memberNameOrId, timestamp,
+              OSProcess.zipStacks());
       context.getResultSender().lastResult(stackTracePerMember);
     } catch (Exception e) {
       context.getResultSender().sendException(e);
