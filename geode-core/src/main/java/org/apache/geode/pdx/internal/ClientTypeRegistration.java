@@ -16,6 +16,7 @@ package org.apache.geode.pdx.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,6 +47,10 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class ClientTypeRegistration implements TypeRegistration {
 
   private static final Logger logger = LogService.getLogger();
+
+  private final Map<Integer, PdxType> idToType = Collections.synchronizedMap(new HashMap<>());
+  private final Map<EnumId, EnumInfo> idToEnum = Collections.synchronizedMap(new HashMap<>());
+  private final TypeRegistryReverseMap reverseMap = new TypeRegistryReverseMap();
 
   private final InternalCache cache;
 
@@ -372,5 +377,15 @@ public class ClientTypeRegistration implements TypeRegistration {
   @Override
   public int getLocalSize() {
     return 0;
+  }
+
+  @Override
+  public Map<PdxType, Integer> getTypeToIdMap() {
+    return reverseMap.typeToId;
+  }
+
+  @Override
+  public Map<EnumInfo, EnumId> getEnumToIdMap() {
+    return reverseMap.enumToId;
   }
 }

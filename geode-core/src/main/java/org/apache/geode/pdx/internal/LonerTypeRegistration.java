@@ -185,4 +185,16 @@ public class LonerTypeRegistration implements TypeRegistration {
   public int getLocalSize() {
     return delegate.getLocalSize();
   }
+
+  @Override
+  public Map<PdxType, Integer> getTypeToIdMap() {
+    initializeRegistry();
+    return delegate.getTypeToIdMap();
+  }
+
+  @Override
+  public Map<EnumInfo, EnumId> getEnumToIdMap() {
+    initializeRegistry();
+    return delegate.getEnumToIdMap();
+  }
 }

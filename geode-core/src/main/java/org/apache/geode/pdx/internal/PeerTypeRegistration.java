@@ -780,6 +780,16 @@ public class PeerTypeRegistration implements TypeRegistration {
     return getIdToType().size();
   }
 
+  @Override
+  public Map<PdxType, Integer> getTypeToIdMap() {
+    return reverseMap.typeToId;
+  }
+
+  @Override
+  public Map<EnumInfo, EnumId> getEnumToIdMap() {
+    return reverseMap.enumToId;
+  }
+
   @VisibleForTesting
   @SuppressWarnings("deprecation")
   protected AttributesFactory<Object, Object> getAttributesFactory() {
