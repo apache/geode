@@ -33,7 +33,7 @@ public enum RegionType {
 
   // this is used to represent regions not supported by the management V2 API. For example Gfsh can
   // create regions with "LOCAL*" types
-  UNSUPPORTED,
+  LEGACY,
 
   /**
    * @deprecated use PARTITION and set the redundancy level to 1
