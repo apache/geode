@@ -100,9 +100,6 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
    * @return the redundant copies of a region
    */
   public Integer getRedundantCopies() {
-    if (type != null && type.withRedundant() && redundantCopies == null) {
-      return 1;
-    }
     return redundantCopies;
   }
 

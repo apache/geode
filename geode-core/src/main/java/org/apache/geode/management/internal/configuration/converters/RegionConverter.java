@@ -168,7 +168,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
       try {
         return RegionType.valueOf(refid);
       } catch (Exception e) {
-        return RegionType.LEGACY;
+        // try to determine the region type based on the regionAttributes
       }
     }
 

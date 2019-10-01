@@ -143,8 +143,6 @@ public class RegionConverterTest {
     assertThat(converter.getRegionType("ABC", null))
         .isEqualTo(RegionType.LEGACY);
 
-    assertThat(converter.getRegionType("PARTITION_REDUNDANT", null))
-        .isEqualTo(RegionType.PARTITION_REDUNDANT);
     assertThat(converter.getRegionType(null, null)).isEqualTo(RegionType.LEGACY);
 
     RegionAttributesType regionAttributes = new RegionAttributesType();
@@ -158,9 +156,15 @@ public class RegionConverterTest {
     pAttributes.setLocalMaxMemory("20000");
     regionAttributes.setPartitionAttributes(pAttributes);
     assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.PARTITION);
+    assertThat(converter.getRegionType("PARTITION_REDUNDANT", regionAttributes))
+        .isEqualTo(RegionType.PARTITION);
 
     pAttributes.setLocalMaxMemory("0");
     assertThat(converter.getRegionType(null, regionAttributes))
+        .isEqualTo(RegionType.PARTITION_PROXY);
+    assertThat(converter.getRegionType("PARTITION_PROXY_REDUNDANT", regionAttributes))
+        .isEqualTo(RegionType.PARTITION_PROXY);
+    assertThat(converter.getRegionType("PARTITION_PROXY", regionAttributes))
         .isEqualTo(RegionType.PARTITION_PROXY);
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
@@ -183,6 +187,46 @@ public class RegionConverterTest {
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PRELOADED);
     assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.LEGACY);
+  }
+
+  @Test
+  public void fromXmlWithPartitionRedundantType() throws Exception {
+    config.setName("test");
+    config.setType("PARTITION_REDUNDANT");
+    RegionAttributesType attributesType = new RegionAttributesType();
+    attributesType.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+    attributesType.setRedundantCopy("3");
+    config.setRegionAttributes(attributesType);
+    region = converter.fromXmlObject(config);
+    assertThat(region.getType()).isEqualTo(RegionType.PARTITION);
+    assertThat(region.getRedundantCopies()).isEqualTo(3);
+  }
+
+  @Test
+  public void fromXmlWithPartitionRedundantPersistentType() throws Exception {
+    config.setName("test");
+    config.setType("PARTITION_REDUNDANT_PERSISTENT");
+    RegionAttributesType attributesType = new RegionAttributesType();
+    attributesType.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
+    attributesType.setRedundantCopy("3");
+    config.setRegionAttributes(attributesType);
+    region = converter.fromXmlObject(config);
+    assertThat(region.getType()).isEqualTo(RegionType.PARTITION_PERSISTENT);
+    assertThat(region.getRedundantCopies()).isEqualTo(3);
+  }
+
+  @Test
+  public void fromXmlWithPartitionProxyRedundantType() throws Exception {
+    config.setName("test");
+    config.setType("PARTITION_PROXY_REDUNDANT");
+    RegionAttributesType attributesType = new RegionAttributesType();
+    config.setRegionAttributes(attributesType);
+    attributesType.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+    attributesType.setRedundantCopy("3");
+    attributesType.setLocalMaxMemory("0");
+    region = converter.fromXmlObject(config);
+    assertThat(region.getType()).isEqualTo(RegionType.PARTITION_PROXY);
+    assertThat(region.getRedundantCopies()).isEqualTo(3);
   }
 
   @Test

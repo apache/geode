@@ -68,11 +68,6 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
     }
 
     Integer redundantCopies = config.getRedundantCopies();
-    if (config.getType().withRedundant() && redundantCopies != null && redundantCopies == 0) {
-      throw new IllegalArgumentException(
-          "redundantCopies cannot be 0 when the type has redundancy.");
-    }
-
     if (redundantCopies != null && (redundantCopies < 0 || redundantCopies > 3)) {
       throw new IllegalArgumentException(
           "redundantCopies cannot be less than 0 or greater than 3.");
