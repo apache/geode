@@ -379,20 +379,26 @@ jobs:
       run:
         path: bash
         args:
-        - -ecx
+        - -cx
         - |-
           pushd geode
             GEODE_SHA=$(git rev-parse HEAD)
           popd
           GEODE_SEMVER=$(cat geode-build-version/number)
 
-          cat > geode-passing-tokens/passing-build-tokens.json <<JSON
+          GS_PATH=gs://((artifact-bucket))/semvers/((pipeline-prefix))((geode-build-branch))/passing-build-tokens.json
+          CURRENT_PASSING_SHA=$(gsutil cat ${GS_PATH} | jq -r .ref)
+          set -e
+          # Check that the incoming GEODE_SHA is a descendent of the currently stored value.
+          # Keeps us from winding back the repository in the case of an out-of-order pipeline pass
+          if [ -z "${CURRENT_PASSING_SHA}" ] || (cd geode; git merge-base --is-ancestor ${CURRENT_PASSING_SHA} ${GEODE_SHA}); then
+            cat > geode-passing-tokens/passing-build-tokens.json <<JSON
           {
             "ref": "${GEODE_SHA}",
             "semver": "${GEODE_SEMVER}"
           }
           JSON
-          echo "${GEODE_SHA}" > geode-passing-tokens/sha
+          fi
   - aggregate:
     - put: geode-passing-tokens
       params:
