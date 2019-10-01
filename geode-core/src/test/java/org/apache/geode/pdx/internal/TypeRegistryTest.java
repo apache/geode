@@ -31,47 +31,60 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 @Category({SerializationTest.class})
 public class TypeRegistryTest {
 
+  private static final int TYPE_ID = 37;
+  private static final int ENUM_ID = 42;
   private InternalCache internalCache = mock(InternalCache.class);
   private TypeRegistration typeRegistration = mock(TypeRegistration.class);
   private TypeRegistry typeRegistry = new TypeRegistry(internalCache, typeRegistration);
 
   private PdxType newType = mock(PdxType.class);
+  private EnumInfo newEnum = mock(EnumInfo.class);
 
   @Before
   public void setUp() {}
 
   @Test
   public void defineTypeGivenANewTypeStoresItWithTheCorrectIdAndReturnsIt() {
-    when(typeRegistration.defineType(newType)).thenReturn(37);
+    when(typeRegistration.defineType(newType)).thenReturn(TYPE_ID);
 
     PdxType result = typeRegistry.defineType(newType);
 
     assertThat(result).isSameAs(newType);
-    verify(newType).setTypeId(37);
-    assertThat(typeRegistry.getIdToType().get(37)).isSameAs(newType);
-    assertThat(typeRegistry.getTypeToId().get(newType)).isSameAs(37);
+    verify(newType).setTypeId(TYPE_ID);
+    assertThat(typeRegistry.getIdToType().get(TYPE_ID)).isSameAs(newType);
+    assertThat(typeRegistry.getTypeToId().get(newType)).isSameAs(TYPE_ID);
+  }
+
+  @Test
+  public void defineEnumGivenANewEnumStoresItWithTheCorrectIdAndReturnsThatId() {
+    when(typeRegistration.defineEnum(newEnum)).thenReturn(ENUM_ID);
+
+    int result = typeRegistry.defineEnum(newEnum);
+
+    assertThat(result).isEqualTo(ENUM_ID);
+    assertThat(typeRegistry.getIdToEnum().get(ENUM_ID)).isSameAs(newEnum);
+    assertThat(typeRegistry.getEnumInfoToId().get(newEnum)).isEqualTo(ENUM_ID);
   }
 
   @Test
   public void defineTypeGivenANewTypeThatIsInTypeToIdButNotIdToTypeStoresItWithTheCorrectIdAndReturnsIt() {
-    when(typeRegistration.defineType(newType)).thenReturn(37);
-    typeRegistry.getTypeToId().put(newType, 37);
-    typeRegistry.getIdToType().put(37, null);
+    when(typeRegistration.defineType(newType)).thenReturn(TYPE_ID);
+    typeRegistry.getTypeToId().put(newType, TYPE_ID);
 
     PdxType result = typeRegistry.defineType(newType);
 
     assertThat(result).isSameAs(newType);
-    verify(newType).setTypeId(37);
-    assertThat(typeRegistry.getIdToType().get(37)).isSameAs(newType);
-    assertThat(typeRegistry.getTypeToId().get(newType)).isSameAs(37);
+    verify(newType).setTypeId(TYPE_ID);
+    assertThat(typeRegistry.getIdToType().get(TYPE_ID)).isSameAs(newType);
+    assertThat(typeRegistry.getTypeToId().get(newType)).isSameAs(TYPE_ID);
   }
 
   @Test
   public void defineTypeGivenATypeEqualToAnExistingTypeReturnsTheExistingType() {
     PdxType existingType = new PdxType("myClass", true);
     PdxType equalType = new PdxType("myClass", true);
-    typeRegistry.getTypeToId().put(existingType, 37);
-    typeRegistry.getIdToType().put(37, existingType);
+    typeRegistry.getTypeToId().put(existingType, TYPE_ID);
+    typeRegistry.getIdToType().put(TYPE_ID, existingType);
 
     PdxType result = typeRegistry.defineType(equalType);
 
@@ -83,8 +96,8 @@ public class TypeRegistryTest {
     PdxType existingType = new PdxType("myClass", true);
     PdxType equalType = new PdxType("myClass", true);
     typeRegistry.getTypeToId().put(existingType, null);
-    typeRegistry.getIdToType().put(37, existingType);
-    when(typeRegistration.defineType(equalType)).thenReturn(37);
+    typeRegistry.getIdToType().put(TYPE_ID, existingType);
+    when(typeRegistration.defineType(equalType)).thenReturn(TYPE_ID);
 
     PdxType result = typeRegistry.defineType(equalType);
 
@@ -95,8 +108,8 @@ public class TypeRegistryTest {
   public void defineTypeGivenATypeNotEqualToAnExistingButWithTheSameIdThrows() {
     PdxType existingType = mock(PdxType.class);
     typeRegistry.getTypeToId().put(existingType, null);
-    typeRegistry.getIdToType().put(37, existingType);
-    when(typeRegistration.defineType(newType)).thenReturn(37);
+    typeRegistry.getIdToType().put(TYPE_ID, existingType);
+    when(typeRegistration.defineType(newType)).thenReturn(TYPE_ID);
 
     assertThatThrownBy(() -> typeRegistry.defineType(newType))
         .hasMessageContaining("Old type does not equal new type for the same id.");
