@@ -156,7 +156,7 @@ public class ClusterStartupRule implements SerializableTestRule {
       // GEODE-6247: JDK 11 has an issue where native code is reporting committed is 2MB > max.
       IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
     }
-    DUnitLauncher.launchIfNeeded();
+    DUnitLauncher.launchIfNeeded(false);
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i);
     }
