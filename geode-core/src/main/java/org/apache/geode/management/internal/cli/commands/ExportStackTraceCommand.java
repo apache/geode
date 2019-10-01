@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -97,7 +98,9 @@ public class ExportStackTraceCommand extends GfshCommand {
       if (resultObj instanceof StackTracesPerMember) {
         StackTracesPerMember stackTracePerMember = (StackTracesPerMember) resultObj;
         String headerMessage =
-            stackTracePerMember.getMemberNameOrId() + " at " + stackTracePerMember.getTimestamp();
+            stackTracePerMember.getMemberNameOrId() + " at "
+                + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SS")
+                    .format(stackTracePerMember.getTimestamp());
         dumps.put(headerMessage,
             stackTracePerMember.getStackTraces());
       }

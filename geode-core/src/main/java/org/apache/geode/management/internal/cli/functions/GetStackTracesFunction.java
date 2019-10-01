@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.geode.cache.Cache;
@@ -37,7 +36,7 @@ public class GetStackTracesFunction implements InternalFunction {
       if (memberNameOrId == null) {
         memberNameOrId = cache.getDistributedSystem().getDistributedMember().getId();
       }
-      String timestamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SS").format(new Date());
+      Date timestamp = new Date();
       StackTracesPerMember stackTracePerMember =
           new StackTracesPerMember(memberNameOrId, timestamp,
               OSProcess.zipStacks());
