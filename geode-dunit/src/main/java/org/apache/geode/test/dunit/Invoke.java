@@ -124,6 +124,9 @@ public class Invoke {
   }
 
   public static void invokeInLocator(final SerializableRunnableIF runnable) {
-    Host.getLocator().invoke(runnable);
+    VM locator = Host.getLocator();
+    if (locator != null) {
+      locator.invoke(runnable);
+    }
   }
 }
