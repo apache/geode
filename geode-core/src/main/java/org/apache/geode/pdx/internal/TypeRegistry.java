@@ -562,4 +562,12 @@ public class TypeRegistry {
   Map<Class<?>, PdxType> getLocalTypeIds() {
     return localTypeIds;
   }
+
+  Map<Integer, EnumInfo> getIdToEnum() {
+    return idToEnum;
+  }
+
+  Map<EnumInfo, Integer> getEnumInfoToId() {
+    return enumInfoToId;
+  }
 }

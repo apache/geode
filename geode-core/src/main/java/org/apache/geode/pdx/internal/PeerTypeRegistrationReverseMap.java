@@ -22,7 +22,13 @@ import java.util.Map;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 
-public class PeerTypeRegistrationReverseMap {
+/**
+ * This class serves two purposes. It lets us look up an id based on a type/enum, if we previously
+ * found that type/enum in the region. And, if a type/enum is present in this map, that means we
+ * read the type/enum while holding the dlock, which means the type/enum was distributed to all
+ * members.
+ */
+class PeerTypeRegistrationReverseMap extends TypeRegistryReverseMap {
   /**
    * When a new pdxType or a new enumInfo is added to idToType region, its
    * listener will add the new type to the pendingTypeToId first, to make sure
@@ -36,25 +42,6 @@ public class PeerTypeRegistrationReverseMap {
   private final Map<EnumInfo, EnumId> pendingEnumToId =
       Collections.synchronizedMap(new HashMap<>());
 
-  /**
-   * This map serves two purposes. It lets us look up an id based on a type, if we previously
-   * found that type in the region. And, if a type is present in this map, that means we read
-   * the type while holding the dlock, which means the type was distributed to all members.
-   */
-  private final Map<PdxType, Integer> typeToId = Collections.synchronizedMap(new HashMap<>());
-
-  private final Map<EnumInfo, EnumId> enumToId = Collections.synchronizedMap(new HashMap<>());
-
-  void save(Object key, Object value) {
-    if (value instanceof PdxType) {
-      PdxType type = (PdxType) value;
-      typeToId.put(type, (Integer) key);
-    } else if (value instanceof EnumInfo) {
-      EnumInfo info = (EnumInfo) value;
-      enumToId.put(info, (EnumId) key);
-    }
-  }
-
   void saveToPending(Object key, Object value) {
     if (value instanceof PdxType) {
       PdxType type = (PdxType) value;
@@ -63,22 +50,6 @@ public class PeerTypeRegistrationReverseMap {
       EnumInfo info = (EnumInfo) value;
       pendingEnumToId.put(info, (EnumId) key);
     }
-  }
-
-  int typeToIdSize() {
-    return typeToId.size();
-  }
-
-  int enumToIdSize() {
-    return enumToId.size();
-  }
-
-  Integer getIdFromReverseMap(PdxType newType) {
-    return typeToId.get(newType);
-  }
-
-  EnumId getIdFromReverseMap(EnumInfo newInfo) {
-    return enumToId.get(newInfo);
   }
 
   // The reverse maps should only be loaded from the region if there is a mismatch in size between

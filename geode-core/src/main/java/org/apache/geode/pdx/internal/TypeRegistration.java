@@ -93,4 +93,8 @@ public interface TypeRegistration {
    * Return the size of the type registry in this member.
    */
   int getLocalSize();
+
+  Map<PdxType, Integer> getTypeToIdMap();
+
+  Map<EnumInfo, EnumId> getEnumToIdMap();
 }

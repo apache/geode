@@ -121,4 +121,14 @@ public class NullTypeRegistration implements TypeRegistration {
   public int getLocalSize() {
     return 0;
   }
+
+  @Override
+  public Map<PdxType, Integer> getTypeToIdMap() {
+    return Collections.emptyMap();
+  }
+
+  @Override
+  public Map<EnumInfo, EnumId> getEnumToIdMap() {
+    return Collections.emptyMap();
+  }
 }
