@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static java.util.Collections.emptySet;
 import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_DISK_SPACE_LIMIT;
 import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_FILE_SIZE_LIMIT;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
@@ -42,6 +43,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -53,15 +59,19 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -70,6 +80,8 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.metrics.CacheMetricsSession;
+import org.apache.geode.internal.metrics.CacheMetricsSessionFactory;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -89,9 +101,22 @@ public class InternalDistributedSystemJUnitTest {
   /**
    * Creates a <code>DistributedSystem</code> with the given configuration properties.
    */
-  protected InternalDistributedSystem createSystem(Properties props) {
+  private InternalDistributedSystem createSystem(Properties props,
+      CacheMetricsSessionFactory metricsSessionFactory, Set<MeterRegistry> userMeterRegistries) {
     assertFalse(ClusterDistributionManager.isDedicatedAdminVM());
-    this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
+    this.system = new InternalDistributedSystem.Builder(props)
+        .setMetricsSessionFactory(metricsSessionFactory)
+        .addUserMeterRegistries(userMeterRegistries)
+        .build();
+    return this.system;
+  }
+
+  /**
+   * Creates a <code>DistributedSystem</code> with the given configuration properties.
+   */
+  private InternalDistributedSystem createSystem(Properties props) {
+    this.system = new InternalDistributedSystem.Builder(props)
+        .build();
     return this.system;
   }
 
@@ -732,7 +757,8 @@ public class InternalDistributedSystemJUnitTest {
     new DistributionConfigImpl(props, false);
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
-        "When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
+        "When using ssl-enabled-components one cannot use any other SSL properties other than "
+            + "cluster-ssl-* or the corresponding aliases");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -744,7 +770,8 @@ public class InternalDistributedSystemJUnitTest {
 
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
-        "When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
+        "When using ssl-enabled-components one cannot use any other SSL properties other than "
+            + "cluster-ssl-* or the corresponding aliases");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -756,7 +783,8 @@ public class InternalDistributedSystemJUnitTest {
 
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
-        "When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
+        "When using ssl-enabled-components one cannot use any other SSL properties other than "
+            + "cluster-ssl-* or the corresponding aliases");
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -768,7 +796,52 @@ public class InternalDistributedSystemJUnitTest {
 
     illegalArgumentException.expect(IllegalArgumentException.class);
     illegalArgumentException.expectMessage(
-        "When using ssl-enabled-components one cannot use any other SSL properties other than cluster-ssl-* or the corresponding aliases");
+        "When using ssl-enabled-components one cannot use any other SSL properties other than "
+            + "cluster-ssl-* or the corresponding aliases");
+  }
+
+  @Test
+  public void usesSessionFactoryToCreateMetricsSession() {
+    Set<MeterRegistry> userMeterRegistries = new HashSet<>();
+    userMeterRegistries.add(mock(MeterRegistry.class, "user registry 1"));
+    userMeterRegistries.add(mock(MeterRegistry.class, "user registry 2"));
+    userMeterRegistries.add(mock(MeterRegistry.class, "user registry 3"));
+
+    CacheMetricsSessionFactory metricsSessionFactory = mock(CacheMetricsSessionFactory.class);
+
+    CacheMetricsSession metricsSession = mock(CacheMetricsSession.class);
+    when(metricsSessionFactory.create(any())).thenReturn(metricsSession);
+
+    createSystem(getCommonProperties(), metricsSessionFactory, userMeterRegistries);
+
+    verify(metricsSessionFactory).create(userMeterRegistries);
+  }
+
+  @Test
+  public void startsMetricsSession() {
+    CacheMetricsSessionFactory metricsSessionFactory = mock(CacheMetricsSessionFactory.class);
+
+    CacheMetricsSession metricsSession = mock(CacheMetricsSession.class);
+    when(metricsSessionFactory.create(any())).thenReturn(metricsSession);
+
+    createSystem(getCommonProperties(), metricsSessionFactory, emptySet());
+
+    verify(metricsSession).start(system);
+  }
+
+  @Test
+  public void getMeterRegistry_returnsMetricsSessionMeterRegistry() {
+    MeterRegistry sessionMeterRegistry = mock(MeterRegistry.class);
+    
+    CacheMetricsSession metricsSession = mock(CacheMetricsSession.class);
+    when(metricsSession.meterRegistry()).thenReturn(sessionMeterRegistry);
+
+    CacheMetricsSessionFactory metricsSessionFactory = mock(CacheMetricsSessionFactory.class);
+    when(metricsSessionFactory.create(any())).thenReturn(metricsSession);
+
+    createSystem(getCommonProperties(), metricsSessionFactory, emptySet());
+
+    assertThat(system.getMeterRegistry()).isSameAs(sessionMeterRegistry);
   }
 
   private Properties getCommonProperties() {

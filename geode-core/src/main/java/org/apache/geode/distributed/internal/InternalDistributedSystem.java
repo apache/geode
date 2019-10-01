@@ -45,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -101,6 +102,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.metrics.CacheMetricsSession;
+import org.apache.geode.internal.metrics.CacheMetricsSessionFactory;
+import org.apache.geode.internal.metrics.CompositeCacheMetricsSession;
 import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
@@ -173,6 +176,7 @@ public class InternalDistributedSystem extends DistributedSystem
       ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   private final StatisticsManager statisticsManager;
+  private CacheMetricsSession metricsSession;
 
   /**
    * The distribution manager that is used to communicate with the distributed system.
@@ -181,12 +185,13 @@ public class InternalDistributedSystem extends DistributedSystem
 
   private final GrantorRequestProcessor.GrantorRequestContext grc;
 
-  /** services provided by other modules */
+  /**
+   * services provided by other modules
+   */
   private Map<Class, DistributedSystemService> services = new HashMap<>();
 
   private final AtomicReference<ClusterAlertMessaging> clusterAlertMessaging =
       new AtomicReference<>();
-  private CacheMetricsSession metricsSession;
 
   /**
    * If the experimental multiple-system feature is enabled, always create a new system.
@@ -320,7 +325,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * disconnected
    */
   private final Set<DisconnectListener> disconnectListeners = new LinkedHashSet<>(); // needs to be
-                                                                                     // ordered
+  // ordered
 
   /**
    * Set of listeners that are invoked whenever a connection is created to the distributed system
@@ -536,7 +541,8 @@ public class InternalDistributedSystem extends DistributedSystem
    * @param statisticsManagerFactory creates the statistics manager for this member
    */
   private InternalDistributedSystem(ConnectionConfig config,
-      StatisticsManagerFactory statisticsManagerFactory) {
+      StatisticsManagerFactory statisticsManagerFactory, CacheMetricsSession metricsSession) {
+    this.metricsSession = metricsSession;
     alertingSession = AlertingSession.create();
     alertingService = new InternalAlertingServiceFactory().create();
     LoggingUncaughtExceptionHandler
@@ -794,13 +800,15 @@ public class InternalDistributedSystem extends DistributedSystem
       } catch (IOException e) {
         throw new GemFireIOException("Problem finishing a locator service start", e);
       }
-
+      
       startSampler();
 
       clusterAlertMessaging.set(new ClusterAlertMessaging(this));
       alertingService.useAlertMessaging(clusterAlertMessaging.get());
       alertingSession.createSession(alertingService);
       alertingSession.startSession();
+
+      metricsSession.start(this);
 
       // Log any instantiators that were registered before the log writer
       // was created
@@ -1110,6 +1118,10 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public long getStartTime() {
     return startTime;
+  }
+
+  public MeterRegistry getMeterRegistry() {
+    return metricsSession.meterRegistry();
   }
 
   /**
@@ -2550,7 +2562,6 @@ public class InternalDistributedSystem extends DistributedSystem
           return;
         }
 
-
         logger.info(
             "Attempting to reconnect to the distributed system.  This is attempt #{}.",
             reconnectAttemptCounter);
@@ -2624,7 +2635,6 @@ public class InternalDistributedSystem extends DistributedSystem
           }
           reconnectAttemptCounter.set(saveNumberOfTries);
         }
-
 
         DistributionManager newDM = reconnectDS.getDistributionManager();
         if (newDM instanceof ClusterDistributionManager) {
@@ -2774,7 +2784,6 @@ public class InternalDistributedSystem extends DistributedSystem
    * InternalDistributedSystem
    *
    * @param propsToCheck the Properties instance to compare with the existing Properties
-   *
    * @throws IllegalStateException when the configuration is not the same other returns
    */
   public void validateSameProperties(Properties propsToCheck, boolean isConnected) {
@@ -2973,6 +2982,8 @@ public class InternalDistributedSystem extends DistributedSystem
     private final Properties configProperties;
 
     private SecurityConfig securityConfig;
+    private CacheMetricsSessionFactory metricsSessionFactory = CompositeCacheMetricsSession::new;
+    private Set<MeterRegistry> userMeterRegistries = new HashSet<>();
 
     public Builder(Properties configProperties) {
       this.configProperties = configProperties;
@@ -2980,6 +2991,16 @@ public class InternalDistributedSystem extends DistributedSystem
 
     public Builder setSecurityConfig(SecurityConfig securityConfig) {
       this.securityConfig = securityConfig;
+      return this;
+    }
+
+    public Builder setMetricsSessionFactory(CacheMetricsSessionFactory metricsSessionFactory) {
+      this.metricsSessionFactory = metricsSessionFactory;
+      return this;
+    }
+
+    public Builder addUserMeterRegistries(Set<MeterRegistry> userMeterRegistries) {
+      this.userMeterRegistries.addAll(userMeterRegistries);
       return this;
     }
 
@@ -2995,9 +3016,10 @@ public class InternalDistributedSystem extends DistributedSystem
       InternalDataSerializer.checkSerializationVersion();
       try {
         SystemFailure.startThreads();
+        CacheMetricsSession metricsSession = metricsSessionFactory.create(userMeterRegistries);
         InternalDistributedSystem newSystem =
-            new InternalDistributedSystem(new ConnectionConfigImpl(
-                configProperties), defaultStatisticsManagerFactory());
+            new InternalDistributedSystem(new ConnectionConfigImpl(configProperties),
+                defaultStatisticsManagerFactory(), metricsSession);
         newSystem
             .initialize(securityConfig.getSecurityManager(), securityConfig.getPostProcessor());
         notifyConnectListeners(newSystem);
@@ -3018,6 +3040,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
     private DistributionManager distributionManager;
     private StatisticsManagerFactory statisticsManagerFactory = defaultStatisticsManagerFactory();
+    private CacheMetricsSessionFactory metricsSessionFactory = CompositeCacheMetricsSession::new;
+    private Set<MeterRegistry> userMeterRegistries = new HashSet<>();
 
     public BuilderForTesting(Properties configProperties) {
       this.configProperties = configProperties;
@@ -3034,14 +3058,25 @@ public class InternalDistributedSystem extends DistributedSystem
       return this;
     }
 
+    public BuilderForTesting setMetricsSessionFactory(
+        CacheMetricsSessionFactory metricsSessionFactory) {
+      this.metricsSessionFactory = metricsSessionFactory;
+      return this;
+    }
+
+    public BuilderForTesting addUserMeterRegistries(Set<MeterRegistry> userMeterRegistries) {
+      this.userMeterRegistries.addAll(userMeterRegistries);
+      return this;
+    }
     /**
      * Builds instance without initializing it for testing.
      */
     public InternalDistributedSystem build() {
       ConnectionConfigImpl connectionConfig = new ConnectionConfigImpl(configProperties);
+      CacheMetricsSession metricsSession = metricsSessionFactory.create(userMeterRegistries);
 
       InternalDistributedSystem internalDistributedSystem =
-          new InternalDistributedSystem(connectionConfig, statisticsManagerFactory);
+          new InternalDistributedSystem(connectionConfig, statisticsManagerFactory, metricsSession);
 
       internalDistributedSystem.config =
           new RuntimeDistributionConfigImpl(internalDistributedSystem);
