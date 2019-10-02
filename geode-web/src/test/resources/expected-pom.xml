@@ -52,6 +52,10 @@
       <scope>compile</scope>
       <exclusions>
         <exclusion>
+          <artifactId>spring-core</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+        <exclusion>
           <artifactId>spring-web</artifactId>
           <groupId>*</groupId>
         </exclusion>
