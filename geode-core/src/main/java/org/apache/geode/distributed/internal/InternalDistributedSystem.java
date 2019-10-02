@@ -2254,7 +2254,6 @@ public class InternalDistributedSystem extends DistributedSystem
 
     /**
      * Invoked after the connection to the distributed system has been disconnected
-     *
      */
     void onShutdown(InternalDistributedSystem sys);
   }
@@ -3068,6 +3067,7 @@ public class InternalDistributedSystem extends DistributedSystem
       this.userMeterRegistries.addAll(userMeterRegistries);
       return this;
     }
+
     /**
      * Builds instance without initializing it for testing.
      */

@@ -42,9 +42,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SecurityConfig;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.metrics.CacheMetricsSession;
-import org.apache.geode.internal.metrics.CacheMetricsSessionFactory;
-import org.apache.geode.internal.metrics.CompositeCacheMetricsSession;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -66,7 +63,6 @@ public class InternalCacheBuilder {
 
   private final Properties configProperties;
   private final CacheConfig cacheConfig;
-  private final CacheMetricsSessionFactory metricsSessionFactory;
   private final Supplier<InternalDistributedSystem> singletonSystemSupplier;
   private final Supplier<InternalCache> singletonCacheSupplier;
   private final InternalDistributedSystemConstructor internalDistributedSystemConstructor;
@@ -113,7 +109,6 @@ public class InternalCacheBuilder {
   private InternalCacheBuilder(Properties configProperties, CacheConfig cacheConfig) {
     this(configProperties,
         cacheConfig,
-        CompositeCacheMetricsSession::new,
         InternalDistributedSystem::getConnectedInstance,
         InternalDistributedSystem::connectInternal,
         GemFireCacheImpl::getInstance,
@@ -123,14 +118,12 @@ public class InternalCacheBuilder {
   @VisibleForTesting
   InternalCacheBuilder(Properties configProperties,
       CacheConfig cacheConfig,
-      CacheMetricsSessionFactory metricsSessionFactory,
       Supplier<InternalDistributedSystem> singletonSystemSupplier,
       InternalDistributedSystemConstructor internalDistributedSystemConstructor,
       Supplier<InternalCache> singletonCacheSupplier,
       InternalCacheConstructor internalCacheConstructor) {
     this.configProperties = configProperties;
     this.cacheConfig = cacheConfig;
-    this.metricsSessionFactory = metricsSessionFactory;
     this.singletonSystemSupplier = singletonSystemSupplier;
     this.internalDistributedSystemConstructor = internalDistributedSystemConstructor;
     this.internalCacheConstructor = internalCacheConstructor;
@@ -187,11 +180,9 @@ public class InternalCacheBuilder {
           InternalCache cache =
               existingCache(internalDistributedSystem::getCache, singletonCacheSupplier);
           if (cache == null) {
-            CacheMetricsSession metricsSession = metricsSessionFactory.create(userMeterRegistries);
-
             cache =
                 internalCacheConstructor.construct(isClient, poolFactory, internalDistributedSystem,
-                    cacheConfig, useAsyncEventListeners, typeRegistry, null, metricsSession);
+                    cacheConfig, useAsyncEventListeners, typeRegistry);
 
             internalDistributedSystem.setCache(cache);
             cache.initialize();
@@ -411,8 +402,7 @@ public class InternalCacheBuilder {
   public interface InternalCacheConstructor {
     InternalCache construct(boolean isClient, PoolFactory poolFactory,
         InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
-        boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry,
-        CacheMetricsSession metricsSession);
+        boolean useAsyncEventListeners, TypeRegistry typeRegistry);
   }
 
   @VisibleForTesting

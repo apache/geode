@@ -44,7 +44,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -71,7 +70,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -832,7 +830,7 @@ public class InternalDistributedSystemJUnitTest {
   @Test
   public void getMeterRegistry_returnsMetricsSessionMeterRegistry() {
     MeterRegistry sessionMeterRegistry = mock(MeterRegistry.class);
-    
+
     CacheMetricsSession metricsSession = mock(CacheMetricsSession.class);
     when(metricsSession.meterRegistry()).thenReturn(sessionMeterRegistry);
 

@@ -369,7 +369,7 @@ public class GemFireCacheImplTest {
     verify(gemFireCacheImpl, times(0)).requestSharedConfiguration();
     verify(gemFireCacheImpl, times(0)).applyJarAndXmlFromClusterConfig();
   }
-  
+
   @Test
   public void getMeterRegistry_returnsTheSystemMeterRegistry() {
     MeterRegistry systemMeterRegistry = mock(MeterRegistry.class);
@@ -380,15 +380,14 @@ public class GemFireCacheImplTest {
     CacheMetricsSession obsoleteCacheMetricsSession = mock(CacheMetricsSession.class);
     when(obsoleteCacheMetricsSession.meterRegistry()).thenReturn(mock(MeterRegistry.class));
 
-    CacheMetricsSessionFactory obsoleteCacheMetricsSessionFactory = mock(CacheMetricsSessionFactory.class);
+    CacheMetricsSessionFactory obsoleteCacheMetricsSessionFactory =
+        mock(CacheMetricsSessionFactory.class);
     when(obsoleteCacheMetricsSessionFactory.create(any())).thenReturn(obsoleteCacheMetricsSession);
 
     InternalCacheBuilder cacheBuilder =
         new InternalCacheBuilder(new Properties(), new CacheConfig(),
-            obsoleteCacheMetricsSessionFactory,
             InternalDistributedSystem::getConnectedInstance,
-            InternalDistributedSystem::connectInternal,
-            GemFireCacheImpl::getInstance,
+            InternalDistributedSystem::connectInternal, GemFireCacheImpl::getInstance,
             GemFireCacheImpl::new);
 
     gemFireCacheImpl = (GemFireCacheImpl) cacheBuilder
@@ -399,7 +398,7 @@ public class GemFireCacheImplTest {
     assertThat(gemFireCacheImpl.getMeterRegistry())
         .isSameAs(systemMeterRegistry);
   }
-  
+
   @Test
   public void addGatewayReceiverServer_requiresPreviouslyAddedGatewayReceiver() {
     gemFireCacheImpl = createGemFireCacheImpl();
