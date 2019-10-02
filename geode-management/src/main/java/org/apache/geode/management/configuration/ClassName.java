@@ -43,6 +43,11 @@ public class ClassName implements Serializable {
   public static ClassName EMPTY = new ClassName("");
 
   /**
+   * Default constructor used for serialization.
+   */
+  public ClassName() {}
+
+  /**
    * Object to be instantiated using the empty param constructor of the className
    *
    * @param className this class needs to have an empty param constructor
