@@ -36,9 +36,8 @@ public class GetStackTracesFunction implements InternalFunction {
       if (memberNameOrId == null) {
         memberNameOrId = cache.getDistributedSystem().getDistributedMember().getId();
       }
-      Instant timestamp = Instant.now();
       StackTracesPerMember stackTracePerMember =
-          new StackTracesPerMember(memberNameOrId, timestamp,
+          new StackTracesPerMember(memberNameOrId, Instant.now(),
               OSProcess.zipStacks());
       context.getResultSender().lastResult(stackTracePerMember);
     } catch (Exception e) {

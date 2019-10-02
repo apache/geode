@@ -53,8 +53,8 @@ public class ExportStackTraceCommand extends GfshCommand {
   public static final String STACK_TRACE_FOR_MEMBER = "*** Stack-trace for member ";
   private final GetStackTracesFunction getStackTracesFunction = new GetStackTracesFunction();
 
-  DateTimeFormatter formatter =
-      DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS", Locale.UK)
+  private static final DateTimeFormatter formatter =
+      DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS", Locale.getDefault())
           .withZone(ZoneId.systemDefault());
 
   /**
