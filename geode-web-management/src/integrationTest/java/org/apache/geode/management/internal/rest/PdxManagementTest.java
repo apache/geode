@@ -32,6 +32,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
+import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
@@ -57,6 +58,10 @@ public class PdxManagementTest {
   public void success() throws Exception {
     Pdx pdx = new Pdx();
     pdx.setReadSerialized(true);
+    pdx.setIgnoreUnreadFields(true);
+    pdx.setPersistent(true);
+    pdx.setDiskStoreName("diskStoreName");
+    pdx.setPdxSerializer(new ClassName("className"));
     context.perform(post("/experimental/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
         .content(mapper.writeValueAsString(pdx)))
