@@ -337,7 +337,8 @@ public class InternalCacheBuilder {
         cacheConfig.getSecurityManager(),
         cacheConfig.getPostProcessor());
 
-    return internalDistributedSystemConstructor.construct(configProperties, securityConfig);
+    return internalDistributedSystemConstructor
+        .construct(configProperties, securityConfig, userMeterRegistries);
   }
 
   private InternalCache existingCache(Supplier<? extends InternalCache> systemCacheSupplier,
@@ -407,6 +408,7 @@ public class InternalCacheBuilder {
 
   @VisibleForTesting
   public interface InternalDistributedSystemConstructor {
-    InternalDistributedSystem construct(Properties configProperties, SecurityConfig securityConfig);
+    InternalDistributedSystem construct(Properties configProperties, SecurityConfig securityConfig,
+        Set<MeterRegistry> userMeterRegistries);
   }
 }

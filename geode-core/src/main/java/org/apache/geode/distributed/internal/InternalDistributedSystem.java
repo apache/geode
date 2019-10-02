@@ -201,7 +201,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * existing one with the same properties.
    */
   public static InternalDistributedSystem connectInternal(Properties config,
-      SecurityConfig securityConfig) {
+      SecurityConfig securityConfig, Set<MeterRegistry> userMeterRegistries) {
     if (config == null) {
       config = new Properties();
     }
@@ -209,6 +209,7 @@ public class InternalDistributedSystem extends DistributedSystem
     if (Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY)) {
       return new Builder(config)
           .setSecurityConfig(securityConfig)
+          .addUserMeterRegistries(userMeterRegistries)
           .build();
     }
 
@@ -259,6 +260,7 @@ public class InternalDistributedSystem extends DistributedSystem
       // Make a new connection to the distributed system
       InternalDistributedSystem newSystem = new Builder(config)
           .setSecurityConfig(securityConfig)
+          .addUserMeterRegistries(userMeterRegistries)
           .build();
       addSystem(newSystem);
       return newSystem;

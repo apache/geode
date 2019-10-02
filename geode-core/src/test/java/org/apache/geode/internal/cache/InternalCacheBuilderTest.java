@@ -41,7 +41,6 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -50,6 +49,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
 import org.apache.geode.cache.CacheExistsException;
@@ -108,15 +108,14 @@ public class InternalCacheBuilderTest {
     internalCacheBuilder
         .create();
 
-    verify(systemConstructor).construct(same(configProperties), any());
+    verify(systemConstructor).construct(same(configProperties), any(), any());
   }
 
   @Test
   public void create_passesUserRegistriesToSystemConstructor_ifNoSystemExists() {
-    Set<MeterRegistry> userRegistries = new HashSet<>();
-    userRegistries.add(mock(MeterRegistry.class, "user registry 1"));
-    userRegistries.add(mock(MeterRegistry.class, "user registry 2"));
-    userRegistries.add(mock(MeterRegistry.class, "user registry 3"));
+    MeterRegistry userRegistry1 = mock(MeterRegistry.class, "user registry 1");
+    MeterRegistry userRegistry2 = mock(MeterRegistry.class, "user registry 2");
+    MeterRegistry userRegistry3 = mock(MeterRegistry.class, "user registry 3");
 
     InternalDistributedSystemConstructor systemConstructor = constructorOf(constructedSystem());
 
@@ -124,9 +123,21 @@ public class InternalCacheBuilderTest {
         new Properties(), new CacheConfig(), nullSingletonSystemSupplier, systemConstructor,
         nullSingletonCacheSupplier, constructorOf(constructedCache()));
 
-    internalCacheBuilder.create();
+    internalCacheBuilder
+        .addMeterSubregistry(userRegistry1)
+        .addMeterSubregistry(userRegistry2)
+        .addMeterSubregistry(userRegistry3)
+        .create();
 
-    // verify(systemConstructor).construct(any(), any(), eq(userRegistries));
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<Set<MeterRegistry>> registriesPassedToSystemConstructor =
+        ArgumentCaptor.forClass(Set.class);
+
+    verify(systemConstructor)
+        .construct(any(), any(), registriesPassedToSystemConstructor.capture());
+
+    assertThat(registriesPassedToSystemConstructor.getValue())
+        .containsExactlyInAnyOrder(userRegistry1, userRegistry2, userRegistry3);
   }
 
   @Test

@@ -15,6 +15,7 @@
 
 package org.apache.geode.distributed;
 
+import static java.util.Collections.emptySet;
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 
 import java.io.File;
@@ -155,7 +156,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    *
    */
   public static DistributedSystem connect(Properties config) {
-    return InternalDistributedSystem.connectInternal(config, null);
+    return InternalDistributedSystem.connectInternal(config, null, emptySet());
   }
 
   protected static void addSystem(InternalDistributedSystem newSystem) {

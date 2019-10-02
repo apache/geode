@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static java.util.Collections.emptySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -45,7 +46,8 @@ public class InternalDistributedSystemSecurityIntegrationTest {
         new SecurityConfig(theSecurityManager, mock(PostProcessor.class));
     Properties configProperties = new Properties();
 
-    system = InternalDistributedSystem.connectInternal(configProperties, securityConfig);
+    system =
+        InternalDistributedSystem.connectInternal(configProperties, securityConfig, emptySet());
 
     system.disconnect();
 
@@ -60,7 +62,8 @@ public class InternalDistributedSystemSecurityIntegrationTest {
         new SecurityConfig(mock(SecurityManager.class), thePostProcessor);
     Properties configProperties = new Properties();
 
-    system = InternalDistributedSystem.connectInternal(configProperties, securityConfig);
+    system =
+        InternalDistributedSystem.connectInternal(configProperties, securityConfig, emptySet());
 
     system.disconnect();
 

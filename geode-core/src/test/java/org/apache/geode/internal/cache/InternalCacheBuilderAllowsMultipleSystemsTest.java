@@ -107,7 +107,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
 
     internalCacheBuilder.create();
 
-    verify(systemConstructor).construct(same(configProperties), any());
+    verify(systemConstructor).construct(same(configProperties), any(), any());
   }
 
   @Test
