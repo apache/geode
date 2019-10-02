@@ -597,9 +597,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       new ConcurrentHashSet<>();
 
   private final ClusterConfigurationLoader ccLoader = new ClusterConfigurationLoader();
-
-  private final CacheMetricsSession metricsSession;
-
+  
   private final StatisticsClock statisticsClock;
 
   static {
@@ -782,7 +780,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.poolFactory = poolFactory;
     this.cacheConfig = cacheConfig; // do early for bug 43213
     pdxRegistry = typeRegistry;
-    this.metricsSession = metricsSession;
 
     // Synchronized to prevent a new cache from being created
     // before an old one has finished closing
@@ -942,7 +939,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public MeterRegistry getMeterRegistry() {
-    return metricsSession.meterRegistry();
+    return system.getMeterRegistry();
   }
 
   /** generate XML for the cache before shutting down due to forced disconnect */
@@ -1179,7 +1176,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     for (CacheLifecycleListener listener : cacheLifecycleListeners) {
       listener.cacheCreated(this);
     }
-    metricsSession.start(system);
 
     if (isClient()) {
       initializeClientRegionShortcuts(this);
@@ -2161,8 +2157,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
          * closed!
          */
         try {
-          metricsSession.stop();
-
           stopServers();
 
           stopServices();

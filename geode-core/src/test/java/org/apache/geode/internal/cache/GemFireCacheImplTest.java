@@ -23,7 +23,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -370,44 +369,23 @@ public class GemFireCacheImplTest {
     verify(gemFireCacheImpl, times(0)).requestSharedConfiguration();
     verify(gemFireCacheImpl, times(0)).applyJarAndXmlFromClusterConfig();
   }
-
+  
   @Test
-  public void initialize_startsTheMetricSession() {
-    InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
+  public void getMeterRegistry_returnsTheSystemMeterRegistry() {
+    MeterRegistry systemMeterRegistry = mock(MeterRegistry.class);
 
-    CacheMetricsSessionFactory metricsSessionFactory = mock(CacheMetricsSessionFactory.class);
-    CacheMetricsSession metricsSession = mock(CacheMetricsSession.class);
-    when(metricsSessionFactory.create(any())).thenReturn(metricsSession);
+    InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
+    when(internalDistributedSystem.getMeterRegistry()).thenReturn(systemMeterRegistry);
+
+    CacheMetricsSession obsoleteCacheMetricsSession = mock(CacheMetricsSession.class);
+    when(obsoleteCacheMetricsSession.meterRegistry()).thenReturn(mock(MeterRegistry.class));
+
+    CacheMetricsSessionFactory obsoleteCacheMetricsSessionFactory = mock(CacheMetricsSessionFactory.class);
+    when(obsoleteCacheMetricsSessionFactory.create(any())).thenReturn(obsoleteCacheMetricsSession);
 
     InternalCacheBuilder cacheBuilder =
         new InternalCacheBuilder(new Properties(), new CacheConfig(),
-            metricsSessionFactory,
-            InternalDistributedSystem::getConnectedInstance,
-            InternalDistributedSystem::connectInternal,
-            GemFireCacheImpl::getInstance,
-            GemFireCacheImpl::new);
-
-    gemFireCacheImpl = (GemFireCacheImpl) cacheBuilder
-        .setUseAsyncEventListeners(true)
-        .setTypeRegistry(mock(TypeRegistry.class))
-        .create(internalDistributedSystem);
-
-    verify(metricsSession).start(same(internalDistributedSystem));
-  }
-
-  @Test
-  public void getMeterRegistry_returnsTheMetricSessionMeterRegistry() {
-    InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
-
-    CacheMetricsSession metricsSession = mock(CacheMetricsSession.class);
-    when(metricsSession.meterRegistry()).thenReturn(mock(MeterRegistry.class));
-
-    CacheMetricsSessionFactory metricsSessionFactory = mock(CacheMetricsSessionFactory.class);
-    when(metricsSessionFactory.create(any())).thenReturn(metricsSession);
-
-    InternalCacheBuilder cacheBuilder =
-        new InternalCacheBuilder(new Properties(), new CacheConfig(),
-            metricsSessionFactory,
+            obsoleteCacheMetricsSessionFactory,
             InternalDistributedSystem::getConnectedInstance,
             InternalDistributedSystem::connectInternal,
             GemFireCacheImpl::getInstance,
@@ -419,35 +397,9 @@ public class GemFireCacheImplTest {
         .create(internalDistributedSystem);
 
     assertThat(gemFireCacheImpl.getMeterRegistry())
-        .isSameAs(metricsSession.meterRegistry());
+        .isSameAs(systemMeterRegistry);
   }
-
-  @Test
-  public void close_stopsTheMetricSession() {
-    InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
-
-    CacheMetricsSessionFactory metricsSessionFactory = mock(CacheMetricsSessionFactory.class);
-    CacheMetricsSession metricsSession = mock(CacheMetricsSession.class);
-    when(metricsSessionFactory.create(any())).thenReturn(metricsSession);
-
-    InternalCacheBuilder cacheBuilder =
-        new InternalCacheBuilder(new Properties(), new CacheConfig(),
-            metricsSessionFactory,
-            InternalDistributedSystem::getConnectedInstance,
-            InternalDistributedSystem::connectInternal,
-            GemFireCacheImpl::getInstance,
-            GemFireCacheImpl::new);
-
-    gemFireCacheImpl = (GemFireCacheImpl) cacheBuilder
-        .setUseAsyncEventListeners(true)
-        .setTypeRegistry(mock(TypeRegistry.class))
-        .create(internalDistributedSystem);
-
-    gemFireCacheImpl.close();
-
-    verify(metricsSession).stop();
-  }
-
+  
   @Test
   public void addGatewayReceiverServer_requiresPreviouslyAddedGatewayReceiver() {
     gemFireCacheImpl = createGemFireCacheImpl();
