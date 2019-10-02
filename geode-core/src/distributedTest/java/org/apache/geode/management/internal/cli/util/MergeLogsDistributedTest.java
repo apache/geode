@@ -82,7 +82,7 @@ public class MergeLogsDistributedTest {
     // remove pulse.log if present
     actualFiles =
         actualFiles.stream().filter(x -> !x.getName().endsWith("pulse.log")).collect(toList());
-    assertThat(actualFiles).hasSize(5);
+    assertThat(actualFiles).hasSize(4);
 
     File result = MergeLogs.mergeLogFile(lsRule.getWorkingDirRoot().getCanonicalPath());
     assertOnLogContents(result);
@@ -94,7 +94,7 @@ public class MergeLogsDistributedTest {
     // remove pulse.log if present
     actualFiles =
         actualFiles.stream().filter(x -> !x.getName().endsWith("pulse.log")).collect(toList());
-    assertThat(actualFiles).hasSize(5);
+    assertThat(actualFiles).hasSize(4);
 
     MergeLogs.mergeLogsInNewProcess(lsRule.getWorkingDirRoot().toPath());
     File result = Arrays.stream(lsRule.getWorkingDirRoot().listFiles())
