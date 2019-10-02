@@ -33,63 +33,7 @@ public enum RegionType {
 
   // this is used to represent regions not supported by the management V2 API. For example Gfsh can
   // create regions with "LOCAL*" types
-  LEGACY,
-
-  /**
-   * @deprecated use PARTITION and set the redundancy level to 1
-   */
-  @Deprecated
-  PARTITION_REDUNDANT,
-  /**
-   * @deprecated use PARTITION_PERSISTENT and set the redundancy level to 1
-   */
-  @Deprecated
-  PARTITION_REDUNDANT_PERSISTENT,
-  /**
-   * @deprecated use PARTITION and set the evictionAction to OVERFLOW_TO_DISK
-   */
-  // PARTITION_OVERFLOW,
-  /**
-   * @deprecated use PARTITION and set the redundancy level to 1, and set the evictionAction to
-   *             OVERFLOW_TO_DISK
-   */
-
-  // PARTITION_REDUNDANT_OVERFLOW,
-  /**
-   * @deprecated use PARTITION_PERSISTENT and set the evictionAction to OVERFLOW_TO_DISK
-   */
-  // PARTITION_PERSISTENT_OVERFLOW,
-  /**
-   * @deprecated use PARTITION_PERSISTENT and set the redundancy level to 1 and set the
-   *             evictionAction to OVERFLOW_TO_DISK
-   */
-  // PARTITION_REDUNDANT_PERSISTENT_OVERFLOW,
-  /**
-   * @deprecated use PARTITION and set the evictionAction to LOCAL_DESTROY
-   */
-  // PARTITION_HEAP_LRU,
-  /**
-   * @deprecated use PARTITION and set the redundancy level to 1 and set the evictionAction to
-   *             LOCAL_DESTROY
-   */
-  // PARTITION_REDUNDANT_HEAP_LRU,
-  /**
-   * @deprecated use PARTITION_PROXY and set the redundancy level to 1
-   */
-  @Deprecated
-  PARTITION_PROXY_REDUNDANT;
-  /**
-   * @deprecated use REPLICATE and set the evictionAction to OVERFLOW_TO_DISK
-   */
-  // REPLICATE_OVERFLOW,
-  /**
-   * @deprecated use REPLICATE_PERSISTENT and set the evictionAction to OVERFLOW_TO_DISK
-   */
-  // REPLICATE_PERSISTENT_OVERFLOW,
-  /**
-   * @deprecated use REPLICATE and set the evictionAction to LOCAL_DESTROY
-   */
-  // REPLICATE_HEAP_LRU;
+  LEGACY;
 
   /**
    * @return if the type contains "PROXY"
@@ -117,12 +61,5 @@ public enum RegionType {
    */
   public boolean withPartition() {
     return name().contains("PARTITION");
-  }
-
-  /**
-   * @return if the type contains "REDUNDANT"
-   */
-  public boolean withRedundant() {
-    return name().contains("REDUNDANT");
   }
 }
