@@ -102,7 +102,7 @@ public class TXLessorDepartureHandler implements DLockLessorDepartureHandler {
     };
 
     try {
-      dm.getWaitingThreadPool().execute(recoverTx);
+      dm.getExecutors().getWaitingThreadPool().execute(recoverTx);
     } catch (RejectedExecutionException e) {
       // this shouldn't happen unless we're shutting down or someone has set a size constraint
       // on the waiting-pool using a system property

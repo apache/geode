@@ -1096,7 +1096,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
           if (isExpectingDirectReply()) {
             sendFullObject.run();
           } else {
-            getDistributionManager().getWaitingThreadPool().execute(sendFullObject);
+            getDistributionManager().getExecutors().getWaitingThreadPool().execute(sendFullObject);
           }
           return;
         }

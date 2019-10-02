@@ -90,7 +90,7 @@ The resource manager has two threshold settings, each expressed as a percentage 
 
 To use off-heap memory, specify the following options when setting up servers and regions:
 
--   Start the JVM as described in [Tuning the JVM's Garbage Collection Parameters](heap_management.html#section_590DA955523246ED980E4E351FF81F71). In particular, set the initial and maximum heap sizes to the same value. Sizes less than 32GB are optimal when you plan to use off-heap memory.
+-   Start the JVM as described in [Tuning the JVM's Garbage Collection Parameters](heap_management.html#tuning_jvm_gc_parameters). In particular, set the initial and maximum heap sizes to the same value. Sizes less than 32GB are optimal when you plan to use off-heap memory.
 -   From gfsh, start each server that will support off-heap memory with a non-zero `off-heap-memory-size` value, specified in megabytes (m) or gigabytes (g). If you plan to use the resource manager, specify critical threshold, eviction threshold, or (in most cases) both.
 
     Example:

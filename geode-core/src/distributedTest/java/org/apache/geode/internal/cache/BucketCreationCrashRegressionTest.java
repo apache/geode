@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
@@ -185,6 +186,7 @@ public class BucketCreationCrashRegressionTest implements Serializable {
     config.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     config.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     config.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    config.setProperty(DISABLE_AUTO_RECONNECT, "true");
     return config;
   }
 

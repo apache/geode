@@ -104,51 +104,26 @@ public class RegionConfigValidatorTest {
   @Test
   public void invalidType() throws Exception {
     config.setName("test");
-    config.setType(RegionType.UNSUPPORTED);
+    config.setType(RegionType.LEGACY);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
             "Region type is unsupported.");
   }
 
-  @Test
-  public void validateDefaultRedundancy() throws Exception {
-    config.setName("test");
-    config.setType(RegionType.PARTITION_REDUNDANT);
-    // the config without the explicit redundancy is valid
-    validator.validate(CacheElementOperation.CREATE, config);
-  }
+
 
   @Test
   public void invalidRedundancy() throws Exception {
-    config.setName("test");
-    config.setType(RegionType.PARTITION_REDUNDANT);
-    config.setRedundantCopies(0);
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
-        IllegalArgumentException.class)
-        .hasMessageContaining(
-            "redundantCopies cannot be 0");
-  }
-
-  @Test
-  public void invalidRedundancy1() throws Exception {
-    config.setName("test");
-    config.setRedundantCopies(0);
-    config.setType(RegionType.PARTITION_REDUNDANT);
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
-        IllegalArgumentException.class)
-        .hasMessageContaining(
-            "redundantCopies cannot be 0");
-
     config.setRedundantCopies(-1);
-    config.setType(RegionType.PARTITION_REDUNDANT);
+    config.setType(RegionType.PARTITION);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
             "redundantCopies cannot be less than 0 or greater than 3.");
 
     config.setRedundantCopies(4);
-    config.setType(RegionType.PARTITION_REDUNDANT);
+    config.setType(RegionType.PARTITION);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
@@ -193,7 +168,7 @@ public class RegionConfigValidatorTest {
             "Expiration timeInSeconds must be greater than or equal to 0.");
     config.getExpirations().clear();
 
-    config.addExpiry(Region.ExpirationType.UNSUPPORTED, 100, null);
+    config.addExpiry(Region.ExpirationType.LEGACY, 100, null);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
@@ -201,7 +176,7 @@ public class RegionConfigValidatorTest {
     config.getExpirations().clear();
 
     config.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, 100,
-        Region.ExpirationAction.UNSUPPORTED);
+        Region.ExpirationAction.LEGACY);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(

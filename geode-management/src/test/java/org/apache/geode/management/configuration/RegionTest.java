@@ -69,49 +69,4 @@ public class RegionTest {
     assertThat(regionConfig.getUri())
         .isEqualTo(AbstractConfiguration.URI_CONTEXT + "/experimental/regions/regionA");
   }
-
-  @Test
-  public void parseJsonWithDeprecatedType() throws Exception {
-    String json = "{\"name\":\"test\", \"type\":\"PARTITION_REDUNDANT_PERSISTENT\"}";
-    regionConfig = mapper.readValue(json, Region.class);
-    assertThat(regionConfig.getName()).isEqualTo("test");
-    assertThat(regionConfig.getRedundantCopies()).isEqualTo(1);
-    assertThat(regionConfig.getType()).isEqualTo(RegionType.PARTITION_REDUNDANT_PERSISTENT);
-
-    String resultJson = mapper.writeValueAsString(regionConfig);
-    assertThat(resultJson).contains("\"type\":\"PARTITION_REDUNDANT_PERSISTENT\"")
-        .contains("\"redundantCopies\":1");
-
-    Region resultRegion = mapper.readValue(resultJson, Region.class);
-    assertThat(regionConfig.getName()).isEqualTo(resultRegion.getName());
-    assertThat(regionConfig.getType()).isEqualTo(resultRegion.getType());
-    assertThat(regionConfig.getRedundantCopies()).isEqualTo(resultRegion.getRedundantCopies());
-  }
-
-  @Test
-  public void parseWithShortcutAndOtherOverridingAttributes() throws Exception {
-    String json =
-        "{\"name\":\"test\", \"redundantCopies\":0, \"type\":\"PARTITION_REDUNDANT_PERSISTENT\"}";
-    regionConfig = mapper.readValue(json, Region.class);
-    assertThat(regionConfig.getName()).isEqualTo("test");
-    assertThat(regionConfig.getRedundantCopies()).isEqualTo(0);
-    assertThat(regionConfig.getType()).isEqualTo(RegionType.PARTITION_REDUNDANT_PERSISTENT);
-  }
-
-  @Test
-  public void redundancySetter() throws Exception {
-    regionConfig.setType(RegionType.PARTITION_REDUNDANT);
-    regionConfig.setRedundantCopies(3);
-    assertThat(regionConfig.getRedundantCopies()).isEqualTo(3);
-  }
-
-  @Test
-  public void redundant() throws Exception {
-    regionConfig.setType(RegionType.PARTITION_REDUNDANT);
-    assertThat(regionConfig.getRedundantCopies()).isEqualTo(1);
-
-    regionConfig.setType(RegionType.PARTITION);
-    assertThat(regionConfig.getRedundantCopies()).isNull();
-  }
-
 }

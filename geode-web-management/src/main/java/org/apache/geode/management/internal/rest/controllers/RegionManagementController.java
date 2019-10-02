@@ -21,6 +21,8 @@ import static org.apache.geode.management.internal.rest.controllers.AbstractMana
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Extension;
+import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,7 +65,10 @@ public class RegionManagementController extends AbstractManagementController {
         HttpStatus.CREATED);
   }
 
-  @ApiOperation(value = "list regions")
+  @ApiOperation(value = "list regions",
+      extensions = {@Extension(properties = {
+          @ExtensionProperty(name = "jqFilter",
+              value = ".result[] | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT)
   @ResponseBody
@@ -80,7 +85,10 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
-  @ApiOperation(value = "get region")
+  @ApiOperation(value = "get region",
+      extensions = {@Extension(properties = {
+          @ExtensionProperty(name = "jqFilter",
+              value = ".result | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
   public ClusterManagementGetResult<Region, RuntimeRegionInfo> getRegion(
@@ -106,7 +114,10 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.delete(config);
   }
 
-  @ApiOperation(value = "list region indexes")
+  @ApiOperation(value = "list region indexes",
+      extensions = {@Extension(properties = {
+          @ExtensionProperty(name = "jqFilter",
+              value = ".result[] | .configuration | {name:.name,expression:.expression}")})})
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody
@@ -123,7 +134,10 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
-  @ApiOperation(value = "list indexes")
+  @ApiOperation(value = "list indexes",
+      extensions = {@Extension(properties = {
+          @ExtensionProperty(name = "jqFilter",
+              value = ".result[] | .configuration | {name:.name,expression:.expression,regionPath:.regionPath}")})})
   @RequestMapping(method = RequestMethod.GET, value = "/indexes")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
@@ -136,7 +150,10 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
-  @ApiOperation(value = "get index")
+  @ApiOperation(value = "get index",
+      extensions = {@Extension(properties = {
+          @ExtensionProperty(name = "jqFilter",
+              value = ".result | .configuration | {name:.name,expression:.expression}")})})
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody

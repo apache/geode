@@ -24,7 +24,6 @@ import org.apache.geode.admin.CacheVmConfig;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.admin.SystemMemberType;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.remote.RemoteApplicationVM;
@@ -117,7 +116,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
         return false;
       }
     }
-    return ((ClusterDistributionManager) dm).getDistributionManagerIdsIncludingAdmin()
+    return dm.getDistributionManagerIdsIncludingAdmin()
         .contains(getDistributedMember());
   }
 

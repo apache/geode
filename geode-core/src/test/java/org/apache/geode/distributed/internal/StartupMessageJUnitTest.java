@@ -95,7 +95,7 @@ public class StartupMessageJUnitTest {
     startupMessage.process(distributionManager);
 
     assertThat(
-        startupMessage.getProcessorType() == ClusterDistributionManager.WAITING_POOL_EXECUTOR);
+        startupMessage.getProcessorType() == OperationExecutors.WAITING_POOL_EXECUTOR);
   }
 
   @Test
@@ -111,6 +111,6 @@ public class StartupMessageJUnitTest {
 
     assertThat(
         startupResponseMessage
-            .getProcessorType() == ClusterDistributionManager.WAITING_POOL_EXECUTOR);
+            .getProcessorType() == OperationExecutors.WAITING_POOL_EXECUTOR);
   }
 }

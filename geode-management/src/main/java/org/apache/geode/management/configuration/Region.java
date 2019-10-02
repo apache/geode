@@ -100,9 +100,6 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
    * @return the redundant copies of a region
    */
   public Integer getRedundantCopies() {
-    if (type != null && type.withRedundant() && redundantCopies == null) {
-      return 1;
-    }
     return redundantCopies;
   }
 
@@ -161,7 +158,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
      * for example: REGION_IDLE_TIME, REGION_TIME_TO_LIVE, eventually these should be removed
      * from the product as well.
      */
-    UNSUPPORTED
+    LEGACY
   }
 
   public enum ExpirationAction {
@@ -172,7 +169,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
      * for example: LOCAL_DESTROY, LOCAL_INVALIDATE, eventually these should be removed from the
      * product as well.
      */
-    UNSUPPORTED
+    LEGACY
   }
 
   public static class Expiration implements Serializable {

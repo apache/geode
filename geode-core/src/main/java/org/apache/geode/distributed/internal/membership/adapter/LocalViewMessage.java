@@ -19,6 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterOperationExecutors;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
@@ -50,7 +51,7 @@ public class LocalViewMessage extends SerialDistributionMessage {
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.VIEW_EXECUTOR;
+    return ClusterOperationExecutors.VIEW_EXECUTOR;
   }
 
 

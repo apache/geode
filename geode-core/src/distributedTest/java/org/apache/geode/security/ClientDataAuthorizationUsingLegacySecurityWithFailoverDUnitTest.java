@@ -57,6 +57,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -131,8 +132,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   @Before
   public void setup() throws Exception {
     Properties clusterMemberProperties = getVMPropertiesWithPermission("cluster,data");
-    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
-    if (version == 0 || version >= 140) {
+    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
       clusterMemberProperties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
@@ -317,8 +317,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
   @Test
   public void dataWriterCannotRegisterInterestAcrossFailover() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataWrite");
-    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
-    if (version == 0 || version >= 140) {
+    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }
@@ -378,8 +377,7 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
 
     Properties props = getVMPropertiesWithPermission(withPermission);
 
-    int version = Integer.parseInt(VersionManager.getInstance().versionWithNoDots(clientVersion));
-    if (version == 0 || version >= 140) {
+    if (TestVersion.compare(clientVersion, "1.4.0") >= 0) {
       props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
           "org.apache.geode.security.templates.UsernamePrincipal");
     }

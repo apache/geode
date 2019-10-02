@@ -308,7 +308,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
+    return OperationExecutors.WAITING_POOL_EXECUTOR;
   }
 
   @Override

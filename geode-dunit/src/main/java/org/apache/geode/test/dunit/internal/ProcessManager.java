@@ -209,15 +209,18 @@ class ProcessManager implements ChildVMLauncher {
     return classpath;
   }
 
-  private String removeModuleFromIntelliJPath(String classpath, String module) {
+  private String removeModuleFromIntelliJPath(String p_classpath, String module) {
+    String classpath = p_classpath;
     String mainClasses = File.separator + "out" + File.separator + "production"
         + File.separator + "org.apache.geode." + module + ".main";
-
-    if (!classpath.contains(mainClasses)) {
-      return classpath;
+    if (classpath.contains(mainClasses)) {
+      classpath = removeFromPath(classpath, mainClasses);
     }
-
-    classpath = removeFromPath(classpath, mainClasses);
+    mainClasses = File.separator + "out" + File.separator + "production"
+        + File.separator + "geode." + module + ".main";
+    if (classpath.contains(mainClasses)) {
+      classpath = removeFromPath(classpath, mainClasses);
+    }
     return classpath;
   }
 

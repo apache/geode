@@ -32,8 +32,8 @@
             Geode does not allow mutable static fields within the product code. All static
             fields must be marked final and be immutable objects.
 
-            If the value of your static field is actually immutable, you can annotate that
-            class or the field itself with @Immutable, and it will be ignored by this rule.
+            If the value of your static field is actually immutable, you can annotate the field
+            itself with @Immutable, and it will be ignored by this rule.
         </description>
         <priority>3</priority>
         <example>

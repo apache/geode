@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -92,8 +93,8 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
 
   @Override
   public int getProcessorType() {
-    return this.targetReinitializing ? ClusterDistributionManager.WAITING_POOL_EXECUTOR
-        : ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+    return this.targetReinitializing ? OperationExecutors.WAITING_POOL_EXECUTOR
+        : OperationExecutors.HIGH_PRIORITY_EXECUTOR;
   }
 
   @Override

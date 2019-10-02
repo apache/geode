@@ -355,7 +355,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     if (cache != null) {
       DistributionManager manager = cache.getDistributionManager();
       if (manager != null) {
-        executor = manager.getWaitingThreadPool();
+        executor = manager.getExecutors().getWaitingThreadPool();
       }
     }
     getCustomEntryConcurrentHashMap().clearWithExecutor(executor);

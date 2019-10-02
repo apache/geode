@@ -18,17 +18,21 @@
 set -e
 
 usage() {
-    echo "Usage: finalize_release.sh -v version_number"
+    echo "Usage: finalize_release.sh -v version_number -g your_github_username"
     echo "  -v   The #.#.# version number to finalize"
+    echo "  -g   Your github username"
     exit 1
 }
 
 VERSION=""
 
-while getopts ":v:" opt; do
+while getopts ":v:g:" opt; do
   case ${opt} in
     v )
       VERSION=$OPTARG
+      ;;
+    g )
+      GITHUB_USER=$OPTARG
       ;;
     \? )
       usage
@@ -36,7 +40,7 @@ while getopts ":v:" opt; do
   esac
 done
 
-if [[ ${VERSION} == "" ]] ; then
+if [[ ${VERSION} == "" ]] || [[ ${GITHUB_USER} == "" ]] ; then
     usage
 fi
 
@@ -66,12 +70,14 @@ fi
 
 echo ""
 echo "============================================================"
-echo "Destroying pipeline"
+echo "Destroying pipelines"
 echo "============================================================"
 set -x
 cd ${0%/*}/../../ci/pipelines/meta
+DEVELOP_META=$(pwd)
+cd ${GEODE}
 fly -t concourse.apachegeode-ci.info login --concourse-url https://concourse.apachegeode-ci.info/
-./destroy_pipelines.sh
+${DEVELOP_META}/destroy_pipelines.sh
 set +x
 
 
@@ -132,6 +138,8 @@ echo "============================================================"
 set -x
 cd ${GEODE_DEVELOP}
 git pull
+git remote add myfork git@github.com:${GITHUB_USER}/geode.git || true
+git checkout -b add-${VERSION}-to-old-versions
 set +x
 #before:
 # '1.9.0'].each {
@@ -146,7 +154,7 @@ set -x
 git add settings.gradle
 git diff --staged
 git commit -m "add ${VERSION} to old versions"
-git push
+git push -u myfork
 set -x
 
 
@@ -167,7 +175,8 @@ echo Keeping releases: $(cat ../keep)
     svn rm $oldVersion
     svn commit -m "remove $oldVersion from mirrors (it is still available at http://archive.apache.org/dist/geode)"
     set +x
-    DID_REMOVE=1
+    [ -z "$DID_REMOVE" ] || DID_REMOVE="${DID_REMOVE} and "
+    DID_REMOVE="${DID_REMOVE}${oldVersion}"
 done
 rm ../keep
 
@@ -178,7 +187,8 @@ echo "Done finalizing the release!"
 echo "============================================================"
 cd ${GEODE}/../..
 echo "Don't forget to:"
-[ -z "$DID_REMOVE" ] || echo "- Update mirror links for old releases that were removed from mirrors"
+echo "- Go to https://github.com/${GITHUB_USER}/geode/pull/new/add-${VERSION}-to-old-versions and create the pull request"
+[ -z "$DID_REMOVE" ] || echo "- Update to non-mirror links for old release $DID_REMOVE that was removed from mirrors"
 echo "- Publish documentation to docs site"
-[ "${V##*.}" -ne 0 ] || echo "- Ask for a volunteer to Update Dependencies"
+[ "${VERSION##*.}" -ne 0 ] || echo "- Ask for a volunteer to begin the chore of updating 3rd-party dependency versions on develop"
 echo "- Send announce email"

@@ -27,8 +27,9 @@ subprojects {
 
   def oldGeodeVersion = project.name
 
-  boolean useTgz = (oldGeodeVersion >= "1.7.0")
-  boolean downloadInstall = (oldGeodeVersion >= "1.2.0")
+  boolean isIncubating = oldGeodeVersion.contains("incubating")
+  boolean useTgz = !isIncubating && ((oldGeodeVersion >= "1.7.0") || (oldGeodeVersion.length() > 5))
+  boolean downloadInstall = !isIncubating && ((oldGeodeVersion >= "1.2.0") || (oldGeodeVersion.length() > 5))
 
   String archiveType = useTgz ? "tgz" : "zip"
 

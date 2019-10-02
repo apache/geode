@@ -43,7 +43,7 @@ public class TXRecoverGrantorMessageProcessor
       final DLockRecoverGrantorProcessor.DLockRecoverGrantorMessage msg) {
 
     try {
-      dm.getWaitingThreadPool().execute(new Runnable() {
+      dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
         @Override
         public void run() {
           processDLockRecoverGrantorMessage(dm, msg);

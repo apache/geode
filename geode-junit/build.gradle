@@ -40,7 +40,6 @@ dependencies {
   }
   compile('org.apache.commons:commons-lang3')
   compile('org.apache.logging.log4j:log4j-api')
-  compile('org.apache.logging.log4j:log4j-core')
   compile('org.assertj:assertj-core')
   compile('org.awaitility:awaitility')
   compile('org.bouncycastle:bcpkix-jdk15on')

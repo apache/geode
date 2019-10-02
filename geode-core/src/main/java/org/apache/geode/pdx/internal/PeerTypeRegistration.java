@@ -763,6 +763,9 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public int getLocalSize() {
+    if (cache.isClosed()) {
+      return 0;
+    }
     return getIdToType().size();
   }
 

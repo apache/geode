@@ -60,6 +60,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
 
 @RunWith(Parameterized.class)
@@ -82,7 +83,7 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     // Lucene Compatibility checks start with Apache Geode v1.2.0
     // Removing the versions older than v1.2.0
-    result.removeIf(s -> Integer.parseInt(VersionManager.getInstance().versionWithNoDots(s)) < 120);
+    result.removeIf(s -> TestVersion.compare(s, "1.2.0") < 0);
     if (result.size() < 1) {
       throw new RuntimeException("No older versions of Geode were found to test against");
     } else {

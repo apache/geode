@@ -523,7 +523,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             getBucket().getFullPath());
       }
       primaryElector = getBucket().getDistributionManager().getId();
-      getBucket().getDistributionManager().getWaitingThreadPool().execute(
+      getBucket().getDistributionManager().getExecutors().getWaitingThreadPool().execute(
           () -> getBucket().getPartitionedRegion().getRedundancyProvider()
               .finishIncompleteBucketCreation(getBucket().getId()));
     }
@@ -2679,7 +2679,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           // ensure there is a thread consuming the queue
           boolean handedOff = false;
           try {
-            getDistributionManager().getWaitingThreadPool().execute(consumeQueue());
+            getDistributionManager().getExecutors().getWaitingThreadPool().execute(consumeQueue());
             handedOff = true;
           } finally {
             if (!handedOff) {

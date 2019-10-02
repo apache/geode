@@ -344,14 +344,18 @@ public class GMSMember implements DataSerializableFixedID {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder(100);
-    String uuid = formatUUID();
 
-    sb.append("GMSMember[name=").append(name)
-        .append(";addr=").append(inetAddr).append(";port=").append(udpPort)
+    sb.append("GMSMember[");
+    if (name != null && name.length() > 0) {
+      sb.append("name=").append(name);
+    }
+    sb.append(";addr=").append(inetAddr).append(";port=").append(udpPort)
         .append(";kind=").append(vmKind).append(";processId=").append(processId)
-        .append(";viewId=").append(vmViewId)
-        .append(";version=").append(versionOrdinal).append(uuid)
-        .append("]");
+        .append(";viewId=").append(vmViewId);
+    if (versionOrdinal != Version.CURRENT_ORDINAL) {
+      sb.append(";version=").append(versionOrdinal);
+    }
+    sb.append("]");
     return sb.toString();
   }
 

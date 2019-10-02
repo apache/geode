@@ -47,6 +47,7 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
 
 public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
@@ -95,7 +96,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     // saved in cluster configuration and multiple receivers are not supported starting in 140.
     // Note: This comparison works because '130' < '140'.
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(version -> (version.compareTo("1.4.0") >= 0));
+    result.removeIf(version -> (TestVersion.compare(version, "1.4.0") >= 0));
     if (result.size() < 1) {
       throw new RuntimeException("No older versions of Geode were found to test against");
     }

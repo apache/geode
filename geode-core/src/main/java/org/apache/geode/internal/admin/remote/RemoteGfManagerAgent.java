@@ -873,7 +873,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
       this.myMembershipListener = new MyMembershipListener();
       dm.addMembershipListener(this.myMembershipListener);
       Set initialMembers = dm.getDistributionManagerIds();
-      this.myMembershipListener.addMembers(initialMembers);
+      this.myMembershipListener.addMembers(new HashSet(initialMembers));
 
       if (logger.isDebugEnabled()) {
         StringBuffer sb = new StringBuffer("[RemoteGfManagerAgent] ");

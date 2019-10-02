@@ -464,7 +464,7 @@ public class GMSMembershipManagerJUnitTest {
     when(dm.getCancelCriterion()).thenReturn(stopper);
     when(dm.getMembershipManager()).thenReturn(manager);
     when(dm.getViewMembers()).thenReturn(members);
-    when(dm.getDistributionManagerIds()).thenReturn(new HashSet(members));
+    when(dm.getDistributionManagerIds()).thenReturn(new HashSet<>(members));
     when(dm.addMembershipListenerAndGetDistributionManagerIds(any(
         org.apache.geode.distributed.internal.MembershipListener.class)))
             .thenReturn(new HashSet(members));

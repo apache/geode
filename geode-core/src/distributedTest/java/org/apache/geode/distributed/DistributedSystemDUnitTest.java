@@ -29,8 +29,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZO
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 import static org.apache.geode.distributed.internal.ClusterDistributionManager.NORMAL_DM_TYPE;
-import static org.apache.geode.distributed.internal.ClusterDistributionManager.SERIAL_EXECUTOR;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD;
+import static org.apache.geode.distributed.internal.OperationExecutors.SERIAL_EXECUTOR;
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
@@ -137,18 +137,19 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
         (ClusterDistributionManager) system.getDistributionManager();
     final FakeMessage message = new FakeMessage(null);
 
-    distributionManager.getExecutor(SERIAL_EXECUTOR, member).execute(new SizeableRunnable(100) {
+    distributionManager.getExecutors().getExecutor(SERIAL_EXECUTOR, member)
+        .execute(new SizeableRunnable(100) {
 
-      @Override
-      public void run() { // always throws NullPointerException
-        message.doAction(distributionManager, false);
-      }
+          @Override
+          public void run() { // always throws NullPointerException
+            message.doAction(distributionManager, false);
+          }
 
-      @Override
-      public String toString() {
-        return "Processing fake message";
-      }
-    });
+          @Override
+          public String toString() {
+            return "Processing fake message";
+          }
+        });
 
     Assert.assertTrue("expected the serial queue to be flushed",
         distributionManager.getMembershipManager().waitForDeparture(member));

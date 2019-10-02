@@ -39,6 +39,7 @@ import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -133,7 +134,9 @@ public class ExecuteFunction66Test {
 
     when(callbackArgPart.getObject()).thenReturn(CALLBACK_ARG);
 
-    when(clusterDistributionManager.getFunctionExecutor()).thenReturn(functionExecutor);
+    OperationExecutors executors = mock(OperationExecutors.class);
+    when(clusterDistributionManager.getExecutors()).thenReturn(executors);
+    when(executors.getFunctionExecutor()).thenReturn(functionExecutor);
 
     when(functionObject.getId()).thenReturn(FUNCTION_ID);
     doCallRealMethod().when(functionObject).getRequiredPermissions(any());

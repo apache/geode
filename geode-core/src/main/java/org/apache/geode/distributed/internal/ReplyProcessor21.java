@@ -531,7 +531,6 @@ public class ReplyProcessor21 implements MembershipListener {
    * @see #canStopWaiting()
    */
   public void waitForReplies() throws InterruptedException, ReplyException {
-
     boolean result = waitForReplies(0);
     Assert.assertTrue(result, "failed but no exception thrown");
   }

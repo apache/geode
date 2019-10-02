@@ -62,13 +62,13 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
       RegionAttributesType.ExpirationAttributesType regionIdleTime =
           regionAttributes.getRegionIdleTime();
       if (regionIdleTime != null) {
-        expirations.add(convertFrom(Region.ExpirationType.UNSUPPORTED, regionIdleTime));
+        expirations.add(convertFrom(Region.ExpirationType.LEGACY, regionIdleTime));
       }
 
       RegionAttributesType.ExpirationAttributesType regionTimeToLive =
           regionAttributes.getRegionTimeToLive();
       if (regionTimeToLive != null) {
-        expirations.add(convertFrom(Region.ExpirationType.UNSUPPORTED, regionTimeToLive));
+        expirations.add(convertFrom(Region.ExpirationType.LEGACY, regionTimeToLive));
       }
 
       if (!expirations.isEmpty()) {
@@ -148,7 +148,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
         expiration.setAction(
             Region.ExpirationAction.valueOf(xmlExpiration.getAction().toUpperCase()));
       } catch (Exception e) {
-        expiration.setAction(Region.ExpirationAction.UNSUPPORTED);
+        expiration.setAction(Region.ExpirationAction.LEGACY);
       }
     }
     return expiration;
@@ -161,25 +161,25 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
    *
    * we do our best to infer the type from the existing xml attributes. For data
    * policies not supported by management rest api (for example, NORMAL and PRELOADED)
-   * it will show as UNSUPPORTED
+   * it will show as LEGACY
    */
   public RegionType getRegionType(String refid, RegionAttributesType regionAttributes) {
     if (refid != null) {
       try {
         return RegionType.valueOf(refid);
       } catch (Exception e) {
-        return RegionType.UNSUPPORTED;
+        // try to determine the region type based on the regionAttributes
       }
     }
 
     // if refid is null, we will try to determine the type based on the region attributes
     if (regionAttributes == null) {
-      return RegionType.UNSUPPORTED;
+      return RegionType.LEGACY;
     }
     RegionAttributesDataPolicy dataPolicy = regionAttributes.getDataPolicy();
 
     if (dataPolicy == null) {
-      return RegionType.UNSUPPORTED;
+      return RegionType.LEGACY;
     }
 
     switch (dataPolicy) {
@@ -204,7 +204,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
         return RegionType.REPLICATE_PROXY;
       }
     }
-    return RegionType.UNSUPPORTED;
+    return RegionType.LEGACY;
   }
 
 

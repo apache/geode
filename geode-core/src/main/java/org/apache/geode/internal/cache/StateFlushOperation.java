@@ -560,7 +560,7 @@ public class StateFlushOperation {
       // though this message must be transmitted on an ordered connection to
       // ensure that datagram channnels are flushed, we need to execute
       // in the waiting pool to avoid blocking those connections
-      dm.getWaitingThreadPool().execute(new Runnable() {
+      dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
         @Override
         public void run() {
           if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)) {

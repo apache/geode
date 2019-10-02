@@ -162,7 +162,8 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
         Assert.assertTrue(this.id != null);
         // wait 10 seconds for the high priority queue to drain
         long endTime = System.currentTimeMillis() + 10000;
-        ThreadPoolExecutor pool = (ThreadPoolExecutor) dm.getHighPriorityThreadPool();
+        ThreadPoolExecutor pool =
+            (ThreadPoolExecutor) dm.getExecutors().getHighPriorityThreadPool();
         while (pool.getActiveCount() > 1 && System.currentTimeMillis() < endTime) {
           boolean interrupted = Thread.interrupted();
           try {

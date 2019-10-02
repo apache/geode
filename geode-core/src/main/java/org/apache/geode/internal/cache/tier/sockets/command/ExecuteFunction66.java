@@ -366,7 +366,7 @@ public class ExecuteFunction66 extends BaseCommand {
         execService.execute(functionExecution);
       } else {
         ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
-        newDM.getFunctionExecutor().execute(functionExecution);
+        newDM.getExecutors().getFunctionExecutor().execute(functionExecution);
       }
     }
     stats.endFunctionExecution(startExecution, fn.hasResult());

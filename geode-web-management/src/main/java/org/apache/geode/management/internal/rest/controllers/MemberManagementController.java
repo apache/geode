@@ -38,7 +38,10 @@ import org.apache.geode.management.runtime.MemberInformation;
 @Controller("members")
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class MemberManagementController extends AbstractManagementController {
-  @ApiOperation(value = "get member")
+  @ApiOperation(value = "get member",
+      extensions = {@Extension(properties = {
+          @ExtensionProperty(name = "jqFilter",
+              value = ".result | .runtimeInfo[] | {name:.memberName,status:.status}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_ENDPOINT + "/{id}")
   @ResponseBody

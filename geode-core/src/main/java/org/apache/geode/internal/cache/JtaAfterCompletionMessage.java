@@ -26,6 +26,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXRemoteCommitMessage.RemoteCommitResponse;
@@ -66,9 +67,9 @@ public class JtaAfterCompletionMessage extends TXMessage {
     msg.setRecipients(recipients);
     // bug #43087 - hang sending JTA synchronizations from delegate server
     if (system.threadOwnsResources()) {
-      msg.processorType = ClusterDistributionManager.SERIAL_EXECUTOR;
+      msg.processorType = OperationExecutors.SERIAL_EXECUTOR;
     } else {
-      msg.processorType = ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+      msg.processorType = OperationExecutors.HIGH_PRIORITY_EXECUTOR;
     }
     system.getDistributionManager().putOutgoing(msg);
     return response;

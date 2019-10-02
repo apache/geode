@@ -210,7 +210,8 @@ For partitioned regions, each node's buckets compute a sum over that node and re
 The `SUM` function where the `DISTINCT` modifier is applied to the expression returns the summation over the set of unique (distinct) values.
 For partitioned regions, the distinct values in a node's buckets are returned to the coordinator node, which can then calculate the sum over the values that are unique across nodes, after eliminating duplicate values that come from separate nodes.
 
-The actual expression used to calculate the aggregation should be an instance of `java.lang.Number`. The `SUM` statement always returns a `java.lang.Float` or `java.lang.Double` as the result (depending on how big the value is); you should take this into consideration when executing the query: if an overflow occurs while computing the `SUM` function because the value is higher than `Double.MAX_VALUE` ((2 - 2<sup>-52</sup>) * 2<sup>1023</sup>), the result will be incorrect.
+The actual expression used to calculate the aggregation should be an instance of `java.lang.Number`.
+The `SUM` statement always returns a `java.lang.Number` as the result and, depending on how big the value is and whether it has a decimal component or not, the returned type could be an instance of `java.lang.Integer`, `java.lang.Long`, `java.lang.Float` or `java.lang.Double`; you should take this into consideration when executing the query: if an overflow occurs while computing the `SUM` function because the value is higher than `Double.MAX_VALUE` ((2 - 2<sup>-52</sup>) * 2<sup>1023</sup>), the result will be incorrect.
 
 The following are example `SUM` queries that return the summation of the entries ID.
 
@@ -279,7 +280,7 @@ The `AVG` keyword where the `DISTINCT` modifier is applied to the expression ret
 For partitioned regions, the distinct values in a node's buckets are returned to the coordinator node, which can then calculate the average over the values that are unique across nodes, after eliminating duplicate values that come from separate nodes.
 
 The actual expression used to calculate the aggregation should be an instance of `java.lang.Number`. 
-The `AVG` statement always returns a `java.lang.Float` or `java.lang.Double` as the result (depending on how big the value is); you should take this into consideration when executing the query: if an overflow occurs while computing the `AVG` function because the value is higher than `Double.MAX_VALUE` ((2 - 2<sup>-52</sup>) * 2<sup>1023</sup>), or if an overflow occurs while computing the intermediate count because the amount of elements is higher than `Long.MAX_VALUE` (2<sup>63</sup> - 1), the result will be incorrect.  
+The `AVG` statement always returns a `java.lang.Number` as the result and, depending on how big the value is and whether it has a decimal component or not, the returned type could be an instance of `java.lang.Integer`, `java.lang.Long`, `java.lang.Float` or `java.lang.Double`; you should take this into consideration when executing the query: if an overflow occurs while computing the `AVG` function because the value is higher than `Double.MAX_VALUE` ((2 - 2<sup>-52</sup>) * 2<sup>1023</sup>), or if an overflow occurs while computing the intermediate count because the amount of elements is higher than `Long.MAX_VALUE` (2<sup>63</sup> - 1), the result will be incorrect.  
 
 The following are example `AVG` queries that calculate the average of the entries ID.
 

@@ -283,7 +283,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
         // DLock needed by the PR destroy.. by moving the destroy to the waiting
         // pool, the entry
         // update is allowed to complete.
-        dm.getWaitingThreadPool().execute(destroyOp(dm, lclRgn, sendReply));
+        dm.getExecutors().getWaitingThreadPool().execute(destroyOp(dm, lclRgn, sendReply));
       } catch (RejectedExecutionException ignore) {
         // rejected while trying to execute destroy thread
         // must be shutting down, just quit
@@ -368,35 +368,36 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
           this.lockRoot = null; // spawned thread will release lock, not
                                 // basicProcess
 
-          rgn.getDistributionManager().getWaitingThreadPool().execute(new Runnable() {
-            @Override
-            public void run() {
-              try {
-                rgn.reinitializeFromImageTarget(getSender());
-              } catch (TimeoutException e) {
-                // dlock timed out, log message
-                logger.warn(String.format(
-                    "Got timeout when trying to recreate region during re-initialization: %s",
-                    rgn.getFullPath()),
-                    e);
-              } catch (IOException e) {
-                // only if loading snapshot, not here
-                InternalGemFireError assErr = new InternalGemFireError(
-                    "unexpected exception");
-                assErr.initCause(e);
-                throw assErr;
-              } catch (ClassNotFoundException e) {
-                // only if loading snapshot, not here
-                InternalGemFireError assErr = new InternalGemFireError(
-                    "unexpected exception");
-                assErr.initCause(e);
-                throw assErr;
-              } finally {
-                if (loc_lockRoot != null)
-                  loc_lockRoot.releaseDestroyLock();
-              }
-            }
-          });
+          rgn.getDistributionManager().getExecutors().getWaitingThreadPool()
+              .execute(new Runnable() {
+                @Override
+                public void run() {
+                  try {
+                    rgn.reinitializeFromImageTarget(getSender());
+                  } catch (TimeoutException e) {
+                    // dlock timed out, log message
+                    logger.warn(String.format(
+                        "Got timeout when trying to recreate region during re-initialization: %s",
+                        rgn.getFullPath()),
+                        e);
+                  } catch (IOException e) {
+                    // only if loading snapshot, not here
+                    InternalGemFireError assErr = new InternalGemFireError(
+                        "unexpected exception");
+                    assErr.initCause(e);
+                    throw assErr;
+                  } catch (ClassNotFoundException e) {
+                    // only if loading snapshot, not here
+                    InternalGemFireError assErr = new InternalGemFireError(
+                        "unexpected exception");
+                    assErr.initCause(e);
+                    throw assErr;
+                  } finally {
+                    if (loc_lockRoot != null)
+                      loc_lockRoot.releaseDestroyLock();
+                  }
+                }
+              });
         } else {
           if (logger.isDebugEnabled()) {
             logger.debug("Processing DestroyRegionOperation, calling basicDestroyRegion: {}",
