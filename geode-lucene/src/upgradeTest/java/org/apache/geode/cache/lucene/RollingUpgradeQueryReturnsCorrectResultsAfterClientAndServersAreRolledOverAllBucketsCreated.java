@@ -17,8 +17,6 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Test;
-
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -31,7 +29,7 @@ import org.apache.geode.test.dunit.VM;
 public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRolledOverAllBucketsCreated
     extends LuceneSearchWithRollingUpgradeDUnit {
 
-  @Test
+  // @Test
   public void test()
       throws Exception {
     // This test verifies the upgrade from lucene 6 to 7 doesn't cause any issues. Without any
