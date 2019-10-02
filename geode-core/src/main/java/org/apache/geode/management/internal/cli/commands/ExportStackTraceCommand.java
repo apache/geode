@@ -26,7 +26,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
@@ -53,8 +52,8 @@ public class ExportStackTraceCommand extends GfshCommand {
   public static final String STACK_TRACE_FOR_MEMBER = "*** Stack-trace for member ";
   private final GetStackTracesFunction getStackTracesFunction = new GetStackTracesFunction();
 
-  private static final DateTimeFormatter formatter =
-      DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS", Locale.getDefault())
+  private final DateTimeFormatter formatter =
+      DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS")
           .withZone(ZoneId.systemDefault());
 
   /**
