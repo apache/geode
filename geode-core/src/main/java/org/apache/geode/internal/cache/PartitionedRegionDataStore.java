@@ -2968,24 +2968,24 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   }
 
   public void executeOnDataStore(final Set localKeys, final Function function, final Object object,
-      final int prid, final Set<Integer> bucketSet, final boolean isReExecute,
+      final int prid, final int[] bucketArray, final boolean isReExecute,
       final PartitionedRegionFunctionStreamingMessage msg, long time, ServerConnection servConn,
       int transactionID) {
 
-    if (!areAllBucketsHosted(bucketSet)) {
+    if (!areAllBucketsHosted(bucketArray)) {
       throw new BucketMovedException(
           "Bucket migrated to another node. Please retry.");
     }
     final DistributionManager dm = this.partitionedRegion.getDistributionManager();
 
     ResultSender resultSender = new PartitionedRegionFunctionResultSender(dm,
-        this.partitionedRegion, time, msg, function, bucketSet);
+        this.partitionedRegion, time, msg, function, bucketArray);
 
     final RegionFunctionContextImpl prContext =
         new RegionFunctionContextImpl(getPartitionedRegion().getCache(), function.getId(),
             this.partitionedRegion, object, localKeys, ColocationHelper
-                .constructAndGetAllColocatedLocalDataSet(this.partitionedRegion, bucketSet),
-            bucketSet, resultSender, isReExecute);
+                .constructAndGetAllColocatedLocalDataSet(this.partitionedRegion, bucketArray),
+            bucketArray, resultSender, isReExecute);
 
     FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), dm.getSystem());
     try {
@@ -3014,13 +3014,19 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     }
   }
 
-  public boolean areAllBucketsHosted(final Set<Integer> bucketSet) {
+  public boolean areAllBucketsHosted(final int[] bucketArray) {
     // boolean arr[] = new boolean[]{false, true, false, true , false , false , false , false };
     // Random random = new Random();
     // int num = random.nextInt(7);
     // System.out.println("PRDS.verifyBuckets returning " + arr[num]);
     // return arr[num];
-    for (Integer bucket : bucketSet) {
+    int bucketlength = BucketSetHelper.length(bucketArray);
+    if (bucketlength == 0) {
+      return true;
+    }
+    int bucket;
+    for (int i = 0; i < bucketlength; i++) {
+      bucket = BucketSetHelper.get(bucketArray, i);
       if (!this.partitionedRegion.getRegionAdvisor().getBucketAdvisor(bucket).isHosting()) {
         return false;
       }

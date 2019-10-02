@@ -16,7 +16,6 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -57,12 +56,13 @@ public interface InternalRegionFunctionContext extends RegionFunctionContext {
   Map<String, LocalDataSet> getColocatedLocalDataSets();
 
   /**
-   * Get the set of bucket IDs for this node as specified by the {@link #getFilter()} method of the
+   * Get the int array of bucket IDs for this node as specified by the {@link #getFilter()} method
+   * of the
    * function context for the given region.
    *
    * @param region region to get the local bucket IDs for
    *
    * @return the set of bucket IDs for this node in this function context for the given region
    */
-  <K, V> Set<Integer> getLocalBucketSet(Region<K, V> region);
+  <K, V> int[] getLocalBucketArray(Region<K, V> region);
 }

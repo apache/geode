@@ -1906,7 +1906,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           assertEquals(2, map.size());
           rfContext.getResultSender().sendResult(map.size());
           map = ColocationHelper.constructAndGetAllColocatedLocalDataSet((PartitionedRegion) r,
-              new HashSet<Integer>());
+              new int[] {2, 0, 1});
           assertEquals(3, map.size());
           rfContext.getResultSender().lastResult(map.size());
         } else if (r.getName().equals(OrderPartitionedRegionName)) {
@@ -1915,7 +1915,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           assertEquals(2, map.size());
           rfContext.getResultSender().sendResult(map.size());
           map = ColocationHelper.constructAndGetAllColocatedLocalDataSet((PartitionedRegion) r,
-              new HashSet<Integer>());
+              new int[] {2, 0, 1});
           assertEquals(3, map.size());
           rfContext.getResultSender().lastResult(map.size());
         } else if (r.getName().equals(ShipmentPartitionedRegionName)) {
@@ -1924,7 +1924,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
           assertEquals(2, map.size());
           rfContext.getResultSender().sendResult(map.size());
           map = ColocationHelper.constructAndGetAllColocatedLocalDataSet((PartitionedRegion) r,
-              new HashSet<Integer>());
+              new int[] {2, 0, 1});
           assertEquals(3, map.size());
           rfContext.getResultSender().lastResult(map.size());
         }

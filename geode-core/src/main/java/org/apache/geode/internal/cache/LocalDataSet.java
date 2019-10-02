@@ -72,6 +72,11 @@ public class LocalDataSet implements Region, QueryExecutor {
   private final Set<Integer> buckets;
   private InternalRegionFunctionContext rfContext;
 
+  public LocalDataSet(PartitionedRegion pr, int[] buckets) {
+    this.proxy = pr;
+    this.buckets = BucketSetHelper.toSet(buckets);
+  }
+
   public LocalDataSet(PartitionedRegion pr, Set<Integer> buckets) {
     this.proxy = pr;
     this.buckets = buckets;

@@ -99,7 +99,7 @@ public class PartitionedRegionFunctionStreamingMessage extends PartitionMessage 
       // check if the routingKeyorKeys is null
       // if null call executeOnDataStore otherwise execute on LocalBuckets
       ds.executeOnDataStore(context.getFilter(), context.getFunction(), context.getArgs(),
-          getProcessorId(), context.getBucketSet(), context.isReExecute(), this, startTime, null,
+          getProcessorId(), context.getBucketArray(), context.isReExecute(), this, startTime, null,
           0);
 
       if (!this.replyLastMsg && context.getFunction().hasResult()) {

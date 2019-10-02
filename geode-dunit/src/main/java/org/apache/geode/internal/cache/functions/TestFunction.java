@@ -211,17 +211,16 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
     // check if the node contains the bucket passed as filter
     RegionFunctionContextImpl rfc = (RegionFunctionContextImpl) context;
     PartitionedRegion pr = (PartitionedRegion) rfc.getDataSet();
-    Set<Integer> bucketIDs = rfc.getLocalBucketSet(pr);
+    int[] bucketIDs = rfc.getLocalBucketArray(pr);
     pr.getGemFireCache().getLogger().fine("LOCAL BUCKETSET =" + bucketIDs);
     ResultSender<Integer> rs = context.<Integer>getResultSender();
     if (!pr.getDataStore().areAllBucketsHosted(bucketIDs)) {
       throw new AssertionError("bucket IDs =" + bucketIDs + " not all hosted locally");
     } else {
-      Integer[] bucketIds = bucketIDs.toArray(new Integer[0]);
-      for (int i = 0; i < bucketIds.length - 1; ++i) {
-        rs.sendResult(bucketIds[i]);
+      for (int i = 1; i < bucketIDs[0]; ++i) {
+        rs.sendResult(bucketIDs[i]);
       }
-      rs.lastResult(bucketIds[bucketIds.length - 1]);
+      rs.lastResult(bucketIDs[bucketIDs[0]]);
     }
   }
 

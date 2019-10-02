@@ -29,14 +29,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executors;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -236,9 +233,9 @@ public class PartitionedRepositoryManagerJUnitTest {
     when(indexForPR.isIndexAvailable(0)).thenReturn(true);
     when(indexForPR.isIndexAvailable(1)).thenReturn(true);
 
-    Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
+    int[] buckets = new int[] {2, 0, 1};
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
+    when(ctx.getLocalBucketArray((any()))).thenReturn(buckets);
     Collection<IndexRepository> repos = repoManager.getRepositories(ctx);
     assertEquals(2, repos.size());
 
@@ -262,10 +259,10 @@ public class PartitionedRepositoryManagerJUnitTest {
     setUpMockBucket(0);
     when(indexForPR.isIndexAvailable(0)).thenReturn(true);
 
-    Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
+    int[] buckets = new int[] {2, 0, 1};
 
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
+    when(ctx.getLocalBucketArray((any()))).thenReturn(buckets);
     repoManager.getRepositories(ctx);
   }
 
@@ -277,10 +274,10 @@ public class PartitionedRepositoryManagerJUnitTest {
       throws BucketNotFoundException {
     setUpMockBucket(0);
 
-    Set<Integer> buckets = new LinkedHashSet<Integer>(Arrays.asList(0, 1));
+    int[] buckets = new int[] {2, 0, 1};
 
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
+    when(ctx.getLocalBucketArray((any()))).thenReturn(buckets);
     repoManager.getRepositories(ctx);
   }
 
@@ -292,9 +289,9 @@ public class PartitionedRepositoryManagerJUnitTest {
     when(indexForPR.isIndexAvailable(0)).thenReturn(true);
     when(indexForPR.isIndexAvailable(1)).thenReturn(true);
 
-    Set<Integer> buckets = new LinkedHashSet<>(Arrays.asList(0, 1));
+    int[] buckets = new int[] {2, 0, 1};
     InternalRegionFunctionContext ctx = Mockito.mock(InternalRegionFunctionContext.class);
-    when(ctx.getLocalBucketSet((any()))).thenReturn(buckets);
+    when(ctx.getLocalBucketArray((any()))).thenReturn(buckets);
 
     await().until(() -> {
       final Collection<IndexRepository> repositories = new HashSet<>();
