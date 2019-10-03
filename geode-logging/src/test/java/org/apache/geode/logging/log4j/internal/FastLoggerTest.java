@@ -37,6 +37,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
+import org.apache.geode.internal.logging.log4j.FastLogger;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
