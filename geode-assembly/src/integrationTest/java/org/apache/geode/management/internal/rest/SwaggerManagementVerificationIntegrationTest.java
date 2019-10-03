@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
@@ -36,6 +37,7 @@ public class SwaggerManagementVerificationIntegrationTest {
 
   @ClassRule
   public static LocatorStarterRule locatorStarter = new LocatorStarterRule()
+      .withProperty(ConfigurationProperties.SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "management")
       .withHttpService()
       .withAutoStart();
 
@@ -61,6 +63,7 @@ public class SwaggerManagementVerificationIntegrationTest {
         is("REST API and interface to manage Geode components."));
     assertThat(info.get("title").asText(),
         is("Apache Geode Management REST API"));
+    assertThat(info.get("authTokenEnabled").asText(), is("true"));
 
     JsonNode license = info.get("license");
     assertThat(license.get("name").asText(), is("Apache License, version 2.0"));
