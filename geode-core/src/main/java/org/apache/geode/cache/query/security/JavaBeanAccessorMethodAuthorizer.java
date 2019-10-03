@@ -15,11 +15,12 @@
 package org.apache.geode.cache.query.security;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
@@ -27,11 +28,11 @@ import org.apache.geode.cache.Declarable;
 /**
  * An immutable and thread-safe {@link MethodInvocationAuthorizer} that allows any method execution
  * that follows the design patterns for accessor methods described in the JavaBean specification
- * 1.01, that is, any method whose name begins with "get" or "is". For additional security, only
+ * 1.01; that is, any method whose name begins with 'get' or 'is'. For additional security, only
  * methods belonging to classes in user-specified packages will be allowed. If a method does not
- * match the user-specified parameters, then the {@link RestrictedMethodAuthorizer} will make the
- * final decision
- *
+ * match the user-specified parameters, or belongs to the 'org.apache.geode' package, then the
+ * decision of whether to authorize or not will be delegated to the default
+ * {@link RestrictedMethodAuthorizer}.
  * <p/>
  *
  * Some known dangerous methods, like {@link Object#getClass()}, are also rejected by this
@@ -39,19 +40,24 @@ import org.apache.geode.cache.Declarable;
  * {@link RestrictedMethodAuthorizer#isKnownDangerousMethod(Method, Object)}).
  * <p/>
  *
- * This authorizer implementation addresses only three of the four known security risks:
- * {@code Java Reflection}, {@code Cache Modification} and {@code Region Modification}.
+ * When used as intended, with all region entries and OQL bind parameters following the JavaBean
+ * specification 1.01, this authorizer implementation addresses all four of the known security
+ * risks: {@code Java Reflection}, {@code Cache Modification}, {@code Region Modification} and
+ * {@code Region Entry Modification}.
  * <p/>
  *
- * The {@code Region Entry Modification} security risk still exists: users with the
- * {@code DATA:READ:RegionName} privilege will be able to execute ANY method (even mutators) on the
- * objects stored within the region and on instances used as bind parameters of the OQL, so this
- * authorizer implementation must be used with extreme care.
+ * It should be noted that the {@code Region Entry Modification} security risk still potentially
+ * exists: users with the {@code DATA:READ:RegionName} privilege will be able to execute any
+ * method whose name starts with 'is' or 'get' on the objects stored within the region and on
+ * instances used as bind parameters of the OQL, providing they are in the specified packages.
+ * If those methods do not fully follow the JavaBean 1.01 specification that accessors do not
+ * modify the instance's state then entry modifications are possible.
  * <p/>
  *
- * Usage of this authorizer implementation is only recommended for secured clusters on which only
- * trusted users and applications have access to the OQL engine. It might also be used on clusters
- * on which the entries stored are immutable.
+ * Usage of this authorizer implementation is only recommended for secured clusters on which the
+ * Operator has full confidence that all objects stored in regions and used as OQL bind parameters
+ * follow JavaBean specification 1.01. It might also be used on clusters on which the entries
+ * stored are immutable.
  * <p/>
  *
  * @see org.apache.geode.cache.Cache
@@ -59,12 +65,13 @@ import org.apache.geode.cache.Declarable;
  * @see org.apache.geode.cache.query.security.RestrictedMethodAuthorizer
  */
 
-public class JavaBeanAccessorMethodAuthorizer implements MethodInvocationAuthorizer {
+public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationAuthorizer {
   static final String NULL_PACKAGE_MESSAGE =
       "A set of allowed packages should be provided to configure the authorizer.";
   static final String NULL_AUTHORIZER_MESSAGE =
       "RestrictedMethodAuthorizer should be provided to create this authorizer.";
   static final String NULL_CACHE_MESSAGE = "Cache should be provided to configure the authorizer.";
+  static final String GEODE_BASE_PACKAGE = "org.apache.geode";
   private final RestrictedMethodAuthorizer restrictedMethodAuthorizer;
   private final Set<String> allowedPackages;
 
@@ -119,24 +126,38 @@ public class JavaBeanAccessorMethodAuthorizer implements MethodInvocationAuthori
    */
   @Override
   public boolean authorize(Method method, Object target) {
-    String methodName = method.getName().toLowerCase();
-    String packageName = target.getClass().getPackage().getName().toLowerCase();
+
+    // First ensure that the given method exists for the given target
+    if (!Arrays.asList(target.getClass().getMethods()).contains(method)) {
+      return false;
+    }
 
     // Return false for known dangerous methods.
     if (restrictedMethodAuthorizer.isKnownDangerousMethod(method, target)) {
       return false;
     }
 
-    boolean matches = false;
+    String packageName = target.getClass().getPackage().getName();
 
-    if ((methodName.startsWith("get") || methodName.startsWith("is"))) {
-      Iterator<String> iterator = this.allowedPackages.iterator();
-      while (iterator.hasNext() && !matches) {
-        matches = iterator.next().startsWith(packageName);
+    // If the target object belongs to the 'org.apache.geode' package, delegate to the default
+    // authorizer.
+    if (packageName.startsWith(GEODE_BASE_PACKAGE)) {
+      return restrictedMethodAuthorizer.isAllowedGeodeMethod(method, target);
+    }
+
+    String methodName = method.getName();
+
+    // Return true if the the object belongs to an allowed package and the method starts with
+    // exactly 'get' or 'is' followed by a non-lowercase character (to prevent matching with
+    // methods that might have names like 'getawayDate' or 'islandName' etc.)
+    if (Pattern.matches("^(get|is)($|[^A-Z])+", methodName)) {
+      if (allowedPackages.stream().anyMatch(packageName::startsWith)) {
+        return true;
       }
     }
-    // Return true if we found a match, otherwise, delegate to the default authorizer.
-    return matches || restrictedMethodAuthorizer.authorize(method, target);
+
+    // Delegate to the default authorizer if none of the above criteria are met.
+    return restrictedMethodAuthorizer.authorize(method, target);
   }
 
   /**
@@ -149,5 +170,4 @@ public class JavaBeanAccessorMethodAuthorizer implements MethodInvocationAuthori
   Set<String> getAllowedPackages() {
     return allowedPackages;
   }
-
 }
