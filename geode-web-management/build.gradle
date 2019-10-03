@@ -21,8 +21,12 @@ apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 
 jar.enabled = false
 
-configurations {
-  commonTestCompile
+apply plugin: 'nebula.facet'
+facets {
+  commonTest {
+    testTaskName = 'commonTest'
+    includeInCheckLifecycle = false
+  }
 }
 
 sourceSets {
@@ -36,13 +40,6 @@ sourceSets {
     resources {
       srcDir "${projectDir}/src/main/webapp"
     }
-  }
-
-  commonTest {
-    java {
-      srcDir "${projectDir}/src/commonTest/java"
-    }
-    compileClasspath = configurations.commonTestCompile
   }
 }
 
