@@ -14,7 +14,6 @@
  */
 package org.apache.geode.logging.internal.spi;
 
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -82,16 +81,6 @@ public interface LoggingProvider {
   default void enableLoggingToStandardOutput() {
     // override to enable logging to stdout
   }
-
-  /**
-   * Returns a Logger with the specified name.
-   *
-   * @param name The logger name. If null the name of the calling class will be used.
-   * @return The Logger.
-   * @throws UnsupportedOperationException if {@code name} is {@code null} and the calling class
-   *         cannot be determined.
-   */
-  Logger getLogger(String name);
 
   /**
    * If multiple {@code LoggingProvider}s are loadable then the instance with the highest priority

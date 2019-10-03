@@ -17,7 +17,6 @@ package org.apache.geode.logging.internal;
 import static org.apache.geode.logging.internal.LoggingProviderLoader.LOGGING_PROVIDER_NAME_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,6 +81,13 @@ public class LoggingProviderLoaderTest {
     assertThat(value).isInstanceOf(SimpleLoggingProvider.class);
   }
 
+  @Test
+  public void getLoggingProviderReturnsSimpleLoggingProviderByDefault() {
+    LoggingProvider loggingProvider = new LoggingProviderLoader().load();
+
+    assertThat(loggingProvider).isInstanceOf(SimpleLoggingProvider.class);
+  }
+
   static class TestLoggingProvider implements LoggingProvider {
 
     @Override
@@ -94,11 +100,6 @@ public class LoggingProviderLoaderTest {
     @Override
     public void cleanup() {
       // nothing
-    }
-
-    @Override
-    public Logger getLogger(String name) {
-      return null;
     }
 
     @Override

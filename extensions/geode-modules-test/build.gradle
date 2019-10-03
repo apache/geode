@@ -28,6 +28,8 @@ dependencies {
     exclude group: 'org.apache.tomcat'
   }
   compile(project(':geode-core'))
+  implementation(project(':geode-logging'))
+
   compile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

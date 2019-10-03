@@ -27,6 +27,7 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   distributedTestCompile('junit:junit')
   compile('mx4j:mx4j')
+  distributedTestImplementation(project(':geode-logging'))
   distributedTestCompile('org.httpunit:httpunit')
   distributedTestCompile('org.apache.tomcat:tomcat-jaspic-api:' + DependencyConstraints.get('tomcat8.version'))
   compile(project(':geode-core'))

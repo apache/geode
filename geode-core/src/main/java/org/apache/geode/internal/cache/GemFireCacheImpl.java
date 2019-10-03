@@ -217,6 +217,7 @@ import org.apache.geode.internal.config.ClusterConfigurationNotAvailableExceptio
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.lang.ThrowableUtils;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -855,7 +856,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       persistentMemberManager = new PersistentMemberManager();
 
       if (useAsyncEventListeners) {
-        eventThreadPool = LoggingExecutors.newThreadPoolWithFixedFeed("Message Event Thread",
+        eventThreadPool = CoreLoggingExecutors.newThreadPoolWithFixedFeed("Message Event Thread",
             command -> {
               ConnectionTable.threadWantsSharedResources();
               command.run();

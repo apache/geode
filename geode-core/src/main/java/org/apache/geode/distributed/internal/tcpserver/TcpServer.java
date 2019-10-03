@@ -60,8 +60,8 @@ import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingF
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionNotFoundException;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -187,7 +187,7 @@ public class TcpServer {
   }
 
   private static ExecutorService createExecutor(PoolStatHelper poolHelper) {
-    return LoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
+    return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
         MAX_POOL_SIZE, poolHelper, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
