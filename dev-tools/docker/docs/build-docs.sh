@@ -26,10 +26,9 @@ REPO_PATH=${SCRIPT_DIR}/../../../
 docker run -i -t \
   --rm=true \
   -w "${REPO_PATH}/geode-book" \
-  -u "${USER_NAME}" \
   -v "$PWD:${REPO_PATH}" \
   ${IMAGE_NAME}-${USER_NAME} \
-  bundle exec bookbinder bind local
+  /bin/bash -c "bundle exec bookbinder bind local && chown -R ${USER_ID}:${GROUP_ID} ${REPO_PATH}/geode-book/output"
 
 popd
 

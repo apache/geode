@@ -15,10 +15,10 @@
 # limitations under the License.
 
 FROM ruby:2.3.1
-MAINTAINER Geode Community <dev@geode.apache.org>
 
 LABEL Vendor="Apache Geode"
 LABEL version=unstable
+LABEL maintainer=dev@geode.apache.org
 
 ADD Gemfile Gemfile
 ADD Gemfile.lock Gemfile.lock
