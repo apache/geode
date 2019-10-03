@@ -52,7 +52,7 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>spring-core</artifactId>
+          <artifactId>commons-logging</artifactId>
           <groupId>*</groupId>
         </exclusion>
         <exclusion>
@@ -75,10 +75,6 @@
           <groupId>*</groupId>
         </exclusion>
         <exclusion>
-          <artifactId>spring-core</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-        <exclusion>
           <artifactId>commons-logging</artifactId>
           <groupId>*</groupId>
         </exclusion>
@@ -90,7 +86,7 @@
       <scope>runtime</scope>
       <exclusions>
         <exclusion>
-          <artifactId>spring-core</artifactId>
+          <artifactId>commons-logging</artifactId>
           <groupId>*</groupId>
         </exclusion>
         <exclusion>

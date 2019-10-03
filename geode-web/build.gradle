@@ -28,17 +28,17 @@ dependencies {
   runtimeOnly('org.springframework:spring-aspects') {
     exclude module: 'aspectjweaver'
     exclude module: 'aopalliance'
-    exclude module: 'spring-core'
+    exclude module: 'commons-logging'
   }
   runtimeOnly('org.springframework:spring-oxm') {
     exclude module: 'commons-logging'
     exclude module: 'spring-beans'
-    exclude module: 'spring-core'
+    exclude module: 'commons-logging'
   }
   runtimeOnly('org.springframework:spring-webmvc') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
-    exclude module: 'spring-core'
+    exclude module: 'commons-logging'
   }
   runtimeOnly('commons-fileupload:commons-fileupload') {
     exclude module: 'commons-io'
