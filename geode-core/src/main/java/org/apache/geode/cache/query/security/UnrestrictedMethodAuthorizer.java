@@ -60,7 +60,7 @@ public final class UnrestrictedMethodAuthorizer implements MethodInvocationAutho
   private final RestrictedMethodAuthorizer restrictedMethodAuthorizer;
 
   /**
-   * Creates a {@code GeodeBasedMethodAuthorizer} object and initializes it so it can be safely
+   * Creates a {@code UnrestrictedMethodAuthorizer} object and initializes it so it can be safely
    * used in a multi-threaded environment.
    * <p/>
    *
@@ -76,7 +76,7 @@ public final class UnrestrictedMethodAuthorizer implements MethodInvocationAutho
   }
 
   /**
-   * Creates a {@code GeodeBasedMethodAuthorizer} object and initializes it so it can be safely
+   * Creates a {@code UnrestrictedMethodAuthorizer} object and initializes it so it can be safely
    * used in a multi-threaded environment.
    * <p/>
    *
