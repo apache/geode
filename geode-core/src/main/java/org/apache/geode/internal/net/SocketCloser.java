@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
@@ -158,7 +159,13 @@ public class SocketCloser {
 
   private Future asyncExecute(String address, Runnable runnableToExecute) {
     ExecutorService asyncThreadExecutor = getAsyncThreadExecutor(address);
-    return asyncThreadExecutor.submit(runnableToExecute);
+    try {
+      return asyncThreadExecutor.submit(runnableToExecute);
+    }
+    catch (RejectedExecutionException ree) {
+      runnableToExecute.run();
+      return null;
+    }
   }
 
   /**
