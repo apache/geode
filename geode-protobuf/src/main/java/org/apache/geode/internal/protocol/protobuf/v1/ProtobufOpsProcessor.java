@@ -34,7 +34,7 @@ import org.apache.geode.security.NotAuthorizedException;
 @Experimental
 public class ProtobufOpsProcessor {
   private final ProtobufOperationContextRegistry protobufOperationContextRegistry;
-  private static final Logger logger = LogService.getLogger(ProtobufOpsProcessor.class);
+  private static final Logger logger = LogService.getLogger();
 
   public ProtobufOpsProcessor(ProtobufOperationContextRegistry protobufOperationContextRegistry) {
     this.protobufOperationContextRegistry = protobufOperationContextRegistry;

@@ -40,8 +40,8 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.ResourceListener;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
@@ -115,7 +115,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
     if (!DISABLE_HEAP_EVICTOR_THREAD_POOL) {
       QueueStatHelper poolStats = this.cache.getCachePerfStats().getEvictionQueueStatHelper();
-      this.evictorThreadPool = LoggingExecutors.newFixedThreadPoolWithTimeout(threadName,
+      this.evictorThreadPool = CoreLoggingExecutors.newFixedThreadPoolWithTimeout(threadName,
           MAX_EVICTOR_THREADS, 15, poolStats);
     } else {
       // disabled

@@ -14,6 +14,10 @@
  */
 package org.apache.geode.management.internal.rest.swagger;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -22,9 +26,13 @@ import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
+import springfox.documentation.service.StringVendorExtension;
+import springfox.documentation.service.VendorExtension;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
+import org.apache.geode.management.internal.rest.security.GeodeAuthenticationProvider;
 
 
 @PropertySource({"classpath:swagger-management.properties"})
@@ -43,15 +51,23 @@ public class SwaggerConfig {
         .apiInfo(apiInfo());
   }
 
+  @Autowired
+  private GeodeAuthenticationProvider authProvider;
+
   /**
    * API Info as it appears on the Swagger-UI page
    */
   private ApiInfo apiInfo() {
+    List<VendorExtension> extensions = new ArrayList<>();
+    VendorExtension<String> authInfo = new StringVendorExtension("authTokenEnabled",
+        Boolean.toString(authProvider.isAuthTokenEnabled()));
+    extensions.add(authInfo);
     return new ApiInfoBuilder()
         .title("Apache Geode Management REST API")
         .description(
             "REST API and interface to manage Geode components.")
         .version("v2")
+        .extensions(extensions)
         .termsOfServiceUrl("http://www.apache.org/licenses/")
         .license("Apache License, version 2.0")
         .licenseUrl("http://www.apache.org/licenses/")
