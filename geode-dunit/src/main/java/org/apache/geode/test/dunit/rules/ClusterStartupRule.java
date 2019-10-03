@@ -39,7 +39,6 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableConsumerIF;
@@ -114,13 +113,6 @@ public class ClusterStartupRule implements SerializableTestRule {
     this.vmCount = vmCount;
   }
 
-  /**
-   * Returns the port that the standard dunit locator is listening on.
-   */
-  public static int getDUnitLocatorPort() {
-    return DUnitEnv.get().getLocatorPort();
-  }
-
   public static ClientCache getClientCache() {
     if (clientCacheRule == null) {
       return null;
@@ -156,7 +148,7 @@ public class ClusterStartupRule implements SerializableTestRule {
       // GEODE-6247: JDK 11 has an issue where native code is reporting committed is 2MB > max.
       IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
     }
-    DUnitLauncher.launchIfNeeded();
+    DUnitLauncher.launchIfNeeded(false);
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i);
     }

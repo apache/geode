@@ -146,6 +146,10 @@ public class DUnitLauncher {
    * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
    */
   public static void launchIfNeeded() {
+    launchIfNeeded(true);
+  }
+
+  public static void launchIfNeeded(boolean launchLocator) {
     if (System.getProperties().contains(VM_NUM_PARAM)) {
       // we're a dunit child vm, do nothing.
       return;
@@ -153,7 +157,7 @@ public class DUnitLauncher {
 
     if (!isHydra() && !isLaunched()) {
       try {
-        launch();
+        launch(launchLocator);
       } catch (Exception e) {
         throw new RuntimeException("Unable to launch dunit VMs", e);
       }
@@ -181,7 +185,7 @@ public class DUnitLauncher {
     return "localhost[" + locatorPort + "]";
   }
 
-  private static void launch() throws AlreadyBoundException, IOException,
+  private static void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
     DUNIT_SUSPECT_FILE = new File(SUSPECT_FILENAME);
     DUNIT_SUSPECT_FILE.delete();
@@ -206,15 +210,17 @@ public class DUnitLauncher {
 
     Runtime.getRuntime().addShutdownHook(new Thread(processManager::killVMs));
 
-    // Create a VM for the locator
-    processManager.launchVM(LOCATOR_VM_NUM);
+    if (launchLocator) {
+      // Create a VM for the locator
+      processManager.launchVM(LOCATOR_VM_NUM);
 
-    // wait for the VM to start up
-    if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
-      throw new RuntimeException(STARTUP_TIMEOUT_MESSAGE);
+      // wait for the VM to start up
+      if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
+        throw new RuntimeException(STARTUP_TIMEOUT_MESSAGE);
+      }
+
+      locatorPort = startLocator(registry);
     }
-
-    locatorPort = startLocator(registry);
 
     init(master);
 
@@ -232,7 +238,7 @@ public class DUnitLauncher {
     DUnitHost host =
         new DUnitHost(InetAddress.getLocalHost().getCanonicalHostName(), processManager,
             vmEventNotifier);
-    host.init(registry, NUM_VMS);
+    host.init(NUM_VMS, launchLocator);
   }
 
   public static Properties getDistributedSystemProperties() {

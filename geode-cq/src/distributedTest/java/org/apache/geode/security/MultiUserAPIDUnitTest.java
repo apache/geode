@@ -51,9 +51,10 @@ public class MultiUserAPIDUnitTest {
 
   @BeforeClass
   public static void setUp() throws Exception {
-    server = cluster.startServerVM(0, s -> s.withSecurityManager(SimpleSecurityManager.class)
-        .withCredential("cluster", "cluster")
-        .withConnectionToLocator(ClusterStartupRule.getDUnitLocatorPort()));
+    MemberVM locator =
+        cluster.startLocatorVM(0, c -> c.withSecurityManager(SimpleSecurityManager.class));
+    server = cluster.startServerVM(1, s -> s.withCredential("cluster", "cluster")
+        .withConnectionToLocator(locator.getPort()));
 
     server.invoke(() -> {
       ClusterStartupRule.memberStarter.createRegion(RegionShortcut.REPLICATE, "region");
