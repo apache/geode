@@ -68,14 +68,16 @@ import org.apache.geode.test.version.VersionManager;
 public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCase {
 
 
-  @Parameterized.Parameters(name = "from_v{0}, with reindex={1}")
+  @Parameterized.Parameters(name = "from_v{0}, with reindex={1}, singleHopEnabled={2}")
   public static Collection<Object[]> data() {
     Collection<String> luceneVersions = getLuceneVersions();
     Collection<Object[]> rval = new ArrayList<>();
     luceneVersions.forEach(v -> {
-      rval.add(new Object[] {v, true});
-      rval.add(new Object[] {v, false});
+      rval.add(new Object[] {v, true, true});
+      rval.add(new Object[] {v, false, true});
     });
+    rval.add(new Object[] {VersionManager.CURRENT_VERSION, true, true});
+    rval.add(new Object[] {VersionManager.CURRENT_VERSION, true, false});
     return rval;
   }
 
@@ -107,6 +109,9 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
 
   @Parameterized.Parameter(1)
   public Boolean reindex;
+
+  @Parameterized.Parameter(2)
+  public Boolean singleHopEnabled;
 
   private void deleteVMFiles() {
     System.out.println("deleting files in vm" + VM.getCurrentVMNum());
@@ -145,20 +150,24 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
     return props;
   }
 
-  VM rollClientToCurrentAndCreateRegion(VM oldClient, ClientRegionShortcut shortcut,
-      String regionName, String[] hostNames, int[] locatorPorts, boolean subscriptionEnabled) {
-    VM rollClient = rollClientToCurrent(oldClient, hostNames, locatorPorts, subscriptionEnabled);
+  VM rollClientToCurrentAndCreateRegion(VM oldClient,
+      ClientRegionShortcut shortcut,
+      String regionName, String[] hostNames, int[] locatorPorts,
+      boolean subscriptionEnabled, boolean singleHopEnabled) {
+    VM rollClient = rollClientToCurrent(oldClient, hostNames, locatorPorts, subscriptionEnabled,
+        singleHopEnabled);
     // recreate region on "rolled" client
     invokeRunnableInVMs(invokeCreateClientRegion(regionName, shortcut), rollClient);
     return rollClient;
   }
 
-  private VM rollClientToCurrent(VM oldClient, String[] hostNames, int[] locatorPorts,
-      boolean subscriptionEnabled) {
+  private VM rollClientToCurrent(VM oldClient, String[] hostNames,
+      int[] locatorPorts,
+      boolean subscriptionEnabled, boolean singleHopEnabled) {
     oldClient.invoke(invokeCloseCache());
     VM rollClient = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldClient.getId());
     rollClient.invoke(invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts,
-        subscriptionEnabled));
+        subscriptionEnabled, singleHopEnabled));
     rollClient.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
     return rollClient;
   }
@@ -203,14 +212,17 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
     cacheServer.start();
   }
 
-  CacheSerializableRunnable invokeCreateClientCache(final Properties systemProperties,
-      final String[] hosts, final int[] ports, boolean subscriptionEnabled) {
+  CacheSerializableRunnable invokeCreateClientCache(
+      final Properties systemProperties,
+      final String[] hosts, final int[] ports, boolean subscriptionEnabled,
+      boolean singleHopEnabled) {
     return new CacheSerializableRunnable("execute: createClientCache") {
       @Override
       public void run2() {
         try {
           LuceneSearchWithRollingUpgradeDUnit.cache =
-              createClientCache(systemProperties, hosts, ports, subscriptionEnabled);
+              createClientCache(systemProperties, hosts, ports, subscriptionEnabled,
+                  singleHopEnabled);
         } catch (Exception e) {
           fail("Error creating client cache", e);
         }
@@ -225,13 +237,15 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit extends JUnit4Distribu
   }
 
 
-  private static ClientCache createClientCache(Properties systemProperties, String[] hosts,
-      int[] ports, boolean subscriptionEnabled) {
+  private static ClientCache createClientCache(Properties systemProperties,
+      String[] hosts,
+      int[] ports, boolean subscriptionEnabled, boolean singleHopEnabled) {
     ClientCacheFactory cf = new ClientCacheFactory(systemProperties);
     if (subscriptionEnabled) {
       cf.setPoolSubscriptionEnabled(true);
       cf.setPoolSubscriptionRedundancy(-1);
     }
+    cf.setPoolPRSingleHopEnabled(singleHopEnabled);
     int hostsLength = hosts.length;
     for (int i = 0; i < hostsLength; i++) {
       cf.addPoolLocator(hosts[i], ports[i]);

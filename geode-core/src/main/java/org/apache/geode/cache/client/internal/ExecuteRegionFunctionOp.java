@@ -78,6 +78,7 @@ public class ExecuteRegionFunctionOp {
       ExecuteRegionFunctionOpImpl op, boolean isReexecute,
       Set<String> failedNodes) {
 
+    final boolean isDebugEnabled = logger.isDebugEnabled();
     if (!isHA) {
       maxRetryAttempts = 0;
     }
@@ -111,7 +112,17 @@ public class ExecuteRegionFunctionOp {
           // If the retryAttempt is set to default(-1). Try it on all servers once.
           // Calculating number of servers when function is re-executed as it involves
           // messaging locator.
-          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
+          // Since it's in exception handling, getAllServers() will return
+          // current available servers, excluded the failed one.
+          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size();
+          if (isDebugEnabled) {
+            logger.debug("maxRetryAttempts was using pool's default, change to " + maxRetryAttempts
+                + " based on current live server number");
+          }
+        } else {
+          if (isDebugEnabled) {
+            logger.debug("There are still " + maxRetryAttempts + " retries");
+          }
         }
 
         if ((maxRetryAttempts--) < 1) {

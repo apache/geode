@@ -102,8 +102,12 @@ public class ExecuteRegionFunctionSingleHopOp {
           (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
               .get();
 
+      if (isDebugEnabled) {
+        logger.debug(
+            "Singlehop failed, there are " + retryAttempts + " retries left on non-singlehop mode");
+      }
       ExecuteRegionFunctionOp.execute(pool,
-          resultCollector, retryAttempts - 1,
+          resultCollector, retryAttempts,
           isHA,
           executeRegionFunctionOp, true, failedNodes);
     }

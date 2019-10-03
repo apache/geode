@@ -128,7 +128,13 @@ public class SingleHopClientExecutor {
               // If the retryAttempt is set to default(-1). Try it on all servers once.
               // Calculating number of servers when function is re-executed as it involves
               // messaging locator.
-              maxRetryAttempts = pool.getConnectionSource().getAllServers().size() - 1;
+              // Since it's in exception handling, getAllServers() will return
+              // current available servers, excluded the failed one.
+              maxRetryAttempts = pool.getConnectionSource().getAllServers().size();
+              if (isDebugEnabled) {
+                logger.debug("In singlehop, maxRetryAttempts was using pool's default, change to "
+                    + maxRetryAttempts + " based on current live server number");
+              }
             }
 
             if (ee.getCause() instanceof InternalFunctionInvocationTargetException) {
