@@ -42,9 +42,9 @@ import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.StatListener;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * A thread that monitors the health of the distributed system. It is kind of like a

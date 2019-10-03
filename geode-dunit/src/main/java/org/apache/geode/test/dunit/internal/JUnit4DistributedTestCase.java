@@ -48,7 +48,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.Host;

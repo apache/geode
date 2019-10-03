@@ -27,7 +27,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.connectors.jdbc.internal.AbstractJdbcCallback;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
 /**

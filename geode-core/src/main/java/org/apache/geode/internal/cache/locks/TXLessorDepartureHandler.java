@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.locks.DLockGrantor;
 import org.apache.geode.distributed.internal.locks.DLockLessorDepartureHandler;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Handles departure of lessor (lease holder) by sending a message asking each participant if it's

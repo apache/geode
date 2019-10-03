@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.tx.DistributedTXRegionStub;
 import org.apache.geode.internal.cache.tx.PartitionedTXRegionStub;
 import org.apache.geode.internal.cache.tx.TXRegionStub;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class PeerTXStateStub extends TXStateStub {
 

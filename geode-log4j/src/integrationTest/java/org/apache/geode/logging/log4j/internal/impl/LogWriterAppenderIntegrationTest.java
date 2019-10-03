@@ -42,8 +42,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.logging.internal.LogMessageRegex;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
 import org.apache.geode.logging.internal.spi.SessionContext;

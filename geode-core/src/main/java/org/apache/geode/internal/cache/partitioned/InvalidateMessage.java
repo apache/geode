@@ -48,11 +48,11 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 public class InvalidateMessage extends DestroyMessage {
   private static final Logger logger = LogService.getLogger();

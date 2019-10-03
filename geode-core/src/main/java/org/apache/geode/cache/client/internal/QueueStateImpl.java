@@ -37,7 +37,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class QueueStateImpl implements QueueState {
   private static final Logger logger = LogService.getLogger();

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging.log4j;
+package org.apache.geode.logging.internal.log4j;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;

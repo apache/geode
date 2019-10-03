@@ -44,7 +44,7 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;

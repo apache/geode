@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.Oplog;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Creates and keeps track of the temporary locations used during a backup. Most temporary files are

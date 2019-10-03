@@ -61,8 +61,6 @@ import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionN
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -70,6 +68,8 @@ import org.apache.geode.internal.serialization.UnsupportedSerializationVersionEx
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * TCP server which listens on a port and delegates requests to a request handler. The server uses

@@ -52,7 +52,7 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList.Iterator;
 import org.apache.geode.internal.cache.tx.ClientTXStateStub;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Used to send region operations from a client to a server

@@ -43,7 +43,7 @@ import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.cli.json.QueryResultFormatter;
 

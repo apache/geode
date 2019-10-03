@@ -33,8 +33,8 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.io.RollingFileHandler;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Captures sample of statistics. The SampleCollector contains maps of StatisticsTypes to

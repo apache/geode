@@ -24,7 +24,7 @@ import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Evaluates the health of various GemFire components in the VM according to a

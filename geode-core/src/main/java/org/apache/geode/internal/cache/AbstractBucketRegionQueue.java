@@ -40,9 +40,9 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.LogService;
 
 public abstract class AbstractBucketRegionQueue extends BucketRegion {
   protected static final Logger logger = LogService.getLogger();

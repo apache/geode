@@ -240,8 +240,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
@@ -251,6 +249,8 @@ import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingExecutors;
 
 /**
  * A Region whose total storage is split into chunks of data (partitions) which are copied up to a

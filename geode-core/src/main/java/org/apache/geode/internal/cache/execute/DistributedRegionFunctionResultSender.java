@@ -23,7 +23,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.DistributedRegionFunctionStreamingMessage;
 import org.apache.geode.internal.cache.ForceReattemptException;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class DistributedRegionFunctionResultSender implements InternalResultSender {
 

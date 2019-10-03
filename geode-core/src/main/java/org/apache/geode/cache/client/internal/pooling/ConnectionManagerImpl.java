@@ -56,8 +56,8 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingExecutors;
 import org.apache.geode.security.GemFireSecurityException;
 
 /**

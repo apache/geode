@@ -42,7 +42,7 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;

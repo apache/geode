@@ -26,7 +26,7 @@ import org.apache.geode.internal.cache.partitioned.rebalance.model.Bucket;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Member;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Move;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * A director to move primaries to improve the load balance of a fixed partition region. This is

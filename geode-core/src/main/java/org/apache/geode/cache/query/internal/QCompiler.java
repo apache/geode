@@ -43,7 +43,7 @@ import org.apache.geode.cache.query.types.MapType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Class Description

@@ -46,10 +46,10 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingExecutors;
 
 public class ConcurrentSerialGatewaySenderEventProcessor
     extends AbstractGatewaySenderEventProcessor {

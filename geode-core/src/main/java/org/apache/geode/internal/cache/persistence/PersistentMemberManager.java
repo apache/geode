@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class PersistentMemberManager {
   private static final Logger logger = LogService.getLogger();

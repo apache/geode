@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Keeps track redundancy statistics across the buckets of a given {@link PartitionedRegion}

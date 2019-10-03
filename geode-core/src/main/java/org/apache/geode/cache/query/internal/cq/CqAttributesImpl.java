@@ -27,7 +27,7 @@ import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqAttributesMutator;
 import org.apache.geode.cache.query.CqListener;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Cloneable {
   private static final Logger logger = LogService.getLogger();

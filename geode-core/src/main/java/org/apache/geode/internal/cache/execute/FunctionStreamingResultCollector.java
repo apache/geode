@@ -46,7 +46,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.FunctionStreamingReplyMessage;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class FunctionStreamingResultCollector extends ReplyProcessor21
     implements CachedResultCollector {

@@ -32,13 +32,13 @@ import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.Clie
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpHashMap;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpSingleEntry;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.size.Sizeable;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This new class acts as a wrapper for the existing <code>ClientUpdateMessageImpl</code>. Now, the

@@ -28,7 +28,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassLoadUtil;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.ManagementException;
 
 /**

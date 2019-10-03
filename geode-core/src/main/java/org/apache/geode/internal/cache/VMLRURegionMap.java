@@ -37,9 +37,9 @@ import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Internal implementation of {@link RegionMap} for regions stored in normal VM memory that maintain

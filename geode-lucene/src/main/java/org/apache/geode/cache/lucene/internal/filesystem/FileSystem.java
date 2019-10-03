@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.lucene.internal.IndexRepositoryFactory;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * A Filesystem like interface that stores file data in geode regions.

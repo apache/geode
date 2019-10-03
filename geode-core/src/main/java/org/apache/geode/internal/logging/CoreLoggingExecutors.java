@@ -35,9 +35,11 @@ import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
-import org.apache.geode.internal.logging.LoggingThreadFactory.CommandWrapper;
-import org.apache.geode.internal.logging.LoggingThreadFactory.ThreadInitializer;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.logging.internal.LoggingExecutors;
+import org.apache.geode.logging.internal.LoggingThreadFactory;
+import org.apache.geode.logging.internal.LoggingThreadFactory.CommandWrapper;
+import org.apache.geode.logging.internal.LoggingThreadFactory.ThreadInitializer;
 
 /**
  * Utility class that creates instances of ExecutorService
@@ -198,7 +200,8 @@ public class CoreLoggingExecutors {
   public static ExecutorService newFixedThreadPoolWithTimeout(String threadName,
       int poolSize, int keepAliveSeconds, QueueStatHelper feedStats) {
     BlockingQueue<Runnable> feed = createFeedWithStatistics(0, feedStats);
-    return LoggingExecutors.newFixedThreadPool(threadName, true, poolSize, keepAliveSeconds, feed);
+    ThreadFactory threadFactory = new LoggingThreadFactory(threadName, true);
+    return new ThreadPoolExecutor(poolSize, poolSize, keepAliveSeconds, SECONDS, feed, threadFactory);
   }
 
   public static ScheduledExecutorService newScheduledThreadPool(String threadName, int poolSize,

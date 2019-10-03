@@ -51,7 +51,7 @@ import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class ServerCQImpl extends CqQueryImpl implements DataSerializable, ServerCQ {
   private static final Logger logger = LogService.getLogger();

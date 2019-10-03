@@ -32,13 +32,13 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.LogService;
 
 public class GMSUtil {
   private static final Logger logger = LogService.getLogger();

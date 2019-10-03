@@ -15,7 +15,7 @@
 package org.apache.geode.test.golden;
 
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Verifies that test output containing an unexpected FATAL message will fail with that FATAL

@@ -25,7 +25,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.logging.internal.LoggingExecutors;
 
 /**
  * This class allows sockets to be closed without blocking. In some cases we have seen a call of

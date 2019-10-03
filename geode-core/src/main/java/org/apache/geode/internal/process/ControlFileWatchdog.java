@@ -23,8 +23,8 @@ import java.nio.file.Files;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * Invokes a ControlRequestHandler when a control file has been created.

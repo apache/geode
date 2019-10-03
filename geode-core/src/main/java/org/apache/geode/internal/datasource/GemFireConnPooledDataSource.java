@@ -23,7 +23,7 @@ import javax.sql.PooledConnection;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * GemFireTransactionDataSource extends AbstractDataSource. This is a datasource class which

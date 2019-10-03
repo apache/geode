@@ -36,7 +36,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
-import org.apache.geode.internal.logging.log4j.FastLogger;
+import org.apache.geode.logging.internal.log4j.FastLogger;
 
 @Measurement(iterations = 1, time = 1, timeUnit = MINUTES)
 @Warmup(iterations = 1, time = 1, timeUnit = MINUTES)

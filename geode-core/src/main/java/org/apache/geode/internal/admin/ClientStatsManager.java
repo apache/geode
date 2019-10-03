@@ -33,8 +33,8 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This class publishes the client statistics using the admin region.

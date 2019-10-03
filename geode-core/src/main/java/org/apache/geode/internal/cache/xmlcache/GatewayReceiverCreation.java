@@ -24,7 +24,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class GatewayReceiverCreation implements GatewayReceiver {
   private static final Logger logger = LogService.getLogger();

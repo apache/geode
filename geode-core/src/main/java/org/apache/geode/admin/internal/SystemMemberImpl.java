@@ -47,7 +47,7 @@ import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Member of a GemFire system.

@@ -30,7 +30,7 @@ import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.UnregisterAllInterest;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Used to keep track of what interest a client has registered. This code was extracted from the old

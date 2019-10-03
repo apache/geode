@@ -34,12 +34,12 @@ import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.logging.internal.LogService;
 
 public class RegionMapPut extends AbstractRegionMapPut {
   protected static final Logger logger = LogService.getLogger();

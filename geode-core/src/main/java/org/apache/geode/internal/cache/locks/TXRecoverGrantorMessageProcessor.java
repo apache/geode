@@ -27,7 +27,7 @@ import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.TXCommitMessage;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Provides processing of DLockRecoverGrantorProcessor. Reply will not be sent until all locks are

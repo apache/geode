@@ -43,7 +43,7 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
 import org.apache.geode.logging.internal.spi.SessionContext;

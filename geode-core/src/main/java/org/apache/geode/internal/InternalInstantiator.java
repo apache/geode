@@ -44,9 +44,9 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.cache.tier.sockets.ClientInstantiatorMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Contains the implementation of {@link org.apache.geode.Instantiator} registration and

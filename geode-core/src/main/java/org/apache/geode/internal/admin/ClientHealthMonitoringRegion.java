@@ -28,7 +28,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.admin.remote.ClientHealthStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This is an admin (meta) region used by the client health monitoring service to publish the client

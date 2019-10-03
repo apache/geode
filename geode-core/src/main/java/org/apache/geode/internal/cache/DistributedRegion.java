@@ -125,13 +125,13 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.sequencelog.RegionLogger;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 @SuppressWarnings("deprecation")
 public class DistributedRegion extends LocalRegion implements InternalDistributedRegion {

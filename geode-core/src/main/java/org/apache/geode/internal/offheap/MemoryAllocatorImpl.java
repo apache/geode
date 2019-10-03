@@ -36,9 +36,9 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This allocator is somewhat like an Arena allocator. We start out with an array of multiple large

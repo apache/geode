@@ -26,11 +26,13 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler.FailureSetter;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler.Implementation;
+import org.apache.geode.logging.internal.LoggingThread;
+import org.apache.geode.logging.internal.LoggingUncaughtExceptionHandler;
+import org.apache.geode.logging.internal.LoggingUncaughtExceptionHandler.FailureSetter;
+import org.apache.geode.logging.internal.LoggingUncaughtExceptionHandler.Implementation;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/** Unit tests for {@link org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler}. */
+/** Unit tests for {@link LoggingUncaughtExceptionHandler}. */
 @Category(LoggingTest.class)
 public class LoggingUncaughtExceptionHandlerTest {
 

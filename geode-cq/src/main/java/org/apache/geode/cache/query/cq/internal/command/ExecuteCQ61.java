@@ -41,9 +41,9 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.vmotion.VMotionObserver;
 import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 

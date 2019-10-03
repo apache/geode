@@ -41,8 +41,8 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Triggers centralized eviction(asynchronously) when the ResourceManager sends an eviction event

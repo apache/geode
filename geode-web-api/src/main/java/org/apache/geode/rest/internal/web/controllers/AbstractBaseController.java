@@ -64,7 +64,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.JSONFormatterException;
 import org.apache.geode.pdx.PdxInstance;

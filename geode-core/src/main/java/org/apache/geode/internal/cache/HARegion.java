@@ -44,11 +44,11 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This region is being implemented to suppress distribution of puts and to allow localDestroys on

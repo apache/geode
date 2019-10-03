@@ -36,7 +36,7 @@ import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;

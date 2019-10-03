@@ -27,7 +27,7 @@ import java.util.function.BiFunction;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.logging.internal.LoggingExecutors;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.operation.RebalanceOperation;

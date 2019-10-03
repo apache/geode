@@ -59,13 +59,13 @@ import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * A Replicate Region removeAll message. Meant to be sent only to the peer who hosts transactional

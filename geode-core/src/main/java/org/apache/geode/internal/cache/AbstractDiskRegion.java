@@ -41,9 +41,9 @@ import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Code shared by both DiskRegion and RecoveredDiskRegion.

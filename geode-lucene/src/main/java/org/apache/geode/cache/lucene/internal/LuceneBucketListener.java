@@ -20,7 +20,7 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class LuceneBucketListener extends PartitionListenerAdapter {
   private static final Logger logger = LogService.getLogger();

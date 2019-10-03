@@ -17,8 +17,8 @@ package org.apache.geode.admin.internal;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This is a disabled implementation of ManagedEntityController for bug #47909.

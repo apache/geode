@@ -33,9 +33,9 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 public class FindVersionTagOperation {
   private static final Logger logger = LogService.getLogger();

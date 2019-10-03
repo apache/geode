@@ -39,7 +39,7 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 class BackupFileCopier {
   private static final Logger logger = LogService.getLogger();

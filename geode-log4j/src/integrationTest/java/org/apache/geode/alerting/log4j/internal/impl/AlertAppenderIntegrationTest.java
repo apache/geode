@@ -53,7 +53,7 @@ import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.junit.categories.AlertingTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 

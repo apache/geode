@@ -23,7 +23,7 @@ import javax.sql.XADataSource;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This class models a connection pool for transactional database connection. Extends the

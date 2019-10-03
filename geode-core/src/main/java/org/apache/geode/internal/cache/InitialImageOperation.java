@@ -89,8 +89,6 @@ import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.sequencelog.RegionLogger;
@@ -100,6 +98,8 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ObjectIntProcedure;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * Handles requests for an initial image from a cache peer

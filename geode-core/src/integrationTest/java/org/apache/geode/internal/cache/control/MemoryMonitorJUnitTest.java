@@ -43,7 +43,7 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class MemoryMonitorJUnitTest {
   private static Logger logger = LogService.getLogger();

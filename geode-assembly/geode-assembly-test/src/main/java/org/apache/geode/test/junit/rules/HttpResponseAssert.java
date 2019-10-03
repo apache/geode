@@ -32,7 +32,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.assertj.core.api.ListAssert;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;

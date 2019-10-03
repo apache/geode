@@ -45,7 +45,7 @@ import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.deployment.FunctionScanner;
 import org.apache.geode.pdx.internal.TypeRegistry;
 

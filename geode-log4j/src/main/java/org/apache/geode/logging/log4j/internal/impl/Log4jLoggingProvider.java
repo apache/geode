@@ -33,7 +33,7 @@ import org.apache.logging.log4j.core.lookup.StrLookup;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.logging.log4j.FastLogger;
+import org.apache.geode.logging.internal.log4j.FastLogger;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateScope;

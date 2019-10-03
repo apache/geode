@@ -33,8 +33,8 @@ import org.apache.geode.admin.ManagedEntity;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ProcessOutputReader;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * Implements the actual administration (starting, stopping, etc.) of GemFire

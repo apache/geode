@@ -44,7 +44,7 @@ import org.apache.geode.internal.cache.execute.LocalResultCollectorImpl;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultWaiter;
 import org.apache.geode.internal.cache.execute.ResultCollectorHolder;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class PRFunctionStreamingResultCollector extends FunctionStreamingResultCollector
     implements CachedResultCollector {

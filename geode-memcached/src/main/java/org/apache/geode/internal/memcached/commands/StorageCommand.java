@@ -27,9 +27,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.internal.logging.LoggingThreadFactory;
 import org.apache.geode.internal.memcached.KeyWrapper;
 import org.apache.geode.internal.memcached.RequestReader;
+import org.apache.geode.logging.internal.LoggingThreadFactory;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**

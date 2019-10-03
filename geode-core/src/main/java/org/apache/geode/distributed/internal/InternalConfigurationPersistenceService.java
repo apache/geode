@@ -73,7 +73,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.config.JAXBService;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;

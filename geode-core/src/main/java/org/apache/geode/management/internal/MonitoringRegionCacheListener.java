@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.ClassLoadUtil;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Cache listener on local monitoring region to get Manager's local MBean updates. This acts as an

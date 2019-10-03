@@ -19,8 +19,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.ManagedEntity;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Creates ManagedEntityController for administration (starting, stopping, etc.) of GemFire

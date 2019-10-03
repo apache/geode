@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class StartupOperation {
   private static final Logger logger = LogService.getLogger();

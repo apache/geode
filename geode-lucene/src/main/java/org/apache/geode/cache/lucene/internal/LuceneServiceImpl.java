@@ -79,9 +79,9 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 /**

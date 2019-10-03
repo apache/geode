@@ -23,7 +23,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Helper class for CacheXmlPropertyResolver. Helps in parsing ${...${}..}..${} strings.

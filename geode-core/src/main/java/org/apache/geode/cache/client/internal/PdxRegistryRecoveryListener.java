@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**

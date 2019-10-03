@@ -52,7 +52,7 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;

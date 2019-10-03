@@ -15,7 +15,7 @@
 package org.apache.geode.test.golden;
 
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Verifies that test output containing an unexpected ERROR message will fail with that ERROR

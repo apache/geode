@@ -27,8 +27,8 @@ import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Does a Execution of function on server region It does not get the resul from the server (follows

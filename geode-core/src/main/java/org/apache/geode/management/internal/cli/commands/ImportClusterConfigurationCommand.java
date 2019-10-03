@@ -40,7 +40,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;

@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Executes Function with FunctionService#onRegion(Region region) in client server mode.

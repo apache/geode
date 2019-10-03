@@ -94,9 +94,9 @@ import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
 import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.SSLUtil;
 
 /**

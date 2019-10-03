@@ -66,8 +66,8 @@ import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMembe
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.logging.internal.LogService;
 
 @SuppressWarnings("ConstantConditions")
 public class Services {

@@ -16,7 +16,6 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
@@ -24,6 +23,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
+import org.apache.geode.logging.internal.LogService;
 
 public class DisconnectClientRequestOperationHandler implements
     ProtobufOperationHandler<ConnectionAPI.DisconnectClientRequest, ConnectionAPI.DisconnectClientResponse> {

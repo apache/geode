@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This listener is attached to the Monitoring Region to receive any addition or deletion of MBEans

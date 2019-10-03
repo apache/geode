@@ -24,9 +24,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.FastLogger;
 import org.apache.geode.logging.internal.Configuration;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.log4j.FastLogger;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogConfigSupplier;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;

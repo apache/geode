@@ -64,7 +64,7 @@ import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipMan
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;

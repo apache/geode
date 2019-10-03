@@ -69,7 +69,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;

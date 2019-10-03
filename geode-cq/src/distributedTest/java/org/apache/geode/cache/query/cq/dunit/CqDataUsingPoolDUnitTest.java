@@ -64,7 +64,7 @@ import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;

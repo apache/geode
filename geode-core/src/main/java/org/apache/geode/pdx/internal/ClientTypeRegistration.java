@@ -41,7 +41,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolManagerImpl;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class ClientTypeRegistration implements TypeRegistration {
 

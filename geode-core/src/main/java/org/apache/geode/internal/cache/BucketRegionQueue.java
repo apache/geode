@@ -45,10 +45,10 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.parallel.BucketRegionQueueUnavailableException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.concurrent.Atomics;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.LogService;
 
 public class BucketRegionQueue extends AbstractBucketRegionQueue {
 

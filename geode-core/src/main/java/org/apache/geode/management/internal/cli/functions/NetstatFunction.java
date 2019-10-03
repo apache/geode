@@ -36,7 +36,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
 import org.apache.geode.management.internal.cli.GfshParser;

@@ -51,8 +51,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 @Deprecated
 public class TransactionManagerImpl implements TransactionManager, Serializable {

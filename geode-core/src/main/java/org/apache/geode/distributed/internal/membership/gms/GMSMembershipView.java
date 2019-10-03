@@ -33,12 +33,12 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * The GMSMembershipView class represents a membership view. Note that this class is not

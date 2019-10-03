@@ -62,11 +62,11 @@ import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * The internal implementation of the {@link CacheTransactionManager} interface returned by

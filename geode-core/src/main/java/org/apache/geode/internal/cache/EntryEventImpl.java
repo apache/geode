@@ -66,7 +66,6 @@ import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
@@ -84,6 +83,7 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 /**

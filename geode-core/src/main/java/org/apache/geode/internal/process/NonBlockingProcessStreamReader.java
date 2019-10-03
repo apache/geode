@@ -20,8 +20,8 @@ import java.io.InputStreamReader;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Reads the InputStream per-byte instead of per-line. Uses BufferedReader.ready() to ensure that

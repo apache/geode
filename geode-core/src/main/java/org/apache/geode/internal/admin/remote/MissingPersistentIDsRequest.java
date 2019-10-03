@@ -36,8 +36,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * A request to all members for any persistent members that they are waiting for. TODO prpersist -

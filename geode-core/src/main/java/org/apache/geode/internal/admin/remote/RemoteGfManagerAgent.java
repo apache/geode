@@ -61,10 +61,10 @@ import org.apache.geode.internal.admin.GfManagerAgent;
 import org.apache.geode.internal.admin.GfManagerAgentConfig;
 import org.apache.geode.internal.admin.JoinLeaveListener;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 import org.apache.geode.security.AuthenticationFailedException;
 
 /**

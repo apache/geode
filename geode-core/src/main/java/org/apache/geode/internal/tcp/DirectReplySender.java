@@ -30,8 +30,8 @@ import org.apache.geode.distributed.internal.LonerDistributionManager.DummyDMSta
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * A reply sender which replies back directly to a dedicated socket socket.

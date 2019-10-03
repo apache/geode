@@ -45,13 +45,13 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.JavaWorkarounds;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingExecutors;
+import org.apache.geode.logging.internal.LoggingThread;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",

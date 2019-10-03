@@ -22,9 +22,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * @since GemFire 7.0

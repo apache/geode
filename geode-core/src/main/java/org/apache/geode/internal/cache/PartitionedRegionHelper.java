@@ -59,7 +59,7 @@ import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class PartitionedRegionHelper {
   private static final Logger logger = LogService.getLogger();

@@ -28,9 +28,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingExecutors;
 
 public class DiskStoreMonitor {
   private static final Logger logger = LogService.getLogger();

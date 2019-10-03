@@ -79,8 +79,6 @@ import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationExcep
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -88,6 +86,8 @@ import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;

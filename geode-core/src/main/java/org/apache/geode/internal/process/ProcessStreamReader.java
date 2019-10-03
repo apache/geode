@@ -21,7 +21,7 @@ import java.io.InputStream;
 
 import org.apache.commons.lang3.SystemUtils;
 
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * Reads the output stream of a Process.

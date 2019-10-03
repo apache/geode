@@ -37,8 +37,8 @@ import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.cq.ClientCQ;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class ClientCQImpl extends CqQueryImpl implements ClientCQ {

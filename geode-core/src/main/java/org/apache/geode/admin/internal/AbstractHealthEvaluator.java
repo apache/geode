@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * The abstract superclass of all GemFire health evaluators. Basically, this class specifies what

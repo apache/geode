@@ -57,11 +57,11 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * StreamingOperation is an abstraction for sending messages to multiple (or single) recipient

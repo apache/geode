@@ -42,13 +42,13 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Breadcrumbs;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This class uniquely identifies any Region Operation like create, update destroy etc. It is

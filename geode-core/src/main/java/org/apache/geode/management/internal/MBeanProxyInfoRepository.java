@@ -25,7 +25,7 @@ import javax.management.ObjectName;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 
 /**

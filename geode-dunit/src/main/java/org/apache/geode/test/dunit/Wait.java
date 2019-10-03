@@ -20,7 +20,7 @@ import static org.junit.Assert.fail;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**

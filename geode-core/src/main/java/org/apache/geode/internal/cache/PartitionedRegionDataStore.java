@@ -96,11 +96,11 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableReadLock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Implementation of DataStore (DS) for a PartitionedRegion (PR). This will be import

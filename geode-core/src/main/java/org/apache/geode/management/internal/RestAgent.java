@@ -34,9 +34,9 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Agent implementation that controls the HTTP server end points used for REST clients to connect

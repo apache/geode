@@ -26,9 +26,9 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyMessage;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 
 /** Creates a new instance of CloseCacheMessage */

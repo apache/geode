@@ -36,7 +36,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.pdx.PdxRegistryMismatchException;
 import org.apache.geode.security.GemFireSecurityException;
 

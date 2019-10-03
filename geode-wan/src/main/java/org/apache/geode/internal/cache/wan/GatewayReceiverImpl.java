@@ -35,8 +35,8 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * @since GemFire 7.0

@@ -39,8 +39,8 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 
 /**

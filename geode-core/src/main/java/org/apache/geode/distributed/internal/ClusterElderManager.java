@@ -24,8 +24,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.geode.logging.internal.LogService;
 
 public class ClusterElderManager {
   private static final Logger logger = LogService.getLogger();

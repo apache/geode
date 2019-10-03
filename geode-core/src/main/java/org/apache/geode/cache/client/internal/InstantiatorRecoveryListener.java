@@ -26,7 +26,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * A listener which will try to resend the instantiators to all servers if the entire server

@@ -23,8 +23,8 @@ import org.apache.geode.admin.internal.GemFireHealthEvaluator;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.HealthListenerMessage;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * Implements a thread that monitors the health of the vm it lives in.

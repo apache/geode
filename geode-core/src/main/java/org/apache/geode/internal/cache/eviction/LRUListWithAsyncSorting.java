@@ -28,9 +28,9 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingExecutors;
 
 /**
  * LRUListWithAsyncSorting holds the eviction list, and the behavior for maintaining the list and

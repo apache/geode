@@ -20,8 +20,8 @@ import java.util.Optional;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.lang.SystemPropertyHelper;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.LogService;
 
 public class LRUListWithSyncSorting extends AbstractEvictionList {
 

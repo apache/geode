@@ -26,11 +26,11 @@ import javax.management.ObjectName;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Central component for federation It consists of an Object State as well as some meta data for the

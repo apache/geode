@@ -62,10 +62,10 @@ import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 public class RegionAdvisor extends CacheDistributionAdvisor {
   private static final Logger logger = LogService.getLogger();

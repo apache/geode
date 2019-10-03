@@ -46,7 +46,7 @@ import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * An utility class to retrieve colocated regions in a colocation hierarchy in various scenarios

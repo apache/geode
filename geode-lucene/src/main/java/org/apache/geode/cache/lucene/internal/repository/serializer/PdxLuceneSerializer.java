@@ -23,7 +23,7 @@ import org.apache.lucene.document.Document;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
 /**

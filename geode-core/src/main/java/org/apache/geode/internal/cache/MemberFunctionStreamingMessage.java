@@ -49,9 +49,9 @@ import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.MemberFunctionResultSender;
 import org.apache.geode.internal.cache.execute.MultiRegionFunctionContextImpl;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 public class MemberFunctionStreamingMessage extends DistributionMessage
     implements TransactionMessage, MessageWithReply {

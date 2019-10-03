@@ -101,8 +101,8 @@ import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Tests basic transaction functionality

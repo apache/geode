@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Provides an implementation of {@code DistributionConfig} that is used at runtime by an

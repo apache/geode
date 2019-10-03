@@ -22,7 +22,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 
 public class GetClusterConfigurationFunction implements InternalFunction {

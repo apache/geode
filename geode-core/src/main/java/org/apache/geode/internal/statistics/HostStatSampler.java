@@ -29,13 +29,13 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.UncheckedPidUnavailableException;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 import org.apache.geode.logging.internal.spi.LogFile;
 
 /**

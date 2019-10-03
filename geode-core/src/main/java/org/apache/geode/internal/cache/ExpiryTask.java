@@ -33,8 +33,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * ExpiryTask represents a timeout event for expiration

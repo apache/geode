@@ -87,13 +87,13 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.concurrent.AtomicLong5;
 import org.apache.geode.internal.concurrent.Atomics;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.LogService;
 
 
 /**

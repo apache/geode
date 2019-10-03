@@ -28,9 +28,9 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * TXRegionLockRequest represents all the locks that need to be made for a single region.

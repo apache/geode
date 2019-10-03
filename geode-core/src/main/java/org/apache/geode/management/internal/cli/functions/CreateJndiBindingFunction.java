@@ -26,8 +26,8 @@ import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.DriverJarUtil;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
 

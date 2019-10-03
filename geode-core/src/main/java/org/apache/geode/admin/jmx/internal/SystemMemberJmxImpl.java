@@ -44,7 +44,7 @@ import org.apache.geode.internal.admin.ApplicationVM;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Provides MBean support for managing a SystemMember application.

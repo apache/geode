@@ -37,9 +37,9 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberView;
 import org.apache.geode.internal.cache.persistence.PersistentStateListener.PersistentStateAdapter;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.TransformUtils;
+import org.apache.geode.logging.internal.LogService;
 
 public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
 

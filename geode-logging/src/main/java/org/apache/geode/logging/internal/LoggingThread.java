@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging;
+package org.apache.geode.logging.internal;
 
 /**
  * LoggingThread instances always handle uncaught exceptions by logging them.

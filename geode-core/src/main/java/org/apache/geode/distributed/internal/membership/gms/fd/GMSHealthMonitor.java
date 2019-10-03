@@ -68,10 +68,10 @@ import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRe
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
 import org.apache.geode.internal.ConnectionWatcher;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.LoggingExecutors;
 
 /**
  * Failure Detection

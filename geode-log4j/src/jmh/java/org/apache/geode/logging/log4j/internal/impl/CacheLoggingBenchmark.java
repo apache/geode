@@ -43,7 +43,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.rules.accessible.AccessibleTemporaryFolder;
 

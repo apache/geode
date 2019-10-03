@@ -41,7 +41,7 @@ import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Represents the CqQuery object. Implements CqQuery API and CqAttributeMutator.

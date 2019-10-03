@@ -17,7 +17,7 @@ package org.apache.geode.internal.offheap;
 
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * Used to asynchronously disconnect an InternalDistributedSystem when we run out of off-heap

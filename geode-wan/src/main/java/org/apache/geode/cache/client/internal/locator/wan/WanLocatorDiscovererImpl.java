@@ -23,8 +23,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingExecutors;
 
 public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
 

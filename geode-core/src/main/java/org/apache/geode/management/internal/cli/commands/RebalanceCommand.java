@@ -44,7 +44,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.logging.internal.LoggingExecutors;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;

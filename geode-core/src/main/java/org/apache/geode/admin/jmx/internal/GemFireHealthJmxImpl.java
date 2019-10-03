@@ -27,7 +27,7 @@ import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.admin.RuntimeAdminException;
 import org.apache.geode.admin.internal.GemFireHealthImpl;
 import org.apache.geode.internal.admin.GfManagerAgent;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * The JMX "managed resource" that represents the health of GemFire. Basically, it provides the

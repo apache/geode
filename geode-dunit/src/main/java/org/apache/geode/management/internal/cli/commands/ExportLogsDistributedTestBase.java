@@ -51,7 +51,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;

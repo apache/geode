@@ -20,8 +20,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.LogService;
 
 abstract class AbstractEvictionList implements EvictionList {
   private static final Logger logger = LogService.getLogger();

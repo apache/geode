@@ -24,8 +24,8 @@ import java.io.UncheckedIOException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.AbstractLauncher.ServiceState;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandler;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Creates the {@link PidFile} and uses {@link ControlFileWatchdog} to monitor the directory for

@@ -35,7 +35,7 @@ import org.apache.geode.cache.query.internal.CompiledValue;
 import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.SystemManagementService;

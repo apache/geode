@@ -33,7 +33,7 @@ import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class DumpDirectoryFiles implements InternalFunction {
   private static final long serialVersionUID = 1L;

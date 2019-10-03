@@ -31,8 +31,8 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * RegionVersionHolders are part of a RegionVersionVector. A RVH holds the current version for a

@@ -48,11 +48,11 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.LocalStatListener;
 import org.apache.geode.internal.statistics.StatisticsManager;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingExecutors;
 
 /**
  * Allows for the setting of eviction and critical thresholds. These thresholds are compared against

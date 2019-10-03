@@ -21,7 +21,7 @@ import java.util.Properties;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * A little class for testing the local DistributionManager

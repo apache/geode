@@ -26,7 +26,7 @@ import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.LocalRegion.IteratorType;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
-import org.apache.geode.internal.logging.EntriesCollection;
+import org.apache.geode.logging.internal.EntriesCollection;
 
 /** Set view of entries */
 public class EntriesSet extends AbstractSet implements EntriesCollection {

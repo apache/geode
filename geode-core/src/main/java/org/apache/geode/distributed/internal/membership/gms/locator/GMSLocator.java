@@ -48,9 +48,9 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.logging.internal.LogService;
 
 public class GMSLocator implements Locator {
 

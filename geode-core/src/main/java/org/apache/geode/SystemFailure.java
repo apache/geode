@@ -21,7 +21,7 @@ import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.SystemFailureTestHook;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * Catches and responds to JVM failure

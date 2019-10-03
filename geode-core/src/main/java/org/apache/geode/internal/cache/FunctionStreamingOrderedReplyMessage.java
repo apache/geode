@@ -21,7 +21,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class FunctionStreamingOrderedReplyMessage extends FunctionStreamingReplyMessage {
   private static final Logger logger = LogService.getLogger();

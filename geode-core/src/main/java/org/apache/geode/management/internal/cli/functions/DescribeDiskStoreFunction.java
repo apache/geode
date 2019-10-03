@@ -33,8 +33,8 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 

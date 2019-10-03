@@ -47,7 +47,7 @@ import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**

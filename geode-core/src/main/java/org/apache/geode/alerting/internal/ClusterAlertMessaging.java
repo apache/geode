@@ -14,7 +14,7 @@
  */
 package org.apache.geode.alerting.internal;
 
-import static org.apache.geode.internal.logging.LoggingExecutors.newFixedThreadPool;
+import static org.apache.geode.logging.internal.LoggingExecutors.newFixedThreadPool;
 
 import java.time.Instant;
 import java.util.concurrent.ExecutorService;
@@ -28,8 +28,8 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ReenteredConnectException;
+import org.apache.geode.logging.internal.LogService;
 
 public class ClusterAlertMessaging implements AlertMessaging {
 

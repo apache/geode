@@ -49,11 +49,11 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.IdentityArrayList;
 import org.apache.geode.internal.cache.TXReservationMgr;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * Provides lock grantor authority to a distributed lock service. This is responsible for granting,

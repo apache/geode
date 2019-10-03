@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.xmlcache.AsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelAsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialAsyncEventQueueCreation;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
 

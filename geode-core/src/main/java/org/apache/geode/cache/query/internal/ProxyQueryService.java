@@ -42,7 +42,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.internal.cq.ClientCQ;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * A wrapper class over an actual QueryService instance. This is used when the

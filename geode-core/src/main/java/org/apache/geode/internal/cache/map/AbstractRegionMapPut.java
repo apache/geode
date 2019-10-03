@@ -24,7 +24,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public abstract class AbstractRegionMapPut {
   private static final Logger logger = LogService.getLogger();

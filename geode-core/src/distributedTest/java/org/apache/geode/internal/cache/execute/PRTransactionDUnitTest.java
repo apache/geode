@@ -63,7 +63,7 @@ import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperatorImpl;
 import org.apache.geode.internal.cache.partitioned.rebalance.ExplicitMoveDirector;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;

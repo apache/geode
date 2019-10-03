@@ -47,8 +47,8 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.logging.internal.LogService;
 
 
 /**

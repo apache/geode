@@ -29,7 +29,7 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This class manages the state an logic to backup a single cache.

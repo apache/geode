@@ -30,9 +30,9 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.admin.remote.AdminResponse;
 import org.apache.geode.internal.admin.remote.CliLegacyMessage;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * A request to from an admin VM to all non admin members to start a backup. In the prepare phase of

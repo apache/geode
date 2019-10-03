@@ -48,7 +48,7 @@ import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;

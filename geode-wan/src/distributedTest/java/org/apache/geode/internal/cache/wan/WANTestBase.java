@@ -160,7 +160,7 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventPr
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.AsyncEventQueueMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.GatewayReceiverMXBean;

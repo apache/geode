@@ -24,7 +24,7 @@ import java.time.ZoneId;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class LogFilter {
   public enum LineFilterResult {

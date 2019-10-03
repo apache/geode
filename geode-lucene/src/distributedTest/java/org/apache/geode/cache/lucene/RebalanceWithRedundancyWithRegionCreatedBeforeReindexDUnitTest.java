@@ -41,7 +41,7 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;

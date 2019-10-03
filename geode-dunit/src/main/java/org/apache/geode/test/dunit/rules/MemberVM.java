@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.Locator;

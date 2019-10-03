@@ -51,7 +51,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 @RunWith(JUnitParamsRunner.class)
 public class SetOperationJTAJUnitTest {

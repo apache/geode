@@ -30,7 +30,7 @@ import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
 import org.apache.geode.cache.query.QueryExecutionTimeoutException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * {@link QueryMonitor} class, monitors the query execution time. In typical usage, the maximum

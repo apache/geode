@@ -53,9 +53,9 @@ import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerPr
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingExecutors;
 
 /**
  * Implementation of ResourceManager with additional internal-only methods.

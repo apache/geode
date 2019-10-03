@@ -24,9 +24,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Creates <code>ServerSockets</code> for JMX adaptors.

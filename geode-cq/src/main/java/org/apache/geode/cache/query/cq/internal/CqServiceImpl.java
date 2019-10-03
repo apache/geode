@@ -79,8 +79,8 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.JavaWorkarounds;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Implements the CqService functionality.

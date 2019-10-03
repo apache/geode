@@ -29,9 +29,9 @@ import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.LogService;
 
 public class RemoteParallelGatewaySenderEventProcessor extends ParallelGatewaySenderEventProcessor {
   private static final Logger logger = LogService.getLogger();

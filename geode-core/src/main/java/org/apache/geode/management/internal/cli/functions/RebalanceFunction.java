@@ -28,7 +28,7 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 
 public class RebalanceFunction implements InternalFunction {

@@ -21,7 +21,7 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PRHARedundancyProvider;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public abstract class RecoveryRunnable implements Runnable {
   private static final Logger logger = LogService.getLogger();

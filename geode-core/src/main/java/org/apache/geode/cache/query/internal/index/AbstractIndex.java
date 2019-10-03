@@ -73,8 +73,8 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.internal.PdxString;
 

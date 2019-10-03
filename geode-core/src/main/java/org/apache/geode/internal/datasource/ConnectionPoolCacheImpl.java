@@ -27,7 +27,7 @@ import javax.sql.PooledConnection;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class ConnectionPoolCacheImpl extends AbstractPoolCache {
   private static final Logger logger = LogService.getLogger();

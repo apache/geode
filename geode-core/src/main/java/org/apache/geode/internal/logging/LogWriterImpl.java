@@ -33,6 +33,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.process.StartupStatusListener;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * Abstract implementation of {@link InternalLogWriter}. Each logger has a level and it will only

@@ -43,7 +43,7 @@ import org.codehaus.cargo.container.tomcat.TomcatPropertySet;
 import org.codehaus.cargo.generic.DefaultContainerFactory;
 import org.codehaus.cargo.generic.configuration.DefaultConfigurationFactory;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Base class for handling the setup and configuration of cargo containers

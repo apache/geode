@@ -50,11 +50,11 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This message is used by transactions to invalidate an entry on a transaction hosted on a remote

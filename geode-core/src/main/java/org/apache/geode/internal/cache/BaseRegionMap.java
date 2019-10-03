@@ -21,7 +21,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * BaseRegionMap consolidates common behaviour between {@link AbstractRegionMap} and

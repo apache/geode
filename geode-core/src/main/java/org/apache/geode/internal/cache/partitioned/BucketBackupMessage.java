@@ -27,10 +27,10 @@ import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * A message sent requesting that an evaluation of buckets be made to determine if one or more needs

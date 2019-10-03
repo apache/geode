@@ -27,7 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Hosts common utility methods needed by the management package

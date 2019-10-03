@@ -30,8 +30,8 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.LockGrantorId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
+import org.apache.geode.logging.internal.LogService;
 
 /** Provides clean separation of implementation from public facade */
 public class TXLockServiceImpl extends TXLockService {

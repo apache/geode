@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Retrieves {@link ClientPartitionAdvisor} for the specified PartitionedRegion from one of the

@@ -75,7 +75,6 @@ import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.offheap.StoredObject;
@@ -85,6 +84,7 @@ import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.DelayedAction;
+import org.apache.geode.logging.internal.LogService;
 
 public abstract class DistributedCacheOperation {
 

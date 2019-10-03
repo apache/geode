@@ -28,8 +28,8 @@ import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This class tracks GemFire statistics related to CqService. Specifically the following statistics

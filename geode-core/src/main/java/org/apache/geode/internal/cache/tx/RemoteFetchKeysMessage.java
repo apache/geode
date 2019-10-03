@@ -46,11 +46,11 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.ObjectIntProcedure;
+import org.apache.geode.logging.internal.LogService;
 
 public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 

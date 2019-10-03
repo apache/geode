@@ -66,11 +66,11 @@ import org.apache.geode.internal.cache.partitioned.BucketProfileUpdateMessage;
 import org.apache.geode.internal.cache.partitioned.DeposePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.DeposePrimaryBucketMessage.DeposePrimaryBucketResponse;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Specialized {@link CacheDistributionAdvisor} for {@link BucketRegion BucketRegions}. The

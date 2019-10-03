@@ -33,10 +33,10 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This message is used to implement clear. It is only used when a region is not a replica and has

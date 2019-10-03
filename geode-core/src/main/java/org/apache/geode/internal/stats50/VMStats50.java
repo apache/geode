@@ -43,9 +43,9 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.statistics.VMStatsContract;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Statistics related to a Java VM. This version is hardcoded to use 1.5 MXBean stats from

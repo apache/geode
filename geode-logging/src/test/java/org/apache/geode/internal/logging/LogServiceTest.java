@@ -23,8 +23,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.logging.log4j.FastLogger;
-import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.log4j.FastLogger;
+import org.apache.geode.logging.internal.log4j.message.GemFireParameterizedMessageFactory;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**

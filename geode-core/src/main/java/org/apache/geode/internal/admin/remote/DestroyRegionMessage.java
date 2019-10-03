@@ -25,9 +25,9 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * A message that is sent to a particular distribution manager to let it know that the sender is an

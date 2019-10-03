@@ -53,7 +53,7 @@ import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.SimulatedBucketOperator;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.AddressComparor;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This class performs a rebalance on a single partitioned region.

@@ -32,7 +32,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class EndpointManagerImpl implements EndpointManager {
   private static final Logger logger = LogService.getLogger();

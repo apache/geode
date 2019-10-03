@@ -22,7 +22,7 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class GeodeCompositeMeterRegistry extends CompositeMeterRegistry {
   private final Logger logger;

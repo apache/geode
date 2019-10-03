@@ -62,7 +62,7 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.Configuration;

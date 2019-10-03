@@ -26,9 +26,9 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.metrics.MetricsPublishingService;
 import org.apache.geode.metrics.MetricsSession;
 

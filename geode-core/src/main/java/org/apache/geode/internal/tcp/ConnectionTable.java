@@ -48,10 +48,10 @@ import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCloser;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingExecutors;
 
 /**
  * <p>

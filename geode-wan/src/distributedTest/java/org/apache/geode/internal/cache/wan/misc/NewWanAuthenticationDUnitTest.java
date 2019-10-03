@@ -40,7 +40,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.WANTestBase;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityTestUtils;

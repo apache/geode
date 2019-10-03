@@ -20,7 +20,7 @@ import javax.management.Notification;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This class actually distribute the notification with the help of the actual broadcaster proxy.

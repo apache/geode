@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.log4j.LogWriterLogger;
 
 /**

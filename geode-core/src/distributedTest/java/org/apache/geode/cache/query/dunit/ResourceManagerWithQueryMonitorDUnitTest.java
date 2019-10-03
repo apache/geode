@@ -73,7 +73,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.IgnoredException;

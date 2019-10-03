@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Class <code>SerialGatewayEventCallbackDispatcher</code> dispatches batches of

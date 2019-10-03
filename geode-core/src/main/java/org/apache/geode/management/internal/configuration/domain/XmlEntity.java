@@ -47,8 +47,8 @@ import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
 

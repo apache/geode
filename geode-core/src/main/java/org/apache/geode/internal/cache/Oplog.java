@@ -97,7 +97,6 @@ import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
@@ -110,6 +109,7 @@ import org.apache.geode.internal.serialization.UnsupportedSerializationVersionEx
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.shared.NativeCalls;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
 
 /**

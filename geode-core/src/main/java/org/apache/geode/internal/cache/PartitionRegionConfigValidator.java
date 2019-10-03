@@ -31,7 +31,7 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class PartitionRegionConfigValidator {
 

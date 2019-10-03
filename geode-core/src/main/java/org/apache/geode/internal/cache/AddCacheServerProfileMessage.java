@@ -30,9 +30,9 @@ import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * OperationMessage synchronously propagates a change in the profile to another member. It is a

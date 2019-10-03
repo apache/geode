@@ -28,9 +28,9 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.util.Breadcrumbs;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * This class maintains statistics in GemFire about the distribution manager and distribution in

@@ -20,7 +20,7 @@ import java.util.TreeSet;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Represents a single member of the distributed system.

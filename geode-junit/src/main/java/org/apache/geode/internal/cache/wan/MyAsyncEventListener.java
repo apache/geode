@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class MyAsyncEventListener implements AsyncEventListener, Declarable {
   private static final Logger logger = LogService.getLogger();

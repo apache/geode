@@ -20,7 +20,7 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Property resolver for resolving ${} like strings with system or Gemfire properties in Cache.xml

@@ -40,7 +40,7 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Defines methods that all <code>SystemMember</code> MBeans should implement.

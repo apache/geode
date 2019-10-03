@@ -45,9 +45,9 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 public class DestroyRegionOperation extends DistributedCacheOperation {
 

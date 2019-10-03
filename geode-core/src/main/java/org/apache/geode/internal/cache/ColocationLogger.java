@@ -24,8 +24,8 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 /**
  * Provides logging when regions are missing from a colocation hierarchy. This logger runs in it's

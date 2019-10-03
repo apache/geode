@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.logging.internal.LoggingExecutors;
 
 /**
  * A data structure used to hold load information for a locator

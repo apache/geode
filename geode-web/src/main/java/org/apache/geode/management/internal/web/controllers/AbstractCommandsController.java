@@ -42,7 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;

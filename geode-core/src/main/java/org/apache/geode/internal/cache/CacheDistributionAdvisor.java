@@ -48,11 +48,11 @@ import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Adds bookkeeping info and cache-specific behavior to DistributionAdvisor. Adds bit-encoded flags

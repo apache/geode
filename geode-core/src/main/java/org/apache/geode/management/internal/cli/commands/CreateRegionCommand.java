@@ -42,7 +42,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;

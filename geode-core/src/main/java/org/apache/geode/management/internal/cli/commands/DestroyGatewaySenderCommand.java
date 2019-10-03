@@ -26,7 +26,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;

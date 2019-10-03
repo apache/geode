@@ -53,7 +53,7 @@ import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetE
 import org.apache.geode.internal.cache.execute.MyFunctionExecutionException;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class TestFunction<T> implements Function<T>, Declarable2, DataSerializable {
   public static final String TEST_FUNCTION10 = "TestFunction10";

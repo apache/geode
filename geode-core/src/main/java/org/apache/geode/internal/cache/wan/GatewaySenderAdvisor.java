@@ -45,11 +45,11 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingThread;
 
 public class GatewaySenderAdvisor extends DistributionAdvisor {
   private static final Logger logger = LogService.getLogger();

@@ -45,7 +45,7 @@ import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.pdx.internal.PdxString;
 
 public class CompiledIn extends AbstractCompiledValue implements Indexable {

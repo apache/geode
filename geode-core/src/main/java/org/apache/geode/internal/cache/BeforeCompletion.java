@@ -21,7 +21,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class BeforeCompletion {
   private static final Logger logger = LogService.getLogger();

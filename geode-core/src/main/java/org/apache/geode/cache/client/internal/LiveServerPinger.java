@@ -26,7 +26,7 @@ import org.apache.geode.cache.client.internal.EndpointManager.EndpointListenerAd
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 /**
  * Responsible for pinging live servers to make sure they are still alive.

@@ -21,8 +21,8 @@ import java.text.SimpleDateFormat;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.logging.internal.LogService;
 
 public abstract class AbstractExecutor {
 

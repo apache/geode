@@ -66,7 +66,6 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
@@ -83,6 +82,7 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.lang.AttachAPINotFoundException;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.cli.util.HostUtils;
 import org.apache.geode.management.internal.cli.util.JsonUtil;
 

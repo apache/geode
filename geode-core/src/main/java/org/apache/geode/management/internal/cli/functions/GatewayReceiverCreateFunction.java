@@ -25,7 +25,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.realizers.GatewayReceiverRealizer;
 

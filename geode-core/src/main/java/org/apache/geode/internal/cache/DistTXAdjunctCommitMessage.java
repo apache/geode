@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class DistTXAdjunctCommitMessage extends TXCommitMessage {
 

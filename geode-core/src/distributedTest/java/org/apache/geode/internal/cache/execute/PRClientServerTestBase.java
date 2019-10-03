@@ -56,7 +56,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;

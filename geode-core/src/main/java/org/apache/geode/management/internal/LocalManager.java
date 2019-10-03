@@ -45,9 +45,9 @@ import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.LogService;
+import org.apache.geode.logging.internal.LoggingExecutors;
 import org.apache.geode.management.ManagementException;
 
 /**

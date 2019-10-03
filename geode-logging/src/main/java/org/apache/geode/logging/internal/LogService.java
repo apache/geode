@@ -12,14 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging;
+package org.apache.geode.logging.internal;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.StackLocator;
 
-import org.apache.geode.internal.logging.log4j.FastLogger;
-import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
+import org.apache.geode.logging.internal.log4j.FastLogger;
+import org.apache.geode.logging.internal.log4j.message.GemFireParameterizedMessageFactory;
 
 /**
  * Provides Log4J2 Loggers with customized optimizations for Geode:

@@ -30,7 +30,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.locator.PeerLocatorRequest;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class PrimaryHandler implements TcpHandler {
   private static final Logger logger = LogService.getLogger();

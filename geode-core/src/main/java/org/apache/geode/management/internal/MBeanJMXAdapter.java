@@ -42,7 +42,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassLoadUtil;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.management.AsyncEventQueueMXBean;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DiskStoreMXBean;

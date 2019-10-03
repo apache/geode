@@ -62,7 +62,7 @@ import org.apache.geode.internal.cache.LocalRegion.IteratorType;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 
 public class LocalDataSet implements Region, QueryExecutor {
 

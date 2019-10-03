@@ -54,7 +54,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
