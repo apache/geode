@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ruby:2.3.0
+FROM ruby:2.3.1
 MAINTAINER Geode Community <dev@geode.apache.org>
 
 LABEL Vendor="Apache Geode"

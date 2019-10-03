@@ -21,11 +21,13 @@ SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 . $SCRIPT_DIR/build-image-common.sh
 
+REPO_PATH=${SCRIPT_DIR}/../../../
+
 docker run -i -t \
   --rm=true \
-  -w "/home/${USER_NAME}/incubator-geode/geode-book" \
+  -w "${REPO_PATH}/geode-book" \
   -u "${USER_NAME}" \
-  -v "$PWD:/home/${USER_NAME}/incubator-geode" \
+  -v "$PWD:${REPO_PATH}" \
   ${IMAGE_NAME}-${USER_NAME} \
   bundle exec bookbinder bind local
 
