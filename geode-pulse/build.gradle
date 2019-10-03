@@ -20,7 +20,7 @@ evaluationDependsOn(':geode-core')
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply plugin: 'war'
 
-apply from: "${project.projectDir}/../gradle/publish-java.gradle"
+apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 
 jar.enabled = false
 
@@ -171,7 +171,6 @@ artifacts {
 
 war {
   enabled = true
-  rootSpec.exclude("**/*commons-logging-*.jar")
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   classpath configurations.runtimeClasspath
 }

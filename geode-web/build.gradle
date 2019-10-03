@@ -21,6 +21,7 @@ apply plugin: 'war'
 
 apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 
+jar.enabled = false
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
@@ -71,9 +72,5 @@ integrationTest.dependsOn(war)
 
 war {
   enabled = true
-  rootSpec.exclude("**/*commons-logging-*.jar")
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-  // this shouldn't be necessary but if it's not specified we're missing some of the jars
-  // from the runtime classpath
-  classpath configurations.runtimeClasspath
 }
