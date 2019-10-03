@@ -129,12 +129,12 @@ public class RestAPIsWithSSLDUnitTest {
 
   private void startClusterWithSSL(final Properties sslProperties)
       throws Exception {
-    int locatorPort = ClusterStartupRule.getDUnitLocatorPort();
-    server = cluster.startServerVM(0, s -> s.withRestService()
+    MemberVM locator = cluster.startLocatorVM(0);
+    server = cluster.startServerVM(1, s -> s.withRestService()
         .withProperties(sslProperties)
-        .withConnectionToLocator(locatorPort)
+        .withConnectionToLocator(locator.getPort())
         .withRegion(RegionShortcut.REPLICATE, PEOPLE_REGION_NAME));
-    client = cluster.startClientVM(1, c -> c.withLocatorConnection(locatorPort)
+    client = cluster.startClientVM(2, c -> c.withLocatorConnection(locator.getPort())
         .withCacheSetup(cf -> cf.setPdxReadSerialized(true)));
 
     client.invoke(() -> {

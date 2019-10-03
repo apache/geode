@@ -100,7 +100,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   @BeforeClass
   public static final void initializeDistributedTestCase() {
-    DUnitLauncher.launchIfNeeded();
+    DUnitLauncher.launchIfNeeded(true);
   }
 
   public static final void initializeBlackboard() {
