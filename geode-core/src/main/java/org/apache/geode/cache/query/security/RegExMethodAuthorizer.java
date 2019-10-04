@@ -158,10 +158,12 @@ public final class RegExMethodAuthorizer implements MethodInvocationAuthorizer {
 
     // Compare fully qualified method name against compiled expressions.
     String fullyQualifiedMethodName = target.getClass().getName() + "." + method.getName();
-    boolean match = compiledPatterns.stream()
-        .anyMatch(pattern -> pattern.matcher(fullyQualifiedMethodName).matches());
+    if (compiledPatterns.stream()
+        .anyMatch(pattern -> pattern.matcher(fullyQualifiedMethodName).matches())) {
+      return true;
+    }
 
-    // Return if there was a match, otherwise delegate to the default authorizer.
-    return match || restrictedMethodAuthorizer.authorize(method, target);
+    // Delegate to the default authorizer.
+    return restrictedMethodAuthorizer.authorize(method, target);
   }
 }
