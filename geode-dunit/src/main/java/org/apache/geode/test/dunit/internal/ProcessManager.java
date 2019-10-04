@@ -16,6 +16,7 @@ package org.apache.geode.test.dunit.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -288,11 +289,11 @@ class ProcessManager implements ChildVMLauncher {
       // detection is disabled, so we turn it off in the locator. Tests for network partition
       // detection should create a separate locator that has it enabled
       cmds.add(
-          "-D" + DistributionConfig.GEMFIRE_PREFIX + ENABLE_NETWORK_PARTITION_DETECTION + "=false");
+          "-D" + GEMFIRE_PREFIX + ENABLE_NETWORK_PARTITION_DETECTION + "=false");
       cmds.add(
-          "-D" + DistributionConfig.GEMFIRE_PREFIX + "allow_old_members_to_join_for_testing=true");
+          "-D" + GEMFIRE_PREFIX + "allow_old_members_to_join_for_testing=true");
     }
-    cmds.add("-D" + LOG_LEVEL + "=" + DUnitLauncher.logLevel);
+    cmds.add("-D" + GEMFIRE_PREFIX + LOG_LEVEL + "=" + DUnitLauncher.logLevel);
     if (DUnitLauncher.LOG4J != null) {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
     }
@@ -300,10 +301,10 @@ class ProcessManager implements ChildVMLauncher {
     cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
     cmds.add("-XX:+HeapDumpOnOutOfMemoryError");
     cmds.add("-Xmx512m");
-    cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE=10");
-    cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "disallowMcastDefaults=true");
+    cmds.add("-D" + GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE=10");
+    cmds.add("-D" + GEMFIRE_PREFIX + "disallowMcastDefaults=true");
     cmds.add("-D" + DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE + "=true");
-    cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX
+    cmds.add("-D" + GEMFIRE_PREFIX
         + ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS + "=true");
     cmds.add("-ea");
     cmds.add("-XX:MetaspaceSize=512m");
