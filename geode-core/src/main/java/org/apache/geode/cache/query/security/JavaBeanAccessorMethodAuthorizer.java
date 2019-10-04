@@ -15,7 +15,6 @@
 package org.apache.geode.cache.query.security;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Objects;
 import java.util.Properties;
@@ -24,6 +23,7 @@ import java.util.regex.Pattern;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.Region;
 
 /**
  * An immutable and thread-safe {@link MethodInvocationAuthorizer} that allows any method execution
@@ -72,6 +72,9 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
       "RestrictedMethodAuthorizer should be provided to create this authorizer.";
   static final String NULL_CACHE_MESSAGE = "Cache should be provided to configure the authorizer.";
   static final String GEODE_BASE_PACKAGE = "org.apache.geode";
+
+  private static final Pattern pattern = Pattern.compile("^(get|is)($|[^A-Z])+");
+
   private final RestrictedMethodAuthorizer restrictedMethodAuthorizer;
   private final Set<String> allowedPackages;
 
@@ -115,7 +118,9 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
   /**
    * Executes the authorization logic to determine whether the {@code method} is allowed to be
    * executed on the {@code target} object instance.
-   * <p/>
+   * If the {@code target} object is an instance of {@link Region}, this methods also ensures that
+   * the user has the {@code DATA:READ} permission granted for the target {@link Region}.
+   * </p>
    *
    * @param method the {@link Method} that should be authorized.
    * @param target the {@link Object} on which the {@link Method} will be executed.
@@ -126,11 +131,6 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
    */
   @Override
   public boolean authorize(Method method, Object target) {
-
-    // First ensure that the given method exists for the given target
-    if (!Arrays.asList(target.getClass().getMethods()).contains(method)) {
-      return false;
-    }
 
     // Return false for known dangerous methods.
     if (restrictedMethodAuthorizer.isKnownDangerousMethod(method, target)) {
@@ -150,7 +150,7 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
     // Return true if the the object belongs to an allowed package and the method starts with
     // exactly 'get' or 'is' followed by a non-lowercase character (to prevent matching with
     // methods that might have names like 'getawayDate' or 'islandName' etc.)
-    if (Pattern.matches("^(get|is)($|[^A-Z])+", methodName)) {
+    if (pattern.matcher(methodName).matches()) {
       if (allowedPackages.stream().anyMatch(packageName::startsWith)) {
         return true;
       }

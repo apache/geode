@@ -85,20 +85,6 @@ public class JavaBeanAccessorMethodAuthorizerTest {
   }
 
   @Test
-  public void authorizeReturnsFalseForNonexistentMethods() throws NoSuchMethodException {
-    String testString = "";
-
-    List<Method> nonStringMethods = new ArrayList<>();
-    nonStringMethods.add(List.class.getMethod("get", int.class));
-    nonStringMethods.add(List.class.getMethod("isEmpty"));
-    nonStringMethods.add(List.class.getMethod("size"));
-
-    nonStringMethods.forEach(
-        method -> assertThat(authorizerWithStringPackageSpecified.authorize(method, testString))
-            .isFalse());
-  }
-
-  @Test
   public void authorizeReturnsFalseForKnownDangerousMethods() throws NoSuchMethodException {
     TestBean testBean = new TestBean();
     List<Method> dangerousMethods = new ArrayList<>();
