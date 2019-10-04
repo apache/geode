@@ -16,8 +16,10 @@
 package org.apache.geode.management.internal.rest;
 
 
+import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Before;
@@ -32,9 +34,11 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementListResult;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
@@ -103,5 +107,23 @@ public class GatewayManagementIntegrationTest {
       cacheConfig.setGatewayReceiver(null);
       return cacheConfig;
     });
+  }
+
+  @Test
+  public void createGatewayReceiver() {
+    GatewayReceiver gatewayReceiver = new GatewayReceiver();
+    gatewayReceiver.setGroup("group");
+    gatewayReceiver.setStartPort(1000);
+    gatewayReceiver.setEndPort(1000);
+    gatewayReceiver.setManualStart(true);
+    gatewayReceiver.setMaximumTimeBetweenPings(200);
+    gatewayReceiver
+        .setGatewayTransportFilters(
+            Collections.singletonList(new ClassName("className", "{\"key1\": \"value1\"}")));
+
+    assertManagementResult(client.create(gatewayReceiver))
+        .hasStatusCode(ClusterManagementResult.StatusCode.OK);
+    assertManagementResult(client.delete(gatewayReceiver))
+        .hasStatusCode(ClusterManagementResult.StatusCode.OK);
   }
 }
