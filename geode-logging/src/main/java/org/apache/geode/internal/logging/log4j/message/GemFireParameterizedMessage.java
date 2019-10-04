@@ -24,7 +24,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.message.Message;
 
-import org.apache.geode.internal.logging.EntriesCollection;
+import org.apache.geode.internal.logging.LogWithToString;
 
 /**
  * Handles messages that consist of a format string containing '{}' to represent each replaceable
@@ -467,7 +467,7 @@ public class GemFireParameterizedMessage implements Message {
         }
         // str.append(Arrays.deepToString((Object[]) o));
       }
-    } else if (o instanceof Map && !(o instanceof EntriesCollection)) {
+    } else if (o instanceof Map && !(o instanceof LogWithToString)) {
       // GEODE: do NOT use Map handling if instanceof Geode Region
       // special handling of container Map
       final String id = identityToString(o);
@@ -493,7 +493,7 @@ public class GemFireParameterizedMessage implements Message {
         }
         str.append('}');
       }
-    } else if (o instanceof Collection && !(o instanceof EntriesCollection)) {
+    } else if (o instanceof Collection && !(o instanceof LogWithToString)) {
       // GEODE: do NOT use Collection handling if instanceof Geode EntriesSet
       // special handling of container Collection
       final String id = identityToString(o);
