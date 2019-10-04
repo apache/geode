@@ -123,7 +123,15 @@ public class GatewayManagementIntegrationTest {
 
     assertManagementResult(client.create(gatewayReceiver))
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
-    assertManagementResult(client.delete(gatewayReceiver))
-        .hasStatusCode(ClusterManagementResult.StatusCode.OK);
+
+    // manually removing the GWR so that it won't pollute other tests
+    LocatorStarterRule locator =
+        ((PlainLocatorContextLoader) context.getLocator()).getLocatorStartupRule();
+    InternalConfigurationPersistenceService cps =
+        locator.getLocator().getConfigurationPersistenceService();
+    cps.updateCacheConfig("group", cacheConfig -> {
+      cacheConfig.setGatewayReceiver(null);
+      return cacheConfig;
+    });
   }
 }
