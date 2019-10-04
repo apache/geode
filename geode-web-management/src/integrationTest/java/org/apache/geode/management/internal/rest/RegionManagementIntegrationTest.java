@@ -78,10 +78,10 @@ public class RegionManagementIntegrationTest {
     expiration.setTimeInSeconds(1);
     regionConfig.setExpirations(Collections.singletonList(expiration));
 
-    // if run multiple times, this could either be OK or ENTITY_EXISTS
     assertManagementResult(client.create(regionConfig))
-        .hasStatusCode(ClusterManagementResult.StatusCode.OK,
-            ClusterManagementResult.StatusCode.ENTITY_EXISTS);
+        .hasStatusCode(ClusterManagementResult.StatusCode.OK);
+    assertManagementResult(client.delete(regionConfig))
+        .hasStatusCode(ClusterManagementResult.StatusCode.OK);
   }
 
   @Test
