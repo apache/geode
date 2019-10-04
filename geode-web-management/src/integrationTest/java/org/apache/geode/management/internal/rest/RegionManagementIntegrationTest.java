@@ -20,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
+import java.util.Collections;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,6 +36,9 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.Region.Expiration;
+import org.apache.geode.management.configuration.Region.ExpirationAction;
+import org.apache.geode.management.configuration.Region.ExpirationType;
 import org.apache.geode.management.configuration.RegionType;
 
 @RunWith(SpringRunner.class)
@@ -62,7 +67,16 @@ public class RegionManagementIntegrationTest {
   public void sanityCheck() {
     Region regionConfig = new Region();
     regionConfig.setName("customers");
-    regionConfig.setType(RegionType.REPLICATE);
+    regionConfig.setType(RegionType.PARTITION);
+    regionConfig.setDiskStoreName("diskStore");
+    regionConfig.setKeyConstraint("keyConstraint");
+    regionConfig.setValueConstraint("valueConstraint");
+    regionConfig.setRedundantCopies(1);
+    Expiration expiration = new Expiration();
+    expiration.setType(ExpirationType.ENTRY_IDLE_TIME);
+    expiration.setAction(ExpirationAction.DESTROY);
+    expiration.setTimeInSeconds(1);
+    regionConfig.setExpirations(Collections.singletonList(expiration));
 
     // if run multiple times, this could either be OK or ENTITY_EXISTS
     assertManagementResult(client.create(regionConfig))
