@@ -101,10 +101,10 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.metrics.CacheMetricsSession;
 import org.apache.geode.internal.metrics.CacheMetricsSessionFactory;
 import org.apache.geode.internal.metrics.CompositeCacheMetricsSession;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
@@ -802,7 +802,7 @@ public class InternalDistributedSystem extends DistributedSystem
       } catch (IOException e) {
         throw new GemFireIOException("Problem finishing a locator service start", e);
       }
-      
+
       startSampler();
 
       clusterAlertMessaging.set(new ClusterAlertMessaging(this));
