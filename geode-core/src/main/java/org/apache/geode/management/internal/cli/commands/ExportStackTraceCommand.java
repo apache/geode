@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -102,10 +103,7 @@ public class ExportStackTraceCommand extends GfshCommand {
     for (Object resultObj : resultList) {
       if (resultObj instanceof StackTracesPerMember) {
         StackTracesPerMember stackTracePerMember = (StackTracesPerMember) resultObj;
-        String headerMessage =
-            stackTracePerMember.getMemberNameOrId() + " at "
-                + formatter.format(stackTracePerMember.getTimestamp());
-        dumps.put(headerMessage,
+        dumps.put(getHeaderMessage(stackTracePerMember),
             stackTracePerMember.getStackTraces());
       }
     }
@@ -117,6 +115,16 @@ public class ExportStackTraceCommand extends GfshCommand {
 
     return result;
 
+  }
+
+  String getHeaderMessage(StackTracesPerMember stackTracesPerMember) {
+    String headerMessage = stackTracesPerMember.getMemberNameOrId();
+
+    Instant timestamp = stackTracesPerMember.getTimestamp();
+    if (timestamp != null) {
+      headerMessage += " at " + formatter.format(timestamp);
+    }
+    return headerMessage;
   }
 
   /***
