@@ -28,7 +28,7 @@ docker run -i -t \
   -w "${REPO_PATH}/geode-book" \
   -v "$PWD:${REPO_PATH}" \
   ${IMAGE_NAME}-${USER_NAME} \
-  /bin/bash -c "bundle exec bookbinder bind local && chown -R ${USER_ID}:${GROUP_ID} ${REPO_PATH}/geode-book/output"
+  /bin/bash -c "bundle exec bookbinder bind local && chown -R ${USER_ID}:${GROUP_ID} ${REPO_PATH}/geode-book/output ${REPO_PATH}/geode-book/final_app"
 
 popd
 
