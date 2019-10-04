@@ -342,7 +342,7 @@ dependencies {
   testRuntime('commons-io:commons-io')
   testRuntime('commons-validator:commons-validator')
   testRuntime('com.pholser:junit-quickcheck-generators')
-  testRuntime(project(':geode-old-versions'))
+  testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
   integrationTestCompile(project(':geode-junit')) {
@@ -379,7 +379,7 @@ dependencies {
   distributedTestCompile('com.jayway.jsonpath:json-path-assert')
   distributedTestCompile('net.openhft:compiler')
 
-  distributedTestRuntime(project(':geode-old-versions'))
+  distributedTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
   distributedTestRuntime('org.apache.derby:derby')
 
 
@@ -387,7 +387,7 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  upgradeTestRuntime(project(':geode-old-versions'))
+  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
   upgradeTestRuntime(project(':geode-log4j'))
 
 

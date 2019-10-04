@@ -90,7 +90,7 @@ dependencies {
     exclude module: 'geode-core'
   }
 
-  upgradeTestRuntime(project(':geode-old-versions'))
+  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
   performanceTestCompile(project(':geode-junit')) {

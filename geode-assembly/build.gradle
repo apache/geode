@@ -193,10 +193,10 @@ dependencies {
   testCompile(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
-  testRuntime(project(':geode-old-versions'))
+  testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
-  acceptanceTestRuntime(project(':geode-old-versions'))
+  acceptanceTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
 
   integrationTestCompile(project(':geode-core'))
@@ -281,7 +281,7 @@ dependencies {
   }
   upgradeTestCompile(project(':geode-assembly:geode-assembly-test'))
 
-  upgradeTestRuntime(project(':geode-old-versions'))
+  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
   upgradeTestRuntime(project(':extensions:session-testing-war'))
   upgradeTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
   upgradeTestRuntime('org.apache.httpcomponents:httpclient')
