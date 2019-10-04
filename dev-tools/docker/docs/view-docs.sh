@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e -x -u
+set -e -u
 
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
@@ -23,6 +23,7 @@ SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 REPO_PATH=${SCRIPT_DIR}/../../../
 
+echo "Starting up web server..."
 docker run -i -t \
   --rm=true \
   -w "${REPO_PATH}/geode-book/final_app/" \
@@ -31,5 +32,5 @@ docker run -i -t \
   ${IMAGE_NAME}-${USER_NAME} \
   /bin/bash -c "bundle install; rackup --host 0.0.0.0"
 
-popd
+popd 1> /dev/null
 
