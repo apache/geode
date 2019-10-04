@@ -18,7 +18,7 @@ Bookbinder is a Ruby gem that binds  a unified documentation web application fro
 
 ## Automatic build
 
-Documentation can be build and previewed using the utility scripts at [dev_tools/docker/docs](https://github.com/apache/geode/tree/develop/dev-tools/docker/docs). These scripts use Docker, removing the requirement of installing Ruby and Bookbinder. They are based on the instructions described in the [Manual build](#manual-build) chapter.
+Documentation can be built and previewed using the utility scripts at [dev_tools/docker/docs](https://github.com/apache/geode/tree/develop/dev-tools/docker/docs). These scripts use Docker, removing the requirement of installing Ruby and Bookbinder. They are based on the instructions described in the [Manual build](#manual-build) chapter.
 
 ## Manual build
 
