@@ -20,7 +20,7 @@ plugins {
   id 'maven-publish'
 }
 
-apply from: "${project.projectDir}/../../gradle/publish.gradle"
+apply from: "${project.projectDir}/../../gradle/publish-common.gradle"
 
 jar.enabled = false
 

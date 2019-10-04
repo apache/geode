@@ -24,7 +24,7 @@ repositories {
   }
 }
 
-apply from: "${project.projectDir}/../gradle/publish.gradle"
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 
 dependencies {

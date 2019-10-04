@@ -17,7 +17,7 @@
 
 apply plugin: 'antlr'
 apply plugin: 'me.champeau.gradle.jmh'
-apply from: "${project.projectDir}/../gradle/publish.gradle"
+apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/pmd.gradle"
 
 sourceSets {

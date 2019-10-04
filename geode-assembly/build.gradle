@@ -23,7 +23,7 @@ import java.nio.file.Paths
 evaluationDependsOn(":geode-core")
 
 apply plugin: 'distribution'
-apply from: "${project.projectDir}/../gradle/publish.gradle"
+apply from: "${project.projectDir}/../gradle/publish-common.gradle"
 // This subproject's 'publication' is not a jar and should not be constrained to match versions
 // in the geode-all-bom.
 project.ext.set('constrainVersionInBom', false)
