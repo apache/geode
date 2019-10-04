@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,7 +70,6 @@ import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -90,16 +91,23 @@ public class DefaultQueryService implements InternalQueryService {
    */
   public static final boolean QUERY_HETEROGENEOUS_OBJECTS = Boolean
       .valueOf(System.getProperty(
-          DistributionConfig.GEMFIRE_PREFIX + "QueryService.QueryHeterogeneousObjects", "true"))
+          GEMFIRE_PREFIX + "QueryService.QueryHeterogeneousObjects", "true"))
       .booleanValue();
 
   public static final boolean COPY_ON_READ_AT_ENTRY_LEVEL = Boolean
       .valueOf(System.getProperty(
-          DistributionConfig.GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"))
+          GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"))
       .booleanValue();
 
+  /**
+   * Instead of the below property, please use an existing MethodInvocationAuthorizer
+   * implementation such as RestrictedMethodAuthorizer, UnrestrictedMethodAuthorizer,
+   * RegExMethodAuthorizer or JavaBeanAccessorMethodAuthorizer, or provide your own
+   * implementation.
+   */
+  @Deprecated
   public static final boolean ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.getBoolean(
-      DistributionConfig.GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
+      GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
 
 
   /** Test purpose only */
@@ -121,6 +129,13 @@ public class DefaultQueryService implements InternalQueryService {
       throw new IllegalArgumentException(
           "cache must not be null");
     this.cache = cache;
+    if (ALLOW_UNTRUSTED_METHOD_INVOCATION) {
+      logger
+          .warn("The property " + GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation " +
+              "is deprecated. Please use an existing MethodInvocationAuthorizer implementation " +
+              "(RestrictedMethodAuthorizer, UnrestrictedMethodAuthorizer, RegExMethodAuthorizer " +
+              "or JavaBeanAccessorMethodAuthorizer) or provide your own implementation.");
+    }
     if (!cache.getSecurityService().isIntegratedSecurity() || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
       // A no-op authorizer, allow method invocation
       this.methodInvocationAuthorizer = ((Method m, Object t) -> true);
