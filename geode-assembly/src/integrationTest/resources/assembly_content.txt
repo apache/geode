@@ -492,6 +492,7 @@ javadoc/org/apache/geode/cache/query/package-frame.html
 javadoc/org/apache/geode/cache/query/package-summary.html
 javadoc/org/apache/geode/cache/query/package-tree.html
 javadoc/org/apache/geode/cache/query/security/MethodInvocationAuthorizer.html
+javadoc/org/apache/geode/cache/query/security/RegExMethodAuthorizer.html
 javadoc/org/apache/geode/cache/query/security/RestrictedMethodAuthorizer.html
 javadoc/org/apache/geode/cache/query/security/package-frame.html
 javadoc/org/apache/geode/cache/query/security/package-summary.html
