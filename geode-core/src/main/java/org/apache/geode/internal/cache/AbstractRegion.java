@@ -106,7 +106,7 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
  */
 @SuppressWarnings("deprecation")
 public abstract class AbstractRegion implements InternalRegion, AttributesMutator, CacheStatistics,
-    DataSerializableFixedID, Extensible<Region<?, ?>>, EvictableRegion, EntriesCollection {
+    DataSerializableFixedID, Extensible<Region<?, ?>>, EvictableRegion {
 
   private static final Logger logger = LogService.getLogger();
   private final ReentrantReadWriteLock readWriteLockForCacheLoader = new ReentrantReadWriteLock();
