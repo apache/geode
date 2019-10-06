@@ -956,7 +956,6 @@ lib/geode-dependencies.jar
 lib/geode-http-service-0.0.0.jar
 lib/geode-jca-0.0.0.rar
 lib/geode-log4j-0.0.0.jar
-lib/geode-logging-0.0.0.jar
 lib/geode-lucene-0.0.0.jar
 lib/geode-management-0.0.0.jar
 lib/geode-memcached-0.0.0.jar

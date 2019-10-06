@@ -262,7 +262,6 @@ SESSION_JAR="${LIB_DIR}/geode-modules-session-${VERSION}.jar"
 
 declare -a OTHER_JARS
 OTHER_JARS=(${GEODE}/lib/geode-core-${VERSION}.jar \
-    ${GEODE}/lib/geode-logging-${VERSION}.jar \
     ${GEODE}/lib/geode-serialization-${VERSION}.jar \
     ${GEODE}/lib/geode-common-${VERSION}.jar \
     ${GEODE}/lib/geode-log4j-${VERSION}.jar \

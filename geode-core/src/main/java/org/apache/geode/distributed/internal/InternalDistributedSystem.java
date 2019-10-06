@@ -101,7 +101,6 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
@@ -538,8 +537,6 @@ public class InternalDistributedSystem extends DistributedSystem
       StatisticsManagerFactory statisticsManagerFactory) {
     alertingSession = AlertingSession.create();
     alertingService = new InternalAlertingServiceFactory().create();
-    LoggingUncaughtExceptionHandler
-        .setFailureSetter(error -> SystemFailure.setFailure((VirtualMachineError) error));
     loggingSession = LoggingSession.create();
     originalConfig = config.distributionConfig();
     isReconnectingDS = config.isReconnecting();
@@ -2189,7 +2186,7 @@ public class InternalDistributedSystem extends DistributedSystem
             // .uncleanShutdown("VM is exiting", null);
             // }
           }
-        }, false);
+        });
         Runtime.getRuntime().addShutdownHook(tmp_shutdownHook);
       }
     } finally {

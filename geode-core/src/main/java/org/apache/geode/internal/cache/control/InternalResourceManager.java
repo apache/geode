@@ -52,7 +52,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
 import org.apache.geode.internal.cache.partitioned.SizedBasedLoadProbe;
-import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
@@ -136,7 +135,7 @@ public class InternalResourceManager implements ResourceManager {
     // Create a new executor the resource manager and the monitors it creates
     // can use to handle dispatching of notifications.
     this.notifyExecutor =
-        CoreLoggingExecutors.newSerialThreadPoolWithFeedStatistics("Notification Handler",
+        LoggingExecutors.newSerialThreadPoolWithFeedStatistics("Notification Handler",
             thread -> thread.setPriority(Thread.MAX_PRIORITY), null,
             this.stats.getResourceEventPoolStatHelper(), getThreadMonitorObj(),
             0, this.stats.getResourceEventQueueStatHelper());

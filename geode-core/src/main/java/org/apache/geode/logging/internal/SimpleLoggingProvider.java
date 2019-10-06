@@ -14,6 +14,8 @@
  */
 package org.apache.geode.logging.internal;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;
@@ -35,6 +37,11 @@ public class SimpleLoggingProvider implements LoggingProvider {
   @Override
   public void cleanup() {
     // nothing
+  }
+
+  @Override
+  public Logger getLogger(String name) {
+    return LogManager.getLogger(name);
   }
 
   @Override

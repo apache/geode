@@ -33,12 +33,13 @@ import org.apache.logging.log4j.core.lookup.StrLookup;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.logging.log4j.FastLogger;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateOccurs;
 import org.apache.geode.logging.internal.spi.LogLevelUpdateScope;
 import org.apache.geode.logging.internal.spi.LogWriterLevel;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
+import org.apache.geode.logging.log4j.internal.FastLogger;
+import org.apache.geode.logging.log4j.internal.impl.message.GemFireParameterizedMessageFactory;
 
 /**
  * Log4J 2 implementation of {@link LoggingProvider}.
@@ -181,6 +182,11 @@ public class Log4jLoggingProvider implements LoggingProvider {
       PausableAppender geodeConsoleAppender = (PausableAppender) appender;
       geodeConsoleAppender.pause();
     }
+  }
+
+  @Override
+  public org.apache.logging.log4j.Logger getLogger(final String name) {
+    return new FastLogger(LogManager.getLogger(name, GemFireParameterizedMessageFactory.get()));
   }
 
   @Override
