@@ -17,14 +17,11 @@ package org.apache.geode.internal.cache.persistence;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
-import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -45,9 +42,9 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
@@ -143,7 +140,7 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
    */
   @Test
   public void testGetDataDelayDueToRecoveryAfterServerShutdown() throws Exception {
-    int numBuckets = 5000;
+    int numEntries = 10000;
     System.setProperty("gemfire.disk.recoverValuesSync", "true");
 
     vm0.invoke(() -> createPartitionedRegion(1, -1, 113, true));
@@ -151,7 +148,7 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
     vm2.invoke(() -> createPartitionedRegion(1, -1, 113, true));
     vm3.invoke(() -> createPartitionedRegion(1, -1, 113, true));
 
-    vm0.invoke(() -> createData(0, numBuckets));
+    vm0.invoke(() -> createData(0, numEntries));
 
     Set<Integer> bucketsOnVM0 = vm0.invoke(() -> getBucketList());
     Set<Integer> bucketsOnVM1 = vm1.invoke(() -> getBucketList());
@@ -167,15 +164,9 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
       long timeElapsed;
       int key;
       Region<?, ?> region = getCache().getRegion(partitionedRegionName);
-      for (int i = 0; i < numBuckets / 5; i++) {
-        key = getRandomNumberInRange(0, numBuckets - 1);
-        Instant start = Instant.now();
+      for (int i = 0; i < numEntries; i++) {
+        key = getRandomNumberInRange(0, numEntries - 1);
         assertThat(region.get(key)).isEqualTo(key);
-        Instant finish = Instant.now();
-        timeElapsed = Duration.between(start, finish).toMillis();
-        if (timeElapsed > 250) {
-          fail("Delayed get " + timeElapsed + ", for key: " + key);
-        }
       }
 
     });
@@ -184,6 +175,7 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
     createPartitionedRegionOnVM1.await(2, MINUTES);
 
     assertThat(vm1.invoke(() -> getBucketList())).isEqualTo(bucketsOnVM1);
+    assertThat(vm0.invoke(() -> getRegionStats().getGetRetries())).isEqualTo(0);
   }
 
   private void createPartitionedRegion(final int redundancy, final int recoveryDelay,
@@ -257,8 +249,9 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
     return cacheRule.getOrCreateCache();
   }
 
-  private InternalDistributedSystem getSystem() {
-    return getCache().getInternalDistributedSystem();
+  private PartitionedRegionStats getRegionStats() {
+    PartitionedRegion region = (PartitionedRegion) getCache().getRegion(partitionedRegionName);
+    return region.getPrStats();
   }
 
   int getRandomNumberInRange(int min, int max) {
