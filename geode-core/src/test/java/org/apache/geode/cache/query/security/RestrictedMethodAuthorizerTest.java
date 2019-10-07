@@ -206,14 +206,23 @@ public class RestrictedMethodAuthorizerTest {
   }
 
   @SuppressWarnings("unchecked")
-  private void verifyGeneralObjectMethods(Class type, Object object) {
+  private void verifyObjectMethods(Class type, Object object) {
     try {
       Method toStringMethod = type.getMethod("toString");
       Method equalsMethod = type.getMethod("equals", Object.class);
-      Method compareToMethod = type.getMethod("compareTo", Object.class);
 
       assertThat(methodAuthorizer.authorize(toStringMethod, object)).isTrue();
       assertThat(methodAuthorizer.authorize(equalsMethod, object)).isTrue();
+    } catch (NoSuchMethodException noSuchMethodException) {
+      throw new RuntimeException(noSuchMethodException);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private void verifyComparableMethods(Class type, Object object) {
+    try {
+      Method compareToMethod = type.getMethod("compareTo", Object.class);
+
       assertThat(methodAuthorizer.authorize(compareToMethod, object)).isTrue();
     } catch (NoSuchMethodException noSuchMethodException) {
       throw new RuntimeException(noSuchMethodException);
@@ -222,8 +231,17 @@ public class RestrictedMethodAuthorizerTest {
 
   @Test
   public void authorizeShouldReturnFalseForNotAllowedMethods() throws Exception {
-    Method method = Integer.class.getMethod("getClass");
-    assertThat(methodAuthorizer.authorize(method, 0)).isFalse();
+    TestBean testBean = new TestBean();
+    List<Method> dangerousMethods = new ArrayList<>();
+    dangerousMethods.add(TestBean.class.getMethod("getClass"));
+    dangerousMethods.add(TestBean.class.getMethod("readResolve"));
+    dangerousMethods.add(TestBean.class.getMethod("readObjectNoData"));
+    dangerousMethods.add(TestBean.class.getMethod("readObject", ObjectInputStream.class));
+    dangerousMethods.add(TestBean.class.getMethod("writeReplace"));
+    dangerousMethods.add(TestBean.class.getMethod("writeObject", ObjectOutputStream.class));
+
+    dangerousMethods
+        .forEach(method -> assertThat(methodAuthorizer.authorize(method, testBean)).isFalse());
   }
 
   @Test
@@ -242,7 +260,9 @@ public class RestrictedMethodAuthorizerTest {
   public void authorizeShouldReturnTrueForAllowedMethodsOnBooleanInstances() throws Exception {
     Method booleanValueMethod = Boolean.class.getMethod("booleanValue");
     assertThat(methodAuthorizer.authorize(booleanValueMethod, Boolean.TRUE)).isTrue();
-    verifyGeneralObjectMethods(Boolean.class, Boolean.TRUE);
+
+    verifyObjectMethods(Boolean.class, Boolean.TRUE);
+    verifyComparableMethods(Boolean.class, Boolean.TRUE);
   }
 
   @Test
@@ -277,6 +297,7 @@ public class RestrictedMethodAuthorizerTest {
       assertThat(methodAuthorizer.authorize(floatValueMethod, number)).isTrue();
       assertThat(methodAuthorizer.authorize(longValueMethod, number)).isTrue();
       assertThat(methodAuthorizer.authorize(shortValueMethod, number)).isTrue();
+      verifyObjectMethods(number.getClass(), number);
     });
   }
 
@@ -296,7 +317,9 @@ public class RestrictedMethodAuthorizerTest {
       assertThat(methodAuthorizer.authorize(afterMethod, date)).isTrue();
       assertThat(methodAuthorizer.authorize(beforeMethod, date)).isTrue();
       assertThat(methodAuthorizer.authorize(getTimeMethod, date)).isTrue();
-      verifyGeneralObjectMethods(date.getClass(), date);
+
+      verifyObjectMethods(date.getClass(), date);
+      verifyComparableMethods(date.getClass(), date);
     });
   }
 
@@ -312,7 +335,9 @@ public class RestrictedMethodAuthorizerTest {
     assertThat(methodAuthorizer.authorize(beforeMethod, timestamp)).isTrue();
     assertThat(methodAuthorizer.authorize(getNanosMethod, timestamp)).isTrue();
     assertThat(methodAuthorizer.authorize(getTimeMethod, timestamp)).isTrue();
-    verifyGeneralObjectMethods(Timestamp.class, timestamp);
+
+    verifyObjectMethods(Timestamp.class, timestamp);
+    verifyComparableMethods(Timestamp.class, timestamp);
   }
 
   @Test
@@ -366,7 +391,8 @@ public class RestrictedMethodAuthorizerTest {
 
     stringMethods
         .forEach(method -> assertThat(methodAuthorizer.authorize(method, string)).isTrue());
-    verifyGeneralObjectMethods(String.class, string);
+    verifyObjectMethods(String.class, string);
+    verifyComparableMethods(String.class, string);
   }
 
   @Test
@@ -382,6 +408,7 @@ public class RestrictedMethodAuthorizerTest {
     instances.forEach((mapEntry) -> {
       assertThat(methodAuthorizer.authorize(getKeyMethod, mapEntry)).isTrue();
       assertThat(methodAuthorizer.authorize(getValueMethod, mapEntry)).isTrue();
+      verifyObjectMethods(mapEntry.getClass(), mapEntry);
     });
   }
 
@@ -397,6 +424,7 @@ public class RestrictedMethodAuthorizerTest {
 
     mapMethods
         .forEach(method -> assertThat(methodAuthorizer.authorize(method, mapInstance)).isTrue());
+    verifyObjectMethods(mapInstance.getClass(), mapInstance);
   }
 
   @Test
@@ -413,10 +441,13 @@ public class RestrictedMethodAuthorizerTest {
     methods.add(QRegion.class.getMethod("getEntries"));
     methods.add(QRegion.class.getMethod("getValues"));
 
-    methods.forEach(
-        method -> assertThat(methodAuthorizer.authorize(method, qRegionInstance)).isTrue());
-    methods.forEach(
-        method -> assertThat(methodAuthorizer.authorize(method, dummyQRegionInstance)).isTrue());
+    methods.forEach(method -> {
+      assertThat(methodAuthorizer.authorize(method, qRegionInstance)).isTrue();
+      assertThat(methodAuthorizer.authorize(method, dummyQRegionInstance)).isTrue();
+    });
+
+    verifyObjectMethods(qRegionInstance.getClass(), qRegionInstance);
+    verifyObjectMethods(dummyQRegionInstance.getClass(), dummyQRegionInstance);
   }
 
   @Test
@@ -433,10 +464,15 @@ public class RestrictedMethodAuthorizerTest {
     methods.add(Map.class.getMethod("keySet"));
     methods.add(Map.class.getMethod("values"));
 
-    methods.forEach(method -> assertThat(methodAuthorizer.authorize(method, region)).isTrue());
-    methods.forEach(method -> assertThat(methodAuthorizer.authorize(method, localRegion)).isTrue());
-    methods.forEach(
-        method -> assertThat(methodAuthorizer.authorize(method, partitionedRegion)).isTrue());
+    methods.forEach(method -> {
+      assertThat(methodAuthorizer.authorize(method, region)).isTrue();
+      assertThat(methodAuthorizer.authorize(method, localRegion)).isTrue();
+      assertThat(methodAuthorizer.authorize(method, partitionedRegion)).isTrue();
+    });
+
+    verifyObjectMethods(region.getClass(), region);
+    verifyObjectMethods(localRegion.getClass(), localRegion);
+    verifyObjectMethods(partitionedRegion.getClass(), partitionedRegion);
   }
 
   @Test
@@ -456,9 +492,10 @@ public class RestrictedMethodAuthorizerTest {
     methods.add(Map.class.getMethod("keySet"));
     methods.add(Map.class.getMethod("values"));
 
-    methods.forEach(method -> assertThat(methodAuthorizer.authorize(method, region)).isFalse());
-    methods.forEach(
-        method -> assertThat(methodAuthorizer.authorize(method, partitionedRegion)).isFalse());
+    methods.forEach(method -> {
+      assertThat(methodAuthorizer.authorize(method, region)).isFalse();
+      assertThat(methodAuthorizer.authorize(method, partitionedRegion)).isFalse();
+    });
   }
 
   @Test
@@ -506,21 +543,22 @@ public class RestrictedMethodAuthorizerTest {
     regionMethods.add(Region.class.getMethod("keySet"));
     regionMethods.add(Region.class.getMethod("values"));
 
-    regionEntryMethods.forEach(
-        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, entryEvent)).isFalse());
-    regionEntryMethods.forEach(
-        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, gatewayQueueEvent))
-            .isFalse());
-    regionMethods
-        .forEach(method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, haContainerMap))
-            .isFalse());
-    regionMethods.forEach(method -> assertThat(
-        methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegionDataStore)).isFalse());
-    queueRegionMethods
-        .forEach(method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, haContainerMap))
-            .isFalse());
-    queueRegionMethods.forEach(method -> assertThat(
-        methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegionDataStore)).isFalse());
+    regionEntryMethods.forEach(method -> {
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, entryEvent)).isFalse();
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, gatewayQueueEvent)).isFalse();
+    });
+
+    regionMethods.forEach(method -> {
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, haContainerMap)).isFalse();
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegionDataStore))
+          .isFalse();
+    });
+
+    queueRegionMethods.forEach(method -> {
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, haContainerMap)).isFalse();
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegionDataStore))
+          .isFalse();
+    });
   }
 
   @Test
@@ -529,12 +567,17 @@ public class RestrictedMethodAuthorizerTest {
     regionEntryInstances.add(mock(NonTXEntry.class));
     regionEntryInstances.add(mock(Region.Entry.class));
     regionEntryInstances.add(mock(EntrySnapshot.class));
+
     Method getKeyMethod = Region.Entry.class.getMethod("getKey");
     Method getValueMethod = Region.Entry.class.getMethod("getValue");
+    Method toStringMethod = Object.class.getMethod("toString");
+    Method equalsMethod = Object.class.getMethod("equals", Object.class);
 
     regionEntryInstances.forEach((regionEntry) -> {
       assertThat(methodAuthorizer.isAllowedGeodeMethod(getKeyMethod, regionEntry)).isTrue();
       assertThat(methodAuthorizer.isAllowedGeodeMethod(getValueMethod, regionEntry)).isTrue();
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(equalsMethod, regionEntry)).isTrue();
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(toStringMethod, regionEntry)).isTrue();
     });
   }
 
@@ -551,14 +594,14 @@ public class RestrictedMethodAuthorizerTest {
     regionMethods.add(Region.class.getMethod("get", Object.class));
     regionMethods.add(Region.class.getMethod("keySet"));
     regionMethods.add(Region.class.getMethod("values"));
+    regionMethods.add(Object.class.getMethod("toString"));
+    regionMethods.add(Object.class.getMethod("equals", Object.class));
 
-    regionMethods.forEach(
-        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, region)).isTrue());
-    regionMethods.forEach(
-        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, localRegion)).isTrue());
-    regionMethods.forEach(
-        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegion))
-            .isTrue());
+    regionMethods.forEach(method -> {
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, region)).isTrue();
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, localRegion)).isTrue();
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegion)).isTrue();
+    });
   }
 
   @Test
@@ -580,27 +623,25 @@ public class RestrictedMethodAuthorizerTest {
     regionMethods.add(Region.class.getMethod("keySet"));
     regionMethods.add(Region.class.getMethod("values"));
 
-    regionMethods.forEach(
-        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, region)).isFalse());
-    regionMethods.forEach(
-        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, localRegion)).isFalse());
-    regionMethods.forEach(
-        method -> assertThat(methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegion))
-            .isFalse());
+    regionMethods.forEach(method -> {
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, region)).isFalse();
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, localRegion)).isFalse();
+      assertThat(methodAuthorizer.isAllowedGeodeMethod(method, partitionedRegion)).isFalse();
+    });
   }
 
   @Test
   public void isKnownDangerousMethodShouldReturnTrueForNonSafeMethods() throws Exception {
     TestBean testBean = new TestBean();
-    List<Method> dangerousMethodds = new ArrayList<>();
-    dangerousMethodds.add(Object.class.getMethod("getClass"));
-    dangerousMethodds.add(TestBean.class.getMethod("readResolve"));
-    dangerousMethodds.add(TestBean.class.getMethod("readObjectNoData"));
-    dangerousMethodds.add(TestBean.class.getMethod("readObject", ObjectInputStream.class));
-    dangerousMethodds.add(TestBean.class.getMethod("writeReplace"));
-    dangerousMethodds.add(TestBean.class.getMethod("writeObject", ObjectOutputStream.class));
+    List<Method> dangerousMethods = new ArrayList<>();
+    dangerousMethods.add(TestBean.class.getMethod("getClass"));
+    dangerousMethods.add(TestBean.class.getMethod("readResolve"));
+    dangerousMethods.add(TestBean.class.getMethod("readObjectNoData"));
+    dangerousMethods.add(TestBean.class.getMethod("readObject", ObjectInputStream.class));
+    dangerousMethods.add(TestBean.class.getMethod("writeReplace"));
+    dangerousMethods.add(TestBean.class.getMethod("writeObject", ObjectOutputStream.class));
 
-    dangerousMethodds.forEach(
+    dangerousMethods.forEach(
         method -> assertThat(methodAuthorizer.isKnownDangerousMethod(method, testBean)).isTrue());
   }
 

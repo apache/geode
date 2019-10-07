@@ -15,19 +15,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e -x -u
+set -u
 
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 . $SCRIPT_DIR/build-image-common.sh
 
+REPO_PATH=${SCRIPT_DIR}/../../../
+
+echo "Running Bookbinder inside Docker container to generate documentation..."
+echo "  Complete log can be found in ${SCRIPT_DIR}/build-docs-output.txt"
+
 docker run -i -t \
   --rm=true \
-  -w "/home/${USER_NAME}/incubator-geode/geode-book" \
-  -u "${USER_NAME}" \
-  -v "$PWD:/home/${USER_NAME}/incubator-geode" \
+  -w "${REPO_PATH}/geode-book" \
+  -v "$PWD:${REPO_PATH}" \
   ${IMAGE_NAME}-${USER_NAME} \
-  bundle exec bookbinder bind local
+  /bin/bash -c "bundle exec bookbinder bind local &> ${SCRIPT_DIR}/build-docs-output.txt"
 
-popd
+SUCCESS=$(grep "Bookbinder bound your book into" ${SCRIPT_DIR}/build-docs-output.txt)
+
+if [[ "${SUCCESS}" == "" ]];then
+  echo "Something went wrong while generating documentation, check log."
+else
+  echo ${SUCCESS}
+fi
+
+docker run -i -t \
+  --rm=true \
+  -w "${REPO_PATH}/geode-book" \
+  -v "$PWD:${REPO_PATH}" \
+  ${IMAGE_NAME}-${USER_NAME} \
+  /bin/bash -c "chown -R ${USER_ID}:${GROUP_ID} ${REPO_PATH}/geode-book/output ${REPO_PATH}/geode-book/final_app"
+
+popd 1> /dev/null
 

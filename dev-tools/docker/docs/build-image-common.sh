@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e -x -u
+set -u
 
 export DOCKER_ENV_VERSION="0.1"
 
@@ -32,13 +32,14 @@ trap cleanup EXIT
 
 IMAGE_NAME="geode/docsbuild:${DOCKER_ENV_VERSION}"
 
-pushd ${TMP_DIR}
+pushd ${TMP_DIR} 1> /dev/null
 cp $SCRIPT_DIR/Dockerfile .
 cp $SCRIPT_DIR/../../../geode-book/Gemfile* .
 
-docker build -t ${IMAGE_NAME} .
+echo "Building ${IMAGE_NAME} image..."
+docker build -q -t ${IMAGE_NAME} .
 
-popd
+popd 1> /dev/null
 
 if [ "$(uname -s)" == "Linux" ]; then
   USER_NAME=${SUDO_USER:=$USER}
@@ -50,7 +51,8 @@ else # boot2docker uid and gid
   GROUP_ID=50
 fi
 
-docker build -t "${IMAGE_NAME}-${USER_NAME}" - <<UserSpecificDocker
+echo "Building ${IMAGE_NAME}-${USER_NAME} image..."
+docker build -q -t "${IMAGE_NAME}-${USER_NAME}" - <<UserSpecificDocker
 FROM ${IMAGE_NAME} 
 RUN groupadd --non-unique -g ${GROUP_ID} ${USER_NAME}
 RUN useradd -g ${GROUP_ID} -u ${USER_ID} -k /root -m ${USER_NAME}
@@ -58,4 +60,4 @@ ENV HOME /home/${USER_NAME}
 UserSpecificDocker
 
 # Go to root
-pushd ${SCRIPT_DIR}/../../../
+pushd ${SCRIPT_DIR}/../../../ 1> /dev/null

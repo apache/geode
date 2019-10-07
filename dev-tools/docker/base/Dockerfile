@@ -15,10 +15,10 @@
 # limitations under the License.
 
 FROM openjdk:8
-MAINTAINER Geode Community <dev@geode.apache.org>
 
 LABEL Vendor="Apache Geode"
 LABEL version=unstable
+LABEL maintainer=dev@geode.apache.org
 
 ENV PATH $PATH:$JAVA_HOME/bin
 

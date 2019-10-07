@@ -15,10 +15,8 @@
 package org.apache.geode.test.dunit.internal;
 
 import java.io.IOException;
-import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.registry.Registry;
 
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -39,16 +37,18 @@ class DUnitHost extends Host {
     this.vmEventNotifier = vmEventNotifier;
   }
 
-  public void init(Registry registry, int numVMs)
-      throws AccessException, RemoteException, NotBoundException, InterruptedException {
+  public void init(int numVMs, boolean launchLocator)
+      throws RemoteException, NotBoundException, InterruptedException {
     for (int i = 0; i < numVMs; i++) {
       RemoteDUnitVMIF remote = processManager.getStub(i);
       ProcessHolder processHolder = processManager.getProcessHolder(i);
       addVM(i, remote, processHolder, processManager);
     }
 
-    addLocator(DUnitLauncher.LOCATOR_VM_NUM, processManager.getStub(DUnitLauncher.LOCATOR_VM_NUM),
-        processManager.getProcessHolder(DUnitLauncher.LOCATOR_VM_NUM), processManager);
+    if (launchLocator) {
+      addLocator(DUnitLauncher.LOCATOR_VM_NUM, processManager.getStub(DUnitLauncher.LOCATOR_VM_NUM),
+          processManager.getProcessHolder(DUnitLauncher.LOCATOR_VM_NUM), processManager);
+    }
 
     addHost(this);
   }

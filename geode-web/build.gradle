@@ -19,8 +19,9 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply plugin: 'war'
 
-apply from: "${project.projectDir}/../gradle/publish.gradle"
+apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 
+jar.enabled = false
 
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
@@ -32,9 +33,10 @@ dependencies {
   providedCompile(project(path: ':geode-core')) {
     //spring-web is excluded from the providedCompile configuration to ensure
     //that it is included as part of the war. spring-web must be loaded with the war's
-    //classloader to interoperate correctly with it's optional dependences that are included
+    //classloader to interoperate correctly with it's optional dependencies that are included
     //in this war, in particular commons-fileupload.
     exclude module: 'spring-web'
+    exclude module: 'spring-core'
   }
   providedCompile(platform(project(':boms:geode-all-bom')))
   providedCompile('javax.servlet:javax.servlet-api')
@@ -69,5 +71,6 @@ distributedTest.dependsOn(war)
 integrationTest.dependsOn(war)
 
 war {
+  enabled = true
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

@@ -66,7 +66,7 @@ evaluationDependsOnChildren()
 }
 
 apply plugin: 'distribution'
-apply from: "${rootDir}/${scriptDir}/publish.gradle"
+apply from: "${rootDir}/${scriptDir}/publish-common.gradle"
 
 
 // This subproject's 'publication' is not a jar and should not be constrained to match versions

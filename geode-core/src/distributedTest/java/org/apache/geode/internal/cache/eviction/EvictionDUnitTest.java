@@ -76,19 +76,20 @@ public class EvictionDUnitTest {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule(2);
 
-  private MemberVM server0, server1;
+  private MemberVM locator, server0, server1;
 
   @Before
   public void before() {
-    int locatorPort = ClusterStartupRule.getDUnitLocatorPort();
+    locator = cluster.startLocatorVM(0);
     Properties properties = new Properties();
     if (offHeap) {
       properties.setProperty(OFF_HEAP_MEMORY_SIZE, "200m");
     }
 
-    server0 = cluster.startServerVM(0, s -> s.withNoCacheServer()
+    int locatorPort = locator.getPort();
+    server0 = cluster.startServerVM(1, s -> s.withNoCacheServer()
         .withProperties(properties).withConnectionToLocator(locatorPort));
-    server1 = cluster.startServerVM(1, s -> s.withNoCacheServer()
+    server1 = cluster.startServerVM(2, s -> s.withNoCacheServer()
         .withProperties(properties).withConnectionToLocator(locatorPort));
 
     VMProvider.invokeInEveryMember("setup VM", () -> {
@@ -312,8 +313,9 @@ public class EvictionDUnitTest {
     server1.stop(false);
 
     // restart server1 and create the regions again and verify the data are preserved
-    server1 = cluster.startServerVM(1, s -> s.withNoCacheServer()
-        .withConnectionToLocator(ClusterStartupRule.getDUnitLocatorPort()));
+    int locatorPort = locator.getPort();
+    server1 = cluster.startServerVM(2, s -> s.withNoCacheServer()
+        .withConnectionToLocator(locatorPort));
     server1.invoke(setupVM);
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();

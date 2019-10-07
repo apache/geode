@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal;
 
+import static java.util.Arrays.stream;
+import static java.util.Comparator.naturalOrder;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_LOWER_BOUND;
 import static org.apache.geode.internal.AvailablePort.AVAILABLE_PORTS_UPPER_BOUND;
@@ -27,19 +29,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeFalse;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ErrorCollector;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.AvailablePort.Keeper;
@@ -50,290 +57,404 @@ public class AvailablePortHelperIntegrationTest {
 
   private Set<ServerSocket> serverSockets;
 
+  @Rule
+  public ErrorCollector errorCollector = new ErrorCollector();
+
   @Before
-  public void before() throws Exception {
-    this.serverSockets = new HashSet<>();
+  public void setUp() {
+    serverSockets = new HashSet<>();
   }
 
   @After
-  public void after() throws Exception {
-    for (ServerSocket serverSocket : this.serverSockets) {
+  public void tearDown() {
+    for (ServerSocket serverSocket : serverSockets) {
       try {
         if (serverSocket != null && !serverSocket.isClosed()) {
           serverSocket.close();
         }
-      } catch (IOException ignore) {
-        System.err.println("Unable to close " + serverSocket);
+      } catch (IOException e) {
+        errorCollector.addError(e);
       }
     }
   }
 
   @Test
-  @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRange_zero(final boolean useMembershipPortRange)
-      throws Exception {
-    int[] results = getRandomAvailableTCPPortRange(0, useMembershipPortRange);
-    assertThat(results).isEmpty();
+  public void getRandomAvailableTCPPortRange_returnsNoPorts_ifCountIsZero() {
+    int[] results = getRandomAvailableTCPPortRange(0);
+
+    assertThat(results)
+        .isEmpty();
+  }
+
+  @Test
+  public void getRandomAvailableTCPPortRange_returnsOnePort_ifCountIsOne() {
+    int[] results = getRandomAvailableTCPPortRange(1);
+
+    assertThat(results)
+        .hasSize(1);
+  }
+
+  @Test
+  public void getRandomAvailableTCPPortRange_returnsManyPorts_ifCountIsMany() {
+    int[] results = getRandomAvailableTCPPortRange(10);
+
+    assertThat(results)
+        .hasSize(10);
   }
 
   @Test
   @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRange_one_returnsOne(final boolean useMembershipPortRange)
-      throws Exception {
-    int[] results = getRandomAvailableTCPPortRange(1, useMembershipPortRange);
-    assertThat(results).hasSize(1);
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRange_two_returnsTwo(final boolean useMembershipPortRange)
-      throws Exception {
-    int[] results = getRandomAvailableTCPPortRange(2, useMembershipPortRange);
-    assertThat(results).hasSize(2);
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRange_many_returnsMany(final boolean useMembershipPortRange)
-      throws Exception {
-    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
-    assertThat(results).hasSize(10);
-    assertPortsAreUsable(results);
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRange_returnsUniquePorts(
-      final boolean useMembershipPortRange) throws Exception {
+  @TestCaseName("{method}(useMembershipPortRange={0})")
+  public void getRandomAvailableTCPPortRange_returnsUsablePorts(boolean useMembershipPortRange) {
     int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
 
-    Set<Integer> ports = new HashSet<>();
-    for (int port : results) {
-      ports.add(port);
-    }
-
-    assertThat(ports).hasSize(results.length);
+    stream(results).forEach(port -> assertThatPort(port)
+        .isUsable());
   }
 
   @Test
   @Parameters({"true", "false"})
+  @TestCaseName("{method}(useMembershipPortRange={0})")
+  public void getRandomAvailableTCPPortRange_returnsUniquePorts(boolean useMembershipPortRange) {
+    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+
+    assertThat(results)
+        .doesNotHaveDuplicates();
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  @TestCaseName("{method}(useMembershipPortRange={0})")
+  public void getRandomAvailableTCPPortRange_returnsNaturallyOrderedPorts(
+      boolean useMembershipPortRange) {
+    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+
+    assertThat(results)
+        .isSortedAccordingTo(naturalOrder());
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  @TestCaseName("{method}(useMembershipPortRange={0})")
   public void getRandomAvailableTCPPortRange_returnsConsecutivePorts(
-      final boolean useMembershipPortRange) throws Exception {
+      boolean useMembershipPortRange) {
     int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
 
-    List<Integer> ports = new ArrayList<>();
-    for (int port : results) {
-      if (useMembershipPortRange) {
-        assertThat(port).isGreaterThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[0])
-            .isLessThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
-      } else {
-        assertThat(port).isGreaterThanOrEqualTo(AVAILABLE_PORTS_LOWER_BOUND)
-            .isLessThanOrEqualTo(AVAILABLE_PORTS_UPPER_BOUND);
-      }
-      ports.add(port);
-    }
-
-    assertThat(ports).hasSize(10);
-
-    int previousPort = 0;
-    for (int port : ports) {
-      if (previousPort != 0) {
-        assertThat(port).isEqualTo(previousPort + 1);
-      }
-      previousPort = port;
-    }
+    assertThatSequence(results)
+        .isConsecutive();
   }
 
   @Test
   @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRangeKeepers_zero(final boolean useMembershipPortRange)
-      throws Exception {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(0, useMembershipPortRange);
-    assertThat(results).isEmpty();
+  @TestCaseName("{method}(useMembershipPortRange={0})")
+  public void getRandomAvailableTCPPortRange_returnsPortsInRange(boolean useMembershipPortRange) {
+    int lower =
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0] : AVAILABLE_PORTS_LOWER_BOUND;
+    int upper =
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
+
+    int[] results = getRandomAvailableTCPPortRange(10, useMembershipPortRange);
+
+    stream(results).forEach(port ->
+
+    assertThat(port)
+        .isGreaterThanOrEqualTo(lower)
+        .isLessThanOrEqualTo(upper));
+  }
+
+  @Test
+  public void getRandomAvailableTCPPortRangeKeepers_returnsNoKeepers_ifCountIsZero() {
+    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(0);
+
+    assertThat(results)
+        .isEmpty();
+  }
+
+  @Test
+  public void getRandomAvailableTCPPortRangeKeepers_returnsOneKeeper_ifCountIsOne() {
+    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(1);
+
+    assertThat(results)
+        .hasSize(1);
+  }
+
+  @Test
+  public void getRandomAvailableTCPPortRangeKeepers_returnsManyKeepers_ifCountIsMany() {
+    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10);
+
+    assertThat(results)
+        .hasSize(10);
   }
 
   @Test
   @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRangeKeepers_one_returnsOne(
-      final boolean useMembershipPortRange) throws Exception {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(1, useMembershipPortRange);
-    assertThat(results).hasSize(1);
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRangeKeepers_two_returnsTwo(
-      final boolean useMembershipPortRange) throws Exception {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(2, useMembershipPortRange);
-    assertThat(results).hasSize(2);
-  }
-
-  @Test
-  @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRangeKeepers_many_returnsMany(
-      final boolean useMembershipPortRange) throws Exception {
+  @TestCaseName("{method}(useMembershipPortRange={0})")
+  public void getRandomAvailableTCPPortRangeKeepers_returnsUsableKeepers(
+      boolean useMembershipPortRange) {
     List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
-    assertThat(results).hasSize(10);
-    assertKeepersAreUsable(results);
+
+    results.stream().forEach(keeper ->
+
+    assertThatKeeper(keeper)
+        .isUsable());
   }
 
   @Test
   @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRangeKeepers_returnsUsableKeeper(
-      final boolean useMembershipPortRange) throws Exception {
-    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(1, useMembershipPortRange);
-    assertKeepersAreUsable(results);
-  }
-
-  @Test
-  @Parameters({"true", "false"})
+  @TestCaseName("{method}(useMembershipPortRange={0})")
   public void getRandomAvailableTCPPortRangeKeepers_returnsUniqueKeepers(
-      final boolean useMembershipPortRange) throws Exception {
+      boolean useMembershipPortRange) {
     List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
 
-    Set<Integer> ports = new HashSet<>();
-    for (Keeper keeper : results) {
-      ports.add(keeper.getPort());
-    }
-
-    assertThat(ports).hasSize(results.size());
+    assertThat(keeperPorts(results))
+        .doesNotHaveDuplicates();
   }
 
   @Test
   @Parameters({"true", "false"})
+  @TestCaseName("{method}(useMembershipPortRange={0})")
+  public void getRandomAvailableTCPPortRangeKeepers_returnsNaturallyOrderedPorts(
+      boolean useMembershipPortRange) {
+    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
+
+    assertThat(keeperPorts(results))
+        .isSortedAccordingTo(naturalOrder());
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  @TestCaseName("{method}(useMembershipPortRange={0})")
   public void getRandomAvailableTCPPortRangeKeepers_returnsConsecutivePorts(
-      final boolean useMembershipPortRange) throws Exception {
+      boolean useMembershipPortRange) {
     List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
 
-    List<Integer> ports = new ArrayList<>();
-    for (Keeper keeper : results) {
-      assertThat(keeper).isNotNull();
-      int port = keeper.getPort();
-      if (useMembershipPortRange) {
-        assertThat(port).isGreaterThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[0])
-            .isLessThanOrEqualTo(DEFAULT_MEMBERSHIP_PORT_RANGE[1]);
-      } else {
-        assertThat(port).isGreaterThanOrEqualTo(AVAILABLE_PORTS_LOWER_BOUND)
-            .isLessThanOrEqualTo(AVAILABLE_PORTS_UPPER_BOUND);
-      }
-      ports.add(port);
-    }
-
-    assertThat(ports).hasSize(10);
-
-    int previousPort = 0;
-    for (int port : ports) {
-      if (previousPort != 0) {
-        assertThat(port).isEqualTo(previousPort + 1);
-      }
-      previousPort = port;
-    }
+    assertThatSequence(keeperPorts(results))
+        .isConsecutive();
   }
 
   @Test
-  public void getRandomAvailableUDPPort_succeeds() throws IOException {
+  @Parameters({"true", "false"})
+  @TestCaseName("{method}(useMembershipPortRange={0})")
+  public void getRandomAvailableTCPPortRangeKeepers_returnsPortsInRange(
+      boolean useMembershipPortRange) {
+    int lower =
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0] : AVAILABLE_PORTS_LOWER_BOUND;
+    int upper =
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
+
+    List<Keeper> results = getRandomAvailableTCPPortRangeKeepers(10, useMembershipPortRange);
+
+    keeperPorts(results).forEach(port ->
+
+    assertThat(port)
+        .isGreaterThanOrEqualTo(lower)
+        .isLessThanOrEqualTo(upper));
+  }
+
+  @Test
+  public void getRandomAvailableUDPPort_returnsNonZeroUdpPort() {
     int udpPort = getRandomAvailableUDPPort();
-    assertThat(udpPort).isNotZero();
-    assertThat(AvailablePort.isPortAvailable(udpPort, MULTICAST)).isTrue();
+
+    assertThat(udpPort)
+        .isNotZero();
+  }
+
+  @Test
+  public void getRandomAvailableUDPPort_returnsAvailableUdpPort() {
+    int udpPort = getRandomAvailableUDPPort();
+
+    assertThat(AvailablePort.isPortAvailable(udpPort, MULTICAST))
+        .isTrue();
   }
 
   @Test
   @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPortRange_returnsUniqueRanges(
-      final boolean useMembershipPortRange) {
-    Set<Integer> ports = new HashSet<>();
+  @TestCaseName("{method}(useMembershipPortRange={0})")
+  public void getRandomAvailableTCPPortRange_returnsUniqueRanges(boolean useMembershipPortRange) {
+    Collection<Integer> previousPorts = new HashSet<>();
+    for (int i = 0; i < 3; ++i) {
 
-    for (int i = 0; i < 1000; ++i) {
-      int[] testPorts = getRandomAvailableTCPPortRange(5, useMembershipPortRange);
-      for (int testPort : testPorts) {
-        assertThat(ports).doesNotContain(testPort);
-        ports.add(testPort);
-      }
+      int[] results = getRandomAvailableTCPPortRange(5, useMembershipPortRange);
+
+      Collection<Integer> ports = toSet(results);
+
+      assertThat(previousPorts)
+          .doesNotContainAnyElementsOf(ports);
+
+      previousPorts.addAll(ports);
     }
   }
 
   @Test
   @Parameters({"true", "false"})
-  public void getRandomAvailableTCPPort_returnsUniqueValues(final boolean useMembershipPortRange) {
-    Set<Integer> ports = new HashSet<>();
+  @TestCaseName("{method}(useMembershipPortRange={0})")
+  public void getRandomAvailableTCPPort_returnsUniqueValues(boolean useMembershipPortRange) {
+    Collection<Integer> previousPorts = new HashSet<>();
+    for (int i = 0; i < 3; ++i) {
 
-    for (int i = 0; i < 1000; ++i) {
-      int testPort = getRandomAvailableTCPPorts(1, useMembershipPortRange)[0];
-      assertThat(ports).doesNotContain(testPort);
-      ports.add(testPort);
+      int port = getRandomAvailableTCPPorts(1, useMembershipPortRange)[0];
+
+      assertThat(previousPorts)
+          .doesNotContain(port);
+
+      previousPorts.add(port);
     }
   }
 
   @Test
   @Parameters({"true", "false"})
-  public void initializeUniquePortRange_willReturnSamePortsForSameRange(
-      final boolean useMembershipPortRange) {
+  @TestCaseName("{method}(useMembershipPortRange={0})")
+  public void initializeUniquePortRange_returnSamePortsForSameRange(
+      boolean useMembershipPortRange) {
     assumeFalse(
         "Windows has ports scattered throughout the range that makes this test difficult to pass consistently",
         SystemUtils.isWindows());
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 3; ++i) {
+
       initializeUniquePortRange(i);
-      int[] testPorts = getRandomAvailableTCPPorts(3, useMembershipPortRange);
+      int[] previousPorts = getRandomAvailableTCPPorts(3, useMembershipPortRange);
+
       initializeUniquePortRange(i);
-      assertThat(getRandomAvailableTCPPorts(3, useMembershipPortRange)).isEqualTo(testPorts);
+      int[] ports = getRandomAvailableTCPPorts(3, useMembershipPortRange);
+
+      assertThat(ports)
+          .isEqualTo(previousPorts);
     }
   }
 
   @Test
   @Parameters({"true", "false"})
+  @TestCaseName("{method}(useMembershipPortRange={0})")
   public void initializeUniquePortRange_willReturnUniquePortsForUniqueRanges(
-      final boolean useMembershipPortRange) {
+      boolean useMembershipPortRange) {
     assumeFalse(
         "Windows has ports scattered throughout the range that makes this test difficult to pass consistently",
         SystemUtils.isWindows());
 
-    Set<Integer> ports = new HashSet<>();
+    Collection<Integer> previousPorts = new HashSet<>();
+    for (int i = 0; i < 3; ++i) {
 
-    for (int i = 0; i < 100; ++i) {
       initializeUniquePortRange(i);
-      int[] testPorts = getRandomAvailableTCPPorts(5, useMembershipPortRange);
-      for (int testPort : testPorts) {
-        assertThat(ports).doesNotContain(testPort);
-        ports.add(testPort);
+      int[] results = getRandomAvailableTCPPorts(5, useMembershipPortRange);
+
+      Collection<Integer> ports = toSet(results);
+
+      assertThat(previousPorts)
+          .doesNotContainAnyElementsOf(ports);
+
+      previousPorts.addAll(ports);
+    }
+  }
+
+  private ServerSocket createServerSocket() {
+    try {
+      ServerSocket serverSocket = new ServerSocket();
+      serverSockets.add(serverSocket);
+      return serverSocket;
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private List<Integer> toList(int[] integers) {
+    return stream(integers)
+        .boxed()
+        .collect(Collectors.toList());
+  }
+
+  private Set<Integer> toSet(int[] integers) {
+    return stream(integers)
+        .boxed()
+        .collect(Collectors.toSet());
+  }
+
+  private List<Integer> keeperPorts(List<Keeper> keepers) {
+    return keepers.stream()
+        .map(Keeper::getPort)
+        .collect(Collectors.toList());
+  }
+
+  private PortAssertion assertThatPort(int port) {
+    return new PortAssertion(port);
+  }
+
+  private KeeperAssertion assertThatKeeper(Keeper keeper) {
+    return new KeeperAssertion(keeper);
+  }
+
+  private SequenceAssertion assertThatSequence(int[] integers) {
+    return new SequenceAssertion(toList(integers));
+  }
+
+  private SequenceAssertion assertThatSequence(List<Integer> integers) {
+    return new SequenceAssertion(integers);
+  }
+
+  private class PortAssertion {
+
+    private final int port;
+
+    PortAssertion(int port) {
+      this.port = port;
+    }
+
+    PortAssertion isUsable() {
+      try {
+        ServerSocket serverSocket = createServerSocket();
+        serverSocket.setReuseAddress(true);
+
+        serverSocket.bind(new InetSocketAddress(port));
+
+        assertThat(serverSocket.isBound()).isTrue();
+        assertThat(serverSocket.isClosed()).isFalse();
+        serverSocket.close();
+        assertThat(serverSocket.isClosed()).isTrue();
+      } catch (IOException e) {
+        throw new UncheckedIOException(e);
       }
+      return this;
     }
   }
 
-  private void assertPortsAreUsable(int[] ports) throws IOException {
-    for (int port : ports) {
-      assertPortIsUsable(port);
+  private class KeeperAssertion {
+
+    private final Keeper keeper;
+
+    KeeperAssertion(Keeper keeper) {
+      this.keeper = keeper;
+    }
+
+    KeeperAssertion isUsable() {
+      int port = keeper.getPort();
+      keeper.release();
+      assertThatPort(port).isUsable();
+      return this;
     }
   }
 
-  private void assertPortIsUsable(int port) throws IOException {
-    ServerSocket serverSocket = createServerSocket();
-    serverSocket.setReuseAddress(true);
+  private class SequenceAssertion {
 
-    serverSocket.bind(new InetSocketAddress(port));
+    private final List<Integer> actual;
 
-    assertThat(serverSocket.isBound()).isTrue();
-    assertThat(serverSocket.isClosed()).isFalse();
-    serverSocket.close();
-    assertThat(serverSocket.isClosed()).isTrue();
-  }
+    SequenceAssertion(List<Integer> actual) {
+      this.actual = actual;
+      assertThat(actual)
+          .isNotEmpty();
+    }
 
-  private void assertKeepersAreUsable(Collection<Keeper> keepers) throws IOException {
-    for (Keeper keeper : keepers) {
-      assertKeeperIsUsable(keeper);
+    SequenceAssertion isConsecutive() {
+      int start = actual.get(0);
+      int end = actual.get(actual.size() - 1);
+
+      List<Integer> expected = IntStream.rangeClosed(start, end)
+          .boxed()
+          .collect(Collectors.toList());
+
+      assertThat(actual)
+          .isEqualTo(expected);
+
+      return this;
     }
   }
-
-  private void assertKeeperIsUsable(Keeper keeper) throws IOException {
-    int port = keeper.getPort();
-    keeper.release();
-    assertPortIsUsable(port);
-  }
-
-  private ServerSocket createServerSocket() throws IOException {
-    ServerSocket serverSocket = new ServerSocket();
-    this.serverSockets.add(serverSocket);
-    return serverSocket;
-  }
-
 }
