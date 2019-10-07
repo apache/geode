@@ -100,15 +100,14 @@ public class DefaultQueryService implements InternalQueryService {
       .booleanValue();
 
   /**
-   * Instead of the below property, please use an existing MethodInvocationAuthorizer
-   * implementation such as RestrictedMethodAuthorizer, UnrestrictedMethodAuthorizer,
-   * RegExMethodAuthorizer or JavaBeanAccessorMethodAuthorizer, or provide your own
-   * implementation.
+   * Instead of the below property, please use the UnrestrictedMethodAuthorizer
+   * implementation of MethodInvocationAuthorizer, which provides the same functionality.
    */
   @Deprecated
   public static final boolean ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.getBoolean(
       GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
 
+  private boolean deprecatedWarningHasBeenShown = false;
 
   /** Test purpose only */
   @MutableForTesting
@@ -129,12 +128,12 @@ public class DefaultQueryService implements InternalQueryService {
       throw new IllegalArgumentException(
           "cache must not be null");
     this.cache = cache;
-    if (ALLOW_UNTRUSTED_METHOD_INVOCATION) {
+    if (ALLOW_UNTRUSTED_METHOD_INVOCATION && !deprecatedWarningHasBeenShown) {
       logger
           .warn("The property " + GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation " +
-              "is deprecated. Please use an existing MethodInvocationAuthorizer implementation " +
-              "(RestrictedMethodAuthorizer, UnrestrictedMethodAuthorizer, RegExMethodAuthorizer " +
-              "or JavaBeanAccessorMethodAuthorizer) or provide your own implementation.");
+              "is deprecated. To provide the same functionality, please use the " +
+              "UnrestrictedMethodAuthorizer implementation of MethodInvocationAuthorizer");
+      deprecatedWarningHasBeenShown = true;
     }
     if (!cache.getSecurityService().isIntegratedSecurity() || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
       // A no-op authorizer, allow method invocation
