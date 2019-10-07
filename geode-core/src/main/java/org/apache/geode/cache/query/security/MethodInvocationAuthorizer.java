@@ -16,8 +16,8 @@ package org.apache.geode.cache.query.security;
 
 import java.lang.reflect.Method;
 
-import org.apache.geode.cache.query.internal.AttributeDescriptor;
-import org.apache.geode.cache.query.internal.MethodDispatch;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
 
 /**
  * The root interface that should be implemented by method invocation authorizer instances.
@@ -25,12 +25,19 @@ import org.apache.geode.cache.query.internal.MethodDispatch;
  * allowed to be executed on a specific {@link java.lang.Object} instance.
  * <p/>
  *
- * Implementations of this interface must be thread-safe: multiple threads might be authorizing
- * several method invocations using the same instance at the same time.
- * <p/>
+ * There are mainly four security risks when allowing users to execute arbitrary methods in OQL,
+ * which should be addressed by implementations of this interface:
+ * <p>
+ * <ul>
+ * <li>{@code Java Reflection}: do anything through {@link Object#getClass()} or similar.
+ * <li>{@code Cache Modification}: execute {@link Cache} operations (close, get regions, etc.).
+ * <li>{@code Region Modification}: execute {@link Region} operations (destroy, invalidate, etc.).
+ * <li>{@code Region Entry Modification}: execute in-place modifications on the region entries.
+ * </ul>
+ * </p>
  *
- * @see org.apache.geode.cache.query.internal.MethodDispatch
- * @see org.apache.geode.cache.query.internal.AttributeDescriptor
+ * Implementations of this interface should be thread-safe: multiple threads might be authorizing
+ * several method invocations using the same instance at the same time.
  */
 public interface MethodInvocationAuthorizer {
 
@@ -39,12 +46,11 @@ public interface MethodInvocationAuthorizer {
    * executed on the {@code target} object instance.
    * <p/>
    *
-   * <b>Implementation Note</b>: both the {@link MethodDispatch} and {@link AttributeDescriptor}
-   * classes will remember whether the method invocation is already authorized, so that
-   * {@code authorize} will be called once in the lifetime of a Geode member for every new method
-   * seen while traversing the objects.
-   * Nevertheless, the implementation should be lighting fast as it will be called by the OQL engine
-   * in runtime during the query execution.
+   * <b>Implementation Note</b>: the query engine will remember whether the method invocation has
+   * been already authorized or not for the current query context, so this method will be called
+   * once in the lifetime of a query for every new method seen while traversing the objects.
+   * Nevertheless, the implementation should be lighting fast as it will be called by the
+   * OQL engine in runtime during the query execution.
    *
    * @param method the {@link Method} that should be authorized.
    * @param target the {@link Object} on which the {@link Method} will be executed.

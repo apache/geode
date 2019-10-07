@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ruby:2.3.0
-MAINTAINER Geode Community <dev@geode.apache.org>
+FROM ruby:2.3.1
 
 LABEL Vendor="Apache Geode"
 LABEL version=unstable
+LABEL maintainer=dev@geode.apache.org
 
 ADD Gemfile Gemfile
 ADD Gemfile.lock Gemfile.lock

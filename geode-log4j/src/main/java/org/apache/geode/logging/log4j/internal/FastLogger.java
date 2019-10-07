@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging.log4j;
+package org.apache.geode.logging.log4j.internal;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
@@ -27,7 +27,6 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
  * Overrides is-enabled checks for log levels below INFO to avoid performance penalties when the log
  * level is INFO or above. If delegating is true then it will always delegate to
  * ExtendedLoggerWrapper for is-enabled checks.
- *
  */
 public class FastLogger extends ExtendedLoggerWrapper {
   private static final long serialVersionUID = 7084130827962463327L;
@@ -74,6 +73,6 @@ public class FastLogger extends ExtendedLoggerWrapper {
   }
 
   public ExtendedLogger getExtendedLogger() {
-    return super.logger;
+    return logger;
   }
 }

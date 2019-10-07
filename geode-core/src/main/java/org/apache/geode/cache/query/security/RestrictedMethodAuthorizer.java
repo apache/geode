@@ -37,9 +37,13 @@ import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 
 /**
- * The default, immutable and thread-safe method invocation authorizer used by Geode to determine
- * whether a {@link java.lang.reflect.Method} is allowed to be executed on a specific
+ * The default, immutable and thread-safe {@link MethodInvocationAuthorizer} used by Geode to
+ * determine whether a {@link java.lang.reflect.Method} is allowed to be executed on a specific
  * {@link java.lang.Object} instance.
+ * <p/>
+ *
+ * This authorizer addresses the four known security risks: {@code Java Reflection},
+ * {@code Cache Modification}, {@code Region Modification} and {@code Region Entry Modification}.
  * <p/>
  *
  * Custom applications can delegate to this class and use it as the starting point for providing
@@ -82,6 +86,12 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
 
   private static Map<String, Set<Class>> createGeodeAcceptanceList() {
     Map<String, Set<Class>> acceptanceListMap = new HashMap<>();
+
+    Set<Class> objectCallers = new HashSet<>();
+    objectCallers.add(Object.class);
+    objectCallers = Collections.unmodifiableSet(objectCallers);
+    acceptanceListMap.put("equals", objectCallers);
+    acceptanceListMap.put("toString", objectCallers);
 
     Set<Class> entryCallers = new HashSet<>();
     entryCallers.add(Region.Entry.class);
@@ -134,7 +144,6 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
     dateCallers = Collections.unmodifiableSet(dateCallers);
     acceptanceListMap.put("after", dateCallers);
     acceptanceListMap.put("before", dateCallers);
-    acceptanceListMap.put("getNanos", dateCallers);
     acceptanceListMap.put("getTime", dateCallers);
 
     Set<Class> timestampCallers = new HashSet<>();

@@ -52,10 +52,10 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.FastLogger;
 import org.apache.geode.logging.internal.log4j.LogWriterLogger;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogWriterLevel;
+import org.apache.geode.logging.log4j.internal.FastLogger;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.categories.LoggingTest;
 

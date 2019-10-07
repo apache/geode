@@ -25,7 +25,6 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   compile(project(':extensions:geode-modules'))
   compile(project(':geode-core'))
-  implementation(project(':geode-logging'))
 
   compile('javax.servlet:javax.servlet-api')
   compile('mx4j:mx4j')

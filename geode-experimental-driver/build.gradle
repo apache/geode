@@ -44,7 +44,6 @@ dependencies {
     exclude module: 'junit-dep'
   }
 
-  integrationTestImplementation(project(':geode-logging'))
   integrationTestImplementation(project(':geode-serialization'))
   integrationTestCompile('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'

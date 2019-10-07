@@ -1,7 +1,7 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to You under the Apache license, Version 2.0 (the
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
@@ -9,10 +9,10 @@
  *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the license for the specific language governing permissions and limitations under
- * the license.
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-package org.apache.geode.internal.logging.log4j.message;
+package org.apache.geode.logging.log4j.internal.impl.message;
 
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -24,7 +24,8 @@ import java.util.Set;
 
 import org.apache.logging.log4j.message.Message;
 
-import org.apache.geode.internal.logging.EntriesCollection;
+import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.EntriesCollection;
 
 /**
  * Handles messages that consist of a format string containing '{}' to represent each replaceable
@@ -467,7 +468,7 @@ public class GemFireParameterizedMessage implements Message {
         }
         // str.append(Arrays.deepToString((Object[]) o));
       }
-    } else if (o instanceof Map && !(o instanceof EntriesCollection)) {
+    } else if (o instanceof Map && !(o instanceof Region)) {
       // GEODE: do NOT use Map handling if instanceof Geode Region
       // special handling of container Map
       final String id = identityToString(o);
@@ -494,7 +495,7 @@ public class GemFireParameterizedMessage implements Message {
         str.append('}');
       }
     } else if (o instanceof Collection && !(o instanceof EntriesCollection)) {
-      // GEODE: do NOT use Collection handling if instanceof Geode EntriesSet
+      // GEODE: do NOT use Collection handling if instanceof Geode EntriesCollection
       // special handling of container Collection
       final String id = identityToString(o);
       if (dejaVu.contains(id)) {

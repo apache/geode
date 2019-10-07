@@ -15,20 +15,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -e -x -u
+set -e -u
 
 SCRIPT_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 . $SCRIPT_DIR/build-image-common.sh
 
+REPO_PATH=${SCRIPT_DIR}/../../../
+
+echo "Starting up web server..."
 docker run -i -t \
   --rm=true \
-  -w "/home/${USER_NAME}/incubator-geode/geode-book/final_app/public" \
-  -u "${USER_NAME}" \
-  -v "$PWD:/home/${USER_NAME}/incubator-geode" \
-  -p 127.0.0.1:8080:8080 \
+  -w "${REPO_PATH}/geode-book/final_app/" \
+  -v "$PWD:${REPO_PATH}" \
+  -p 127.0.0.1:9292:9292 \
   ${IMAGE_NAME}-${USER_NAME} \
-  python -m SimpleHTTPServer 8080
+  /bin/bash -c "bundle install; rackup --host 0.0.0.0"
 
-popd
+popd 1> /dev/null
 
