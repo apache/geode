@@ -127,7 +127,7 @@ tests:
   PARALLEL_DUNIT: 'true'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
-  RAM: '210'
+  RAM: '280'
   name: StressNew
 - ARTIFACT_SLUG: windows-acceptancetestfiles
   CPUS: '16'
