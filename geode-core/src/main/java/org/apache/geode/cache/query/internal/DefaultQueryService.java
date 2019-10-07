@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.management.ServiceNotFoundException;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
@@ -69,7 +71,6 @@ import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
-import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -101,27 +102,6 @@ public class DefaultQueryService implements InternalQueryService {
           GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"))
       .booleanValue();
 
-  /**
-   * Instead of the below property, please use the UnrestrictedMethodAuthorizer
-   * implementation of MethodInvocationAuthorizer, which provides the same functionality.
-   */
-  @Deprecated
-  public static final boolean ALLOW_UNTRUSTED_METHOD_INVOCATION;
-
-  public static final String DEPRECATION_WARNING = "The property " + GEMFIRE_PREFIX +
-      "QueryService.allowUntrustedMethodInvocation is deprecated. " +
-      "Please use the UnrestrictedMethodAuthorizer implementation of MethodInvocationAuthorizer " +
-      "instead";
-
-  static {
-    String deprecatedValue =
-        System.getProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
-    if (deprecatedValue != null) {
-      logger.warn(DEPRECATION_WARNING);
-    }
-    ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.valueOf(deprecatedValue);
-  }
-
   /** Test purpose only */
   @MutableForTesting
   public static boolean TEST_QUERY_HETEROGENEOUS_OBJECTS = false;
@@ -133,20 +113,16 @@ public class DefaultQueryService implements InternalQueryService {
   private InternalPool pool;
 
   private Map<Region, HashSet<IndexCreationData>> indexDefinitions =
-      Collections.synchronizedMap(new HashMap<Region, HashSet<IndexCreationData>>());
+      Collections.synchronizedMap(new HashMap<>());
 
 
   public DefaultQueryService(InternalCache cache) {
     if (cache == null)
-      throw new IllegalArgumentException(
-          "cache must not be null");
+      throw new IllegalArgumentException("cache must not be null");
     this.cache = cache;
-    if (!cache.getSecurityService().isIntegratedSecurity() || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
-      // A no-op authorizer, allow method invocation
-      this.methodInvocationAuthorizer = NO_OP_AUTHORIZER;
-    } else {
-      this.methodInvocationAuthorizer = new RestrictedMethodAuthorizer(cache);
-    }
+      QueryConfigurationService queryConfigurationService =
+              cache.getService(QueryConfigurationService.class);
+      this.methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
   }
 
   /**

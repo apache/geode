@@ -29,6 +29,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.management.ServiceNotFoundException;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -1384,7 +1386,12 @@ public class PoolImpl implements InternalPool {
    */
   @Override
   public QueryService getQueryService() {
-    DefaultQueryService queryService = new DefaultQueryService(cache);
+    DefaultQueryService queryService = null;
+    try {
+      queryService = new DefaultQueryService(cache);
+    } catch (ServiceNotFoundException e) {
+      throw new IllegalStateException(e.getMessage(), e.getCause());
+    }
     queryService.setPool(this);
     return queryService;
   }

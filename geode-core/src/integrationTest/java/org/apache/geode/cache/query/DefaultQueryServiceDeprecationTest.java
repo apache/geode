@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.query.dunit;
+package org.apache.geode.cache.query;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
@@ -20,20 +20,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.cache.query.internal.DefaultQueryService;
+import org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
 public class DefaultQueryServiceDeprecationTest implements Serializable {
-
-  private MemberVM locator;
 
   @ClassRule
   public static TemporaryFolder folderRule = new TemporaryFolder();
@@ -41,26 +38,21 @@ public class DefaultQueryServiceDeprecationTest implements Serializable {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  @Before
-  public void startUp() {
-    locator = cluster.startLocatorVM(0);
-  }
-
   @Test
   public void warningMessageIsOnlyLoggedOnceWhenDeprecatedPropertyUsed() throws IOException {
     File logFile = folderRule.newFile("customLog1.log");
 
     MemberVM server = cluster.startServerVM(1,
-        x -> x.withConnectionToLocator(locator.getPort()).withSystemProperty(
-            GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation", "true")
+        x -> x.withSystemProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation",
+            "true")
             .withProperty("log-file", logFile.getAbsolutePath()));
 
     server.invoke(() -> {
       ClusterStartupRule.getCache().getQueryService();
       ClusterStartupRule.getCache().getQueryService();
-      LogFileAssert.assertThat(logFile).containsOnlyOnce(DefaultQueryService.DEPRECATION_WARNING);
+      LogFileAssert.assertThat(logFile)
+          .containsOnlyOnce(QueryConfigurationServiceImpl.DEPRECATION_WARNING);
     });
-    server.getVM().bounce();
   }
 
   @Test
@@ -68,12 +60,11 @@ public class DefaultQueryServiceDeprecationTest implements Serializable {
     File logFile = folderRule.newFile("customLog2.log");
 
     MemberVM server =
-        cluster.startServerVM(1, x -> x.withConnectionToLocator(locator.getPort())
-            .withProperty("log-file", logFile.getAbsolutePath()));
+        cluster.startServerVM(1, x -> x.withProperty("log-file", logFile.getAbsolutePath()));
     server.invoke(() -> {
       ClusterStartupRule.getCache().getQueryService();
-      LogFileAssert.assertThat(logFile).doesNotContain(DefaultQueryService.DEPRECATION_WARNING);
+      LogFileAssert.assertThat(logFile)
+          .doesNotContain(QueryConfigurationServiceImpl.DEPRECATION_WARNING);
     });
-    server.getVM().bounce();
   }
 }

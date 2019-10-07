@@ -75,6 +75,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
+import javax.management.ServiceNotFoundException;
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
@@ -4174,7 +4175,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public InternalQueryService getQueryService() {
     if (!isClient()) {
-      return new DefaultQueryService(this);
+      return (InternalQueryService) getLocalQueryService();
     }
     Pool defaultPool = getDefaultPool();
     if (defaultPool == null) {
@@ -4192,7 +4193,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public QueryService getLocalQueryService() {
-    return new DefaultQueryService(this);
+    try {
+      return new DefaultQueryService(this);
+    } catch (ServiceNotFoundException e) {
+      throw new IllegalStateException(e.getMessage(), e.getCause());
+    }
   }
 
   /**
