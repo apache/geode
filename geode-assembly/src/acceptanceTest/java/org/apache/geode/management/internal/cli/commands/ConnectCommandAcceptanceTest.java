@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.assumeFalse;
 
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
@@ -33,6 +32,7 @@ import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 
 @Category(GfshTest.class)
 public class ConnectCommandAcceptanceTest {
+
   @Rule
   public GfshRule gfsh130 = new GfshRule("1.3.0");
 
@@ -41,8 +41,10 @@ public class ConnectCommandAcceptanceTest {
 
   @Test
   public void useCurrentGfshToConnectToOlderLocator() {
-    // this test can only be run with pre-9 jdk since it needs to run older version of gfsh
-    assumeTrue(!SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
+    assumeFalse(
+        "this test can only be run with pre-9 jdk since it needs to run older version of gfsh",
+        SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
+
     GfshScript
         .of("start locator")
         .execute(gfsh130);
@@ -60,7 +62,7 @@ public class ConnectCommandAcceptanceTest {
   @Test
   public void invalidHostname() {
     GfshExecution connect = GfshScript
-        .of("connect --locator=l192.168.99.1[52326]")
+        .of("connect --locator=\"invalid host name[52326]\"")
         .expectFailure()
         .execute(gfshDefault);
 
