@@ -56,7 +56,14 @@ public class PdxManagementTest {
   }
 
   @Test
-  public void success() throws Exception {
+  public void successThenConflict() throws Exception {
+    createPdx();
+    createPdx();
+  }
+
+  private static boolean firstTime = true;
+
+  public void createPdx() throws Exception {
     Pdx pdx = new Pdx();
     pdx.setReadSerialized(true);
     pdx.setIgnoreUnreadFields(true);
@@ -66,13 +73,16 @@ public class PdxManagementTest {
     context.perform(post("/experimental/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
         .content(mapper.writeValueAsString(pdx)))
-        .andExpect(status().isCreated())
+        .andExpect(firstTime ? status().isCreated() : status().isConflict())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(
             jsonPath("$.statusMessage",
-                containsString("Successfully updated configuration for cluster.")))
-        .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(
-            jsonPath("$._links.self", endsWith("/management/experimental/configurations/pdx")));
+                containsString(firstTime ? "Successfully updated configuration for cluster."
+                    : "Pdx 'PDX' already exists in group cluster.")))
+        .andExpect(jsonPath("$.statusCode", is(firstTime ? "OK" : "ENTITY_EXISTS")))
+        .andExpect(firstTime
+            ? jsonPath("$._links.self", endsWith("/management/experimental/configurations/pdx"))
+            : jsonPath("$._links.self").doesNotExist());
+    firstTime = false;
   }
 }
