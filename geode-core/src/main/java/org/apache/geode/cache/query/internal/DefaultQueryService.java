@@ -104,10 +104,19 @@ public class DefaultQueryService implements InternalQueryService {
    * implementation of MethodInvocationAuthorizer, which provides the same functionality.
    */
   @Deprecated
-  public static final boolean ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.getBoolean(
-      GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
+  public static final boolean ALLOW_UNTRUSTED_METHOD_INVOCATION;
 
-  private boolean deprecatedWarningHasBeenShown = false;
+  static {
+    String deprecatedValue =
+        System.getProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
+    if (deprecatedValue != null) {
+      logger.warn("The property " + GEMFIRE_PREFIX +
+          "QueryService.allowUntrustedMethodInvocation is deprecated. To provide the same " +
+          "functionality, please use the UnrestrictedMethodAuthorizer implementation of" +
+          "MethodInvocationAuthorizer");
+    }
+    ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.valueOf(deprecatedValue);
+  }
 
   /** Test purpose only */
   @MutableForTesting
@@ -128,13 +137,6 @@ public class DefaultQueryService implements InternalQueryService {
       throw new IllegalArgumentException(
           "cache must not be null");
     this.cache = cache;
-    if (ALLOW_UNTRUSTED_METHOD_INVOCATION && !deprecatedWarningHasBeenShown) {
-      logger
-          .warn("The property " + GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation " +
-              "is deprecated. To provide the same functionality, please use the " +
-              "UnrestrictedMethodAuthorizer implementation of MethodInvocationAuthorizer");
-      deprecatedWarningHasBeenShown = true;
-    }
     if (!cache.getSecurityService().isIntegratedSecurity() || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
       // A no-op authorizer, allow method invocation
       this.methodInvocationAuthorizer = ((Method m, Object t) -> true);
