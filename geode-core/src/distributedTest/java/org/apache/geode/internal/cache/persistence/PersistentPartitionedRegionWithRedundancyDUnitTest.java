@@ -141,7 +141,6 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
   @Test
   public void testGetDataDelayDueToRecoveryAfterServerShutdown() throws Exception {
     int numEntries = 10000;
-    System.setProperty("gemfire.disk.recoverValuesSync", "true");
 
     vm0.invoke(() -> createPartitionedRegion(1, -1, 113, true));
     vm1.invoke(() -> createPartitionedRegion(1, -1, 113, true));
