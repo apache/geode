@@ -14,9 +14,9 @@ geode-rebalancer-0.0.0.jar
 geode-redis-0.0.0.jar
 geode-serialization-0.0.0.jar
 geode-wan-0.0.0.jar
-jackson-databind-2.9.8.jar
-jackson-annotations-2.9.8.jar
-jackson-core-2.9.8.jar
+jackson-databind-2.10.0.jar
+jackson-annotations-2.10.0.jar
+jackson-core-2.10.0.jar
 geode-unsafe-0.0.0.jar
 HikariCP-3.2.0.jar
 commons-lang3-3.8.1.jar
