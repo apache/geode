@@ -41,6 +41,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.runtime.RuntimeInfo;
@@ -176,9 +177,10 @@ public class RegionManagementController extends AbstractManagementController {
     return addBiDirectionalUpLink(clusterManagementService.get(filter));
   }
 
-  private static <R extends ClusterManagementResult> R addBiDirectionalDownLinks(R ret,
+  private static <R extends ClusterManagementGetResult> R addBiDirectionalDownLinks(R ret,
       String... subs) {
-    addBiDirectionalDownLinks(ret.getLinks(), subs);
+    ConfigurationResult<?, ?> result = ret.getResult();
+    addBiDirectionalDownLinks(result.getLinks(), subs);
     return ret;
   }
 
@@ -188,8 +190,9 @@ public class RegionManagementController extends AbstractManagementController {
     }
   }
 
-  private static <R extends ClusterManagementResult> R addBiDirectionalUpLink(R ret) {
-    addBiDirectionalUpLink(ret.getLinks());
+  private static <R extends ClusterManagementGetResult> R addBiDirectionalUpLink(R ret) {
+    ConfigurationResult<?, ?> result = ret.getResult();
+    addBiDirectionalUpLink(result.getLinks());
     return ret;
   }
 
