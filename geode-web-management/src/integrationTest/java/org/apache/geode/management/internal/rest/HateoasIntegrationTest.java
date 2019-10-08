@@ -81,10 +81,48 @@ public class HateoasIntegrationTest {
         .andExpect(content().string(containsString("\"_links\"")))
         .andExpect(
             jsonPath("$.result[0]._links.self",
-                Matchers.containsString("/experimental/regions/customers")))
+                Matchers.endsWith("/experimental/regions/customers")))
+        .andExpect(
+            jsonPath("$.result[0]._links.indexes",
+                Matchers.endsWith("/experimental/regions/customers/indexes")))
+        .andExpect(
+            jsonPath("$.result[0]._links.diskstores",
+                Matchers.endsWith("/experimental/regions/customers/diskstores")))
         .andExpect(
             jsonPath("$.result[0]._links.self",
                 Matchers.containsString("http://")));
+  }
+
+  @Test
+  public void getRegionHateoas() throws Exception {
+    Region regionConfig = new Region();
+    regionConfig.setName("customers");
+    regionConfig.setType(RegionType.REPLICATE);
+
+    try {
+      // if run multiple times, this could either be OK or ENTITY_EXISTS
+      assertManagementResult(client.create(regionConfig))
+          .hasStatusCode(ClusterManagementResult.StatusCode.OK);
+    } catch (ClusterManagementException cme) {
+      assertThat(cme.getResult().getStatusCode())
+          .isEqualTo(ClusterManagementResult.StatusCode.ENTITY_EXISTS);
+    }
+
+    context.perform(get("/experimental/regions/customers"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("\"_links\"")))
+        .andExpect(
+            jsonPath("$.result._links.self",
+                Matchers.endsWith("/experimental/regions/customers")))
+        .andExpect(
+            jsonPath("$.result._links.indexes",
+                Matchers.endsWith("/experimental/regions/customers/indexes")))
+        .andExpect(
+            jsonPath("$.result._links.diskstores",
+                Matchers.endsWith("/experimental/regions/customers/diskstores")))
+        .andExpect(
+            jsonPath("$._links.['api root']]",
+                Matchers.endsWith("/experimental/")));
   }
 
   @Test
