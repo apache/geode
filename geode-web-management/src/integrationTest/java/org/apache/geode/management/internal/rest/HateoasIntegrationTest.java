@@ -102,7 +102,7 @@ public class HateoasIntegrationTest {
             jsonPath("$._links.wiki",
                 Matchers.containsString("cwiki")))
         .andExpect(
-            jsonPath("$._links.list regions",
+            jsonPath("$._links.['list regions']",
                 Matchers.containsString("/regions")));
   }
 }
