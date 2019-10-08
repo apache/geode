@@ -17,12 +17,12 @@ import java.nio.file.Paths
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+apply plugin: 'java-library'
 
 project.ext.installs = new Properties()
 
 subprojects {
-  apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+  apply plugin: 'base'
 
   def oldGeodeVersion = project.name
 
@@ -81,7 +81,6 @@ subprojects {
     project.build.dependsOn(project.enumerateArchiveContents)
 
   }
-  (project.tasks.jar as Task).onlyIf {false}
 }
 
 def generatedResources = buildDir.toPath().resolve('generated-resources').resolve('main').toString()
