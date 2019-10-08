@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.internal.Links;
 
 /**
  * This base class provides the common attributes returned from all {@link ClusterManagementService}
@@ -164,10 +165,7 @@ public class ClusterManagementResult {
   @JsonProperty(value = "_links")
   public Map<String, String> getLinks() {
     if (topLevel) {
-      Map<String, String> ret = new LinkedHashMap<>();
-      ret.putAll(links);
-      Links.addApiRoot(ret);
-      return ret;
+      Links.addApiRoot(links);
     }
     return links;
   }

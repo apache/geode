@@ -15,9 +15,9 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.management.api.Links.SELF;
 import static org.apache.geode.management.api.RestfulEndpoint.URI_VERSION;
 import static org.apache.geode.management.configuration.Region.REGION_CONFIG_ENDPOINT;
+import static org.apache.geode.management.internal.Links.SELF;
 
 import java.util.Map;
 

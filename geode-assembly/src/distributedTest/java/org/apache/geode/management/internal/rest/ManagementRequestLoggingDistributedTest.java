@@ -127,11 +127,14 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
               "Management Request:",
               " POST[url=/management/experimental/regions];",
               " user=null;",
-              " payload={\"class\":\"org.apache.geode.management.configuration.Region\",\"group\":null,\"name\":\"customers\",\"type\":\"REPLICATE\",\"keyConstraint\":null,\"valueConstraint\":null,\"diskStoreName\":null,\"redundantCopies\":null,\"expirations\":null,\"uri\":\"/management/experimental/regions/customers\"}")
+              " payload={\"class\":\"org.apache.geode.management.configuration.Region\",\"group\":null,\"name\":\"customers\",\"type\":\"REPLICATE\",\"keyConstraint\":null,\"valueConstraint\":null,\"diskStoreName\":null,\"redundantCopies\":null,\"expirations\":null}")
           .containsSubsequence(
               "Management Response:",
               " Status=201;",
-              " response={\"statusCode\":\"OK\",\"statusMessage\":\"Successfully updated configuration for cluster.\",\"uri\":\"/management/experimental/regions/customers\",\"memberStatuses\":[{\"memberName\":\"server1\",\"success\":true,\"message\":\"Region successfully created.\"}]}");
+              " response={\"statusCode\":\"OK\",\"statusMessage\":\"Successfully updated configuration for cluster.\",\"memberStatuses\":[{\"memberName\":\"server1\",\"success\":true,\"message\":\"Region successfully created.\"}],\"_links\":{\"self\":\"http://localhost:"
+                  + httpPort
+                  + "/management/experimental/regions/customers\",\"api root\":\"http://localhost:"
+                  + httpPort + "/management/experimental/\"}}");
     });
   }
 

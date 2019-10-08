@@ -12,13 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.api;
+package org.apache.geode.management.internal;
 
 import static org.apache.geode.management.api.RestfulEndpoint.URI_CONTEXT;
 import static org.apache.geode.management.api.RestfulEndpoint.URI_VERSION;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import org.apache.geode.management.api.RestfulEndpoint;
 
 /**
  * HATEOAS data-structures
@@ -39,10 +41,16 @@ public class Links {
     return ret;
   }
 
-  static void addApiRoot(Map<String, String> links) {
-    links.put(API_ROOT, URI_CONTEXT + URI_VERSION + "/");
+  public static void addApiRoot(Map<String, String> links) {
+    links.putIfAbsent(API_ROOT, URI_CONTEXT + URI_VERSION + "/");
   }
 
+  /**
+   * Enriches a {@link LinkedHashMap} with URI links to documentation that assists in the
+   * understanding of Geode management API
+   *
+   * The keys in the map are {@link #SWAGGER}, {@link #DOCS} and {@link #WIKI}
+   */
   public static LinkedHashMap<String, String> rootLinks() {
     LinkedHashMap<String, String> ret = new LinkedHashMap<>();
     ret.put(SWAGGER, URI_CONTEXT + "/swagger-ui.html");

@@ -15,9 +15,9 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.management.api.Links.API_ROOT;
 import static org.apache.geode.management.api.RestfulEndpoint.URI_CONTEXT;
 import static org.apache.geode.management.api.RestfulEndpoint.URI_VERSION;
+import static org.apache.geode.management.internal.Links.API_ROOT;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -30,13 +30,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.Links;
+import org.apache.geode.management.internal.Links;
 
 @Controller("api-root")
 @RequestMapping(URI_VERSION)
@@ -51,7 +51,7 @@ public class RootManagementController extends AbstractManagementController {
   }
 
   @ApiOperation(value = API_ROOT)
-  @RequestMapping(method = RequestMethod.GET, value = "/")
+  @GetMapping("/")
   public ResponseEntity<ClusterManagementResult> getRootLinks() {
     ClusterManagementResult clusterManagementResult = new ClusterManagementResult();
     LinkedHashMap<String, String> links = Links.rootLinks();
