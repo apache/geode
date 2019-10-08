@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -71,6 +72,7 @@ public class PdxManagementTest {
             jsonPath("$.statusMessage",
                 containsString("Successfully updated configuration for cluster.")))
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.uri", is("/management/experimental/configurations/pdx")));
+        .andExpect(
+            jsonPath("$._links.self", endsWith("/management/experimental/configurations/pdx")));
   }
 }
