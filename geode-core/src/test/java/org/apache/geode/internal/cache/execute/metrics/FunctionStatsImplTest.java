@@ -96,11 +96,11 @@ public class FunctionStatsImplTest {
   }
 
   @Test
-  public void recordSuccessfulExecution_incrementsSuccessTimerCount() {
+  public void endFunctionExecution_incrementsSuccessTimerCount() {
     FunctionStats functionStats =
         new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
 
-    functionStats.recordSuccessfulExecution(5, NANOSECONDS, false);
+    functionStats.endFunctionExecution(0, false);
 
     assertThat(successTimer().count())
         .as("Success timer count")
@@ -108,25 +108,27 @@ public class FunctionStatsImplTest {
   }
 
   @Test
-  public void recordSuccessfulExecution_incrementsSuccessTimerTotalTime() {
+  public void endFunctionExecution_incrementsSuccessTimerTotalTime() {
+    long endTime = 5;
     FunctionStats functionStats =
-        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
+        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats, endTime,
+            false);
 
-    long elapsedNanos = 5;
-    functionStats.recordSuccessfulExecution(elapsedNanos, NANOSECONDS, false);
+    long startTime = 0;
+    functionStats.endFunctionExecution(startTime, false);
 
+    long elapsedNanos = endTime - startTime;
     assertThat(successTimer().totalTime(NANOSECONDS))
         .as("Success timer total time")
         .isEqualTo(elapsedNanos);
   }
 
   @Test
-  public void recordSuccessfulExecution_noResult_clockStatsDisabled_incrementsStats() {
+  public void endFunctionExecution_noResult_clockStatsDisabled_incrementsStats() {
     FunctionStats functionStats =
-        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats, 0L,
-            false);
+        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
 
-    functionStats.recordSuccessfulExecution(5, NANOSECONDS, false);
+    functionStats.endFunctionExecution(0, false);
 
     verify(statistics)
         .incInt(functionExecutionsCompletedId(), 1);
@@ -141,12 +143,11 @@ public class FunctionStatsImplTest {
   }
 
   @Test
-  public void recordSuccessfulExecution_hasResult_clockStatsDisabled_incrementsStats() {
+  public void endFunctionExecution_hasResult_clockStatsDisabled_incrementsStats() {
     FunctionStats functionStats =
-        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats, 0L,
-            false);
+        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
 
-    functionStats.recordSuccessfulExecution(5, NANOSECONDS, true);
+    functionStats.endFunctionExecution(0, true);
 
     verify(statistics)
         .incInt(functionExecutionsCompletedId(), 1);
@@ -161,14 +162,16 @@ public class FunctionStatsImplTest {
   }
 
   @Test
-  public void recordSuccessfulExecution_noResult_clockStatsEnabled_incrementsStats() {
+  public void endFunctionExecution_noResult_clockStatsEnabled_incrementsStats() {
+    long endTime = 5;
     FunctionStats functionStats =
-        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats, 0L,
+        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats, endTime,
             true);
 
-    long elapsedNanos = 5;
-    functionStats.recordSuccessfulExecution(elapsedNanos, NANOSECONDS, false);
+    long startTime = 0;
+    functionStats.endFunctionExecution(startTime, false);
 
+    long elapsedNanos = endTime - startTime;
     verify(statistics)
         .incInt(functionExecutionsCompletedId(), 1);
     verify(statistics)
@@ -182,14 +185,16 @@ public class FunctionStatsImplTest {
   }
 
   @Test
-  public void recordSuccessfulExecution_hasResult_clockStatsEnabled_incrementsStats() {
+  public void endFunctionExecution_hasResult_clockStatsEnabled_incrementsStats() {
+    long endTime = 5;
     FunctionStats functionStats =
-        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats, 0L,
+        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats, endTime,
             true);
 
-    long elapsedNanos = 5;
-    functionStats.recordSuccessfulExecution(elapsedNanos, NANOSECONDS, true);
+    long startTime = 0;
+    functionStats.endFunctionExecution(startTime, true);
 
+    long elapsedNanos = endTime - startTime;
     verify(statistics)
         .incInt(functionExecutionsCompletedId(), 1);
     verify(statistics)
@@ -203,25 +208,27 @@ public class FunctionStatsImplTest {
   }
 
   @Test
-  public void recordSuccessfulExecution_incrementsAggregateStats() {
+  public void endFunctionExecution_incrementsAggregateStats() {
+    long endTime = 5;
     FunctionStats functionStats =
-        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
+        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats, endTime,
+            false);
 
-    long elapsedNanos = 5;
+    long startTime = 0;
     boolean haveResult = true;
-    functionStats.recordSuccessfulExecution(elapsedNanos, NANOSECONDS, haveResult);
+    functionStats.endFunctionExecution(startTime, haveResult);
 
+    long elapsedNanos = endTime - startTime;
     verify(functionServiceStats)
         .endFunctionExecution(elapsedNanos, haveResult);
   }
 
   @Test
-  public void recordFailedExecution_incrementsFailureTimerCount() {
+  public void endFunctionExecutionWithException_incrementsFailureTimerCount() {
     FunctionStats functionStats =
         new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
 
-    long elapsedNanos = 5;
-    functionStats.recordFailedExecution(elapsedNanos, NANOSECONDS, false);
+    functionStats.endFunctionExecutionWithException(0, false);
 
     assertThat(failureTimer().count())
         .as("Failure timer count")
@@ -229,24 +236,27 @@ public class FunctionStatsImplTest {
   }
 
   @Test
-  public void recordFailedExecution_incrementsFailureTimerTotalTime() {
+  public void endFunctionExecutionWithException_incrementsFailureTimerTotalTime() {
+    long endTime = 5;
     FunctionStats functionStats =
-        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
+        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats, endTime,
+            false);
 
-    long elapsedNanos = 5;
-    functionStats.recordFailedExecution(elapsedNanos, NANOSECONDS, false);
+    long startTime = 0;
+    functionStats.endFunctionExecutionWithException(startTime, false);
 
+    long elapsedNanos = endTime - startTime;
     assertThat(failureTimer().totalTime(NANOSECONDS))
         .as("Failure timer total time")
         .isEqualTo(elapsedNanos);
   }
 
   @Test
-  public void recordFailedExecution_noResult_incrementsStats() {
+  public void endFunctionExecutionWithException_noResult_incrementsStats() {
     FunctionStats functionStats =
         new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
 
-    functionStats.recordFailedExecution(5, NANOSECONDS, false);
+    functionStats.endFunctionExecutionWithException(0, false);
 
     verify(statistics)
         .incInt(functionExecutionsRunningId(), -1);
@@ -257,11 +267,11 @@ public class FunctionStatsImplTest {
   }
 
   @Test
-  public void recordFailedExecution_hasResult_incrementsStats() {
+  public void endFunctionExecutionWithException_hasResult_incrementsStats() {
     FunctionStats functionStats =
         new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
 
-    functionStats.recordFailedExecution(5, NANOSECONDS, true);
+    functionStats.endFunctionExecutionWithException(0, true);
 
     verify(statistics)
         .incInt(functionExecutionsRunningId(), -1);
@@ -272,12 +282,12 @@ public class FunctionStatsImplTest {
   }
 
   @Test
-  public void recordFailedExecution_incrementsAggregateStats() {
+  public void endFunctionExecutionWithException_incrementsAggregateStats() {
     FunctionStats functionStats =
         new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
 
     boolean haveResult = true;
-    functionStats.recordFailedExecution(5, NANOSECONDS, haveResult);
+    functionStats.endFunctionExecutionWithException(0, haveResult);
 
     verify(functionServiceStats)
         .endFunctionExecutionWithException(haveResult);

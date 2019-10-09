@@ -42,7 +42,6 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.management.internal.cli.functions.ListFunctionFunction;
 import org.apache.geode.metrics.MetricsPublishingService;
 import org.apache.geode.metrics.SimpleMetricsPublishingService;
 import org.apache.geode.rules.ServiceJarRule;
@@ -279,12 +278,6 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
     gfshRule.execute(connectCommand, deployFunctionCommand);
   }
 
-  private void executeInternalFunction() {
-    FunctionService.onServer(serverPool)
-        .execute(new ListFunctionFunction())
-        .getResult();
-  }
-
   private void executeFunctionThatSucceeds(Function<? super String[]> function, Duration duration) {
     Throwable thrown = catchThrowable(() -> executeFunction(function, duration, true));
 
@@ -329,12 +322,10 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
         .isNull();
   }
 
-  @SuppressWarnings("SameParameterValue")
   private ExecutionsTimerValues getSuccessTimerValues(String functionId) {
     return getExecutionsTimerValues(functionId, true);
   }
 
-  @SuppressWarnings("SameParameterValue")
   private ExecutionsTimerValues getFailureTimerValues(String functionId) {
     return getExecutionsTimerValues(functionId, false);
   }

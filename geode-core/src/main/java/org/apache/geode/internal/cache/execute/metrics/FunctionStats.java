@@ -14,10 +14,6 @@
  */
 package org.apache.geode.internal.cache.execute.metrics;
 
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-
-import java.util.concurrent.TimeUnit;
-
 import io.micrometer.core.instrument.MeterRegistry;
 
 import org.apache.geode.Statistics;
@@ -30,7 +26,6 @@ public interface FunctionStats {
    */
   void close();
 
-
   /**
    * Returns whether the FunctionStats is closed.
    */
@@ -41,25 +36,19 @@ public interface FunctionStats {
    *
    * @return the current value of the "function Executions completed" stat
    */
-  default int getFunctionExecutionsCompleted() {
-    return 0;
-  }
+  int getFunctionExecutionsCompleted();
 
   /**
    * Returns the current value of the "number of currently running invocations" stat.
    *
    * @return the current value of the "functionExecutionsRunning" stat
    */
-  default int getFunctionExecutionsRunning() {
-    return 0;
-  }
+  int getFunctionExecutionsRunning();
 
   /**
    * Increments the "ResultsReturnedToResultCollector" stat.
    */
-  default void incResultsReturned() {
-
-  }
+  void incResultsReturned();
 
   /**
    * Returns the current value of the "Total number of results received and passed to
@@ -67,73 +56,49 @@ public interface FunctionStats {
    *
    * @return the current value of the "resultsReturned" stat
    */
-  default int getResultsReceived() {
-    return 0;
-  }
+  int getResultsReceived();
 
   /**
    * Increments the "ResultsReturnedToResultCollector" stat.
    */
-  default void incResultsReceived() {
-
-  }
+  void incResultsReceived();
 
   /**
    * Returns the current value of the "Total number of FunctionService...execute() calls" stat.
    *
    * @return the current value of the "functionExecutionsCall" stat
    */
-  default int getFunctionExecutionCalls() {
-    return 0;
-  }
+  int getFunctionExecutionCalls();
 
   /**
    * Returns the current time (ns).
    *
    * @return the current time (ns)
    */
-  default long getTime() {
-    return 0;
-  }
+  long getTime();
 
   /**
    * Increments the "_functionExecutionCallsId" and "_functionExecutionsRunningId" stats and
    * "_functionExecutionHasResultRunningId" in case of function.hasResult = true..
    */
-  default void startFunctionExecution(boolean haveResult) {
-    // nothing
-  }
+  void startFunctionExecution(boolean haveResult);
 
   /**
    * Increments the "functionExecutionsCompleted" and "functionExecutionCompleteProcessingTime"
-   * stats.
+   * stats, as well as updating micrometer timers.
    *
    * @param startTime The start of the functionExecution (which is decremented from the current
    *        time to determine the function Execution processing time).
    * @param haveResult haveResult=true then update the _functionExecutionHasResultRunningId and
    *        _functionExecutionHasResultCompleteProcessingTimeId
    */
-  default void endFunctionExecution(long startTime, boolean haveResult) {
-    long elapsed = getTime() - startTime;
-    recordSuccessfulExecution(elapsed, NANOSECONDS, haveResult);
-  }
-
-  default void recordSuccessfulExecution(long elapsed, TimeUnit timeUnit, boolean haveResult) {
-
-  }
+  void endFunctionExecution(long startTime, boolean haveResult);
 
   /**
    * Increments the "_functionExecutionException" and decrements "_functionExecutionsRunningId" and
-   * decrement "_functionExecutionHasResultRunningId"
+   * decrement "_functionExecutionHasResultRunningId", as well as updating micrometer timers.
    */
-  default void endFunctionExecutionWithException(long startTime, boolean haveResult) {
-    long elapsed = getTime() - startTime;
-    recordFailedExecution(elapsed, NANOSECONDS, haveResult);
-  }
-
-  default void recordFailedExecution(long elapsed, TimeUnit timeUnit, boolean haveResult) {
-
-  }
+  void endFunctionExecutionWithException(long startTime, boolean haveResult);
 
   @VisibleForTesting
   Statistics getStatistics();

@@ -70,27 +70,27 @@ public class FunctionStatsManagerTest {
   }
 
   @Test
-  public void getFunctionStatsByName_returnsSingletonDummyFunctionStats_ifStatsDisabled_andMeterRegistryIsNull() {
+  public void getFunctionStatsByName_returnsDummyFunctionStats_ifStatsDisabled_andMeterRegistryIsNull() {
     FunctionStatsManager functionStatsManager = new FunctionStatsManager(true, statisticsFactory,
         () -> null);
 
     FunctionStats functionStats = functionStatsManager.getFunctionStatsByName("foo");
 
-    FunctionStats singletonDummyFunctionStats = functionStatsManager.getDummyFunctionStats();
+    FunctionStats dummyFunctionStats = functionStatsManager.getDummyFunctionStats();
     assertThat(functionStats)
-        .isSameAs(singletonDummyFunctionStats);
+        .isSameAs(dummyFunctionStats);
   }
 
   @Test
-  public void getFunctionStatsByName_usesSingletonDummyStatistics_ifStatsDisabled() {
+  public void getFunctionStatsByName_usesDummyStatistics_ifStatsDisabled() {
     FunctionStatsManager functionStatsManager = new FunctionStatsManager(true, statisticsFactory,
         () -> meterRegistry);
 
     FunctionStats functionStats = functionStatsManager.getFunctionStatsByName("foo");
 
-    Statistics singletonDummyStatistics = functionStatsManager.getDummyStatistics();
+    Statistics dummyStatistics = functionStatsManager.getDummyStatistics();
     assertThat(functionStats.getStatistics())
-        .isSameAs(singletonDummyStatistics);
+        .isSameAs(dummyStatistics);
   }
 
   @Test

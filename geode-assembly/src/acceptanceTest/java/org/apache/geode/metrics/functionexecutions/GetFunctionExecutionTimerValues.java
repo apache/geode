@@ -27,7 +27,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.metrics.SimpleMetricsPublishingService;
 
 public class GetFunctionExecutionTimerValues implements Function<Void> {
-  static final String ID = "GetFunctionExecutionTimerValues";
+  private static final String ID = "GetFunctionExecutionTimerValues";
 
   @Override
   public void execute(FunctionContext<Void> context) {

@@ -17,8 +17,8 @@ package org.apache.geode.internal.cache.execute.metrics;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
@@ -133,7 +133,6 @@ public class FunctionStatsImpl implements FunctionStats {
             "Total number of Exceptions Occurred while executing function", "operations"),
     });
 
-    // Initialize id fields
     functionExecutionsCompletedId = STATISTICS_TYPE.nameToId(FUNCTION_EXECUTIONS_COMPLETED);
     functionExecutionsCompletedProcessingTimeId =
         STATISTICS_TYPE.nameToId(FUNCTION_EXECUTIONS_COMPLETED_PROCESSING_TIME);
@@ -270,8 +269,10 @@ public class FunctionStatsImpl implements FunctionStats {
   }
 
   @Override
-  public void recordSuccessfulExecution(long elapsed, TimeUnit timeUnit, boolean haveResult) {
-    successTimer.record(elapsed, timeUnit);
+  public void endFunctionExecution(long startTime, boolean haveResult) {
+    long elapsed = getTime() - startTime;
+
+    successTimer.record(elapsed, NANOSECONDS);
 
     statistics.incInt(functionExecutionsCompletedId, 1);
     statistics.incInt(functionExecutionsRunningId, -1);
@@ -292,8 +293,10 @@ public class FunctionStatsImpl implements FunctionStats {
   }
 
   @Override
-  public void recordFailedExecution(long elapsed, TimeUnit timeUnit, boolean haveResult) {
-    failureTimer.record(elapsed, timeUnit);
+  public void endFunctionExecutionWithException(long startTime, boolean haveResult) {
+    long elapsed = getTime() - startTime;
+
+    failureTimer.record(elapsed, NANOSECONDS);
 
     statistics.incInt(functionExecutionsRunningId, -1);
     statistics.incInt(functionExecutionExceptionsId, 1);

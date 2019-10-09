@@ -382,9 +382,7 @@ public class FunctionServiceStats {
    * Increments the "functionExecutionsCompleted" and "functionExecutionCompleteProcessingTime"
    * stats.
    *
-   * @param elapsed The start of the functionExecution (which is decremented from the current time
-   *        to
-   *        determine the function Execution processing time).
+   * @param elapsed The elapsed time for function execution in nanoseconds
    * @param haveResult haveResult=true then update the _functionExecutionHasResultRunningId and
    *        _functionExecutionHasResultCompleteProcessingTimeId
    */
