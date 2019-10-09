@@ -30,7 +30,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.condition.PatternsRequestCondition;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
@@ -89,8 +88,8 @@ public class RootManagementControllerTest {
     when(handlerMethodOne.getMethod()).thenReturn(methodOne);
     when(handlerMethodTwo.getMethod()).thenReturn(methodTwo);
 
-    ResponseEntity<ClusterManagementResult> result = rootManagementController.getRootLinks();
-    Map<String, String> links = result.getBody().getLinks();
+    ClusterManagementResult result = rootManagementController.getRootLinks();
+    Map<String, String> links = result.getLinks();
     Map<String, String> expectedLinks = Links.rootLinks();
     Links.addApiRoot(expectedLinks);
     expectedLinks.put("length", "/management/experimental/members");
@@ -102,8 +101,8 @@ public class RootManagementControllerTest {
   public void getRootLinksWithoutHandlerMethods() {
     when(handlerMapping.getHandlerMethods()).thenReturn(Collections.emptyMap());
 
-    ResponseEntity<ClusterManagementResult> result = rootManagementController.getRootLinks();
-    Map<String, String> links = result.getBody().getLinks();
+    ClusterManagementResult result = rootManagementController.getRootLinks();
+    Map<String, String> links = result.getLinks();
     Map<String, String> expectedLinks = Links.rootLinks();
     Links.addApiRoot(expectedLinks);
     assertThat(links).isEqualTo(expectedLinks);

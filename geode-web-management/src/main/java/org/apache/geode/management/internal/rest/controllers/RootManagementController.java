@@ -27,18 +27,16 @@ import java.util.Optional;
 import io.swagger.annotations.ApiOperation;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.internal.Links;
 
-@Controller("api-root")
+@RestController("api-root")
 @RequestMapping(URI_VERSION)
 public class RootManagementController extends AbstractManagementController {
   private static final Logger logger = LogService.getLogger();
@@ -52,7 +50,7 @@ public class RootManagementController extends AbstractManagementController {
 
   @ApiOperation(value = API_ROOT)
   @GetMapping("/")
-  public ResponseEntity<ClusterManagementResult> getRootLinks() {
+  public ClusterManagementResult getRootLinks() {
     ClusterManagementResult clusterManagementResult = new ClusterManagementResult();
     LinkedHashMap<String, String> links = Links.rootLinks();
     handlerMapping.getHandlerMethods()
@@ -68,7 +66,7 @@ public class RootManagementController extends AbstractManagementController {
                     URI_CONTEXT
                         + entry.getKey().getPatternsCondition().getPatterns().iterator().next()));
     clusterManagementResult.setLinks(links);
-    return new ResponseEntity<>(clusterManagementResult, HttpStatus.OK);
+    return clusterManagementResult;
   }
 
   private static Optional<String> extractApiOperationValue(Annotation[] annotations) {
