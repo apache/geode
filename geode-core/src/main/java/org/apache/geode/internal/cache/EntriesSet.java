@@ -26,9 +26,10 @@ import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.LocalRegion.IteratorType;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
+import org.apache.geode.internal.logging.LogWithToString;
 
 /** Set view of entries */
-public class EntriesSet extends AbstractSet implements EntriesCollection {
+public class EntriesSet extends AbstractSet implements LogWithToString {
 
   final LocalRegion topRegion;
 
