@@ -72,7 +72,6 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config) {
     String endPoint = URI_VERSION + config.getEndpoint();
     // the response status code info is represented by the ClusterManagementResult.errorCode already
@@ -89,7 +88,6 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult delete(
       T config) {
     String uri = getIdentityEndpoint(config);
@@ -148,7 +146,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   private <V extends OperationResult> ClusterManagementOperationResult<V> reAnimate(
       ClusterManagementOperationResult<V> result) {
-    String uri = stripPrefix("^.*" + AbstractConfiguration.URI_CONTEXT, result.getUri());
+    String uri = result.getUri().replaceFirst("^.*" + AbstractConfiguration.URI_CONTEXT, "");
 
     // complete the future by polling the check-status REST endpoint
     CompletableFuture<Date> futureOperationEnded = new CompletableFuture<>();
@@ -174,10 +172,6 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
     return new ClusterManagementListOperationsResult<>(
         result.getResult().stream().map(this::reAnimate).collect(Collectors.toList()));
-  }
-
-  private static String stripPrefix(String prefixRegex, String s) {
-    return s.replaceFirst(prefixRegex, "");
   }
 
   private String getIdentityEndpoint(AbstractConfiguration config) {

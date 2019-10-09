@@ -71,7 +71,7 @@ public class ConfigurePDXDUnitTest {
   }
 
   @After
-  public void after() throws Exception {
+  public void after() {
     // for the test to be run multiple times, we need to clean out the cluster config
     InternalConfigurationPersistenceService cps = getLocator().getConfigurationPersistenceService();
     cps.updateCacheConfig("cluster", config -> {
@@ -80,13 +80,13 @@ public class ConfigurePDXDUnitTest {
     });
   }
 
-  InternalLocator getLocator() {
+  private InternalLocator getLocator() {
     return ((PlainLocatorContextLoader) webContext.getLocator()).getLocatorStartupRule()
         .getLocator();
   }
 
   @Test
-  public void configureWithNoServer() throws Exception {
+  public void configureWithNoServer() {
     ClusterManagementRealizationResult result = client.create(pdxType);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);

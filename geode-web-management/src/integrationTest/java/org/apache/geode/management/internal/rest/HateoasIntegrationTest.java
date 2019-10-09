@@ -63,18 +63,7 @@ public class HateoasIntegrationTest {
 
   @Test
   public void listRegionHateoas() throws Exception {
-    Region regionConfig = new Region();
-    regionConfig.setName("customers");
-    regionConfig.setType(RegionType.REPLICATE);
-
-    try {
-      // if run multiple times, this could either be OK or ENTITY_EXISTS
-      assertManagementResult(client.create(regionConfig))
-          .hasStatusCode(ClusterManagementResult.StatusCode.OK);
-    } catch (ClusterManagementException cme) {
-      assertThat(cme.getResult().getStatusCode())
-          .isEqualTo(ClusterManagementResult.StatusCode.ENTITY_EXISTS);
-    }
+    prepRegion();
 
     context.perform(get("/experimental/regions"))
         .andExpect(status().isOk())
@@ -95,18 +84,7 @@ public class HateoasIntegrationTest {
 
   @Test
   public void getRegionHateoas() throws Exception {
-    Region regionConfig = new Region();
-    regionConfig.setName("customers");
-    regionConfig.setType(RegionType.REPLICATE);
-
-    try {
-      // if run multiple times, this could either be OK or ENTITY_EXISTS
-      assertManagementResult(client.create(regionConfig))
-          .hasStatusCode(ClusterManagementResult.StatusCode.OK);
-    } catch (ClusterManagementException cme) {
-      assertThat(cme.getResult().getStatusCode())
-          .isEqualTo(ClusterManagementResult.StatusCode.ENTITY_EXISTS);
-    }
+    prepRegion();
 
     context.perform(get("/experimental/regions/customers"))
         .andExpect(status().isOk())
@@ -123,6 +101,21 @@ public class HateoasIntegrationTest {
         .andExpect(
             jsonPath("$._links.['api root']]",
                 Matchers.endsWith("/experimental/")));
+  }
+
+  private void prepRegion() {
+    Region regionConfig = new Region();
+    regionConfig.setName("customers");
+    regionConfig.setType(RegionType.REPLICATE);
+
+    try {
+      // if run multiple times, this could either be OK or ENTITY_EXISTS
+      assertManagementResult(client.create(regionConfig))
+          .hasStatusCode(ClusterManagementResult.StatusCode.OK);
+    } catch (ClusterManagementException cme) {
+      assertThat(cme.getResult().getStatusCode())
+          .isEqualTo(ClusterManagementResult.StatusCode.ENTITY_EXISTS);
+    }
   }
 
   @Test

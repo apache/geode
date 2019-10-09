@@ -78,7 +78,7 @@ public class OperationHistoryManager {
     expiredKeys.forEach(history::remove);
   }
 
-  long now() {
+  private long now() {
     return System.currentTimeMillis();
   }
 
@@ -172,7 +172,7 @@ public class OperationHistoryManager {
       return futureOperationEnded;
     }
 
-    public void setOperationEnded(Date operationEnded) {
+    void setOperationEnded(Date operationEnded) {
       this.futureOperationEnded.complete(operationEnded);
     }
 

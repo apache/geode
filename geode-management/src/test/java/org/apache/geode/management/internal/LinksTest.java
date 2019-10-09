@@ -56,11 +56,6 @@ public class LinksTest {
     assertThat(links.get("api root")).isEqualTo(expectedLink);
   }
 
-  @Test(expected = NullPointerException.class)
-  public void addApiRootToNull() {
-    Links.addApiRoot(null);
-  }
-
   @Test
   public void rootLinksOk() {
     Map<String, String> links = Links.rootLinks();

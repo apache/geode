@@ -77,7 +77,7 @@ public class ClusterManagementResult {
    * for internal use only
    */
   @JsonIgnore
-  protected void setTopLevel(boolean topLevel) {
+  void setTopLevel(boolean topLevel) {
     this.topLevel = topLevel;
   }
 
@@ -100,6 +100,7 @@ public class ClusterManagementResult {
     this.statusCode = copyFrom.statusCode;
     this.statusMessage = copyFrom.statusMessage;
     this.links = copyFrom.links;
+    this.topLevel = copyFrom.topLevel;
   }
 
   /**

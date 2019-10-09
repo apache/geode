@@ -72,8 +72,9 @@ public class RootManagementControllerTest {
     RequestMappingInfo mappingInfoTwo = new RequestMappingInfo("experimental-two",
         patternsRequestConditionTwo, null, null, null, null, null, null);
     HandlerMethod handlerMethodTwo = mock(HandlerMethod.class);
-    Method methodTwo = Arrays.stream(MemberManagementController.class.getMethods())
-        .filter(method -> method.getName().equals("listMembers"))
+    // String.class is used so that we have a class that is not annotated with @ApiOperation
+    Method methodTwo = Arrays.stream(String.class.getMethods())
+        .filter(method -> method.getName().equals("length"))
         .findFirst()
         .orElseThrow(() -> new NullPointerException("method not found"));
     handlerMethodMap.put(mappingInfoTwo, handlerMethodTwo);
@@ -82,12 +83,7 @@ public class RootManagementControllerTest {
         new PatternsRequestCondition("/objects");
     RequestMappingInfo mappingInfoThree = new RequestMappingInfo("non-experimental-three",
         patternsRequestConditionThree, null, null, null, null, null, null);
-    HandlerMethod handlerMethodThree = mock(HandlerMethod.class);
-    Method methodThree = Arrays.stream(String.class.getMethods())
-        .filter(method -> method.getName().equals("length"))
-        .findFirst()
-        .orElseThrow(() -> new NullPointerException("method not found"));
-    handlerMethodMap.put(mappingInfoThree, handlerMethodThree);
+    handlerMethodMap.put(mappingInfoThree, null);
 
     when(handlerMapping.getHandlerMethods()).thenReturn(handlerMethodMap);
     when(handlerMethodOne.getMethod()).thenReturn(methodOne);
@@ -97,7 +93,7 @@ public class RootManagementControllerTest {
     Map<String, String> links = result.getBody().getLinks();
     Map<String, String> expectedLinks = Links.rootLinks();
     Links.addApiRoot(expectedLinks);
-    expectedLinks.put("list members", "/management/experimental/members");
+    expectedLinks.put("length", "/management/experimental/members");
     expectedLinks.put("list regions", "/management/experimental/regions");
     assertThat(links).isEqualTo(expectedLinks);
   }
