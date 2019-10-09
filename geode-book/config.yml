@@ -29,6 +29,7 @@ template_variables:
   product_name: Geode
   product_version: '1.12'
   product_version_nodot: '112'
+  min_java_version: '8'
   min_java_update: '121'
   support_url: http://geode.apache.org/community
   product_url: http://geode.apache.org/
