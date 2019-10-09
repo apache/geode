@@ -293,7 +293,8 @@ public class CompiledOperation extends AbstractCompiledValue {
     } else if (receiver instanceof PdxString) {
       receiver = ((PdxString) receiver).toString();
     }
-    return methodDispatch.invoke(receiver, args);
+
+    return methodDispatch.invoke(receiver, args, context);
   }
 
   // Asif :Function for generating from clause

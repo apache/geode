@@ -36,11 +36,12 @@ import org.apache.geode.security.NotAuthorizedException;
  * Utility class for mapping operations in the query language to Java methods
  */
 public class MethodDispatch {
-  private Class _targetClass;
-  private String _methodName;
-  private Class[] _argTypes;
-  private Method _method; // remember the right method
-  private MethodInvocationAuthorizer _methodInvocationAuthorizer;
+  private static final String AUTHORIZATION_CACHE_KEY = "METHOD_AUTHORIZATION_CACHE_KEY";
+  private Method _method;
+  private final Class _targetClass;
+  private final String _methodName;
+  private final Class[] _argTypes;
+  private final MethodInvocationAuthorizer _methodInvocationAuthorizer;
 
   public MethodDispatch(MethodInvocationAuthorizer methodInvocationAuthorizer, Class targetClass,
       String methodName, List argTypes) throws NameResolutionException {
@@ -55,12 +56,25 @@ public class MethodDispatch {
     _method.setAccessible(true);
   }
 
-  public Object invoke(Object target, List args)
+  public Object invoke(Object target, List args, ExecutionContext executionContext)
       throws NameNotFoundException, QueryInvocationTargetException {
     Object[] argsArray = args.toArray();
 
     try {
-      if (!_methodInvocationAuthorizer.authorize(_method, target)) {
+      // Try to use cached result so authorizer gets invoked only once per query.
+      boolean authorizationResult;
+      Boolean cachedResult = (Boolean) executionContext.cacheGet(AUTHORIZATION_CACHE_KEY);
+
+      if (cachedResult != null) {
+        // Use cached result.
+        authorizationResult = cachedResult;
+      } else {
+        // First time, evaluate and cache result.
+        authorizationResult = _methodInvocationAuthorizer.authorize(_method, target);
+        executionContext.cachePut(AUTHORIZATION_CACHE_KEY, authorizationResult);
+      }
+
+      if (!authorizationResult) {
         throw new NotAuthorizedException(UNAUTHORIZED_STRING + _method.getName());
       }
 
