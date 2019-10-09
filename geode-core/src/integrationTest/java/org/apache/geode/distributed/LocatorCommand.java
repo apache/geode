@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.geode.distributed.LocatorLauncher.Command;
 
+@SuppressWarnings("unused")
 public class LocatorCommand {
 
   private String javaPath;

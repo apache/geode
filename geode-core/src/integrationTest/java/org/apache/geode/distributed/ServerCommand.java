@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.geode.distributed.ServerLauncher.Command;
 
+@SuppressWarnings("unused")
 public class ServerCommand {
 
   private String javaPath;
