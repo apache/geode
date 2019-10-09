@@ -309,7 +309,7 @@ public class ExecuteRegionFunctionOpRetryTest {
             default:
               throw new AssertionError("unknown FailureMode type: " + failureMode);
           }
-        });
+        }, retryAttempts);
 
     executeFunctionMultiHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
         testSupport.getExecutablePool(),
@@ -325,7 +325,8 @@ public class ExecuteRegionFunctionOpRetryTest {
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
         (pool, failureMode) -> ExecuteFunctionTestSupport.thenThrow(when(pool
             .execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt())),
-            failureMode));
+            failureMode),
+        retryAttempts);
 
     reExecuteFunctionMultiHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
         testSupport.getExecutablePool(),

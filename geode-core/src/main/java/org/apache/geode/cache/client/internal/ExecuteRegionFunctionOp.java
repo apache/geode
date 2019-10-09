@@ -27,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.NoAvailableServersException;
-import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
@@ -67,17 +66,14 @@ public class ExecuteRegionFunctionOp {
   /**
    * Does a execute Function on a server using connections from the given pool to communicate with
    * the server.
-   *
-   * @param pool the pool to use to communicate with the server.
-   * @param resultCollector is used to collect the results from the Server
-   * @param maxRetryAttempts Maximum number of retry attempts
    */
   static void execute(ExecutablePool pool,
       ResultCollector resultCollector,
-      int maxRetryAttempts, boolean isHA,
+      int retryAttempts, boolean isHA,
       ExecuteRegionFunctionOpImpl op, boolean isReexecute,
       Set<String> failedNodes) {
 
+    int maxRetryAttempts = retryAttempts > 0 ? retryAttempts : -1;
     if (!isHA) {
       maxRetryAttempts = 0;
     }
@@ -107,11 +103,8 @@ public class ExecuteRegionFunctionOp {
         throw failedException;
       } catch (ServerConnectivityException se) {
 
-        if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
-          // If the retryAttempt is set to default(-1). Try it on all servers once.
-          // Calculating number of servers when function is re-executed as it involves
-          // messaging locator.
-          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
+        if (maxRetryAttempts == -1) {
+          maxRetryAttempts = ((PoolImpl) pool).calculateRetryAttempts(se);
         }
 
         if ((maxRetryAttempts--) < 1) {
