@@ -126,7 +126,8 @@ public class FunctionStatsImplTest {
   @Test
   public void endFunctionExecution_noResult_clockStatsDisabled_incrementsStats() {
     FunctionStats functionStats =
-        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
+        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats, 0,
+            false);
 
     functionStats.endFunctionExecution(0, false);
 
@@ -145,7 +146,8 @@ public class FunctionStatsImplTest {
   @Test
   public void endFunctionExecution_hasResult_clockStatsDisabled_incrementsStats() {
     FunctionStats functionStats =
-        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats);
+        new FunctionStatsImpl(FUNCTION_ID, meterRegistry, statistics, functionServiceStats, 0,
+            false);
 
     functionStats.endFunctionExecution(0, true);
 
