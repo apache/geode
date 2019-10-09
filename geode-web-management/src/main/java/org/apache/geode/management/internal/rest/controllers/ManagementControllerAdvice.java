@@ -53,8 +53,12 @@ import org.apache.geode.security.NotAuthorizedException;
 public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   private static final Logger logger = LogService.getLogger();
 
-  @Autowired
   private Jackson2ObjectMapperFactoryBean objectMapperFactory;
+
+  @Autowired
+  public ManagementControllerAdvice(Jackson2ObjectMapperFactoryBean objectMapperFactory) {
+    this.objectMapperFactory = objectMapperFactory;
+  }
 
   @Override
   public boolean supports(MethodParameter returnType, Class converterType) {
@@ -75,9 +79,7 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
       if (!includeClass) {
         json = removeClassFromJsonText(json);
       }
-      if (ours()) {
-        json = qualifyHrefsInJsonText(json);
-      }
+      json = qualifyHrefsInJsonText(json, requestUrl());
       response.getHeaders().add(HttpHeaders.CONTENT_TYPE,
           "application/json; charset=" + Charset.defaultCharset().toString());
       response.getBody().write(json.getBytes());
@@ -86,10 +88,6 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private boolean ours() {
-    return !requestUrl().contains("/api-docs");
   }
 
   private static String requestUrl() {
@@ -104,8 +102,7 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
         .replaceAll("\"class\":\"[^\"]*\",", "");
   }
 
-  private static String baseUrl() {
-    String requestUrl = requestUrl();
+  private static String baseUrl(String requestUrl) {
     int pos = requestUrl.indexOf(URI_CONTEXT);
     if (pos >= 0) {
       return requestUrl.substring(0, pos + URI_CONTEXT.length());
@@ -120,8 +117,12 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
     }
   }
 
-  private static String qualifyHrefsInJsonText(String json) {
-    String baseUrl = baseUrl();
+  static String qualifyHrefsInJsonText(String json, String requestUrl) {
+    if (requestUrl.contains("/api-docs")) {
+      return json;
+    }
+    String baseUrl = baseUrl(requestUrl);
+
     return baseUrl == null ? json : json.replace("\"" + URI_CONTEXT, "\"" + baseUrl);
   }
 
