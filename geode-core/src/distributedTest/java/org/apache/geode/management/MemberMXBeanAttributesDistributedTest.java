@@ -42,7 +42,7 @@ import org.apache.geode.test.dunit.VM;
  */
 
 @SuppressWarnings({"serial", "unused"})
-public class MemberMBeanAttributesDUnitTest extends ManagementTestBase {
+public class MemberMXBeanAttributesDistributedTest extends ManagementTestBase {
 
   private static final long BYTES_PER_MEGABYTE = 1024 * 1024;
 
