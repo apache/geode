@@ -76,7 +76,7 @@ public class FunctionStatsManagerTest {
 
     FunctionStats functionStats = functionStatsManager.getFunctionStatsByName("foo");
 
-    FunctionStats singletonDummyFunctionStats = FunctionStatsManager.getDummyFunctionStats();
+    FunctionStats singletonDummyFunctionStats = functionStatsManager.getDummyFunctionStats();
     assertThat(functionStats)
         .isSameAs(singletonDummyFunctionStats);
   }
@@ -88,7 +88,7 @@ public class FunctionStatsManagerTest {
 
     FunctionStats functionStats = functionStatsManager.getFunctionStatsByName("foo");
 
-    Statistics singletonDummyStatistics = FunctionStatsManager.getDummyStatistics();
+    Statistics singletonDummyStatistics = functionStatsManager.getDummyStatistics();
     assertThat(functionStats.getStatistics())
         .isSameAs(singletonDummyStatistics);
   }
@@ -129,7 +129,7 @@ public class FunctionStatsManagerTest {
     FunctionStats functionStats = functionStatsManager.getFunctionStatsByName("foo");
 
     assertThat(functionStats.getMeterRegistry())
-        .isSameAs(FunctionStatsManager.getNoopMeterRegistry());
+        .isSameAs(functionStatsManager.getNoopMeterRegistry());
   }
 
   @Test

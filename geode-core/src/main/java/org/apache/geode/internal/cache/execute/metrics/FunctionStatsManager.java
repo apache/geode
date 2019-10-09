@@ -24,7 +24,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.StatisticsType;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.statistics.DummyStatisticsImpl;
@@ -32,20 +31,14 @@ import org.apache.geode.metrics.internal.NoopMeterRegistry;
 
 public class FunctionStatsManager {
 
-  private static final StatisticsType functionStatsType = FunctionStatsImpl.getStatisticsType();
-  private static final Statistics dummyStatistics =
-      new DummyStatisticsImpl(functionStatsType, null, 0);
-  private static final FunctionServiceStats dummyFunctionServiceStats =
-      FunctionServiceStats.createDummy();
-  private static final MeterRegistry noopMeterRegistry = new NoopMeterRegistry();
-  private static final FunctionStats dummyFunctionStats = new FunctionStatsImpl("",
-      noopMeterRegistry, dummyStatistics, dummyFunctionServiceStats);
-
   private final boolean statsDisabled;
   private final StatisticsFactory statisticsFactory;
   private final FunctionServiceStats functionServiceStats;
   private final Supplier<MeterRegistry> meterRegistrySupplier;
   private final Map<String, FunctionStats> functionExecutionStatsMap;
+  private final Statistics dummyStatistics;
+  private final MeterRegistry noopMeterRegistry;
+  private final FunctionStats dummyFunctionStats;
 
   public FunctionStatsManager(boolean statsDisabled, StatisticsFactory statisticsFactory,
       Supplier<MeterRegistry> meterRegistrySupplier) {
@@ -60,7 +53,11 @@ public class FunctionStatsManager {
     this.statisticsFactory = statisticsFactory;
     this.functionServiceStats = functionServiceStats;
     this.meterRegistrySupplier = meterRegistrySupplier;
-    this.functionExecutionStatsMap = new ConcurrentHashMap<>();
+
+    functionExecutionStatsMap = new ConcurrentHashMap<>();
+    dummyStatistics = createDummyStatistics();
+    noopMeterRegistry = createNoopMeterRegistry();
+    dummyFunctionStats = createDummyFunctionStats(noopMeterRegistry, dummyStatistics);
   }
 
   public FunctionServiceStats getFunctionServiceStats() {
@@ -111,24 +108,41 @@ public class FunctionStatsManager {
   public static FunctionStats getFunctionStats(String functionID) {
     InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
     if (ds == null) {
-      return dummyFunctionStats;
+      return createDummyFunctionStats();
     }
     return ds.getFunctionStatsManager().getFunctionStatsByName(functionID);
   }
 
   @VisibleForTesting
-  static FunctionStats getDummyFunctionStats() {
+  FunctionStats getDummyFunctionStats() {
     return dummyFunctionStats;
   }
 
   @VisibleForTesting
-  static Statistics getDummyStatistics() {
+  Statistics getDummyStatistics() {
     return dummyStatistics;
   }
 
   @VisibleForTesting
-  static MeterRegistry getNoopMeterRegistry() {
+  MeterRegistry getNoopMeterRegistry() {
     return noopMeterRegistry;
+  }
+
+  private static FunctionStats createDummyFunctionStats() {
+    return createDummyFunctionStats(createNoopMeterRegistry(), createDummyStatistics());
+  }
+
+  private static FunctionStats createDummyFunctionStats(MeterRegistry meterRegistry,
+      Statistics statistics) {
+    return new FunctionStatsImpl("", meterRegistry, statistics, FunctionServiceStats.createDummy());
+  }
+
+  private static DummyStatisticsImpl createDummyStatistics() {
+    return new DummyStatisticsImpl(FunctionStatsImpl.getStatisticsType(), null, 0);
+  }
+
+  private static NoopMeterRegistry createNoopMeterRegistry() {
+    return new NoopMeterRegistry();
   }
 
   public interface Factory {

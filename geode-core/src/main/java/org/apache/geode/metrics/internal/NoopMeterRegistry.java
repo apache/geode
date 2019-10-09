@@ -42,10 +42,12 @@ import io.micrometer.core.instrument.noop.NoopLongTaskTimer;
 import io.micrometer.core.instrument.noop.NoopMeter;
 import io.micrometer.core.instrument.noop.NoopTimer;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 
 public class NoopMeterRegistry extends MeterRegistry {
 
+  @Immutable
   @VisibleForTesting
   static final Clock NOOP_CLOCK = new Clock() {
     @Override
