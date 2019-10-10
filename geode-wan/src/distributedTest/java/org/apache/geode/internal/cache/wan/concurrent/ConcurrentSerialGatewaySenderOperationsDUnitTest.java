@@ -14,102 +14,26 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import java.util.Set;
+import java.io.IOException;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
-import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderOperationsDUnitTest;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@Category({WanTest.class})
+@Category(WanTest.class)
+@SuppressWarnings("serial")
 public class ConcurrentSerialGatewaySenderOperationsDUnitTest
     extends SerialGatewaySenderOperationsDUnitTest {
 
-  private static final long serialVersionUID = 1L;
-
-  public ConcurrentSerialGatewaySenderOperationsDUnitTest() {
-    super();
+  @Override
+  protected void createSenderInVm4() throws IOException {
+    createSender("ln", 2, true, true, 5, OrderPolicy.KEY);
   }
 
   @Override
-  protected void createSenderVM5() {
-    vm5.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, false, 100, 10, false, true, null,
-        true, 5, OrderPolicy.KEY));
-  }
-
-  @Override
-  protected void createSenderVM4() {
-    vm4.invoke(() -> WANTestBase.createConcurrentSender("ln", 2, false, 100, 10, false, true, null,
-        true, 5, OrderPolicy.KEY));
-  }
-
-  protected void validateQueueClosedVM4() {
-    vm4.invoke(() -> WANTestBase.validateQueueClosedForConcurrentSerialGatewaySender("ln"));
-  }
-
-  private void validateQueueContents(VM vm, String site, int size) {
-    vm.invoke(() -> WANTestBase.validateQueueContentsForConcurrentSerialGatewaySender(site, size));
-  }
-
-  public static void verifySenderPausedState(String senderId) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    AbstractGatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = (AbstractGatewaySender) s;
-        break;
-      }
-    }
-    assertTrue(sender.isPaused());
-  }
-
-  public static void verifySenderResumedState(String senderId) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    AbstractGatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = (AbstractGatewaySender) s;
-        break;
-      }
-    }
-    assertFalse(sender.isPaused());
-    assertTrue(sender.isRunning());
-  }
-
-  public static void verifySenderStoppedState(String senderId) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    AbstractGatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = (AbstractGatewaySender) s;
-        break;
-      }
-    }
-    assertFalse(sender.isRunning());
-    assertFalse(sender.isPaused());
-  }
-
-  public static void verifyGatewaySenderOperations(String senderId) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
-    assertFalse(sender.isPaused());
-    assertFalse(((AbstractGatewaySender) sender).isRunning());
-    sender.pause();
-    sender.resume();
-    sender.stop();
+  protected void createSenderInVm5() throws IOException {
+    createSender("ln", 2, true, true, 5, OrderPolicy.KEY);
   }
 }
