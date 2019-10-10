@@ -811,6 +811,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return startEventProcessorInPausedState;
   }
 
+  @Override
   public void setStartEventProcessorInPausedState() {
     startEventProcessorInPausedState = true;
   }
@@ -1353,6 +1354,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     return 0;
   }
 
+  @Override
   public int getEventQueueSize() {
     AbstractGatewaySenderEventProcessor localProcessor = this.eventProcessor;
     return localProcessor == null ? 0 : localProcessor.eventQueueSize();

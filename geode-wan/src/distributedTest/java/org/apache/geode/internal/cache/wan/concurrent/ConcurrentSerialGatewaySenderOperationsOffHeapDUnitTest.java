@@ -14,22 +14,28 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
+
+import java.util.Properties;
+
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.WanTest;
 
 @SuppressWarnings("serial")
-@Category({WanTest.class})
+@Category(WanTest.class)
 public class ConcurrentSerialGatewaySenderOperationsOffHeapDUnitTest
     extends ConcurrentSerialGatewaySenderOperationsDUnitTest {
 
-  public ConcurrentSerialGatewaySenderOperationsOffHeapDUnitTest() {
-    super();
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties props = new Properties();
+    props.setProperty(OFF_HEAP_MEMORY_SIZE, "300m");
+    return props;
   }
 
   @Override
-  public boolean isOffHeap() {
+  protected boolean isOffHeap() {
     return true;
   }
-
 }
