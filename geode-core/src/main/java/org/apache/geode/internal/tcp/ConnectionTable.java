@@ -47,6 +47,7 @@ import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipMan
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.net.BufferPool;
@@ -210,7 +211,7 @@ public class ConnectionTable {
     if (conserveSockets) {
       return LoggingExecutors.newThreadOnEachExecute("SharedP2PReader");
     } else {
-      return LoggingExecutors.newThreadPoolWithSynchronousFeed("UnsharedP2PReader", 1,
+      return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("UnsharedP2PReader", 1,
           Integer.MAX_VALUE, READER_POOL_KEEP_ALIVE_TIME);
     }
   }

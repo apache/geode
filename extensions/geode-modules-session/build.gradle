@@ -33,6 +33,7 @@ dependencies {
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  integrationTestImplementation(project(':geode-logging'))
 
   compile('javax.servlet:javax.servlet-api')
   compile('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
