@@ -492,10 +492,6 @@ public class JGroupsMessenger implements Messenger {
                                                       // shutdown
       return;
     }
-    if (addressesWithIoExceptionsProcessed.contains(dest)) {
-      return;
-    }
-    addressesWithIoExceptionsProcessed.add(dest);
     GMSMembershipView v = this.view;
     JGAddress jgMbr = (JGAddress) dest;
     if (jgMbr != null && v != null) {
@@ -510,9 +506,15 @@ public class JGroupsMessenger implements Messenger {
         }
       }
       if (recipient != null) {
-        logger.warn("Unable to send message to " + recipient, e);
-        services.getHealthMonitor().suspect(recipient,
-            "Unable to send messages to this member via JGroups");
+        if (!addressesWithIoExceptionsProcessed.contains(dest)) {
+          logger.warn("Unable to send message to " + recipient, e);
+          addressesWithIoExceptionsProcessed.add(dest);
+        }
+        // If communications aren't working we need to resolve the issue quickly, so here
+        // we initiate a final check. Prior to becoming open-source we did a similar check
+        // using JGroups VERIFY_SUSPECT
+        services.getHealthMonitor().checkIfAvailable(recipient,
+            "Unable to send messages to this member via JGroups", true);
       }
     }
   }
