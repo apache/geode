@@ -293,7 +293,6 @@ class ProcessManager implements ChildVMLauncher {
       cmds.add(
           "-D" + GEMFIRE_PREFIX + "allow_old_members_to_join_for_testing=true");
     }
-    cmds.add("-D" + GEMFIRE_PREFIX + LOG_LEVEL + "=" + DUnitLauncher.logLevel);
     if (DUnitLauncher.LOG4J != null) {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
     }
