@@ -21,6 +21,7 @@ import static org.junit.Assume.assumeFalse;
 
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -59,6 +60,7 @@ public class ConnectCommandAcceptanceTest {
         .contains("gfsh client to connect to this cluster.");
   }
 
+  @Ignore("Re-enable after GEODE-7237 is fixed")
   @Test
   public void invalidHostname() {
     GfshExecution connect = GfshScript
