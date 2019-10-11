@@ -12,10 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.result;
 
-import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
+import static java.lang.System.lineSeparator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,9 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 public class CommandResult implements Result {
-  private ResultModel result;
+
+  private final ResultModel result;
+
   private List<String> commandOutput;
   private int commandOutputIndex;
 
@@ -93,7 +94,7 @@ public class CommandResult implements Result {
       }
       // only add the spacer in between the sections.
       if (index < sectionSize) {
-        addSpacedRowInTable(resultTable, LINE_SEPARATOR);
+        addSpacedRowInTable(resultTable, lineSeparator());
       }
     }
 

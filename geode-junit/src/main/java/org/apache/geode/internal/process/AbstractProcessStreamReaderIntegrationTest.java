@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -212,9 +212,9 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
    */
   protected static class ProcessThrowsError {
     private static final String[] LINES =
-        new String[] {"ProcessThrowsError is starting" + LINE_SEPARATOR,
-            "ProcessThrowsError is sleeping" + LINE_SEPARATOR,
-            "ProcessThrowsError is throwing" + LINE_SEPARATOR};
+        new String[] {"ProcessThrowsError is starting" + lineSeparator(),
+            "ProcessThrowsError is sleeping" + lineSeparator(),
+            "ProcessThrowsError is throwing" + lineSeparator()};
 
     protected static final String STDOUT = "";
 
@@ -234,9 +234,9 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
    */
   protected static class ProcessPrintsToStdout {
     private static final String[] LINES =
-        new String[] {"ProcessPrintsToStdout is starting" + LINE_SEPARATOR,
-            "ProcessPrintsToStdout is sleeping" + LINE_SEPARATOR,
-            "ProcessPrintsToStdout is exiting" + LINE_SEPARATOR};
+        new String[] {"ProcessPrintsToStdout is starting" + lineSeparator(),
+            "ProcessPrintsToStdout is sleeping" + lineSeparator(),
+            "ProcessPrintsToStdout is exiting" + lineSeparator()};
 
     protected static final String STDOUT =
         new StringBuilder().append(LINES[0]).append(LINES[1]).append(LINES[2]).toString();
@@ -256,9 +256,9 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
    */
   protected static class ProcessPrintsToStderr {
     private static final String[] LINES =
-        new String[] {"ProcessPrintsToStdout is starting" + LINE_SEPARATOR,
-            "ProcessPrintsToStdout is sleeping" + LINE_SEPARATOR,
-            "ProcessPrintsToStdout is exiting" + LINE_SEPARATOR};
+        new String[] {"ProcessPrintsToStdout is starting" + lineSeparator(),
+            "ProcessPrintsToStdout is sleeping" + lineSeparator(),
+            "ProcessPrintsToStdout is exiting" + lineSeparator()};
 
     protected static final String STDOUT = "";
 
@@ -278,14 +278,14 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
    */
   protected static class ProcessPrintsToBoth {
     private static final String[] OUT_LINES =
-        new String[] {"ProcessPrintsToBoth(out) is starting" + LINE_SEPARATOR,
-            "ProcessPrintsToBoth(out) is sleeping" + LINE_SEPARATOR,
-            "ProcessPrintsToBoth(out) is exiting" + LINE_SEPARATOR};
+        new String[] {"ProcessPrintsToBoth(out) is starting" + lineSeparator(),
+            "ProcessPrintsToBoth(out) is sleeping" + lineSeparator(),
+            "ProcessPrintsToBoth(out) is exiting" + lineSeparator()};
 
     private static final String[] ERR_LINES =
-        new String[] {"ProcessPrintsToBoth(err) is starting" + LINE_SEPARATOR,
-            "ProcessPrintsToBoth(err) is sleeping" + LINE_SEPARATOR,
-            "ProcessPrintsToBoth(err) is exiting" + LINE_SEPARATOR};
+        new String[] {"ProcessPrintsToBoth(err) is starting" + lineSeparator(),
+            "ProcessPrintsToBoth(err) is sleeping" + lineSeparator(),
+            "ProcessPrintsToBoth(err) is exiting" + lineSeparator()};
 
     protected static final String STDOUT = new StringBuilder().append(OUT_LINES[0])
         .append(OUT_LINES[1]).append(OUT_LINES[2]).toString();

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
+import static java.lang.System.lineSeparator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.util.SortedSet;
+import java.util.Collection;
 import java.util.TreeSet;
 
 import org.apache.geode.LogWriter;
@@ -52,20 +52,18 @@ public class SortLogFile {
    */
   public static void sortLogFile(InputStream logFile, PrintWriter sortedFile) throws IOException {
 
-    SortedSet<LogFileParser.LogEntry> sorted = new TreeSet<>((entry1, entry2) -> {
+    Collection<LogFileParser.LogEntry> sorted = new TreeSet<>((entry1, entry2) -> {
       String stamp1 = entry1.getTimestamp();
       String stamp2 = entry2.getTimestamp();
 
       if (stamp1.equals(stamp2)) {
         if (entry1.getContents().equals(entry2.getContents())) {
           // Timestamps and contents are both equal - compare hashCode()
-          return Integer.valueOf(entry1.hashCode()).compareTo(entry2.hashCode());
-        } else {
-          return entry1.getContents().compareTo(entry2.getContents());
+          return Integer.compare(entry1.hashCode(), entry2.hashCode());
         }
-      } else {
-        return stamp1.compareTo(stamp2);
+        return entry1.getContents().compareTo(entry2.getContents());
       }
+      return stamp1.compareTo(stamp2);
     });
 
     BufferedReader br = new BufferedReader(new InputStreamReader(logFile));
@@ -83,7 +81,7 @@ public class SortLogFile {
    * Prints usage information about this program
    */
   private static void usage(String s) {
-    err.println(LINE_SEPARATOR + "** " + s + LINE_SEPARATOR);
+    err.println(lineSeparator() + "** " + s + lineSeparator());
     err.println("Usage: java SortLogFile logFile");
     err.println("-sortedFile file " + "File in which to put sorted log");
     err.println();
@@ -132,9 +130,7 @@ public class SortLogFile {
       ps = out;
     }
 
-    PrintWriter pw = new PrintWriter(ps, true);
-
-    sortLogFile(logFileStream, pw);
+    sortLogFile(logFileStream, new PrintWriter(ps, true));
 
     ExitCode.NORMAL.doSystemExit();
   }

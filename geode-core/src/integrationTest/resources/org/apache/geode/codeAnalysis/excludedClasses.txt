@@ -42,6 +42,7 @@ org/apache/geode/internal/cache/xmlcache/RegionAttributesCreation
 org/apache/geode/internal/datasource/FacetsJCAConnectionManagerImpl
 org/apache/geode/internal/exception/InvalidExecutionContextException
 org/apache/geode/internal/logging/Banner$BannerHeader
+org/apache/geode/internal/logging/MergeLogFiles$ReaderComparator
 org/apache/geode/internal/offheap/RefCountChangeInfo
 org/apache/geode/internal/process/ProcessStreamReader$ReadingMode
 org/apache/geode/internal/process/ProcessType

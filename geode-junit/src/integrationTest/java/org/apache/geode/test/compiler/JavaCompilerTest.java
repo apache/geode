@@ -28,8 +28,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-
 public class JavaCompilerTest {
+
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -55,14 +55,14 @@ public class JavaCompilerTest {
   }
 
   @Test
-  public void invalidSourceThrowsException() throws Exception {
+  public void invalidSourceThrowsException() {
     JavaCompiler javaCompiler = new JavaCompiler();
     String sourceCode = "public class foo {this is not valid java source code}";
     assertThatThrownBy(() -> javaCompiler.compile(sourceCode)).isInstanceOf(Exception.class);
   }
 
   private File getFileFromTestResources(String fileName) throws URISyntaxException {
-    URL resourceFileURL = this.getClass().getResource(fileName);
+    URL resourceFileURL = getClass().getResource(fileName);
     assertThat(resourceFileURL).isNotNull();
 
     URI resourceUri = resourceFileURL.toURI();
@@ -71,5 +71,4 @@ public class JavaCompilerTest {
     assertThat(file).exists();
     return file;
   }
-
 }

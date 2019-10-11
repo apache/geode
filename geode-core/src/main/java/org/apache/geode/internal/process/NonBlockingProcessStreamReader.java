@@ -43,16 +43,14 @@ class NonBlockingProcessStreamReader extends ProcessStreamReader {
 
   private StringBuilder stringBuilder;
   private int character;
-  private boolean ready;
 
   NonBlockingProcessStreamReader(final Builder builder) {
     super(builder);
 
-    this.continueReadingMillis = builder.continueReadingMillis;
-    this.continueReading = new StopWatch();
-    this.stringBuilder = new StringBuilder();
-    this.character = 0;
-    this.ready = false;
+    continueReadingMillis = builder.getContinueReadingMillis();
+    continueReading = new StopWatch();
+    stringBuilder = new StringBuilder();
+    character = 0;
   }
 
   @Override
@@ -93,10 +91,10 @@ class NonBlockingProcessStreamReader extends ProcessStreamReader {
    * sleep until there are more characters ready to read.
    */
   private void readWhileReady(BufferedReader reader) throws IOException {
-    while ((ready = reader.ready()) && (character = reader.read()) != -1) {
+    while (reader.ready() && (character = reader.read()) != -1) {
       stringBuilder.append((char) character);
       if ((char) character == '\n') {
-        this.inputListener.notifyInputLine(stringBuilder.toString());
+        inputListener.notifyInputLine(stringBuilder.toString());
         stringBuilder = new StringBuilder();
       }
     }

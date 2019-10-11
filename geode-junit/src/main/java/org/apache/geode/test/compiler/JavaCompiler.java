@@ -69,8 +69,9 @@ public class JavaCompiler {
 
     try {
       for (UncompiledSourceCode sourceCode : uncompiledSources) {
-        File sourceFile = new File(temporarySourcesDirectory, sourceCode.simpleClassName + ".java");
-        FileUtils.writeStringToFile(sourceFile, sourceCode.sourceCode, Charsets.UTF_8);
+        File sourceFile =
+            new File(temporarySourcesDirectory, sourceCode.getSimpleClassName() + ".java");
+        FileUtils.writeStringToFile(sourceFile, sourceCode.getSourceCode(), Charsets.UTF_8);
         options.add(sourceFile.getAbsolutePath());
       }
 

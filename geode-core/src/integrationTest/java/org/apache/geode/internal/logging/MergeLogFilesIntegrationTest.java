@@ -15,9 +15,8 @@
 package org.apache.geode.internal.logging;
 
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -28,19 +27,19 @@ import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ErrorCollector;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
@@ -50,8 +49,15 @@ import org.apache.geode.test.junit.categories.LoggingTest;
 @Category(LoggingTest.class)
 public class MergeLogFilesIntegrationTest {
 
+  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+
+  private final Object lock = new Object();
+
   /** The next integer to be written to the log */
   private int next;
+
+  @Rule
+  public ErrorCollector errorCollector = new ErrorCollector();
 
   /**
    * A bunch of threads write a strictly increasing integer to log "files" stored in byte arrays.
@@ -61,33 +67,25 @@ public class MergeLogFilesIntegrationTest {
   public void testMultipleThreads() throws Exception {
     // Spawn a bunch of threads that write to a log
     WorkerGroup group = new WorkerGroup("Workers");
-    List workers = new ArrayList();
+    Collection<Worker> workers = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
       Worker worker = new Worker("Worker " + i, group);
       workers.add(worker);
       worker.start();
     }
 
-    for (Iterator iter = workers.iterator(); iter.hasNext();) {
-      Worker worker = (Worker) iter.next();
-      ThreadUtils.join(worker, 120 * 1000);
-    }
-
-    if (group.exceptionOccurred()) {
-      fail(group.getExceptionString());
+    for (Worker worker : workers) {
+      ThreadUtils.join(worker, TIMEOUT_MILLIS);
     }
 
     // Merge the log files together
     Map<String, InputStream> logs = new HashMap<>();
-    for (int i = 0; i < workers.size(); i++) {
-      Worker worker = (Worker) workers.get(i);
+    for (Worker worker : workers) {
       logs.put(worker.getName(), worker.getInputStream());
     }
     StringWriter sw = new StringWriter();
     PrintWriter pw = new PrintWriter(sw, true);
     MergeLogFiles.mergeLogFiles(logs, pw);
-
-    // System.out.println(sw.toString());
 
     // Verify that the entries are sorted
     BufferedReader br = new BufferedReader(new StringReader(sw.toString()));
@@ -102,65 +100,29 @@ public class MergeLogFilesIntegrationTest {
       Matcher matcher = pattern.matcher(line);
       if (matcher.matches()) {
         int value = Integer.parseInt(matcher.group(1));
-        assertTrue(lastValue + " <= " + value, value > lastValue);
+        assertThat(value).isGreaterThan(lastValue);
         lastValue = value;
       }
     }
 
-    assertEquals(999, lastValue);
+    assertThat(lastValue).isEqualTo(999);
   }
 
   /**
-   * A <code>ThreadGroup</code> for workers
+   * A {@code ThreadGroup} for workers
    */
-  private static class WorkerGroup extends ThreadGroup {
-    /**
-     * Did an uncaught exception occur in one of this group's threads?
-     */
-    private boolean exceptionOccurred;
+  private class WorkerGroup extends ThreadGroup {
 
     /**
-     * A <code>StringBuffer</code> containing a description of the uncaught exceptions thrown by the
-     * worker threads.
+     * Creates a new {@code WorkerGroup} with the given name
      */
-    private final StringBuffer sb;
-
-    /**
-     * Creates a new <code>WorkerGroup</code> with the given name
-     */
-    WorkerGroup(String name) {
+    private WorkerGroup(String name) {
       super(name);
-      sb = new StringBuffer();
     }
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-      if (e instanceof VirtualMachineError) {
-        SystemFailure.setFailure((VirtualMachineError) e); // don't throw
-      }
-      sb.append("Uncaught exception in thread ");
-      sb.append(t.getName());
-      sb.append("\n");
-      StringWriter sw = new StringWriter();
-      e.printStackTrace(new PrintWriter(sw, true));
-      sb.append(sw.toString());
-      sb.append("\n");
-
-      exceptionOccurred = true;
-    }
-
-    /**
-     * Returns whether or not an uncaught exception occurred in one of the worker threads.
-     */
-    public boolean exceptionOccurred() {
-      return exceptionOccurred;
-    }
-
-    /**
-     * Returns a string describing the uncaught exception(s) that occurred in the worker threads.
-     */
-    String getExceptionString() {
-      return sb.toString();
+      errorCollector.addError(e);
     }
   }
 
@@ -169,6 +131,7 @@ public class MergeLogFilesIntegrationTest {
    * amount of time between writing entries.
    */
   private class Worker extends Thread {
+
     /** The input stream for reading from the log file */
     private InputStream in;
 
@@ -176,9 +139,9 @@ public class MergeLogFilesIntegrationTest {
     private final Random random;
 
     /**
-     * Creates a new <code>Worker</code> with the given name
+     * Creates a new {@code Worker} with the given name
      */
-    public Worker(String name, ThreadGroup group) {
+    private Worker(String name, ThreadGroup group) {
       super(group, name);
       random = new Random();
     }
@@ -186,15 +149,13 @@ public class MergeLogFilesIntegrationTest {
     @Override
     public void run() {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      LogWriter logger =
-          new LocalLogWriter(ALL.intLevel(), new PrintStream(baos, true));
+      LogWriter logWriter = new LocalLogWriter(ALL.intLevel(), new PrintStream(baos, true));
       for (int i = 0; i < 100; i++) {
-        int n;
-        synchronized (MergeLogFilesIntegrationTest.this) {
-          n = next++;
+        synchronized (lock) {
+          int value = next++;
 
           // Have to log with the lock to guarantee ordering
-          logger.info("VALUE: " + n);
+          logWriter.info("VALUE: " + value);
 
           try {
             // Make sure that no two entries are at the same
@@ -206,7 +167,7 @@ public class MergeLogFilesIntegrationTest {
 
           } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            break; // TODO
+            break;
           }
         }
 
@@ -215,18 +176,17 @@ public class MergeLogFilesIntegrationTest {
 
         } catch (InterruptedException ex) {
           Thread.currentThread().interrupt();
-          break; // TODO
+          break;
         }
       }
 
-      // System.out.println(baos.toString());
       in = new ByteArrayInputStream(baos.toByteArray());
     }
 
     /**
-     * Returns an <code>InputStream</code> for reading from the log that this worker wrote.
+     * Returns an {@code InputStream} for reading from the log that this worker wrote.
      */
-    InputStream getInputStream() {
+    private InputStream getInputStream() {
       return in;
     }
   }
