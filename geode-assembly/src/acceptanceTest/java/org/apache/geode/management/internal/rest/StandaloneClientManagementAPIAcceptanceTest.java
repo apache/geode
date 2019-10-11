@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.rest;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,6 +41,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -58,13 +61,15 @@ public class StandaloneClientManagementAPIAcceptanceTest {
 
   private static String trustStorePath;
 
-  @Parameter
-  public Boolean useSsl;
-
   @Parameters
   public static Collection<Boolean> data() {
     return Arrays.asList(true, false);
   }
+
+  @Parameter
+  public Boolean useSsl;
+
+  private ProcessLogger clientProcessLogger;
 
   @BeforeClass
   public static void beforeClass() {
@@ -78,6 +83,12 @@ public class StandaloneClientManagementAPIAcceptanceTest {
         createTempFileFromResource(StandaloneClientManagementAPIAcceptanceTest.class,
             "/ssl/trusted.keystore").getAbsolutePath();
     assertThat(trustStorePath).as("java file resource not found").isNotBlank();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    clientProcessLogger.awaitTermination(GeodeAwaitility.getTimeout().getValueInMS(), MILLISECONDS);
+    clientProcessLogger.close();
   }
 
   @Test
@@ -168,7 +179,8 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     System.out.format("Launching client command: %s\n", command);
 
     Process process = pBuilder.start();
-    new ProcessLogger(process, "clientCreateRegion");
+    clientProcessLogger = new ProcessLogger(process, "clientCreateRegion");
+    clientProcessLogger.start();
     return process;
   }
 

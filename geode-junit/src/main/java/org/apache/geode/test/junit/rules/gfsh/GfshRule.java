@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
-import static org.apache.commons.lang3.SystemUtils.PATH_SEPARATOR;
+import static java.io.File.pathSeparator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
@@ -71,12 +70,14 @@ public class GfshRule extends ExternalResource {
    */
   @Override
   protected void after() {
-    // this would not include the "stopMemberQuietly" executions
-    gfshExecutions.stream().collect(Collectors.toList()).forEach(this::stopMembers);
+    // Copy the gfshExecutions list because stopMembers will add more executions
+    // This would not include the "stopMemberQuietly" executions
+    ArrayList<GfshExecution> executionsWithMembersToStop = new ArrayList<>(gfshExecutions);
+    executionsWithMembersToStop.forEach(this::stopMembers);
 
-    // this will include the "stopMemberQuietly" executions
+    // This will include the "stopMemberQuietly" executions
     try {
-      gfshExecutions.stream().forEach(gfshExecution -> gfshExecution.killProcess());
+      gfshExecutions.forEach(GfshExecution::killProcess);
     } finally {
       temporaryFolder.delete();
     }
@@ -114,24 +115,23 @@ public class GfshRule extends ExternalResource {
   }
 
   public GfshExecution execute(GfshScript gfshScript) {
-    GfshExecution gfshExecution;
     System.out.println("Executing " + gfshScript);
     try {
-      File workingDir = new File(temporaryFolder.getRoot(), gfshScript.getName());
-      workingDir.mkdirs();
-      Process process =
-          toProcessBuilder(gfshScript, gfsh, workingDir, gfshScript.getDebugPort()).start();
-      gfshExecution = new GfshExecution(process, workingDir);
+      File workingDir = temporaryFolder.newFolder(gfshScript.getName());
+      int debugPort = gfshScript.getDebugPort();
+
+      Process process = toProcessBuilder(gfshScript, gfsh, workingDir, debugPort).start();
+
+      GfshExecution gfshExecution = new GfshExecution(process, workingDir);
       gfshExecutions.add(gfshExecution);
       gfshExecution.awaitTermination(gfshScript);
+      return gfshExecution;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
-    return gfshExecution;
   }
 
-  protected ProcessBuilder toProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir,
+  private ProcessBuilder toProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir,
       int gfshDebugPort) {
     List<String> commandsToExecute = new ArrayList<>();
 
@@ -159,9 +159,9 @@ public class GfshRule extends ExternalResource {
     if (!extendedClasspath.isEmpty()) {
       String classpathKey = "CLASSPATH";
       String existingJavaArgs = environmentMap.get(classpathKey);
-      String specified = String.join(PATH_SEPARATOR, extendedClasspath);
+      String specified = String.join(pathSeparator, extendedClasspath);
       String newValue =
-          String.format("%s%s", existingJavaArgs == null ? "" : existingJavaArgs + PATH_SEPARATOR,
+          String.format("%s%s", existingJavaArgs == null ? "" : existingJavaArgs + pathSeparator,
               specified);
       environmentMap.put(classpathKey, newValue);
     }
