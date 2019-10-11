@@ -36,7 +36,6 @@ import org.apache.geode.security.NotAuthorizedException;
  * Utility class for mapping operations in the query language to Java methods
  */
 public class MethodDispatch {
-  private static final String AUTHORIZATION_CACHE_KEY = "METHOD_AUTHORIZATION_CACHE_KEY";
   private Method _method;
   private final Class _targetClass;
   private final String _methodName;
@@ -63,7 +62,8 @@ public class MethodDispatch {
     try {
       // Try to use cached result so authorizer gets invoked only once per query.
       boolean authorizationResult;
-      Boolean cachedResult = (Boolean) executionContext.cacheGet(AUTHORIZATION_CACHE_KEY);
+      String cacheKey = target.getClass().getCanonicalName() + "." + _method.getName();
+      Boolean cachedResult = (Boolean) executionContext.cacheGet(cacheKey);
 
       if (cachedResult != null) {
         // Use cached result.
@@ -71,7 +71,7 @@ public class MethodDispatch {
       } else {
         // First time, evaluate and cache result.
         authorizationResult = _methodInvocationAuthorizer.authorize(_method, target);
-        executionContext.cachePut(AUTHORIZATION_CACHE_KEY, authorizationResult);
+        executionContext.cachePut(cacheKey, authorizationResult);
       }
 
       if (!authorizationResult) {

@@ -48,7 +48,6 @@ import org.apache.geode.security.NotAuthorizedException;
  * Utility for managing an attribute
  */
 public class AttributeDescriptor {
-  private static final String AUTHORIZATION_CACHE_KEY = "ATTRIBUTE_AUTHORIZATION_CACHE_KEY";
   private final String _name;
   private final TypeRegistry _pdxRegistry;
   private final MethodInvocationAuthorizer _methodInvocationAuthorizer;
@@ -105,12 +104,13 @@ public class AttributeDescriptor {
           Method method = (Method) m;
           // Try to use previous result so authorizer gets invoked only once per query.
           boolean authorizationResult;
-          Boolean cachedResult = (Boolean) executionContext.cacheGet(AUTHORIZATION_CACHE_KEY);
+          String cacheKey = target.getClass().getCanonicalName() + "." + method.getName();
+          Boolean cachedResult = (Boolean) executionContext.cacheGet(cacheKey);
 
           if (cachedResult == null) {
             // First time, evaluate and cache result.
             authorizationResult = _methodInvocationAuthorizer.authorize(method, target);
-            executionContext.cachePut(AUTHORIZATION_CACHE_KEY, authorizationResult);
+            executionContext.cachePut(cacheKey, authorizationResult);
           } else {
             // Use cached result.
             authorizationResult = cachedResult;

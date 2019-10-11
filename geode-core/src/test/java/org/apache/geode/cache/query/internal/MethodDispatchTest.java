@@ -76,69 +76,174 @@ public class MethodDispatchTest {
   }
 
   @Test
-  public void invokeShouldUseAlreadyAuthorizedCachedResultWhenMethodIsAuthorized()
+  public void invokeShouldCacheResultForAllowedMethod() throws Exception {
+    doReturn(true).when(methodInvocationAuthorizer).authorize(any(), any());
+    MethodDispatch methodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, Integer.class, "toString",
+            Collections.emptyList());
+    methodDispatch.invoke(new Integer("0"), emptyList, queryExecutionContext);
+
+    assertThat(queryExecutionContext.cacheGet("java.lang.Integer.toString")).isNotNull();
+    assertThat(queryExecutionContext.cacheGet("java.lang.Integer.toString")).isEqualTo(true);
+  }
+
+  @Test
+  public void invokeShouldCacheResultForForbiddenMethod() throws Exception {
+    doReturn(false).when(methodInvocationAuthorizer).authorize(any(), any());
+    MethodDispatch methodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, Integer.class, "toString",
+            Collections.emptyList());
+
+    assertThatThrownBy(
+        () -> methodDispatch.invoke(new Integer("0"), emptyList, queryExecutionContext))
+            .isInstanceOf(NotAuthorizedException.class)
+            .hasMessage(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "toString");
+
+    assertThat(queryExecutionContext.cacheGet("java.lang.Integer.toString")).isNotNull();
+    assertThat(queryExecutionContext.cacheGet("java.lang.Integer.toString")).isEqualTo(false);
+  }
+
+  @Test
+  public void invokeShouldUseAlreadyAuthorizedCachedResultWhenMethodIsAuthorizedAndQueryContextIsTheSame()
       throws NameResolutionException {
     doReturn(true).when(methodInvocationAuthorizer).authorize(any(), any());
-    MethodDispatch methodDispatch = new MethodDispatch(methodInvocationAuthorizer, TestBean.class,
-        "publicMethod", Collections.emptyList());
+    MethodDispatch publicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBean.class, "publicMethod",
+            Collections.emptyList());
+    MethodDispatch anotherPublicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBean.class, "anotherPublicMethod",
+            Collections.emptyList());
+    MethodDispatch extendedPublicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBeanExtension.class, "publicMethod",
+            Collections.emptyList());
 
     // Same QueryExecutionContext -> Use cache.
     IntStream.range(0, 10).forEach(element -> {
       try {
-        Object result = methodDispatch.invoke(testBean, emptyList, queryExecutionContext);
-        assertThat(result).isInstanceOf(String.class);
-        assertThat(result).isEqualTo("publicMethod");
+        assertThat(publicMethodDispatch.invoke(testBean, emptyList, queryExecutionContext))
+            .isInstanceOf(String.class).isEqualTo("publicMethod");
+        assertThat(anotherPublicMethodDispatch.invoke(testBean, emptyList, queryExecutionContext))
+            .isInstanceOf(String.class).isEqualTo("anotherPublicMethod");
+        assertThat(extendedPublicMethodDispatch
+            .invoke(new TestBeanExtension(), emptyList, queryExecutionContext))
+                .isInstanceOf(String.class).isEqualTo("extendedPublicMethod");
       } catch (NameNotFoundException | QueryInvocationTargetException exception) {
         throw new RuntimeException(exception);
       }
     });
-    verify(methodInvocationAuthorizer, times(1)).authorize(any(), any());
+    verify(methodInvocationAuthorizer, times(3)).authorize(any(), any());
+  }
+
+  @Test
+  public void invokeShouldNotUseAlreadyAuthorizedCachedResultWhenMethodIsAuthorizedAndQueryContextIsNotTheSame()
+      throws NameResolutionException {
+    doReturn(true).when(methodInvocationAuthorizer).authorize(any(), any());
+    MethodDispatch publicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBean.class, "publicMethod",
+            Collections.emptyList());
+    MethodDispatch anotherPublicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBean.class, "anotherPublicMethod",
+            Collections.emptyList());
+    MethodDispatch extendedPublicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBeanExtension.class, "publicMethod",
+            Collections.emptyList());
 
     // New QueryExecutionContext every time -> Do not use cache.
     IntStream.range(0, 10).forEach(element -> {
       try {
         QueryExecutionContext mockContext = mock(QueryExecutionContext.class);
-        Object result = methodDispatch.invoke(testBean, emptyList, mockContext);
-        assertThat(result).isInstanceOf(String.class);
-        assertThat(result).isEqualTo("publicMethod");
+        assertThat(publicMethodDispatch.invoke(testBean, emptyList, mockContext))
+            .isInstanceOf(String.class).isEqualTo("publicMethod");
+        assertThat(anotherPublicMethodDispatch.invoke(testBean, emptyList, mockContext))
+            .isInstanceOf(String.class).isEqualTo("anotherPublicMethod");
+        assertThat(
+            extendedPublicMethodDispatch.invoke(new TestBeanExtension(), emptyList, mockContext))
+                .isInstanceOf(String.class).isEqualTo("extendedPublicMethod");
       } catch (NameNotFoundException | QueryInvocationTargetException exception) {
         throw new RuntimeException(exception);
       }
     });
-    verify(methodInvocationAuthorizer, times(11)).authorize(any(), any());
+    verify(methodInvocationAuthorizer, times(30)).authorize(any(), any());
   }
 
   @Test
-  public void invokeShouldUseAlreadyAuthorizedCachedResultWhenMethodIsNotAuthorized()
+  public void invokeShouldUseAlreadyAuthorizedCachedResultWhenMethodIsNotAuthorizedAndContextIsTheSame()
       throws NameResolutionException {
     doReturn(false).when(methodInvocationAuthorizer).authorize(any(), any());
-    MethodDispatch methodDispatch = new MethodDispatch(methodInvocationAuthorizer, TestBean.class,
-        "publicMethod", Collections.emptyList());
+    MethodDispatch publicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBean.class, "publicMethod",
+            Collections.emptyList());
+    MethodDispatch anotherPublicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBean.class, "anotherPublicMethod",
+            Collections.emptyList());
+    MethodDispatch extendedPublicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBeanExtension.class, "publicMethod",
+            Collections.emptyList());
 
     // Same QueryExecutionContext -> Use cache.
-    IntStream.range(0, 10).forEach(element -> assertThatThrownBy(
-        () -> methodDispatch.invoke(testBean, emptyList, queryExecutionContext))
-            .isInstanceOf(NotAuthorizedException.class)
-            .hasMessage(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "publicMethod"));
-    verify(methodInvocationAuthorizer, times(1)).authorize(any(), any());
+    IntStream.range(0, 10).forEach(element -> {
+      assertThatThrownBy(
+          () -> publicMethodDispatch.invoke(testBean, emptyList, queryExecutionContext))
+              .isInstanceOf(NotAuthorizedException.class)
+              .hasMessage(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "publicMethod");
+      assertThatThrownBy(
+          () -> anotherPublicMethodDispatch.invoke(testBean, emptyList, queryExecutionContext))
+              .isInstanceOf(NotAuthorizedException.class)
+              .hasMessage(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "anotherPublicMethod");
+      assertThatThrownBy(() -> extendedPublicMethodDispatch
+          .invoke(new TestBeanExtension(), emptyList, queryExecutionContext))
+              .isInstanceOf(NotAuthorizedException.class)
+              .hasMessage(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "publicMethod");
+    });
+    verify(methodInvocationAuthorizer, times(3)).authorize(any(), any());
+  }
+
+  @Test
+  public void invokeShouldNotUseAlreadyAuthorizedCachedResultWhenMethodIsNotAuthorizedAndContextIsNotTheSame()
+      throws NameResolutionException {
+    doReturn(false).when(methodInvocationAuthorizer).authorize(any(), any());
+    MethodDispatch publicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBean.class, "publicMethod",
+            Collections.emptyList());
+    MethodDispatch anotherPublicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBean.class, "anotherPublicMethod",
+            Collections.emptyList());
+    MethodDispatch extendedPublicMethodDispatch =
+        new MethodDispatch(methodInvocationAuthorizer, TestBeanExtension.class, "publicMethod",
+            Collections.emptyList());
 
     // New QueryExecutionContext every time -> Do not use cache.
-    IntStream.range(0, 10).forEach(element -> assertThatThrownBy(
-        () -> methodDispatch.invoke(testBean, emptyList, mock(QueryExecutionContext.class)))
-            .isInstanceOf(NotAuthorizedException.class)
-            .hasMessage(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "publicMethod"));
-    verify(methodInvocationAuthorizer, times(11)).authorize(any(), any());
+    IntStream.range(0, 10).forEach(element -> {
+      QueryExecutionContext mockContext = mock(QueryExecutionContext.class);
+      assertThatThrownBy(() -> publicMethodDispatch.invoke(testBean, emptyList, mockContext))
+          .isInstanceOf(NotAuthorizedException.class)
+          .hasMessage(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "publicMethod");
+      assertThatThrownBy(() -> anotherPublicMethodDispatch.invoke(testBean, emptyList, mockContext))
+          .isInstanceOf(NotAuthorizedException.class)
+          .hasMessage(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "anotherPublicMethod");
+      assertThatThrownBy(() -> extendedPublicMethodDispatch
+          .invoke(new TestBeanExtension(), emptyList, mockContext))
+              .isInstanceOf(NotAuthorizedException.class)
+              .hasMessage(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "publicMethod");
+    });
+    verify(methodInvocationAuthorizer, times(30)).authorize(any(), any());
   }
 
   @SuppressWarnings("unused")
   private static class TestBean {
-
     public String publicMethod() {
       return "publicMethod";
     }
 
-    private String privateMethod() {
-      return "privateMethod";
+    public String anotherPublicMethod() {
+      return "anotherPublicMethod";
+    }
+  }
+
+  private static class TestBeanExtension extends TestBean {
+    @Override
+    public String publicMethod() {
+      return "extendedPublicMethod";
     }
   }
 }
