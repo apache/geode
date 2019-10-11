@@ -171,6 +171,11 @@ public class DiskStoreMBean extends NotificationBroadcasterSupport implements Di
     return bridge.getDiskUsagePercentage();
   }
 
+  @Override
+  public float getDiskFreePercentage() {
+    return bridge.getDiskFreePercentage();
+  }
+
   public DiskStoreMBeanBridge getBridge() {
     return bridge;
   }

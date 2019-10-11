@@ -4666,4 +4666,14 @@ public class DiskStoreImpl implements DiskStore {
     return usage;
   }
 
+  /**
+   * Returns the free space percentage of the disk store, or -1 in case
+   * one or more directories have unlimited storage.
+   */
+  public float getDiskFreePercentage() {
+    if (this.totalDiskStoreSpace == ManagementConstants.NOT_AVAILABLE_LONG) {
+      return ManagementConstants.NOT_AVAILABLE_FLOAT;
+    }
+    return (100 - getDiskUsagePercentage());
+  }
 }

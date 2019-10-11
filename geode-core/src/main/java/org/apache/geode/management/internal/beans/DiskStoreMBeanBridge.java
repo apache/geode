@@ -273,4 +273,8 @@ public class DiskStoreMBeanBridge {
   public float getDiskUsagePercentage() {
     return diskStore.getDiskUsagePercentage();
   }
+
+  public float getDiskFreePercentage() {
+    return diskStore.getDiskFreePercentage();
+  }
 }
