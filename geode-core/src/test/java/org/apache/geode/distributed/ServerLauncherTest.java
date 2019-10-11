@@ -293,7 +293,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void startCacheServerDoesNothingWhenDefaultServerDisabled() throws IOException {
+  public void startCacheServerDoesNothingWhenDefaultServerDisabled() {
     Cache cache = createCache();
     CacheServer cacheServer = mock(CacheServer.class, "CacheServer");
     when(cache.getCacheServers()).thenReturn(Collections.emptyList());
@@ -310,7 +310,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void startCacheServerDoesNothingWhenCacheServerAlreadyExists() throws IOException {
+  public void startCacheServerDoesNothingWhenCacheServerAlreadyExists() {
     Cache cache = createCache();
     CacheServer cacheServer1 = mock(CacheServer.class, "CacheServer1");
     CacheServer cacheServer2 = mock(CacheServer.class, "CacheServer2");
@@ -408,20 +408,20 @@ public class ServerLauncherTest {
 
   @Test
   public void startWaitsForStartupTasksToComplete() {
-    ServerLauncherCacheProvider serverLauncherCacheProvider =
-        mock(ServerLauncherCacheProvider.class);
+    ServerLauncherCacheProvider cacheProvider = mock(ServerLauncherCacheProvider.class);
     InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
     InternalCache cacheFromBuilder = createCache(internalResourceManager);
-    when(serverLauncherCacheProvider.createCache(any(), any())).thenReturn(cacheFromBuilder);
-
-    ServerLauncher serverLauncher = new Builder()
-        .setServerLauncherCacheProvider(serverLauncherCacheProvider)
-        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
-        .build();
-
     CompletableFuture<Void> startupTasks = spy(new CompletableFuture<>());
+    when(cacheProvider.createCache(any(), any()))
+        .thenReturn(cacheFromBuilder);
     when(internalResourceManager.allOfStartupTasks())
         .thenReturn(startupTasks);
+
+    ServerLauncher serverLauncher = new Builder()
+        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
+        .setDisableDefaultServer(true)
+        .setServerLauncherCacheProvider(cacheProvider)
+        .build();
 
     CompletableFuture<Void> serverLauncherStart = CompletableFuture.runAsync(serverLauncher::start);
 
@@ -435,7 +435,7 @@ public class ServerLauncherTest {
 
   private CompletableFuture<Void> completedExceptionallyFuture() {
     CompletableFuture<Void> completedExceptionallyFuture = new CompletableFuture<>();
-    completedExceptionallyFuture.completeExceptionally(new RuntimeException());
+    completedExceptionallyFuture.completeExceptionally(new RuntimeException(""));
     return completedExceptionallyFuture;
   }
 
