@@ -91,14 +91,15 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     File outputJar = new File(tempDir.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, new File(filePath));
 
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     int locatorPort = availablePorts[0];
     int httpPort = availablePorts[1];
+    int jmxPort = availablePorts[2];
     GfshExecution startCluster =
-        GfshScript.of(String.format("start locator --port=%d --J=-Dgemfire.http-service-port=%d %s",
-            locatorPort,
-            httpPort,
-            getSslParameters()),
+        GfshScript.of(
+            String.format(
+                "start locator --port=%d --http-service-port=%d --J=-Dgemfire.JMX_MANAGER_PORT=%d %s",
+                locatorPort, httpPort, jmxPort, getSslParameters()),
             String.format("start server --locators=localhost[%d] --server-port=0", locatorPort))
             .withName("startCluster").execute(gfsh);
 
@@ -185,12 +186,13 @@ public class StandaloneClientManagementAPIAcceptanceTest {
   }
 
   private String getJarOrClassesForModule(String module) {
-    String classPath = Arrays.stream(System.getProperty("java.class.path")
+    String classPathValue = System.getProperty("java.class.path");
+    String classPath = Arrays.stream(classPathValue
         .split(File.pathSeparator))
-        .filter(x -> x.contains(module)
-            && (x.endsWith("/classes") || x.endsWith("/classes/java/main")
-                || x.endsWith("/resources") || x.endsWith("/resources/main")
-                || x.endsWith(".jar")))
+        .filter(x -> x.contains(module))
+        // && (x.endsWith("/classes") || x.endsWith("/classes/java/main")
+        // || x.endsWith("/resources") || x.endsWith("/resources/main")
+        // || x.endsWith(".jar")))
         .collect(Collectors.joining(File.pathSeparator));
 
     assertThat(classPath).as("no classes found for module: " + module)
