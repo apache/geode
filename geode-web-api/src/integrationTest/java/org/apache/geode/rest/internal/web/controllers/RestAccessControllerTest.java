@@ -16,6 +16,7 @@ package org.apache.geode.rest.internal.web.controllers;
 
 import static org.apache.geode.test.matchers.JsonEquivalence.jsonEquals;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -136,6 +137,8 @@ public class RestAccessControllerTest {
 
     FunctionService.registerFunction(new AddFreeItemToOrders());
     FunctionService.registerFunction(new EchoArgumentFunction());
+    FunctionService.registerFunction(new GetOrderDescriptionFunction());
+
 
     rule.createRegion(RegionShortcut.REPLICATE_PROXY, "empty",
         f -> f.setCacheLoader(new SimpleCacheLoader()).setCacheWriter(new SimpleCacheWriter()));
@@ -810,7 +813,8 @@ public class RestAccessControllerTest {
     mockMvc.perform(get("/v1/functions"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.functions",
-            containsInAnyOrder("AddFreeItemToOrders", "EchoArgumentFunction")));
+            containsInAnyOrder("AddFreeItemToOrders", "EchoArgumentFunction",
+                "GetOrderDescriptionFunction")));
   }
 
   @Test
@@ -833,6 +837,19 @@ public class RestAccessControllerTest {
         .andExpect(jsonPath("$.items[*].itemNo", containsInAnyOrder(1, 2, 599)))
         .andExpect(jsonPath("$.items[*].description",
             containsInAnyOrder("Product-3", "Product-4", "Part X Free on Bumper Offer")));
+  }
+
+  @Test
+  @WithMockUser
+  public void executeFunctionWithFilter() throws Exception {
+    final String FUNCTION_ARGS = "[{\"@type\": \"String\", \"@value\": \"argument\"}]";
+
+    putEntry(); // order 2
+    mockMvc.perform(post("/v1/functions/GetOrderDescriptionFunction?onRegion=orders&filter=2")
+        .content(FUNCTION_ARGS)
+        .with(POST_PROCESSOR))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("Purchase order for company - B")));
   }
 
   @Test
