@@ -53,7 +53,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @RunWith(JUnitParamsRunner.class)
 @Category({OQLQueryTest.class, SecurityTest.class})
-public class DefaultQueryServiceIntegrationTest {
+public class DefaultQueryServiceWithSecurityIntegrationTest {
   private InternalCache spiedCache;
 
   @Rule
