@@ -3015,12 +3015,13 @@ public class WANTestBase extends DistributedTestCase {
   }
 
   public static void checkAllSiteMetaData(
-      Map<Integer, Set<InetSocketAddress>> dsIdToLocatorAddresses) {
+      Map<Integer, Set<InetSocketAddress>> dsIdToLocatorAddresses, final int siteSizeToCheck) {
     List<Locator> locatorsConfigured = Locator.getLocators();
     Locator locator = locatorsConfigured.get(0);
     await().untilAsserted(() -> {
       Map<Integer, Set<DistributionLocatorId>> allSiteMetaData =
           ((InternalLocator) locator).getLocatorMembershipListener().getAllLocatorsInfo();
+      assertThat(allSiteMetaData.size()).isEqualTo(siteSizeToCheck);
       for (Map.Entry<Integer, Set<InetSocketAddress>> entry : dsIdToLocatorAddresses.entrySet()) {
         Set<DistributionLocatorId> foundLocatorIds = allSiteMetaData.get(entry.getKey());
         Set<InetSocketAddress> expectedLocators = entry.getValue();
