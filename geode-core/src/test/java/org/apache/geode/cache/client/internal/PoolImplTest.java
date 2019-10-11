@@ -113,6 +113,7 @@ public class PoolImplTest {
 
     final PoolFactoryImpl.PoolAttributes poolAttributes =
         mock(PoolFactoryImpl.PoolAttributes.class);
+
     /*
      * These are the minimum pool attributes required
      * so that basic validation and setup completes successfully. The values of
