@@ -37,7 +37,6 @@ import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Abstract base class for integration tests of {@link LocatorLauncher} as an application main in a
@@ -47,8 +46,6 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  */
 public abstract class LocatorLauncherRemoteIntegrationTestCase
     extends LocatorLauncherIntegrationTestCase implements UsesLocatorCommand {
-
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
 
   private final AtomicBoolean threwBindException = new AtomicBoolean();
 
@@ -90,7 +87,9 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   }
 
   protected void assertStopOf(final Process process) {
-    await().untilAsserted(() -> assertThat(process.isAlive()).isFalse());
+    await()
+        .atMost(AWAIT_MILLIS, MILLISECONDS)
+        .untilAsserted(() -> assertThat(process.isAlive()).isFalse());
   }
 
   /**
@@ -158,7 +157,6 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   protected void startLocatorShouldFail(final LocatorCommand command) throws InterruptedException {
     awaitStartFail(command, createBindExceptionListener("sysout", threwBindException),
         createBindExceptionListener("syserr", threwBindException));
-
   }
 
   protected void startLocatorShouldFail() throws InterruptedException {
@@ -172,7 +170,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   private void awaitStartFail(final LocatorCommand command, final InputListener outListener,
       final InputListener errListener) throws InterruptedException {
     executeCommandWithReaders(command.create(), outListener, errListener);
-    process.waitFor(TIMEOUT_MILLIS, MILLISECONDS);
+    process.waitFor(AWAIT_MILLIS, MILLISECONDS);
     assertThatProcessIsNotAlive();
     assertThat(process.exitValue()).isEqualTo(1);
   }
@@ -197,24 +195,26 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
 
   @Override
   protected LocatorLauncher awaitStart(final LocatorLauncher launcher) {
-    await().untilAsserted(() -> {
-      try {
-        assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE);
-      } catch (Exception e) {
-        throw new AssertionError(statusFailedWithException(e), e);
-      }
-    });
+    await()
+        .atMost(AWAIT_MILLIS, MILLISECONDS)
+        .untilAsserted(() -> {
+          try {
+            assertThat(launcher.status().getStatus()).isEqualTo(Status.ONLINE);
+          } catch (Error | Exception e) {
+            throw new AssertionError(statusFailedWithException(e), e);
+          }
+        });
     assertThat(process.isAlive()).isTrue();
     return launcher;
   }
 
-  protected String statusFailedWithException(Exception e) {
+  protected String statusFailedWithException(Throwable cause) {
     StringBuilder sb = new StringBuilder();
     sb.append("Status failed with exception: ");
     sb.append("process.isAlive()=").append(process.isAlive());
     sb.append(", processErrReader").append(processErrReader);
     sb.append(", processOutReader").append(processOutReader);
-    sb.append(", message").append(e.getMessage());
+    sb.append(", message").append(cause.getMessage());
     return sb.toString();
   }
 
