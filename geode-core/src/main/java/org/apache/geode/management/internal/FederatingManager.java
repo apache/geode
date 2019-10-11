@@ -40,6 +40,7 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
@@ -213,8 +214,16 @@ public class FederatingManager extends Manager {
     // If cache is closed all the regions would have been destroyed implicitly
     if (!cache.isClosed()) {
       proxyFactory.removeAllProxies(member, proxyRegion);
-      proxyRegion.localDestroyRegion();
-      notificationRegion.localDestroyRegion();
+      try {
+        proxyRegion.localDestroyRegion();
+      } catch (RegionDestroyedException rde) {
+        logger.info("Region has been destroyed during closing cache. " + rde.getMessage());
+      }
+      try {
+        notificationRegion.localDestroyRegion();
+      } catch (RegionDestroyedException rde) {
+        logger.info("Region has been destroyed during closing cache. " + rde.getMessage());
+      }
     }
 
     if (!system.getDistributedMember().equals(member)) {
