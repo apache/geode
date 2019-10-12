@@ -19,13 +19,13 @@ import java.io.IOException;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
-import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderOperationsDUnitTest;
+import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderOperationsDistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category(WanTest.class)
 @SuppressWarnings("serial")
-public class ConcurrentSerialGatewaySenderOperationsDUnitTest
-    extends SerialGatewaySenderOperationsDUnitTest {
+public class ConcurrentSerialGatewaySenderOperationsDistributedTest
+    extends SerialGatewaySenderOperationsDistributedTest {
 
   @Override
   protected void createSenderInVm4() throws IOException {
