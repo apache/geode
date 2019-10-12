@@ -106,7 +106,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @SuppressWarnings("serial")
-public class SerialGatewaySenderOperationsDUnitTest extends CacheTestCase {
+public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase {
   private static final Logger logger = LogService.getLogger();
 
   @Parameters(name = "{index}: numDispatchers={0}")

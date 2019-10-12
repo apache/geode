@@ -24,8 +24,8 @@ import org.apache.geode.test.junit.categories.WanTest;
 
 @SuppressWarnings("serial")
 @Category(WanTest.class)
-public class ConcurrentSerialGatewaySenderOperationsOffHeapDUnitTest
-    extends ConcurrentSerialGatewaySenderOperationsDUnitTest {
+public class ConcurrentSerialGatewaySenderOperationsOffHeapDistributedTest
+    extends ConcurrentSerialGatewaySenderOperationsDistributedTest {
 
   @Override
   public Properties getDistributedSystemProperties() {
