@@ -1,5 +1,5 @@
 ---
-title:  PUT /gemfire-api/v1/{region}/{key}?op=CAS
+title:  PUT /geode/v1/{region}/{key}?op=CAS
 ---
 
 <!--
@@ -24,8 +24,8 @@ Update (compare-and-set) value having key with a new value if and only if the "@
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{key}?op=CAS
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{key1},{key2},...{keyN}?op=CAS
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{region}/{key}?op=CAS
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{region}/{key1},{key2},...{keyN}?op=CAS
 ```
 
 ## Parameters
@@ -112,7 +112,7 @@ http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v
 ``` pre
 Request Payload: application/json
 
-PUT /gemfire-api/v1/orders/2?op=CAS
+PUT /geode/v1/orders/2?op=CAS
 
 Accept: application/json
 Content-Type: application/json
@@ -212,4 +212,4 @@ Content-Type: application/json
 
 If the "@old" value sent by the client in the HTTP request, along with the "@new" value, does not match the existing value having key in region, then a 409 - CONFLICT error is returned indicating the mismatch in expected state. The "@old" and current value must match in order for the key to be assigned the "@new" value.
 
-If a "CONFLICT" occurs, it is a simple matter for the client to issue a HTTP GET request for the Key (GET /gemfire-api/v1/orders/222) to get a updated copy of the value. CAS is similar to optimistic locking (as opposed to optimistic locking assuming the value will change between the time a client requests a value and subsequently updates the value) in that it assumes the client's state is up-to-date when the client tries to update, but if not then fail, hence the 409 - CONFLICT.
+If a "CONFLICT" occurs, it is a simple matter for the client to issue a HTTP GET request for the Key (GET /geode/v1/orders/222) to get a updated copy of the value. CAS is similar to optimistic locking (as opposed to optimistic locking assuming the value will change between the time a client requests a value and subsequently updates the value) in that it assumes the client's state is up-to-date when the client tries to update, but if not then fail, hence the 409 - CONFLICT.

@@ -1,5 +1,5 @@
 ---
-title:  POST /gemfire-api/v1/functions/{functionId}
+title:  POST /geode/v1/functions/{functionId}
 ---
 
 <!--
@@ -24,7 +24,7 @@ Execute <%=vars.product_name%> function on entire cluster or on a specified regi
 ## Resource URL
 
 ``` pre
-/gemfire-api/v1/functions/{functionId}?[&onRegion=regionname|&onMembers=member1,member2,...,memberN|&onGroups=group1,group2,...,groupN]
+/geode/v1/functions/{functionId}?[&onRegion=regionname|&onMembers=member1,member2,...,memberN|&onGroups=group1,group2,...,groupN]
 ```
 
 ## Parameters
@@ -62,7 +62,7 @@ Execute <%=vars.product_name%> function on entire cluster or on a specified regi
 
 ``` pre
 Request Payload: application/json
-POST /gemfire-api/v1/functions/AddFreeItemToOrders
+POST /geode/v1/functions/AddFreeItemToOrders
 Accept: application/json
 Content-Type: application/json
 
@@ -87,7 +87,7 @@ Another example:
 ``` pre
 Request Payload: null
 
-POST /gemfire-api/v1/functions/getDeliveredOrders
+POST /geode/v1/functions/getDeliveredOrders
 Accept: application/json
 ```
 
@@ -96,7 +96,7 @@ Accept: application/json
 ``` pre
 Response Payload: null
 200 OK
-Location:http: //localhost:8080/gemfire-api/v1/functions/AddFreeItemToOrders
+Location:http: //localhost:8080/geode/v1/functions/AddFreeItemToOrders
 ```
 
 Another example response:
@@ -107,7 +107,7 @@ Response Payload: application/json
 200 OK
 Content-Length: 316
 Content-Type: application/json
-Location: http://localhost:8080/gemfire-api/v1/functions/getDeliveredOrders
+Location: http://localhost:8080/geode/v1/functions/getDeliveredOrders
 [
     {
          "purchaseOrderNo":  "1121",

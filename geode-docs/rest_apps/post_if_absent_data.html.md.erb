@@ -1,5 +1,5 @@
 ---
-title:  POST /gemfire-api/v1/{region}?key=&lt;key&gt;
+title:  POST /geode/v1/{region}?key=&lt;key&gt;
 ---
 
 <!--
@@ -24,7 +24,7 @@ Create (put-if-absent) data in region.
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}?key=<key>
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{region}?key=<key>
 ```
 
 ## Parameters
@@ -56,7 +56,7 @@ http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v
 
 ``` pre
 Request Payload: application/json
-POST /gemfire-api/v1/orders?key=2
+POST /geode/v1/orders?key=2
 
 Accept: application/json
 Content-Type: application/json
@@ -95,7 +95,7 @@ Content-Type: application/json
 ``` pre
 Response Payload: null
 201 CREATED
-Location: http://localhost:8080/gemfire-api/v1/orders/2
+Location: http://localhost:8080/geode/v1/orders/2
 ```
 
 ## Error Codes
@@ -111,7 +111,7 @@ Location: http://localhost:8080/gemfire-api/v1/orders/2
 
 ``` pre
 409 Conflict
-Location:http://localhost:8080/gemfire-api/v1/orders/2
+Location:http://localhost:8080/geode/v1/orders/2
 Content-Type: application/json
 
 {

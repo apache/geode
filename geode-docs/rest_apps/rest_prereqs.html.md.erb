@@ -25,7 +25,7 @@ Before development, it is important to understand the prerequisites and limitati
 
 -   All domain objects, functions and function-arg classes must be properly configured and registered in the <%=vars.product_name%> deployment. Any functions that you wish to execute through the REST API must be available on the target member’s CLASSPATH.
 -   The current implementation supports only the **application/json** MIME type. Other return types (XML, objects, and so on) are not supported. Plain text is supported as a return type for some error messages.
--   Keys are strictly of type String. For example, the request `PUT http://localhost:8080/gemfire-api/v1/customers/123.456` will add an entry for key ("123.456") of type String.
+-   Keys are strictly of type String. For example, the request `PUT http://localhost:8080/geode/v1/customers/123.456` will add an entry for key ("123.456") of type String.
 -   Some special formats of JSON documents are not supported in <%=vars.product_name%> REST. See [Key Types and JSON Support](troubleshooting.html#concept_gsv_zd5_m4) for examples.
 -   To achieve interoperability between <%=vars.product_name%> Java clients (or <%=vars.product_name%> native clients) and REST clients, the following rules must be followed:
     -   All <%=vars.product_name%> Java and native client classes operating on data also accessed by the REST interface must be PDX serialized, either via PDX autoserialization or by implementing `PdxSerializable`.

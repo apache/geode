@@ -1,5 +1,5 @@
 ---
-title:  GET /gemfire-api/v1/queries/adhoc?q=&lt;OQL-statement&gt;
+title:  GET /geode/v1/queries/adhoc?q=&lt;OQL-statement&gt;
 ---
 
 <!--
@@ -24,7 +24,7 @@ Run an unnamed (unidentified), ad-hoc query passed as a URL parameter.
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/queries/adhoc?q=<OQL-statement>
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/queries/adhoc?q=<OQL-statement>
 ```
 
 ## Parameters
@@ -61,7 +61,7 @@ http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v
 ## Example Request
 
 ``` pre
-curl -i "http://localhost:8080/gemfire-api/v1/queries/adhoc?q=select%20*%20%20from%20/customers"
+curl -i "http://localhost:8080/geode/v1/queries/adhoc?q=select%20*%20%20from%20/customers"
 ```
 
 ## Example Success Response

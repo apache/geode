@@ -1,5 +1,5 @@
 ---
-title:  GET /gemfire-api/v1/queries
+title:  GET /geode/v1/queries
 ---
 
 <!--
@@ -24,7 +24,7 @@ List all parameterized queries by ID or name.
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/queries
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/queries
 ```
 
 ## Parameters
@@ -35,7 +35,7 @@ None
 
 ``` pre
 Request Payload: null
-GET /gemfire-api/v1/queries/
+GET /geode/v1/queries/
 Accept: application/json
 ```
 
@@ -47,7 +47,7 @@ Response Payload: application/json
 
 200 OK
 Content-Type: application/json
-Location: http://localhost:8080/gemfire-api/v1/queries
+Location: http://localhost:8080/geode/v1/queries
 
 {
     "queries": [
