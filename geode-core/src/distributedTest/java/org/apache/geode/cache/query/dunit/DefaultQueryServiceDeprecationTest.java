@@ -33,7 +33,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 
 public class DefaultQueryServiceDeprecationTest implements Serializable {
 
-  MemberVM locator;
+  private MemberVM locator;
 
   @ClassRule
   public static TemporaryFolder folderRule = new TemporaryFolder();
@@ -58,7 +58,7 @@ public class DefaultQueryServiceDeprecationTest implements Serializable {
     server.invoke(() -> {
       ClusterStartupRule.getCache().getQueryService();
       ClusterStartupRule.getCache().getQueryService();
-      LogFileAssert.assertThat(logFile).containsOnlyOnce(DefaultQueryService.DEPRECIATION_WARNING);
+      LogFileAssert.assertThat(logFile).containsOnlyOnce(DefaultQueryService.DEPRECATION_WARNING);
     });
     server.getVM().bounce();
   }
@@ -72,7 +72,7 @@ public class DefaultQueryServiceDeprecationTest implements Serializable {
             .withProperty("log-file", logFile.getAbsolutePath()));
     server.invoke(() -> {
       ClusterStartupRule.getCache().getQueryService();
-      LogFileAssert.assertThat(logFile).doesNotContain(DefaultQueryService.DEPRECIATION_WARNING);
+      LogFileAssert.assertThat(logFile).doesNotContain(DefaultQueryService.DEPRECATION_WARNING);
     });
     server.getVM().bounce();
   }

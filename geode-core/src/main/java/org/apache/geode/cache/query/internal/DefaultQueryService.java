@@ -106,7 +106,7 @@ public class DefaultQueryService implements InternalQueryService {
   @Deprecated
   public static final boolean ALLOW_UNTRUSTED_METHOD_INVOCATION;
 
-  public static final String DEPRECIATION_WARNING = "The property " + GEMFIRE_PREFIX +
+  public static final String DEPRECATION_WARNING = "The property " + GEMFIRE_PREFIX +
       "QueryService.allowUntrustedMethodInvocation is deprecated. " +
       "Please use the UnrestrictedMethodAuthorizer implementation of MethodInvocationAuthorizer " +
       "instead";
@@ -115,7 +115,7 @@ public class DefaultQueryService implements InternalQueryService {
     String deprecatedValue =
         System.getProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
     if (deprecatedValue != null) {
-      logger.warn(DEPRECIATION_WARNING);
+      logger.warn(DEPRECATION_WARNING);
     }
     ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.valueOf(deprecatedValue);
   }
