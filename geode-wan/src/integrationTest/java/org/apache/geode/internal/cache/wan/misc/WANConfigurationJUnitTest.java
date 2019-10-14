@@ -28,14 +28,11 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayReceiver;
@@ -117,7 +114,7 @@ public class WANConfigurationJUnitTest {
       fact.setParallel(true);
       fact.setManualStart(true);
       GatewaySender sender1 = fact.create("NYSender", 2);
-      AttributesFactory factory = new AttributesFactory();
+      RegionFactory factory = cache.createRegionFactory();
       factory.addGatewaySenderId(sender1.getId());
       factory.addGatewaySenderId(sender1.getId());
       fail("Expected IllegalArgumentException but not thrown");
@@ -133,18 +130,16 @@ public class WANConfigurationJUnitTest {
   @Test
   public void test_GatewaySenderIdAndAsyncEventId() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
-    AttributesFactory factory = new AttributesFactory();
+    RegionFactory factory = cache.createRegionFactory();
     factory.addGatewaySenderId("ln");
     factory.addGatewaySenderId("ny");
     factory.addAsyncEventQueueId("Async_LN");
-    RegionAttributes attrs = factory.create();
 
     Set<String> senderIds = new HashSet<String>();
     senderIds.add("ln");
     senderIds.add("ny");
-    Set<String> attrsSenderIds = attrs.getGatewaySenderIds();
-    assertEquals(senderIds, attrsSenderIds);
-    Region r = cache.createRegion("Customer", attrs);
+
+    Region r = factory.create("Customer");
     assertEquals(senderIds, ((LocalRegion) r).getGatewaySenderIds());
   }
 
@@ -160,11 +155,9 @@ public class WANConfigurationJUnitTest {
     fact.setParallel(true);
     fact.setManualStart(true);
     GatewaySender sender1 = fact.create("NYSender", 2);
-    AttributesFactory factory = new AttributesFactory();
-    factory.addGatewaySenderId(sender1.getId());
-    factory.setScope(Scope.DISTRIBUTED_ACK);
-    factory.setDataPolicy(DataPolicy.REPLICATE);
-    RegionFactory regionFactory = cache.createRegionFactory(factory.create());
+
+    RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    regionFactory.addGatewaySenderId(sender1.getId());
 
     assertThatThrownBy(() -> regionFactory.create("test_GatewaySender_Parallel_DistributedRegion"))
         .isInstanceOf(GatewaySenderConfigurationException.class).hasMessage(
@@ -293,12 +286,9 @@ public class WANConfigurationJUnitTest {
     fact.addGatewayTransportFilter(myStreamFilter2);
     GatewaySender sender1 = fact.create("TKSender", 2);
 
-
-    AttributesFactory factory = new AttributesFactory();
+    RegionFactory factory = cache.createRegionFactory(RegionShortcut.PARTITION);
     factory.addGatewaySenderId(sender1.getId());
-    factory.setDataPolicy(DataPolicy.PARTITION);
-    Region region =
-        cache.createRegionFactory(factory.create()).create("test_ValidateGatewaySenderAttributes");
+    Region region = factory.create("test_ValidateGatewaySenderAttributes");
     Set<GatewaySender> senders = cache.getGatewaySenders();
     assertEquals(senders.size(), 1);
     GatewaySender gatewaySender = senders.iterator().next();
@@ -342,12 +332,10 @@ public class WANConfigurationJUnitTest {
     fact.addGatewayTransportFilter(myStreamFilter2);
     GatewaySender sender1 = fact.create("TKSender", 2);
 
-
-    AttributesFactory factory = new AttributesFactory();
+    RegionFactory factory = cache.createRegionFactory(RegionShortcut.PARTITION);
     factory.addGatewaySenderId(sender1.getId());
-    factory.setDataPolicy(DataPolicy.PARTITION);
-    Region region =
-        cache.createRegionFactory(factory.create()).create("test_ValidateGatewaySenderAttributes");
+
+    Region region = factory.create("test_ValidateGatewaySenderAttributes");
     Set<GatewaySender> senders = cache.getGatewaySenders();
     assertEquals(1, senders.size());
     GatewaySender gatewaySender = senders.iterator().next();
@@ -364,7 +352,6 @@ public class WANConfigurationJUnitTest {
         gatewaySender.getGatewayEventFilters().size());
     assertEquals(sender1.getGatewayTransportFilters().size(),
         gatewaySender.getGatewayTransportFilters().size());
-
   }
 
   @Test
