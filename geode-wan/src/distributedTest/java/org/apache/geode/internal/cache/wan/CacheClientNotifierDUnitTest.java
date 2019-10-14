@@ -38,6 +38,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
@@ -265,8 +266,9 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
-    RegionFactory factory = cache.createRegionFactory(RegionShortcut.LOCAL);
-    factory.setPoolName(p.getName());
+    RegionFactory factory = cache.createRegionFactory(RegionShortcut.LOCAL)
+        .setScope(Scope.DISTRIBUTED_NO_ACK)
+        .setPoolName(p.getName());
     region = factory.create(regionName);
     region.registerInterest("ALL_KEYS");
     assertNotNull(region);
