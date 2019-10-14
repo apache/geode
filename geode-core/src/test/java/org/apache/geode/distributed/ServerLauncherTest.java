@@ -435,7 +435,7 @@ public class ServerLauncherTest {
 
   private CompletableFuture<Void> completedExceptionallyFuture() {
     CompletableFuture<Void> completedExceptionallyFuture = new CompletableFuture<>();
-    completedExceptionallyFuture.completeExceptionally(new RuntimeException(""));
+    completedExceptionallyFuture.completeExceptionally(new RuntimeException());
     return completedExceptionallyFuture;
   }
 
