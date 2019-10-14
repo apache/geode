@@ -19,6 +19,7 @@ package org.apache.geode.management.configuration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.api.Links;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -45,13 +46,10 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
   }
 
   @Override
-  public String getEndpoint() {
-    return PDX_ENDPOINT;
-  }
-
-  @Override
-  public String getIdentityEndpoint() {
-    return PDX_ENDPOINT;
+  public Links getLinks() {
+    Links links = new Links(getId(), PDX_ENDPOINT);
+    links.setSelf(PDX_ENDPOINT);
+    return links;
   }
 
   public Boolean isReadSerialized() {

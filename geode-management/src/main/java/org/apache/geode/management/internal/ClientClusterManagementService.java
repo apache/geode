@@ -15,7 +15,8 @@
 
 package org.apache.geode.management.internal;
 
-import static org.apache.geode.management.configuration.AbstractConfiguration.URI_VERSION;
+import static org.apache.geode.management.api.Links.URI_CONTEXT;
+import static org.apache.geode.management.api.Links.URI_VERSION;
 import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
 
 import java.util.Date;
@@ -74,7 +75,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   @SuppressWarnings("unchecked")
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult create(T config) {
-    String endPoint = URI_VERSION + config.getEndpoint();
+    String endPoint = URI_VERSION + config.getLinks().getList();
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return assertSuccessful(restTemplate
         .exchange(endPoint, HttpMethod.POST, makeEntity(config),
@@ -112,7 +113,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @SuppressWarnings("unchecked")
   public <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T config) {
-    String endPoint = URI_VERSION + config.getEndpoint();
+    String endPoint = URI_VERSION + config.getLinks().getList();
     return assertSuccessful(restTemplate
         .exchange(endPoint + "/?id={id}&group={group}", HttpMethod.GET, makeEntity(config),
             ClusterManagementListResult.class, config.getId(), config.getGroup())
@@ -148,7 +149,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   private <V extends OperationResult> ClusterManagementOperationResult<V> reAnimate(
       ClusterManagementOperationResult<V> result) {
-    String uri = stripPrefix(AbstractConfiguration.URI_CONTEXT, result.getUri());
+    String uri = stripPrefix(URI_CONTEXT, result.getLinks().getSelf());
 
     // complete the future by polling the check-status REST endpoint
     CompletableFuture<Date> futureOperationEnded = new CompletableFuture<>();
@@ -184,7 +185,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   private String getIdentityEndpoint(AbstractConfiguration config) {
-    String uri = config.getIdentityEndpoint();
+    String uri = config.getLinks().getSelf();
     if (uri == null) {
       throw new IllegalArgumentException(
           "Unable to construct the URI with the current configuration.");

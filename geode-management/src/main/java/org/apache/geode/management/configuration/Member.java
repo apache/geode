@@ -17,6 +17,7 @@ package org.apache.geode.management.configuration;
 
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.api.Links;
 import org.apache.geode.management.runtime.MemberInformation;
 
 @Experimental
@@ -39,7 +40,7 @@ public class Member extends GroupableConfiguration<MemberInformation> {
   }
 
   @Override
-  public String getEndpoint() {
-    return MEMBER_ENDPOINT;
+  public Links getLinks() {
+    return new Links(getId(), MEMBER_ENDPOINT);
   }
 }

@@ -13,37 +13,36 @@
  * the License.
  */
 
-package org.apache.geode.management.configuration;
+package org.apache.geode.management.api;
 
-import static org.apache.geode.management.api.Links.URI_CONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-public class GatewayReceiverTest {
-  private GatewayReceiver receiver;
+import org.apache.geode.util.internal.GeodeJsonMapper;
+
+public class LinksTest {
+
+  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private Links links;
 
   @Before
-  public void before() {
-    receiver = new GatewayReceiver();
+  public void before() throws Exception {
+    links = new Links();
   }
 
   @Test
-  public void getId() {
-    assertThat(receiver.getId()).isEqualTo("cluster");
-
-    receiver.setGroup("group");
-    assertThat(receiver.getId()).isEqualTo("group");
-  }
-
-  @Test
-  public void getUri() {
-    assertThat(receiver.getLinks().getSelf())
-        .isEqualTo(URI_CONTEXT + "/experimental/gateways/receivers/cluster");
-
-    receiver.setGroup("group");
-    assertThat(receiver.getLinks().getSelf())
-        .isEqualTo(URI_CONTEXT + "/experimental/gateways/receivers/group");
+  public void parse() throws Exception {
+    links = new Links("regionA", "/regions");
+    links.addLink("index", "/indexes/index1");
+    String json = mapper.writeValueAsString(links);
+    System.out.println(json);
+    assertThat(json).doesNotContain("others").contains("\"index\":\"/indexes/index1\"");
+    Links links2 = mapper.readValue(json, Links.class);
+    assertThat(links2.getSelf()).isEqualTo("/regions/regionA");
+    assertThat(links2.getList()).isEqualTo("/regions");
+    assertThat(links2.getOthers().get("index")).isEqualTo("/indexes/index1");
   }
 }

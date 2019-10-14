@@ -75,6 +75,8 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
         region.setExpirations(expirations);
       }
     }
+
+    List<RegionConfig.Index> indexes = xmlObject.getIndexes();
     return region;
   }
 

@@ -61,9 +61,9 @@ public class IndexTest {
 
   @Test
   public void getEndPoint() throws Exception {
-    assertThat(index.getEndpoint()).isEqualTo("/indexes");
+    assertThat(index.getLinks().getList()).isEqualTo("/indexes");
 
     index.setRegionPath("/regionA");
-    assertThat(index.getEndpoint()).isEqualTo("/regions/regionA/indexes");
+    assertThat(index.getLinks().getList()).isEqualTo("/regions/regionA/indexes");
   }
 }

@@ -63,7 +63,7 @@ public class ClusterManagementResult {
   // we will always have statusCode when the object is created
   protected StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
-  private String uri;
+  private Links links;
 
   /**
    * for internal use only
@@ -83,7 +83,7 @@ public class ClusterManagementResult {
   public ClusterManagementResult(ClusterManagementResult copyFrom) {
     this.statusCode = copyFrom.statusCode;
     this.statusMessage = copyFrom.statusMessage;
-    this.uri = copyFrom.uri;
+    this.links = copyFrom.links;
   }
 
   /**
@@ -127,19 +127,12 @@ public class ClusterManagementResult {
     return statusMessage;
   }
 
-  /**
-   * Returns the full path (not including http://server:port) by which this result can be referenced
-   * via REST
-   */
-  public String getUri() {
-    return uri;
+  public Links getLinks() {
+    return links;
   }
 
-  /**
-   * for internal use only
-   */
-  public void setUri(String uri) {
-    this.uri = uri;
+  public void setLinks(Links links) {
+    this.links = links;
   }
 
   /**

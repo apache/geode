@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.geode.management.api.Links;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
 /**
@@ -53,8 +54,10 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
 
   @Override
   @JsonIgnore
-  public String getEndpoint() {
-    return REGION_CONFIG_ENDPOINT;
+  public Links getLinks() {
+    Links links = new Links(getId(), REGION_CONFIG_ENDPOINT);
+    links.addLink("indexes", links.getSelf() + "/indexes");
+    return links;
   }
 
   /**

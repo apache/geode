@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.Region;
@@ -125,6 +126,10 @@ public class ListIndexManagementDUnitTest {
     assertThat(runtimeIndex.getName()).isEqualTo("index1");
     assertThat(runtimeIndex.getRegionPath()).isEqualTo("/region1");
     assertThat(runtimeIndex.getExpression()).isEqualTo("id");
+    ConfigurationResult<Index, RuntimeInfo> wrapper = cms.get(index).getResult();
+    Index indexConfig = wrapper.getConfiguration();
+    assertThat(indexConfig.getLinks().getOthers()).containsKey("region");
+    assertThat(indexConfig.getLinks().getOthers().get("region")).endsWith("regions/region1");
   }
 
   @Test

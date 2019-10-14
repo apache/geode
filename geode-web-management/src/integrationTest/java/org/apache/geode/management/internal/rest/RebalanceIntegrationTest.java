@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.management.configuration.AbstractConfiguration.URI_CONTEXT;
+import static org.apache.geode.management.api.Links.URI_CONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.StringContains.containsString;
@@ -155,6 +155,6 @@ public class RebalanceIntegrationTest {
     assertThat(listResult.getResult().get(0).getOperationStart()).isNotNull();
     assertThat(listResult.getResult().get(0).getStatusCode().toString()).isIn("IN_PROGRESS",
         "ERROR", "OK");
-    assertThat(listResult.getResult().get(0).getUri()).contains("rebalances/");
+    assertThat(listResult.getResult().get(0).getLinks().getSelf()).contains("rebalances/");
   }
 }

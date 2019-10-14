@@ -19,6 +19,7 @@ package org.apache.geode.management.configuration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.management.api.Links;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class Index extends GroupableConfiguration<RuntimeInfo> {
@@ -99,11 +100,13 @@ public class Index extends GroupableConfiguration<RuntimeInfo> {
   }
 
   @Override
-  public String getEndpoint() {
+  public Links getLinks() {
     String regionName = getRegionName();
     if (StringUtils.isBlank(regionName)) {
-      return "/indexes";
+      return new Links(getId(), "/indexes");
     }
-    return Region.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes";
+    Links links = new Links(getId(), Region.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes");
+    links.addLink("region", Region.REGION_CONFIG_ENDPOINT + "/" + regionName);
+    return links;
   }
 }

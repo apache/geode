@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.configuration;
 
+import static org.apache.geode.management.api.Links.URI_CONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
@@ -64,9 +65,9 @@ public class RegionTest {
   @Test
   public void getUri() {
     regionConfig.setName("regionA");
-    assertThat(regionConfig.getEndpoint()).isEqualTo("/regions");
+    assertThat(regionConfig.getLinks().getList()).isEqualTo("/regions");
 
-    assertThat(regionConfig.getUri())
-        .isEqualTo(AbstractConfiguration.URI_CONTEXT + "/experimental/regions/regionA");
+    assertThat(regionConfig.getLinks().getSelf())
+        .isEqualTo(URI_CONTEXT + "/experimental/regions/regionA");
   }
 }

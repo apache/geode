@@ -19,6 +19,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.geode.management.api.Links;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
 
 
@@ -48,8 +49,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
   public static final String GATEWAY_RECEIVERS_ENDPOINTS = "/gateways/receivers";
 
   @Override
-  public String getEndpoint() {
-    return GATEWAY_RECEIVERS_ENDPOINTS;
+  public Links getLinks() {
+    return new Links(getId(), GATEWAY_RECEIVERS_ENDPOINTS);
   }
 
   private List<ClassName> gatewayTransportFilters;
