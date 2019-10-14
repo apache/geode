@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
+import static java.lang.System.lineSeparator;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -1106,13 +1106,13 @@ public abstract class LogWriterImpl implements InternalLogWriter {
               }
               StackTraceElement[] els = targetThread.getStackTrace();
               sb.append("Stack trace for '").append(targetThread).append("'")
-                  .append(LINE_SEPARATOR);
+                  .append(lineSeparator());
               if (els.length > 0) {
                 for (int i = 0; i < els.length; i++) {
-                  sb.append("\tat ").append(els[i]).append(LINE_SEPARATOR);
+                  sb.append("\tat ").append(els[i]).append(lineSeparator());
                 }
               } else {
-                sb.append("    no stack").append(LINE_SEPARATOR);
+                sb.append("    no stack").append(lineSeparator());
               }
               if (toStdout) {
                 System.out.println(sb);
@@ -1129,13 +1129,13 @@ public abstract class LogWriterImpl implements InternalLogWriter {
   public static StringBuilder getStackTrace(Thread targetThread) {
     StringBuilder sb = new StringBuilder(500);
     StackTraceElement[] els = targetThread.getStackTrace();
-    sb.append("Stack trace for '").append(targetThread).append("'").append(LINE_SEPARATOR);
+    sb.append("Stack trace for '").append(targetThread).append("'").append(lineSeparator());
     if (els.length > 0) {
       for (int i = 0; i < els.length; i++) {
-        sb.append("\tat ").append(els[i]).append(LINE_SEPARATOR);
+        sb.append("\tat ").append(els[i]).append(lineSeparator());
       }
     } else {
-      sb.append("    no stack").append(LINE_SEPARATOR);
+      sb.append("    no stack").append(lineSeparator());
     }
     return sb;
   }

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
+import static java.lang.System.lineSeparator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
@@ -26,11 +26,12 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * This {@code Rule} is used to indicate tests that require the GEODE_HOME environment varible to be
  * set. (For example, any test that relies on the assembled Pulse WAR or GFSH binary.)
  */
+@SuppressWarnings("serial")
 public class RequiresGeodeHome extends SerializableExternalResource {
 
   private static final String GEODE_HOME_NOT_SET_MESSAGE =
       "This test requires a GEODE_HOME environment variable that points to the location "
-          + "of geode-assembly/build/install/apache-geode." + LINE_SEPARATOR
+          + "of geode-assembly/build/install/apache-geode." + lineSeparator()
           + "For instructions on how to set this variable if running tests through IntelliJ, see "
           + "https://stackoverflow.com/a/32761503/3988499";
 

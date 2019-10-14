@@ -16,7 +16,7 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -35,7 +35,7 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Unit tests for {@link org.apache.geode.internal.logging.SortLogFile}.
+ * Unit tests for {@link SortLogFile}.
  *
  * @since GemFire 3.0
  */
@@ -50,10 +50,10 @@ public class SortLogFileTest {
   public void testRandomLog() throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(baos), true);
-    LogWriter logger = new RandomLogWriter(printWriter);
+    LogWriter logWriter = new RandomLogWriter(printWriter);
 
     for (int i = 0; i < 100; i++) {
-      logger.info(String.valueOf(i));
+      logWriter.info(String.valueOf(i));
     }
 
     printWriter.flush();
@@ -76,15 +76,16 @@ public class SortLogFileTest {
       LogFileParser.LogEntry entry = parser.getNextEntry();
       String timestamp = entry.getTimestamp();
       if (prevTimestamp != null) {
-        assertTrue("Prev: " + prevTimestamp + ", current: " + timestamp,
-            prevTimestamp.compareTo(timestamp) <= 0);
+        assertThat(prevTimestamp.compareTo(timestamp))
+            .as("Prev: " + prevTimestamp + ", current: " + timestamp)
+            .isLessThanOrEqualTo(0);
       }
       prevTimestamp = entry.getTimestamp();
     }
   }
 
   /**
-   * A <code>LogWriter</code> that generates random time stamps.
+   * A {@code LogWriter} that generates random time stamps.
    */
   private static class RandomLogWriter extends LocalLogWriter {
 
@@ -92,18 +93,18 @@ public class SortLogFileTest {
     private final Random random = new Random();
 
     /**
-     * Creates a new <code>RandomLogWriter</code> that logs to the given <code>PrintWriter</code>.
+     * Creates a new {@code RandomLogWriter} that logs to the given {@code PrintWriter}.
      */
-    RandomLogWriter(PrintWriter printWriter) {
+    private RandomLogWriter(PrintWriter printWriter) {
       super(ALL_LEVEL, printWriter);
     }
 
     /**
-     * Ignores <code>date</code> and returns the timestamp for a random date.
+     * Ignores {@code date} and returns the timestamp for a random date.
      */
     @Override
     protected String formatDate(Date date) {
-      long time = date.getTime() + random.nextInt(100000) * 1000;
+      long time = date.getTime() + random.nextInt(100_000) * 1_000;
       date = new Date(time);
       return super.formatDate(date);
     }
