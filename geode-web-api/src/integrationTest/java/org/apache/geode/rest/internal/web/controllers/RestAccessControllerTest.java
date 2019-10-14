@@ -854,6 +854,22 @@ public class RestAccessControllerTest {
 
   @Test
   @WithMockUser
+  public void executeFunctionWithFilterKeyNotFound() throws Exception {
+    final String FUNCTION_ARGS = "[{\"@type\": \"String\", \"@value\": \"argument\"}]";
+
+    putEntry(); // order 2
+    mockMvc.perform(post("/v1/functions/GetOrderDescriptionFunction?onRegion=orders&filter=1")
+        .content(FUNCTION_ARGS)
+        .with(POST_PROCESSOR))
+        .andExpect(status().isInternalServerError())
+        .andExpect(
+            jsonPath("$.message",
+                is("Server has encountered an error while processing function execution!")));
+
+  }
+
+  @Test
+  @WithMockUser
   public void executeNoArgFunctionWithInvalidArg() throws Exception {
     mockMvc.perform(post("/v1/functions/EchoArgumentFunction")
         .content("{\"type\": \"int\"}")

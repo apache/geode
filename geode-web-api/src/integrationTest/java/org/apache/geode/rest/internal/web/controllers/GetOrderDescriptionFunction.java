@@ -26,9 +26,6 @@ import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 
-/**
- * Gemfire function to get the description of an order
- */
 public class GetOrderDescriptionFunction implements Function {
 
   @Override
