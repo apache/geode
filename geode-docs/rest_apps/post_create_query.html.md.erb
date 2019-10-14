@@ -1,5 +1,5 @@
 ---
-title:  POST /gemfire-api/v1/queries?id=&lt;queryId&gt;&q=&lt;OQL-statement&gt;
+title:  POST /geode/v1/queries?id=&lt;queryId&gt;&q=&lt;OQL-statement&gt;
 ---
 
 <!--
@@ -24,7 +24,7 @@ Create (prepare) the specified parameterized query and assign the corresponding 
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/queries?id=<queryId>&q="<OQL-statement>"
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/queries?id=<queryId>&q="<OQL-statement>"
 ```
 
 ## Parameters
@@ -62,7 +62,7 @@ For this release, you cannot specify the query string inside the request body (a
 ## Example Request
 
 ``` pre
-POST /gemfire-api/v1/queries?id=selectOrders&q="SELECT o FROM /orders o WHERE o.quantity > $1 AND o.totalprice > $2"
+POST /geode/v1/queries?id=selectOrders&q="SELECT o FROM /orders o WHERE o.quantity > $1 AND o.totalprice > $2"
 Accept: application/json
 ```
 
@@ -72,7 +72,7 @@ Accept: application/json
 Response Payload: null
 
 201 CREATED
-Location: http://localhost:8080/gemfire-api/v1/queries/selectOrders
+Location: http://localhost:8080/geode/v1/queries/selectOrders
 ```
 
 ## Error Codes
