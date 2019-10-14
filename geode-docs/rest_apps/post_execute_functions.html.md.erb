@@ -39,7 +39,7 @@ Execute <%=vars.product_name%> function on entire cluster or on a specified regi
     http://serverURL/functions/SampleFunction?onRegion=TestPartitionRegion&filter=key1,key2,key3
     ```
 
--   Any *function arguments* are passed in the request body in JSON format. The content of the arguments can depend on how the function is defined. Use @type to declare argument types and @value for specifying a scalar value. An example set of arguments:
+-   Any *function arguments* are passed in the request body in JSON format. The content of the arguments can depend on how the function is defined. Use @type to declare argument types and @value for specifying a scalar value. Collection of objects cannot be specified as parameters. So if a function receives a collection of objects as one of its arguments, it cannot be called using <%=vars.product_name%> REST API. An example set of arguments:
 
     ``` pre
     [
