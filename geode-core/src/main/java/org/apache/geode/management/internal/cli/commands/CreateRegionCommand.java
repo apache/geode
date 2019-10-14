@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import joptsimple.internal.Strings;
@@ -720,7 +721,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
 
       String keyConstraint =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__KEYCONSTRAINT);
-      if (keyConstraint != null && !ClassName.isClassNameValid(keyConstraint)) {
+      if (keyConstraint != null && !isClassNameValid(keyConstraint)) {
         return ResultModel.createError(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_KEYCONSTRAINT_0_IS_INVALID,
             new Object[] {keyConstraint}));
@@ -728,14 +729,14 @@ public class CreateRegionCommand extends SingleGfshCommand {
 
       String valueConstraint =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__VALUECONSTRAINT);
-      if (valueConstraint != null && !ClassName.isClassNameValid(valueConstraint)) {
+      if (valueConstraint != null && !isClassNameValid(valueConstraint)) {
         return ResultModel.createError(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_VALUECONSTRAINT_0_IS_INVALID,
             new Object[] {valueConstraint}));
       }
 
       String compressor = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__COMPRESSOR);
-      if (compressor != null && !ClassName.isClassNameValid(compressor)) {
+      if (compressor != null && !isClassNameValid(compressor)) {
         return ResultModel.createError(CliStrings
             .format(CliStrings.CREATE_REGION__MSG__INVALID_COMPRESSOR, new Object[] {compressor}));
       }
@@ -827,4 +828,14 @@ public class CreateRegionCommand extends SingleGfshCommand {
       return ResultModel.createInfo("");
     }
   }
+
+
+  private static boolean isClassNameValid(String fqcn) {
+    if (StringUtils.isBlank(fqcn)) {
+      return false;
+    }
+    String regex = "([\\p{L}_$][\\p{L}\\p{N}_$]*\\.)*[\\p{L}_$][\\p{L}\\p{N}_$]*";
+    return Pattern.matches(regex, fqcn);
+  }
+
 }
