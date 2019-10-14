@@ -202,7 +202,7 @@ public class InternalCacheBuilder {
             String hostName = internalDistributedSystem.getDistributedMember().getHost();
 
             CompositeMeterRegistry compositeMeterRegistry = compositeMeterRegistryFactory
-                .create(systemId, memberName, hostName);
+                .create(systemId, memberName, hostName, isClient);
 
             for (MeterRegistry meterSubregistry : meterSubregistries) {
               compositeMeterRegistry.add(meterSubregistry);

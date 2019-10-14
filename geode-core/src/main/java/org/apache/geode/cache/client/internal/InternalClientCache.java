@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
@@ -41,4 +43,6 @@ public interface InternalClientCache extends ClientCache {
   InternalDistributedSystem getInternalDistributedSystem();
 
   CachePerfStats getCachePerfStats();
+
+  MeterRegistry getMeterRegistry();
 }

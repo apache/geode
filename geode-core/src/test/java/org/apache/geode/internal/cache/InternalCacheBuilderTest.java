@@ -150,6 +150,7 @@ public class InternalCacheBuilderTest {
     int theSystemId = 21;
     String theMemberName = "theMemberName";
     String theHostName = "theHostName";
+    boolean isClient = false;
     InternalDistributedSystem theConstructedSystem =
         systemWith("theConstructedSystem", theSystemId, theMemberName, theHostName);
     InternalCache constructedCache = constructedCache();
@@ -167,7 +168,7 @@ public class InternalCacheBuilderTest {
         .create();
 
     verify(theCompositeMeterRegistryFactory)
-        .create(eq(theSystemId), eq(theMemberName), eq(theHostName));
+        .create(eq(theSystemId), eq(theMemberName), eq(theHostName), eq(isClient));
   }
 
   @Test
@@ -178,7 +179,7 @@ public class InternalCacheBuilderTest {
     CompositeMeterRegistry theCompositeMeterRegistry = new CompositeMeterRegistry();
     CompositeMeterRegistryFactory theCompositeMeterRegistryFactory =
         mock(CompositeMeterRegistryFactory.class);
-    when(theCompositeMeterRegistryFactory.create(anyInt(), any(), any()))
+    when(theCompositeMeterRegistryFactory.create(anyInt(), any(), any(), anyBoolean()))
         .thenReturn(theCompositeMeterRegistry);
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
@@ -626,7 +627,7 @@ public class InternalCacheBuilderTest {
     MeterRegistry theMeterRegistry = new SimpleMeterRegistry();
 
     CompositeMeterRegistry theCompositeMeterRegistry = new CompositeMeterRegistry();
-    when(compositeMeterRegistryFactory.create(anyInt(), any(), any()))
+    when(compositeMeterRegistryFactory.create(anyInt(), any(), any(), anyBoolean()))
         .thenReturn(theCompositeMeterRegistry);
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(

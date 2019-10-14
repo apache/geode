@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.metrics;
 
+import static java.util.Objects.requireNonNull;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
@@ -27,14 +28,25 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory {
 
   @Override
-  public CompositeMeterRegistry create(int systemId, String memberName, String hostName) {
+  public CompositeMeterRegistry create(int systemId, String memberName, String hostName,
+      boolean isClient) {
+    requireNonNull(memberName);
+    requireNonNull(hostName);
+    if (hostName.isEmpty()) {
+      throw new IllegalArgumentException("Host name must not be empty");
+    }
+
     JvmGcMetrics gcMetricsBinder = new JvmGcMetrics();
     GeodeCompositeMeterRegistry registry = new GeodeCompositeMeterRegistry(gcMetricsBinder);
 
     MeterRegistry.Config registryConfig = registry.config();
-    registryConfig.commonTags("cluster", String.valueOf(systemId));
-    registryConfig.commonTags("member", memberName == null ? "" : memberName);
-    registryConfig.commonTags("host", hostName == null ? "" : hostName);
+    if (!isClient) {
+      registryConfig.commonTags("cluster", String.valueOf(systemId));
+    }
+    if (!memberName.isEmpty()) {
+      registryConfig.commonTags("member", memberName);
+    }
+    registryConfig.commonTags("host", hostName);
 
     gcMetricsBinder.bindTo(registry);
     new JvmMemoryMetrics().bindTo(registry);

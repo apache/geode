@@ -570,7 +570,7 @@ public class GemFireCacheImplTest {
     gemFireCacheImpl = (GemFireCacheImpl) new InternalCacheBuilder()
         .addMeterSubregistry(subregistry)
         .setTypeRegistry(mock(TypeRegistry.class))
-        .create(Fakes.distributedSystem());
+        .create(distributedSystem());
 
     gemFireCacheImpl.close();
 
@@ -580,15 +580,21 @@ public class GemFireCacheImplTest {
   private static GemFireCacheImpl createGemFireCacheImpl() {
     return (GemFireCacheImpl) new InternalCacheBuilder()
         .setTypeRegistry(mock(TypeRegistry.class))
-        .create(Fakes.distributedSystem());
+        .create(distributedSystem());
   }
 
   private static GemFireCacheImpl createGemFireCacheWithTypeRegistry() {
-    InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
+    InternalDistributedSystem internalDistributedSystem = distributedSystem();
     TypeRegistry typeRegistry = mock(TypeRegistry.class);
     return (GemFireCacheImpl) new InternalCacheBuilder()
         .setUseAsyncEventListeners(true)
         .setTypeRegistry(typeRegistry)
         .create(internalDistributedSystem);
+  }
+
+  private static InternalDistributedSystem distributedSystem() {
+    InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
+    when(internalDistributedSystem.getName()).thenReturn("my-name");
+    return internalDistributedSystem;
   }
 }
