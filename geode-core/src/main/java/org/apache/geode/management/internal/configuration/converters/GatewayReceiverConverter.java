@@ -15,9 +15,16 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
+import org.apache.geode.cache.configuration.ParameterType;
+import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.GatewayReceiver;
 
 public class GatewayReceiverConverter
@@ -30,6 +37,26 @@ public class GatewayReceiverConverter
     receiver.setMaximumTimeBetweenPings(stringToInt(xmlObject.getMaximumTimeBetweenPings()));
     receiver.setSocketBufferSize(stringToInt(xmlObject.getSocketBufferSize()));
     receiver.setStartPort(stringToInt(xmlObject.getStartPort()));
+    List<ClassName> configFilters = new ArrayList<>();
+    for (DeclarableType xmlFilter : xmlObject.getGatewayTransportFilters()) {
+      String className = xmlFilter.getClassName();
+      Properties properties = new Properties();
+      for (ParameterType parameter : xmlFilter.getParameters()) {
+        String parameterValue;
+        if (parameter.getString() != null) {
+          parameterValue = parameter.getString();
+        } else if (parameter.getDeclarable() != null) {
+          parameterValue = parameter.getDeclarable().toString();
+        } else {
+          parameterValue = "";
+        }
+        properties.setProperty(parameter.getName(), parameterValue);
+      }
+      configFilters.add(new ClassName(className, properties));
+    }
+    if (!configFilters.isEmpty()) {
+      receiver.setGatewayTransportFilters(configFilters);
+    }
     return receiver;
   }
 
@@ -41,6 +68,12 @@ public class GatewayReceiverConverter
     receiver.setManualStart(configObject.isManualStart());
     receiver.setMaximumTimeBetweenPings(intToString(configObject.getMaximumTimeBetweenPings()));
     receiver.setSocketBufferSize(intToString(configObject.getSocketBufferSize()));
+    List<DeclarableType> xmlFilters = receiver.getGatewayTransportFilters();
+    for (ClassName configFilter : configObject.getGatewayTransportFilters()) {
+      String className = configFilter.getClassName();
+      Properties props = configFilter.getInitProperties();
+      xmlFilters.add(new DeclarableType(className, props));
+    }
     return receiver;
   }
 
