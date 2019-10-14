@@ -23,6 +23,8 @@ import static org.mockito.Mockito.spy;
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 
 import org.junit.Before;
@@ -45,6 +47,10 @@ public class ExportStackTraceCommandTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private ExportStackTraceCommand command;
+
+  private final DateTimeFormatter formatter =
+      DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS")
+          .withZone(ZoneId.systemDefault());
 
   @Before
   public void before() {
@@ -72,12 +78,23 @@ public class ExportStackTraceCommandTest {
   }
 
   @Test
-  public void getHeaderMessage() throws IOException {
+  public void getHeaderMessageWithTimestamp() throws IOException {
+    Instant time = Instant.now();
     StackTracesPerMember stackTracePerMember =
-        new StackTracesPerMember("server", Instant.now(),
+        new StackTracesPerMember("server", time,
             OSProcess.zipStacks());
     String headerMessage = command.getHeaderMessage(stackTracePerMember);
 
-    assertThat(headerMessage).isNotNull();
+    assertThat(headerMessage).isEqualTo("server at " + formatter.format(time));
+  }
+
+  @Test
+  public void getHeaderMessageWithoutTimestamp() throws IOException {
+    StackTracesPerMember stackTracePerMember =
+        new StackTracesPerMember("server", null,
+            OSProcess.zipStacks());
+    String headerMessage = command.getHeaderMessage(stackTracePerMember);
+
+    assertThat(headerMessage).isEqualTo("server");
   }
 }
