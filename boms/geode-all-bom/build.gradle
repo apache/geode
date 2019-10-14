@@ -27,6 +27,8 @@ jar.enabled = false
 publishing {
   publications {
     maven(MavenPublication) {
+      from components.javaPlatform
+
       // publish.gradle injects 'from components.java', as well as some other pom configuration.
       pom.packaging 'pom'
       artifacts = []
