@@ -42,7 +42,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * unsupported CQ features throw UnsupportedOperationException
  */
 @Category(ClientSubscriptionTest.class)
-public class ContinuousQueryParserDUnitTest {
+public class ContinuousQueryValidationDUnitTest {
   private QueryService queryService;
 
   @Rule
@@ -108,35 +108,35 @@ public class ContinuousQueryParserDUnitTest {
     CqAttributes attrs = new CqAttributesFactory().create();
     String[] unsupportedCQs = new String[] {
         // not "just" a select statement
-        "(select * from /region where status = 'active').isEmpty",
+        "(SELECT * FROM /region WHERE status = 'active').isEmpty",
 
         // cannot be DISTINCT
-        "select DISTINCT * from /region WHERE status = 'active'",
+        "SELECT DISTINCT * FROM /region WHERE status = 'active'",
 
         // references more than one region
-        "select * from /region1 r1, /region2 r2 where r1 = r2",
+        "SELECT * FROM /region1 r1, /region2 r2 WHERE r1 = r2",
 
         // where clause refers to a region
-        "select * from /region r where r.val = /region.size",
+        "SELECT * FROM /region r WHERE r.val = /region.size",
 
         // more than one iterator in FROM clause
-        "select * from /portfolios p1, p1.positions p2 where p2.id = 'IBM'",
+        "SELECT * FROM /portfolios p1, p1.positions p2 WHERE p2.id = 'IBM'",
 
         // first iterator in FROM clause is not just a region path
-        "select * from /region.entries e where e.value.id = 23",
+        "SELECT * FROM /region.entries e WHERE e.value.id = 23",
 
         // has projections
-        "select id from /region where status = 'active'",
+        "SELECT id FROM /region WHERE status = 'active'",
 
         // has ORDER BY
-        "select * from /region where status = 'active' ORDER BY id",
+        "SELECT * FROM /region WHERE status = 'active' ORDER BY id",
 
         // has aggregates
-        "select MIN(id) from /region where status = 'active'",
-        "select MAX(id) from /region where status = 'active'",
-        "select SUM(id) from /region where status = 'active'",
-        "select AVG(id) from /region where status = 'active'",
-        "select COUNT(id) from /region where status = 'active'",
+        "SELECT MIN(id) FROM /region WHERE status = 'active'",
+        "SELECT MAX(id) FROM /region WHERE status = 'active'",
+        "SELECT SUM(id) FROM /region WHERE status = 'active'",
+        "SELECT AVG(id) FROM /region WHERE status = 'active'",
+        "SELECT COUNT(id) FROM /region WHERE status = 'active'",
     };
 
     for (String queryString : unsupportedCQs) {

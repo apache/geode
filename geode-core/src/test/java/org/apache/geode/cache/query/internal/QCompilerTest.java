@@ -471,6 +471,10 @@ public class QCompilerTest {
             + "(id) FROM /region)",
         "SELECT COUNT(id), status FROM /region WHERE " + function + "(id) < ELEMENT(SELECT "
             + function + "(id) FROM /region) GROUP BY status",
+        "SELECT * FROM /region WHERE id > ELEMENT(SELECT id FROM /region WHERE " + function
+            + "(id) > 0)",
+        "SELECT id, status FROM /region WHERE id > ELEMENT(SELECT id FROM /region WHERE " + function
+            + "(id) > 0)"
     };
 
     for (String queryString : queries) {
@@ -478,7 +482,7 @@ public class QCompilerTest {
       assertThatThrownBy(() -> compiler.compileQuery(queryString))
           .as(String.format("Query parsing succeeded for %s but should have failed.", queryString))
           .isInstanceOf(QueryInvalidException.class)
-          .hasMessageContaining("Aggregate functions can not be used as part of the criteria");
+          .hasMessageContaining("Aggregate functions can not be used as part of the WHERE clause");
     }
   }
 }

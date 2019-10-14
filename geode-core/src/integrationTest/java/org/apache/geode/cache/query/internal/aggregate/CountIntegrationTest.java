@@ -118,6 +118,18 @@ public class CountIntegrationTest extends AggregateFunctionQueryBaseIntegrationT
         (int) supplierOne.get().filter(p -> p.getID() > 0 || p.isActive() || !p.isActive()
             || p.getPositions().containsKey("IBM")).limit(50).count());
 
+    // Aggregate used as as WHERE condition within inner query.
+    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+        (int) supplierOne.get()
+            .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).min().orElse(-1))
+            .mapToInt(Portfolio::getID).count());
+    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+        (int) supplierOne.get()
+            .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).max().orElse(-1))
+            .mapToInt(Portfolio::getID).count());
+
     // Equi Join Queries
     equiJoinQueries.put("SELECT COUNT(*) from /" + firstRegionName + " p, /" + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 0",
@@ -210,6 +222,20 @@ public class CountIntegrationTest extends AggregateFunctionQueryBaseIntegrationT
         + " p, p.positions.values pos WHERE p.ID > 0 OR p.status IN SET ('active', 'inactive') OR pos.secId = 'IBM' LIMIT 50",
         (int) supplierOne.get().filter(p -> p.getID() > 0 || p.isActive() || !p.isActive()
             || p.getPositions().containsKey("IBM")).limit(50).count());
+
+    // Aggregate used as as WHERE condition within inner query.
+    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+        (int) supplierOne.get()
+            .filter(
+                p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).min().orElse(-1))
+            .mapToInt(PortfolioPdx::getID).count());
+    queries.put("SELECT COUNT(*) FROM /" + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+        (int) supplierOne.get()
+            .filter(
+                p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).max().orElse(-1))
+            .mapToInt(PortfolioPdx::getID).count());
 
     // Equi Join Queries
     equiJoinQueries.put("SELECT COUNT(*) from /" + firstRegionName + " p, /" + secondRegionName

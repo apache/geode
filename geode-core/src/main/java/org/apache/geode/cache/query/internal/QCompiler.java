@@ -202,7 +202,7 @@ public class QCompiler implements OQLLexerTokenTypes {
   private void checkWhereClauseForAggregates(CompiledValue compiledValue) {
     if (compiledValue instanceof CompiledAggregateFunction) {
       throw new QueryInvalidException(
-          "Aggregate functions can not be used as part of the criteria.");
+          "Aggregate functions can not be used as part of the WHERE clause.");
     }
 
     // Inner queries are supported.
