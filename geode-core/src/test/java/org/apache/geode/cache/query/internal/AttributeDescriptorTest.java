@@ -48,6 +48,13 @@ import org.apache.geode.security.NotAuthorizedException;
 
 @RunWith(JUnitParamsRunner.class)
 public class AttributeDescriptorTest {
+  private static final String PUBLIC_NO_ACCESSORS = "publicAttributeWithoutAccessors";
+  private static final String PUBLIC_ACCESSOR_BY_NAME = "publicAttributeWithPublicAccessor";
+  private static final String PUBLIC_ACCESSOR_BY_GETTER = "publicAttributeWithPublicGetterMethod";
+  private static final String PRIVATE_ACCESSOR_BY_NAME = "nonPublicAttributeWithPublicAccessor";
+  private static final String PRIVATE_ACCESSOR_BY_GETTER =
+      "nonPublicAttributeWithPublicGetterMethod";
+
   private TestBean testBean;
   private TypeRegistry typeRegistry;
   private QueryExecutionContext queryExecutionContext;
@@ -56,9 +63,8 @@ public class AttributeDescriptorTest {
   @Before
   public void setUp() {
     AttributeDescriptor._localCache.clear();
-    testBean = new TestBean("publicAttributeWithoutAccessors", "publicAttributeWithPublicAccessor",
-        "publicAttributeWithPublicGetterMethod", "nonPublicAttributeWithPublicAccessor",
-        "nonPublicAttributeWithPublicGetterMethod");
+    testBean = new TestBean(PUBLIC_NO_ACCESSORS, PUBLIC_ACCESSOR_BY_NAME, PUBLIC_ACCESSOR_BY_GETTER,
+        PRIVATE_ACCESSOR_BY_NAME, PRIVATE_ACCESSOR_BY_GETTER);
     InternalCache mockCache = mock(InternalCache.class);
     typeRegistry = new TypeRegistry(mockCache, true);
     methodInvocationAuthorizer = spy(MethodInvocationAuthorizer.class);
@@ -66,9 +72,8 @@ public class AttributeDescriptorTest {
   }
 
   @Test
-  @Parameters({"publicAttributeWithoutAccessors", "publicAttributeWithPublicAccessor",
-      "publicAttributeWithPublicGetterMethod", "nonPublicAttributeWithPublicAccessor",
-      "nonPublicAttributeWithPublicAccessor"})
+  @Parameters({PUBLIC_NO_ACCESSORS, PUBLIC_ACCESSOR_BY_NAME, PUBLIC_ACCESSOR_BY_GETTER,
+      PRIVATE_ACCESSOR_BY_NAME, PRIVATE_ACCESSOR_BY_GETTER})
   public void validateReadTypeShouldReturnTrueWhenMemberCanBeFound(String attributeName) {
     AttributeDescriptor attributeDescriptor =
         new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer, attributeName);
@@ -83,7 +88,7 @@ public class AttributeDescriptorTest {
   }
 
   @Test
-  @Parameters({"nonPublicAttributeWithPublicAccessor", "nonPublicAttributeWithPublicAccessor"})
+  @Parameters({PRIVATE_ACCESSOR_BY_NAME, PRIVATE_ACCESSOR_BY_GETTER})
   public void getReadFieldShouldReturnNullForNonPublicAttributes(String attributeName) {
     AttributeDescriptor attributeDescriptor =
         new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer, attributeName);
@@ -91,8 +96,7 @@ public class AttributeDescriptorTest {
   }
 
   @Test
-  @Parameters({"publicAttributeWithoutAccessors", "publicAttributeWithPublicAccessor",
-      "publicAttributeWithPublicGetterMethod"})
+  @Parameters({PUBLIC_NO_ACCESSORS, PUBLIC_ACCESSOR_BY_NAME, PUBLIC_ACCESSOR_BY_GETTER})
   public void getReadFieldShouldReturnRequestedFieldForPublicAttributes(String attributeName)
       throws NoSuchFieldException {
     AttributeDescriptor attributeDescriptor =
@@ -102,19 +106,19 @@ public class AttributeDescriptorTest {
   }
 
   @Test
-  @Parameters({"publicAttributeWithPublicGetterMethod", "nonPublicAttributeWithPublicGetterMethod"})
+  @Parameters({PUBLIC_ACCESSOR_BY_GETTER, PRIVATE_ACCESSOR_BY_GETTER})
   public void getReadMethodShouldReturnRequestedMethodForAttributesWithGetters(String attributeName)
       throws NoSuchMethodException {
     AttributeDescriptor attributeDescriptor =
         new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer, attributeName);
-    String getterName =
-        "get" + attributeName.substring(0, 1).toUpperCase() + attributeName.substring(1);
+    String getterName = "get"
+        + attributeName.substring(0, 1).toUpperCase() + attributeName.substring(1);
     assertThat(attributeDescriptor.getReadMethod(TestBean.class))
         .isEqualTo(TestBean.class.getMethod(getterName));
   }
 
   @Test
-  @Parameters({"publicAttributeWithPublicAccessor", "nonPublicAttributeWithPublicAccessor"})
+  @Parameters({PUBLIC_ACCESSOR_BY_NAME, PRIVATE_ACCESSOR_BY_NAME})
   public void getReadMethodShouldReturnRequestedMethodForAttributesWithAccessors(
       String attributeName) throws NoSuchMethodException {
     AttributeDescriptor attributeDescriptor =
@@ -130,16 +134,14 @@ public class AttributeDescriptorTest {
         new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer, "nonExistingAttribute");
     assertThat(attributeDescriptor.getReadMethod(TestBean.class)).isNull();
     assertThat(DefaultQuery.getPdxClasstoMethodsmap().isEmpty()).isFalse();
-    assertThat(
-        DefaultQuery.getPdxClasstoMethodsmap().containsKey(TestBean.class.getCanonicalName()))
-            .isTrue();
+    assertThat(DefaultQuery.getPdxClasstoMethodsmap()
+        .containsKey(TestBean.class.getCanonicalName())).isTrue();
     assertThat(DefaultQuery.getPdxClasstoMethodsmap().get(TestBean.class.getCanonicalName())
         .contains("nonExistingAttribute")).isTrue();
   }
 
   @Test
-  @Parameters({"publicAttributeWithoutAccessors", "publicAttributeWithPublicAccessor",
-      "publicAttributeWithPublicGetterMethod"})
+  @Parameters({PUBLIC_NO_ACCESSORS, PUBLIC_ACCESSOR_BY_NAME, PUBLIC_ACCESSOR_BY_GETTER})
   public void getReadMemberShouldReturnFieldWhenAttributeIsPublicAndUseInternalCache(
       String attributeName) throws NameNotFoundException {
     AttributeDescriptor attributeDescriptor =
@@ -152,7 +154,7 @@ public class AttributeDescriptorTest {
   }
 
   @Test
-  @Parameters({"nonPublicAttributeWithPublicAccessor", "nonPublicAttributeWithPublicGetterMethod"})
+  @Parameters({PRIVATE_ACCESSOR_BY_NAME, PRIVATE_ACCESSOR_BY_GETTER})
   public void getReadMemberShouldReturnMethodWhenAttributeIsNotPublicAndUseInternalCache(
       String attributeName) throws NameNotFoundException {
     AttributeDescriptor attributeDescriptor =
@@ -204,8 +206,7 @@ public class AttributeDescriptorTest {
   }
 
   @Test
-  @Parameters({"publicAttributeWithoutAccessors", "publicAttributeWithPublicAccessor",
-      "publicAttributeWithPublicGetterMethod"})
+  @Parameters({PUBLIC_NO_ACCESSORS, PUBLIC_ACCESSOR_BY_NAME, PUBLIC_ACCESSOR_BY_GETTER})
   public void readReflectionForPublicAttributeShouldNotInvokeAuthorizer(String attributeName)
       throws NameResolutionException, QueryInvocationTargetException {
     AttributeDescriptor attributeDescriptor =
@@ -218,7 +219,7 @@ public class AttributeDescriptorTest {
   }
 
   @Test
-  @Parameters({"nonPublicAttributeWithPublicAccessor", "nonPublicAttributeWithPublicGetterMethod"})
+  @Parameters({PRIVATE_ACCESSOR_BY_NAME, PRIVATE_ACCESSOR_BY_GETTER})
   public void readReflectionForImplicitMethodInvocationShouldReturnCorrectlyWhenMethodIsAuthorized(
       String attributeName) throws NameResolutionException, QueryInvocationTargetException {
     doReturn(true).when(methodInvocationAuthorizer).authorize(any(), any());
@@ -242,29 +243,27 @@ public class AttributeDescriptorTest {
     attributeDescriptor.readReflection(testBean, queryExecutionContext);
 
     String cacheKey = TestBean.class.getCanonicalName() + "." + methodName;
-    assertThat(queryExecutionContext.cacheGet(cacheKey)).isNotNull();
     assertThat(queryExecutionContext.cacheGet(cacheKey)).isEqualTo(true);
   }
 
   @Test
-  public void readReflectionForImplicitMethodInvocationShouldUseAlreadyAuthorizedCachedResultWhenMethodIsAuthorizedAndQueryContextIsTheSame() {
+  public void readReflectionForImplicitMethodInvocationShouldUseCachedAuthorizerResultWhenMethodIsAuthorizedAndQueryContextIsTheSame() {
     doReturn(true).when(methodInvocationAuthorizer).authorize(any(), any());
     AttributeDescriptor nonPublicAttributeWithPublicAccessor =
-        new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer,
-            "nonPublicAttributeWithPublicAccessor");
+        new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer, PRIVATE_ACCESSOR_BY_NAME);
     AttributeDescriptor nonPublicAttributeWithPublicGetterMethod =
         new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer,
-            "nonPublicAttributeWithPublicGetterMethod");
+            PRIVATE_ACCESSOR_BY_GETTER);
 
     // Same QueryExecutionContext -> Use cache.
     IntStream.range(0, 10).forEach(element -> {
       try {
         assertThat(nonPublicAttributeWithPublicAccessor
             .readReflection(testBean, queryExecutionContext)).isInstanceOf(String.class)
-                .isEqualTo("nonPublicAttributeWithPublicAccessor");
+                .isEqualTo(PRIVATE_ACCESSOR_BY_NAME);
         assertThat(nonPublicAttributeWithPublicGetterMethod
             .readReflection(testBean, queryExecutionContext)).isInstanceOf(String.class)
-                .isEqualTo("nonPublicAttributeWithPublicGetterMethod");
+                .isEqualTo(PRIVATE_ACCESSOR_BY_GETTER);
       } catch (NameNotFoundException | QueryInvocationTargetException exception) {
         throw new RuntimeException(exception);
       }
@@ -273,14 +272,13 @@ public class AttributeDescriptorTest {
   }
 
   @Test
-  public void readReflectionForImplicitMethodInvocationShouldNotUseAlreadyAuthorizedCachedResultWhenMethodIsAuthorizedAndQueryContextIsNotTheSame() {
+  public void readReflectionForImplicitMethodInvocationShouldNotUseCachedAuthorizerResultWhenMethodIsAuthorizedAndQueryContextIsNotTheSame() {
     doReturn(true).when(methodInvocationAuthorizer).authorize(any(), any());
     AttributeDescriptor nonPublicAttributeWithPublicAccessor =
-        new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer,
-            "nonPublicAttributeWithPublicAccessor");
+        new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer, PRIVATE_ACCESSOR_BY_NAME);
     AttributeDescriptor nonPublicAttributeWithPublicGetterMethod =
         new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer,
-            "nonPublicAttributeWithPublicGetterMethod");
+            PRIVATE_ACCESSOR_BY_GETTER);
 
     // New QueryExecutionContext every time -> Do not use cache.
     IntStream.range(0, 10).forEach(element -> {
@@ -288,10 +286,10 @@ public class AttributeDescriptorTest {
         QueryExecutionContext mockContext = mock(QueryExecutionContext.class);
         assertThat(nonPublicAttributeWithPublicAccessor
             .readReflection(testBean, mockContext)).isInstanceOf(String.class)
-                .isEqualTo("nonPublicAttributeWithPublicAccessor");
+                .isEqualTo(PRIVATE_ACCESSOR_BY_NAME);
         assertThat(nonPublicAttributeWithPublicGetterMethod
             .readReflection(testBean, mockContext)).isInstanceOf(String.class)
-                .isEqualTo("nonPublicAttributeWithPublicGetterMethod");
+                .isEqualTo(PRIVATE_ACCESSOR_BY_GETTER);
       } catch (NameNotFoundException | QueryInvocationTargetException exception) {
         throw new RuntimeException(exception);
       }
@@ -300,7 +298,7 @@ public class AttributeDescriptorTest {
   }
 
   @Test
-  @Parameters({"nonPublicAttributeWithPublicAccessor", "nonPublicAttributeWithPublicGetterMethod"})
+  @Parameters({PRIVATE_ACCESSOR_BY_NAME, PRIVATE_ACCESSOR_BY_GETTER})
   public void readReflectionForImplicitMethodInvocationShouldThrowExceptionWhenMethodIsNotAuthorized(
       String attributeName) {
     doReturn(false).when(methodInvocationAuthorizer).authorize(any(), any());
@@ -327,19 +325,17 @@ public class AttributeDescriptorTest {
         .hasMessageStartingWith(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING);
 
     String cacheKey = TestBean.class.getCanonicalName() + "." + methodName;
-    assertThat(queryExecutionContext.cacheGet(cacheKey)).isNotNull();
     assertThat(queryExecutionContext.cacheGet(cacheKey)).isEqualTo(false);
   }
 
   @Test
-  public void readReflectionForImplicitMethodInvocationShouldUseAlreadyAuthorizedCachedResultWhenMethodIsForbiddenAndQueryContextIsTheSame() {
+  public void readReflectionForImplicitMethodInvocationShouldUseCachedAuthorizerResultWhenMethodIsForbiddenAndQueryContextIsTheSame() {
     doReturn(false).when(methodInvocationAuthorizer).authorize(any(), any());
     AttributeDescriptor nonPublicAttributeWithPublicAccessor =
-        new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer,
-            "nonPublicAttributeWithPublicAccessor");
+        new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer, PRIVATE_ACCESSOR_BY_NAME);
     AttributeDescriptor nonPublicAttributeWithPublicGetterMethod =
         new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer,
-            "nonPublicAttributeWithPublicGetterMethod");
+            PRIVATE_ACCESSOR_BY_GETTER);
 
     // Same QueryExecutionContext -> Use cache.
     IntStream.range(0, 10).forEach(element -> {
@@ -357,14 +353,13 @@ public class AttributeDescriptorTest {
   }
 
   @Test
-  public void readReflectionForImplicitMethodInvocationShouldNotUseAlreadyAuthorizedCachedResultWhenMethodIsForbiddenAndQueryContextIsNotTheSame() {
+  public void readReflectionForImplicitMethodInvocationShouldNotUseCachedAuthorizerResultWhenMethodIsForbiddenAndQueryContextIsNotTheSame() {
     doReturn(false).when(methodInvocationAuthorizer).authorize(any(), any());
     AttributeDescriptor nonPublicAttributeWithPublicAccessor =
-        new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer,
-            "nonPublicAttributeWithPublicAccessor");
+        new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer, PRIVATE_ACCESSOR_BY_NAME);
     AttributeDescriptor nonPublicAttributeWithPublicGetterMethod =
         new AttributeDescriptor(typeRegistry, methodInvocationAuthorizer,
-            "nonPublicAttributeWithPublicGetterMethod");
+            PRIVATE_ACCESSOR_BY_GETTER);
 
     // New QueryExecutionContext every time -> Do not use cache.
     IntStream.range(0, 10).forEach(element -> {
@@ -395,9 +390,8 @@ public class AttributeDescriptorTest {
   }
 
   @Test
-  @Parameters({"publicAttributeWithoutAccessors", "publicAttributeWithPublicAccessor",
-      "publicAttributeWithPublicGetterMethod", "nonPublicAttributeWithPublicAccessor",
-      "nonPublicAttributeWithPublicAccessor"})
+  @Parameters({PUBLIC_NO_ACCESSORS, PUBLIC_ACCESSOR_BY_NAME, PUBLIC_ACCESSOR_BY_GETTER,
+      PRIVATE_ACCESSOR_BY_NAME, PRIVATE_ACCESSOR_BY_GETTER})
   public void readShouldReturnCorrectlyForAccessibleAuthorizedNonPdxMembers(String attributeName)
       throws NameNotFoundException, QueryInvocationTargetException {
     doReturn(true).when(methodInvocationAuthorizer).authorize(any(), any());

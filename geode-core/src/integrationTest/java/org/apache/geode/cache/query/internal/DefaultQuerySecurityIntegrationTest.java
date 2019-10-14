@@ -122,11 +122,12 @@ public class DefaultQuerySecurityIntegrationTest {
   @TestCaseName("[{index}] {method}(RegionType:{0}")
   public void queryWithSingleProjectionFieldShouldUseCachingForImplicitMethodAuthorizations(
       RegionShortcut regionShortcut) {
+    int entries = 100;
     String regionName = testName.getMethodName();
-    createAndPopulateRegion(regionName, regionShortcut, 100);
+    createAndPopulateRegion(regionName, regionShortcut, entries);
     String queryString = "SELECT object.name FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 1, 10, 100);
+    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 1, 10, entries);
   }
 
   @Test
@@ -134,11 +135,12 @@ public class DefaultQuerySecurityIntegrationTest {
   @TestCaseName("[{index}] {method}(RegionType:{0}")
   public void queryWithMultipleProjectionFieldsShouldUseCachingForImplicitMethodAuthorizations(
       RegionShortcut regionShortcut) {
+    int entries = 200;
     String regionName = testName.getMethodName();
-    createAndPopulateRegion(regionName, regionShortcut, 100);
+    createAndPopulateRegion(regionName, regionShortcut, entries);
     String queryString = "SELECT object.privateID, object.name FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 2, 10, 100);
+    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 2, 10, entries);
   }
 
   @Test
@@ -146,11 +148,12 @@ public class DefaultQuerySecurityIntegrationTest {
   @TestCaseName("[{index}] {method}(RegionType:{0}")
   public void queryWithSingleProjectionMethodShouldUseCachingForExplicitMethodAuthorizations(
       RegionShortcut regionShortcut) {
+    int entries = 100;
     String regionName = testName.getMethodName();
-    createAndPopulateRegion(regionName, regionShortcut, 150);
+    createAndPopulateRegion(regionName, regionShortcut, entries);
     String queryString = "SELECT object.getName() FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 1, 20, 150);
+    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 1, 20, entries);
   }
 
   @Test
@@ -158,11 +161,12 @@ public class DefaultQuerySecurityIntegrationTest {
   @TestCaseName("[{index}] {method}(RegionType:{0}")
   public void queryWithMultipleProjectionMethodsShouldUseCachingForExplicitMethodAuthorizations(
       RegionShortcut regionShortcut) {
+    int entries = 200;
     String regionName = testName.getMethodName();
-    createAndPopulateRegion(regionName, regionShortcut, 150);
+    createAndPopulateRegion(regionName, regionShortcut, entries);
     String queryString = "SELECT object.getId(), object.getName() FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 2, 20, 150);
+    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 2, 20, entries);
   }
 
   private static class SpyAuthorizer implements MethodInvocationAuthorizer {
