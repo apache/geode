@@ -44,6 +44,6 @@ public class GatewayReceiverTest {
 
     receiver.setGroup("group");
     assertThat(receiver.getLinks().getSelf())
-        .isEqualTo(URI_CONTEXT + "/experimental/gateways/receivers/group");
+        .isEqualTo("/gateways/receivers/group");
   }
 }

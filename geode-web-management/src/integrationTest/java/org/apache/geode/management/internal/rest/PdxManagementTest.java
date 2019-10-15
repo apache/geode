@@ -71,6 +71,6 @@ public class PdxManagementTest {
             jsonPath("$.statusMessage",
                 containsString("Successfully updated configuration for cluster.")))
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.uri", is("/management/experimental/configurations/pdx")));
+        .andExpect(jsonPath("$.links.self", is("/configurations/pdx")));
   }
 }

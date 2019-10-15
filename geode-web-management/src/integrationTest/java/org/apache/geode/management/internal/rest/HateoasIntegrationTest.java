@@ -67,19 +67,15 @@ public class HateoasIntegrationTest {
 
     context.perform(get("/experimental/regions"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("\"_links\"")))
         .andExpect(
-            jsonPath("$.result[0]._links.self",
-                Matchers.endsWith("/experimental/regions/customers")))
+            jsonPath("$.result[0].configuration.links.self",
+                Matchers.endsWith("/regions/customers")))
         .andExpect(
-            jsonPath("$.result[0]._links.indexes",
-                Matchers.endsWith("/experimental/regions/customers/indexes")))
-        .andExpect(
-            jsonPath("$.result[0]._links.diskstores",
-                Matchers.endsWith("/experimental/regions/customers/diskstores")))
-        .andExpect(
-            jsonPath("$.result[0]._links.self",
-                Matchers.containsString("http://")));
+            jsonPath("$.result[0].configuration.links.indexes",
+                Matchers.endsWith("/regions/customers/indexes")));
+//        .andExpect(
+//            jsonPath("$.result[0].configuration.links.self",
+//                Matchers.containsString("http://")));
   }
 
   @Test
@@ -88,19 +84,13 @@ public class HateoasIntegrationTest {
 
     context.perform(get("/experimental/regions/customers"))
         .andExpect(status().isOk())
-        .andExpect(content().string(containsString("\"_links\"")))
         .andExpect(
-            jsonPath("$.result._links.self",
-                Matchers.endsWith("/experimental/regions/customers")))
+            jsonPath("$.result.configuration.links.self",
+                Matchers.endsWith("/regions/customers")))
         .andExpect(
-            jsonPath("$.result._links.indexes",
-                Matchers.endsWith("/experimental/regions/customers/indexes")))
-        .andExpect(
-            jsonPath("$.result._links.diskstores",
-                Matchers.endsWith("/experimental/regions/customers/diskstores")))
-        .andExpect(
-            jsonPath("$._links.['api root']]",
-                Matchers.endsWith("/experimental/")));
+            jsonPath("$.result.configuration.links.indexes",
+                Matchers.endsWith("/regions/customers/indexes")))
+       ;
   }
 
   private void prepRegion() {
@@ -116,24 +106,5 @@ public class HateoasIntegrationTest {
       assertThat(cme.getResult().getStatusCode())
           .isEqualTo(ClusterManagementResult.StatusCode.ENTITY_EXISTS);
     }
-  }
-
-  @Test
-  public void listRootLinks() throws Exception {
-    context.perform(get("/experimental/"))
-        .andExpect(status().isOk())
-        .andExpect(content().string(containsString("\"_links\"")))
-        .andExpect(
-            jsonPath("$._links.swagger",
-                Matchers.containsString("swagger-ui.html")))
-        .andExpect(
-            jsonPath("$._links.docs",
-                Matchers.containsString("/docs")))
-        .andExpect(
-            jsonPath("$._links.wiki",
-                Matchers.containsString("cwiki")))
-        .andExpect(
-            jsonPath("$._links.['list regions']",
-                Matchers.containsString("/regions")));
   }
 }
