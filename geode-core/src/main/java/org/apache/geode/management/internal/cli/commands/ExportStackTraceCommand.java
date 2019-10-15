@@ -22,6 +22,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,6 +52,10 @@ import org.apache.geode.security.ResourcePermission;
 public class ExportStackTraceCommand extends GfshCommand {
   public static final String STACK_TRACE_FOR_MEMBER = "*** Stack-trace for member ";
   private final GetStackTracesFunction getStackTracesFunction = new GetStackTracesFunction();
+
+  private final DateTimeFormatter formatter =
+      DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss.SSS")
+          .withZone(ZoneId.systemDefault());
 
   /**
    * Current implementation supports writing it to a locator/server side file and returning the
@@ -96,7 +103,8 @@ public class ExportStackTraceCommand extends GfshCommand {
     for (Object resultObj : resultList) {
       if (resultObj instanceof StackTracesPerMember) {
         StackTracesPerMember stackTracePerMember = (StackTracesPerMember) resultObj;
-        dumps.put(stackTracePerMember.getMemberNameOrId(), stackTracePerMember.getStackTraces());
+        dumps.put(getHeaderMessage(stackTracePerMember),
+            stackTracePerMember.getStackTraces());
       }
     }
 
@@ -107,6 +115,16 @@ public class ExportStackTraceCommand extends GfshCommand {
 
     return result;
 
+  }
+
+  String getHeaderMessage(StackTracesPerMember stackTracesPerMember) {
+    String headerMessage = stackTracesPerMember.getMemberNameOrId();
+
+    Instant timestamp = stackTracesPerMember.getTimestamp();
+    if (timestamp != null) {
+      headerMessage += " at " + formatter.format(timestamp);
+    }
+    return headerMessage;
   }
 
   /***

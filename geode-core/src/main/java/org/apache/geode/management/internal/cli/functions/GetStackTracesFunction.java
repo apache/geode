@@ -15,6 +15,8 @@
 package org.apache.geode.management.internal.cli.functions;
 
 
+import java.time.Instant;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.OSProcess;
@@ -35,7 +37,8 @@ public class GetStackTracesFunction implements InternalFunction {
         memberNameOrId = cache.getDistributedSystem().getDistributedMember().getId();
       }
       StackTracesPerMember stackTracePerMember =
-          new StackTracesPerMember(memberNameOrId, OSProcess.zipStacks());
+          new StackTracesPerMember(memberNameOrId, Instant.now(),
+              OSProcess.zipStacks());
       context.getResultSender().lastResult(stackTracePerMember);
     } catch (Exception e) {
       context.getResultSender().sendException(e);
