@@ -192,7 +192,15 @@ tar czf ../${NCTAR} *
 cd ..
 rm -Rf repkg-temp
 gpg --armor -u ${SIGNING_KEY} -b ${NCTAR}
-sha512sum ${NCTAR} > ${NCTAR}.sha512
+
+if which shasum >/dev/null; then
+  SHASUM=shasum
+  SHASUM_OPTS="-a 512"
+else
+  SHASUM=sha512sum
+  SHASUM_OPTS=""
+fi
+${SHASUM} ${SHASUM_OPTS} ${NCTAR} > ${NCTAR}.sha512
 set +x
 
 
