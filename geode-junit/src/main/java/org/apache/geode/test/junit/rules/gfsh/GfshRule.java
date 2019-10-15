@@ -117,9 +117,10 @@ public class GfshRule extends ExternalResource {
   public GfshExecution execute(GfshScript gfshScript) {
     System.out.println("Executing " + gfshScript);
     try {
-      File workingDir = temporaryFolder.newFolder(gfshScript.getName());
-      int debugPort = gfshScript.getDebugPort();
+      File workingDir = new File(temporaryFolder.getRoot(), gfshScript.getName());
+      workingDir.mkdirs();
 
+      int debugPort = gfshScript.getDebugPort();
       Process process = toProcessBuilder(gfshScript, gfsh, workingDir, debugPort).start();
 
       GfshExecution gfshExecution = new GfshExecution(process, workingDir);
