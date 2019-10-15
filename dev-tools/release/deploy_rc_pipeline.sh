@@ -254,7 +254,7 @@ jobs:
               echo 'deb-src http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               echo 'deb     http://security.debian.org/         stable/updates  main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               apt-get update
-              DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev
+              DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
               cd geode-native
               mkdir build
               cd build
@@ -298,7 +298,7 @@ jobs:
               echo 'deb-src http://ftp.de.debian.org/debian/    stable main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               echo 'deb     http://security.debian.org/         stable/updates  main contrib non-free' >> /etc/apt/sources.list.d/stable.list
               apt-get update
-              DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev
+              DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
               curl -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tar.gz > src.tgz
               tar xzf src.tgz
               cd apache-geode-native*
