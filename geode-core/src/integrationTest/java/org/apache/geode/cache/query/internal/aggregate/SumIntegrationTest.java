@@ -112,6 +112,18 @@ public class SumIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
             .filter(p -> p.getID() > 0 && p.isActive() && p.getPositions().containsKey("IBM"))
             .mapToInt(Portfolio::getID).sum()));
 
+    // Aggregate used as as WHERE condition within inner query.
+    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+        downCast(supplierOne.get()
+            .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).min().orElse(-1))
+            .mapToInt(Portfolio::getID).sum()));
+    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+        downCast(supplierOne.get()
+            .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).max().orElse(-1))
+            .mapToInt(Portfolio::getID).sum()));
+
     // Equi Join Queries
     equiJoinQueries.put("SELECT SUM(p.ID) from /" + firstRegionName + " p, /" + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 0",
@@ -197,6 +209,20 @@ public class SumIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
         + " p, p.positions.values pos WHERE p.ID > 0 AND p.status = 'active' AND pos.secId = 'IBM'",
         downCast(supplierOne.get()
             .filter(p -> p.getID() > 0 && p.isActive() && p.getPositions().containsKey("IBM"))
+            .mapToInt(PortfolioPdx::getID).sum()));
+
+    // Aggregate used as as WHERE condition within inner query.
+    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+        downCast(supplierOne.get()
+            .filter(
+                p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).min().orElse(-1))
+            .mapToInt(PortfolioPdx::getID).sum()));
+    queries.put("SELECT SUM(p.ID) FROM /" + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+        downCast(supplierOne.get()
+            .filter(
+                p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).max().orElse(-1))
             .mapToInt(PortfolioPdx::getID).sum()));
 
     // Equi Join Queries
