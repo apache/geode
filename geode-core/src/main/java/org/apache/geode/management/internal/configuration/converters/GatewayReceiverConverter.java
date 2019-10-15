@@ -68,11 +68,13 @@ public class GatewayReceiverConverter
     receiver.setManualStart(configObject.isManualStart());
     receiver.setMaximumTimeBetweenPings(intToString(configObject.getMaximumTimeBetweenPings()));
     receiver.setSocketBufferSize(intToString(configObject.getSocketBufferSize()));
-    List<DeclarableType> xmlFilters = receiver.getGatewayTransportFilters();
-    for (ClassName configFilter : configObject.getGatewayTransportFilters()) {
-      String className = configFilter.getClassName();
-      Properties props = configFilter.getInitProperties();
-      xmlFilters.add(new DeclarableType(className, props));
+    if (configObject.getGatewayTransportFilters() != null) {
+      List<DeclarableType> xmlFilters = receiver.getGatewayTransportFilters();
+      for (ClassName configFilter : configObject.getGatewayTransportFilters()) {
+        String className = configFilter.getClassName();
+        Properties props = configFilter.getInitProperties();
+        xmlFilters.add(new DeclarableType(className, props));
+      }
     }
     return receiver;
   }

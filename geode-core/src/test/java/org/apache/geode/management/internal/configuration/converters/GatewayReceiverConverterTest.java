@@ -62,6 +62,23 @@ public class GatewayReceiverConverterTest {
   }
 
   @Test
+  public void fromConfigWithNullTransportFilters() {
+    GatewayReceiver config = new GatewayReceiver();
+    config.setEndPort(2);
+    config.setManualStart(true);
+    config.setMaximumTimeBetweenPings(1000);
+    config.setSocketBufferSize(1024);
+    config.setStartPort(1);
+    GatewayReceiverConfig xml = converter.fromConfigObject(config);
+    assertThat(xml.isManualStart()).isTrue();
+    assertThat(xml.getStartPort()).isEqualTo("1");
+    assertThat(xml.getEndPort()).isEqualTo("2");
+    assertThat(xml.getSocketBufferSize()).isEqualTo("1024");
+    assertThat(xml.getMaximumTimeBetweenPings()).isEqualTo("1000");
+    assertThat(xml.getGatewayTransportFilters()).isEmpty();
+  }
+
+  @Test
   public void fromXmlObject() {
     GatewayReceiverConfig xml = new GatewayReceiverConfig();
     xml.setEndPort("2");
