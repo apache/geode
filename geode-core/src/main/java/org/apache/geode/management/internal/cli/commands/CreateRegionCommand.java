@@ -14,12 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.ManagementHelper.isClassNameValid;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import joptsimple.internal.Strings;
@@ -828,14 +829,4 @@ public class CreateRegionCommand extends SingleGfshCommand {
       return ResultModel.createInfo("");
     }
   }
-
-
-  private static boolean isClassNameValid(String fqcn) {
-    if (StringUtils.isBlank(fqcn)) {
-      return false;
-    }
-    String regex = "([\\p{L}_$][\\p{L}\\p{N}_$]*\\.)*[\\p{L}_$][\\p{L}\\p{N}_$]*";
-    return Pattern.matches(regex, fqcn);
-  }
-
 }

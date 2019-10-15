@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.management.internal.ManagementHelper;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /**
@@ -69,7 +70,7 @@ public class ClassName implements Serializable {
     if (StringUtils.isBlank(className)) {
       return;
     }
-    if (!isClassNameValid(className)) {
+    if (!ManagementHelper.isClassNameValid(className)) {
       throw new IllegalArgumentException("Invalid className");
     }
     this.className = className;
