@@ -15,7 +15,6 @@
 
 package org.apache.geode.cache.configuration;
 
-import static org.apache.geode.management.api.Links.URI_CONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
@@ -30,7 +29,7 @@ public class PdxTypeTest {
     assertThat(config.getLinks().getList())
         .isEqualTo("/configurations/pdx");
     assertThat(config.getLinks().getSelf())
-        .isEqualTo(URI_CONTEXT + "/experimental/configurations/pdx");
+        .isEqualTo("/configurations/pdx");
   }
 
 }

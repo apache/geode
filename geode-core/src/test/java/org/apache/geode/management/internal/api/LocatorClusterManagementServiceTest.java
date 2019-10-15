@@ -350,13 +350,13 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void startOperation() {
-    final String URI = "test/uri";
+    final String URI = "/test/uri";
     ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
     when(operation.getEndpoint()).thenReturn(URI);
     when(executorManager.submit(any()))
         .thenReturn(new OperationInstance<>(null, "42", operation, new Date()));
     ClusterManagementOperationResult<?> result = service.start(operation);
-    assertThat(result.getLinks().getSelf()).isEqualTo("/management/experimental" + URI + "/42");
+    assertThat(result.getLinks().getSelf()).isEqualTo(URI + "/42");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
     assertThat(result.getStatusMessage()).contains("Operation started");
   }

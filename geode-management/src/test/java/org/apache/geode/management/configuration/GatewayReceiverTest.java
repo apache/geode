@@ -40,7 +40,7 @@ public class GatewayReceiverTest {
   @Test
   public void getUri() {
     assertThat(receiver.getLinks().getSelf())
-        .isEqualTo(URI_CONTEXT + "/experimental/gateways/receivers/cluster");
+        .isEqualTo("/gateways/receivers/cluster");
 
     receiver.setGroup("group");
     assertThat(receiver.getLinks().getSelf())

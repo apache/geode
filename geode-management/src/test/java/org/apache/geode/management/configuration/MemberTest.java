@@ -16,7 +16,6 @@
 package org.apache.geode.management.configuration;
 
 
-import static org.apache.geode.management.api.Links.URI_CONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
@@ -29,6 +28,6 @@ public class MemberTest {
     config.setId("memberA");
     assertThat(config.getLinks().getList()).isEqualTo("/members");
     assertThat(config.getLinks().getSelf())
-        .isEqualTo(URI_CONTEXT + "/experimental/members/memberA");
+        .isEqualTo("/members/memberA");
   }
 }

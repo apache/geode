@@ -53,7 +53,6 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
   }
 
   @Override
-  @JsonIgnore
   public Links getLinks() {
     Links links = new Links(getId(), REGION_CONFIG_ENDPOINT);
     links.addLink("indexes", links.getSelf() + "/indexes");

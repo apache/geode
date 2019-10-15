@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.configuration;
 
-import static org.apache.geode.management.api.Links.URI_CONTEXT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
@@ -58,8 +57,11 @@ public class RegionTest {
     assertThat(regionConfig.getType()).isEqualTo(RegionType.REPLICATE);
 
     String json2 = mapper.writeValueAsString(regionConfig);
+    System.out.println(json2);
     assertThat(json2).contains("\"type\":\"REPLICATE\"");
     assertThat(json2).contains("\"name\":\"test\"");
+
+    mapper.readValue(json2, Region.class);
   }
 
   @Test
@@ -68,6 +70,6 @@ public class RegionTest {
     assertThat(regionConfig.getLinks().getList()).isEqualTo("/regions");
 
     assertThat(regionConfig.getLinks().getSelf())
-        .isEqualTo(URI_CONTEXT + "/experimental/regions/regionA");
+        .isEqualTo("/regions/regionA");
   }
 }
