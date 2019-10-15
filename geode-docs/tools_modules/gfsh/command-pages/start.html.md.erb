@@ -257,6 +257,8 @@ In addition, if gfsh is not already connected to a JMX Manager, the gfsh console
 
 **Note:** When both `--max-heap` and `--initial-heap` are specified during locator startup, additional GC parameters are specified internally by <%=vars.product_name%>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the`-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
 
+**Note:** The additional GC parameters introduced by the `--max-heap` option are not compatible with the usage of G1 garbage collector.
+
 **Availability:** Online or offline.
 
 **Syntax:**
@@ -365,7 +367,8 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 <td><span class="keyword parmname">\-\-max-heap</span></td>
 <td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options
 <div class="note note">
-<b>Note:</b> If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+<b>Note:</b> If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.<br/>
+<b>Note:</b> The additional GC parameters introduced by the <code class="ph codeph">-max-heap</code> option are not compatible with the usage of G1 garbage collector.
 </div></td>
 <td> </td>
 </tr>
@@ -460,6 +463,8 @@ start pulse --url=http://gemfire.example.com:7070/pulse
 Start a <%=vars.product_name%> cache server process.
 
 **Note:** When both <span class="keyword parmname">\\-\\-max-heap</span> and <span class="keyword parmname">\\-\\-initial-heap</span> are specified during server startup, additional GC parameters are specified on your behalf. If you do not want the additional default GC properties set, then use the `-Xms` and `-Xmx` JVM options to set just these parameters. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
+
+**Note:** The additional GC parameters introduced by the `--max-heap` option are not compatible with the usage of G1 garbage collector.
 
 **Availability:** Online or offline.
 
@@ -646,7 +651,8 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <td><span class="keyword parmname">\-\-max-heap</span></td>
 <td>Maximum size of the heap in the same format as the JVM -Xmx parameter.
 <div class="note note">
-<b>Note:</b> If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+<b>Note:</b> If you use the <code class="ph codeph">--J=-Xms</code> and <code class="ph codeph">--J=-Xmx</code> JVM properties instead of <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code>, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.<br/>
+<b>Note:</b> The additional GC parameters introduced by the <code class="ph codeph">-max-heap</code> option are not compatible with the usage of G1 garbage collector.
 </div></td>
 <td> </td>
 </tr>
