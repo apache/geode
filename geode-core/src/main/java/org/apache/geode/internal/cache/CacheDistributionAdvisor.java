@@ -118,6 +118,12 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
   private Set<InternalDistributedMember> adviseSetforUpdate = Collections.emptySet();
   private volatile long adviseUpdateVersion = -1;
 
+  private volatile long inRecoveryVersion = 0;
+  private volatile long adviseInRecoveryVersion = -1;
+
+  public synchronized void incInRecoveryVersion() {
+    inRecoveryVersion++;
+  }
 
   /** Creates a new instance of CacheDistributionAdvisor */
   protected CacheDistributionAdvisor(CacheDistributionAdvisee region) {
@@ -148,24 +154,29 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
    * Returns a the set of members that either want all events or are caching data.
    *
    */
-  private Set<InternalDistributedMember> adviseAllEventsOrCached()
+  Set<InternalDistributedMember> adviseAllEventsOrCached()
       throws IllegalStateException {
     getAdvisee().getCancelCriterion().checkCancelInProgress(null);
 
     // minimize volatile reads by copying ref to local var
     long tempProfilesVersion = profilesVersion; // volatile read
-    if (adviseAllEventsVersion != tempProfilesVersion) {
+    long tempInRecoveryVersion = inRecoveryVersion; // volatile read
+
+    if (adviseAllEventsVersion != tempProfilesVersion
+        || adviseInRecoveryVersion != tempInRecoveryVersion) {
       synchronized (adviseSetforAllEvents) {
-        if (adviseAllEventsVersion != tempProfilesVersion) {
+        if (adviseAllEventsVersion != tempProfilesVersion
+            || adviseInRecoveryVersion != tempInRecoveryVersion) {
 
           adviseSetforAllEvents = Collections.unmodifiableSet(adviseFilter(profile -> {
             CacheProfile cp = (CacheProfile) profile;
-            if (cp.inRecovery) {
+            if (cp.getInRecovery()) {
               return false;
             }
             return cp.cachedOrAllEventsWithListener();
           }));
           adviseAllEventsVersion = tempProfilesVersion;
+          adviseInRecoveryVersion = tempInRecoveryVersion;
         }
       }
     }
@@ -195,7 +206,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
             adviseSetforUpdate = Collections.unmodifiableSet(adviseFilter(profile -> {
               CacheProfile cp = (CacheProfile) profile;
-              DataPolicy dp = cp.dataPolicy;
+              DataPolicy dp = cp.getDataPolicy();
               return dp.withReplication()
                   || (cp.allEvents() && (dp.withStorage() || cp.hasCacheListener));
             }));
@@ -290,7 +301,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     return adviseFilter(profile -> {
       assert profile instanceof CacheProfile;
       CacheProfile cp = (CacheProfile) profile;
-      return !cp.inRecovery;
+      return !cp.getInRecovery();
     });
   }
 
@@ -313,7 +324,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       assert profile instanceof CacheProfile;
       CacheProfile prof = (CacheProfile) profile;
       // if region in cache is in recovery, exclude
-      if (prof.inRecovery) {
+      if (prof.getInRecovery()) {
         return false;
       }
 
@@ -394,7 +405,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       }
 
       // if region in cache is in recovery, exclude
-      if (profile.inRecovery) {
+      if (profile.getInRecovery()) {
         uninitialized.add(profile.getDistributedMember());
         continue;
       }
@@ -483,12 +494,13 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
    */
   public static class CacheProfile extends DistributionAdvisor.Profile {
     public DataPolicy dataPolicy = DataPolicy.REPLICATE;
+
     public InterestPolicy interestPolicy = InterestPolicy.DEFAULT;
     public boolean hasCacheLoader = false;
     public boolean hasCacheWriter = false;
     public boolean hasCacheListener = false;
     public Scope scope = Scope.DISTRIBUTED_NO_ACK;
-    public boolean inRecovery = false;
+    private boolean inRecovery = false;
     public Set<String> gatewaySenderIds = Collections.emptySet();
     public Set<String> asyncEventQueueIds = Collections.emptySet();
     /**
@@ -638,6 +650,18 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
 
     public boolean isPersistent() {
       return dataPolicy.withPersistence();
+    }
+
+    public boolean getInRecovery() {
+      return inRecovery;
+    };
+
+    public void setInRecovery(boolean recovery) {
+      inRecovery = recovery;
+    };
+
+    public DataPolicy getDataPolicy() {
+      return dataPolicy;
     }
 
     /** Set the profile data information that is stored in a short */
