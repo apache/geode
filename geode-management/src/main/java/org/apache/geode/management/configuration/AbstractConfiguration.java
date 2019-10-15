@@ -18,7 +18,6 @@ package org.apache.geode.management.configuration;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
@@ -86,7 +85,7 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
   @Override
   public abstract String getId();
 
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  @JsonIgnore
   public abstract Links getLinks();
 
   /**

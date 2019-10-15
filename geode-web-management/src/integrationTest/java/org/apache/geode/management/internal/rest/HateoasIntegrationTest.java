@@ -17,9 +17,7 @@ package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -68,14 +66,14 @@ public class HateoasIntegrationTest {
     context.perform(get("/experimental/regions"))
         .andExpect(status().isOk())
         .andExpect(
-            jsonPath("$.result[0].configuration.links.self",
+            jsonPath("$.result[0].links.self",
                 Matchers.endsWith("/regions/customers")))
         .andExpect(
-            jsonPath("$.result[0].configuration.links.indexes",
+            jsonPath("$.result[0].links.indexes",
                 Matchers.endsWith("/regions/customers/indexes")));
-//        .andExpect(
-//            jsonPath("$.result[0].configuration.links.self",
-//                Matchers.containsString("http://")));
+    // .andExpect(
+    // jsonPath("$.result[0].configuration.links.self",
+    // Matchers.containsString("http://")));
   }
 
   @Test
@@ -85,12 +83,11 @@ public class HateoasIntegrationTest {
     context.perform(get("/experimental/regions/customers"))
         .andExpect(status().isOk())
         .andExpect(
-            jsonPath("$.result.configuration.links.self",
+            jsonPath("$.result.links.self",
                 Matchers.endsWith("/regions/customers")))
         .andExpect(
-            jsonPath("$.result.configuration.links.indexes",
-                Matchers.endsWith("/regions/customers/indexes")))
-       ;
+            jsonPath("$.result.links.indexes",
+                Matchers.endsWith("/regions/customers/indexes")));
   }
 
   private void prepRegion() {

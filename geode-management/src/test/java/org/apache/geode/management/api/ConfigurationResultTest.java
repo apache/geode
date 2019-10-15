@@ -13,36 +13,32 @@
  * the License.
  */
 
-package org.apache.geode.management.configuration;
+package org.apache.geode.management.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Before;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-public class GatewayReceiverTest {
-  private GatewayReceiver receiver;
+import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
-  @Before
-  public void before() {
-    receiver = new GatewayReceiver();
-  }
-
-  @Test
-  public void getId() {
-    assertThat(receiver.getId()).isEqualTo("cluster");
-
-    receiver.setGroup("group");
-    assertThat(receiver.getId()).isEqualTo("group");
-  }
+public class ConfigurationResultTest {
+  private ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Test
-  public void getUri() {
-    assertThat(receiver.getLinks().getSelf())
-        .isEqualTo("/gateways/receivers/cluster");
+  public void jsonTest() throws Exception {
+    ConfigurationResult<Region, RuntimeRegionInfo> result = new ConfigurationResult<>();
+    Region region = new Region();
+    region.setName("test");
+    result.setConfiguration(region);
 
-    receiver.setGroup("group");
-    assertThat(receiver.getLinks().getSelf())
-        .isEqualTo("/gateways/receivers/group");
+    String regionJson = mapper.writeValueAsString(region);
+    String json = mapper.writeValueAsString(result);
+    assertThat(regionJson).doesNotContain("links");
+    System.out.println(json);
+    assertThat(json).contains("links");
+    mapper.readValue(json, ConfigurationResult.class);
   }
 }
