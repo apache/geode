@@ -38,25 +38,59 @@ Execute <%=vars.product_name%> function on entire cluster or on a specified regi
     ``` pre
     http://serverURL/functions/SampleFunction?onRegion=TestPartitionRegion&filter=key1,key2,key3
     ```
+-   Any *function arguments* are passed in the request body in JSON format. The content of the arguments can depend on how the function is defined. Each function argument has to be written as a JSON object (sourrounded by `{ }`) and using `@type` to declare its type. `@value` can be used to specify a scalar value. Inner JSON objects (`{ }`) or JSON collections (`[ ]`) are not accepted.
+Collections of Java objects cannot be specified as parameters in JSON format. So if a function receives a collection of objects as one of its arguments (e.g. `List`), it cannot be called using <%=vars.product_name%> REST API. For example: `function(List<Item> list)`, `doSomething(double d, List<double> elements)`.  Following there are some examples of functions and their arguments in JSON format:
 
--   Any *function arguments* are passed in the request body in JSON format. The content of the arguments can depend on how the function is defined. Use @type to declare argument types and @value for specifying a scalar value. Collection of objects cannot be specified as parameters. So if a function receives a collection of objects as one of its arguments, it cannot be called using <%=vars.product_name%> REST API. An example set of arguments:
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function signature</th>
+<th>Function arguments in JSON format</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>
+<pre>myFunction1(int n)</pre>
+</td>
+<td>
+<pre>
+[
+    {
+        "@type":  "integer",
+        "@value": 10
+    }
+]
+</pre>
+</td></tr>
+<tr class="even">
+<td>
+<pre>myFunction2(double d, Item i)</pre>
+</td>
+<td>
+<pre>
+[
+    {
+        "@type":  "double",
+        "@value": 210
+    },
+    {
+        "@type":  "org.apache.geode.web.rest.domain.Item",
+        "itemNo":  "599",
+        "description":  "Part X Free on Bumper Offer",
+        "quantity":  "2",
+        "unitprice":  "5",
+        "totalprice":  "10.00"
+    }
+]
+</pre>
+</td></tr></table>
 
-    ``` pre
-    [
-            {
-                 "@type":  "double",
-                 "@value": 210
-            },
-            {
-                 "@type":  "org.apache.geode.web.rest.domain.Item",
-                 "itemNo":  "599",
-                 "description":  "Part X Free on Bumper Offer",
-                 "quantity":  "2",
-                 "unitprice":  "5",
-                 "totalprice":  "10.00"
-            }
-    ]
-    ```
 
 ## Example Requests
 
