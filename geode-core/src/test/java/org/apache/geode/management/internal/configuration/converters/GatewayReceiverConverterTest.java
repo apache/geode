@@ -62,7 +62,7 @@ public class GatewayReceiverConverterTest {
   }
 
   @Test
-  public void fromConfigWithNullTransportFilters() {
+  public void fromConfigWithNoTransportFilters() {
     GatewayReceiver config = new GatewayReceiver();
     config.setEndPort(2);
     config.setManualStart(true);
@@ -102,4 +102,38 @@ public class GatewayReceiverConverterTest {
     assertThat(configFilter.getClassName()).isEqualTo("className");
     assertThat(configFilter.getInitProperties()).isEqualTo(filterProps);
   }
+
+  @Test
+  public void fromXmlWithNoTransportFilters() {
+    GatewayReceiverConfig xml = new GatewayReceiverConfig();
+    xml.setEndPort("2");
+    xml.setManualStart(true);
+    xml.setMaximumTimeBetweenPings("1000");
+    xml.setSocketBufferSize("1024");
+    xml.setStartPort("1");
+    GatewayReceiver config = converter.fromXmlObject(xml);
+    assertThat(config.isManualStart()).isTrue();
+    assertThat(config.getEndPort()).isEqualTo(2);
+    assertThat(config.getMaximumTimeBetweenPings()).isEqualTo(1000);
+    assertThat(config.getSocketBufferSize()).isEqualTo(1024);
+    assertThat(config.getStartPort()).isEqualTo(1);
+    assertThat(config.getGatewayTransportFilters()).isNull();;
+  }
+
+  @Test
+  public void fromXmlWithBlankIntAttribute() {
+    GatewayReceiverConfig xml = new GatewayReceiverConfig();
+    xml.setEndPort("");
+    GatewayReceiver config = converter.fromXmlObject(xml);
+    assertThat(config.getEndPort()).isNull();
+  }
+
+  @Test
+  public void fromConfigWithNullIntegerAttribute() {
+    GatewayReceiver config = new GatewayReceiver();
+    config.setEndPort(null);
+    GatewayReceiverConfig xml = converter.fromConfigObject(config);
+    assertThat(xml.getEndPort()).isNull();
+  }
+
 }
