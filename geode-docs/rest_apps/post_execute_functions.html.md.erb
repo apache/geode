@@ -89,7 +89,29 @@ Collections of Java objects cannot be specified as parameters in JSON format. So
     }
 ]
 </pre>
+Notice how Item fields are written in JSON format due to the restrictions in inner objects previously mentioned. The following approach will be wrong:
+<pre>
+[
+    {
+        "@type":  "double",
+        "@value": 210
+    },
+    {
+        "@type":  "org.apache.geode.web.rest.domain.Item",
+        "itemNo" : {
+	    "@type":"double",
+            "@value": 599
+        },
+        "description": "Part X Free on Bumper Offer",
+        "quantity":  "2",
+        "unitprice":  "5",
+        "totalprice":  "10.00"
+    }
+]
+</pre>
 </td></tr></table>
+
+
 
 
 ## Example Requests
