@@ -166,6 +166,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     InternalCache cache = dm.getCache();
 
     long start = stats.getTime();
+    boolean startedFunctionExecution = false;
     try {
       tx = prepForTransaction(dm);
       ResultSender resultSender = new MemberFunctionResultSender(dm, this, this.functionObject);
@@ -190,8 +191,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       FunctionContextImpl context = new MultiRegionFunctionContextImpl(cache,
           this.functionObject.getId(), this.args, resultSender, regions, isReExecute);
 
-      start = stats.getTime();
       stats.startFunctionExecution(this.functionObject.hasResult());
+      startedFunctionExecution = true;
+
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Function: {} on remote member with context: {}",
             this.functionObject.getId(), context.toString());
@@ -208,7 +210,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
         logger.debug("FunctionException occurred on remote member while executing Function: {}",
             this.functionObject.getId(), functionException);
       }
-      stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+      if (startedFunctionExecution) {
+        stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+      }
       rex = new ReplyException(functionException);
       replyWithException(dm, rex);
       // thr = functionException.getCause();
@@ -217,7 +221,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       // throw new CacheClosedException("remote system shutting down");
       // thr = se; cache is closed, no point trying to send a reply
       thr = new FunctionInvocationTargetException(exception);
-      stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+      if (startedFunctionExecution) {
+        stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+      }
       rex = new ReplyException(thr);
       replyWithException(dm, rex);
     } catch (Exception exception) {
@@ -225,7 +231,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
         logger.debug("Exception occurred on remote member while executing Function: {}",
             this.functionObject.getId(), exception);
       }
-      stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+      if (startedFunctionExecution) {
+        stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
+      }
       rex = new ReplyException(exception);
       replyWithException(dm, rex);
       // thr = e.getCause();

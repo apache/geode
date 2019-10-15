@@ -222,7 +222,7 @@ public class FunctionStatsImplTest {
 
     long elapsedNanos = endTime - startTime;
     verify(functionServiceStats)
-        .endFunctionExecution(elapsedNanos, haveResult);
+        .endFunctionExecutionWithElapsedTime(elapsedNanos, haveResult);
   }
 
   @Test

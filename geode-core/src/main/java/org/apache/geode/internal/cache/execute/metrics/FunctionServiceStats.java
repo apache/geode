@@ -382,11 +382,11 @@ public class FunctionServiceStats {
    * Increments the "functionExecutionsCompleted" and "functionExecutionCompleteProcessingTime"
    * stats.
    *
-   * @param elapsed The elapsed time for function execution in nanoseconds
+   * @param elapsedNanos The elapsed time for function execution in nanoseconds
    * @param haveResult haveResult=true then update the _functionExecutionHasResultRunningId and
    *        _functionExecutionHasResultCompleteProcessingTimeId
    */
-  public void endFunctionExecution(long elapsed, boolean haveResult) {
+  public void endFunctionExecutionWithElapsedTime(long elapsedNanos, boolean haveResult) {
     // Increment number of function executions completed
     this._stats.incInt(_functionExecutionsCompletedId, 1);
 
@@ -394,14 +394,14 @@ public class FunctionServiceStats {
     this._stats.incInt(_functionExecutionsRunningId, -1);
 
     // Increment function execution complete processing time
-    this._stats.incLong(_functionExecutionsCompletedProcessingTimeId, elapsed);
+    this._stats.incLong(_functionExecutionsCompletedProcessingTimeId, elapsedNanos);
 
     if (haveResult) {
       // Decrement function Executions with haveResult = true running.
       this._stats.incInt(_functionExecutionsHasResultRunningId, -1);
 
       // Increment function execution with haveResult = true complete processing time
-      this._stats.incLong(_functionExecutionsHasResultCompletedProcessingTimeId, elapsed);
+      this._stats.incLong(_functionExecutionsHasResultCompletedProcessingTimeId, elapsedNanos);
     }
   }
 

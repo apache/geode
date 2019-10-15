@@ -270,33 +270,33 @@ public class FunctionStatsImpl implements FunctionStats {
 
   @Override
   public void endFunctionExecution(long startTime, boolean haveResult) {
-    long elapsed = getTime() - startTime;
+    long elapsedNanos = getTime() - startTime;
 
-    successTimer.record(elapsed, NANOSECONDS);
+    successTimer.record(elapsedNanos, NANOSECONDS);
 
     statistics.incInt(functionExecutionsCompletedId, 1);
     statistics.incInt(functionExecutionsRunningId, -1);
 
     if (timeStatisticsEnabled.getAsBoolean()) {
-      statistics.incLong(functionExecutionsCompletedProcessingTimeId, elapsed);
+      statistics.incLong(functionExecutionsCompletedProcessingTimeId, elapsedNanos);
     }
 
     if (haveResult) {
       statistics.incInt(functionExecutionsHasResultRunningId, -1);
 
       if (timeStatisticsEnabled.getAsBoolean()) {
-        statistics.incLong(functionExecutionsHasResultCompletedProcessingTimeId, elapsed);
+        statistics.incLong(functionExecutionsHasResultCompletedProcessingTimeId, elapsedNanos);
       }
     }
 
-    aggregateStatistics.endFunctionExecution(elapsed, haveResult);
+    aggregateStatistics.endFunctionExecutionWithElapsedTime(elapsedNanos, haveResult);
   }
 
   @Override
   public void endFunctionExecutionWithException(long startTime, boolean haveResult) {
-    long elapsed = getTime() - startTime;
+    long elapsedNanos = getTime() - startTime;
 
-    failureTimer.record(elapsed, NANOSECONDS);
+    failureTimer.record(elapsedNanos, NANOSECONDS);
 
     statistics.incInt(functionExecutionsRunningId, -1);
     statistics.incInt(functionExecutionExceptionsId, 1);
