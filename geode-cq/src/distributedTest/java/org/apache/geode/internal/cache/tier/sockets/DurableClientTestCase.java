@@ -29,8 +29,10 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -510,9 +512,6 @@ public class DurableClientTestCase extends DurableClientTestBase {
     // Verify the durable client received the updates before failover
     this.checkListenerEvents(2, 1, -1, this.durableClientVM);
 
-    // Stop server 1 - publisher will put 10 entries during shutdown/primary identification
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-
     this.durableClientVM.invoke(new CacheSerializableRunnable("Get") {
       @Override
       public void run2() throws CacheException {
@@ -525,14 +524,18 @@ public class DurableClientTestCase extends DurableClientTestBase {
       }
     });
 
+    // Stop server 1
+    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+
+    // Verify durable client failed over if redundancyLevel=0
+    if (redundancyLevel == 0) {
+      this.server2VM.invoke(() -> verifyClientHasConnected());
+    }
+
     publishEntries(3, 1);
 
-    if (redundancyLevel == 1) {
-      // Verify the durable client received the updates after failover
-      this.checkListenerEvents(3, 1, -1, this.durableClientVM);
-    } else {
-      this.checkListenerEvents(2, 1, -1, this.durableClientVM);
-    }
+    // Verify the durable client received the updates after failover
+    this.checkListenerEvents(3, 1, -1, this.durableClientVM);
 
     // Stop the durable client
     this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
@@ -665,4 +668,10 @@ public class DurableClientTestCase extends DurableClientTestBase {
     this.server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
+  private void verifyClientHasConnected() {
+    CacheServer cacheServer = CacheServerTestUtil.getCache().getCacheServers().get(0);
+    CacheClientNotifier ccn =
+        ((InternalCacheServer) cacheServer).getAcceptor().getCacheClientNotifier();
+    await().until(() -> ccn.getClientProxies().size() == 1);
+  }
 }
