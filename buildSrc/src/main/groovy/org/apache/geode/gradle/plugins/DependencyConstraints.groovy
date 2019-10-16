@@ -102,7 +102,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '2.2')
         api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.10.2')
         api(group: 'com.zaxxer', name: 'HikariCP', version: '3.2.0')
-        api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3')
+        api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.4')
         api(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
         api(group: 'commons-configuration', name: 'commons-configuration', version: '1.10')
         api(group: 'commons-digester', name: 'commons-digester', version: '2.1')

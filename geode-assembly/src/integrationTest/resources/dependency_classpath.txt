@@ -36,7 +36,7 @@ istack-commons-runtime-2.2.jar
 commons-validator-1.6.jar
 shiro-core-1.4.0.jar
 shiro-config-ogdl-1.4.0.jar
-commons-beanutils-1.9.3.jar
+commons-beanutils-1.9.4.jar
 commons-collections-3.2.2.jar
 commons-io-2.6.jar
 spring-core-4.3.23.RELEASE.jar
