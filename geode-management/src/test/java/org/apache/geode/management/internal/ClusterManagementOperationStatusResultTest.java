@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.api;
+package org.apache.geode.management.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
