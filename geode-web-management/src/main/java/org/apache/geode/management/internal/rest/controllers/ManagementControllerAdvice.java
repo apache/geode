@@ -37,6 +37,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementException;
@@ -44,12 +45,14 @@ import org.apache.geode.management.api.ClusterManagementRealizationException;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
+import org.apache.geode.management.internal.Links;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 
 @ControllerAdvice
 public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   private static final Logger logger = LogService.getLogger();
+  private String requestContext;
 
   @Autowired
   private Jackson2ObjectMapperFactoryBean objectMapperFactory;
@@ -64,8 +67,13 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   public Object beforeBodyWrite(Object body, MethodParameter returnType,
       MediaType selectedContentType, Class selectedConverterType,
       ServerHttpRequest request, ServerHttpResponse response) {
+
     List<String> values = request.getHeaders().get(INCLUDE_CLASS_HEADER);
     boolean includeClass = values != null && values.contains("true");
+
+    if (requestContext == null) {
+      requestContext = ServletUriComponentsBuilder.fromCurrentContextPath().build().toString();
+    }
 
     try {
       ObjectMapper objectMapper = objectMapperFactory.getObject();
@@ -73,6 +81,7 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
       if (!includeClass) {
         json = removeClassFromJsonText(json);
       }
+      json = qualifyHrefsInJsonText(json, requestContext);
       response.getHeaders().add(HttpHeaders.CONTENT_TYPE,
           "application/json; charset=" + Charset.defaultCharset().toString());
       response.getBody().write(json.getBytes());
@@ -89,6 +98,13 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
     return json
         .replaceAll("\"[^\"]*\":\\{\"class\":\"[^\"]*\"},?", "")
         .replaceAll("\"class\":\"[^\"]*\",", "");
+  }
+
+  static String qualifyHrefsInJsonText(String json, String requestContext) {
+    if (requestContext == null) {
+      return json;
+    }
+    return json.replace(Links.HREF_PREFIX + Links.URI_CONTEXT, requestContext);
   }
 
   @ExceptionHandler(Exception.class)

@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.management.api.Links.URI_CONTEXT;
+import static org.apache.geode.management.internal.Links.URI_VERSION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.StringContains.containsString;
@@ -73,8 +73,8 @@ public class RebalanceIntegrationTest {
         .andExpect(status().isAccepted())
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(
-            jsonPath("$.uri",
-                Matchers.containsString("/management/experimental/operations/rebalances/")))
+            jsonPath("$.links.self",
+                Matchers.containsString("/experimental/operations/rebalances/")))
         .andExpect(jsonPath("$.statusMessage", Matchers.containsString("Operation started")));
   }
 
@@ -101,11 +101,13 @@ public class RebalanceIntegrationTest {
     }
   }
 
-  class ResponseBodyMatchers {
-    public ResultMatcher containsObjectAsJson(CompletableFuture<String> futureUri) {
+  static class ResponseBodyMatchers {
+    ResultMatcher containsObjectAsJson(CompletableFuture<String> futureUri) {
       return mvcResult -> {
         String json = mvcResult.getResponse().getContentAsString();
-        String uri = json.replaceFirst(".*\"uri\":\"" + URI_CONTEXT, "").replaceFirst("\".*", "");
+        String uri =
+            json.replaceFirst(".*\"self\":\"[^\"]*" + URI_VERSION, URI_VERSION).replaceFirst("\".*",
+                "");
         futureUri.complete(uri);
       };
     }
@@ -131,7 +133,7 @@ public class RebalanceIntegrationTest {
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(
             jsonPath("$.result[0].statusCode", Matchers.isOneOf("IN_PROGRESS", "ERROR", "OK")))
-        .andExpect(jsonPath("$.result[0].uri", Matchers.containsString("rebalances/")))
+        .andExpect(jsonPath("$.result[0].links.self", Matchers.containsString("rebalances/")))
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")));
   }
 
@@ -155,6 +157,6 @@ public class RebalanceIntegrationTest {
     assertThat(listResult.getResult().get(0).getOperationStart()).isNotNull();
     assertThat(listResult.getResult().get(0).getStatusCode().toString()).isIn("IN_PROGRESS",
         "ERROR", "OK");
-    assertThat(listResult.getResult().get(0).getLinks().getSelf()).contains("rebalances/");
+    assertThat(listResult.getResult().get(0).getLinks().getSelf()).isNull();
   }
 }

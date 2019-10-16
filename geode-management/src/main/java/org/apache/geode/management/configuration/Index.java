@@ -19,7 +19,7 @@ package org.apache.geode.management.configuration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.management.api.Links;
+import org.apache.geode.management.internal.Links;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class Index extends GroupableConfiguration<RuntimeInfo> {

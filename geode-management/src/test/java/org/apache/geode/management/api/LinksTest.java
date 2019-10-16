@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.management.internal.Links;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class LinksTest {
@@ -31,18 +32,27 @@ public class LinksTest {
   @Before
   public void before() throws Exception {
     links = new Links();
+    links = new Links("regionA", "/regions");
+    links.addLink("index", "/indexes/index1");
   }
 
   @Test
   public void parse() throws Exception {
-    links = new Links("regionA", "/regions");
-    links.addLink("index", "/indexes/index1");
     String json = mapper.writeValueAsString(links);
     System.out.println(json);
-    assertThat(json).doesNotContain("others").contains("\"index\":\"/indexes/index1\"");
+    assertThat(json).doesNotContain("others")
+        .contains("\"list\":\"#HREF/management/experimental/regions\"");
     Links links2 = mapper.readValue(json, Links.class);
-    assertThat(links2.getSelf()).isEqualTo("/regions/regionA");
-    assertThat(links2.getList()).isEqualTo("/regions");
-    assertThat(links2.getOthers().get("index")).isEqualTo("/indexes/index1");
+    assertThat(links2.getSelf()).isNull();
+    assertThat(links2.getList()).isNull();
+  }
+
+  @Test
+  public void getUri() throws Exception {
+    assertThat(links.getSelf()).isEqualTo("/regions/regionA");
+    assertThat(links.getList()).isEqualTo("/regions");
+    assertThat(links.getLinks().get("list")).isEqualTo("#HREF/management/experimental/regions");
+    assertThat(links.getLinks().get("self"))
+        .isEqualTo("#HREF/management/experimental/regions/regionA");
   }
 }

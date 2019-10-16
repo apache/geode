@@ -23,7 +23,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.JsonSerializable;
-import org.apache.geode.management.api.Links;
+import org.apache.geode.management.internal.Links;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -85,6 +85,9 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
   @Override
   public abstract String getId();
 
+  /**
+   * for internal usage only
+   */
   @JsonIgnore
   public abstract Links getLinks();
 

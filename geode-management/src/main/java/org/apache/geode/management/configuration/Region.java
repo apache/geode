@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import org.apache.geode.management.api.Links;
+import org.apache.geode.management.internal.Links;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
 /**

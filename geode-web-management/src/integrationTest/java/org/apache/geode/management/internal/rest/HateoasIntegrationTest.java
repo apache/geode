@@ -70,10 +70,10 @@ public class HateoasIntegrationTest {
                 Matchers.endsWith("/regions/customers")))
         .andExpect(
             jsonPath("$.result[0].links.indexes",
-                Matchers.endsWith("/regions/customers/indexes")));
-    // .andExpect(
-    // jsonPath("$.result[0].configuration.links.self",
-    // Matchers.containsString("http://")));
+                Matchers.endsWith("/regions/customers/indexes")))
+        .andExpect(
+            jsonPath("$.result[0].links.self",
+                Matchers.containsString("http://")));
   }
 
   @Test

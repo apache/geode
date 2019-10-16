@@ -15,9 +15,8 @@
 
 package org.apache.geode.management.internal;
 
-import static org.apache.geode.management.api.Links.URI_CONTEXT;
-import static org.apache.geode.management.api.Links.URI_VERSION;
 import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
+import static org.apache.geode.management.internal.Links.URI_VERSION;
 
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
@@ -144,12 +143,12 @@ public class ClientClusterManagementService implements ClusterManagementService 
         .getBody());
 
     // our restTemplate requires the url to be modified to start from "/experimental"
-    return reAnimate(result);
+    return reAnimate(result, op.getEndpoint());
   }
 
   private <V extends OperationResult> ClusterManagementOperationResult<V> reAnimate(
-      ClusterManagementOperationResult<V> result) {
-    String uri = stripPrefix(URI_CONTEXT, result.getLinks().getSelf());
+      ClusterManagementOperationResult<V> result, String endPoint) {
+    String uri = URI_VERSION + endPoint + "/" + result.getOperationId();
 
     // complete the future by polling the check-status REST endpoint
     CompletableFuture<Date> futureOperationEnded = new CompletableFuture<>();
@@ -158,7 +157,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
             futureOperationEnded);
 
     return new ClusterManagementOperationResult<>(result, operationResult,
-        result.getOperationStart(), futureOperationEnded, result.getOperator());
+        result.getOperationStart(), futureOperationEnded, result.getOperator(),
+        result.getOperationId());
   }
 
   @Override
@@ -174,14 +174,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
         .getBody());
 
     return new ClusterManagementListOperationsResult<>(
-        result.getResult().stream().map(this::reAnimate).collect(Collectors.toList()));
-  }
-
-  private static String stripPrefix(String prefix, String s) {
-    if (s.startsWith(prefix)) {
-      return s.substring(prefix.length());
-    }
-    return s;
+        result.getResult().stream().map(r -> reAnimate(r, opType.getEndpoint()))
+            .collect(Collectors.toList()));
   }
 
   private String getIdentityEndpoint(AbstractConfiguration config) {

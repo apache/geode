@@ -19,6 +19,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.internal.Links;
 
 /**
  * This base class provides the common attributes returned from all {@link ClusterManagementService}

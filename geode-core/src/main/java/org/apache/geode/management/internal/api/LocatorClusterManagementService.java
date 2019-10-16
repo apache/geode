@@ -58,7 +58,6 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
-import org.apache.geode.management.api.Links;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.GatewayReceiver;
@@ -69,6 +68,7 @@ import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
+import org.apache.geode.management.internal.Links;
 import org.apache.geode.management.internal.cli.functions.CacheRealizationFunction;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
@@ -434,7 +434,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
       ClusterManagementResult status, OperationInstance<A, V> operationInstance) {
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
         operationInstance.getFutureResult(), operationInstance.getOperationStart(),
-        operationInstance.getFutureOperationEnded(), operationInstance.getOperator());
+        operationInstance.getFutureOperationEnded(), operationInstance.getOperator(),
+        operationInstance.getId());
     result.setLinks(
         new Links(operationInstance.getId(), operationInstance.getOperation().getEndpoint()));
     return result;

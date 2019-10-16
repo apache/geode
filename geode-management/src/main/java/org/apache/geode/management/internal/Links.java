@@ -13,59 +13,83 @@
  * the License.
  */
 
-package org.apache.geode.management.api;
+package org.apache.geode.management.internal;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * this keeps all HATEOAS links related to a particular configuration object.
+ * only the map (links) is serialized back to the client, nothing get de-serialized.
+ */
 public class Links {
+  public static final String HREF_PREFIX = "#HREF";
   public static final String URI_CONTEXT = "/management";
   public static final String URI_VERSION = "/experimental";
-
   private String self;
   private String list;
-  private Map<String, String> others;
+  private Map<String, String> links;
 
   public Links() {
-    others = new HashMap<>();
+    links = new HashMap<>();
   }
 
   public Links(String id, String listUri) {
-    others = new HashMap<>();
-    this.list = listUri;
+    links = new HashMap<>();
+    setList(listUri);
 
     if (StringUtils.isNotBlank(id) && StringUtils.isNotBlank(listUri)) {
-      this.self = listUri + "/" + id;
+      setSelf(this.list + "/" + id);
     }
   }
 
+  @JsonIgnore
   public String getSelf() {
     return self;
   }
 
+  @JsonIgnore
   public void setSelf(String self) {
     this.self = self;
+    addLink("self", self);
   }
 
+  @JsonIgnore
   public String getList() {
     return list;
   }
 
+  @JsonIgnore
   public void setList(String list) {
     this.list = list;
+    addLink("list", list);
   }
 
   @JsonAnySetter
   public void addLink(String key, String url) {
-    others.put(key, url);
+    links.put(key, qualifyUrl(url));
   }
 
   @JsonAnyGetter
-  public Map<String, String> getOthers() {
-    return others;
+  public Map<String, String> getLinks() {
+    return links;
+  }
+
+  private static String qualifyUrl(String uri) {
+    if (uri.startsWith(URI_VERSION)) {
+      return HREF_PREFIX + URI_CONTEXT + uri;
+    }
+    if (uri.startsWith(URI_CONTEXT)) {
+      return HREF_PREFIX + uri;
+    }
+    if (uri.startsWith(HREF_PREFIX)) {
+      return uri;
+    }
+    return HREF_PREFIX + URI_CONTEXT + URI_VERSION + uri;
   }
 }

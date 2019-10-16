@@ -128,8 +128,8 @@ public class ListIndexManagementDUnitTest {
     assertThat(runtimeIndex.getExpression()).isEqualTo("id");
     ConfigurationResult<Index, RuntimeInfo> wrapper = cms.get(index).getResult();
     Index indexConfig = wrapper.getConfiguration();
-    assertThat(indexConfig.getLinks().getOthers()).containsKey("region");
-    assertThat(indexConfig.getLinks().getOthers().get("region")).endsWith("regions/region1");
+    assertThat(indexConfig.getLinks().getLinks()).containsKey("region");
+    assertThat(indexConfig.getLinks().getLinks().get("region")).endsWith("regions/region1");
   }
 
   @Test
