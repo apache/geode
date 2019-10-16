@@ -3309,17 +3309,15 @@ public class Connection implements Runnable {
           return;
         default:
           String err =
-              "Unknown handshake reply code: %s nioMessageLength: %s";
-          Object[] errArgs = new Object[] {this.replyCode,
-              messageLength};
+              String.format("Unknown handshake reply code: %s nioMessageLength: %s", this.replyCode,
+                  this.messageLength);
           if (replyCode == 0 && logger.isDebugEnabled()) { // bug 37113
-            logger.debug(
-                String.format(err, errArgs) + " (peer probably departed ungracefully)");
+            logger.debug(err + " (peer probably departed ungracefully)");
           } else {
-            logger.fatal(err, errArgs);
+            logger.fatal(err);
           }
           this.readerShuttingDown = true;
-          requestClose(String.format(err, errArgs));
+          requestClose(err);
           return;
       }
     } catch (Exception e) {
