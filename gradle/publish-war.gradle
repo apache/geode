@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/gradle/publish-common.gradle"
+apply from: "${project.projectDir}/../gradle/publish-common.gradle"
 
 publishing {
   publications {
