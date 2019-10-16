@@ -15,13 +15,20 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
+import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.GatewayReceiver;
 
 public class GatewayReceiverConverter
     extends ConfigurationConverter<GatewayReceiver, GatewayReceiverConfig> {
+  private final ClassNameConverter classNameConverter = new ClassNameConverter();
+
   @Override
   protected GatewayReceiver fromNonNullXmlObject(GatewayReceiverConfig xmlObject) {
     GatewayReceiver receiver = new GatewayReceiver();
@@ -30,6 +37,13 @@ public class GatewayReceiverConverter
     receiver.setMaximumTimeBetweenPings(stringToInt(xmlObject.getMaximumTimeBetweenPings()));
     receiver.setSocketBufferSize(stringToInt(xmlObject.getSocketBufferSize()));
     receiver.setStartPort(stringToInt(xmlObject.getStartPort()));
+    if (!xmlObject.getGatewayTransportFilters().isEmpty()) {
+      List<ClassName> configFilters = new ArrayList<>();
+      for (DeclarableType xmlFilter : xmlObject.getGatewayTransportFilters()) {
+        configFilters.add(classNameConverter.fromXmlObject(xmlFilter));
+      }
+      receiver.setGatewayTransportFilters(configFilters);
+    }
     return receiver;
   }
 
@@ -41,6 +55,12 @@ public class GatewayReceiverConverter
     receiver.setManualStart(configObject.isManualStart());
     receiver.setMaximumTimeBetweenPings(intToString(configObject.getMaximumTimeBetweenPings()));
     receiver.setSocketBufferSize(intToString(configObject.getSocketBufferSize()));
+    if (configObject.getGatewayTransportFilters() != null) {
+      List<DeclarableType> xmlFilters = receiver.getGatewayTransportFilters();
+      for (ClassName configFilter : configObject.getGatewayTransportFilters()) {
+        xmlFilters.add(classNameConverter.fromConfigObject(configFilter));
+      }
+    }
     return receiver;
   }
 
