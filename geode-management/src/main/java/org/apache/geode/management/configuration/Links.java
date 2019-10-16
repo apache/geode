@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal;
+package org.apache.geode.management.configuration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -70,7 +70,9 @@ public class Links {
     addLink("list", list);
   }
 
-
+  /**
+   * adds the additional HATEOAS links
+   */
   public void addLink(String key, String url) {
     links.put(key, qualifyUrl(url));
   }

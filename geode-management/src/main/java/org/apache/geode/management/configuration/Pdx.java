@@ -19,7 +19,6 @@ package org.apache.geode.management.configuration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.internal.Links;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**

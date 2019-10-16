@@ -45,7 +45,7 @@ import org.apache.geode.management.api.ClusterManagementRealizationException;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
-import org.apache.geode.management.internal.Links;
+import org.apache.geode.management.configuration.Links;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 

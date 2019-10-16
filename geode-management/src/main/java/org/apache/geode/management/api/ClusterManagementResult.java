@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.internal.Links;
+import org.apache.geode.management.configuration.Links;
 
 /**
  * This base class provides the common attributes returned from all {@link ClusterManagementService}

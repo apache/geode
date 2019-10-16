@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.management.internal.Links;
+import org.apache.geode.management.configuration.Links;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class LinksTest {

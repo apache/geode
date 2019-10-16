@@ -17,7 +17,6 @@ package org.apache.geode.management.configuration;
 
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.internal.Links;
 import org.apache.geode.management.runtime.MemberInformation;
 
 @Experimental
