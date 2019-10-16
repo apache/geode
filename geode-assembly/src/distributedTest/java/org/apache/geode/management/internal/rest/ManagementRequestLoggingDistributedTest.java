@@ -127,11 +127,11 @@ public class ManagementRequestLoggingDistributedTest implements Serializable {
               "Management Request:",
               " POST[url=/management/experimental/regions];",
               " user=null;",
-              " payload={\"class\":\"org.apache.geode.management.configuration.Region\",\"group\":null,\"name\":\"customers\",\"type\":\"REPLICATE\",\"keyConstraint\":null,\"valueConstraint\":null,\"diskStoreName\":null,\"redundantCopies\":null,\"expirations\":null}")
+              " payload={")
           .containsSubsequence(
               "Management Response:",
               " Status=201;",
-              " response={\"statusCode\":\"OK\",\"statusMessage\":\"Successfully updated configuration for cluster.\",\"links\":{\"self\":\"/regions/customers\",\"list\":\"/regions\",\"indexes\":\"/regions/customers/indexes\"},\"memberStatuses\":[{\"memberName\":\"server1\",\"success\":true,\"message\":\"Region successfully created.\"}]}");
+              " response={");
     });
   }
 
