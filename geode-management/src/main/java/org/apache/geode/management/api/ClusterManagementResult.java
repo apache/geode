@@ -17,6 +17,7 @@ package org.apache.geode.management.api;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.internal.Links;
@@ -64,6 +65,7 @@ public class ClusterManagementResult {
   // we will always have statusCode when the object is created
   protected StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   private Links links;
 
   /**
@@ -128,10 +130,9 @@ public class ClusterManagementResult {
     return statusMessage;
   }
 
-  public Links getLinks() {
-    return links;
-  }
-
+  /**
+   * for internal use only
+   */
   public void setLinks(Links links) {
     this.links = links;
   }

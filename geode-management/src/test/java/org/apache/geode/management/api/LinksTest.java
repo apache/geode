@@ -42,9 +42,11 @@ public class LinksTest {
     System.out.println(json);
     assertThat(json).doesNotContain("others")
         .contains("\"list\":\"#HREF/management/experimental/regions\"");
+    // this is to make sure nothing get de-serialized.
     Links links2 = mapper.readValue(json, Links.class);
     assertThat(links2.getSelf()).isNull();
     assertThat(links2.getList()).isNull();
+    assertThat(links2.getLinks()).isEmpty();
   }
 
   @Test

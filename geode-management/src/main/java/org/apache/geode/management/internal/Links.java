@@ -70,10 +70,14 @@ public class Links {
     addLink("list", list);
   }
 
-  @JsonAnySetter
+
   public void addLink(String key, String url) {
     links.put(key, qualifyUrl(url));
   }
+
+  // this is just to make sure nothing get de-serialized
+  @JsonAnySetter
+  public void anySetter(String key, String url) {}
 
   @JsonAnyGetter
   public Map<String, String> getLinks() {

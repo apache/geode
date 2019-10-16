@@ -157,6 +157,5 @@ public class RebalanceIntegrationTest {
     assertThat(listResult.getResult().get(0).getOperationStart()).isNotNull();
     assertThat(listResult.getResult().get(0).getStatusCode().toString()).isIn("IN_PROGRESS",
         "ERROR", "OK");
-    assertThat(listResult.getResult().get(0).getLinks().getSelf()).isNull();
   }
 }

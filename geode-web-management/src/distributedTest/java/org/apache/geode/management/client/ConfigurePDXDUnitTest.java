@@ -90,7 +90,6 @@ public class ConfigurePDXDUnitTest {
     ClusterManagementRealizationResult result = client.create(pdxType);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getLinks().getSelf()).isEqualTo("/configurations/pdx");
     assertThat(result.getMemberStatuses()).hasSize(0);
 
     // call create the 2nd time
@@ -107,7 +106,6 @@ public class ConfigurePDXDUnitTest {
     ClusterManagementRealizationResult result = client.create(pdxType);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getLinks().getSelf()).isEqualTo("/configurations/pdx");
 
     RealizationResult status = result.getMemberStatuses().get(0);
     assertThat(status.getMemberName()).isEqualTo("server-1");
