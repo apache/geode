@@ -77,10 +77,6 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     try {
       pr.destroyRemotely(state.getTarget(), event.getKeyInfo().getBucketId(), event,
           expectedOldValue);
-    } catch (TransactionException e) {
-      RuntimeException re = getTransactionException(event.getKeyInfo(), e);
-      re.initCause(e.getCause());
-      throw re;
     } catch (PrimaryBucketException e) {
       RuntimeException re = getTransactionException(event.getKeyInfo(), e);
       re.initCause(e);
@@ -104,7 +100,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
-  private RuntimeException getTransactionException(KeyInfo keyInfo, Throwable cause) {
+  RuntimeException getTransactionException(KeyInfo keyInfo, Throwable cause) {
     region.getCancelCriterion().checkCancelInProgress(cause); // fixes bug 44567
     Throwable ex = cause;
     while (ex != null) {
@@ -151,7 +147,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   /**
    * wait to retry after getting a ForceReattemptException
    */
-  private void waitToRetry() {
+  void waitToRetry() {
     // this is what PR operations do. The 2000ms is not used
     (new RetryTimeKeeper(2000)).waitForBucketsRecovery();
   }
@@ -167,10 +163,6 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       return e;
     } catch (EntryNotFoundException enfe) {
       return null;
-    } catch (TransactionException e) {
-      RuntimeException re = getTransactionException(keyInfo, e);
-      re.initCause(e.getCause());
-      throw re;
     } catch (PrimaryBucketException e) {
       RuntimeException re = getTransactionException(keyInfo, e);
       re.initCause(e);
@@ -193,7 +185,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   }
 
 
-  private void trackBucketForTx(KeyInfo keyInfo) {
+  void trackBucketForTx(KeyInfo keyInfo) {
     if (region.getCache().getLogger().fineEnabled()) {
       region.getCache().getLogger()
           .fine("adding bucket:" + keyInfo.getBucketId() + " for tx:" + state.getTransactionId());
@@ -210,10 +202,6 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     try {
       pr.invalidateRemotely(state.getTarget(), event.getKeyInfo().getBucketId(), event);
-    } catch (TransactionException e) {
-      RuntimeException re = getTransactionException(event.getKeyInfo(), e);
-      re.initCause(e.getCause());
-      throw re;
     } catch (PrimaryBucketException e) {
       RuntimeException re = getTransactionException(event.getKeyInfo(), e);
       re.initCause(e);
@@ -244,10 +232,6 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
           keyInfo.getBucketId(), keyInfo.getKey());
       trackBucketForTx(keyInfo);
       return retVal;
-    } catch (TransactionException e) {
-      RuntimeException re = getTransactionException(keyInfo, e);
-      re.initCause(e.getCause());
-      throw re;
     } catch (PrimaryBucketException e) {
       RuntimeException re = getTransactionException(keyInfo, e);
       re.initCause(e);
@@ -272,7 +256,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   /**
    * @return true if the cause of the FRE is a BucketNotFoundException
    */
-  private boolean isBucketNotFoundException(ForceReattemptException e) {
+  boolean isBucketNotFoundException(ForceReattemptException e) {
     ForceReattemptException fre = e;
     while (fre.getCause() != null && fre.getCause() instanceof ForceReattemptException) {
       fre = (ForceReattemptException) fre.getCause();
@@ -288,10 +272,6 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
           (InternalDistributedMember) state.getTarget(), keyInfo.getBucketId(), keyInfo.getKey());
       trackBucketForTx(keyInfo);
       return retVal;
-    } catch (TransactionException e) {
-      RuntimeException re = getTransactionException(keyInfo, e);
-      re.initCause(e.getCause());
-      throw re;
     } catch (PrimaryBucketException e) {
       RuntimeException re = getTransactionException(keyInfo, e);
       re.initCause(e);
@@ -312,7 +292,6 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     }
   }
 
-
   @Override
   public Object findObject(KeyInfo keyInfo, boolean isCreate, boolean generateCallbacks,
       Object value, boolean peferCD, ClientProxyMembershipID requestingClient,
@@ -324,10 +303,6 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       retVal =
           region.getRemotely((InternalDistributedMember) state.getTarget(), keyInfo.getBucketId(),
               key, callbackArgument, peferCD, requestingClient, clientEvent, false);
-    } catch (TransactionException e) {
-      RuntimeException re = getTransactionException(keyInfo, e);
-      re.initCause(e.getCause());
-      throw re;
     } catch (PrimaryBucketException e) {
       RuntimeException re = getTransactionException(keyInfo, e);
       re.initCause(e);
@@ -369,10 +344,6 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     try {
       retVal =
           pr.putRemotely(state.getTarget(), event, ifNew, ifOld, expectedOldValue, requireOldValue);
-    } catch (TransactionException e) {
-      RuntimeException re = getTransactionException(event.getKeyInfo(), e);
-      re.initCause(e.getCause());
-      throw re;
     } catch (PrimaryBucketException e) {
       RuntimeException re = getTransactionException(event.getKeyInfo(), e);
       re.initCause(e);

@@ -24,6 +24,10 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.GemFireException;
+import org.apache.geode.cache.TransactionDataNotColocatedException;
+import org.apache.geode.cache.TransactionDataRebalancedException;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -156,5 +160,85 @@ public class TXStateProxyImplTest {
     DistributedMember remoteMember = mock(InternalDistributedMember.class);
 
     tx.setTarget(remoteMember);
+  }
+
+  @Test
+  public void txHostGetTransactionExceptionReturnsTransactionDataNotColocatedExceptionIfKeyNotInBuckets() {
+    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false, disabledClock());
+    tx.setLocalTXState(new TXState(tx, true, disabledClock()));
+    KeyInfo keyInfo1 = mock(KeyInfo.class);
+    when(keyInfo1.getBucketId()).thenReturn(1);
+    KeyInfo keyInfo2 = mock(KeyInfo.class);
+    when(keyInfo2.getBucketId()).thenReturn(2);
+    tx.trackBucketForTx(keyInfo1);
+
+    TransactionException transactionException =
+        tx.getTransactionException(keyInfo2, new PrimaryBucketException());
+
+    assertThat(transactionException).isInstanceOf(TransactionDataNotColocatedException.class);
+  }
+
+  @Test
+  public void txHostGetTransactionExceptionReturnsTransactionDataNotColocatedExceptionIfFirstOperationOnReplicate() {
+    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false, disabledClock());
+    tx.setLocalTXState(new TXState(tx, true, disabledClock()));
+    KeyInfo keyInfo = mock(KeyInfo.class);
+
+    TransactionException transactionException =
+        tx.getTransactionException(keyInfo, new PrimaryBucketException());
+
+    assertThat(transactionException).isInstanceOf(TransactionDataNotColocatedException.class);
+  }
+
+  @Test
+  public void txHostGetTransactionExceptionReturnsTransactionDataRebalancedExceptionIfFirstOperationOnPartitioned() {
+    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false, disabledClock());
+    tx.setLocalTXState(new TXState(tx, true, disabledClock()));
+    KeyInfo keyInfo = mock(KeyInfo.class);
+    GemFireException exception = mock(GemFireException.class);
+    when(exception.getCause()).thenReturn(new PrimaryBucketException());
+    tx.setFirstOperationOnPartitionedRegion(true);
+
+    TransactionException transactionException = tx.getTransactionException(keyInfo, exception);
+
+    assertThat(transactionException).isInstanceOf(TransactionDataRebalancedException.class);
+  }
+
+  @Test
+  public void txHostGetTransactionExceptionReturnsSameTransactionExceptionIfNotCausedByPrimaryBucketException() {
+    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false, disabledClock());
+    tx.setLocalTXState(new TXState(tx, true, disabledClock()));
+    TransactionException exception = mock(TransactionException.class);
+    KeyInfo keyInfo = mock(KeyInfo.class);
+
+    TransactionException transactionException = tx.getTransactionException(keyInfo, exception);
+
+    assertThat(transactionException).isSameAs(exception);
+  }
+
+  @Test
+  public void txStubGetTransactionExceptionReturnsTransactionDataRebalancedExceptionIfCausedByPrimaryBucketException() {
+    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false, disabledClock());
+    DistributedMember target = mock(InternalDistributedMember.class);
+    tx.setLocalTXState(new PeerTXStateStub(tx, target, null));
+    KeyInfo keyInfo = mock(KeyInfo.class);
+
+    TransactionException transactionException =
+        tx.getTransactionException(keyInfo, new PrimaryBucketException());
+
+    assertThat(transactionException).isInstanceOf(TransactionDataRebalancedException.class);
+  }
+
+  @Test
+  public void txStubGetTransactionExceptionReturnsSameTransactionExceptionIfNotCausedByPrimaryBucketException() {
+    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false, disabledClock());
+    DistributedMember target = mock(InternalDistributedMember.class);
+    tx.setLocalTXState(new PeerTXStateStub(tx, target, null));
+    TransactionException exception = mock(TransactionException.class);
+    KeyInfo keyInfo = mock(KeyInfo.class);
+
+    TransactionException transactionException = tx.getTransactionException(keyInfo, exception);
+
+    assertThat(transactionException).isSameAs(exception);
   }
 }
