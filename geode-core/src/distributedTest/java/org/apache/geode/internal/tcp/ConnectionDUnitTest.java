@@ -14,40 +14,71 @@
  */
 package org.apache.geode.internal.tcp;
 
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.net.SocketCloser;
+import org.apache.geode.test.assertj.LogFileAssert;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
-public class ConnectionTest {
-  @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+public class ConnectionDUnitTest {
 
   @Rule
-  public SystemOutRule systemOutRule = new SystemOutRule();
+  public final DistributedRule distributedRule = DistributedRule.builder().withVMCount(0).build();
+
+  @Rule
+  public final MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  private File logFile;
+
+  private DistributedSystem distributedSystem;
+
+  @After
+  public void teardown() {
+    if (distributedSystem != null) {
+      distributedSystem.disconnect();
+    }
+  }
 
   @Test
-  public void badHeaderMessageIsCorrectlyLogged() {
-    systemOutRule.enableLog();
+  public void badHeaderMessageIsCorrectlyLogged() throws Exception {
+    Properties properties = DUnitLauncher.getDistributedSystemProperties();
+    logFile = temporaryFolder.newFile();
+    properties.put(ConfigurationProperties.LOG_FILE, logFile.getAbsolutePath());
+    distributedSystem = DistributedSystem.connect(properties);
+
+    final String expectedException = "Unknown handshake reply code: 99 messageLength: 0";
+
+    IgnoredException.addIgnoredException(expectedException);
+
     ConnectionTable connectionTable = mock(ConnectionTable.class);
     TCPConduit tcpConduit = mock(TCPConduit.class);
     when(connectionTable.getConduit()).thenReturn(tcpConduit);
@@ -64,11 +95,9 @@ public class ConnectionTest {
     ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
     DataInputStream inputStream = new DataInputStream(byteArrayInputStream);
     connection.readHandshakeForSender(inputStream, peerDataBuffer);
-    String log = systemOutRule.getLog();
-
-    if (!log.contains(
-        "Unknown handshake reply code: 99 messageLength: 0")) {
-      fail("Expected log to contain error message but it contained <<<" + log + ">>>");
-    }
+    distributedSystem.disconnect();
+    distributedSystem = null;
+    LogFileAssert.assertThat(logFile).contains(expectedException);
+    logFile.delete();
   }
 }
