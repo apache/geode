@@ -18,8 +18,8 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 
-public class FunctionToTime implements Function<String[]> {
-  static final String ID = "FunctionToTime";
+public class FunctionToTimeWithResult implements Function<String[]> {
+  static final String ID = "FunctionToTimeWithResult";
 
   @Override
   public void execute(FunctionContext<String[]> context) {

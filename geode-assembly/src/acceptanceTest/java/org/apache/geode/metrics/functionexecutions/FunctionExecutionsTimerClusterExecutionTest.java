@@ -82,8 +82,8 @@ public class FunctionExecutionsTimerClusterExecutionTest {
 
     Path functionsJarPath = temporaryFolder.getRoot().toPath()
         .resolve("functions.jar").toAbsolutePath();
-    writeJarFromClasses(functionsJarPath.toFile(),
-        GetFunctionExecutionTimerValues.class, FunctionToTime.class, ExecutionsTimerValues.class);
+    writeJarFromClasses(functionsJarPath.toFile(), GetFunctionExecutionTimerValues.class,
+        FunctionToTimeWithResult.class, ExecutionsTimerValues.class);
 
     String startLocatorCommand = String.join(" ",
         "start locator",
@@ -156,7 +156,7 @@ public class FunctionExecutionsTimerClusterExecutionTest {
 
   @Test
   public void timersRecordCountAndTotalTime_ifFunctionExecutedOnReplicateRegion() {
-    FunctionToTime function = new FunctionToTime();
+    FunctionToTimeWithResult function = new FunctionToTimeWithResult();
     Duration functionDuration = Duration.ofSeconds(1);
     executeFunctionOnReplicateRegion(function, functionDuration);
 
@@ -173,7 +173,7 @@ public class FunctionExecutionsTimerClusterExecutionTest {
 
   @Test
   public void timersRecordCountAndTotalTime_ifFunctionExecutedOnReplicateRegionMultipleTimes() {
-    FunctionToTime function = new FunctionToTime();
+    FunctionToTimeWithResult function = new FunctionToTimeWithResult();
     Duration functionDuration = Duration.ofSeconds(1);
     int numberOfExecutions = 10;
 
@@ -197,7 +197,7 @@ public class FunctionExecutionsTimerClusterExecutionTest {
 
   @Test
   public void timersRecordCountAndTotalTime_ifFunctionExecutedOnPartitionRegionMultipleTimes() {
-    FunctionToTime function = new FunctionToTime();
+    FunctionToTimeWithResult function = new FunctionToTimeWithResult();
     Duration functionDuration = Duration.ofSeconds(1);
     int numberOfExecutions = 10;
 

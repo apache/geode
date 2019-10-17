@@ -88,7 +88,7 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
 
     functionHelpersJarPath =
         temporaryFolder.getRoot().toPath().resolve("function-helpers.jar").toAbsolutePath();
-    writeJarFromClasses(functionHelpersJarPath.toFile(), FunctionToTime.class,
+    writeJarFromClasses(functionHelpersJarPath.toFile(), FunctionToTimeWithResult.class,
         GetFunctionExecutionTimerValues.class, ExecutionsTimerValues.class);
 
     startServerCommandWithStatsEnabled = startServerCommand(false, true);
@@ -108,9 +108,9 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
   public void timersNotRegisteredIfFunctionDeployedButNotExecuted() {
     startServerWithStatsEnabled();
 
-    deployFunction(FunctionToTime.class);
+    deployFunction(FunctionToTimeWithResult.class);
 
-    assertThat(getExecutionsTimerValuesFor(FunctionToTime.ID))
+    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .isEmpty();
   }
@@ -118,12 +118,12 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
   @Test
   public void timersRegisteredIfFunctionDeployedAndThenExecuted() {
     startServerWithStatsEnabled();
-    deployFunction(FunctionToTime.class);
+    deployFunction(FunctionToTimeWithResult.class);
 
     Duration functionDuration = Duration.ofSeconds(1);
-    executeFunctionById(FunctionToTime.ID, functionDuration);
+    executeFunctionById(FunctionToTimeWithResult.ID, functionDuration);
 
-    assertThat(getExecutionsTimerValuesFor(FunctionToTime.ID))
+    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .hasSize(2);
   }
@@ -132,9 +132,9 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
   public void timersRegisteredIfStatsDisabled() {
     startServerWithStatsDisabled();
 
-    executeFunctionThatSucceeds(new FunctionToTime(), Duration.ofMillis(1));
+    executeFunctionThatSucceeds(new FunctionToTimeWithResult(), Duration.ofMillis(1));
 
-    assertThat(getExecutionsTimerValuesFor(FunctionToTime.ID))
+    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .hasSize(2);
   }
@@ -142,11 +142,11 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
   @Test
   public void timersUnregisteredIfServerRestarts() {
     startServerWithStatsEnabled();
-    executeFunctionThatSucceeds(new FunctionToTime(), Duration.ofMillis(1));
+    executeFunctionThatSucceeds(new FunctionToTimeWithResult(), Duration.ofMillis(1));
 
     restartServer();
 
-    assertThat(getExecutionsTimerValuesFor(FunctionToTime.ID))
+    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .isEmpty();
   }
@@ -154,7 +154,7 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
   @Test
   public void successTimerRecordsCountAndTotalTimeIfFunctionSucceeds() {
     startServerWithStatsEnabled();
-    FunctionToTime function = new FunctionToTime();
+    FunctionToTimeWithResult function = new FunctionToTimeWithResult();
     Duration functionDuration = Duration.ofSeconds(1);
     executeFunctionThatSucceeds(function, functionDuration);
 
@@ -172,7 +172,7 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
   @Test
   public void successTimerRecordsCountAndTotalTimeIfTimeStatsDisabled() {
     startServerWithTimeStatsDisabled();
-    FunctionToTime function = new FunctionToTime();
+    FunctionToTimeWithResult function = new FunctionToTimeWithResult();
     Duration functionDuration = Duration.ofSeconds(1);
     executeFunctionThatSucceeds(function, functionDuration);
 
@@ -190,7 +190,7 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
   @Test
   public void failureTimerRecordsCountAndTotalTimeIfFunctionThrows() {
     startServerWithStatsEnabled();
-    FunctionToTime function = new FunctionToTime();
+    FunctionToTimeWithResult function = new FunctionToTimeWithResult();
     Duration functionDuration = Duration.ofSeconds(1);
     executeFunctionThatThrows(function, functionDuration);
 

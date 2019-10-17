@@ -229,7 +229,6 @@ public class ExecuteFunction66 extends BaseCommand {
       int earlierClientReadTimeout = handshake.getClientReadTimeout();
       handshake.setClientReadTimeout(functionTimeout);
 
-      long statStartTime = stats.getTime();
       try {
         if (logger.isDebugEnabled()) {
           logger.debug("Executing Function on Server: {} with context: {}", serverConnection,
@@ -258,10 +257,8 @@ public class ExecuteFunction66 extends BaseCommand {
           writeReply(clientMessage, serverConnection);
         }
       } catch (FunctionException e) {
-        stats.endFunctionExecutionWithException(statStartTime, functionObject.hasResult());
         throw e;
       } catch (Exception e) {
-        stats.endFunctionExecutionWithException(statStartTime, functionObject.hasResult());
         throw new FunctionException(e);
       } finally {
         handshake.setClientReadTimeout(earlierClientReadTimeout);
@@ -316,14 +313,20 @@ public class ExecuteFunction66 extends BaseCommand {
   private void executeFunctionLocally(final Function fn, final FunctionContext cx,
       final ServerToClientFunctionResultSender65 sender, DistributionManager dm,
       final FunctionStats stats) throws IOException {
-    long startExecution = stats.getTime();
-    stats.startFunctionExecution(fn.hasResult());
 
     if (fn.hasResult()) {
-      fn.execute(cx);
-      if (sender.isOkayToSendResult() && !sender.isLastResultReceived() && fn.hasResult()) {
-        throw new FunctionException(
-            String.format("The function, %s, did not send last result", fn.getId()));
+      long startExecution = stats.getTime();
+      stats.startFunctionExecution(fn.hasResult());
+      try {
+        fn.execute(cx);
+        if (sender.isOkayToSendResult() && !sender.isLastResultReceived() && fn.hasResult()) {
+          throw new FunctionException(
+              String.format("The function, %s, did not send last result", fn.getId()));
+        }
+        stats.endFunctionExecution(startExecution, fn.hasResult());
+      } catch (Exception e) {
+        stats.endFunctionExecutionWithException(startExecution, fn.hasResult());
+        throw e;
       }
     } else {
       /*
@@ -333,6 +336,8 @@ public class ExecuteFunction66 extends BaseCommand {
       TXStateProxy txState = TXManagerImpl.getCurrentTXState();
       Runnable functionExecution = () -> {
         InternalCache cache = null;
+        long startExecution = stats.getTime();
+        stats.startFunctionExecution(fn.hasResult());
         try {
           if (txState != null) {
             cache = GemFireCacheImpl.getExisting("executing function");
@@ -344,6 +349,7 @@ public class ExecuteFunction66 extends BaseCommand {
             }
           }
           fn.execute(cx);
+          stats.endFunctionExecution(startExecution, fn.hasResult());
         } catch (InternalFunctionInvocationTargetException e) {
           // TRAC #44709: InternalFunctionInvocationTargetException should not be logged
           stats.endFunctionExecutionWithException(startExecution, fn.hasResult());
@@ -371,7 +377,6 @@ public class ExecuteFunction66 extends BaseCommand {
         newDM.getExecutors().getFunctionExecutor().execute(functionExecution);
       }
     }
-    stats.endFunctionExecution(startExecution, fn.hasResult());
   }
 
   private void sendException(byte hasResult, Message msg, String message,
