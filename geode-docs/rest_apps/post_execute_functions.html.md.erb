@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Execute <%=vars.product_name%> function on entire cluster or on a specified region, members and member groups.
+Execute <%=vars.product_name%> function on an entire cluster or on a specified region, members, and member groups.
 
 ## Resource URL
 
@@ -29,34 +29,90 @@ Execute <%=vars.product_name%> function on entire cluster or on a specified regi
 
 ## Parameters
 
--   **{functionId}** This required parameter is the name of the function to execute. Place it in the Resource URL, as in the example request: `AddFreeItemToOrders`.
+-   **{functionId}** This required parameter is the name of the function to execute. Place it in the resource URL, as in the example request: `AddFreeItemToOrders`.
 -   **onRegion** This optional parameter specifies the target region for the function. You can only invoke a function on a single region. Substitute the region's name for `regionname` within the sample syntax `onRegion=regionname`.
 -   **onMembers** This optional parameter specifies the target members of the function. For multiple members, specify a comma-delimited list of member names, as in the sample `onMembers=member1,member2`.
 -   **onGroups** This optional parameter specifies the target groups of the function. For multiple groups, specify a comma-delimited list of group names, as in the sample `onGroups=membergroup1,membergroup2`.
--   **filter** This optional parameter can only be used with the **onRegion** parameter, where the region has a `data-policy` of `PARTITION`. The parameter specifies a list of applicable keys that the function needs to filter on. There are 3 keys in the example Resource URL:
+-   **filter** This optional parameter can only be used with the **onRegion** parameter, where the region has a `data-policy` of `PARTITION`. The parameter specifies a list of applicable keys that the function needs to filter on. There are three keys in the example resource URL:
 
     ``` pre
     http://serverURL/functions/SampleFunction?onRegion=TestPartitionRegion&filter=key1,key2,key3
     ```
+-   Any *function arguments* are passed in the request body in JSON format. The content of the arguments depends on how the function is defined. Each function argument must be written as a JSON object (enclosed in braces `{ }`) and using `@type` to declare its type. `@value` can be used to specify a scalar value. Nested JSON objects (`{ }`) or JSON collections (`[ ]`) are not accepted.
+Collections of Java objects cannot be specified as parameters in JSON format, so if a function expects a collection of objects as one of its arguments (for example, `function(List<Item> list)`), it cannot be called using the <%=vars.product_name%> REST API. Following are some examples of functions and their arguments in JSON format:
 
--   Any *function arguments* are passed in the request body in JSON format. The content of the arguments can depend on how the function is defined. Use @type to declare argument types and @value for specifying a scalar value. An example set of arguments:
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Function signature</th>
+<th>Function arguments in JSON format</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>
+<pre>myFunction1(int n)</pre>
+</td>
+<td>
+<pre>
+[
+    {
+        "@type":  "integer",
+        "@value": 10
+    }
+]
+</pre>
+</td></tr>
+<tr class="even">
+<td>
+<pre>myFunction2(double d, Item i)</pre>
+</td>
+<td>
+<pre>
+[
+    {
+        "@type":  "double",
+        "@value": 210
+    },
+    {
+        "@type":  "org.apache.geode.web.rest.domain.Item",
+        "itemNo":  "599",
+        "description":  "Part X Free on Bumper Offer",
+        "quantity":  "2",
+        "unitprice":  "5",
+        "totalprice":  "10.00"
+    }
+]
+</pre>
+Notice how `item` fields are written in JSON format due to the restrictions against nested objects. The following approach would be wrong:
+<pre>
+[
+    {
+        "@type":  "double",
+        "@value": 210
+    },
+    {
+        "@type":  "org.apache.geode.web.rest.domain.Item",
+        "itemNo" : {
+            "@type":"double",
+            "@value": 599
+        },
+        "description": "Part X Free on Bumper Offer",
+        "quantity":  "2",
+        "unitprice":  "5",
+        "totalprice":  "10.00"
+    }
+]
+</pre>
+</td></tr></table>
 
-    ``` pre
-    [
-            {
-                 "@type":  "double",
-                 "@value": 210
-            },
-            {
-                 "@type":  "org.apache.geode.web.rest.domain.Item",
-                 "itemNo":  "599",
-                 "description":  "Part X Free on Bumper Offer",
-                 "quantity":  "2",
-                 "unitprice":  "5",
-                 "totalprice":  "10.00"
-            }
-    ]
-    ```
+
+
 
 ## Example Requests
 
@@ -111,11 +167,11 @@ Location: http://localhost:8080/geode/v1/functions/getDeliveredOrders
 [
     {
          "purchaseOrderNo":  "1121",
-         "deliveryDate":  "Thu Feb 20 00:00:00 IST 2014"
+         "deliveryDate":  "Thu Oct 10 00:00:00 IST 2019"
     },
     {
          "purchaseOrderNo":  "777",
-         "deliveryDate":  "Thu Feb 20 00:00:00 IST 2014"
+         "deliveryDate":  "Thu Oct 10 00:00:00 IST 2019"
     },
     {
         ...
@@ -125,18 +181,6 @@ Location: http://localhost:8080/geode/v1/functions/getDeliveredOrders
 
 ## Error Codes
 
-Status code 500 INTERNAL SERVER ERROR is an error encountered in a server. Check the HTTP response body for a stack trace of the exception. Causes:
-
--   The Region identified by name (%1$s) could not found!
--   Could not found the specified members in disributed system!
--   no member(s) are found belonging to the provided group(s)!
--   Disributed system does not contain any valid data node to run the specified function!
--   Key is of an inappropriate type for this region!
--   Specified key is null and this region does not permit null keys!
--   Server has encountered low memory condition!
--   Input parameter is null!
--   Could not convert function results into Restful (JSON) format!
--   Function has returned results that could not be converted into Restful (JSON) format!
--   Server has encountered an error while processing function execution!
+Status code 500 INTERNAL SERVER ERROR is an error encountered in a server. Check the HTTP response body for a stack trace of the exception. 
 
 
