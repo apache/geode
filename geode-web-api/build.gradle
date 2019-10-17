@@ -31,6 +31,7 @@ dependencies {
   compileOnly(project(':geode-logging'))
   compileOnly(project(':geode-serialization'))
 
+  implementation('javax.xml.bind:jaxb-api')
   compileOnly('javax.servlet:javax.servlet-api')
 
   compile('org.apache.commons:commons-lang3')

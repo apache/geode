@@ -38,6 +38,7 @@ dependencies {
   compile('org.apache.logging.log4j:log4j-api')
   testCompile('com.pholser:junit-quickcheck-core')
 
+  implementation('javax.xml.bind:jaxb-api')
   distributedTestCompile('org.hamcrest:hamcrest-core')
   distributedTestCompile('org.hamcrest:hamcrest-library')
 

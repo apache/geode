@@ -28,6 +28,9 @@ dependencies {
   compile('org.springframework:spring-web')
   compile('org.apache.httpcomponents:httpclient')
 
+  //jaxb is used by cluster configuration
+  implementation('javax.xml.bind:jaxb-api')
+
   compileOnly(project(':geode-common')) {
     exclude module: 'junit'
   }
