@@ -16,7 +16,6 @@ package org.apache.geode.cache.query.internal;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -84,6 +83,7 @@ import org.apache.geode.internal.logging.LogService;
  */
 public class DefaultQueryService implements InternalQueryService {
   private static final Logger logger = LogService.getLogger();
+  static final MethodInvocationAuthorizer NO_OP_AUTHORIZER = (method, target) -> true;
 
   /**
    * System property to allow query on region with heterogeneous objects. By default its set to
@@ -141,7 +141,7 @@ public class DefaultQueryService implements InternalQueryService {
     this.cache = cache;
     if (!cache.getSecurityService().isIntegratedSecurity() || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
       // A no-op authorizer, allow method invocation
-      this.methodInvocationAuthorizer = ((Method m, Object t) -> true);
+      this.methodInvocationAuthorizer = NO_OP_AUTHORIZER;
     } else {
       this.methodInvocationAuthorizer = new RestrictedMethodAuthorizer(cache);
     }
