@@ -19,6 +19,8 @@ import static org.apache.geode.management.configuration.GatewayReceiver.GATEWAY_
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +66,10 @@ public class GatewayManagementController extends AbstractManagementController {
   }
 
   @ApiOperation(value = "create gateway-receiver")
+  @ApiResponses({
+      @ApiResponse(code = 400, message = "Bad request."),
+      @ApiResponse(code = 409, message = "Gateway receiver already exists."),
+      @ApiResponse(code = 500, message = "Internal error.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @PostMapping(GATEWAY_RECEIVERS_ENDPOINTS)
   public ResponseEntity<ClusterManagementResult> createGatewayReceiver(

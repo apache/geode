@@ -33,6 +33,8 @@ public class ClusterManagementResult {
    * REST controller
    */
   public enum StatusCode {
+    /** operation is successful, configuration is realized and persisted */
+    OK,
     /** configuration failed validation */
     ILLEGAL_ARGUMENT,
     /** user is not authenticated */
@@ -57,9 +59,7 @@ public class ClusterManagementResult {
     /** async operation launched successfully */
     ACCEPTED,
     /** async operation has not yet completed */
-    IN_PROGRESS,
-    /** operation is successful, configuration is realized and persisted */
-    OK
+    IN_PROGRESS
   }
 
   // we will always have statusCode when the object is created
