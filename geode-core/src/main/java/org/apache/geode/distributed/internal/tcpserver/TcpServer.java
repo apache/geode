@@ -229,10 +229,10 @@ public class TcpServer {
         srv_sock = getSocketCreator().createServerSocket(port, BACKLOG, bind_address);
       }
       // GEODE-4176 - set the port from a wild-card bind so that handlers know the correct value
+
       if (this.port <= 0) {
         this.port = srv_sock.getLocalPort();
       }
-
       if (log.isInfoEnabled()) {
         log.info("Locator was created at " + new Date());
         log.info("Listening on port " + getPort() + " bound on address " + bind_address);

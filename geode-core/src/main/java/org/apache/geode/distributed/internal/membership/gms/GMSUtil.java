@@ -102,60 +102,84 @@ public class GMSUtil {
    * @param locatorsString a DistributionConfig "locators" string
    * @param bindAddress optional address to check for loopback compatibility
    * @return addresses of locators
+   *
+   * @see org.apache.geode.distributed.ConfigurationProperties#LOCATORS for format
    */
   public static List<HostAddress> parseLocators(String locatorsString, InetAddress bindAddress) {
     List<HostAddress> result = new ArrayList<>(2);
     Set<InetSocketAddress> inetAddresses = new HashSet<>();
     String host;
-    int port;
     boolean checkLoopback = (bindAddress != null);
     boolean isLoopback = (checkLoopback && bindAddress.isLoopbackAddress());
 
     StringTokenizer parts = new StringTokenizer(locatorsString, ",");
     while (parts.hasMoreTokens()) {
+      String str = parts.nextToken();
+
+      final int portSpecificationStart = str.indexOf('[');
+
+      if (portSpecificationStart == -1) {
+        throw createBadPortException(str);
+      }
+
+      host = str.substring(0, portSpecificationStart);
+
+      int idx = host.lastIndexOf('@');
+      if (idx < 0) {
+        idx = host.lastIndexOf(':');
+      }
+      String start = host.substring(0, idx > -1 ? idx : host.length());
+      if (start.indexOf(':') >= 0) { // a single numeric ipv6 address
+        idx = host.lastIndexOf('@');
+      }
+      if (idx >= 0) {
+        host = host.substring(idx + 1, host.length());
+      }
+
+      int startIdx = portSpecificationStart + 1;
+      int endIdx = str.indexOf(']');
+
+      if (endIdx == -1) {
+        throw createBadPortException(str);
+      }
+
+      final int port;
+
       try {
-        String str = parts.nextToken();
-        host = str.substring(0, str.indexOf('['));
-        int idx = host.lastIndexOf('@');
-        if (idx < 0) {
-          idx = host.lastIndexOf(':');
-        }
-        String start = host.substring(0, idx > -1 ? idx : host.length());
-        if (start.indexOf(':') >= 0) { // a single numeric ipv6 address
-          idx = host.lastIndexOf('@');
-        }
-        if (idx >= 0) {
-          host = host.substring(idx + 1, host.length());
-        }
-
-        int startIdx = str.indexOf('[') + 1;
-        int endIdx = str.indexOf(']');
         port = Integer.parseInt(str.substring(startIdx, endIdx));
-        if (port <= 0) {
-          continue;
-        }
-        InetSocketAddress isa = new InetSocketAddress(host, port);
-
-        if (checkLoopback) {
-          if (isLoopback && !isa.getAddress().isLoopbackAddress()) {
-            throw new GemFireConfigException(
-                "This process is attempting to join with a loopback address (" + bindAddress
-                    + ") using a locator that does not have a local address (" + isa
-                    + ").  On Unix this usually means that /etc/hosts is misconfigured.");
-          }
-        }
-        HostAddress la = new HostAddress(isa, host);
-        if (!inetAddresses.contains(isa)) {
-          inetAddresses.add(isa);
-          result.add(la);
-        }
       } catch (NumberFormatException e) {
-        // this shouldn't happen because the config has already been parsed and
-        // validated
+        throw createBadPortException(str);
+      }
+
+      final InetSocketAddress isa = new InetSocketAddress(host, port);
+
+      final InetAddress locatorAddress = isa.getAddress();
+
+      if (locatorAddress == null) {
+        throw new GemFireConfigException("This process is attempting to use a locator" +
+            " at an unknown address or FQDN: " + host);
+      }
+
+      if (checkLoopback && isLoopback && !locatorAddress.isLoopbackAddress()) {
+        throw new GemFireConfigException(
+            "This process is attempting to join with a loopback address (" + bindAddress
+                + ") using a locator that does not have a local address (" + isa
+                + ").  On Unix this usually means that /etc/hosts is misconfigured.");
+      }
+
+      HostAddress la = new HostAddress(isa, host);
+      if (!inetAddresses.contains(isa)) {
+        inetAddresses.add(isa);
+        result.add(la);
       }
     }
 
     return result;
+  }
+
+  private static GemFireConfigException createBadPortException(final String str) {
+    return new GemFireConfigException("This process is attempting to use a locator" +
+        " with a malformed port specification: " + str);
   }
 
   /** Parses comma-separated-roles/groups into array of groups (strings). */
