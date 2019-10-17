@@ -814,7 +814,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   private SelectResults buildSortedResult(CompiledSelect cs, int limit) throws QueryException {
 
     try {
-      ExecutionContext localContext = new QueryExecutionContext(this.parameters, this.pr.cache);
+      ExecutionContext localContext =
+          new QueryExecutionContext(this.parameters, this.pr.getCache());
 
 
       List<Collection> allResults = new ArrayList<Collection>();

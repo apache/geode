@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -40,15 +41,20 @@ import org.apache.geode.cache.query.internal.aggregate.Sum;
 import org.apache.geode.cache.query.internal.aggregate.SumDistinct;
 import org.apache.geode.cache.query.internal.aggregate.SumDistinctPRQueryNode;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.internal.cache.InternalCache;
 
-public class CompiledAggregateFunctionJUnitTest {
+public class CompiledAggregateFunctionTest {
   private InternalCache cache;
   private List<Integer> bucketList;
 
   @Before
   public void setUp() throws Exception {
     cache = mock(InternalCache.class);
+    when(cache.getQueryService()).thenReturn(mock(InternalQueryService.class));
+    when(cache.getQueryService().getMethodInvocationAuthorizer())
+        .thenReturn(mock(MethodInvocationAuthorizer.class));
+
     bucketList = Collections.singletonList(1);
   }
 
