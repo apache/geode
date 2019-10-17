@@ -18,8 +18,11 @@ package org.apache.geode.management.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.configuration.AbstractConfiguration;
+import org.apache.geode.management.configuration.Links;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -72,5 +75,10 @@ public class ConfigurationResult<T extends AbstractConfiguration<R>, R extends R
    */
   public void setRuntimeInfo(List<R> runtimeInfo) {
     this.runtimeInfo = runtimeInfo;
+  }
+
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  public Links getLinks() {
+    return configuration.getLinks();
   }
 }

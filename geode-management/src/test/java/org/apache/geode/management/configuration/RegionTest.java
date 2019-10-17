@@ -57,16 +57,19 @@ public class RegionTest {
     assertThat(regionConfig.getType()).isEqualTo(RegionType.REPLICATE);
 
     String json2 = mapper.writeValueAsString(regionConfig);
+    System.out.println(json2);
     assertThat(json2).contains("\"type\":\"REPLICATE\"");
     assertThat(json2).contains("\"name\":\"test\"");
+
+    mapper.readValue(json2, Region.class);
   }
 
   @Test
   public void getUri() {
     regionConfig.setName("regionA");
-    assertThat(regionConfig.getEndpoint()).isEqualTo("/regions");
+    assertThat(regionConfig.getLinks().getList()).isEqualTo("/regions");
 
-    assertThat(regionConfig.getUri())
-        .isEqualTo(AbstractConfiguration.URI_CONTEXT + "/experimental/regions/regionA");
+    assertThat(regionConfig.getLinks().getSelf())
+        .isEqualTo("/regions/regionA");
   }
 }

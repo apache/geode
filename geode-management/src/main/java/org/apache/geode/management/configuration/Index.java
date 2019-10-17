@@ -99,11 +99,13 @@ public class Index extends GroupableConfiguration<RuntimeInfo> {
   }
 
   @Override
-  public String getEndpoint() {
+  public Links getLinks() {
     String regionName = getRegionName();
     if (StringUtils.isBlank(regionName)) {
-      return "/indexes";
+      return new Links(getId(), "/indexes");
     }
-    return Region.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes";
+    Links links = new Links(getId(), Region.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes");
+    links.addLink("region", Region.REGION_CONFIG_ENDPOINT + "/" + regionName);
+    return links;
   }
 }

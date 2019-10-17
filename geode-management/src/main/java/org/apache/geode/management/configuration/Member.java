@@ -39,7 +39,7 @@ public class Member extends GroupableConfiguration<MemberInformation> {
   }
 
   @Override
-  public String getEndpoint() {
-    return MEMBER_ENDPOINT;
+  public Links getLinks() {
+    return new Links(getId(), MEMBER_ENDPOINT);
   }
 }

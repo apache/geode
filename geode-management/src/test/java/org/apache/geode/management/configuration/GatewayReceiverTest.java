@@ -38,11 +38,11 @@ public class GatewayReceiverTest {
 
   @Test
   public void getUri() {
-    assertThat(receiver.getUri())
-        .isEqualTo(AbstractConfiguration.URI_CONTEXT + "/experimental/gateways/receivers/cluster");
+    assertThat(receiver.getLinks().getSelf())
+        .isEqualTo("/gateways/receivers/cluster");
 
     receiver.setGroup("group");
-    assertThat(receiver.getUri())
-        .isEqualTo(AbstractConfiguration.URI_CONTEXT + "/experimental/gateways/receivers/group");
+    assertThat(receiver.getLinks().getSelf())
+        .isEqualTo("/gateways/receivers/group");
   }
 }

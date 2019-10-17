@@ -13,23 +13,32 @@
  * the License.
  */
 
-package org.apache.geode.cache.configuration;
+package org.apache.geode.management.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-import org.apache.geode.management.configuration.Pdx;
+import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
-public class PdxTypeTest {
+public class ConfigurationResultTest {
+  private ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Test
-  public void getUri() {
-    Pdx config = new Pdx();
-    assertThat(config.getLinks().getList())
-        .isEqualTo("/configurations/pdx");
-    assertThat(config.getLinks().getSelf())
-        .isEqualTo("/configurations/pdx");
-  }
+  public void jsonTest() throws Exception {
+    ConfigurationResult<Region, RuntimeRegionInfo> result = new ConfigurationResult<>();
+    Region region = new Region();
+    region.setName("test");
+    result.setConfiguration(region);
 
+    String regionJson = mapper.writeValueAsString(region);
+    String json = mapper.writeValueAsString(result);
+    assertThat(regionJson).doesNotContain("links");
+    System.out.println(json);
+    assertThat(json).contains("links");
+    mapper.readValue(json, ConfigurationResult.class);
+  }
 }

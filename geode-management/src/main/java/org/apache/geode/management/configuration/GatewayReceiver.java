@@ -48,8 +48,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
   public static final String GATEWAY_RECEIVERS_ENDPOINTS = "/gateways/receivers";
 
   @Override
-  public String getEndpoint() {
-    return GATEWAY_RECEIVERS_ENDPOINTS;
+  public Links getLinks() {
+    return new Links(getId(), GATEWAY_RECEIVERS_ENDPOINTS);
   }
 
   private List<ClassName> gatewayTransportFilters;
