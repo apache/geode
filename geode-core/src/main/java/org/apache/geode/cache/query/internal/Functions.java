@@ -18,8 +18,8 @@ package org.apache.geode.cache.query.internal;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -27,6 +27,7 @@ import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
@@ -36,6 +37,7 @@ import org.apache.geode.pdx.internal.PdxString;
  */
 
 public class Functions {
+  public static final Logger logger = LogService.getLogger();
   public static final int ELEMENT = 1;
 
   public static Object nvl(CompiledValue arg1, CompiledValue arg2, ExecutionContext context)
@@ -96,18 +98,17 @@ public class Functions {
       // for remote distinct queries, the result of sub query could contain a
       // mix of String and PdxString which could be duplicates, so convert all
       // PdxStrings to String
-      if (context.isDistinct() && ((DefaultQuery) context.getQuery()).isRemoteQuery()) {
-        Set tempResults = new HashSet();
-        for (Object o : c) {
-          if (o instanceof PdxString) {
-            o = ((PdxString) o).toString();
-          }
-          tempResults.add(o);
-        }
-        c.clear();
-        c.addAll(tempResults);
-        tempResults = null;
-      }
+      // if (isDistinct && ((DefaultQuery) context.getQuery()).isRemoteQuery()) {
+      // Set tempResults = new HashSet();
+      // for (Object o : c) {
+      // if (o instanceof PdxString) {
+      // o = ((PdxString) o).toString();
+      // }
+      // tempResults.add(o);
+      // }
+      // c.clear();
+      // c.addAll(tempResults);
+      // }
       checkSingleton(c.size());
       return c.iterator().next();
     }
