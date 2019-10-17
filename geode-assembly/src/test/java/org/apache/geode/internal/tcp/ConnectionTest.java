@@ -25,6 +25,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
@@ -46,6 +47,7 @@ public class ConnectionTest {
   public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
   @Test
+  @Ignore("Test ignored: SystemOutRule fails to capture output logged by Connection in CI runs")
   public void badHeaderMessageIsCorrectlyLogged() {
     ConnectionTable connectionTable = mock(ConnectionTable.class);
     TCPConduit tcpConduit = mock(TCPConduit.class);
