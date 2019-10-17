@@ -15,18 +15,22 @@
 
 package org.apache.geode.management.internal.cli.domain;
 
+import static org.apache.geode.management.configuration.ClassName.isClassNameValid;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 
 public class ClassNameTest {
+  private ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Test
   public void constructWithoutProps() {
@@ -94,8 +98,6 @@ public class ClassNameTest {
 
   @Test
   public void illegalJson() {
-    assertThatThrownBy(() -> new ClassName("test", ""))
-        .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> new ClassName("test", "a:b"))
         .isInstanceOf(IllegalArgumentException.class);
   }
@@ -114,4 +116,83 @@ public class ClassNameTest {
     MyCacheWriter obj = DeclarableTypeInstantiator.newInstance(cacheWriter, null);
     assertThat(obj.getProperties()).containsEntry("k", "v").containsOnlyKeys("k");
   }
+
+  @Test
+  public void jsonMapper() throws Exception {
+    Properties properties = new Properties();
+    properties.put("key1", "value1");
+    ClassName className = new ClassName("abc", properties);
+    ClassName className1 = new ClassName("abc", mapper.writeValueAsString(properties));
+    assertThat(className).isEqualToComparingFieldByField(className1);
+    String json = mapper.writeValueAsString(className);
+    String json1 = mapper.writeValueAsString(className1);
+    assertThat(json).isEqualTo(json1);
+
+    ClassName className2 = mapper.readValue(json, ClassName.class);
+    assertThat(className2).isEqualToComparingFieldByField(className);
+  }
+
+  @Test
+  public void deserializeIllegalClassName() throws Exception {
+    assertThatThrownBy(() -> new ClassName("a b")).isInstanceOf(IllegalArgumentException.class);
+    String json = "{\"className\":\"a b\"}";
+    assertThatThrownBy(() -> mapper.readValue(json, ClassName.class))
+        .hasCauseInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void isValidClassNameGivenEmptyStringReturnsFalse() {
+    assertThat(isClassNameValid("")).isFalse();
+  }
+
+  @Test
+  public void isValidClassNameGivenDashReturnsFalse() {
+    assertThat(isClassNameValid("-")).isFalse();
+  }
+
+  @Test
+  public void isValidClassNameGivenSpaceReturnsFalse() {
+    assertThat(isClassNameValid(" ")).isFalse();
+  }
+
+  @Test
+  public void isValidClassNameGivenCommaReturnsFalse() {
+    assertThat(isClassNameValid(",")).isFalse();
+  }
+
+  @Test
+  public void isValidClassNameGivenLeadingDotReturnsFalse() {
+    assertThat(isClassNameValid(".a")).isFalse();
+  }
+
+  @Test
+  public void isValidClassNameGivenTrailingDotReturnsFalse() {
+    assertThat(isClassNameValid("a.")).isFalse();
+  }
+
+  @Test
+  public void isValidClassNameGivenTwoDotsReturnsFalse() {
+    assertThat(isClassNameValid("a..a")).isFalse();
+  }
+
+  @Test
+  public void isValidClassNameGivenNameThatStartsWithDigitReturnsFalse() {
+    assertThat(isClassNameValid("9a")).isFalse();
+  }
+
+  @Test
+  public void isValidClassNameGivenNameReturnsTrue() {
+    assertThat(isClassNameValid("a9")).isTrue();
+  }
+
+  @Test
+  public void isValidClassNameGivenDotDelimitedNamesReturnsTrue() {
+    assertThat(isClassNameValid("$a1._b2.c3$")).isTrue();
+  }
+
+  @Test
+  public void isValidClassNameGivenMiddleNameThatStartsWithDigitReturnsFalse() {
+    assertThat(isClassNameValid("a1.2b.c3")).isFalse();
+  }
+
 }
