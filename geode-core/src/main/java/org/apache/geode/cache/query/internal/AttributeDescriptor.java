@@ -34,7 +34,6 @@ import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.util.JavaWorkarounds;
 import org.apache.geode.pdx.JSONFormatter;
@@ -50,16 +49,13 @@ import org.apache.geode.security.NotAuthorizedException;
 public class AttributeDescriptor {
   private final String _name;
   private final TypeRegistry _pdxRegistry;
-  private final MethodInvocationAuthorizer _methodInvocationAuthorizer;
   /** cache for remembering the correct Member for a class and attribute */
   @MakeNotStatic
   static final ConcurrentMap<List, Member> _localCache = new ConcurrentHashMap<>();
 
-  public AttributeDescriptor(TypeRegistry pdxRegistry,
-      MethodInvocationAuthorizer methodInvocationAuthorizer, String name) {
+  public AttributeDescriptor(TypeRegistry pdxRegistry, String name) {
     _name = name;
     _pdxRegistry = pdxRegistry;
-    _methodInvocationAuthorizer = methodInvocationAuthorizer;
   }
 
   /** Validate whether this attribute <i>can</i> be evaluated for target type */
@@ -109,7 +105,8 @@ public class AttributeDescriptor {
 
           if (cachedResult == null) {
             // First time, evaluate and cache result.
-            authorizationResult = _methodInvocationAuthorizer.authorize(method, target);
+            authorizationResult =
+                executionContext.getMethodInvocationAuthorizer().authorize(method, target);
             executionContext.cachePut(cacheKey, authorizationResult);
           } else {
             // Use cached result.

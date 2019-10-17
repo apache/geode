@@ -181,11 +181,9 @@ public class RuntimeIterator extends AbstractCompiledValue {
       return false;
     }
     // if there are zero arguments and it's an attribute, then defer to
-    // AttributeDescriptor
-    // to see if there's a match
-    return new AttributeDescriptor(context.getCache().getPdxRegistry(),
-        context.getCache().getQueryService().getMethodInvocationAuthorizer(), name)
-            .validateReadType(clazz);
+    // AttributeDescriptor to see if there's a match
+    return new AttributeDescriptor(context.getCache().getPdxRegistry(), name)
+        .validateReadType(clazz);
   }
 
   @Override
