@@ -61,9 +61,9 @@ public class CacheDistributionAdvisorConcurrentTest {
 
   }
 
+  @Test
   public void getAdviseUpdateForConcurrentUpdateShouldSucceed(
       ParallelExecutor executor) throws Exception {
-
 
     EntryEventImpl event = new EntryEventImpl();
     event.setNewValue(null);
