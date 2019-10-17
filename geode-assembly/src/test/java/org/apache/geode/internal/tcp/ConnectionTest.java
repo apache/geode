@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.tcp;
 
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.quality.Strictness.STRICT_STUBS;
@@ -24,8 +25,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
-import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
@@ -44,11 +43,11 @@ public class ConnectionTest {
   public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
 
   @Rule
-  public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
+  public SystemOutRule systemOutRule = new SystemOutRule();
 
   @Test
-  @Ignore("Test ignored: SystemOutRule fails to capture output logged by Connection in CI runs")
   public void badHeaderMessageIsCorrectlyLogged() {
+    systemOutRule.enableLog();
     ConnectionTable connectionTable = mock(ConnectionTable.class);
     TCPConduit tcpConduit = mock(TCPConduit.class);
     when(connectionTable.getConduit()).thenReturn(tcpConduit);
@@ -66,7 +65,10 @@ public class ConnectionTest {
     DataInputStream inputStream = new DataInputStream(byteArrayInputStream);
     connection.readHandshakeForSender(inputStream, peerDataBuffer);
     String log = systemOutRule.getLog();
-    Assert.assertTrue(log.contains(
-        "Unknown handshake reply code: 99 messageLength: 0"));
+
+    if (!log.contains(
+        "Unknown handshake reply code: 99 messageLength: 0")) {
+      fail("Expected log to contain error message but it contained <<<" + log + ">>>");
+    }
   }
 }
