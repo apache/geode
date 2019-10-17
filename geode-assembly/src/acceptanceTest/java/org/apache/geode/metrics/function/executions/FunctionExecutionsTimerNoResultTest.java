@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.metrics.functionexecutions;
+package org.apache.geode.metrics.function.executions;
 
 
 import static java.io.File.pathSeparatorChar;
@@ -25,9 +25,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.core.ConditionFactory;
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,10 +44,12 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.metrics.MetricsPublishingService;
 import org.apache.geode.metrics.SimpleMetricsPublishingService;
 import org.apache.geode.rules.ServiceJarRule;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
-public class FunctionExecutionsTimerWithNoResultTest {
+/**
+ * Acceptance tests for function executions timer for functions with hasResult=false
+ */
+public class FunctionExecutionsTimerNoResultTest {
 
   private int locatorPort;
   private ClientCache clientCache;
@@ -192,11 +193,11 @@ public class FunctionExecutionsTimerWithNoResultTest {
     await().untilAsserted(() -> {
       ExecutionsTimerValues value = failureTimerValue();
 
-      assertThat(value.count)
+      Assertions.assertThat(value.count)
           .as("Number of failed executions")
           .isEqualTo(1);
 
-      assertThat(value.totalTime)
+      Assertions.assertThat(value.totalTime)
           .as("Total time of failed executions")
           .isGreaterThan(functionDuration.toNanos());
     });
@@ -275,7 +276,7 @@ public class FunctionExecutionsTimerWithNoResultTest {
 
   private ExecutionsTimerValues getExecutionsTimerValuesFromServer(boolean isSuccessful) {
     List<List<ExecutionsTimerValues>> timerValuesForEachServer =
-        FunctionExecutionsTimerWithNoResultTest
+        FunctionExecutionsTimerNoResultTest
             .<Void, List<ExecutionsTimerValues>>onServer(clientCache)
             .execute(new GetFunctionExecutionTimerValues())
             .getResult();
@@ -286,7 +287,7 @@ public class FunctionExecutionsTimerWithNoResultTest {
         .filter(v -> v.succeeded == isSuccessful)
         .collect(toList());
 
-    assertThat(values)
+    Assertions.assertThat(values)
         .hasSize(1);
 
     return values.get(0);

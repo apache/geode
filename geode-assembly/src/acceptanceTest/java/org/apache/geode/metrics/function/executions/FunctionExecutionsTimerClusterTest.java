@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.metrics.functionexecutions;
+package org.apache.geode.metrics.function.executions;
 
 
 import static java.io.File.pathSeparatorChar;
@@ -50,7 +50,7 @@ import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 /**
  * Acceptance tests for function executions timer on cluster with two servers and one locator
  */
-public class FunctionExecutionsTimerClusterExecutionTest {
+public class FunctionExecutionsTimerClusterTest {
 
   private int locatorPort;
   private ClientCache clientCache;

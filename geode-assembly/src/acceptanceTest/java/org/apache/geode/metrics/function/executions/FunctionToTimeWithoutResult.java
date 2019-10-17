@@ -12,14 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.metrics.functionexecutions;
+package org.apache.geode.metrics.function.executions;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 
-public class FunctionToTimeWithResult implements Function<String[]> {
-  static final String ID = "FunctionToTimeWithResult";
+public class FunctionToTimeWithoutResult implements Function<String[]> {
+  static final String ID = "FunctionToTimeWithoutResult";
 
   @Override
   public void execute(FunctionContext<String[]> context) {
@@ -32,9 +32,7 @@ public class FunctionToTimeWithResult implements Function<String[]> {
     } catch (InterruptedException ignored) {
     }
 
-    if (successful) {
-      context.getResultSender().lastResult("OK");
-    } else {
+    if (!successful) {
       throw new FunctionException("FAIL");
     }
   }
@@ -42,5 +40,15 @@ public class FunctionToTimeWithResult implements Function<String[]> {
   @Override
   public String getId() {
     return ID;
+  }
+
+  @Override
+  public boolean hasResult() {
+    return false;
+  }
+
+  @Override
+  public boolean isHA() {
+    return false;
   }
 }

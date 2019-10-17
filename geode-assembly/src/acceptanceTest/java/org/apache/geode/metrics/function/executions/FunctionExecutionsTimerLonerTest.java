@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.metrics.functionexecutions;
+package org.apache.geode.metrics.function.executions;
 
 
 import static java.io.File.pathSeparatorChar;
@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -48,9 +49,9 @@ import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 /**
- * Acceptance tests for function executions timer on a single server with no locator
+ * Acceptance tests for function executions timer on a loner server with no locator
  */
-public class FunctionExecutionsTimerSingleServerExecutionTest {
+public class FunctionExecutionsTimerLonerTest {
 
   private int serverPort;
   private int jmxRmiPort;
@@ -110,7 +111,7 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
 
     deployFunction(FunctionToTimeWithResult.class);
 
-    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
+    Assertions.assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .isEmpty();
   }
@@ -123,7 +124,7 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
     Duration functionDuration = Duration.ofSeconds(1);
     executeFunctionById(FunctionToTimeWithResult.ID, functionDuration);
 
-    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
+    Assertions.assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .hasSize(2);
   }
@@ -134,7 +135,7 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
 
     executeFunctionThatSucceeds(new FunctionToTimeWithResult(), Duration.ofMillis(1));
 
-    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
+    Assertions.assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .hasSize(2);
   }
@@ -146,7 +147,7 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
 
     restartServer();
 
-    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
+    Assertions.assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .isEmpty();
   }
@@ -337,7 +338,7 @@ public class FunctionExecutionsTimerSingleServerExecutionTest {
         .filter(v -> v.succeeded == succeededTagValue)
         .collect(toList());
 
-    assertThat(executionsTimerValues)
+    Assertions.assertThat(executionsTimerValues)
         .hasSize(1);
 
     return executionsTimerValues.get(0);
