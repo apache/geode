@@ -646,11 +646,16 @@ public class ExecutionContext {
   }
 
   public boolean isDistinct() {
-    return distinct;
+    Object isDistinct = this.cacheGet("distinct");
+    if (isDistinct != null) {
+      return (Boolean) isDistinct;
+    } else {
+      return false;
+    }
   }
 
   public void setDistinct(boolean distinct) {
-    this.distinct = distinct;
+    this.cachePut("distinct", this.isDistinct());
   }
 
   boolean isBindArgsSet() {

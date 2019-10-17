@@ -393,7 +393,6 @@ public class CompiledSelect extends AbstractCompiledValue {
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     context.newScope((Integer) context.cacheGet(scopeID));
     context.pushExecCache((Integer) context.cacheGet(scopeID));
-    boolean prevDistinctState = context.isDistinct();
     context.setDistinct(this.distinct);
     if (this.hasUnmappedOrderByCols && context.getBucketList() != null) {
       throw new QueryInvalidException(
@@ -616,7 +615,6 @@ public class CompiledSelect extends AbstractCompiledValue {
       }
       return result;
     } finally {
-      context.setDistinct(prevDistinctState);
       context.popScope();
       context.popExecCache();
     }
