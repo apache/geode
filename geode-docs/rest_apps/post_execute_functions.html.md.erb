@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Execute <%=vars.product_name%> function on entire cluster or on a specified region, members and member groups.
+Execute <%=vars.product_name%> function on an entire cluster or on a specified region, members, and member groups.
 
 ## Resource URL
 
@@ -29,17 +29,17 @@ Execute <%=vars.product_name%> function on entire cluster or on a specified regi
 
 ## Parameters
 
--   **{functionId}** This required parameter is the name of the function to execute. Place it in the Resource URL, as in the example request: `AddFreeItemToOrders`.
+-   **{functionId}** This required parameter is the name of the function to execute. Place it in the resource URL, as in the example request: `AddFreeItemToOrders`.
 -   **onRegion** This optional parameter specifies the target region for the function. You can only invoke a function on a single region. Substitute the region's name for `regionname` within the sample syntax `onRegion=regionname`.
 -   **onMembers** This optional parameter specifies the target members of the function. For multiple members, specify a comma-delimited list of member names, as in the sample `onMembers=member1,member2`.
 -   **onGroups** This optional parameter specifies the target groups of the function. For multiple groups, specify a comma-delimited list of group names, as in the sample `onGroups=membergroup1,membergroup2`.
--   **filter** This optional parameter can only be used with the **onRegion** parameter, where the region has a `data-policy` of `PARTITION`. The parameter specifies a list of applicable keys that the function needs to filter on. There are 3 keys in the example Resource URL:
+-   **filter** This optional parameter can only be used with the **onRegion** parameter, where the region has a `data-policy` of `PARTITION`. The parameter specifies a list of applicable keys that the function needs to filter on. There are three keys in the example resource URL:
 
     ``` pre
     http://serverURL/functions/SampleFunction?onRegion=TestPartitionRegion&filter=key1,key2,key3
     ```
 -   Any *function arguments* are passed in the request body in JSON format. The content of the arguments can depend on how the function is defined. Each function argument has to be written as a JSON object (sourrounded by `{ }`) and using `@type` to declare its type. `@value` can be used to specify a scalar value. Inner JSON objects (`{ }`) or JSON collections (`[ ]`) are not accepted.
-Collections of Java objects cannot be specified as parameters in JSON format. So if a function receives a collection of objects as one of its arguments (e.g. `List`), it cannot be called using <%=vars.product_name%> REST API. For example: `function(List<Item> list)`, `doSomething(double d, List<double> elements)`.  Following there are some examples of functions and their arguments in JSON format:
+Collections of Java objects cannot be specified as parameters in JSON format. So, if a function receives a collection of objects as one of its arguments (e.g., `List`), it cannot be called using <%=vars.product_name%> REST API—for example, `function(List<Item> list)`, `doSomething(double d, List<double> elements)`. Following are some examples of functions and their arguments in JSON format:
 
 <table>
 <colgroup>
@@ -89,7 +89,7 @@ Collections of Java objects cannot be specified as parameters in JSON format. So
     }
 ]
 </pre>
-Notice how `Item` fields are written in JSON format due to the restrictions in inner objects previously mentioned. The following approach will be wrong:
+Notice how `item` fields are written in JSON format due to the restrictions in inner objects previously mentioned. The following approach will be wrong:
 <pre>
 [
     {
@@ -181,18 +181,18 @@ Location: http://localhost:8080/gemfire-api/v1/functions/getDeliveredOrders
 
 ## Error Codes
 
-Status code 500 INTERNAL SERVER ERROR is an error encountered in a server. Check the HTTP response body for a stack trace of the exception. Causes:
+Status code 500 INTERNAL SERVER ERROR is an error encountered in a server. Check the HTTP response body for a stack trace of the exception. Causes include:
 
--   The Region identified by name (%1$s) could not found!
--   Could not found the specified members in disributed system!
--   no member(s) are found belonging to the provided group(s)!
+-   The Region identified by name (%1$s) could not be found!
+-   Could not find the specified members in disributed system!
+-   No member(s) are found belonging to the provided group(s)!
 -   Disributed system does not contain any valid data node to run the specified function!
 -   Key is of an inappropriate type for this region!
 -   Specified key is null and this region does not permit null keys!
--   Server has encountered low memory condition!
+-   Server has encountered low-memory condition!
 -   Input parameter is null!
--   Could not convert function results into Restful (JSON) format!
--   Function has returned results that could not be converted into Restful (JSON) format!
+-   Could not convert function results into RESTful (JSON) format!
+-   Function has returned results that could not be converted into RESTful (JSON) format!
 -   Server has encountered an error while processing function execution!
 
 
