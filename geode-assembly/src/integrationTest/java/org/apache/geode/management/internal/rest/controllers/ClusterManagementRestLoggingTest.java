@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
-import org.apache.geode.management.configuration.Region;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class ClusterManagementRestLoggingTest {
@@ -43,8 +42,6 @@ public class ClusterManagementRestLoggingTest {
   @Test
   public void ping() throws Exception {
     assertThat(cms.isConnected()).isTrue();
-    Region region = new Region();
-    cms.list(region);
   }
 
 }

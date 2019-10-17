@@ -15,8 +15,8 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
+import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.configuration.Pdx.PDX_ENDPOINT;
-import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -24,16 +24,16 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.Pdx;
 
-@Controller("pdxManagement")
-@RequestMapping(MANAGEMENT_API_VERSION)
+@RestController("pdxManagement")
+@RequestMapping(URI_VERSION)
 public class PdxManagementController extends AbstractManagementController {
 
   @ApiOperation(value = "configure pdx")
@@ -43,11 +43,10 @@ public class PdxManagementController extends AbstractManagementController {
       @ApiResponse(code = 409, message = "Entity already exists."),
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
-  @RequestMapping(method = RequestMethod.POST, value = PDX_ENDPOINT)
+  @PostMapping(PDX_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> configurePdx(
       @RequestBody Pdx pdxType) {
     ClusterManagementResult result = clusterManagementService.create(pdxType);
-    return new ResponseEntity<>(result,
-        HttpStatus.CREATED);
+    return new ResponseEntity<>(result, HttpStatus.CREATED);
   }
 }
