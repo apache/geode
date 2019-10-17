@@ -74,7 +74,7 @@ public class PathUtils {
     try {
       return new AttributeDescriptor(context.getCache().getPdxRegistry(),
           context.getCache().getQueryService().getMethodInvocationAuthorizer(), attribute)
-              .read(target);
+              .read(target, context);
     } catch (NameNotFoundException nfe) {
       if (DefaultQueryService.QUERY_HETEROGENEOUS_OBJECTS
           || DefaultQueryService.TEST_QUERY_HETEROGENEOUS_OBJECTS) {
