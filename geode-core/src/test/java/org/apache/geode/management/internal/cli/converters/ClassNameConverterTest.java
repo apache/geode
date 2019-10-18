@@ -49,7 +49,7 @@ public class ClassNameConverterTest {
 
   @Test
   public void convertWithOnlyDelimiter() {
-    assertThat(converter.convertFromText("{", ClassName.class, "")).isEqualTo(ClassName.EMPTY);
+    assertThat(converter.convertFromText("{}", ClassName.class, "")).isEqualTo(ClassName.EMPTY);
   }
 
   @Test
