@@ -631,7 +631,7 @@ public class RestrictedMethodAuthorizerTest {
   }
 
   @Test
-  public void isKnownDangerousMethodShouldReturnTrueForNonSafeMethods() throws Exception {
+  public void isPermanentlyForbiddenMethodShouldReturnTrueForNonSafeMethods() throws Exception {
     TestBean testBean = new TestBean();
     List<Method> dangerousMethods = new ArrayList<>();
     dangerousMethods.add(TestBean.class.getMethod("getClass"));
@@ -642,7 +642,8 @@ public class RestrictedMethodAuthorizerTest {
     dangerousMethods.add(TestBean.class.getMethod("writeObject", ObjectOutputStream.class));
 
     dangerousMethods.forEach(
-        method -> assertThat(methodAuthorizer.isKnownDangerousMethod(method, testBean)).isTrue());
+        method -> assertThat(methodAuthorizer.isPermanentlyForbiddenMethod(method, testBean))
+            .isTrue());
   }
 
   @SuppressWarnings("unused")
