@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.LowMemoryException;
@@ -83,6 +84,7 @@ import org.apache.geode.internal.logging.LogService;
  */
 public class DefaultQueryService implements InternalQueryService {
   private static final Logger logger = LogService.getLogger();
+  @Immutable
   static final MethodInvocationAuthorizer NO_OP_AUTHORIZER = (method, target) -> true;
 
   /**
