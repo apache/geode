@@ -34,6 +34,8 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -57,23 +59,21 @@ public class ConnectionDUnitTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private File logFile;
-
-  private DistributedSystem distributedSystem;
+  private Cache cache;
 
   @After
   public void teardown() {
-    if (distributedSystem != null) {
-      distributedSystem.disconnect();
+    if (cache != null) {
+      cache.close();
     }
   }
 
   @Test
   public void badHeaderMessageIsCorrectlyLogged() throws Exception {
     Properties properties = DUnitLauncher.getDistributedSystemProperties();
-    logFile = temporaryFolder.newFile();
+    File logFile = temporaryFolder.newFile();
     properties.put(ConfigurationProperties.LOG_FILE, logFile.getAbsolutePath());
-    distributedSystem = DistributedSystem.connect(properties);
+    cache = new CacheFactory(properties).create();
 
     final String expectedException = "Unknown handshake reply code: 99 messageLength: 0";
 
@@ -95,9 +95,8 @@ public class ConnectionDUnitTest {
     ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
     DataInputStream inputStream = new DataInputStream(byteArrayInputStream);
     connection.readHandshakeForSender(inputStream, peerDataBuffer);
-    distributedSystem.disconnect();
-    distributedSystem = null;
+    cache.close();
+    cache = null;
     LogFileAssert.assertThat(logFile).contains(expectedException);
-    logFile.delete();
   }
 }
