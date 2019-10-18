@@ -24,7 +24,6 @@ import java.util.function.Supplier;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.execute.Function;
@@ -60,6 +59,8 @@ public class ExecuteFunctionOp {
   /** index of ignoreFailedMembers in flags[] */
   public static final int IGNORE_FAILED_MEMBERS_INDEX = 1;
 
+  private static final int MAX_RETRY_INITIAL_VALUE = -1;
+
   private ExecuteFunctionOp() {
     // no instances allowed
   }
@@ -83,8 +84,8 @@ public class ExecuteFunctionOp {
     } else {
 
       boolean reexecute = false;
+      int maxRetryAttempts = MAX_RETRY_INITIAL_VALUE;
 
-      int maxRetryAttempts = pool.getRetryAttempts();
       if (!isHA) {
         maxRetryAttempts = 0;
       }
@@ -107,11 +108,8 @@ public class ExecuteFunctionOp {
 
         } catch (ServerConnectivityException se) {
 
-          if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
-            // If the retryAttempt is set to default(-1). Try it on all servers once.
-            // Calculating number of servers when function is re-executed as it involves
-            // messaging locator.
-            maxRetryAttempts = pool.getConnectionSource().getAllServers().size() - 1;
+          if (maxRetryAttempts == MAX_RETRY_INITIAL_VALUE) {
+            maxRetryAttempts = pool.calculateRetryAttempts(se);
           }
 
           if ((maxRetryAttempts--) < 1) {

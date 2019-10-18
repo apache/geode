@@ -17,7 +17,12 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
@@ -27,30 +32,39 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.apache.geode.test.version.VersionManager;
 
-public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRolledOverAllBucketsCreated
-    extends LuceneSearchWithRollingUpgradeDUnit {
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRestartedFromCurrentVersion
+    extends LuceneSearchWithRollingUpgradeTestBase {
+
+  @Parameterized.Parameter()
+  public Boolean reindex;
+
+  @Parameterized.Parameter(1)
+  public Boolean singleHopEnabled;
+
+  @Parameterized.Parameters(name = "from_currentVersion, with reindex={0}, singleHopEnabled={1}")
+  public static Collection<Object[]> data() {
+    Collection<Object[]> rval = new ArrayList<>();
+    rval.add(new Object[] {true, true});
+    rval.add(new Object[] {true, false});
+    rval.add(new Object[] {false, true});
+    rval.add(new Object[] {false, false});
+    return rval;
+  }
 
   @Test
-  public void test()
-      throws Exception {
-    // This test verifies the upgrade from lucene 6 to 7 doesn't cause any issues. Without any
-    // changes to accomodate this upgrade, this test will fail with an IndexFormatTooNewException.
-    //
-    // The main sequence in this test that causes the failure is:
-    //
-    // - start two servers with old version using Lucene 6
-    // - roll one server to new version server using Lucene 7
-    // - do puts into primary buckets in new server which creates entries in the fileAndChunk region
-    // with Lucene 7 format
-    // - stop the new version server which causes the old version server to become primary for those
-    // buckets
-    // - do a query which causes the IndexFormatTooNewException to be thrown
+  public void test() throws Exception {
+    // Since the changes relating to GEODE-7258 is not applied on 1.10.0,
+    // use this test to roll from develop to develop to verify.
     final Host host = Host.getHost(0);
-    VM locator = host.getVM(oldVersion, 0);
-    VM server1 = host.getVM(oldVersion, 1);
-    VM server2 = host.getVM(oldVersion, 2);
-    VM client = host.getVM(oldVersion, 3);
+    VM locator = host.getVM(VersionManager.CURRENT_VERSION, 0);
+    VM server1 = host.getVM(VersionManager.CURRENT_VERSION, 1);
+    VM server2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
+    VM client = host.getVM(VersionManager.CURRENT_VERSION, 3);
 
     final String regionName = "aRegion";
     String regionType = "partitionedRedundant";
@@ -109,7 +123,10 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRol
           shortcut.name(), regionName, locatorPorts, reindex);
 
       // Execute a query on the client and verify the results. This also waits until flushed.
-      client.invoke(() -> verifyLuceneQueryResults(regionName, numObjects));
+      client.invoke(() -> {
+        updateClientSingleHopMetadata(regionName);
+        verifyLuceneQueryResults(regionName, numObjects);
+      });
 
       // Put some objects on the client. This will update the document to the latest lucene version
       putSerializableObject(client, regionName, 0, numObjects);

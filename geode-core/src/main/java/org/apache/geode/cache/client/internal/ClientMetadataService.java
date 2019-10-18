@@ -30,6 +30,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.FixedPartitionResolver;
@@ -493,6 +494,10 @@ public class ClientMetadataService {
     return bucketId;
   }
 
+  @VisibleForTesting
+  public void scheduleGetPRMetaData(final LocalRegion region, final boolean isRecursive) {
+    scheduleGetPRMetaData((InternalRegion) region, isRecursive);
+  }
 
   public void scheduleGetPRMetaData(final InternalRegion region, final boolean isRecursive) {
     if (this.nonPRs.contains(region.getFullPath())) {
