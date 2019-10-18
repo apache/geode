@@ -127,7 +127,13 @@ public class ExecutionContext {
     this.bindArguments = bindArguments;
     this.cache = cache;
     this.cancelationTask = Optional.empty();
-    this.methodInvocationAuthorizer = cache.getQueryService().getMethodInvocationAuthorizer();
+
+    // Authorization & authentication logic happens on server side only.
+    if (cache.isClient()) {
+      this.methodInvocationAuthorizer = DefaultQueryService.NO_OP_AUTHORIZER;
+    } else {
+      this.methodInvocationAuthorizer = cache.getQueryService().getMethodInvocationAuthorizer();
+    }
   }
 
   Optional<ScheduledFuture> getCancelationTask() {

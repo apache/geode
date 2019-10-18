@@ -16,6 +16,8 @@ package org.apache.geode.cache.query.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
@@ -27,7 +29,18 @@ import org.apache.geode.internal.cache.InternalCache;
 public class ExecutionContextTest {
 
   @Test
-  public void constructorShouldUseConfiguredMethodAuthorizer() {
+  public void constructorShouldUseNoOpMethodAuthorizerOnClientSide() {
+    InternalCache mockCache = mock(InternalCache.class);
+    when(mockCache.isClient()).thenReturn(true);
+
+    ExecutionContext executionContext = new ExecutionContext(null, mockCache);
+    assertThat(executionContext.getMethodInvocationAuthorizer())
+        .isSameAs(DefaultQueryService.NO_OP_AUTHORIZER);
+    verify(mockCache, times(0)).getQueryService();
+  }
+
+  @Test
+  public void constructorShouldUseConfiguredMethodAuthorizerOnServerSide() {
     InternalCache mockCache = mock(InternalCache.class);
     InternalQueryService mockQueryService = mock(InternalQueryService.class);
     when(mockCache.getQueryService()).thenReturn(mockQueryService);
