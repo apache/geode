@@ -23,9 +23,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
  */
 public interface CompositeMeterRegistryFactory {
 
-  CompositeMeterRegistry create(int systemId, String memberName, String hostName, boolean isClient,
-      String memberType);
-
   CompositeMeterRegistry create(InternalDistributedSystem internalDistributedSystem,
       boolean isClient);
 }

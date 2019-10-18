@@ -16,10 +16,12 @@ package org.apache.geode.internal.metrics;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Properties;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
@@ -31,7 +33,6 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory {
@@ -50,28 +51,12 @@ public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory 
   }
 
   @Override
-  public CompositeMeterRegistry create(int systemId, String memberName, String hostName,
-      boolean isClient, String memberType) {
-    requireNonNull(memberName);
-    requireNonNull(hostName);
-    requireNonNull(memberType);
-    if (hostName.isEmpty()) {
-      throw new IllegalArgumentException("Host name must not be empty");
-    }
-
+  public CompositeMeterRegistry create(InternalDistributedSystem system, boolean isClient) {
 
     JvmGcMetrics gcMetricsBinder = new JvmGcMetrics();
     GeodeCompositeMeterRegistry registry = new GeodeCompositeMeterRegistry(gcMetricsBinder);
 
-    MeterRegistry.Config registryConfig = registry.config();
-    if (!isClient) {
-      registryConfig.commonTags("cluster", String.valueOf(systemId));
-    }
-    if (!memberName.isEmpty()) {
-      registryConfig.commonTags("member", memberName);
-    }
-    registryConfig.commonTags("host", hostName);
-    registryConfig.commonTags("member.type", memberType);
+    addCommonTags(registry, system, isClient);
 
     gcMetricsBinder.bindTo(registry);
     new JvmMemoryMetrics().bindTo(registry);
@@ -83,65 +68,57 @@ public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory 
     return registry;
   }
 
-  @Override
-  public CompositeMeterRegistry create(InternalDistributedSystem internalDistributedSystem,
+  private void addCommonTags(GeodeCompositeMeterRegistry registry, InternalDistributedSystem system,
       boolean isClient) {
-    int clusterId = internalDistributedSystem.getConfig().getDistributedSystemId();
+    Set<Tag> commonTags = getCommonTags(system, isClient);
 
-    String memberName = internalDistributedSystem.getName();
-    String hostName = internalDistributedSystem.getDistributedMember().getHost();
-    String memberType = resolveMemberType(hasLocators.getAsBoolean(),
+    MeterRegistry.Config registryConfig = registry.config();
+    registryConfig.commonTags(commonTags);
+  }
+
+  private Set<Tag> getCommonTags(InternalDistributedSystem system, boolean isClient) {
+    int clusterId = system.getConfig().getDistributedSystemId();
+
+    String memberName = system.getName();
+    String hostName = system.getDistributedMember().getHost();
+    String memberType = determineMemberType(hasLocators.getAsBoolean(),
         hasCacheServer.getAsBoolean());
 
-    return create(clusterId, memberName, hostName, isClient, memberType);
-  }
+    requireNonNull(memberName, "Member Name is null.");
+    requireNonNull(hostName, "Host Name is null.");
 
-  /**
-   * Will be true the configuration properties requested an embedded locator
-   */
-  public boolean startLocatorRequested(Properties configProperties) {
-    // If the property exists that means a locator was requested.
+    if (hostName.isEmpty()) {
+      throw new IllegalArgumentException("Host name must not be empty");
+    }
+    Set<Tag> tags = new HashSet<>();
 
-    if (configProperties == null) {
-      return false;
+    if (!isClient) {
+      tags.add(Tag.of("cluster", String.valueOf(clusterId)));
+
     }
 
-    String property = configProperties.getProperty(DistributionConfig.START_LOCATOR_NAME);
+    if (!memberName.isEmpty()) {
+      tags.add(Tag.of("member", memberName));
+    }
 
-    return !((property == null) || (property.isEmpty()));
+    tags.add(Tag.of("host", hostName));
+    tags.add(Tag.of("member.type", memberType));
+    return tags;
   }
 
-  private static final String LOCATOR = "locator";
-  private static final String SERVER = "server";
-  private static final String SERVER_LOCATOR = "server-locator";
-  private static final String EMBEDDED_CACHE = "embedded-cache";
-
-  /**
-   * Guesses the member type based on passed in conditions primarily for metrics
-   *
-   * @param hasLocator will be true on a locator or on a server that has an embedded
-   *        locator
-   * @param hasCacheServer will be true if the cache was not created by ServerLauncher
-   * @return member type as a String
-   */
-  private String resolveMemberType(boolean hasLocator,
-      boolean hasCacheServer) {
-
-    // logger.info("ALINDSEY: hasLocator=" + hasLocator + " hasCacheServer=" + hasCacheServer);
-
+  private String determineMemberType(boolean hasLocator, boolean hasCacheServer) {
     if (hasCacheServer && hasLocator) {
-      return SERVER_LOCATOR;
+      return "server-locator";
     }
 
     if (hasCacheServer) {
-      return SERVER;
+      return "server";
     }
 
     if (hasLocator) {
-      return LOCATOR;
+      return "locator";
     }
 
-    return EMBEDDED_CACHE;
+    return "embedded-cache";
   }
-
 }

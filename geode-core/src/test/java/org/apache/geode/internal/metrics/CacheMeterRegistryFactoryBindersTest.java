@@ -17,6 +17,7 @@ package org.apache.geode.internal.metrics;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.List;
@@ -26,22 +27,41 @@ import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.TimeGauge;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Answers;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 public class CacheMeterRegistryFactoryBindersTest {
 
   private static final String[] COMMON_TAG_KEYS =
       {"cluster", "member", "host", "member.type"};
   private CompositeMeterRegistry registry;
+  private static final int SYSTEM_ID = 42;
+  private static final String MEMBER_NAME = "member-name";
+  private static final String HOST_NAME = "host-name";
+  private static final boolean IS_CLIENT = false;
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
+  private InternalDistributedSystem system;
 
   @Before
   public void before() {
-    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
+    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory(() -> false, () -> true);
 
-    registry = factory.create(42, "member-name", "host-name", false, "member-type");
-    registry.add(new SimpleMeterRegistry());
+    when(system.getConfig().getDistributedSystemId()).thenReturn(SYSTEM_ID);
+    when(system.getName()).thenReturn(MEMBER_NAME);
+    when(system.getDistributedMember().getHost()).thenReturn(HOST_NAME);
+
+    registry = factory.create(system, IS_CLIENT);
   }
 
   @Test
