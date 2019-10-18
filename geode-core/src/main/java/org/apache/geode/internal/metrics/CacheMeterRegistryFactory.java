@@ -41,16 +41,12 @@ public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory 
 
   public CacheMeterRegistryFactory() {
     this(Locator::hasLocator, () -> ServerLauncher.getInstance() != null);
-    System.out.println("MLH Constructor 1");
   }
-
-
 
   @VisibleForTesting
   CacheMeterRegistryFactory(BooleanSupplier hasLocators, BooleanSupplier hasCacheServer) {
     this.hasLocators = hasLocators;
     this.hasCacheServer = hasCacheServer;
-    System.out.println("MLH Constructor 2");
   }
 
   @Override
@@ -64,7 +60,6 @@ public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory 
     }
 
 
-    System.out.println("MLH Create 1");
     JvmGcMetrics gcMetricsBinder = new JvmGcMetrics();
     GeodeCompositeMeterRegistry registry = new GeodeCompositeMeterRegistry(gcMetricsBinder);
 
@@ -92,7 +87,6 @@ public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory 
   public CompositeMeterRegistry create(InternalDistributedSystem internalDistributedSystem,
       boolean isClient) {
     int clusterId = internalDistributedSystem.getConfig().getDistributedSystemId();
-    System.out.println("MLH Create 2");
 
     String memberName = internalDistributedSystem.getName();
     String hostName = internalDistributedSystem.getDistributedMember().getHost();
