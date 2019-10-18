@@ -75,11 +75,7 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
   }
 
   /**
-   * Returns the portion of the URI that uniquely, in the scope of {@link #getEndpoint()},
-   * identifies this instance.
-   * Some implementations of this class require that some other attribute be set
-   * (for example {@link Region#setName(String)}) before this method will return
-   * a non-null value. Refer to the javadocs on subclasses for details.
+   * Returns the attribute of the configuration that uniquely identifies it
    */
   @Override
   public abstract String getId();
