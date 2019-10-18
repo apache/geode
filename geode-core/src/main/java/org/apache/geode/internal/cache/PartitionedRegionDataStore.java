@@ -2989,8 +2989,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
             bucketArray, resultSender, isReExecute);
 
     FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem());
-    long start = stats.getTime();
-    stats.startFunctionExecution(function.hasResult());
+    long start = stats.startFunctionExecution(function.hasResult());
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Function: {} on Remote Node with context: ", function.getId(),

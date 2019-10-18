@@ -71,17 +71,12 @@ public interface FunctionStats {
   int getFunctionExecutionCalls();
 
   /**
-   * Returns the current time (ns).
+   * Increments the "_functionExecutionCallsId" and "_functionExecutionsRunningId" stats and
+   * "_functionExecutionHasResultRunningId" in case of function.hasResult = true..
    *
    * @return the current time (ns)
    */
-  long getTime();
-
-  /**
-   * Increments the "_functionExecutionCallsId" and "_functionExecutionsRunningId" stats and
-   * "_functionExecutionHasResultRunningId" in case of function.hasResult = true..
-   */
-  void startFunctionExecution(boolean haveResult);
+  long startFunctionExecution(boolean haveResult);
 
   /**
    * Increments the "functionExecutionsCompleted" and "functionExecutionCompleteProcessingTime"

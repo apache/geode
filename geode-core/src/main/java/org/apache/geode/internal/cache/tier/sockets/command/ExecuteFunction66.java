@@ -315,8 +315,7 @@ public class ExecuteFunction66 extends BaseCommand {
       final FunctionStats stats) throws IOException {
 
     if (fn.hasResult()) {
-      long startExecution = stats.getTime();
-      stats.startFunctionExecution(fn.hasResult());
+      long startExecution = stats.startFunctionExecution(fn.hasResult());
       try {
         fn.execute(cx);
         if (sender.isOkayToSendResult() && !sender.isLastResultReceived() && fn.hasResult()) {
@@ -336,8 +335,7 @@ public class ExecuteFunction66 extends BaseCommand {
       TXStateProxy txState = TXManagerImpl.getCurrentTXState();
       Runnable functionExecution = () -> {
         InternalCache cache = null;
-        long startExecution = stats.getTime();
-        stats.startFunctionExecution(fn.hasResult());
+        long startExecution = stats.startFunctionExecution(fn.hasResult());
         try {
           if (txState != null) {
             cache = GemFireCacheImpl.getExisting("executing function");

@@ -149,8 +149,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
   private ResultCollector executeOnServer(Function function, ResultCollector rc, byte hasResult,
       int timeoutMs) {
     FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId());
-    long start = stats.getTime();
-    stats.startFunctionExecution(true);
+    long start = stats.startFunctionExecution(true);
     try {
       validateExecution(function, null);
 
@@ -194,8 +193,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
   private ResultCollector executeOnServer(String functionId, ResultCollector rc, byte hasResult,
       boolean isHA, boolean optimizeForWrite, int timeoutMs) {
     FunctionStats stats = FunctionStatsManager.getFunctionStats(functionId);
-    long start = stats.getTime();
-    stats.startFunctionExecution(true);
+    long start = stats.startFunctionExecution(true);
     try {
       validateExecution(null, null);
 
@@ -239,8 +237,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private void executeOnServerNoAck(Function function, byte hasResult) {
     FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId());
-    long start = stats.getTime();
-    stats.startFunctionExecution(false);
+    long start = stats.startFunctionExecution(false);
     try {
       validateExecution(function, null);
       ExecuteFunctionNoAckOp.execute(pool, function, args, memberMappedArg, allServers,
@@ -260,8 +257,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
   private void executeOnServerNoAck(String functionId, byte hasResult, boolean isHA,
       boolean optimizeForWrite) {
     FunctionStats stats = FunctionStatsManager.getFunctionStats(functionId);
-    long start = stats.getTime();
-    stats.startFunctionExecution(false);
+    long start = stats.startFunctionExecution(false);
     try {
       validateExecution(null, null);
       ExecuteFunctionNoAckOp.execute(pool, functionId, args, memberMappedArg, allServers,

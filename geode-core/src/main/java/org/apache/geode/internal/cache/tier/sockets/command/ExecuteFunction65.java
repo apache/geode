@@ -196,8 +196,7 @@ public class ExecuteFunction65 extends BaseCommand {
       int earlierClientReadTimeout = handshake.getClientReadTimeout();
       handshake.setClientReadTimeout(0);
 
-      long startExecution = stats.getTime();
-      stats.startFunctionExecution(functionObject.hasResult());
+      long startExecution = stats.startFunctionExecution(functionObject.hasResult());
       try {
         if (logger.isDebugEnabled()) {
           logger.debug("Executing Function on Server: {} with context: {}", serverConnection,

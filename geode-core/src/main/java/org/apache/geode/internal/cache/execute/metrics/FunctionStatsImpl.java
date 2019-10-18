@@ -252,12 +252,7 @@ public class FunctionStatsImpl implements FunctionStats {
   }
 
   @Override
-  public long getTime() {
-    return clock.getAsLong();
-  }
-
-  @Override
-  public void startFunctionExecution(boolean haveResult) {
+  public long startFunctionExecution(boolean haveResult) {
     statistics.incInt(functionExecutionCallsId, 1);
     statistics.incInt(functionExecutionsRunningId, 1);
 
@@ -266,11 +261,13 @@ public class FunctionStatsImpl implements FunctionStats {
     }
 
     aggregateStatistics.startFunctionExecution(haveResult);
+
+    return clock.getAsLong();
   }
 
   @Override
   public void endFunctionExecution(long startTime, boolean haveResult) {
-    long elapsedNanos = getTime() - startTime;
+    long elapsedNanos = clock.getAsLong() - startTime;
 
     successTimer.record(elapsedNanos, NANOSECONDS);
 
@@ -294,7 +291,7 @@ public class FunctionStatsImpl implements FunctionStats {
 
   @Override
   public void endFunctionExecutionWithException(long startTime, boolean haveResult) {
-    long elapsedNanos = getTime() - startTime;
+    long elapsedNanos = clock.getAsLong() - startTime;
 
     failureTimer.record(elapsedNanos, NANOSECONDS);
 

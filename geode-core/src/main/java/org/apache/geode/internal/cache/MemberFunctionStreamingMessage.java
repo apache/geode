@@ -165,7 +165,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     TXStateProxy tx = null;
     InternalCache cache = dm.getCache();
 
-    long start = stats.getTime();
+    long start = 0;
     boolean startedFunctionExecution = false;
     try {
       tx = prepForTransaction(dm);
@@ -191,7 +191,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       FunctionContextImpl context = new MultiRegionFunctionContextImpl(cache,
           this.functionObject.getId(), this.args, resultSender, regions, isReExecute);
 
-      stats.startFunctionExecution(this.functionObject.hasResult());
+      start = stats.startFunctionExecution(this.functionObject.hasResult());
       startedFunctionExecution = true;
 
       if (logger.isDebugEnabled()) {

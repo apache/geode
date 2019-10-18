@@ -200,8 +200,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     ServerRegionProxy srp = getServerRegionProxy();
     FunctionStats stats =
         FunctionStatsManager.getFunctionStats(function.getId(), region.getSystem());
-    long start = stats.getTime();
-    stats.startFunctionExecution(true);
+    long start = stats.startFunctionExecution(true);
     try {
       validateExecution(function, null);
       srp.executeFunction(function, this, collector, hasResult,
@@ -223,8 +222,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
 
     ServerRegionProxy srp = getServerRegionProxy();
     FunctionStats stats = FunctionStatsManager.getFunctionStats(functionId, region.getSystem());
-    long start = stats.getTime();
-    stats.startFunctionExecution(true);
+    long start = stats.startFunctionExecution(true);
     try {
       validateExecution(null, null);
       srp.executeFunction(functionId, this, collector, hasResult, isHA,
@@ -245,8 +243,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     ServerRegionProxy srp = getServerRegionProxy();
     FunctionStats stats =
         FunctionStatsManager.getFunctionStats(function.getId(), region.getSystem());
-    long start = stats.getTime();
-    stats.startFunctionExecution(false);
+    long start = stats.startFunctionExecution(false);
     try {
       validateExecution(function, null);
       srp.executeFunctionNoAck(region.getFullPath(), function, this, hasResult, false);
@@ -264,8 +261,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       boolean optimizeForWrite) throws FunctionException {
     ServerRegionProxy srp = getServerRegionProxy();
     FunctionStats stats = FunctionStatsManager.getFunctionStats(functionId, region.getSystem());
-    long start = stats.getTime();
-    stats.startFunctionExecution(false);
+    long start = stats.startFunctionExecution(false);
     try {
       validateExecution(null, null);
       srp.executeFunctionNoAck(region.getFullPath(), functionId, this, hasResult, isHA,

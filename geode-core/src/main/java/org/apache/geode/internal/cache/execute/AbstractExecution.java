@@ -318,8 +318,7 @@ public abstract class AbstractExecution implements InternalExecution {
 
     FunctionStats stats = FunctionStatsManager.getFunctionStats(fn.getId(), dm.getSystem());
 
-    long start = stats.getTime();
-    stats.startFunctionExecution(fn.hasResult());
+    long start = stats.startFunctionExecution(fn.hasResult());
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Function: {} on local node with context: {}", fn.getId(),

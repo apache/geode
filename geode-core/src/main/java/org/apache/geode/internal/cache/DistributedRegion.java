@@ -3790,8 +3790,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     final RegionFunctionContextImpl context = new RegionFunctionContextImpl(cache, function.getId(),
         this, args, filter, null, null, resultSender, isReExecute);
     FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem());
-    long start = stats.getTime();
-    stats.startFunctionExecution(function.hasResult());
+    long start = stats.startFunctionExecution(function.hasResult());
     try {
       function.execute(context);
       stats.endFunctionExecution(start, function.hasResult());

@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 
-import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -111,7 +110,7 @@ public class FunctionExecutionsTimerLonerTest {
 
     deployFunction(FunctionToTimeWithResult.class);
 
-    Assertions.assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
+    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .isEmpty();
   }
@@ -124,7 +123,7 @@ public class FunctionExecutionsTimerLonerTest {
     Duration functionDuration = Duration.ofSeconds(1);
     executeFunctionById(FunctionToTimeWithResult.ID, functionDuration);
 
-    Assertions.assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
+    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .hasSize(2);
   }
@@ -135,7 +134,7 @@ public class FunctionExecutionsTimerLonerTest {
 
     executeFunctionThatSucceeds(new FunctionToTimeWithResult(), Duration.ofMillis(1));
 
-    Assertions.assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
+    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .hasSize(2);
   }
@@ -147,7 +146,7 @@ public class FunctionExecutionsTimerLonerTest {
 
     restartServer();
 
-    Assertions.assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
+    assertThat(getExecutionsTimerValuesFor(FunctionToTimeWithResult.ID))
         .as("Function executions timers on server")
         .isEmpty();
   }
@@ -338,7 +337,7 @@ public class FunctionExecutionsTimerLonerTest {
         .filter(v -> v.succeeded == succeededTagValue)
         .collect(toList());
 
-    Assertions.assertThat(executionsTimerValues)
+    assertThat(executionsTimerValues)
         .hasSize(1);
 
     return executionsTimerValues.get(0);
