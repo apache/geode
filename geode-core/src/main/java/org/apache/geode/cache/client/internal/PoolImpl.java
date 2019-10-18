@@ -41,6 +41,7 @@ import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
 import org.apache.geode.cache.client.internal.pooling.ConnectionManager;
@@ -1581,4 +1582,28 @@ public class PoolImpl implements InternalPool {
   public int getSubscriptionTimeoutMultiplier() {
     return subscriptionTimeoutMultiplier;
   }
+
+  public int calculateRetryAttempts(Throwable cause) {
+
+    int maxRetryAttempts = getRetryAttempts();
+
+    if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
+      // If the retryAttempt is set to default(-1). Try executing on all servers once.
+      // As calculating number of servers involves sending message to locator, it is
+      // done only when there is an exception.
+      if (cause instanceof ServerConnectivityException
+          && (cause.getMessage().contains(ConnectionManagerImpl.BORROW_CONN_ERROR_MSG)
+              || cause.getMessage().contains(ConnectionManagerImpl.UNEXPECTED_SOCKET_CLOSED_MSG))) {
+        // The client was unable to establish a connection before sending the
+        // request.
+        maxRetryAttempts = getConnectionSource().getAllServers().size();
+      } else {
+        // The request was sent once.
+        maxRetryAttempts = getConnectionSource().getAllServers().size() - 1;
+      }
+    }
+
+    return maxRetryAttempts;
+  }
+
 }

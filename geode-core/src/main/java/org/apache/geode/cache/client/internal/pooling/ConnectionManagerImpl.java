@@ -70,6 +70,9 @@ import org.apache.geode.security.GemFireSecurityException;
 public class ConnectionManagerImpl implements ConnectionManager {
   private static final Logger logger = LogService.getLogger();
   private static final int NOT_WAITING = -1;
+  public static final String BORROW_CONN_ERROR_MSG = "Could not create a new connection to server ";
+  public static final String UNEXPECTED_SOCKET_CLOSED_MSG =
+      "Pool unexpected closed socket on server";
 
   private final String poolName;
   private final PoolStats poolStats;
@@ -321,8 +324,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       return connection;
     }
 
-    throw new ServerConnectivityException(
-        "Could not create a new connection to server " + server);
+    throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
   }
 
   @Override

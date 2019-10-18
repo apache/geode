@@ -228,9 +228,8 @@ public class ExecuteFunctionOpRetryTest {
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
         (pool, failureMode) -> ExecuteFunctionTestSupport.thenThrow(when(pool
             .execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt())),
-            failureMode));
-
-    when(testSupport.getExecutablePool().getRetryAttempts()).thenReturn(retryAttempts);
+            failureMode),
+        retryAttempts);
 
     args = null;
     memberMappedArg = mock(MemberMappedArgument.class);

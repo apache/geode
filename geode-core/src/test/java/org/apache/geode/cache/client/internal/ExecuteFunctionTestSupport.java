@@ -15,6 +15,7 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.HAStatus.HA;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -91,8 +92,6 @@ class ExecuteFunctionTestSupport {
    * This method has to be {@code static} because it is called before
    * {@link ExecuteFunctionTestSupport} is constructed.
    *
-   * @param whenPoolExecute is the {@link OngoingStubbing} for (one of the ) {@code execute()}
-   *        methods on {@link PoolImpl}
    * @param failureMode is the {@link FailureMode} that determines the kind of exception
    *        to {@code throw}
    */
@@ -149,7 +148,7 @@ class ExecuteFunctionTestSupport {
   ExecuteFunctionTestSupport(
       final HAStatus haStatus,
       final FailureMode failureMode,
-      final BiConsumer<PoolImpl, FailureMode> addPoolMockBehavior) {
+      final BiConsumer<PoolImpl, FailureMode> addPoolMockBehavior, Integer retryAttempts) {
 
     final List<ServerLocation> servers = (List<ServerLocation>) mock(List.class);
     when(servers.size()).thenReturn(ExecuteFunctionTestSupport.NUMBER_OF_SERVERS);
@@ -174,6 +173,9 @@ class ExecuteFunctionTestSupport {
 
     executablePool = mock(PoolImpl.class);
     when(executablePool.getConnectionSource()).thenReturn(connectionSource);
+    when(executablePool.getRetryAttempts()).thenReturn(retryAttempts);
+    when(executablePool.calculateRetryAttempts(any(ServerConnectivityException.class)))
+        .thenCallRealMethod();
 
     addPoolMockBehavior.accept(executablePool, failureMode);
   }
