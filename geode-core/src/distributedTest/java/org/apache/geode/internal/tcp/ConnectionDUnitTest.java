@@ -20,35 +20,64 @@ import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Properties;
 
-import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.net.SocketCloser;
+import org.apache.geode.test.assertj.LogFileAssert;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
-public class ConnectionTest {
-  @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+public class ConnectionDUnitTest {
 
   @Rule
-  public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
+  public final DistributedRule distributedRule = DistributedRule.builder().withVMCount(0).build();
+
+  @Rule
+  public final MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  private Cache cache;
+
+  @After
+  public void teardown() {
+    if (cache != null) {
+      cache.close();
+    }
+  }
 
   @Test
-  @Ignore("Test ignored: SystemOutRule fails to capture output logged by Connection in CI runs")
-  public void badHeaderMessageIsCorrectlyLogged() {
+  public void badHeaderMessageIsCorrectlyLogged() throws Exception {
+    Properties properties = DUnitLauncher.getDistributedSystemProperties();
+    File logFile = temporaryFolder.newFile();
+    properties.put(ConfigurationProperties.LOG_FILE, logFile.getAbsolutePath());
+    cache = new CacheFactory(properties).create();
+
+    final String expectedException = "Unknown handshake reply code: 99 messageLength: 0";
+
+    IgnoredException.addIgnoredException(expectedException);
+
     ConnectionTable connectionTable = mock(ConnectionTable.class);
     TCPConduit tcpConduit = mock(TCPConduit.class);
     when(connectionTable.getConduit()).thenReturn(tcpConduit);
@@ -65,8 +94,8 @@ public class ConnectionTest {
     ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
     DataInputStream inputStream = new DataInputStream(byteArrayInputStream);
     connection.readHandshakeForSender(inputStream, peerDataBuffer);
-    String log = systemOutRule.getLog();
-    Assert.assertTrue(log.contains(
-        "Unknown handshake reply code: 99 messageLength: 0"));
+    cache.close();
+    cache = null;
+    LogFileAssert.assertThat(logFile).contains(expectedException);
   }
 }
