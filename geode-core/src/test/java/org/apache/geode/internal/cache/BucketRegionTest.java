@@ -438,12 +438,18 @@ public class BucketRegionTest {
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
-    doReturn(false).when(event).isGenerateCallbacks();
 
-    bucketRegion.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, false, false);
+    final String key = "Object0";
+    EntryEventImpl eventNew = new EntryEventImpl();
+    eventNew.setGenerateCallbacks(false);
+    eventNew.setKeyInfo(new KeyInfo(key, null, 0));
+
+
+
+    bucketRegion.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, eventNew, false, false);
 
     verify(partitionedRegion, never()).invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY,
-        event, false, false);
+        eventNew, false, false);
   }
 
   @Test
@@ -452,14 +458,19 @@ public class BucketRegionTest {
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
-    doReturn(true).when(event).isGenerateCallbacks();
     doReturn(false).when(partitionedRegion).isInitialized();
     doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
 
-    bucketRegion.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, false, false);
+    final String key = "Object0";
+    EntryEventImpl eventNew = new EntryEventImpl();
+    eventNew.setGenerateCallbacks(true);
+    eventNew.setKeyInfo(new KeyInfo(key, null, 0));
+
+
+    bucketRegion.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, eventNew, false, false);
 
     verify(partitionedRegion, never()).invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY,
-        event, false, false);
+        eventNew, false, false);
   }
 
   @Test
@@ -467,15 +478,18 @@ public class BucketRegionTest {
     BucketRegion bucketRegion =
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
+    final String key = "Object0";
+    EntryEventImpl eventNew = new EntryEventImpl();
+    eventNew.setGenerateCallbacks(true);
+    eventNew.setKeyInfo(new KeyInfo(key, null, 0));
     doReturn(false).when(bucketRegion).isInitialized();
-    doReturn(true).when(event).isGenerateCallbacks();
     doReturn(true).when(partitionedRegion).isInitialized();
     doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
-    doReturn(event).when(bucketRegion).createEventForPR(event);
+    doReturn(eventNew).when(bucketRegion).createEventForPR(eventNew);
 
-    bucketRegion.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, true, false);
+    bucketRegion.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, eventNew, true, false);
 
-    verify(partitionedRegion).invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event,
+    verify(partitionedRegion).invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, eventNew,
         true, false);
   }
 
@@ -485,12 +499,15 @@ public class BucketRegionTest {
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
-    doReturn(false).when(event).isGenerateCallbacks();
+    final String key = "Object0";
+    EntryEventImpl eventNew = new EntryEventImpl();
+    eventNew.setGenerateCallbacks(false);
+    eventNew.setKeyInfo(new KeyInfo(key, null, 0));
 
-    bucketRegion.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event, false);
+    bucketRegion.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, eventNew, false);
 
     verify(partitionedRegion, never()).invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE,
-        event, false);
+        eventNew, false);
   }
 
   @Test
@@ -499,14 +516,17 @@ public class BucketRegionTest {
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
-    doReturn(true).when(event).isGenerateCallbacks();
     doReturn(false).when(partitionedRegion).isInitialized();
     doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
+    final String key = "Object0";
+    EntryEventImpl eventNew = new EntryEventImpl();
+    eventNew.setGenerateCallbacks(true);
+    eventNew.setKeyInfo(new KeyInfo(key, null, 0));
 
-    bucketRegion.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event, false);
+    bucketRegion.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, eventNew, false);
 
     verify(partitionedRegion, never()).invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE,
-        event, false);
+        eventNew, false);
   }
 
   @Test
@@ -515,14 +535,19 @@ public class BucketRegionTest {
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
-    doReturn(true).when(event).isGenerateCallbacks();
+    final String key = "Object0";
+    EntryEventImpl eventNew = new EntryEventImpl();
+    eventNew.setGenerateCallbacks(true);
+    eventNew.setKeyInfo(new KeyInfo(key, null, 0));
+
     doReturn(true).when(partitionedRegion).isInitialized();
     doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
-    doReturn(event).when(bucketRegion).createEventForPR(event);
+    doReturn(eventNew).when(bucketRegion).createEventForPR(eventNew);
 
-    bucketRegion.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event, true);
+    bucketRegion.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, eventNew, true);
 
-    verify(partitionedRegion).invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event,
+    verify(partitionedRegion).invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE,
+        eventNew,
         true);
   }
 
@@ -532,11 +557,14 @@ public class BucketRegionTest {
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
-    doReturn(false).when(event).isGenerateCallbacks();
+    final String key = "Object0";
+    EntryEventImpl eventNew = new EntryEventImpl();
+    eventNew.setGenerateCallbacks(false);
+    eventNew.setKeyInfo(new KeyInfo(key, null, 0));
 
-    bucketRegion.invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event, false, false);
+    bucketRegion.invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, eventNew, false, false);
 
-    verify(partitionedRegion, never()).invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event,
+    verify(partitionedRegion, never()).invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, eventNew,
         false, false);
   }
 
@@ -546,13 +574,17 @@ public class BucketRegionTest {
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
-    doReturn(true).when(event).isGenerateCallbacks();
+    final String key = "Object0";
+    EntryEventImpl eventNew = new EntryEventImpl();
+    eventNew.setGenerateCallbacks(true);
+    eventNew.setKeyInfo(new KeyInfo(key, null, 0));
+
     doReturn(false).when(partitionedRegion).isInitialized();
     doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
 
-    bucketRegion.invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event, false, false);
+    bucketRegion.invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, eventNew, false, false);
 
-    verify(partitionedRegion, never()).invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event,
+    verify(partitionedRegion, never()).invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, eventNew,
         false, false);
   }
 
@@ -562,14 +594,18 @@ public class BucketRegionTest {
         spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
             cache, internalRegionArgs, disabledClock()));
     doReturn(false).when(bucketRegion).isInitialized();
-    doReturn(true).when(event).isGenerateCallbacks();
+    final String key = "Object0";
+    EntryEventImpl eventNew = new EntryEventImpl();
+    eventNew.setGenerateCallbacks(true);
+    eventNew.setKeyInfo(new KeyInfo(key, null, 0));
+
     doReturn(true).when(partitionedRegion).isInitialized();
     doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
-    doReturn(event).when(bucketRegion).createEventForPR(event);
+    doReturn(eventNew).when(bucketRegion).createEventForPR(eventNew);
 
-    bucketRegion.invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event, true, false);
+    bucketRegion.invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, eventNew, true, false);
 
-    verify(partitionedRegion).invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event,
+    verify(partitionedRegion).invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, eventNew,
         true, false);
   }
 }
