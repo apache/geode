@@ -36,7 +36,6 @@ import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.logging.internal.LoggingExecutors;
 import org.apache.geode.logging.internal.LoggingThreadFactory;
 import org.apache.geode.logging.internal.LoggingThreadFactory.CommandWrapper;
 import org.apache.geode.logging.internal.LoggingThreadFactory.ThreadInitializer;
@@ -201,7 +200,8 @@ public class CoreLoggingExecutors {
       int poolSize, int keepAliveSeconds, QueueStatHelper feedStats) {
     BlockingQueue<Runnable> feed = createFeedWithStatistics(0, feedStats);
     ThreadFactory threadFactory = new LoggingThreadFactory(threadName, true);
-    return new ThreadPoolExecutor(poolSize, poolSize, keepAliveSeconds, SECONDS, feed, threadFactory);
+    return new ThreadPoolExecutor(poolSize, poolSize, keepAliveSeconds, SECONDS, feed,
+        threadFactory);
   }
 
   public static ScheduledExecutorService newScheduledThreadPool(String threadName, int poolSize,
