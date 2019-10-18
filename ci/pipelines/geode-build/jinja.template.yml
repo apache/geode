@@ -416,8 +416,8 @@ jobs:
       {{ all_gating_jobs() | indent(6) }}
     - put: concourse-metadata-resource
   - aggregate:
-    {% for ssl_var in [{'title': '_without_ssl', 'flag':''}, {'title': '_with_ssl', 'flag': '-PwithSsl'}] %}
-    - task: run_benchmarks{{ ssl_var.title }}
+    {% for run_var in [{'title': '', 'flag':'', 'options': ''}, {'title': '_with_ssl', 'flag': '-PwithSsl', 'options': '--tests=*GetBenchmark --tests=*PutBenchmark'}, {'title': '_with_security_manager', 'flag': '-PwithSecurityManager', 'options': '--tests=Partitioned*'}] %}
+    - task: run_benchmarks{{ run_var.title }}
       image: alpine-tools-image
       config:
         platform: linux
@@ -430,7 +430,9 @@ jobs:
           BENCHMARKS_BRANCH: {{benchmarks.benchmark_branch}}
           BASELINE_BRANCH: {{benchmarks.baseline_branch}}
           BASELINE_VERSION: {{benchmarks.baseline_version}}
-          WITH_SSL: {{ ssl_var.flag }}
+          FLAGS: {{ run_var.flag }}
+          TAG_POSTFIX: {{ run_var.title }}
+          TEST_OPTIONS: {{ run_var.options }}
         run:
           path: geode-ci/ci/scripts/run_benchmarks.sh
         inputs:
@@ -455,7 +457,9 @@ jobs:
               ARTIFACT_BUCKET: ((artifact-bucket))
               BASELINE_BRANCH: {{benchmarks.baseline_branch}}
               BASELINE_VERSION: {{benchmarks.baseline_version}}
-              WITH_SSL: {{ ssl_var.flag }}
+              FLAGS: {{ run_var.flag }}
+              TAG_POSTFIX: {{ run_var.title }}
+              TEST_OPTIONS: {{ run_var.options }}
             run:
               path: geode-ci/ci/scripts/cleanup_benchmarks.sh
             inputs:
