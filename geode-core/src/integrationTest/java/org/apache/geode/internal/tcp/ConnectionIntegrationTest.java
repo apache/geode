@@ -26,7 +26,6 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Properties;
 
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -35,22 +34,17 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.internal.DUnitLauncher;
-import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
-public class ConnectionDUnitTest {
-
-  @Rule
-  public final DistributedRule distributedRule = DistributedRule.builder().withVMCount(0).build();
+public class ConnectionIntegrationTest {
 
   @Rule
   public final MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
@@ -58,21 +52,17 @@ public class ConnectionDUnitTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private Cache cache;
-
-  @After
-  public void teardown() {
-    if (cache != null) {
-      cache.close();
-    }
-  }
+  @Rule
+  public CacheRule cacheRule = new CacheRule();
 
   @Test
   public void badHeaderMessageIsCorrectlyLogged() throws Exception {
-    Properties properties = DUnitLauncher.getDistributedSystemProperties();
+    Properties properties = new Properties();
+    properties.put(ConfigurationProperties.LOCATORS, ""); // loner system
     File logFile = temporaryFolder.newFile();
     properties.put(ConfigurationProperties.LOG_FILE, logFile.getAbsolutePath());
-    cache = new CacheFactory(properties).create();
+    cacheRule.createCache(properties);
+    Cache cache = cacheRule.getCache();
 
     final String expectedException = "Unknown handshake reply code: 99 messageLength: 0";
 
@@ -95,7 +85,6 @@ public class ConnectionDUnitTest {
     DataInputStream inputStream = new DataInputStream(byteArrayInputStream);
     connection.readHandshakeForSender(inputStream, peerDataBuffer);
     cache.close();
-    cache = null;
     LogFileAssert.assertThat(logFile).contains(expectedException);
   }
 }
