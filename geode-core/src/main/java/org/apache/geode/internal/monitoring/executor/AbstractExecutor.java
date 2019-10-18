@@ -92,7 +92,7 @@ public abstract class AbstractExecutor {
       writeThreadStack(thread, "Thread stack:", stringBuilder);
     }
 
-    if (thread.getLockOwnerName() != null) {
+    if (logThreadDetails && thread.getLockOwnerName() != null) {
       ThreadInfo lockOwnerThread = ManagementFactory.getThreadMXBean()
           .getThreadInfo(thread.getLockOwnerId(), THREAD_DUMP_DEPTH);
       if (lockOwnerThread != null) {
