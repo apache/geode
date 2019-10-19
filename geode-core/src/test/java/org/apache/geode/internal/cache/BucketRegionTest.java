@@ -476,7 +476,7 @@ public class BucketRegionTest {
     EntryEventImpl eventNew = new EntryEventImpl();
     eventNew.setGenerateCallbacks(true);
     eventNew.setKeyInfo(new KeyInfo(key, null, 0));
-
+    CacheClientNotifier.resetInstance();
 
     bucketRegion.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, eventNew, false, false);
 
@@ -539,6 +539,7 @@ public class BucketRegionTest {
     eventNew.setGenerateCallbacks(true);
     eventNew.setKeyInfo(new KeyInfo(key, null, 0));
 
+    CacheClientNotifier.resetInstance();
     bucketRegion.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, eventNew, false);
 
     verify(partitionedRegion, never()).invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE,
@@ -603,6 +604,7 @@ public class BucketRegionTest {
     eventNew.setGenerateCallbacks(true);
     eventNew.setKeyInfo(new KeyInfo(key, null, 0));
 
+    CacheClientNotifier.resetInstance();
     bucketRegion.invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, eventNew, false, false);
 
     verify(partitionedRegion, never()).invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, eventNew,

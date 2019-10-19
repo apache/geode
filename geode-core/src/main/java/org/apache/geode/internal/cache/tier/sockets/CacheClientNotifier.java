@@ -162,15 +162,11 @@ public class CacheClientNotifier {
     return ccnSingleton;
   }
 
-  /**
-   * Registers a new client updater that wants to receive updates with this server.
-   *
-   * @param socket The socket over which the server communicates with the client.
-   * @param isPrimary Whether server is the primary subscription end point for this client
-   * @param acceptorId ID of the acceptor used to clean up the client connection
-   * @param notifyBySubscription Whether the Server is running in NotifyBySubscription mode
-   * @throws IOException Can occur if there are issues communicating over the socket
-   */
+  public static void resetInstance() { ccnSingleton=null; }
+
+
+
+
   public void registerClient(final ClientRegistrationMetadata clientRegistrationMetadata,
       final Socket socket, final boolean isPrimary, final long acceptorId,
       final boolean notifyBySubscription) throws IOException {
