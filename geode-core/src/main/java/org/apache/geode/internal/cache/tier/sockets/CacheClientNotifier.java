@@ -162,8 +162,10 @@ public class CacheClientNotifier {
     return ccnSingleton;
   }
 
-  public static void resetInstance() { ccnSingleton=null; }
-
+  @VisibleForTesting
+  public static void resetInstance() {
+    ccnSingleton = null;
+  }
 
 
 
