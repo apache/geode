@@ -34,6 +34,8 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
 
 public class ServerFunctionExecutor extends AbstractExecution {
@@ -146,11 +148,10 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private ResultCollector executeOnServer(Function function, ResultCollector rc, byte hasResult,
       int timeoutMs) {
-    FunctionStats stats = FunctionStats.getFunctionStats(function.getId());
+    FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId());
+    long start = stats.startFunctionExecution(true);
     try {
       validateExecution(function, null);
-      long start = stats.startTime();
-      stats.startFunctionExecution(true);
 
       final ExecuteFunctionOpImpl executeFunctionOp =
           new ExecuteFunctionOpImpl(function, args, memberMappedArg,
@@ -179,23 +180,22 @@ public class ServerFunctionExecutor extends AbstractExecution {
       rc.endResults();
       return rc;
     } catch (FunctionException functionException) {
-      stats.endFunctionExecutionWithException(true);
+      stats.endFunctionExecutionWithException(start, true);
       throw functionException;
     } catch (ServerConnectivityException exception) {
       throw exception;
     } catch (Exception exception) {
-      stats.endFunctionExecutionWithException(true);
+      stats.endFunctionExecutionWithException(start, true);
       throw new FunctionException(exception);
     }
   }
 
   private ResultCollector executeOnServer(String functionId, ResultCollector rc, byte hasResult,
       boolean isHA, boolean optimizeForWrite, int timeoutMs) {
-    FunctionStats stats = FunctionStats.getFunctionStats(functionId);
+    FunctionStats stats = FunctionStatsManager.getFunctionStats(functionId);
+    long start = stats.startFunctionExecution(true);
     try {
       validateExecution(null, null);
-      long start = stats.startTime();
-      stats.startFunctionExecution(true);
 
       final ExecuteFunctionOpImpl executeFunctionOp =
           new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
@@ -225,53 +225,51 @@ public class ServerFunctionExecutor extends AbstractExecution {
       rc.endResults();
       return rc;
     } catch (FunctionException functionException) {
-      stats.endFunctionExecutionWithException(true);
+      stats.endFunctionExecutionWithException(start, true);
       throw functionException;
     } catch (ServerConnectivityException exception) {
       throw exception;
     } catch (Exception exception) {
-      stats.endFunctionExecutionWithException(true);
+      stats.endFunctionExecutionWithException(start, true);
       throw new FunctionException(exception);
     }
   }
 
   private void executeOnServerNoAck(Function function, byte hasResult) {
-    FunctionStats stats = FunctionStats.getFunctionStats(function.getId());
+    FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId());
+    long start = stats.startFunctionExecution(false);
     try {
       validateExecution(function, null);
-      long start = stats.startTime();
-      stats.startFunctionExecution(false);
       ExecuteFunctionNoAckOp.execute(pool, function, args, memberMappedArg, allServers,
           hasResult, isFnSerializationReqd, groups);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
-      stats.endFunctionExecutionWithException(false);
+      stats.endFunctionExecutionWithException(start, false);
       throw functionException;
     } catch (ServerConnectivityException exception) {
       throw exception;
     } catch (Exception exception) {
-      stats.endFunctionExecutionWithException(false);
+      stats.endFunctionExecutionWithException(start, false);
       throw new FunctionException(exception);
     }
   }
 
   private void executeOnServerNoAck(String functionId, byte hasResult, boolean isHA,
       boolean optimizeForWrite) {
-    FunctionStats stats = FunctionStats.getFunctionStats(functionId);
+    FunctionStats stats = FunctionStatsManager.getFunctionStats(functionId);
+    long start = stats.startFunctionExecution(false);
     try {
       validateExecution(null, null);
-      long start = stats.startTime();
-      stats.startFunctionExecution(false);
       ExecuteFunctionNoAckOp.execute(pool, functionId, args, memberMappedArg, allServers,
           hasResult, isFnSerializationReqd, isHA, optimizeForWrite, groups);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
-      stats.endFunctionExecutionWithException(false);
+      stats.endFunctionExecutionWithException(start, false);
       throw functionException;
     } catch (ServerConnectivityException exception) {
       throw exception;
     } catch (Exception exception) {
-      stats.endFunctionExecutionWithException(false);
+      stats.endFunctionExecutionWithException(start, false);
       throw new FunctionException(exception);
     }
   }

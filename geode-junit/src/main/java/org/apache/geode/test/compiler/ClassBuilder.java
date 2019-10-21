@@ -166,16 +166,24 @@ public class ClassBuilder implements Serializable {
     jarOutputStream.close();
   }
 
-  public void writeJarFromClass(Class clazz, File jar) throws IOException {
-    String className = clazz.getName();
-    String classAsPath = className.replace('.', '/') + ".class";
-    InputStream stream = clazz.getClassLoader().getResourceAsStream(classAsPath);
-    byte[] bytes = IOUtils.toByteArray(stream);
-    try (FileOutputStream out = new FileOutputStream(jar)) {
-      createJar(classAsPath, out, bytes);
-    }
+  public static void writeJarFromClasses(File jar, Class... types) throws IOException {
+    try (JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(jar))) {
+      for (Class type : types) {
+        String className = type.getName();
+        String classAsPath = className.replace('.', '/') + ".class";
+        InputStream stream = type.getClassLoader().getResourceAsStream(classAsPath);
+        byte[] bytes = IOUtils.toByteArray(stream);
 
+        JarEntry entry = new JarEntry(classAsPath);
+        entry.setTime(System.currentTimeMillis());
+
+        jarOutputStream.putNextEntry(entry);
+        jarOutputStream.write(bytes);
+        jarOutputStream.closeEntry();
+      }
+    }
   }
+
 
   /**
    * Creates a ClassLoader that contains an empty class with the given name using the given content.

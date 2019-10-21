@@ -12,10 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.compiler;
+package org.apache.geode.metrics.function.executions;
 
-public class TestObject {
-  public void forClassBuilderTest() {
-    // this class is just for testing purposes
+import java.io.Serializable;
+
+public class ExecutionsTimerValues implements Serializable {
+  final String functionId;
+  final boolean succeeded;
+  final long count;
+  final double totalTime;
+
+  ExecutionsTimerValues(String functionId, boolean succeeded, long count, double totalTime) {
+    this.functionId = functionId;
+    this.succeeded = succeeded;
+    this.count = count;
+    this.totalTime = totalTime;
+  }
+
+  @Override
+  public String toString() {
+    return "ExecutionsTimerValues{" +
+        "functionId='" + functionId + '\'' +
+        ", succeeded=" + succeeded +
+        ", count=" + count +
+        ", totalTime=" + totalTime +
+        '}';
   }
 }
