@@ -34,7 +34,7 @@ import org.apache.geode.cache.Region;
  * Some known dangerous methods, like {@link Object#getClass()}, are also rejected by this
  * authorizer implementation, no matter whether the method matches the configured regular
  * expressions
- * or not (see {@link RestrictedMethodAuthorizer#isKnownDangerousMethod(Method, Object)}).
+ * or not (see {@link RestrictedMethodAuthorizer#isPermanentlyForbiddenMethod(Method, Object)}).
  * <p/>
  *
  * When correctly configured, this authorizer implementation addresses the four known security
@@ -147,7 +147,7 @@ public final class RegExMethodAuthorizer implements MethodInvocationAuthorizer {
   @Override
   public boolean authorize(Method method, Object target) {
     // Return false for known dangerous methods.
-    if (restrictedMethodAuthorizer.isKnownDangerousMethod(method, target)) {
+    if (restrictedMethodAuthorizer.isPermanentlyForbiddenMethod(method, target)) {
       return false;
     }
 
