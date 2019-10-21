@@ -65,7 +65,7 @@ dependencies {
   upgradeTestCompile('org.awaitility:awaitility')
   upgradeTestCompile('org.mockito:mockito-core')
 
-  upgradeTestRuntime(project(':geode-old-versions'))
+  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
 
 ext.moduleName = group + '.cq'

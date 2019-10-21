@@ -17,7 +17,7 @@ import java.nio.file.Paths
  * limitations under the License.
  */
 
-apply plugin: 'java-library'
+apply from: "${rootProject.rootDir}/gradle/java.gradle"
 
 project.ext.installs = new Properties()
 
@@ -77,13 +77,13 @@ subprojects {
         new File(contentsFile.toAbsolutePath().toString()).text = file(unpackDest).listFiles()
       }
     }
-    project.build.dependsOn(project.downloadAndUnzipFile)
-    project.build.dependsOn(project.enumerateArchiveContents)
+    project.assemble.dependsOn(project.downloadAndUnzipFile)
+    project.assemble.dependsOn(project.enumerateArchiveContents)
 
   }
 }
 
-def generatedResources = buildDir.toPath().resolve('generated-resources').resolve('main').toString()
+def generatedResources = buildDir.toPath().resolve('generated-resources').resolve('test').toString()
 tasks.register('createGeodeClasspathsFile') {
   def classpathsFile = Paths.get(generatedResources).resolve('geodeOldVersionClasspaths.txt').toString()
   def installsFile = Paths.get(generatedResources).resolve('geodeOldVersionInstalls.txt').toString()
@@ -114,10 +114,10 @@ tasks.register('createGeodeClasspathsFile') {
 project.createGeodeClasspathsFile.mustRunAfter(clean)
 project.createGeodeClasspathsFile.inputs.files(getTasksByName('downloadAndUnzipFile', true))
 project.createGeodeClasspathsFile.inputs.files(getTasksByName('enumerateArchiveContents', true))
-project.build.dependsOn(createGeodeClasspathsFile)
+project.jarTest.dependsOn(createGeodeClasspathsFile)
 
 sourceSets {
-  main {
+  test {
     output.dir(generatedResources, builtBy: createGeodeClasspathsFile)
   }
 }
