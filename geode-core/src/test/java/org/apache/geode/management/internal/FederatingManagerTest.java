@@ -26,6 +26,7 @@ import java.net.InetAddress;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.StatisticsFactory;
@@ -35,34 +36,36 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.test.junit.categories.JMXTest;
 
+@Category(JMXTest.class)
 public class FederatingManagerTest {
 
+  private InternalCache cache;
+  private InternalCacheForClientAccess cacheForClientAccess;
   private MBeanJMXAdapter jmxAdapter;
   private ManagementResourceRepo repo;
-  private InternalDistributedSystem system;
   private SystemManagementService service;
-  private InternalCache cache;
   private StatisticsFactory statisticsFactory;
   private StatisticsClock statisticsClock;
-  private InternalCacheForClientAccess cacheForClientAccess;
+  private InternalDistributedSystem system;
 
   @Before
   public void setUp() throws Exception {
+    cache = mock(InternalCache.class);
+    cacheForClientAccess = mock(InternalCacheForClientAccess.class);
     jmxAdapter = mock(MBeanJMXAdapter.class);
     repo = mock(ManagementResourceRepo.class);
-    system = mock(InternalDistributedSystem.class);
     service = mock(SystemManagementService.class);
-    cache = mock(InternalCache.class);
-    statisticsFactory = mock(StatisticsFactory.class);
     statisticsClock = mock(StatisticsClock.class);
-    cacheForClientAccess = mock(InternalCacheForClientAccess.class);
+    statisticsFactory = mock(StatisticsFactory.class);
+    system = mock(InternalDistributedSystem.class);
+
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
 
     when(cache.getCacheForProcessingClientRequests())
@@ -79,12 +82,11 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesMonitoringRegion() throws Exception {
-    InternalDistributedMember member = member(1, 20);
     FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
         cache, statisticsFactory, statisticsClock);
     federatingManager.startManager();
 
-    federatingManager.addMemberArtifacts(member);
+    federatingManager.addMemberArtifacts(member(1, 20));
 
     verify(cacheForClientAccess)
         .createInternalRegion(eq("_monitoringRegion_null<v1>20"), any(), any());
@@ -92,31 +94,28 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() throws Exception {
-    InternalDistributedMember member = member(2, 40);
     FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
         cache, statisticsFactory, statisticsClock);
     federatingManager.startManager();
 
-    federatingManager.addMemberArtifacts(member);
+    federatingManager.addMemberArtifacts(member(2, 40));
 
     ArgumentCaptor<InternalRegionArguments> captor =
         ArgumentCaptor.forClass(InternalRegionArguments.class);
     verify(cacheForClientAccess)
         .createInternalRegion(eq("_monitoringRegion_null<v2>40"), any(), captor.capture());
-
-    InternalRegionArguments internalRegionArguments = captor.getValue();
-    HasCachePerfStats hasCachePerfStats = internalRegionArguments.getCachePerfStatsHolder();
-    assertThat(hasCachePerfStats.hasOwnStats()).isTrue();
+    boolean hasOwnStats = captor.getValue().getCachePerfStatsHolder().hasOwnStats();
+    assertThat(hasOwnStats)
+        .isTrue();
   }
 
   @Test
   public void addMemberArtifactsCreatesNotificationRegion() throws Exception {
-    InternalDistributedMember member = member(3, 60);
     FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
         cache, statisticsFactory, statisticsClock);
     federatingManager.startManager();
 
-    federatingManager.addMemberArtifacts(member);
+    federatingManager.addMemberArtifacts(member(3, 60));
 
     verify(cacheForClientAccess)
         .createInternalRegion(eq("_notificationRegion_null<v3>60"), any(), any());
@@ -124,12 +123,11 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() throws Exception {
-    InternalDistributedMember member = member(4, 80);
     FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
         cache, statisticsFactory, statisticsClock);
     federatingManager.startManager();
 
-    federatingManager.addMemberArtifacts(member);
+    federatingManager.addMemberArtifacts(member(4, 80));
 
     ArgumentCaptor<InternalRegionArguments> captor =
         ArgumentCaptor.forClass(InternalRegionArguments.class);
@@ -137,13 +135,13 @@ public class FederatingManagerTest {
         .createInternalRegion(eq("_notificationRegion_null<v4>80"), any(), captor.capture());
 
     InternalRegionArguments internalRegionArguments = captor.getValue();
-    HasCachePerfStats hasCachePerfStats = internalRegionArguments.getCachePerfStatsHolder();
-    assertThat(hasCachePerfStats.hasOwnStats()).isTrue();
+    assertThat(internalRegionArguments.getCachePerfStatsHolder().hasOwnStats())
+        .isTrue();
   }
 
   @Test
   public void removeMemberArtifactsLocallyDestroysMonitoringRegion() {
-    InternalDistributedMember member = member(4, 80);
+    InternalDistributedMember member = member();
     Region monitoringRegion = mock(Region.class);
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(monitoringRegion);
@@ -162,7 +160,7 @@ public class FederatingManagerTest {
 
   @Test
   public void removeMemberArtifactsLocallyDestroysNotificationRegion() {
-    InternalDistributedMember member = member(4, 80);
+    InternalDistributedMember member = member();
     Region notificationRegion = mock(Region.class);
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(mock(Region.class));
@@ -181,11 +179,10 @@ public class FederatingManagerTest {
 
   @Test
   public void removeMemberArtifactsDoesNotThrowIfMonitoringRegionIsAlreadyDestroyed() {
-    InternalDistributedMember member = member(4, 80);
+    InternalDistributedMember member = member();
     Region monitoringRegion = mock(Region.class);
     doThrow(new RegionDestroyedException("test", "monitoringRegion"))
-        .when(monitoringRegion)
-        .localDestroyRegion();
+        .when(monitoringRegion).localDestroyRegion();
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(monitoringRegion);
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -203,11 +200,10 @@ public class FederatingManagerTest {
 
   @Test
   public void removeMemberArtifactsDoesNotThrowIfNotificationRegionIsAlreadyDestroyed() {
-    InternalDistributedMember member = member(4, 80);
+    InternalDistributedMember member = member();
     Region notificationRegion = mock(Region.class);
     doThrow(new RegionDestroyedException("test", "notificationRegion"))
-        .when(notificationRegion)
-        .localDestroyRegion();
+        .when(notificationRegion).localDestroyRegion();
     when(repo.getEntryFromMonitoringRegionMap(eq(member)))
         .thenReturn(mock(Region.class));
     when(repo.getEntryFromNotifRegionMap(eq(member)))
@@ -221,6 +217,10 @@ public class FederatingManagerTest {
 
     verify(notificationRegion)
         .localDestroyRegion();
+  }
+
+  private InternalDistributedMember member() {
+    return member(1, 1);
   }
 
   private InternalDistributedMember member(int viewId, int port) {
