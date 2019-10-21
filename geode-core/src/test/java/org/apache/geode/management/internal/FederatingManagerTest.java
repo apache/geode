@@ -17,6 +17,7 @@ package org.apache.geode.management.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -30,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -84,8 +86,8 @@ public class FederatingManagerTest {
 
     federatingManager.addMemberArtifacts(member);
 
-    verify(cacheForClientAccess).createInternalRegion(eq("_monitoringRegion_null<v1>20"), any(),
-        any());
+    verify(cacheForClientAccess)
+        .createInternalRegion(eq("_monitoringRegion_null<v1>20"), any(), any());
   }
 
   @Test
@@ -99,8 +101,8 @@ public class FederatingManagerTest {
 
     ArgumentCaptor<InternalRegionArguments> captor =
         ArgumentCaptor.forClass(InternalRegionArguments.class);
-    verify(cacheForClientAccess).createInternalRegion(eq("_monitoringRegion_null<v2>40"), any(),
-        captor.capture());
+    verify(cacheForClientAccess)
+        .createInternalRegion(eq("_monitoringRegion_null<v2>40"), any(), captor.capture());
 
     InternalRegionArguments internalRegionArguments = captor.getValue();
     HasCachePerfStats hasCachePerfStats = internalRegionArguments.getCachePerfStatsHolder();
@@ -116,8 +118,8 @@ public class FederatingManagerTest {
 
     federatingManager.addMemberArtifacts(member);
 
-    verify(cacheForClientAccess).createInternalRegion(eq("_notificationRegion_null<v3>60"), any(),
-        any());
+    verify(cacheForClientAccess)
+        .createInternalRegion(eq("_notificationRegion_null<v3>60"), any(), any());
   }
 
   @Test
@@ -131,12 +133,94 @@ public class FederatingManagerTest {
 
     ArgumentCaptor<InternalRegionArguments> captor =
         ArgumentCaptor.forClass(InternalRegionArguments.class);
-    verify(cacheForClientAccess).createInternalRegion(eq("_notificationRegion_null<v4>80"), any(),
-        captor.capture());
+    verify(cacheForClientAccess)
+        .createInternalRegion(eq("_notificationRegion_null<v4>80"), any(), captor.capture());
 
     InternalRegionArguments internalRegionArguments = captor.getValue();
     HasCachePerfStats hasCachePerfStats = internalRegionArguments.getCachePerfStatsHolder();
     assertThat(hasCachePerfStats.hasOwnStats()).isTrue();
+  }
+
+  @Test
+  public void removeMemberArtifactsLocallyDestroysMonitoringRegion() {
+    InternalDistributedMember member = member(4, 80);
+    Region monitoringRegion = mock(Region.class);
+    when(repo.getEntryFromMonitoringRegionMap(eq(member)))
+        .thenReturn(monitoringRegion);
+    when(repo.getEntryFromNotifRegionMap(eq(member)))
+        .thenReturn(mock(Region.class));
+    when(system.getDistributedMember())
+        .thenReturn(member);
+    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
+        cache, statisticsFactory, statisticsClock);
+
+    federatingManager.removeMemberArtifacts(member, false);
+
+    verify(monitoringRegion)
+        .localDestroyRegion();
+  }
+
+  @Test
+  public void removeMemberArtifactsLocallyDestroysNotificationRegion() {
+    InternalDistributedMember member = member(4, 80);
+    Region notificationRegion = mock(Region.class);
+    when(repo.getEntryFromMonitoringRegionMap(eq(member)))
+        .thenReturn(mock(Region.class));
+    when(repo.getEntryFromNotifRegionMap(eq(member)))
+        .thenReturn(notificationRegion);
+    when(system.getDistributedMember())
+        .thenReturn(member);
+    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
+        cache, statisticsFactory, statisticsClock);
+
+    federatingManager.removeMemberArtifacts(member, false);
+
+    verify(notificationRegion)
+        .localDestroyRegion();
+  }
+
+  @Test
+  public void removeMemberArtifactsDoesNotThrowIfMonitoringRegionIsAlreadyDestroyed() {
+    InternalDistributedMember member = member(4, 80);
+    Region monitoringRegion = mock(Region.class);
+    doThrow(new RegionDestroyedException("test", "monitoringRegion"))
+        .when(monitoringRegion)
+        .localDestroyRegion();
+    when(repo.getEntryFromMonitoringRegionMap(eq(member)))
+        .thenReturn(monitoringRegion);
+    when(repo.getEntryFromNotifRegionMap(eq(member)))
+        .thenReturn(mock(Region.class));
+    when(system.getDistributedMember())
+        .thenReturn(member);
+    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
+        cache, statisticsFactory, statisticsClock);
+
+    federatingManager.removeMemberArtifacts(member, false);
+
+    verify(monitoringRegion)
+        .localDestroyRegion();
+  }
+
+  @Test
+  public void removeMemberArtifactsDoesNotThrowIfNotificationRegionIsAlreadyDestroyed() {
+    InternalDistributedMember member = member(4, 80);
+    Region notificationRegion = mock(Region.class);
+    doThrow(new RegionDestroyedException("test", "notificationRegion"))
+        .when(notificationRegion)
+        .localDestroyRegion();
+    when(repo.getEntryFromMonitoringRegionMap(eq(member)))
+        .thenReturn(mock(Region.class));
+    when(repo.getEntryFromNotifRegionMap(eq(member)))
+        .thenReturn(notificationRegion);
+    when(system.getDistributedMember())
+        .thenReturn(member);
+    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
+        cache, statisticsFactory, statisticsClock);
+
+    federatingManager.removeMemberArtifacts(member, false);
+
+    verify(notificationRegion)
+        .localDestroyRegion();
   }
 
   private InternalDistributedMember member(int viewId, int port) {
