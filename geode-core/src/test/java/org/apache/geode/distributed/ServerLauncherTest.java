@@ -317,8 +317,9 @@ public class ServerLauncherTest {
     when(cache.getCacheServers()).thenReturn(Collections.singletonList(cacheServer1));
     when(cache.addCacheServer()).thenReturn(cacheServer1);
     ServerLauncher launcher = new Builder()
-        .setServerLauncherCacheProvider((a, b) -> cache)
         .setControllableProcessFactory(() -> mock(ControllableProcess.class))
+        .setDisableDefaultServer(true)
+        .setServerLauncherCacheProvider((a, b) -> cache)
         .build();
 
     launcher.start();
@@ -334,10 +335,11 @@ public class ServerLauncherTest {
     InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
     Cache cache = createCache(internalResourceManager);
     ServerLauncher serverLauncher = new Builder()
+        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
+        .setDisableDefaultServer(true)
+        .setServerLauncherCacheProvider((a, b) -> cache)
         .setStartupCompletionAction(startupCompletionAction)
         .setStartupExceptionAction(startupExceptionAction)
-        .setServerLauncherCacheProvider((a, b) -> cache)
-        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
         .build();
 
     when(internalResourceManager.allOfStartupTasks())
@@ -357,9 +359,10 @@ public class ServerLauncherTest {
     InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
     Cache cache = createCache(internalResourceManager);
     ServerLauncher serverLauncher = new Builder()
-        .setStartupExceptionAction(startupExceptionAction)
-        .setServerLauncherCacheProvider((a, b) -> cache)
         .setControllableProcessFactory(() -> mock(ControllableProcess.class))
+        .setDisableDefaultServer(true)
+        .setServerLauncherCacheProvider((a, b) -> cache)
+        .setStartupExceptionAction(startupExceptionAction)
         .build();
 
     when(internalResourceManager.allOfStartupTasks())
@@ -379,8 +382,9 @@ public class ServerLauncherTest {
     when(serverLauncherCacheProvider.createCache(any(), any())).thenReturn(cacheFromBuilder);
 
     ServerLauncher serverLauncher = new Builder()
-        .setServerLauncherCacheProvider(serverLauncherCacheProvider)
         .setControllableProcessFactory(() -> mock(ControllableProcess.class))
+        .setDisableDefaultServer(true)
+        .setServerLauncherCacheProvider(serverLauncherCacheProvider)
         .build();
     serverLauncher.start();
 
@@ -396,8 +400,9 @@ public class ServerLauncherTest {
     when(serverLauncherCacheProvider.createCache(any(), any())).thenReturn(cacheFromBuilder);
 
     ServerLauncher serverLauncher = new Builder()
-        .setServerLauncherCacheProvider(serverLauncherCacheProvider)
         .setControllableProcessFactory(() -> controllableProcess)
+        .setDisableDefaultServer(true)
+        .setServerLauncherCacheProvider(serverLauncherCacheProvider)
         .build();
     serverLauncher.start();
 
