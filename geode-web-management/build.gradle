@@ -52,21 +52,18 @@ dependencies {
   compileOnly(project(':geode-core'))
 
   compileOnly('javax.servlet:javax.servlet-api')
-  // jackson-annotations must be accessed from the geode classloader and not the webapp
-  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
-
   compile('org.apache.commons:commons-lang3')
   compile('commons-fileupload:commons-fileupload') {
     exclude module: 'commons-io'
   }
-  compile('com.fasterxml.jackson.core:jackson-core')
-  compile('com.fasterxml.jackson.core:jackson-databind') {
+  // jackson-annotations must be accessed from the geode classloader and not the webapp
+  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
+  compileOnly('com.fasterxml.jackson.core:jackson-core')
+  compileOnly('com.fasterxml.jackson.core:jackson-databind') {
     exclude module: 'jackson-annotations'
   }
-
   compileOnly('com.fasterxml.jackson.module:jackson-module-scala_2.10')
   compileOnly('io.swagger:swagger-annotations')
-
   compile('io.springfox:springfox-swagger2') {
     exclude module: 'slf4j-api'
     exclude module: 'jackson-annotations'
