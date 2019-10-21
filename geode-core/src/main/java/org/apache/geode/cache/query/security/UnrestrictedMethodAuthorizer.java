@@ -30,7 +30,7 @@ import org.apache.geode.cache.Region;
  *
  * Some known dangerous methods, like {@link Object#getClass()}, are also rejected by this
  * authorizer implementation, no matter whether the target object belongs to Geode or not
- * (see {@link RestrictedMethodAuthorizer#isKnownDangerousMethod(Method, Object)}).
+ * (see {@link RestrictedMethodAuthorizer#isPermanentlyForbiddenMethod(Method, Object)}).
  * <p/>
  *
  * This authorizer implementation addresses only three of the four known security risks:
@@ -104,7 +104,7 @@ public final class UnrestrictedMethodAuthorizer implements MethodInvocationAutho
   @Override
   public boolean authorize(Method method, Object target) {
     // Return false for known dangerous methods.
-    if (restrictedMethodAuthorizer.isKnownDangerousMethod(method, target)) {
+    if (restrictedMethodAuthorizer.isPermanentlyForbiddenMethod(method, target)) {
       return false;
     }
 

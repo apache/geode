@@ -79,9 +79,10 @@ import org.apache.geode.internal.cache.PartitionedRegion.BucketLock;
 import org.apache.geode.internal.cache.PartitionedRegion.SizeEntry;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
-import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultSender;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
@@ -2987,10 +2988,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
                 .constructAndGetAllColocatedLocalDataSet(this.partitionedRegion, bucketArray),
             bucketArray, resultSender, isReExecute);
 
-    FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), dm.getSystem());
+    FunctionStats stats = FunctionStatsManager.getFunctionStats(function.getId(), dm.getSystem());
+    long start = stats.startFunctionExecution(function.hasResult());
     try {
-      long start = stats.startTime();
-      stats.startFunctionExecution(function.hasResult());
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Function: {} on Remote Node with context: ", function.getId(),
             prContext);
@@ -3002,7 +3002,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
         logger.debug("FunctionException occurred on remote node while executing Function: {}",
             function.getId(), functionException);
       }
-      stats.endFunctionExecutionWithException(function.hasResult());
+      stats.endFunctionExecutionWithException(start, function.hasResult());
       if (functionException.getCause() instanceof QueryInvalidException) {
         // Handle this exception differently since it can contain
         // non-serializable objects.

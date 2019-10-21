@@ -362,7 +362,8 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
    * @return {@code true} if the {@code method} is considered non safe to be executed on the
    *         {@code target} instance according to the Geode security rules, {@code false} otherwise.
    */
-  public boolean isKnownDangerousMethod(Method method, @SuppressWarnings("unused") Object target) {
+  public boolean isPermanentlyForbiddenMethod(Method method,
+      @SuppressWarnings("unused") Object target) {
     return forbiddenMethods.contains(method.getName());
   }
 

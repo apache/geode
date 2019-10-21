@@ -30,12 +30,13 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.InternalFunctionExecutionService;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.InternalFunctionService;
 import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender65;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
@@ -161,7 +162,7 @@ public class ExecuteFunction65 extends BaseCommand {
         functionObject = (Function) function;
       }
 
-      FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId());
+      FunctionStats stats = FunctionStatsManager.getFunctionStats(functionObject.getId());
 
       // check if the caller is authorized to do this operation on server
       functionObject.getRequiredPermissions(null, args).forEach(securityService::authorize);
@@ -195,9 +196,8 @@ public class ExecuteFunction65 extends BaseCommand {
       int earlierClientReadTimeout = handshake.getClientReadTimeout();
       handshake.setClientReadTimeout(0);
 
+      long startExecution = stats.startFunctionExecution(functionObject.hasResult());
       try {
-        long startExecution = stats.startTime();
-        stats.startFunctionExecution(functionObject.hasResult());
         if (logger.isDebugEnabled()) {
           logger.debug("Executing Function on Server: {} with context: {}", serverConnection,
               context);
@@ -221,10 +221,10 @@ public class ExecuteFunction65 extends BaseCommand {
         }
         stats.endFunctionExecution(startExecution, functionObject.hasResult());
       } catch (FunctionException e) {
-        stats.endFunctionExecutionWithException(functionObject.hasResult());
+        stats.endFunctionExecutionWithException(startExecution, functionObject.hasResult());
         throw e;
       } catch (Exception e) {
-        stats.endFunctionExecutionWithException(functionObject.hasResult());
+        stats.endFunctionExecutionWithException(startExecution, functionObject.hasResult());
         throw new FunctionException(e);
       } finally {
         handshake.setClientReadTimeout(earlierClientReadTimeout);

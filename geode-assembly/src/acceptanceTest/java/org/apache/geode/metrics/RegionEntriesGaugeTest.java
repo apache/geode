@@ -24,6 +24,7 @@ import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
@@ -54,7 +55,6 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.rules.ServiceJarRule;
-import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.MetricsTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -107,8 +107,8 @@ public class RegionEntriesGaugeTest {
 
     Path functionJarPath =
         temporaryFolder.getRoot().toPath().resolve("function.jar").toAbsolutePath();
-    new ClassBuilder()
-        .writeJarFromClass(GetMemberRegionEntriesGaugeFunction.class, functionJarPath.toFile());
+    writeJarFromClasses(functionJarPath.toFile(), GetMemberRegionEntriesGaugeFunction.class);
+
     String deployCommand = "deploy --jar=" + functionJarPath.toAbsolutePath();
     String listFunctionsCommand = "list functions";
 
