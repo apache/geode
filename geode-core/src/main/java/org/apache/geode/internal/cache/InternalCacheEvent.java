@@ -21,9 +21,9 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 
 /**
  * A CacheEvent, but the isGenerateCallbacks() is hidden from public consumption
- *
  */
 public interface InternalCacheEvent extends CacheEvent {
+
   /**
    * Answers true if this event should generate user callbacks.
    *
@@ -53,7 +53,6 @@ public interface InternalCacheEvent extends CacheEvent {
 
   /**
    * Returns the Operation type.
-   *
    */
   EnumListenerEvent getEventType();
 
@@ -71,8 +70,6 @@ public interface InternalCacheEvent extends CacheEvent {
 
   /**
    * set the client routing information for this event
-   *
-   * @param info TODO
    */
   void setLocalFilterInfo(FilterInfo info);
 
