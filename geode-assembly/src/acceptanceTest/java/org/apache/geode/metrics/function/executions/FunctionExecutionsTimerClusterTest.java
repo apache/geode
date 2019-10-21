@@ -83,7 +83,7 @@ public class FunctionExecutionsTimerClusterTest {
     Path functionsJarPath = temporaryFolder.getRoot().toPath()
         .resolve("functions.jar").toAbsolutePath();
     writeJarFromClasses(functionsJarPath.toFile(), GetFunctionExecutionTimerValues.class,
-        FunctionToTimeWithResult.class, ExecutionsTimerValues.class);
+        FunctionToTimeWithResult.class, ExecutionsTimerValues.class, ThreadSleep.class);
 
     String startLocatorCommand = String.join(" ",
         "start locator",

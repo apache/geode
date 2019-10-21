@@ -14,6 +14,9 @@
  */
 package org.apache.geode.metrics.function.executions;
 
+import static java.time.Duration.ofMillis;
+import static org.apache.geode.metrics.function.executions.ThreadSleep.sleepForAtLeast;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
@@ -24,13 +27,10 @@ public class FunctionToTimeWithResult implements Function<String[]> {
   @Override
   public void execute(FunctionContext<String[]> context) {
     String[] arguments = context.getArguments();
-    long timeToSleep = Long.parseLong(arguments[0]);
+    long sleepTimeMillis = Long.parseLong(arguments[0]);
     boolean successful = Boolean.parseBoolean(arguments[1]);
 
-    try {
-      Thread.sleep(timeToSleep);
-    } catch (InterruptedException ignored) {
-    }
+    sleepForAtLeast(ofMillis(sleepTimeMillis));
 
     if (successful) {
       context.getResultSender().lastResult("OK");
