@@ -171,12 +171,6 @@ public class DistributionAdvisor {
   private int numActiveProfiles = 0;
 
   /**
-   * Profiles version number
-   */
-  protected volatile long profilesVersion = 0;
-
-
-  /**
    * A collection of MembershipListeners that want to be notified when a profile is added to or
    * removed from this DistributionAdvisor. The keys are membership listeners and the values are
    * Boolean.TRUE.
@@ -1319,7 +1313,8 @@ public class DistributionAdvisor {
   // must synchronize when modifying profile array
   private synchronized boolean basicAddProfile(Profile p) {
     // don't add more than once, but replace existing profile
-    profilesVersion++;
+    // try {
+
     int index = indexOfMemberId(p.getId());
     if (index >= 0) {
       Profile[] oldProfiles = profiles; // volatile read
@@ -1345,16 +1340,17 @@ public class DistributionAdvisor {
    * Perform work of removing the given member from this advisor.
    */
   private synchronized Profile basicRemoveMemberId(ProfileId id) {
-
+    // try {
     int i = indexOfMemberId(id);
     if (i >= 0) {
-      profilesVersion++;
       Profile profileRemoved = profiles[i];
       basicRemoveIndex(i);
       return profileRemoved;
     } else
       return null;
-
+    // } finally {
+    // Assert.assertTrue(-1 == indexOfMemberId(id));
+    // }
   }
 
   private int indexOfMemberId(ProfileId id) {
