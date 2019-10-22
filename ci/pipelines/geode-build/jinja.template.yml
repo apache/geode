@@ -223,8 +223,8 @@ jobs:
   serial: true
   plan:
   - get: geode-ci
+  - get: alpine-tools-image
   - aggregate:
-    - get: alpine-tools-image
     - get: geode
       trigger: true
     - get: geode-build-version
@@ -476,8 +476,8 @@ jobs:
   - get: geode-ci
     passed:
     - Benchmark
+  - get: alpine-tools-image
   - aggregate:
-    - get: alpine-tools-image
     - get: geode
       passed:
       - Benchmark
