@@ -70,7 +70,7 @@ public class DumpDirectoryFilesIntegrationTest extends LuceneIntegrationTest {
     IndexReader reader = DirectoryReader.open(directory);
     IndexSearcher searcher = new IndexSearcher(reader);
     final TopDocs results = searcher.search(new MatchAllDocsQuery(), 1000);
-    assertEquals(4, results.totalHits);
+    assertEquals(4, results.totalHits.value);
   }
 
 }

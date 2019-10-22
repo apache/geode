@@ -63,7 +63,7 @@ public class GeodeDependencyJarIntegrationTest {
     assertThat(getManifestClassPath())
         .describedAs("The geode-dependency jar's manifest classpath has changed. Verify "
             + "dependencies and copy geode-assembly/build/integrationTest/dependency_classpath.txt "
-            + "to src/integrationTest/resources/dependency_classpath.txt")
+            + "to geode-assembly/src/integrationTest/resources/dependency_classpath.txt")
         .containsExactlyInAnyOrderElementsOf(expectedClasspathElements);
   }
 

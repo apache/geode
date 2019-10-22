@@ -949,6 +949,7 @@ lib/antlr-2.7.7.jar
 lib/classgraph-4.8.52.jar
 lib/commons-beanutils-1.9.3.jar
 lib/commons-codec-1.10.jar
+lib/commons-codec-1.11.jar
 lib/commons-collections-3.2.2.jar
 lib/commons-digester-2.1.jar
 lib/commons-io-2.6.jar

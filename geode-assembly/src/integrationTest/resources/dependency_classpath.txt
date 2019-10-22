@@ -2,7 +2,6 @@ geode-common-0.0.0.jar
 geode-connectors-0.0.0.jar
 geode-core-0.0.0.jar
 geode-cq-0.0.0.jar
-geode-http-service-0.0.0.jar
 geode-log4j-0.0.0.jar
 geode-logging-0.0.0.jar
 geode-lucene-0.0.0.jar
@@ -18,14 +17,12 @@ geode-wan-0.0.0.jar
 jackson-databind-2.10.0.jar
 jackson-annotations-2.10.0.jar
 jackson-core-2.10.0.jar
+geode-http-service-0.0.0.jar
 geode-unsafe-0.0.0.jar
 HikariCP-3.2.0.jar
 commons-lang3-3.8.1.jar
 jaxb-api-2.3.1.jar
 log4j-jcl-2.12.0.jar
-log4j-slf4j-impl-2.12.0.jar
-log4j-core-2.12.0.jar
-log4j-jul-2.12.0.jar
 log4j-api-2.12.0.jar
 spring-shell-1.2.0.RELEASE.jar
 rmiio-2.1.2.jar
@@ -81,6 +78,7 @@ lucene-analyzers-phonetic-8.2.0.jar
 lucene-analyzers-common-8.2.0.jar
 lucene-queryparser-8.2.0.jar
 lucene-core-8.2.0.jar
+commons-codec-1.11.jar
 lucene-queries-8.2.0.jar
 protobuf-java-3.6.1.jar
 geo-0.7.1.jar
