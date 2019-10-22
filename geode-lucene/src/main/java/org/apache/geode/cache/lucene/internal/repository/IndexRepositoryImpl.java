@@ -143,11 +143,11 @@ public class IndexRepositoryImpl implements IndexRepository {
   @Override
   public void query(Query query, int limit, IndexResultCollector collector) throws IOException {
     long start = stats.startRepositoryQuery();
-    int totalHits = 0;
+    long totalHits = 0;
     IndexSearcher searcher = searcherManager.acquire();
     try {
       TopDocs docs = searcher.search(query, limit);
-      totalHits = docs.totalHits;
+      totalHits = docs.totalHits.value;
       for (ScoreDoc scoreDoc : docs.scoreDocs) {
         Document doc = searcher.doc(scoreDoc.doc);
         Object key = SerializerUtil.getKey(doc);
@@ -220,7 +220,7 @@ public class IndexRepositoryImpl implements IndexRepository {
         return 0;
       }
       try {
-        return writer.numDocs();
+        return writer.getDocStats().numDocs;
       } catch (AlreadyClosedException e) {
         // ignore
         return 0;

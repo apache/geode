@@ -17,9 +17,12 @@ package org.apache.geode.cache.lucene.internal.directory;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.lucene.store.BaseDirectory;
@@ -73,7 +76,8 @@ public class RegionDirectory extends BaseDirectory {
   }
 
   @Override
-  public IndexOutput createOutput(final String name, final IOContext context) throws IOException {
+  public IndexOutput createOutput(final String name, final IOContext context)
+      throws FileAlreadyExistsException {
     ensureOpen();
     final File file = fs.createFile(name);
     final OutputStream out = file.getOutputStream();
@@ -119,6 +123,11 @@ public class RegionDirectory extends BaseDirectory {
   @Override
   public void close() throws IOException {
     isOpen = false;
+  }
+
+  @Override
+  public Set<String> getPendingDeletions() throws IOException {
+    return Collections.emptySet();
   }
 
   /**

@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene.internal.filesystem;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -66,11 +67,11 @@ public class FileSystem {
         .collect(Collectors.toList());
   }
 
-  public File createFile(final String name) throws IOException {
+  public File createFile(final String name) throws FileAlreadyExistsException {
     // TODO lock region ?
     final File file = new File(this, name);
     if (null != fileAndChunkRegion.putIfAbsent(name, file)) {
-      throw new IOException("File exists.");
+      throw new FileAlreadyExistsException("File exists.");
     }
     stats.incFileCreates(1);
 
