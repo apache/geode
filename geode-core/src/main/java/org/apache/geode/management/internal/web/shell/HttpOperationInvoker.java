@@ -411,6 +411,11 @@ public class HttpOperationInvoker implements OperationInvoker {
     return httpRequester.get(link, String.class);
   }
 
+  @Override
+  public String getRemoteGeodeVersion() {
+    final URI link = HttpRequester.createURI(baseUrl, "/version/geodeRelease");
+    return httpRequester.get(link, String.class);
+  }
 
   /**
    * Processes the requested command. Sends the command to the GemFire Manager for remote processing

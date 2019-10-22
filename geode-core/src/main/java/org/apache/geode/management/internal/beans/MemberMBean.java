@@ -363,6 +363,11 @@ public class MemberMBean extends NotificationBroadcasterSupport implements Membe
   }
 
   @Override
+  public String getGeodeReleaseVersion() {
+    return bridge.getGeodeReleaseVersion();
+  }
+
+  @Override
   public boolean hasGatewayReceiver() {
     return bridge.hasGatewayReceiver();
   }

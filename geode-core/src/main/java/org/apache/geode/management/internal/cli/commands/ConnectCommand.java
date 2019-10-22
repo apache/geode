@@ -161,17 +161,21 @@ public class ConnectCommand extends OfflineGfshCommand {
     }
 
     String gfshVersion = gfsh.getVersion();
+    String gfshGeodeVersion = gfsh.getGeodeVersion();
     String remoteVersion = null;
     try {
-      remoteVersion = invoker.getRemoteVersion();
-      if (versionComponent(remoteVersion, VERSION_MAJOR)
-          .equalsIgnoreCase(versionComponent(gfshVersion, VERSION_MAJOR))
-          && versionComponent(remoteVersion, VERSION_MINOR)
-              .equalsIgnoreCase(versionComponent(gfshVersion, VERSION_MINOR))) {
+      String remoteGeodeVersion = invoker.getRemoteGeodeVersion();
+      if (hasSameMajorMinor(gfshGeodeVersion, remoteGeodeVersion)) {
         return result;
       }
     } catch (Exception e) {
-      gfsh.logInfo("failed to get the the remote version.", e);
+      // we failed to get the remote geode version, now try to get the remote product version for
+      // error message
+      try {
+        remoteVersion = invoker.getRemoteVersion();
+      } catch (Exception ex) {
+        gfsh.logInfo("failed to get the the remote version.", ex);
+      }
     }
 
     // will reach here only when remoteVersion is not available or does not match
@@ -185,7 +189,14 @@ public class ConnectCommand extends OfflineGfshCommand {
     }
   }
 
-  private String versionComponent(String version, int component) {
+  private static boolean hasSameMajorMinor(String gfshVersion, String remoteVersion) {
+    return versionComponent(remoteVersion, VERSION_MAJOR)
+        .equalsIgnoreCase(versionComponent(gfshVersion, VERSION_MAJOR))
+        && versionComponent(remoteVersion, VERSION_MINOR)
+            .equalsIgnoreCase(versionComponent(gfshVersion, VERSION_MINOR));
+  }
+
+  private static String versionComponent(String version, int component) {
     String[] versionComponents = StringUtils.split(version, '.');
     return versionComponents.length >= component + 1 ? versionComponents[component] : "";
   }

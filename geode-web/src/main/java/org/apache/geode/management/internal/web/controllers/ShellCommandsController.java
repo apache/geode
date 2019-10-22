@@ -49,6 +49,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -192,6 +193,11 @@ public class ShellCommandsController extends AbstractCommandsController {
     return GemFireVersion.getGemFireVersion();
   }
 
+  @RequestMapping(method = RequestMethod.GET, value = "/version/geodeRelease")
+  @ResponseBody
+  public String geodeReleaseVersion() {
+    return Version.CURRENT.getName();
+  }
 
   private ResponseEntity<InputStreamResource> getResponse(String result) {
     ResultModel commandResult = ResultModel.fromJson(result);
