@@ -265,7 +265,7 @@ In addition, if gfsh is not already connected to a JMX Manager, the gfsh console
 
 ``` pre
 start locator --name=value [--bind-address=value] [--force(=value)]
- [--groups=value(,value)*] [--hostname-for-clients=value]
+ [--groups=value(,value)*] [--hostname-for-clients=value] [--classpath=value]
  [--locators=value] [--log-level=value] [--mcast-address=value] [--mcast-port=value] [--port=value] [--dir=value]
  [--properties-file=value] [--security-properties-file=value] [--initial-heap=value] [--max-heap=value]
  [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-cluster-configuration-from-dir(=value)]
@@ -316,46 +316,51 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 <td>uses <code>bind-address</code></td>
 </tr>
 <tr class="even">
+<td><span class="keyword parmname">\-\-classpath</span></td>
+<td>Application classes added to the locator's CLASSPATH after the core jar file. See <a href="../../../getting_started/setup_classpath.html">Setting Up the CLASSPATH</a> for details.</td>
+<td> </td>
+</tr>
+<tr class="odd">
 <td><span class="keyword parmname">\-\-locators</span></td>
 <td>List of locators used by this locator to join the appropriate <%=vars.product_name%> cluster.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><span class="keyword parmname">\-\-log-level</span></td>
 <td>Level of output logged to the locator log file. Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><span class="keyword parmname">\-\-mcast-address </span></td>
 <td>IP address or hostname used to bind the UPD socket for multi-cast networking so the locator can locate other members in the <%=vars.product_name%> cluster. If mcast-port is zero, then mcast-address is ignored.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><span class="keyword parmname">\-\-mcast-port</span></td>
 <td>Port used for multi-cast networking so the locator can locate other members of the <%=vars.product_name%> cluster. A zero value disables mcast.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><span class="keyword parmname">\-\-port</span></td>
 <td>Port the locator will listen on.</td>
 <td>10334</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><span class="keyword parmname">\-\-dir</span></td>
 <td>Directory in which the Locator will be started and run.</td>
 <td><span class="ph filepath">./&lt;locator-member-name&gt;</span></td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><span class="keyword parmname">\-\-properties-file</span></td>
 <td>Specify the <code class="ph codeph">gemfire.properties</code> file for configuring the locator's cluster. The file's path should be absolute or relative to gfsh's working directory.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><span class="keyword parmname">\-\-security-properties-file</span></td>
 <td>The <span class="ph filepath">gfsecurity.properties</span> file for configuring the Locator's security configuration in the cluster. The file's path can be absolute or relative to gfsh's working directory.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><span class="keyword parmname">\-\-initial-heap</span></td>
 <td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options.
 <div class="note note">
@@ -363,7 +368,7 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 </div></td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><span class="keyword parmname">\-\-max-heap</span></td>
 <td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options
 <div class="note note">
@@ -372,28 +377,28 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 </div></td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><span class="keyword parmname">\-\-connect</span></td>
 <td>When connect is set to false, gfsh does not automatically connect to the locator which is started using this command.</td>
 <td>true</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><span class="keyword parmname">\-\-enable-cluster-configuration</span></td>
 <td>Enables cluster configuration behavior where locators maintain configurations for all members of the cluster. 
 See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of the Cluster Configuration Service</a>.</td>
 <td>true</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><span class="keyword parmname">\-\-load-cluster-configuration-from-dir</span></td>
 <td><b>Deprecated. Use <code>gfsh import cluster-configuration</code> for this functionality.</b> Loads the cluster configuration from the <span class="ph filepath">shared-config</span> directory. (When set to false, the configuration is loaded from the disk store of the internal, persistent region used by the locator to persist the configuration.)</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><span class="keyword parmname">\-\-cluster-config-dir</span></td>
 <td>Directory used by the cluster configuration service to store the cluster configuration on the filesystem</td>
 <td>cluster-config</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><span class="keyword parmname">\-\-redirect-output</span></td>
 <td>When true, redirect standard output and standard error to the locator log file. If specified without a value, the value is set to true.</td>
 <td>false</td>
@@ -403,7 +408,7 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <td>Specifies the HTTP service port.</td>
 <td>7070</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><span class="keyword parmname">\-\-http-service-bind-address</span></td>
 <td>Specifies the IP address to which the HTTP service will be bound.
 </td>
