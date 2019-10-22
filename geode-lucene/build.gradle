@@ -47,6 +47,7 @@ dependencies {
   testCompile('org.powermock:powermock-api-mockito2')
 
   upgradeTestCompile('commons-io:commons-io')
+  upgradeTestCompile('org.apache.lucene:lucene-backward-codecs')
 
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'

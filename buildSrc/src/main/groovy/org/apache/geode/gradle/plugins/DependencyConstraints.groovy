@@ -209,6 +209,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('lucene-core')
       entry('lucene-queryparser')
       entry('lucene-test-framework')
+      entry('lucene-backward-codecs')
     }
 
     dependencySet(group: 'org.hamcrest', version: '1.3') {
