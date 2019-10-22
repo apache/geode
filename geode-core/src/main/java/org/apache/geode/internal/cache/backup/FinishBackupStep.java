@@ -56,6 +56,8 @@ class FinishBackupStep extends BackupStep {
 
   @Override
   void processLocally() {
+    LogService.getLogger().info("JASON finish backup step processLocally");
+
     try {
       addToResults(member, finishBackupFactory.createFinishBackup(cache).run());
     } catch (IOException e) {

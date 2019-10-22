@@ -57,17 +57,20 @@ class BackupTask {
   }
 
   HashSet<PersistentID> getPreparedDiskStores() throws InterruptedException {
+    logger.info("JASON getPreparedDiskStores");
     locksAcquired.await();
     return diskStoresWithData;
   }
 
   void notifyOtherMembersReady() {
+    logger.info("JASON notifying other members ready " + this.toString());
     otherMembersReady.countDown();
   }
 
   HashSet<PersistentID> backup() throws InterruptedException, IOException {
     prepareForBackup();
     locksAcquired.countDown();
+    logger.info("JASON backup locksAcquired for task" + this.toString() + " awaiting other members boolean");
     try {
       otherMembersReady.await();
     } catch (InterruptedException e) {
@@ -79,6 +82,7 @@ class BackupTask {
       return new HashSet<>();
     }
 
+    logger.info("JASON doBackup calling");
     return doBackup();
   }
 
@@ -86,6 +90,7 @@ class BackupTask {
     for (DiskStore store : cache.listDiskStoresIncludingRegionOwned()) {
       DiskStoreImpl storeImpl = (DiskStoreImpl) store;
 
+      logger.info("JASON prepare back up, acquiring lock for store");
       storeImpl.lockStoreBeforeBackup();
       if (logger.isDebugEnabled()) {
         logger.debug("Acquired lock for backup on disk store {}", store.getName());

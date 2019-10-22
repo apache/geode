@@ -21,6 +21,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 
 class FlushToDiskStep extends BackupStep {
 
@@ -52,6 +53,7 @@ class FlushToDiskStep extends BackupStep {
 
   @Override
   void processLocally() {
+    LogService.getLogger().info("JASON flushtoDiskstep processLocally");
     flushToDiskFactory.createFlushToDisk(cache).run();
   }
 }

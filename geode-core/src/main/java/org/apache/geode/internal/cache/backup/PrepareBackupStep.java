@@ -60,6 +60,7 @@ class PrepareBackupStep extends BackupStep {
 
   @Override
   void processLocally() {
+    logger.info("JASON prepare backup steps processLocally");
     try {
       addToResults(member,
           prepareBackupFactory.createPrepareBackup(member, cache, properties).run());

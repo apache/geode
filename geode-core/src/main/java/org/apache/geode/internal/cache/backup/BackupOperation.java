@@ -26,6 +26,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.internal.BackupStatusImpl;
@@ -66,6 +67,7 @@ public class BackupOperation {
   }
 
   public BackupStatus backupAllMembers(String targetDirPath, String baselineDirPath) {
+    LogService.getLogger().info("JASON BACKUPOPERATION:backupAllMembers from backupOperation.java");
     Properties properties = new BackupConfigFactory().withTargetDirPath(targetDirPath)
         .withBaselineDirPath(baselineDirPath).createBackupProperties();
     return performBackup(properties);
@@ -74,6 +76,7 @@ public class BackupOperation {
   private BackupStatus performBackup(Properties properties) throws ManagementException {
     if (backupLockService.obtainLock(dm)) {
       try {
+        LogService.getLogger().info("JASON BACKUPOPERATION: performBackupUnderLock");
         return performBackupUnderLock(properties);
       } finally {
         backupLockService.releaseLock(dm);
@@ -89,6 +92,7 @@ public class BackupOperation {
         missingPersistentMembersProvider.getMissingPersistentMembers(dm);
     Set<InternalDistributedMember> recipients = dm.getOtherDistributionManagerIds();
 
+    LogService.getLogger().info("JASON BACKUPOPERATION:performing backup steps");
     BackupDataStoreResult result = performBackupSteps(dm.getId(), recipients, properties);
 
     // It's possible that when calling getMissingPersistentMembers, some members are
@@ -108,7 +112,8 @@ public class BackupOperation {
 
   private BackupDataStoreResult performBackupSteps(InternalDistributedMember member,
       Set<InternalDistributedMember> recipients, Properties properties) {
-    flushToDiskFactory.createFlushToDiskStep(dm, member, cache, recipients, flushToDiskFactory)
+      LogService.getLogger().info("JASON BACKUPOPERATION: FLush to disk step");
+      flushToDiskFactory.createFlushToDiskStep(dm, member, cache, recipients, flushToDiskFactory)
         .send();
 
     boolean abort = true;
@@ -118,7 +123,10 @@ public class BackupOperation {
       PrepareBackupStep prepareBackupStep =
           prepareBackupFactory.createPrepareBackupStep(dm, member, cache, recipients,
               prepareBackupFactory, properties);
+      LogService.getLogger().info("JASON BACKUPOPERATION: sending prepare back up steps");
       existingDataStores = prepareBackupStep.send();
+      LogService.getLogger().info("JASON BACKUPOPERATION: sent prepare back up steps");
+
       abort = false;
     } finally {
       if (abort) {
@@ -126,9 +134,12 @@ public class BackupOperation {
             .send();
         successfulMembers = Collections.emptyMap();
       } else {
+        LogService.getLogger().info("JASON BACKUPOPERATION: sending finish back up steps");
         successfulMembers =
             finishBackupFactory.createFinishBackupStep(dm, member, cache, recipients,
                 finishBackupFactory).send();
+        LogService.getLogger().info("JASON BACKUPOPERATION: sent finish back up steps");
+
       }
     }
     return new BackupDataStoreResult(existingDataStores, successfulMembers);

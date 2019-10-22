@@ -58,14 +58,18 @@ abstract class BackupStep implements BackupResultCollector {
   Map<DistributedMember, Set<PersistentID>> send() {
     ReplyProcessor21 replyProcessor = createReplyProcessor();
 
+    logger.info("JASON BACKUPSTEPS: distributing backup steps");
     dm.putOutgoing(createDistributionMessage(replyProcessor));
 
+    logger.info("JASON BACKUPSTEPS:about to call processLocally");
     processLocally();
 
     try {
       replyProcessor.waitForReplies();
+      logger.info("JASON BACKUPSTEPS:replies received");
     } catch (ReplyException e) {
       if (!(e.getCause() instanceof CancelException)) {
+        logger.info("JASON BACKUPSTEPS:not a cancel exception" + e.getCause());
         throw e;
       }
     } catch (InterruptedException e) {

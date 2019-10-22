@@ -54,18 +54,22 @@ public class BackupService {
 
   public HashSet<PersistentID> prepareBackup(InternalDistributedMember sender, BackupWriter writer)
       throws IOException, InterruptedException {
+    logger.info("JASON BACKUPSERVICE: prepareBackup for service:" + this.toString());
     validateRequestingSender(sender);
     BackupTask backupTask = new BackupTask(cache, writer);
     if (!currentTask.compareAndSet(null, backupTask)) {
       throw new IOException("Another backup is already in progress");
     }
+    logger.info("JASON BACKUPSERVICE: submitting tasks");
     taskFuture = executor.submit(() -> backupTask.backup());
     return backupTask.getPreparedDiskStores();
   }
 
   public HashSet<PersistentID> doBackup() throws IOException {
+    logger.info("JASON BACKUPSERVICE:  doBackup");
     BackupTask task = currentTask.get();
     if (task == null) {
+      logger.info("JASON BACKUPSERVICE: BOOM no task so aborting early!!!");
       throw new IOException("No backup currently in progress");
     }
     task.notifyOtherMembersReady();
@@ -133,10 +137,12 @@ public class BackupService {
   }
 
   private ExecutorService createExecutor() {
+    logger.info("JASON BACKUPSERVICE: creating BackUpService and executor");
     return LoggingExecutors.newSingleThreadExecutor("BackupServiceThread", true);
   }
 
   private void cleanup() {
+    logger.info("JASON CLEAN UP!", new Exception("JASON CLEAN UP "));
     cache.getDistributionManager().removeAllMembershipListener(membershipListener);
     currentTask.set(null);
   }

@@ -23,6 +23,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 
 class AbortBackupStep extends BackupStep {
 
@@ -64,6 +65,8 @@ class AbortBackupStep extends BackupStep {
 
   @Override
   void processLocally() {
+    LogService.getLogger().info("JASON abort backupstep processLocally");
+
     abortBackupFactory.createAbortBackup(cache).run();
     addToResults(member, Collections.emptySet());
   }
