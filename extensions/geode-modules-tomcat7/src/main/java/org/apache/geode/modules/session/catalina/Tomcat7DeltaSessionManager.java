@@ -39,7 +39,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
    */
   @Override
   public void startInternal() throws LifecycleException {
-    super.startInternal();
+    startInternalBase();
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Starting");
     }
@@ -69,7 +69,15 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
     scheduleTimerTasks();
 
     this.started.set(true);
-    this.setState(LifecycleState.STARTING);
+    this.setLifecycleState(LifecycleState.STARTING);
+  }
+
+  void setLifecycleState(LifecycleState newState) throws LifecycleException {
+    this.setState(newState);
+  }
+
+  void startInternalBase() throws LifecycleException {
+    super.startInternal();
   }
 
   /**
@@ -80,7 +88,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
    */
   @Override
   public void stopInternal() throws LifecycleException {
-    super.stopInternal();
+    stopInternalBase();
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Stopping");
     }
@@ -112,7 +120,15 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
       unregisterCommitSessionValve();
     }
 
-    this.setState(LifecycleState.STOPPING);
+    setLifecycleState(LifecycleState.STOPPING);
+  }
+
+  void stopInternalBase() throws LifecycleException {
+    super.stopInternal();
+  }
+
+  void destroyInternalBase() throws LifecycleException {
+    super.destroyInternal();
   }
 
   /**

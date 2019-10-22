@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -49,6 +50,7 @@ import org.apache.catalina.util.CustomObjectInputStream;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Query;
@@ -63,6 +65,9 @@ import org.apache.geode.modules.util.RegionHelper;
 public abstract class DeltaSessionManager extends ManagerBase
     implements Lifecycle, PropertyChangeListener, SessionManager {
 
+  static final String catalinaBaseSystemProperty = "catalina.base";
+  static final String javaTempDirSystemProperty = "java.io.tmpdir";
+  static final String fileSeparatorSystemProperty = "file.separator";
   /**
    * The number of rejected sessions.
    */
@@ -372,7 +377,7 @@ public abstract class DeltaSessionManager extends ManagerBase
 
   protected void initializeSessionCache() {
     // Retrieve the cache
-    GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+    GemFireCacheImpl cache = (GemFireCacheImpl) getAnyCacheInstance();
     if (cache == null) {
       throw new IllegalStateException(
           "No cache exists. Please configure either a PeerToPeerCacheLifecycleListener or ClientServerCacheLifecycleListener in the server.xml file.");
@@ -383,7 +388,15 @@ public abstract class DeltaSessionManager extends ManagerBase
         : new PeerToPeerSessionCache(this, cache);
 
     // Initialize the session cache
+    initSessionCache();
+  }
+
+  void initSessionCache() {
     this.sessionCache.initialize();
+  }
+
+  Cache getAnyCacheInstance() {
+    return CacheFactory.getAnyInstance();
   }
 
   @Override
@@ -570,7 +583,7 @@ public abstract class DeltaSessionManager extends ManagerBase
     getPipeline().addValve(jvmRouteBinderValve);
   }
 
-  protected Pipeline getPipeline() {
+  Pipeline getPipeline() {
     return getContainer().getPipeline();
   }
 
@@ -660,7 +673,7 @@ public abstract class DeltaSessionManager extends ManagerBase
    * @throws IOException if an input/output error occurs
    */
   private void doUnload() throws IOException {
-    QueryService querySvc = sessionCache.getCache().getQueryService();
+    QueryService querySvc = getSessionCache().getCache().getQueryService();
     Context context = getTheContext();
 
     if (context == null) {
@@ -707,9 +720,9 @@ public abstract class DeltaSessionManager extends ManagerBase
     ObjectOutputStream oos = null;
     boolean error = false;
     try {
-      fos = new FileOutputStream(store.getAbsolutePath());
-      bos = new BufferedOutputStream(fos);
-      oos = new ObjectOutputStream(bos);
+      fos = getFileOutputStream(store);
+      bos = getBufferedOutputStream(fos);
+      oos = getObjectOutputStream(bos);
     } catch (IOException e) {
       error = true;
       getLogger().error("Exception unloading sessions", e);
@@ -755,7 +768,7 @@ public abstract class DeltaSessionManager extends ManagerBase
     if (getLogger().isDebugEnabled())
       getLogger().debug("Unloading " + list.size() + " sessions");
     try {
-      oos.writeObject(list.size());
+      writeToObjectOutputStream(oos, list);
       for (DeltaSessionInterface session : list) {
         if (session instanceof StandardSession) {
           StandardSession standardSession = (StandardSession) session;
@@ -830,8 +843,8 @@ public abstract class DeltaSessionManager extends ManagerBase
     Loader loader = null;
     ClassLoader classLoader = null;
     try {
-      fis = new FileInputStream(store.getAbsolutePath());
-      bis = new BufferedInputStream(fis);
+      fis = getFileInputStream(store);
+      bis = getBufferedInputStream(fis);
       if (getTheContext() != null) {
         loader = getTheContext().getLoader();
       }
@@ -847,7 +860,7 @@ public abstract class DeltaSessionManager extends ManagerBase
         if (getLogger().isDebugEnabled()) {
           getLogger().debug("Creating standard object input stream");
         }
-        ois = new ObjectInputStream(bis);
+        ois = getObjectInputStream(bis);
       }
     } catch (FileNotFoundException e) {
       if (getLogger().isDebugEnabled()) {
@@ -871,7 +884,7 @@ public abstract class DeltaSessionManager extends ManagerBase
 
     // Load the previously unloaded active sessions
     try {
-      int n = (Integer) ois.readObject();
+      int n = getSessionCountFromObjectInputStream(ois);
       if (getLogger().isDebugEnabled()) {
         getLogger().debug("Loading " + n + " persisted sessions");
       }
@@ -932,14 +945,55 @@ public abstract class DeltaSessionManager extends ManagerBase
    * Return a File object representing the pathname to our persistence file, if any.
    */
   private File sessionStore(String ctxPath) {
-    String storeDir = System.getProperty("catalina.base");
+    String storeDir = getSystemPropertyValue(catalinaBaseSystemProperty);
     if (storeDir == null || storeDir.isEmpty()) {
-      storeDir = System.getProperty("java.io.tmpdir");
+      storeDir = getSystemPropertyValue(javaTempDirSystemProperty);
     } else {
-      storeDir += System.getProperty("file.separator") + "temp";
+      storeDir += getSystemPropertyValue(fileSeparatorSystemProperty) + "temp";
     }
 
+    return getFileAtPath(storeDir, ctxPath);
+  }
+
+  String getSystemPropertyValue(String propertyKey) {
+    return System.getProperty(propertyKey);
+  }
+
+  File getFileAtPath(String storeDir, String ctxPath) {
     return (new File(storeDir, ctxPath.replaceAll("/", "_") + ".sessions.ser"));
+  }
+
+  FileInputStream getFileInputStream(File file) throws FileNotFoundException {
+    return new FileInputStream(file.getAbsolutePath());
+  }
+
+  BufferedInputStream getBufferedInputStream(FileInputStream fis) {
+    return new BufferedInputStream(fis);
+  }
+
+  ObjectInputStream getObjectInputStream(BufferedInputStream bis) throws IOException {
+    return new ObjectInputStream(bis);
+  }
+
+  FileOutputStream getFileOutputStream(File file) throws FileNotFoundException {
+    return new FileOutputStream(file.getAbsolutePath());
+  }
+
+  BufferedOutputStream getBufferedOutputStream(FileOutputStream fos) {
+    return new BufferedOutputStream(fos);
+  }
+
+  ObjectOutputStream getObjectOutputStream(BufferedOutputStream bos) throws IOException {
+    return new ObjectOutputStream(bos);
+  }
+
+  void writeToObjectOutputStream(ObjectOutputStream oos, List listToWrite) throws IOException {
+    oos.writeObject(listToWrite.size());
+  }
+
+  int getSessionCountFromObjectInputStream(ObjectInputStream ois)
+      throws IOException, ClassNotFoundException {
+    return (Integer) ois.readObject();
   }
 
   @Override

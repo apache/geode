@@ -47,7 +47,7 @@ public class TouchPartitionedRegionEntriesFunction
 
     Cache cache = context.getCache();
     // Get local (primary) data for the context
-    Region primaryDataSet = PartitionRegionHelper.getLocalDataForContext(rfc);
+    Region primaryDataSet = getLocalDataForContextViaRegionHelper(rfc);
 
     if (cache.getLogger().fineEnabled()) {
       String builder = "Function " + ID + " received request to touch "
@@ -96,4 +96,9 @@ public class TouchPartitionedRegionEntriesFunction
 
   @Override
   public void fromData(DataInput in) {}
+
+  // Helper methods added to improve unit testing of class
+  Region getLocalDataForContextViaRegionHelper(RegionFunctionContext rfc) {
+    return PartitionRegionHelper.getLocalDataForContext(rfc);
+  }
 }

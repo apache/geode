@@ -98,7 +98,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     // Invoke the appropriate function depending on the type of region
     if (regionAttributesID.startsWith("partition")) {
       // Execute the partitioned touch function on the primary server(s)
-      Execution execution = FunctionService.onRegion(getSessionRegion()).withFilter(sessionIds);
+      Execution execution = getExecutionForFunctionOnRegionWithFilter(sessionIds);
       try {
         ResultCollector collector = execution.execute(TouchPartitionedRegionEntriesFunction.ID);
         collector.getResult();
@@ -108,8 +108,8 @@ public class ClientServerSessionCache extends AbstractSessionCache {
       }
     } else {
       // Execute the member touch function on all the server(s)
-      Execution execution = FunctionService.onServers(getCache())
-          .setArguments(new Object[] {this.sessionRegion.getFullPath(), sessionIds});
+      Object[] arguments = new Object[] {this.sessionRegion.getFullPath(), sessionIds};
+      Execution execution = getExecutionForFunctionOnServersWithArguments(arguments);
       try {
         ResultCollector collector = execution.execute(TouchReplicatedRegionEntriesFunction.ID);
         collector.getResult();
@@ -143,7 +143,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
   @Override
   public boolean isBackingCacheAvailable() {
     if (getSessionManager().isCommitValveFailfastEnabled()) {
-      PoolImpl pool = (PoolImpl) PoolManager.find(getOperatingRegionName());
+      PoolImpl pool = findPoolInPoolManager();
       return pool.isPrimaryUpdaterAlive();
     }
     return true;
@@ -155,7 +155,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
   }
 
   private void bootstrapServers() {
-    Execution execution = FunctionService.onServers(this.cache);
+    Execution execution = getExecutionForFunctionOnServers();
     ResultCollector collector = execution.execute(new BootstrappingFunction());
     // Get the result. Nothing is being done with it.
     try {
@@ -202,12 +202,12 @@ public class ClientServerSessionCache extends AbstractSessionCache {
         .anyMatch(x -> x instanceof SessionExpirationCacheListener);
   }
 
-  private void createSessionRegionOnServers() {
+  void createSessionRegionOnServers() {
     // Create the RegionConfiguration
     RegionConfiguration configuration = createRegionConfiguration();
 
     // Send it to the server tier
-    Execution execution = FunctionService.onServer(this.cache).setArguments(configuration);
+    Execution execution = getExecutionForFunctionOnServerWithRegionConfiguration(configuration);
     ResultCollector collector = execution.execute(CreateRegionFunction.ID);
 
     // Verify the region was successfully created on the servers
@@ -225,7 +225,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     }
   }
 
-  private Region<String, HttpSession> createLocalSessionRegion() {
+  Region<String, HttpSession> createLocalSessionRegion() {
     ClientRegionFactory<String, HttpSession> factory = null;
     if (getSessionManager().getEnableLocalCache()) {
       // Create the region factory with caching and heap LRU enabled
@@ -256,5 +256,38 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     }
 
     return region;
+  }
+
+  // Helper methods added to improve unit testing of class
+  Execution getExecutionForFunctionOnServers() {
+    return getExecutionForFunctionOnServersWithArguments(null);
+  }
+
+  Execution getExecutionForFunctionOnServersWithArguments(Object[] arguments) {
+    if (arguments != null && arguments.length > 0) {
+      return FunctionService.onServers(getCache()).setArguments(arguments);
+    } else {
+      return FunctionService.onServers(getCache());
+    }
+  }
+
+  Execution getExecutionForFunctionOnServerWithRegionConfiguration(RegionConfiguration arguments) {
+    if (arguments != null) {
+      return FunctionService.onServer(getCache()).setArguments(arguments);
+    } else {
+      return FunctionService.onServer(getCache());
+    }
+  }
+
+  Execution getExecutionForFunctionOnRegionWithFilter(Set<?> filter) {
+    if (filter != null && filter.size() > 0) {
+      return FunctionService.onRegion(getSessionRegion()).withFilter(filter);
+    } else {
+      return FunctionService.onRegion(getSessionRegion());
+    }
+  }
+
+  PoolImpl findPoolInPoolManager() {
+    return (PoolImpl) PoolManager.find(getOperatingRegionName());
   }
 }
