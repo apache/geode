@@ -59,17 +59,17 @@ connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=val
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-locator</span></td>
 <td>Network address of the Locator in the form: <code class="ph codeph">host[port]</code>.</td>
 <td><code class="ph codeph">localhost[10334]</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-jmx-manager </span></td>
 <td>Network address of the JMX manager in the form: <code class="ph codeph">host[port]</code>.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-use-http</span></td>
 <td>Connects to a JMX manager HTTP service using the HTTP protocol.</td>
 <td><ul>
@@ -77,12 +77,12 @@ connect [--locator=value] [--jmx-manager=value] [--use-http(=value)?] [--url=val
 <li>If the parameter is specified without a value: <code class="ph codeph">true</code></li>
 </ul></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-url</span></td>
 <td>URL used to connect to a JMX manager's HTTP service</td>
 <td><code class="ph codeph">http://localhost:8080/gemfire/v1</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-user</span></td>
 <td>The user name of the credential to use in authentication when connecting
 to the JMX manager.
@@ -90,49 +90,49 @@ When specified, if the <code>--password</code> option is not also specified,
 <code>gfsh</code> will prompt for the password.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-password</span></td>
 <td>The password portion of the credential to use in authentication 
 when connecting to the JMX manager.
 </td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-key-store</span></td>
 <td>Java keystore file containing this application's certificate and private key. If the<code class="ph codeph">                                         --key-store-password</code> parameter is not specified, gfsh prompts the operator for the password.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-key-store-password</span></td>
 <td>Password to access the private key from the keystore file specified by <code class="ph codeph">--key-store</code>.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-trust-store</span></td>
 <td>Java keystore file containing the collection of CA certificates trusted by this application. If the <code class="ph codeph">--trust-store-password</code> parameter is not specified, gfsh prompts the operator for the password.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-trust-store-password</span></td>
 <td>Password to unlock the keystore file specified by <code class="ph codeph">--trust-store</code>.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-ciphers</span></td>
 <td>SSL/TLS ciphers used when encrypting the connection. The default is &quot;any&quot;.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-protocols</span></td>
 <td>SSL/TLS protocol versions to enable when encrypting the connection. The default is &quot;any&quot;.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-security-properties-file</span></td>
 <td>The <code class="ph codeph">gfsecurity.properties</code> file for configuring gfsh to connect to the Locator/Manager. The file path can be absolute or relative to the current gfsh directory.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-use-ssl</span></td>
 <td>Whether to use SSL for communication with Locator and/or JMX Manager. If set to <code class="ph codeph">true</code>, the connect command also reads <code class="ph codeph">gfsecurity.properties</code>. SSL Options take precedence over values set in the properties file. If none are specified, defaults are used.</td>
 <td><ul>
@@ -140,7 +140,7 @@ when connecting to the JMX manager.
 <li>If the parameter is specified without a value: <code class="ph codeph">true</code></li>
 </ul></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-skip-ssl-validation</span></td>
 <td>When SSL communication is enabled and this option is specified or assigned the value <code>true</code>, this gfsh client accepts any SSL certificate, allowing this gfsh client to authenticate any locator or server to which it is connecting. This option exists to facilitate testing, and it is not intended for production systems.</td>
 <td>

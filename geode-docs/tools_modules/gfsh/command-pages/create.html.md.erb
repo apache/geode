@@ -94,94 +94,94 @@ create async-event-queue --id=value --listener=value [--groups=value(,value)*]
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-id</span></td>
 <td><em>Required</em>. ID of the asynchronous event queue</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-groups</span></td>
 <td>The queue is created on all members of the group(s). If you do not specify a group, the queue is created on all members.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-parallel</span></td>
 <td>Specifies whether the queue is parallel.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-enable-batch-conflation</span></td>
 <td>Enables batch conflation.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-batch-size</span></td>
 <td>Maximum number of messages that a batch can contain.</td>
 <td>100</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-batch-time-interval</span></td>
 <td>Maximum amount of time, in ms, that can elapse before a batch is delivered.</td>
 <td>5</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-persistent</span></td>
 <td>Boolean value that determines whether <%=vars.product_name%> persists this queue.</td>
 <td>false
 <p>If specified with out a value, default is true.</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-disk-store</span></td>
 <td>Named disk store to use for storing queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, <%=vars.product_name%> uses the default disk store for overflow and queue persistence.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-disk-synchronous</span></td>
 <td>Specifies whether disk writes are synchronous.</td>
 <td>true</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-max-queue-memory</span></td>
 <td>Maximum amount of memory in megabytes that the queue can consume before overflowing to disk.</td>
 <td>100</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-dispatcher-threads</span></td>
 <td>Number of threads used for sending events.</td>
 <td>5</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-order-policy</span></td>
 <td>Policy for dispatching events when \-\-dispatcher-threads is &gt; 1. Possible values are <code class="ph codeph">THREAD</code>, <code class="ph codeph">KEY</code>, <code class="ph codeph">PARTITION</code>.</td>
 <td>KEY</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-gateway-event-filter</span></td>
 <td>List of fully qualified class names of GatewayEventFilters for this queue. These classes filter events before dispatching to remote servers.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-gateway-event-substitution-filter</span></td>
 <td>Fully-qualified class name of the <code class="ph codeph">GatewayEventSubstitutionFilter</code> for this queue.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-listener</span></td>
 <td><em>Required.</em> Fully-qualified class name of Async Event Listener for this queue</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-listener-param</span></td>
 <td>Parameter name and value to be passed to the Async Event Listener class. Optionally, you can specify a value by following the parameter name with the # character and the value. For example:
 <pre class="pre codeblock"><code>--listener-param=myParam#24</code></pre></td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-forward-expiration-destroy</span></td>
 <td>Enables forwarding of expiration destroy operations to AsyncEventListener instances. If specified without a value, this parameter is set to “false”.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-pause-event-processing</span></td>
 <td>Specifies whether event dispatching from the queue to the listener(s) will be paused when the AsyncEventQueue is started. If specified without a value, this parameter is set to "true".</td>
 <td>false</td>
@@ -275,12 +275,12 @@ create disk-store --name=value --dir=value(,value)* [--allow-force-compaction(=v
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-name</span></td>
 <td><em>Required.</em> The name of this disk store.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-dir</span></td>
 <td><em>Required.</em> One or more directory names where the disk store files are written. Optionally, directory names may be followed by <code class="ph codeph">#</code> and the maximum number of megabytes that the disk store can use in the directory. For example:
 <pre class="pre codeblock"><code>--dir=/data/ds1 
@@ -288,53 +288,53 @@ create disk-store --name=value --dir=value(,value)* [--allow-force-compaction(=v
 If the specified directory does not exist, the command will create the directory for you.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-allow-force-compaction</span></td>
 <td>Set to true to allow disk compaction to be forced on this disk store.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-auto-compact</span></td>
 <td>Set to true to automatically compact the disk files.</td>
 <td>true</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-compaction-threshold</span></td>
 <td>Percentage of garbage allowed before the disk store is eligible for compaction.</td>
 <td>50</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-max-oplog-size</span></td>
 <td>Maximum size, in megabytes, for an oplog file. When the oplog file reaches this size, the file is rolled over to a new file.</td>
 <td>1024</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-queue-size</span></td>
 <td>Maximum number of operations that can be asynchronously queued to be written to disk.</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-time-interval</span></td>
 <td>The number of milliseconds that can elapse before unwritten data is written to disk.</td>
 <td>1000</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname"> --groups</span></td>
 <td>The disk store is created on all members of the group(s). If no group is specified, the disk store is created on all members.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-write-buffer-size</span></td>
 <td>The size of the write buffer that this disk store uses when writing data to disk. Larger values may increase performance but use more memory. The disk store allocates one direct memory buffer of this size.</td>
 <td>32768</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-disk-usage-warning-percentage</span></td>
 <td>Disk usage above this threshold generates a warning message. For example, if the threshold is set to 90%, then on a 1 TB drive falling under 100 GB of free disk space generates the warning.
 <p>Set to &quot;0&quot; (zero) to disable.</p></td>
 <td>90</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-disk-usage-critical-percentage</span></td>
 <td>Disk usage above this threshold generates an error message and shuts down the member's cache. For example, if the threshold is set to 99%, then falling under 10 GB of free disk space on a 1 TB drive generates the error and shuts down the cache.
 <p>Set to &quot;0&quot; (zero) to disable.</p></td>
@@ -402,12 +402,12 @@ create gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-groups</span></td>
 <td>Gateway receivers are created on the members of the group(s).</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-members</span></td>
 <td>Name of the member(s) on which to create the gateway receiver.
 For backward compatibility, no gateway receiver configuration is persisted
@@ -415,49 +415,49 @@ if this option is specified and cluster configuration is enabled.
 </td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-manual-start</span></td>
 <td>Boolean value that specifies whether you need to manually start the gateway receiver. If you specify this option without a value, the default is &quot;true&quot; the gateway receiver must be started manually.</td>
 <td>true</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-start-port</span></td>
 <td><p>Starting port number to use when specifying the range of possible port numbers this gateway receiver will use to connects to gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
 <p>The <code class="ph codeph">STARTPORT</code> value is inclusive while the <code class="ph codeph">ENDPORT</code> value is exclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPORT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
 <td>5000</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-end-port</span></td>
 <td><p>Defines the upper bound port number to use when specifying the range of possible port numbers this gateway receiver will use to for connections from gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
 <p>The <code class="ph codeph">ENDPORT</code> value is exclusive while the <code class="ph codeph">STARTPORT</code> value is inclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPORT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
 <td>5500</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-bind-address</span></td>
 <td>Network address for connections from gateway senders in other sites. Specify the address as a literal string value.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-socket-buffer-size</span></td>
 <td>An integer value that sets the buffer size (in bytes) of the socket connection for this gateway receiver. This value should match the <code class="ph codeph">socket-buffer-size</code> setting of gateway senders that connect to this receiver.</td>
 <td>32768</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-gateway-transport-filter</span></td>
 <td>The fully qualified class name of the GatewayTransportFilter to be added to the Gateway receiver.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-maximum-time-between-pings</span></td>
 <td>Integer value that specifies the time interval (in milliseconds) to use between pings to connected WAN sites. This value determines the maximum amount of time that can elapse before a remote WAN site is considered offline.</td>
 <td>60000</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-hostname-for-senders</span></td>
 <td>The host name or IP address told to gateway senders as the address for them to connect to. The locator informs gateway senders of this value.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-if-not-exists</span></td>
 <td>When specified without providing a boolean value or when specified and set to true, gateway receivers will not be created if they already exist. Command output reports the status of each creation attempt.
 </td>
@@ -522,92 +522,92 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-id</span></td>
 <td><em>Required.</em> Unique identifier for the gateway sender, usually an identifier associated with a physical location.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-remote-distributed-system-id</span></td>
 <td><em>Required.</em> ID of the remote cluster where this gateway sender sends events.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-groups</span></td>
 <td>Gateway senders are created on the members of the group(s).</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-members</span></td>
 <td>Name of the member(s) on which to create the gateway sender.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-parallel</span></td>
 <td>When set to true, specifies a parallel Gateway Sender.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-enable-batch-conflation</span></td>
 <td>Boolean value that determines whether <%=vars.product_name%> should conflate messages.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-manual-start</span></td>
 <td><b>Deprecated.</b> Boolean value that specifies whether you need to manually start the gateway sender. If you supply a null value, the default value of false is used, and the gateway sender starts automatically. <em>A manual start is likely to cause data loss, so manual start should never be used in a production system.</em></td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-socket-buffer-size</span></td>
 <td>Size of the socket buffer that sends messages to remote sites. This size should match the size of the <code class="ph codeph">socket-buffer-size</code> attribute of remote gateway receivers that process region events.</td>
 <td>32768</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-socket-read-timeout</span></td>
 <td>Amount of time in milliseconds that the gateway sender will wait to receive an acknowledgment from a remote site. By default this is set to 0, which means there is no timeout. If you do set this timeout, you must set it to a minimum of 30000 (milliseconds). Setting it to a lower number will generate an error message and reset the value to the default of 0.</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-batch-size</span></td>
 <td>Maximum number of messages that a batch can contain.</td>
 <td>100</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-batch-time-interval</span></td>
 <td>Maximum number of milliseconds that can elapse between sending batches.</td>
 <td>1000</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-enable-persistence</span></td>
 <td>Boolean value that determines whether <%=vars.product_name%> persists the gateway queue.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-disk-store-name</span></td>
 <td>Named disk store to use for storing the queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, <%=vars.product_name%> uses the default disk store for overflow and queue persistence.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-disk-synchronous</span></td>
 <td>For regions that write to disk, boolean that specifies whether disk writes are done synchronously for the region.</td>
 <td>true</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-maximum-queue-memory</span></td>
 <td>Maximum amount of memory in megabytes that the queue can consume before overflowing to disk.</td>
 <td>100 MB</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-alert-threshold</span></td>
 <td>Maximum number of milliseconds that a region event can remain in the gateway sender queue before <%=vars.product_name%> logs an alert.</td>
 <td>0</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-dispatcher-threads</span></td>
 <td>Number of dispatcher threads that are used to process region events from a gateway sender queue or asynchronous event queue.</td>
 <td>5</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-order-policy</span></td>
 <td>When the <code class="ph codeph">dispatcher-threads</code> attribute is greater than 1, <code class="ph codeph">order-policy</code> configures the way in which multiple dispatcher threads process region events from a serial gateway queue or serial asynchronous event queue. This attribute can have one of the following values:
 <dt><b>key</b></dt>
@@ -620,13 +620,13 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 <p>You cannot configure the <code class="ph codeph">order-policy</code> for a parallel event queue, because parallel queues cannot preserve event ordering for regions. Only the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved.</p></td>
 <td>key</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-gateway-event-filter</span></td>
 <td>A list of fully-qualified class names of GatewayEventFilters (separated by commas) to be associated with the GatewaySender. This serves as a callback for users to filter out events before dispatching to a remote cluster. For example:
 <pre class="pre codeblock"><code>gateway-event-filter=com.user.filters.MyFilter1,com.user.filters.MyFilters2</code></pre></td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-gateway-transport-filter</span></td>
 <td>The fully-qualified class name of the GatewayTransportFilter to be added to the GatewaySender.</td>
 <td> </td>
@@ -856,204 +856,204 @@ for syntax details.
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-name</span></td>
 <td><em>Required.</em> Name/Path of the region to be created.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-type</span></td>
 <td><em>Required</em> (if template-region is not specified.) Type of region to create. Options include: PARTITION, PARTITION_REDUNDANT, REPLICATE, LOCAL, etc.
 <p>To get a list of of all region type options, add the <span class="keyword parmname">\-\-type</span> parameter and then select the TAB key to display a full list.</p></td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-template-region </span></td>
 <td><em>Required</em> (if type is not specified.) Name/Path of the region whose attributes should be duplicated when creating this region.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-groups</span></td>
 <td>Group(s) of members on which the region will be created.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-if-not-exists</span></td>
 <td>A new region will not be created if a region with the same name already exists. By default, an attempt to create a duplicate region is reported as an error.
 If this option is specified without a value or is specified with a value of <code>true</code>, then gfsh displays a "Skipping..." acknowledgement, but does not throw an error.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-key-constraint</span></td>
 <td>Fully qualified class name of the objects allowed as region keys. Ensures that keys for region entries are all of the same class.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-value-constraint </span></td>
 <td>Fully qualified class name of the objects allowed as region values. If not specified, then region values can be of any class.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-enable-statistics</span></td>
 <td>Whether to gather statistics for the region. Must be true to use expiration on the region.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-entry-idle-time-expiration</span></td>
 <td>How long, in seconds, the region's entries can remain in the cache without being accessed.</td>
 <td>no expiration</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-entry-idle-time-expiration-action </span></td>
 <td>Action to be taken on an entry that has exceeded the idle expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-entry-time-to-live-expiration</span></td>
 <td>How long, in seconds, the region's entries can remain in the cache without being accessed or updated. The default is no expiration of this type.</td>
 <td>no expiration</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-entry-time-to-live-expiration-action</span></td>
 <td>Action to be taken on an entry that has exceeded the TTL expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-entry-idle-time-custom-expiry</span></td>
 <td>The name of a class implementing CustomExpiry for entry idle time. Append a JSON string for initialization properties.</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-entry-time-to-live-custom-expiry</span></td>
 <td>The name of a class implementing CustomExpiry for entry time to live. Append a JSON string for initialization properties.</td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-region-idle-time-expiration</span></td>
 <td>How long, in seconds, the region can remain in the cache without its entries being accessed. The default is no expiration of this type.</td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-region-idle-time-expiration-action</span></td>
 <td>Action to be taken on a region that has exceeded the idle expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate. The destroy and local-destroy actions destroy the region. The invalidate and local-invalidate actions leave the region in place, but invalidate all of its entries.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-region-time-to-live-expiration</span></td>
 <td>How long, in seconds, the region can remain in the cache without its entries being accessed or updated. The default is no expiration of this type.</td>
 <td>no expiration</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-region-time-to-live-expiration-action</span></td>
 <td>Action to be taken on a region that has exceeded the TTL expiration. Valid expiration actions include destroy, local-destroy, invalidate (default), local-invalidate. The destroy and local-destroy actions destroy the region. The invalidate and local-invalidate actions leave the region in place, but invalidate all of its entries.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-disk-store</span></td>
 <td>Disk Store to be used by this region. The <a href="list.html#topic_BC14AD57EA304FB3845766898D01BD04">list disk-stores</a> command can be used to display existing disk stores.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-enable-synchronous-disk</span></td>
 <td>Whether writes are done synchronously for regions that persist data to disk.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-enable-async-conflation</span></td>
 <td>Whether to allow aggregation of asynchronous TCP/IP messages sent by the producer member of the region. A false value causes all asynchronous messages to be sent individually.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-enable-subscription-conflation</span></td>
 <td>Whether the server should conflate its messages to the client. A false value causes all server-client messages to be sent individually.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-cache-listener</span></td>
 <td>Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Any number of cache listeners can be configured. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-cache-loader</span></td>
 <td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>initialize()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-cache-writer</span></td>
 <td>Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-async-event-queue-id</span></td>
 <td>IDs of the Async Event Queues that will be used for write-behind operations.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-gateway-sender-id</span></td>
 <td>IDs of the Gateway Senders to which data will be routed.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-enable-concurrency-checks</span></td>
 <td>Whether Region Version Vectors are implemented. Region Version Vectors are an extension to the versioning scheme that aid in synchronization of replicated regions.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-enable-cloning</span></td>
 <td>Determines how fromDelta applies deltas to the local cache for delta propagation. When true, the updates are applied to a clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-concurrency-level </span></td>
 <td>Estimate of the maximum number of application threads that will concurrently access a region entry at one time. This attribute does not apply to partitioned regions.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-colocated-with </span></td>
 <td>Central Region with which this region should be colocated.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-local-max-memory</span></td>
 <td>Maximum amount of memory, in megabytes, to be used by the region in this process. (The default is 90% of available heap.)</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-recovery-delay </span></td>
 <td>Delay in milliseconds that existing members will wait after a member crashes before restoring this region's redundancy on the remaining members. The default value (-1) indicates that redundancy will not be recovered after a failure.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-redundant-copies </span></td>
 <td>Number of extra copies of buckets desired. Extra copies allow for both high availability in the face of VM departure (intended or unintended) and load balancing read operations. (Allowed values: 0, 1, 2 and 3)</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-startup-recovery-delay </span></td>
 <td>Delay in milliseconds that new members will wait before assuming their share of cluster-level redundancy. This allows time for multiple regions to start before the redundancy workload is parceled out to the new members. A value of -1 indicates that adding new members will not trigger redundancy recovery.</td>
 <td>The default is to recover redundancy immediately when a new member is added.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-total-max-memory </span></td>
 <td>Maximum amount of memory, in megabytes, to be used by the region in all processes.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-total-num-buckets </span></td>
 <td>Total number of hash buckets to be used by the region in all processes.</td>
 <td>113</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-compressor</span></td>
 <td>Java class name that implements compression for the region. You can write a custom compressor that implements <code class="ph codeph">org.apache.geode.compression.Compressor</code> or you can specify the Snappy compressor (<code class="ph codeph">org.apache.geode.compression.SnappyCompressor</code>), which is bundled with <%=vars.product_name%>. See <a href="../../../managing/region_compression.html">Region Compression</a>.</td>
 <td>no compression</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-off-heap</span></td>
 <td>Specifies whether the region values are stored in heap memory or off-heap memory. When true, region values are in off-heap memory. If the parameter is specified without a value, the value of true is used.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-partition-resolver</span></td>
 <td>Specifies the full path to a custom partition resolver. Specify <code class="ph codeph">org.apache.geode.cache.util.StringPrefixPartitionResolver</code> to use the included string prefix partition resolver.</td>
 <td></td>
@@ -1074,11 +1074,11 @@ If this option is specified without a value or is specified with a value of <cod
 <div class="p">
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td>local-destroy</td>
 <td>Entry is destroyed locally. Use with caution - may lead to inconsistencies.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>overflow-to-disk</td>
 <td>Entry is overflowed to disk. For partitioned regions, this provides the most reliable read behavior across the region.</td>
 </tr>

@@ -43,12 +43,12 @@ http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/quer
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>id</td>
 <td><strong>Required.</strong> Unique identifier for the named parameterized query.</td>
 <td>selectCustomers</td>
 </tr>
-<tr class="even">
+<tr>
 <td>q</td>
 <td><strong>Required.</strong> OQL query statement. Use doublequotes to surround the OQL query statement.</td>
 <td><pre class="pre"><code>&quot;SELECT o FROM /orders o WHERE o.quantity &gt; $1 AND o.totalprice &gt; $2&quot;</code></pre></td>
@@ -105,7 +105,7 @@ Location: http://localhost:8080/geode/v1/queries/selectOrders
 <td>409 CONFLICT</td>
 <td>QueryId already assigned to another query</td>
 </tr>
-<tr class="even">
+<tr>
 <td>500 INTERNAL SERVER ERROR</td>
 <td>Error encountered at <%=vars.product_name%> server. Check the HTTP response body for a stack trace of the exception.
 <ul>

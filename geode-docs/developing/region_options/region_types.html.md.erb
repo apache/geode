@@ -50,7 +50,7 @@ These are the primary configuration choices for each data region.
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>Partitioned</td>
 <td>System-wide setting for the data set. Data is divided into buckets across the members that define the region. For high availability, configure redundant copies so each bucket is stored in multiple members with one member holding the primary.</td>
 <td>Server regions and peer regions
@@ -61,7 +61,7 @@ These are the primary configuration choices for each data region.
 <li>Partitioned event listeners and data loaders</li>
 </ul></td>
 </tr>
-<tr class="even">
+<tr>
 <td>Replicated (distributed)</td>
 <td>Holds all data from the distributed region. The data from the distributed region is copied into the member replica region. Can be mixed with non-replication, with some members holding replicas and some holding non-replicas.</td>
 <td>Server regions and peer regions
@@ -71,7 +71,7 @@ These are the primary configuration choices for each data region.
 <li>Query performance</li>
 </ul></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Distributed non-replicated</td>
 <td>Data is spread across the members that define the region. Each member holds only the data it has expressed interest in. Can be mixed with replication, with some members holding replicas and some holding non-replicas.</td>
 <td>Peer regions, but not server regions and not client regions
@@ -80,7 +80,7 @@ These are the primary configuration choices for each data region.
 <li>Query performance</li>
 </ul></td>
 </tr>
-<tr class="even">
+<tr>
 <td>Non-distributed (local)</td>
 <td>The region is visible only to the defining member.</td>
 <td>Client regions and peer regions

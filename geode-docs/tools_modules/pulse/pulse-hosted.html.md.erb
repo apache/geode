@@ -46,17 +46,17 @@ of your <%=vars.product_name%> installation directory. Depending on your applica
     </tr>
     </thead>
     <tbody>
-    <tr class="odd">
+    <tr>
     <td><code class="ph codeph">pulse.useLocator</code></td>
     <td>Specify &quot;true&quot; to configure Pulse to connect to a <%=vars.product_name%> Locator member, or &quot;false&quot; to connect directly to a JMX Manager.
     <p>When Pulse connects to a <%=vars.product_name%> locator, the locator provides the address and port of an available JMX Manager to use for monitoring the cluster. In most production deployments, you should connect Pulse to a locator instance; this allows Pulse to provide monitoring services using any available JMX Manager.</p>
     <p>If you specify &quot;false,&quot; Pulse connects directly to a specific JMX Manager. If this manager is not available, the Pulse connection fails, even if another JMX Manager is available in the cluster.</p></td>
     </tr>
-    <tr class="even">
+    <tr>
     <td><code class="ph codeph">pulse.host</code></td>
     <td>Specify the DNS name or IP address of the <%=vars.product_name%> locator or JMX Manager machine to which Pulse should connect. You specify either a locator or JMX Manager address depending on how you configured the <code class="ph codeph">pulse.useLocator</code> property.</td>
     </tr>
-    <tr class="odd">
+    <tr>
     <td><code class="ph codeph">pulse.port</code></td>
     <td>Specify the port number of the <%=vars.product_name%> locator or the HTTP port number of the JMX Manager to which Pulse should connect. You specify either a locator or JMX Manager port depending on how you configured the <code class="ph codeph">pulse.useLocator</code> property.
     <p>If you configured <code class="ph codeph">pulse.useLocator=false</code>, then <code class="ph codeph">pulse.port</code> must correspond to the <code class="ph codeph">http-service-port</code> setting of the JMX Manager.</p></td>

@@ -39,54 +39,54 @@ These `<disk-store>` attributes and subelements have corresponding `gfsh create 
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code class="ph codeph">name</code></td>
 <td>String used to identify this disk store. All regions and queues select their disk store by specifying this name.</td>
 <td>DEFAULT</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code class="ph codeph">allow-force-compaction</code></td>
 <td>Boolean indicating whether to allow manual compaction through the API or command-line tools.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code class="ph codeph">auto-compact</code></td>
 <td>Boolean indicating whether to automatically compact a file when it reaches the <code class="ph codeph">compaction-threshold</code>.</td>
 <td>true</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code class="ph codeph">compaction-threshold</code></td>
 <td>Percentage of garbage allowed in the file before it is eligible for compaction. Garbage is created by entry destroys, entry updates, and region destroys and creates. Surpassing this percentage does not make compaction occur—it makes the file eligible to be compacted when a compaction is done.</td>
 <td>50</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code class="ph codeph">disk-usage-critical-percentage</code></td>
 <td>Disk usage above this threshold generates an error message and shuts down the member's cache. For example, if the threshold is set to 99%, then falling under 10 GB of free disk space on a 1 TB drive generates the error and shuts down the cache.
 <p>Set to &quot;0&quot; (zero) to disable.</p></td>
 <td>99</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code class="ph codeph">disk-usage-warning-percentage</code></td>
 <td>Disk usage above this threshold generates a warning message. For example, if the threshold is set to 90%, then on a 1 TB drive falling under 100 GB of free disk space generates the warning.
 <p>Set to &quot;0&quot; (zero) to disable.</p></td>
 <td>90</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code class="ph codeph">max-oplog-size</code></td>
 <td>The largest size, in megabytes, to allow an operation log to become before automatically rolling to a new file. This size is the combined sizes of the oplog files.</td>
 <td>1024</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code class="ph codeph">queue-size</code></td>
 <td>For asynchronous queueing. The maximum number of operations to allow into the write queue before automatically flushing the queue. Operations that would add entries to the queue block until the queue is flushed. A value of zero implies no size limit. Reaching this limit or the time-interval limit will cause the queue to flush.</td>
 <td>0</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code class="ph codeph">time-interval</code></td>
 <td>For asynchronous queueing. The number of milliseconds that can elapse before data is flushed to disk. Reaching this limit or the queue-size limit causes the queue to flush.</td>
 <td>1000</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code class="ph codeph">write-buffer-size</code></td>
 <td>Size of the buffer, in bytes, used to write to disk.</td>
 <td>32768</td>

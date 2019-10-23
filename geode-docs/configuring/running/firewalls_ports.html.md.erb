@@ -57,32 +57,32 @@ This table contains properties potentially involved in firewall behavior, with a
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>peer-to-peer config</td>
 <td><p><code class="ph codeph">conserve-sockets</code></p></td>
 <td><p>Specifies whether sockets are shared by the system member's threads.</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>peer-to-peer config</td>
 <td><p><code class="ph codeph">locators</code></p></td>
 <td><p>The list of locators used by system members. The list must be configured consistently for every member of the cluster.</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>peer-to-peer config</td>
 <td><p><code class="ph codeph">mcast-address</code></p></td>
 <td><p>Address used to discover other members of the cluster. Only used if mcast-port is non-zero. This attribute must be consistent across the cluster.</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>peer-to-peer config</td>
 <td><p><code class="ph codeph">mcast-port</code></p></td>
 <td><p>Port used, along with the mcast-address, for multicast communication with other members of the cluster. If zero, multicast is disabled for data distribution.</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>peer-to-peer config</td>
 <td><p><code class="ph codeph">membership-port-range</code></p></td>
 <td><p>The range of ephemeral ports available for unicast UDP messaging and for TCP failure detection in the peer-to-peer cluster.</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>peer-to-peer config</td>
 <td><p><code class="ph codeph">tcp-port</code></p></td>
 <td><p>The TCP port to listen on for cache communications.</p></td>
@@ -104,17 +104,17 @@ This table contains properties potentially involved in firewall behavior, with a
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>cache server config</td>
 <td><p><code class="ph codeph">hostname-for-clients</code></p></td>
 <td><p>Hostname or IP address to pass to the client as the location where the server is listening.</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>cache server config</td>
 <td><p><code class="ph codeph">max-connections</code></p></td>
 <td><p>Maximum number of client connections for the server. When the maximum is reached, the server refuses additional client connections.</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>cache server config</td>
 <td><p><code class="ph codeph">port</code> (cache.xml) or <code class="ph codeph">--port</code> parameter to the <code class="ph codeph">gfsh start server</code> command</p></td>
 <td><p>Port that the server listens on for client communication.</p></td>
@@ -138,42 +138,42 @@ This table contains properties potentially involved in firewall behavior, with a
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><p>Cache Server</p></td>
 <td><p><code class="ph codeph">port</code> (cache.xml)</p></td>
 <td>40404</td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>HTTP</p></td>
 <td><code class="ph codeph">http-service-port</code></td>
 <td>7070</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>Locator</p></td>
 <td><code class="ph codeph">start-locator</code> (for embedded locators) or <code class="ph codeph">--port</code> parameter to the <code class="ph codeph">gfsh start locator</code> command.</td>
 <td><em>if not specified upon startup or in the start-locator property, uses default port 10334</em></td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>Membership Port Range</p></td>
 <td><code class="ph codeph">membership-port-range</code></td>
 <td>41000 to 61000</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>Memcached Port</p></td>
 <td><code class="ph codeph">memcached-port</code></td>
 <td><em>not set</em></td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>Multicast</p></td>
 <td><code class="ph codeph">mcast-port</code></td>
 <td>10334</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>RMI</p></td>
 <td><code class="ph codeph">jmx-manager-port</code></td>
 <td>1099</td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>TCP</p></td>
 <td><code class="ph codeph">tcp-port</code></td>
 <td>ephemeral port</td>
