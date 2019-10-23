@@ -80,24 +80,24 @@ In this table:
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><p>Membership failure detection</p></td>
 <td>2</td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>Listener for incoming peer connections (server P2P)</p></td>
 <td><p>1</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>Shared sockets (2 in and 2 out)</p>
 <p>Threads that share sockets use these.</p></td>
 <td><p>4 * (M-1)</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>This member’s thread-owned sockets (1 in and 1 out for each thread, for each peer member).</td>
 <td><p>(T * 2) * (M-1)</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>Other member’s thread-owned sockets that connect to this member (1 in and 1 out for each). Note that this might include server threads if any of the other members are servers (see Server).</p></td>
 <td><p>Summation over (M-1) other members of (T*2)</p></td>
 </tr>
@@ -136,21 +136,21 @@ In this table, M is the total number of members in the cluster.
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>Listener for incoming client connections</td>
 <td><p>1</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>Client pool connections to server</td>
 <td>Number of pool connections to this server</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>Threads servicing client requests (the lesser of the client pool connection count and the server’s <code>max-threads</code> setting). These connections are to the server’s peers.</p></td>
 <td><p>(2 * number of threads in a server that service client pool connections)</p>
 <p>* (M-1)</p>
 <p>These threads do not share sockets.</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>Subscription connections</td>
 <td><p>2 * number of client subscription connections to this server</p></td>
 </tr>
@@ -177,11 +177,11 @@ Client connection requirements are compounded by how many pools they use. The us
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><p>Pool connection</p></td>
 <td><p>summation over the client pools of max-connections</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>Subscription connections</p></td>
 <td><p>2 * summation over the client pools of subscription-enabled</p></td>
 </tr>

@@ -140,33 +140,33 @@ If you are using ORDER BY queries, you must implement the equals and hashCode me
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>ELEMENT(expr)</td>
 <td>Extracts a single element from a collection or array. This function throws a <code class="ph codeph">FunctionDomainException</code> if the argument is not a collection or array with exactly one element.</td>
 <td><pre class="pre codeblock"><code>ELEMENT(SELECT DISTINCT * 
  FROM /exampleRegion 
  WHERE id = &#39;XYZ-1&#39;).status = &#39;active&#39;</code></pre></td>
 </tr>
-<tr class="even">
+<tr>
 <td>IS_DEFINED(expr)</td>
 <td>Returns TRUE if the expression does not evaluate to <a href="../query_additional/literals.html#literals__section_undefined">UNDEFINED</a>.  Inequality queries include undefined values in their query results. With the IS_DEFINED function, you can limit results to only those elements with defined values.</td>
 <td><pre class="pre codeblock"><code>IS_DEFINED(SELECT DISTINCT * 
 FROM /exampleRegion p 
 WHERE p.status = &#39;active&#39;)</code></pre></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>IS_UNDEFINED (expr)</td>
 <td>Returns TRUE if the expression evaluates to <a href="../query_additional/literals.html#literals__section_undefined">UNDEFINED</a>. With the exception of inequality queries, most queries do not include undefined values in their query results. The IS_UNDEFINED function allows undefined values to be included, so you can identify elements with undefined values.</td>
 <td><pre class="pre codeblock"><code>SELECT DISTINCT * 
 FROM /exampleRegion p 
 WHERE IS_UNDEFINED(p.status)</code></pre></td>
 </tr>
-<tr class="even">
+<tr>
 <td>NVL(expr1, expr2)</td>
 <td>Returns expr2 if expr1 is null. The expressions can be query parameters (bind arguments), path expressions, or literals.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td>TO_DATE(date_str, format_str)</td>
 <td>Returns a Java Data class object. The arguments must be String S with date_str representing the date and format_str representing the format used by date_str. The format_str you provide is parsed using java.text.SimpleDateFormat.</td>
 <td> </td>
