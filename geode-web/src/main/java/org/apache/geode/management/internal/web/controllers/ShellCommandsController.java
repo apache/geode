@@ -193,9 +193,9 @@ public class ShellCommandsController extends AbstractCommandsController {
     return GemFireVersion.getGemFireVersion();
   }
 
-  @RequestMapping(method = RequestMethod.GET, value = "/version/geodeRelease")
+  @RequestMapping(method = RequestMethod.GET, value = "/version/geodeSerializationVersion")
   @ResponseBody
-  public String geodeReleaseVersion() {
+  public String geodeSerializationVersion() {
     return Version.CURRENT.getName();
   }
 

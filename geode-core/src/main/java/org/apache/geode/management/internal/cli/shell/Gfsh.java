@@ -678,7 +678,7 @@ public class Gfsh extends JLineShell {
     }
   }
 
-  public String getGeodeVersion() {
+  public String getGeodeSerializationVersion() {
     return Version.CURRENT.getName();
   }
 

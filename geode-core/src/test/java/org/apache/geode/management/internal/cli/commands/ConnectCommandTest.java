@@ -323,8 +323,8 @@ public class ConnectCommandTest {
 
   @Test
   public void connectToManagerWithGreaterPatchVersion() {
-    when(gfsh.getGeodeVersion()).thenReturn("1.5.1");
-    when(operationInvoker.getRemoteGeodeVersion()).thenReturn("1.5.2");
+    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.5.1");
+    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("1.5.2");
     when(operationInvoker.isConnected()).thenReturn(true);
     when(resultModel.getStatus()).thenReturn(Result.Status.OK);
 
@@ -334,8 +334,8 @@ public class ConnectCommandTest {
 
   @Test
   public void connectToManagerWithNoPatchVersion() {
-    when(gfsh.getGeodeVersion()).thenReturn("1.5.1");
-    when(operationInvoker.getRemoteGeodeVersion()).thenReturn("1.5");
+    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.5.1");
+    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("1.5");
     when(operationInvoker.isConnected()).thenReturn(true);
     when(resultModel.getStatus()).thenReturn(Result.Status.OK);
 
@@ -345,8 +345,8 @@ public class ConnectCommandTest {
 
   @Test
   public void connectToManagerWithLessorPatchVersion() {
-    when(gfsh.getGeodeVersion()).thenReturn("1.5.1");
-    when(operationInvoker.getRemoteGeodeVersion()).thenReturn("1.5.0");
+    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.5.1");
+    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("1.5.0");
     when(operationInvoker.isConnected()).thenReturn(true);
     when(resultModel.getStatus()).thenReturn(Result.Status.OK);
 
@@ -367,8 +367,8 @@ public class ConnectCommandTest {
 
   @Test
   public void connectToAValidManager() {
-    when(gfsh.getGeodeVersion()).thenReturn("1.5");
-    when(operationInvoker.getRemoteGeodeVersion()).thenReturn("1.5");
+    when(gfsh.getGeodeSerializationVersion()).thenReturn("1.5");
+    when(operationInvoker.getRemoteGeodeSerializationVersion()).thenReturn("1.5");
     when(operationInvoker.isConnected()).thenReturn(true);
 
     when(resultModel.getStatus()).thenReturn(Result.Status.OK);

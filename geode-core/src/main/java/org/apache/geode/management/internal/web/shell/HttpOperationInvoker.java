@@ -412,8 +412,8 @@ public class HttpOperationInvoker implements OperationInvoker {
   }
 
   @Override
-  public String getRemoteGeodeVersion() {
-    final URI link = HttpRequester.createURI(baseUrl, "/version/geodeRelease");
+  public String getRemoteGeodeSerializationVersion() {
+    final URI link = HttpRequester.createURI(baseUrl, "/version/geodeSerializationVersion");
     return httpRequester.get(link, String.class);
   }
 

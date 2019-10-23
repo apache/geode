@@ -130,7 +130,7 @@ public interface OperationInvoker {
 
   String getRemoteVersion();
 
-  String getRemoteGeodeVersion();
+  String getRemoteGeodeSerializationVersion();
 
   /**
    * Processes the requested command. Sends the command to the GemFire Manager for remote processing

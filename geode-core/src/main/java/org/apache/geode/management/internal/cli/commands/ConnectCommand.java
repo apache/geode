@@ -161,15 +161,15 @@ public class ConnectCommand extends OfflineGfshCommand {
     }
 
     String gfshVersion = gfsh.getVersion();
-    String gfshGeodeVersion = gfsh.getGeodeVersion();
     String remoteVersion = null;
     try {
-      String remoteGeodeVersion = invoker.getRemoteGeodeVersion();
-      if (hasSameMajorMinor(gfshGeodeVersion, remoteGeodeVersion)) {
+      String gfshGeodeSerializationVersion = gfsh.getGeodeSerializationVersion();
+      String remoteGeodeSerializationVersion = invoker.getRemoteGeodeSerializationVersion();
+      if (hasSameMajorMinor(gfshGeodeSerializationVersion, remoteGeodeSerializationVersion)) {
         return result;
       }
     } catch (Exception e) {
-      // we failed to get the remote geode version, now try to get the remote product version for
+      // we failed to get the remote geode serialization version; get remote product version for
       // error message
       try {
         remoteVersion = invoker.getRemoteVersion();

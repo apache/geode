@@ -186,7 +186,7 @@ public class JmxOperationInvoker implements OperationInvoker {
   }
 
   @Override
-  public String getRemoteGeodeVersion() {
+  public String getRemoteGeodeSerializationVersion() {
     return memberMXBeanProxy.getGeodeReleaseVersion();
   }
 
