@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -250,8 +251,6 @@ public class FederatingManagerTest {
         .removeAllProxies(member, monitoringRegion);
   }
 
-  // ----------
-
   @Test
   public void removeMemberArtifactsProxyFactoryDoesNotThrowIfCacheClosed() {
     InternalDistributedMember member = member();
@@ -316,8 +315,6 @@ public class FederatingManagerTest {
         .localDestroyRegion();
   }
 
-  // ----------
-
   @Test
   public void removeMemberArtifactsProxyFactoryDoesNotThrowIfSystemDisconnected() {
     InternalDistributedMember member = member();
@@ -380,6 +377,42 @@ public class FederatingManagerTest {
 
     verify(monitoringRegion)
         .localDestroyRegion();
+  }
+
+  @Test
+  public void removeMemberArtifactsDoesNotThrowIfNotificationRegionIsNull() {
+    InternalDistributedMember member = member();
+    when(repo.getEntryFromMonitoringRegionMap(eq(member)))
+        .thenReturn(mock(Region.class));
+    when(repo.getEntryFromNotifRegionMap(eq(member)))
+        .thenReturn(null);
+    when(system.getDistributedMember())
+        .thenReturn(member);
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+
+    Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
+
+    assertThat(thrown)
+        .isNull();
+  }
+
+  @Test
+  public void removeMemberArtifactsDoesNotThrowIfMonitoringRegionIsNull() {
+    InternalDistributedMember member = member();
+    when(repo.getEntryFromMonitoringRegionMap(eq(member)))
+        .thenReturn(null);
+    when(repo.getEntryFromNotifRegionMap(eq(member)))
+        .thenReturn(mock(Region.class));
+    when(system.getDistributedMember())
+        .thenReturn(member);
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+
+    Throwable thrown = catchThrowable(() -> federatingManager.removeMemberArtifacts(member, false));
+
+    assertThat(thrown)
+        .isNull();
   }
 
   private InternalDistributedMember member() {
