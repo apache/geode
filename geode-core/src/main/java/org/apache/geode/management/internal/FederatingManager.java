@@ -32,6 +32,7 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesFactory;
@@ -321,23 +322,27 @@ public class FederatingManager extends Manager {
     if (!cache.isClosed()) {
       try {
         proxyFactory.removeAllProxies(member, monitoringRegion);
-      } catch (RegionDestroyedException ignore) {
+      } catch (CancelException | RegionDestroyedException ignore) {
         // ignored
       }
       try {
         monitoringRegion.localDestroyRegion();
-      } catch (RegionDestroyedException ignore) {
+      } catch (CancelException | RegionDestroyedException ignore) {
         // ignored
       }
       try {
         notificationRegion.localDestroyRegion();
-      } catch (RegionDestroyedException ignore) {
+      } catch (CancelException | RegionDestroyedException ignore) {
         // ignored
       }
     }
 
     if (!system.getDistributedMember().equals(member)) {
-      service.memberDeparted((InternalDistributedMember) member, crashed);
+      try {
+        service.memberDeparted((InternalDistributedMember) member, crashed);
+      } catch (CancelException | RegionDestroyedException ignore) {
+        // ignored
+      }
     }
   }
 
