@@ -345,7 +345,7 @@ public abstract class DistributedCacheOperation {
 
     try {
       // Recipients with CacheOp
-      Set<InternalDistributedMember> recipients = getRecipients();
+      Set<InternalDistributedMember> recipients = new HashSet<>(getRecipients());
       Map<InternalDistributedMember, PersistentMemberID> persistentIds = null;
       if (region.getDataPolicy().withPersistence()) {
         persistentIds = region.getDistributionAdvisor().adviseInitializedPersistentMembers();
