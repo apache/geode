@@ -13,19 +13,21 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.domain;
+package org.apache.geode.management.configuration;
 
 import static org.apache.geode.management.configuration.ClassName.isClassNameValid;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Properties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-import org.apache.geode.management.configuration.ClassName;
-import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 
@@ -46,13 +48,6 @@ public class ClassNameTest {
         .isEqualTo(new ClassName(null, "{}"))
         .isEqualTo(new ClassName(" ", "{\"k\":\"v\"}"))
         .isEqualTo(ClassName.EMPTY);
-  }
-
-  @Test
-  public void emptyCanNotInstantiate() {
-    assertThatThrownBy(() -> DeclarableTypeInstantiator.newInstance(ClassName.EMPTY, null))
-        .isInstanceOf(RuntimeException.class)
-        .hasMessageContaining("Error instantiating class");
   }
 
   @Test
@@ -103,21 +98,6 @@ public class ClassNameTest {
   }
 
   @Test
-  public void getInstance() {
-    ClassName klass = new ClassName("java.lang.String");
-    String s = DeclarableTypeInstantiator.newInstance(klass, null);
-    assertThat(s.toString()).isEqualTo("");
-  }
-
-  @Test
-  public void getInstanceWithProps() {
-    String json = "{\"k\":\"v\"}";
-    ClassName cacheWriter = new ClassName(MyCacheWriter.class.getName(), json);
-    MyCacheWriter obj = DeclarableTypeInstantiator.newInstance(cacheWriter, null);
-    assertThat(obj.getProperties()).containsEntry("k", "v").containsOnlyKeys("k");
-  }
-
-  @Test
   public void jsonMapper() throws Exception {
     Properties properties = new Properties();
     properties.put("key1", "value1");
@@ -138,6 +118,22 @@ public class ClassNameTest {
     String json = "{\"className\":\"a b\"}";
     assertThatThrownBy(() -> mapper.readValue(json, ClassName.class))
         .hasCauseInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void serializable() throws Exception {
+    Properties properties = new Properties();
+    properties.put("key1", "value1");
+    ClassName className = new ClassName("java.lang.String", properties);
+    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+    ObjectOutputStream outputStream = new ObjectOutputStream(stream);
+    outputStream.writeObject(className);
+    outputStream.close();
+
+    ObjectInputStream inputStream =
+        new ObjectInputStream(new ByteArrayInputStream(stream.toByteArray()));
+    Object object = inputStream.readObject();
+    assertThat(object).isEqualTo(className);
   }
 
   @Test
