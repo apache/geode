@@ -68,10 +68,10 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PoolStats;
@@ -402,7 +402,7 @@ public class AutoConnectionSourceImplJUnitTest {
     Thread.sleep(500);
   }
 
-  protected static class FakeHandler implements TcpHandler {
+  protected static class FakeHandler implements RestartableTcpHandler {
     volatile ClientConnectionResponse nextConnectionResponse;
     volatile LocatorListResponse nextLocatorListResponse;
 

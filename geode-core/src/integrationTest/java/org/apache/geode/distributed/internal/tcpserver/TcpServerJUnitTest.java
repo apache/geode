@@ -44,11 +44,9 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -164,7 +162,7 @@ public class TcpServerJUnitTest {
       ClassNotFoundException, InterruptedException {
     // Initially mock the handler to throw a SocketException. We want to verify that the server
     // can recover and serve new client requests after a SocketException is thrown.
-    TcpHandler mockTcpHandler = mock(TcpHandler.class);
+    RestartableTcpHandler mockTcpHandler = mock(RestartableTcpHandler.class);
     doThrow(SocketException.class).when(mockTcpHandler).processRequest(any(Object.class));
     start(mockTcpHandler);
 
@@ -249,10 +247,6 @@ public class TcpServerJUnitTest {
     }
 
     @Override
-    public void restarting(DistributedSystem ds, GemFireCache cache,
-        InternalConfigurationPersistenceService sharedConfig) {}
-
-    @Override
     public void endRequest(Object request, long startTime) {}
 
     @Override
@@ -286,10 +280,6 @@ public class TcpServerJUnitTest {
 
     @Override
     public void shutDown() {}
-
-    @Override
-    public void restarting(DistributedSystem ds, GemFireCache cache,
-        InternalConfigurationPersistenceService sharedConfig) {}
 
     @Override
     public void endRequest(Object request, long startTime) {}

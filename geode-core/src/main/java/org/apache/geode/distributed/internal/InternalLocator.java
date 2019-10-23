@@ -1158,7 +1158,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       internalCache = null;
 
       logger.info("Locator restart: initializing TcpServer peer location services");
-      server.restarting(null, null, null);
+      handler.restarting(null, null, null);
+      server.restarting();
 
       if (productUseLog.isClosed()) {
         productUseLog.reopen();
@@ -1185,7 +1186,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     logger.info("Locator restart: initializing TcpServer");
 
     try {
-      server.restarting(newSystem, newCache, configurationPersistenceService);
+      handler.restarting(newSystem, newCache, configurationPersistenceService);
+      server.restarting();
     } catch (CancelException e) {
       internalDistributedSystem = null;
       internalCache = null;
@@ -1215,7 +1217,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     endStartLocator(internalDistributedSystem);
     logger.info("Locator restart completed");
 
-    server.restartCompleted(newSystem);
+    handler.restartCompleted(newSystem);
   }
 
   public ClusterManagementService getClusterManagementService() {

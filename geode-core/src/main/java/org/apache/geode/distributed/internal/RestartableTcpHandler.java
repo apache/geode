@@ -12,19 +12,32 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership;
+package org.apache.geode.distributed.internal;
 
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 
-public interface NetLocator extends RestartableTcpHandler {
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
+import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+
+/**
+ * A handler which responds to messages for the {@link TcpServer}
+ *
+ * @since GemFire 5.7
+ */
+public interface RestartableTcpHandler extends TcpHandler {
 
   /**
-   * This must be called after booting the membership manager so that the locator can use its
-   * services
+   * Informs the handler that TcpServer is restarting with the given distributed system and cache
    *
-   * @return true if the membership manager was accepted
+   * @param sharedConfig TODO
    */
-  boolean setServices(Services pservices);
+  void restarting(DistributedSystem ds, GemFireCache cache,
+      InternalConfigurationPersistenceService sharedConfig);
+
+  /**
+   * Informs the handler that restart has completed
+   */
+  default void restartCompleted(DistributedSystem ds) {}
 
 }

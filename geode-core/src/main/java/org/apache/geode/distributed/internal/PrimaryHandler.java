@@ -32,14 +32,14 @@ import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.logging.LogService;
 
-public class PrimaryHandler implements TcpHandler {
+public class PrimaryHandler implements RestartableTcpHandler {
   private static final Logger logger = LogService.getLogger();
 
   private final LocatorMembershipListener locatorListener;
   private final InternalLocator internalLocator;
 
-  private volatile Map<Class, TcpHandler> handlerMapping = new HashMap<>();
-  private volatile Set<TcpHandler> allHandlers = new HashSet<>();
+  private volatile Map<Class, RestartableTcpHandler> handlerMapping = new HashMap<>();
+  private volatile Set<RestartableTcpHandler> allHandlers = new HashSet<>();
 
   private TcpServer tcpServer;
 
@@ -66,7 +66,7 @@ public class PrimaryHandler implements TcpHandler {
   public void restarting(DistributedSystem ds, GemFireCache cache,
       InternalConfigurationPersistenceService sharedConfig) {
     if (ds != null) {
-      for (TcpHandler handler : allHandlers) {
+      for (RestartableTcpHandler handler : allHandlers) {
         handler.restarting(ds, cache, sharedConfig);
       }
     }
@@ -75,7 +75,7 @@ public class PrimaryHandler implements TcpHandler {
   @Override
   public void restartCompleted(DistributedSystem ds) {
     if (ds != null) {
-      for (TcpHandler handler : allHandlers) {
+      for (RestartableTcpHandler handler : allHandlers) {
         handler.restartCompleted(ds);
       }
     }
@@ -137,9 +137,9 @@ public class PrimaryHandler implements TcpHandler {
     return handlerMapping.containsKey(clazz);
   }
 
-  public synchronized void addHandler(Class clazz, TcpHandler handler) {
-    Map<Class, TcpHandler> tmpHandlerMapping = new HashMap<>(handlerMapping);
-    Set<TcpHandler> tmpAllHandlers = new HashSet<>(allHandlers);
+  public synchronized void addHandler(Class clazz, RestartableTcpHandler handler) {
+    Map<Class, RestartableTcpHandler> tmpHandlerMapping = new HashMap<>(handlerMapping);
+    Set<RestartableTcpHandler> tmpAllHandlers = new HashSet<>(allHandlers);
     tmpHandlerMapping.put(clazz, handler);
     if (tmpAllHandlers.add(handler) && tcpServer != null) {
       handler.init(tcpServer);
