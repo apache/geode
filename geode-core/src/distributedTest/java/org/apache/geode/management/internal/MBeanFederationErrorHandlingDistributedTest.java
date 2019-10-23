@@ -60,7 +60,7 @@ import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(JMXTest.class)
-public class MBeanFederationErrorPathDUnitTest implements Serializable {
+public class MBeanFederationErrorHandlingDistributedTest implements Serializable {
 
   private static final String REGION_NAME = "test-region-1";
 
