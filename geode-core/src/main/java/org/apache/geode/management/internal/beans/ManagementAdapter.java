@@ -91,6 +91,7 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -143,6 +144,7 @@ public class ManagementAdapter {
 
   private static final Logger logger = LogService.getLogger();
 
+  @Immutable
   private static final List<String> INTERNAL_LOCK_SERVICES =
       unmodifiableList(asList(DLockService.DTLS, DLockService.LTLS,
           PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME,
