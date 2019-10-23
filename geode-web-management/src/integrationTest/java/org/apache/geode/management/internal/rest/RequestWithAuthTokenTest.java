@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -35,6 +36,7 @@ import org.apache.geode.examples.SimpleSecurityManager;
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = SecuredLocatorWithAuthTokenEnabledContextLoader.class)
 @WebAppConfiguration
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class RequestWithAuthTokenTest {
 
   @Autowired
@@ -51,7 +53,7 @@ public class RequestWithAuthTokenTest {
 
   @Test
   public void pingWithValidToken() throws Exception {
-    context.perform(get("/experimental/ping")
+    context.perform(get("/v1/ping")
         .header("Authorization", "Bearer " + SimpleSecurityManager.VALID_TOKEN))
         .andExpect(status().isOk())
         .andExpect(content().string("pong"));
@@ -59,7 +61,7 @@ public class RequestWithAuthTokenTest {
 
   @Test
   public void pingWithInvalidToken() throws Exception {
-    context.perform(get("/experimental/ping")
+    context.perform(get("/v1/ping")
         .header("Authorization", "Bearer invalidToken"))
         .andExpect(status().isUnauthorized());
   }

@@ -65,15 +65,15 @@ public class SwaggerConfig {
     return new ApiInfoBuilder()
         .title("Apache Geode Management REST API")
         .description(
-            "REST API and interface to manage Geode components.")
-        .version("v2")
+            "REST API to manage Geode. This is experimental. All request/response formats are subject to change.")
+        .version("v1")
         .extensions(extensions)
         .termsOfServiceUrl("http://www.apache.org/licenses/")
         .license("Apache License, version 2.0")
         .licenseUrl("http://www.apache.org/licenses/")
         .contact(new Contact("the Apache Geode Community",
             "http://geode.apache.org",
-            "dev@geode.apache.org"))
+            "user@geode.apache.org"))
         .build();
   }
 }

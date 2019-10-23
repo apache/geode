@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.rest;
 
 
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -54,13 +55,13 @@ public class SwaggerManagementVerificationIntegrationTest {
 
     // Check the JSON
     JsonNode json =
-        assertResponse(client.get("/management/experimental/api-docs")).hasStatusCode(200)
+        assertResponse(client.get("/management/v1/api-docs")).hasStatusCode(200)
             .getJsonObject();
     assertThat(json.get("swagger").asText(), is("2.0"));
 
     JsonNode info = json.get("info");
     assertThat(info.get("description").asText(),
-        is("REST API and interface to manage Geode components."));
+        containsString("REST API to manage Geode. This is experimental."));
     assertThat(info.get("title").asText(),
         is("Apache Geode Management REST API"));
     assertThat(info.get("authTokenEnabled").asText(), is("true"));

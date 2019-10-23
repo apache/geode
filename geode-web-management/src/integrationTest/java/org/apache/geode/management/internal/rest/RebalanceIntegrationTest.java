@@ -32,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -49,6 +50,7 @@ import org.apache.geode.management.runtime.RebalanceResult;
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class RebalanceIntegrationTest {
 
   @Autowired
@@ -69,12 +71,12 @@ public class RebalanceIntegrationTest {
   @Test
   public void start() throws Exception {
     String json = "{}";
-    context.perform(post("/experimental/operations/rebalances").content(json))
+    context.perform(post("/v1/operations/rebalances").content(json))
         .andExpect(status().isAccepted())
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(
             jsonPath("$.links.self",
-                Matchers.containsString("/experimental/operations/rebalances/")))
+                Matchers.containsString("/v1/operations/rebalances/")))
         .andExpect(jsonPath("$.statusMessage", Matchers.containsString("Operation started")));
   }
 
@@ -82,7 +84,7 @@ public class RebalanceIntegrationTest {
   public void getStatus() throws Exception {
     String json = "{}";
     CompletableFuture<String> futureUri = new CompletableFuture<String>();
-    context.perform(post("/experimental/operations/rebalances").content(json))
+    context.perform(post("/v1/operations/rebalances").content(json))
         .andExpect(status().isAccepted())
         .andExpect(new ResponseBodyMatchers().containsObjectAsJson(futureUri))
         .andExpect(jsonPath("$.statusMessage", Matchers.containsString("Operation started")));
@@ -115,7 +117,7 @@ public class RebalanceIntegrationTest {
 
   @Test
   public void checkStatus() throws Exception {
-    context.perform(get("/experimental/operations/rebalances/abc"))
+    context.perform(get("/v1/operations/rebalances/abc"))
         .andExpect(status().isNotFound())
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
@@ -127,8 +129,8 @@ public class RebalanceIntegrationTest {
   @Test
   public void list() throws Exception {
     String json = "{}";
-    context.perform(post("/experimental/operations/rebalances").content(json));
-    context.perform(get("/experimental/operations/rebalances"))
+    context.perform(post("/v1/operations/rebalances").content(json));
+    context.perform(get("/v1/operations/rebalances"))
         .andExpect(status().isOk())
         .andExpect(content().string(not(containsString("\"class\""))))
         .andExpect(
