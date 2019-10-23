@@ -85,4 +85,16 @@ public class PdxManagementTest {
     }
 
   }
+
+  @Test
+  public void invalidClassName() throws Exception {
+    String json = "{\"readSerialized\":true,\"pdxSerializer\":{\"className\":\"class name\"}}";
+
+    context.perform(post("/experimental/configurations/pdx")
+        .with(httpBasic("clusterManage", "clusterManage"))
+        .content(json))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.statusCode", is("ILLEGAL_ARGUMENT")))
+        .andExpect(jsonPath("$.statusMessage", containsString("Invalid className")));
+  }
 }
