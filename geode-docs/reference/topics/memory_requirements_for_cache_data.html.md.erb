@@ -127,7 +127,7 @@ This table gives estimates for the cache overhead in a 32-bit JVM. The overhead 
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>For each region
 <div class="note note">
 <b>Note:</b>
@@ -135,36 +135,36 @@ This table gives estimates for the cache overhead in a 32-bit JVM. The overhead 
 </div></td>
 <td>add 64 bytes per entry</td>
 </tr>
-<tr class="even">
+<tr>
 <td>And concurrency checking is disabled (it is enabled by default)</td>
 <td>subtract 16 bytes per entry
 <p>(See <a href="../../developing/distributed_regions/how_region_versioning_works.html#topic_0BDACA590B2C4974AC9C450397FE70B2">Overhead for Consistency Checks</a>.)</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>And statistics are enabled for the region</td>
 <td>add 16 bytes per entry</td>
 </tr>
-<tr class="even">
+<tr>
 <td>And the region is persisted</td>
 <td>add 52 bytes per entry</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>And the region is overflow only</td>
 <td>add 44 bytes per entry</td>
 </tr>
-<tr class="even">
+<tr>
 <td>And the region has an LRU eviction controller</td>
 <td>add 16 bytes per entry</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>And the region has global scope</td>
 <td>add 110 bytes per entry</td>
 </tr>
-<tr class="even">
+<tr>
 <td>And the region has entry expiration configured</td>
 <td>add 112 bytes per entry</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>For each optional user attribute</td>
 <td>add 40 bytes per entry plus the memory overhead of the user attribute object</td>
 </tr>
@@ -252,24 +252,24 @@ The following table lists the memory requirements based on connections.
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>Per socket</td>
 <td><p>32,768 /socket (configurable)</p>
 <p>Default value per socket should be set to a number &gt; 100 + sizeof (largest object in region) + sizeof (largest key)</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>If server (for example if there are clients that connect to it)</td>
 <td>= (lesser of max-threads property on server or max-connections)* (socket buffer size +thread overhead for the JVM )</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Per member of the cluster if conserve sockets is set to true</td>
 <td>4* number of peers</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Per member, if conserve sockets is set to false</td>
 <td>4 * number of peers hosting that region* number of threads</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>If member hosts a Partitioned Region, If conserve sockets set to false and it is a Server (this is cumulative with the above)</td>
 <td><p>=&lt; max-threads * 2 * number of peers</p>
 <div class="note note">
@@ -277,23 +277,23 @@ The following table lists the memory requirements based on connections.
 <p>it is = 2* current number of clients connected * number of peers. Each connection spawns a thread.</p>
 </div></td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong>Subscription Queues</strong></td>
 <td></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><p>Per Server, depending on whether you limit the queue size. If you do, you can specify the number of megabytes or the number of entries until the queue overflows to disk. When possible, entries on the queue are references to minimize memory impact. The queue consumes memory not only for the key and the entry but also for the client ID/or thread ID as well as for the operation type. Since you can limit the queue to 1 MB, this number is completely configurable and thus there is no simple formula.</p></td>
 <td>1 MB +</td>
 </tr>
-<tr class="even">
+<tr>
 <td><strong><%=vars.product_name%> classes and JVM overhead</strong></td>
 <td>Roughly 50MB</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><strong>Thread overhead</strong></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td><p>Each concurrent client connection into the a server results in a thread being spawned up to max-threads setting. After that a thread services multiple clients up to max-clients setting.</p></td>
 <td>There is a thread stack overhead per connection (at a minimum 256KB to 512 KB, you can set it to smaller to 128KB on many JVMs.)</td>
 </tr>

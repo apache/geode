@@ -17,9 +17,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Basic <%=vars.product_name%> logging configuration is configured via the gemfire.properties file. This topic is intended for advanced users who need increased control over logging due to integration with third-party libraries.
+Basic <%=vars.product_name%> logging configuration is configured via the `gemfire.properties` file. This topic is intended for advanced users who need increased control over logging due to integration with third-party libraries.
 
-The default `log4j2.xml` that <%=vars.product_name%> uses is stored in geode.jar as `log4j2-default.xml`. The contents of the configuration can be viewed in the product distribution in the following location: `$GEMFIRE/defaultConfigs/log4j2.xml`.
+An example `log4j2.xml` can be located within the product distribution at `$GEODE/config/log4j2.xml`.
 
 To specify your own `log4j2.xml` configuration file (or anything else supported by Log4j 2 such as .json or .yaml), use the following flag when starting up your JVM or <%=vars.product_name%> member:
 
@@ -27,7 +27,8 @@ To specify your own `log4j2.xml` configuration file (or anything else supported 
 -Dlog4j.configurationFile=<location-of-your-file>
 ```
 
-If the Java system property `log4j.configurationFile` is specified, then <%=vars.product_name%> will not use the `log4j2-default.xml` included in geode.jar. However, <%=vars.product_name%> will still create and register a AlertAppender and LogWriterAppender if the `alert-level` and `log-file` <%=vars.product_name%> properties are configured. You can then use the <%=vars.product_name%> LogWriter to log to <%=vars.product_name%>'s log or to generate an Alert and receive log statements from customer's application and all third party libraries. Alternatively, you can use any front-end logging API that is configured to log to Log4j 2.
+If the Java system property `log4j.configurationFile` is specified,
+then Log4j will not use the `log4j2.xml` included in `geode-log4j-<version>.jar`.
 
 ## Using Different Front-End Logging APIs to Log to Log4j2
 
@@ -52,9 +53,9 @@ Advanced users may want to move away entirely from setting `log-*` gemfire prope
 
 Custom Log4j 2 configuration in <%=vars.product_name%> comes with some caveats and notes:
 
--   Do not use `"monitorInterval="` in your log4j2.xml file because doing so can have significant performance impact. This setting instructs Log4j 2 to monitor the log4j2.xml config file at runtime and automatically reload and reconfigure if the file changes.
+-   Do not use `"monitorInterval="` in your `log4j2.xml` file, because doing so can have significant performance impact. This setting instructs Log4j 2 to monitor the log4j2.xml config file at runtime and automatically reload and reconfigure if the file changes.
 -   <%=vars.product_name%>'s default `log4j2.xml` specifies status="FATAL" because Log4j 2's StatusLogger generates warnings to standard out at ERROR level anytime <%=vars.product_name%> stops its AlertAppender or LogWriterAppender. <%=vars.product_name%> uses a lot of concurrent threads that are executing code with log statements; these threads may be logging while the <%=vars.product_name%> appenders are being stopped.
--   <%=vars.product_name%>'s default log4j2.xml specifies `shutdownHook="disable"` because <%=vars.product_name%> has a shutdown hook which disconnects the DistributedSystem and closes the Cache, which is executing the code that performs logging. If the Log4J2 shutdown hook stops logging before <%=vars.product_name%> completes its shutdown, Log4j 2 will attempt to start back up. This restart in turn attempts to register another Log4j 2 shutdown hook which fails resulting in a FATAL level message logged by Log4j 2.
+-   <%=vars.product_name%>'s default `log4j2.xml` specifies `shutdownHook="disable"` because <%=vars.product_name%> has a shutdown hook which disconnects the DistributedSystem and closes the Cache, which is executing the code that performs logging. If the Log4J2 shutdown hook stops logging before <%=vars.product_name%> completes its shutdown, Log4j 2 will attempt to start back up. This restart in turn attempts to register another Log4j 2 shutdown hook which fails resulting in a FATAL level message logged by Log4j 2.
 -   The GEODE\_VERBOSE marker (Log4J2 Marker are discussed on [http://logging.apache.org/log4j/2.x/manual/markers.html](http://logging.apache.org/log4j/2.x/manual/markers.html)) can be used to enable additional verbose log statements at TRACE level. Many log statements are enabled simply by enabling DEBUG or TRACE. However, even more log statements can be further enabled by using MarkerFilter to accept GEODE\_VERBOSE. The default <%=vars.product_name%> `log4j2.xml` disables GEODE\_VERBOSE with this line:
 
     ``` pre

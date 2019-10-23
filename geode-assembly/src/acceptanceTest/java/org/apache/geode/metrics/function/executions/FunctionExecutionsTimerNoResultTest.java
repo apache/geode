@@ -81,7 +81,7 @@ public class FunctionExecutionsTimerNoResultTest {
         .resolve("functions.jar").toAbsolutePath();
     writeJarFromClasses(functionsJarPath.toFile(),
         GetFunctionExecutionTimerValues.class, FunctionToTimeWithoutResult.class,
-        ExecutionsTimerValues.class);
+        ExecutionsTimerValues.class, ThreadSleep.class);
 
     String startLocatorCommand = String.join(" ",
         "start locator",

@@ -43,12 +43,12 @@ http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/quer
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>{queryId}</td>
 <td>QueryID for named query.</td>
 <td>selectOrders</td>
 </tr>
-<tr class="even">
+<tr>
 <td><em>query bind parameter values</em></td>
 <td>Bind parameters for the query are specified in the request body (JSON).</td>
 <td><p>Specify the parameter @type and @value for each bind parameter. For example, to provide values to the following query:</p>
@@ -162,7 +162,7 @@ Content-Type: application/json
 <td>404 NOT FOUND</td>
 <td>Query with specified ID could not be found</td>
 </tr>
-<tr class="even">
+<tr>
 <td>500 INTERNAL SERVER ERROR</td>
 <td>Encountered error at server:
 <ul>

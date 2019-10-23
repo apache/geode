@@ -89,7 +89,7 @@ public class FunctionExecutionsTimerLonerTest {
     functionHelpersJarPath =
         temporaryFolder.getRoot().toPath().resolve("function-helpers.jar").toAbsolutePath();
     writeJarFromClasses(functionHelpersJarPath.toFile(), FunctionToTimeWithResult.class,
-        GetFunctionExecutionTimerValues.class, ExecutionsTimerValues.class);
+        GetFunctionExecutionTimerValues.class, ExecutionsTimerValues.class, ThreadSleep.class);
 
     startServerCommandWithStatsEnabled = startServerCommand(false, true);
     startServerCommandWithStatsDisabled = startServerCommand(true, true);

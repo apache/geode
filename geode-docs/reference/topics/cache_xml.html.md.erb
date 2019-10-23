@@ -41,32 +41,32 @@ For <%=vars.product_name%> client configuration, see [&lt;client-cache&gt; Eleme
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>copy-on-read</td>
 <td><p>Boolean indicating whether entry value retrieval methods return direct references to the entry value objects in the cache (false) or copies of the objects (true).</p></td>
 <td>False</td>
 </tr>
-<tr class="even">
+<tr>
 <td>is-server</td>
 <td><p>Boolean indicating whether this member is a cache server.</p></td>
 <td>False</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>lock-timeout</td>
 <td><p>The timeout, in seconds, for implicit object lock requests. This setting affects automatic locking only, and does not apply to manual locking. If a lock request does not return before the specified timeout period, it is cancelled and returns with a failure.</p></td>
 <td>60</td>
 </tr>
-<tr class="even">
+<tr>
 <td>lock-lease</td>
 <td><p>The timeout, in seconds, for implicit and explicit object lock leases. This affects both automatic locking and manual locking. Once a lock is obtained, it can remain in force for the lock lease time period before being automatically cleared by the system.</p></td>
 <td>120</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>message-sync-interval</td>
 <td><p>Used for client subscription queue synchronization when this member acts as a server to clients and server redundancy is used. Sets the frequency (in seconds) at which the primary server sends messages to its secondary servers to remove queued events that have already been processed by the clients.</p></td>
 <td>1</td>
 </tr>
-<tr class="even">
+<tr>
 <td>search-timeout</td>
 <td><p>How many seconds a <code class="ph codeph">netSearch</code> operation can wait for data before timing out. You may want to change this based on your knowledge of the network load or other factors.</p></td>
 <td>300</td>
@@ -209,17 +209,17 @@ Configures a gateway sender to distribute region events to another <%=vars.produ
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>parallel</td>
 <td>Value of &quot;true&quot; or &quot;false&quot; that specifies the type of gateway sender that <%=vars.product_name%> creates.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td>dispatcher-threads</td>
 <td>Number of dispatcher threads that are used to process region events from a gateway sender queue or asynchronous event queue.</td>
 <td>5</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>order-policy</td>
 <td>When the <code class="ph codeph">dispatcher-threads</code> attribute is greater than 1, <code class="ph codeph">order-policy</code> configures the way in which multiple dispatcher threads process region events from a serial gateway queue or serial asynchronous event queue. This attribute can have one of the following values:
 <ul>
@@ -230,67 +230,67 @@ Configures a gateway sender to distribute region events to another <%=vars.produ
 <p>You cannot configure the <code class="ph codeph">order-policy</code> for a parallel event queue, because parallel queues cannot preserve event ordering for regions. Only the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved.</p></td>
 <td>key</td>
 </tr>
-<tr class="even">
+<tr>
 <td>id</td>
 <td>Unique identifier for the gateway sender, usually an identifier associated with a physical location. This attribute is required.</td>
 <td>null</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>remote-distributed-system-id</td>
 <td>Integer that uniquely identifies the remote <%=vars.product_name%> cluster to which this gateway sender will send region events. This value corresponds to the <code class="ph codeph">distributed-system-id</code> property specified in locators for the remote cluster. This attribute is required.</td>
 <td>null</td>
 </tr>
-<tr class="even">
+<tr>
 <td>manual-start</td>
 <td><b>Deprecated.</b> Boolean value that specifies whether you need to manually start the gateway sender. If you supply a null value, the default value of false is used, and the gateway sender attempts to start automatically. <em>A manual start is likely to cause data loss, so manual start should never be used in a production system.</em></td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>socket-buffer-size</td>
 <td>Size of the socket buffer that sends messages to remote sites. This size should match the size of the <code class="ph codeph">socket-buffer-size</code> attribute of remote gateway receivers that process region events.</td>
 <td>32768</td>
 </tr>
-<tr class="even">
+<tr>
 <td>socket-read-timeout</td>
 <td>Amount of time in milliseconds that the gateway sender will wait to receive an acknowledgment from a remote site. By default this is set to 0, which means there is no timeout. If you do set this timeout, you must set it to a minimum of 30000 (milliseconds). Setting it to a lower number will generate an error message and reset the value to the default of 0.</td>
 <td>0</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>enable-batch-conflation</td>
 <td>Boolean value that determines whether <%=vars.product_name%> should conflate messages.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td>batch-size</td>
 <td>Maximum number of messages that a batch can contain.</td>
 <td>100</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>batch-time-interval</td>
 <td>Maximum number of milliseconds that can elapse between sending batches.</td>
 <td>1000</td>
 </tr>
-<tr class="even">
+<tr>
 <td>enable-persistence</td>
 <td>Boolean value that determines whether <%=vars.product_name%> persists the gateway queue.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>disk-store-name</td>
 <td>Named disk store to use for storing the queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, <%=vars.product_name%> uses the default disk store for overflow and queue persistence.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td>disk-synchronous</td>
 <td>For regions that write to disk, boolean that specifies whether disk writes are done synchronously for the region.</td>
 <td>true</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>maximum-queue-memory</td>
 <td>Maximum amount of memory in megabytes that the queue can consume before overflowing to disk.</td>
 <td>100 MB</td>
 </tr>
-<tr class="even">
+<tr>
 <td>alert-threshold</td>
 <td>Maximum number of milliseconds that a region event can remain in the gateway sender queue before <%=vars.product_name%> logs an alert.</td>
 <td>0</td>
@@ -400,39 +400,39 @@ Configures a gateway receiver to receive and apply region events that were distr
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>start-port</td>
 <td><p>Starting port number to use when specifying the range of possible port numbers this gateway receiver will use to connects to gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
 <p>The <code class="ph codeph">STARTPORT</code> value is inclusive while the <code class="ph codeph">ENDPORT</code> value is exclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
 <td>5000</td>
 </tr>
-<tr class="even">
+<tr>
 <td>end-port</td>
 <td><p>Defines the upper bound port number to use when specifying the range of possible port numbers this gateway receiver will use to for connections from gateway senders in other sites. <%=vars.product_name%> chooses an unused port number in the specified port number range to start the receiver. If no port numbers in the range are available, an exception is thrown.</p>
 <p>The <code class="ph codeph">ENDPORT</code> value is exclusive while the <code class="ph codeph">STARTPORT</code> value is inclusive. For example, if you specify <code class="ph codeph">STARTPORT=&quot;50510&quot;</code> and <code class="ph codeph">ENDPOINT=&quot;50520&quot;</code>, <%=vars.product_name%> chooses a port value from 50510 to 50519.</p></td>
 <td>5500</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>bind-address</td>
 <td>Network address for connections from gateway senders in other sites. Specify the address as a literal string value.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td>hostname-for-senders</td>
 <td>Attribute where you can specify an IP address or hostname for gateway sender connections. If you configure hostname-for-senders, locators will use the provided hostname or IP address when instructing gateway senders on how to connect to gateway receivers. If you provide &quot;&quot; or null as the value, by default the gateway receiver's bind-address will be sent to clients.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td>manual-start</td>
 <td>When set to false, the gateway receiver will automatically start when the receiver is created. If set to true, you must manually start the receiver.</td>
 <td>true</td>
 </tr>
-<tr class="even">
+<tr>
 <td>maximum-time-between-pings</td>
 <td>Integer value that specifies the time interval (in milliseconds) to use between pings to connected WAN sites. This value determines the maximum amount of time that can elapse before a remote WAN site is considered offline.</td>
 <td>60000</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>socket-buffer-size</td>
 <td>An integer value that sets the buffer size (in bytes) of the socket connection for this gateway receiver. This value should match the <code class="ph codeph">socket-buffer-size</code> setting of gateway senders that connect to this receiver.</td>
 <td>32768</td>
@@ -514,57 +514,57 @@ Configures a queue for sending region events to an AsyncEventListener implementa
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>id</td>
 <td>Unique identifier for the queue. This attribute is required.</td>
 <td>null</td>
 </tr>
-<tr class="even">
+<tr>
 <td>parallel</td>
 <td>Value of &quot;true&quot; or &quot;false&quot; that specifies the type of queue that <%=vars.product_name%> creates.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>batch-size</td>
 <td>Maximum number of messages that a batch can contain.</td>
 <td>100</td>
 </tr>
-<tr class="even">
+<tr>
 <td>batch-time-interval</td>
 <td>Maximum number of milliseconds that can elapse between sending batches.</td>
 <td>5</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>enable-batch-conflation</td>
 <td>Boolean value that determines whether <%=vars.product_name%> should conflate messages.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td>disk-store-name</td>
 <td>Named disk store to use for storing queue overflow, or for persisting the queue. If you specify a value, the named disk store must exist. If you specify a null value, <%=vars.product_name%> uses the default disk store for overflow and queue persistence.</td>
 <td>null specifies the default disk store</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>disk-synchronous</td>
 <td>For regions that write to disk, boolean that specifies whether disk writes are done synchronously for the region.</td>
 <td>true</td>
 </tr>
-<tr class="even">
+<tr>
 <td>dispatcher-threads</td>
 <td>Number of dispatcher threads that are used to process region events from the queue.</td>
 <td>5</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>forward-expiration-destroy</td>
 <td>When true, forwards expiration destroy operations to AsyncEventListener.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td>maximum-queue-memory</td>
 <td>Maximum amount of memory in megabytes that the queue can consume before overflowing to disk.</td>
 <td>100 mb</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>order-policy</td>
 <td>When the <code class="ph codeph">dispatcher-threads</code> attribute is greater than 1, <code class="ph codeph">order-policy</code> configures the way in which multiple dispatcher threads process region events from the queue. This attribute can have one of the following values:
 <ul>
@@ -575,12 +575,12 @@ Configures a queue for sending region events to an AsyncEventListener implementa
 <p>You cannot configure the <code class="ph codeph">order-policy</code> for a parallel event queue, because parallel queues cannot preserve event ordering for regions. Only the ordering of events for a given partition (or in a given queue of a distributed region) can be preserved.</p></td>
 <td>key</td>
 </tr>
-<tr class="even">
+<tr>
 <td>pause-event-processing</td>
 <td>When true, event dispatching from the queue to the listener(s) will be paused when the AsyncEventQueue is started.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>persistent</td>
 <td>Boolean value that determines whether <%=vars.product_name%> persists this queue.</td>
 <td>False</td>
@@ -665,23 +665,23 @@ The `cacheserver` process uses only `cache.xml` configuration. For application s
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>bind-address</td>
 <td>Hostname or IP address that the server is to listen on for client connections. If null, the server listens on the machine’s default address.</td>
 <td>null</td>
 </tr>
-<tr class="even">
+<tr>
 <td>hostname-for-clients</td>
 <td>Hostname or IP address to pass to the client as the location where the server is listening. When the server connects to the locator it tells the locator the host and port where it is listening for client connections. If the host the server uses by default is one that the client can’t translate into an IP address, the client will have no route to the server’s host and won’t be able to find the server. For this situation, you must supply the server’s alternate hostname for the locator to pass to the client. If null, the server’s <code class="ph codeph">bind-address</code> setting is used.</td>
 <td>null</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>load-poll-interval</td>
 <td>Frequency, in milliseconds, to poll the load probe for load information on the server.</td>
 <td>5000
 <p>(5 seconds)</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>max-connections</td>
 <td>Maximum number of client connections for the server. When the maximum is reached, the server refuses additional client connections.
 <p>
@@ -689,7 +689,7 @@ The `cacheserver` process uses only `cache.xml` configuration. For application s
 Set this at least as high as max-threads.</p></td>
 <td>800</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>max-threads</td>
 <td>Maximum number of threads allowed in this server to service client connections. When the limit is reached, server threads begin servicing multiple connections. A zero setting causes the server to use a thread for every client connection.
 <p>
@@ -697,7 +697,7 @@ Set this at least as high as max-threads.</p></td>
 Set this no higher than max-connections.</p></td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td>maximum-message-count</td>
 <td>Maximum number of messages allowed in a subscription queue. When the queue reaches this limit, messages block.
 <p>
@@ -705,7 +705,7 @@ Set this no higher than max-connections.</p></td>
 Used only if <code class="ph codeph">client-subscription</code> is not configured.</p></td>
 <td>230000</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>maximum-time-between-pings</td>
 <td>Maximum time, in milliseconds, the server allows to pass between messages or pings indicating a client is healthy.
 <p>
@@ -714,7 +714,7 @@ A setting of 0 or a negative number turns off client health monitoring. Be caref
 <td>60000
 <p>(1 minute)</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>message-time-to-live</td>
 <td>Setting used for highly available subscription queues. The expiration time, in seconds, for non-durable messages in the secondary server’s client subscription queue. The system removes non-durable messages that have been in the queue beyond this time. If set to 0 (zero), the messages are never removed.
 <p>
@@ -723,17 +723,17 @@ Set this high enough to avoid removing messages that are still valid, to aovid l
 <td>180
 <p>(3 minutes)</p></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>port</td>
 <td>Port that the server listens on for client communication.</td>
 <td>40404</td>
 </tr>
-<tr class="even">
+<tr>
 <td>socket-buffer-size</td>
 <td>Size for socket buffers used for server-to-client communication.</td>
 <td>32768</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>tcp-no-delay</td>
 <td>When set to true, enables TCP_NODELAY for <%=vars.product_name%> server connections to clients.</td>
 <td>false</td>
@@ -821,23 +821,23 @@ Use for client caches. Defines a client's server pool used to communicate with s
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>free-connection-timeout</td>
 <td>Amount of time a thread will wait to get a pool connection before timing out with an exception. This timeout keeps threads from waiting indefinitely when the pool’s <code class="ph codeph">max-connections</code> has been reached and all connections in the pool are in use by other threads.</td>
 <td>10000</td>
 </tr>
-<tr class="even">
+<tr>
 <td>idle-timeout</td>
 <td>Maximum time, in milliseconds, a pool connection can stay open without being used when there are more than <code class="ph codeph">min-connections</code> in the pool. Pings over the connection do not count as connection use. If set to -1, there is no idle timeout.</td>
 <td>5000</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>load-conditioning-interval</td>
 <td>Amount of time, in milliseconds, a pool connection can remain open before being eligible for silent replacement to a less-loaded server.</td>
 <td>300000
 <p>(5 minutes)</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>max-connections</td>
 <td>Maximum number of pool connections the pool can create. If the maximum connections are in use, an operation requiring a client-to-server connection blocks until a connection becomes available or the <code class="ph codeph">free-connection-timeout</code> is reached. If set to -1, there is no maximum. The setting must indicate a cap greater than <code class="ph codeph">min-connections</code>.
 <p>
@@ -845,17 +845,17 @@ Use for client caches. Defines a client's server pool used to communicate with s
 If you need to use this to cap your pool connections, you should disable the pool attribute <code class="ph codeph">pr-single-hop-enabled</code>. Leaving single hop enabled can increase thrashing and lower performance.</p></td>
 <td>-1</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>min-connections</td>
 <td>Minimum number of pool connections to keep available at all times. Used to establish the initial connection pool. If set to 0 (zero), no connection is created until an operation requires it. This number is the starting point, with more connections added later as needed, up to the <code class="ph codeph">max-connection</code> setting. The setting must be an integer greater than or equal to 0.</td>
 <td>1</td>
 </tr>
-<tr class="even">
+<tr>
 <td>multiuser-authentication</td>
 <td>Used for installations with security where you want to accommodate multiple users within a single client. If set to true, the pool provides authorization for multiple user instances in the same client application, and each user accesses the cache through its own <code class="ph codeph">RegionService</code> instance. If false, the client either uses no authorization or just provides credentials for the single client process.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>name</td>
 <td>Name of this pool. Used in the client region pool-name to assign this pool to a region in the client cache.
 <p>
@@ -863,7 +863,7 @@ If you need to use this to cap your pool connections, you should disable the poo
 This is a required property with no default setting.</p></td>
 <td>none</td>
 </tr>
-<tr class="even">
+<tr>
 <td>ping-interval</td>
 <td>How often to communicate with the server to show the client is alive, set in milliseconds. Pings are only sent when the ping-interval elapses between normal client messages.
 <p>
@@ -871,22 +871,22 @@ This is a required property with no default setting.</p></td>
 Set this lower than the server’s <code class="ph codeph">maximum-time-between-pings</code>.</p></td>
 <td>10000</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>pr-single-hop-enabled</td>
 <td>Setting used to improve access to partitioned region data in the servers. Indicates whether to use metadata about the partitioned region data storage locations to decide where to send some data requests. This allows a client to send a data operation directly to the server hosting the key. Without this, the client contacts any available server and that server contacts the data store. This is used only for operations that can be carried out on a server-by-server basis, like put, get, and destroy.</td>
 <td>true</td>
 </tr>
-<tr class="even">
+<tr>
 <td>read-timeout</td>
 <td>Maximum time, in milliseconds, for the client to wait for a response from a server.</td>
 <td>10000</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>retry-attempts</td>
 <td>Number of times to retry a client request before giving up. If one server fails, the pool moves to the next, and so on until it is successful or it hits this limit. If the available servers are fewer than this setting, the pool will retry servers that have already failed until it reaches the limit. If this is set to -1, the pool tries every available server once.</td>
 <td>-1</td>
 </tr>
-<tr class="even">
+<tr>
 <td>server-group</td>
 <td>Logical named server group to use from the pool. A null value uses the global server group to which all servers belong.
 <p>
@@ -894,17 +894,17 @@ Set this lower than the server’s <code class="ph codeph">maximum-time-between-
 This is only used when the <code class="ph codeph">locator</code> list is defined.</p></td>
 <td>null</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>socket-buffer-size</td>
 <td>Size for socket buffers from the client to the server. Default: 32768.</td>
 <td>32768</td>
 </tr>
-<tr class="even">
+<tr>
 <td>statistic-interval</td>
 <td>Interval, in milliseconds, at which to send client statistics to the server. If set to -1, statistics are not sent.</td>
 <td>-1</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>subscription-ack-interval</td>
 <td>Time, in milliseconds, between messages to the primary server to acknowledge event receipt.
 <p>
@@ -912,19 +912,19 @@ This is only used when the <code class="ph codeph">locator</code> list is define
 Used only when <code class="ph codeph">subscription-redundancy</code> is not ‘0’ (zero).</p></td>
 <td>100</td>
 </tr>
-<tr class="even">
+<tr>
 <td>subscription-enabled</td>
 <td>Boolean indicating whether the server should connect back to the client and automatically sends server-side cache update information. Any bind address information for the client is automatically passed to the server for use in the callbacks.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>subscription-message-
 <p>tracking-timeout</p></td>
 <td>Time-to-live, in milliseconds, for entries in the client’s message tracking list.</td>
 <td>900000
 <p>(15 minutes)</p></td>
 </tr>
-<tr class="even">
+<tr>
 <td>subscription-redundancy</td>
 <td>Number of servers to use as backup to the primary for highly available subscription queue management. If set to 0, none are used. If set to -1, all available servers are used.</td>
 <td>0</td>
@@ -1025,54 +1025,54 @@ Defines a pool of one or more disk stores, which can be used by regions, and cli
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>name</td>
 <td>The name of the Disk Store.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td>auto-compact</td>
 <td>Set to true to automatically compact the disk files.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td>compaction-threshold</td>
 <td>The threshold at which an oplog will become compactable. Until it reaches this threshold the oplog will not be compacted.
 <p>The threshold is a percentage in the range 0 to 100.</p></td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td>allow-force-compaction</td>
 <td>Set to true to allow disk compaction to be forced on this disk store.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td>max-oplog-size</td>
 <td>The maximum size, in megabytes, of an oplog (operation log) file.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td>time-interval</td>
 <td>The number of milliseconds that can elapse before unwritten data is written to disk.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td>write-buffer-size</td>
 <td>The size of the write buffer that this disk store uses when writing data to disk. Larger values may increase performance but use more memory. The disk store allocates one direct memory buffer of this size.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td>queue-size</td>
 <td>Maximum number of operations that can be asynchronously queued to be written to disk.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td>disk-usage-warning-percentage</td>
 <td>Disk usage above this threshold generates a warning message. For example, if the threshold is set to 90%, then on a 1 TB drive falling under 100 GB of free disk space generates the warning.
 <p>Set to &quot;0&quot; (zero) to disable.</p></td>
 <td>90</td>
 </tr>
-<tr class="even">
+<tr>
 <td>disk-usage-critical-percentage</td>
 <td>Disk usage above this threshold generates an error message and shuts down the member's cache. For example, if the threshold is set to 99%, then falling under 10 GB of free disk space on a 1 TB drive generates the error and shuts down the cache.
 <p>Set to &quot;0&quot; (zero) to disable.</p></td>
@@ -1119,7 +1119,7 @@ Specifies a region or disk store's disk directory.
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>dir-size</td>
 <td>Maximum amount of space to use for the disk store, in megabytes.</td>
 <td>214748364
@@ -1213,7 +1213,7 @@ Specifies a region attributes template that can be named (by `id`) and reference
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>concurrency-level</td>
 <td>Gives an estimate of the maximum number of application threads that will concurrently access a region entry at one time. This attribute does not apply to partitioned regions. This attribute helps <%=vars.product_name%> optimize the use of system resources and reduce thread contention. This sets an initial parameter on the underlying <code class="ph codeph">java.util.ConcurrentHashMap</code> used for storing region entries.
 <p>
@@ -1226,7 +1226,7 @@ Before you modify this, read the concurrency level description, then see the Jav
 &lt;/region-attributes&gt;</code></pre></td>
 <td>16 (threads)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>data-policy</td>
 <td><p>Specifies how the local cache handles data for a region. This setting controls behavior such as local data storage and region initialization.</p>
 <p>
@@ -1236,31 +1236,31 @@ Configure the most common options using the region shortcuts, <code class="ph co
 <div class="p">
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td>empty</td>
 <td>No data storage in the local cache. The region always appears empty. Use this for event delivery to and from the local cache without the memory overhead of data storage - zero-footprint producers that only distribute data to others and zero-footprint consumers that only see events. To receive events with this, set the region's <code class="ph codeph">subscription-attributes</code> <code class="ph codeph">interest-policy</code> to all.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>normal</td>
 <td>Data used locally (accessed with <code class="ph codeph">get</code>, stored with <code class="ph codeph">put</code>, etc.) is stored in the local cache. This policy allows the contents in the cache to differ from other caches.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>partition</td>
 <td>Data is partitioned across local and remote caches using the automatic data distribution behavior of partitioned regions. Additional configuration is done in the <code class="ph codeph">partition-attributes</code>.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>replicate</td>
 <td>The region is initialized with the data from other caches. After initialization, all events for the distributed region are automatically copied into the local region, maintaining a replica of the entire distributed region in the local cache. Operations that would cause the contents to differ with other caches are not allowed. This is compatible with local <code class="ph codeph">scope</code>, behaving the same as for normal.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>persistent-partition</td>
 <td>Behaves the same as <code class="ph codeph">partition</code> and also persists data to disk.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>persistent-replicate</td>
 <td>Behaves the same as <code class="ph codeph">replicate</code> and also persists data to disk.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>preloaded</td>
 <td>Initializes like a replicated region, then, once initialized, behaves like a normal region.</td>
 </tr>
@@ -1279,7 +1279,7 @@ Configure the most common options using the region shortcuts, <code class="ph co
 <p>If you use <code class="ph codeph">data-policy</code>, you must set the scope explicitly.</p></td>
 <td>normal</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>enable-async-conflation</td>
 <td><p>For TCP/IP distributions between peers, specifies whether to allow aggregation of asynchronous messages sent by the producer member for the region. This is a special-purpose voolean attribute that applies only when asynchronous queues are used for slow consumers. A false value disables conflation so that all asynchronous messages are sent individually. This special-purpose attribute gives you extra control over peer-to-peer communication between distributed regions using TCP/IP. This attribute does not apply to client/server communication or to communication using the UDP unicast or IP multicast protocols.</p>
 <p>
@@ -1292,7 +1292,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>true</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>enable-subscription-conflation</td>
 <td><p>Boolean for server regions that specifies whether the server can conflate its messages to the client. A true value enables conflation.</p>
 <p>
@@ -1305,7 +1305,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
  &lt;/region-attributes&gt;</code></pre></td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td>gateway-sender-ids</td>
 <td><p>Specifies one or more gateway sender IDs to use for distributing region events to remote <%=vars.product_name%> sites. Specify multiple IDs as a comma-separated list.</p>
 <p><strong>API:</strong> <code class="ph codeph">addGatewaySenderId</code></p>
@@ -1315,7 +1315,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>not set</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>async-event-queue-ids</td>
 <td>Specifies one or more asynchronous event queues to use for distributing region events an <code class="ph codeph">AsyncEventListener</code> implementation (for example, for write-behind cache event handling). Specify multiple IDs as a comma-separated list.
 <p><strong>API</strong>: <code class="ph codeph">addAsyncEventQueueId</code></p>
@@ -1325,13 +1325,13 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>not set</td>
 </tr>
-<tr class="even">
+<tr>
 <td>hub-id</td>
 <td><p>If the <code class="ph codeph">enable-gateway</code> attribute is set to true, a comma-separated list of gateway hub IDs that receive events from the region.</p>
 <p>Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 configuration, see the <code class="ph codeph">gateway-sender-id</code> attribute of the <code class="ph codeph">&lt;region-attributes&gt;</code> element.</p></td>
 <td>null</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>id</td>
 <td><p>Stores the region attribute settings in the cache with this identifier. Once stored, the attributes can be retrieved using the region attribute <code class="ph codeph">refid</code>.</p>
 <p><strong>API:</strong> <code class="ph codeph">setId</code></p>
@@ -1341,7 +1341,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>not set</td>
 </tr>
-<tr class="even">
+<tr>
 <td>ignore-jta</td>
 <td><p>Boolean that determines whether operations on this region participate in active JTA transactions or ignore them and operate outside of the transactions. This is primarily used in cache loaders, writers, and listeners that need to perform non-transactional operations on a region, such as caching a result set.</p>
 <p><strong>API:</strong> <code class="ph codeph">setIgnoreJTA</code></p>
@@ -1351,7 +1351,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>index-update-type</td>
 <td><p>Specifies whether region indexes are maintained synchronously with region modifications, or asynchronously in a background thread. In the <code class="ph codeph">cache.xml</code> file, this is set as a value, asynchronous or synchronous, assigned to the <code class="ph codeph">index-update-type</code> region attribute. Set this through the API by passing a boolean to the <code class="ph codeph">setIndexMaintenanceSynchronous</code> method.</p>
 <p><strong>API:</strong> <code class="ph codeph">setIndexMaintenanceSynchronous</code></p>
@@ -1361,7 +1361,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>synchronous updates</td>
 </tr>
-<tr class="even">
+<tr>
 <td>initial-capacity</td>
 <td><p>Together with the <code class="ph codeph">load-factor</code> region attribute, sets the initial parameters on the underlying <code class="ph codeph">java.util.ConcurrentHashMap</code> used for storing region entries.</p>
 <p><strong>API:</strong> <code class="ph codeph">setInitialCapacity</code></p>
@@ -1371,7 +1371,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>16</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>is-lock-grantor</td>
 <td><p>Determines whether this member defines itself as the lock grantor for the region at region creation time. This only specifies whether the member becomes lock grantor at creation and does not reflect the current state of the member’s lock grantor status. The member’s lock grantor status may change if another member subsequently defines the region with <code class="ph codeph">is-lock-grantor</code> set to true. This attribute is only relevant for regions with <code class="ph codeph">global</code> <code class="ph codeph">scope</code>, as only they allow locking. It affects implicit and explicit locking.</p>
 <p><strong>API:</strong> <code class="ph codeph">setLockGrantor</code></p>
@@ -1381,7 +1381,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td>load-factor</td>
 <td><p>Together with the initial-capacity region attribute, sets the initial parameters on the underlying <code class="ph codeph">java.util.ConcurrentHashMap</code> used for storing region entries. This must be a floating point number between 0 and 1, inclusive.</p>
 <p>
@@ -1394,12 +1394,12 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>.75</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>mirror-type</td>
 <td>Deprecated</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td>multicast-enabled</td>
 <td><p>Boolean that specifies whether distributed operations on a region should use multicasting. To enable this, multicast must be enabled for the cluster with the <code class="ph codeph">mcast-port</code> <code class="ph codeph">gemfire.properties</code> setting.</p>
 <p><strong>API:</strong> <code class="ph codeph">setMulticastEnabled</code></p>
@@ -1409,7 +1409,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>pool-name</td>
 <td><p>Identifies the region as a client region and specifies the server pool the region is to use. The named pool must be defined in the client cache before the region is created. If this is not set, the region does not connect to the servers as a client region.</p>
 <p><strong>API:</strong> <code class="ph codeph">setPoolName</code></p>
@@ -1444,7 +1444,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/client-cache&gt;</code></pre></td>
 <td>not set</td>
 </tr>
-<tr class="even">
+<tr>
 <td>disk-store-name</td>
 <td><p>Assigns the region to the disk store with this name from the disk stores defined for the cache. Persist region data to disk by defining the region as persistent using the Shortcut Attribute Options or data-policy settings. Overflow data to disk by implementing LRU eviction-attributes with an action of overflow to disk. Each disk store defines the file system directories to use, how data is written to disk, and other disk storage maintenance properties. In addition, the <code class="ph codeph">disk-synchronous</code> region attribute specifies whether writes are done synchronously or asynchronously.</p>
 <p><strong>API:</strong> <code class="ph codeph">setDiskStoreName</code></p>
@@ -1454,7 +1454,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>null</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>disk-synchronous</td>
 <td><p>For regions that write to disk, boolean that specifies whether disk writes are done synchronously for the region.</p>
 <p><strong>API:</strong> <code class="ph codeph">setDiskSynchronous</code></p>
@@ -1465,7 +1465,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>true</td>
 </tr>
-<tr class="even">
+<tr>
 <td>refid</td>
 <td><p>Retrieves region shortcuts and user-defined named region attributes for attributes initialization</p>
 <p><strong>API:</strong> <code class="ph codeph">setRefId</code></p>
@@ -1478,7 +1478,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>not set</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>scope</td>
 <td><p>Definition: Determines how updates to region entries are distributed to the other caches in the cluster where the region and entry are defined. Scope also determines whether to allow remote invocation of some of the region’s event handlers, and whether to use region entry versions to provide consistent updates across replicated regions.</p>
 <p>
@@ -1491,19 +1491,19 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 <div class="p">
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td>local</td>
 <td>No distribution. The region is visible only to threads running inside the member.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>distributed-no-ack</td>
 <td>Events are distributed to remote caches with no acknowledgement required.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>distributed-ack</td>
 <td>Events are distributed to remote caches with receipt acknowledgement required. Region entry versions are used to provide consistent updates across members of the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>global</td>
 <td>Events are distributed to remote caches with global locking to ensure distributed cache consistency.</td>
 </tr>
@@ -1517,7 +1517,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>distributed-no-ack</td>
 </tr>
-<tr class="even">
+<tr>
 <td>statistics-enabled</td>
 <td>Boolean specifying whether to gather statistics on the region. Must be true to use expiration on the region. <%=vars.product_name%> provides a standard set of statistics for cached regions and region entries, which give you information for fine-tuning your cluster. Unlike other <%=vars.product_name%> statistics, statistics for local and distributed regions are not archived and cannot be charted. They are kept in instances of <code class="ph codeph">org.apache.geode.cache.CacheStatistics</code> and made available through the region and its entries through the <code class="ph codeph">Region.getStatistics</code> and <code class="ph codeph">Region.Entry.getStatistics</code> methods.
 <p><strong>API:</strong> <code class="ph codeph">setStatisticsEnabled</code></p>
@@ -1527,7 +1527,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>cloning-enabled</td>
 <td><p>Determines how <code class="ph codeph">fromDelta</code> applies deltas to the local cache for delta propagation. When true, the updates are applied to a clone of the value and then the clone is saved to the cache. When false, the value is modified in place in the cache.</p>
 <p><strong>API:</strong> <code class="ph codeph">setCloningEnabled</code></p>
@@ -1537,7 +1537,7 @@ To use this attribute, the <code class="ph codeph">multicast-enabled</code> regi
 &lt;/region-attributes&gt;</code></pre></td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td>concurrency-checks-enabled</td>
 <td><p>Determines whether members perform checks to provide consistent handling for concurrent or out-of-order updates to distributed regions. See [Consistency for Region Updates](../../developing/distributed_regions/region_entry_versions.html#topic_CF2798D3E12647F182C2CEC4A46E2045).</p>
 <p>
@@ -1550,7 +1550,7 @@ Applications that use a <code class="ph codeph">client-cache</code> may want to 
 &lt;/region-attributes&gt;</code></pre></td>
 <td>true</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>off-heap</td>
 <td><p>Specifies that the region uses off-heap memory to store entry values, including values for region entries and queue entries. The region will still use heap memory for everything else, such as entry keys and the ConcurrentHashMap.</p>
 <p><strong>API:</strong> <code class="ph codeph">setOffHeap</code></p>
@@ -1648,31 +1648,31 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>timeout</td>
 <td>Number of seconds before a region or an entry expires. If timeout is not specified, it defaults to zero (which means no expiration).</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td>action</td>
 <td>Action that should take place when a region or an entry expires.
 <div class="p">
 Select one of the following expiration actions:
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">local-destroy</span></td>
 <td>Removes the region or entry from the local cache, but does not distribute the removal operation to remote members. You cannot use this action on partitioned region entries.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">destroy</span></td>
 <td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">invalidate</span></td>
 <td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">local-invalidate</span></td>
 <td>Marks an entry or all entries in the region as invalid but does not distribute the operation. You cannot use this action on partitioned region entries. Local region invalidation is only supported for regions that are not configured as replicated regions.</td>
 </tr>
@@ -1767,31 +1767,31 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>timeout</td>
 <td>Number of seconds before a region or an entry expires. If timeout is not specified, it defaults to zero (which means no expiration).</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td>action</td>
 <td>Action that should take place when a region or an entry expires.
 <div class="p">
 Select one of the following expiration actions:
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">local-destroy</span></td>
 <td>Removes the region or entry from the local cache, but does not distribute the removal operation to remote members. You cannot use this action on partitioned region entries.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">destroy</span></td>
 <td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">invalidate</span></td>
 <td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">local-invalidate</span></td>
 <td>Marks an entry or all entries in the region as invalid but does not distribute the operation. You cannot use this action on partitioned region entries. Local region invalidation is only supported for regions that are not configured as replicated regions.</td>
 </tr>
@@ -1884,31 +1884,31 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>timeout</td>
 <td>Number of seconds before a region or an entry expires. If timeout is not specified, it defaults to zero (which means no expiration).</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td>action</td>
 <td>Action that should take place when a region or an entry expires.
 <div class="p">
 Select one of the following expiration actions:
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">local-destroy</span></td>
 <td>Removes the region or entry from the local cache, but does not distribute the removal operation to remote members. You cannot use this action on partitioned region entries.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">destroy</span></td>
 <td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">invalidate</span></td>
 <td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">local-invalidate</span></td>
 <td>Marks an entry or all entries in the region as invalid but does not distribute the operation. You cannot use this action on partitioned region entries. Local region invalidation is only supported for regions that are not configured as replicated regions.</td>
 </tr>
@@ -2003,31 +2003,31 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>timeout</td>
 <td>Number of seconds before a region or an entry expires. If timeout is not specified, it defaults to zero (which means no expiration).</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td>action</td>
 <td>Action that should take place when a region or an entry expires.
 <div class="p">
 Select one of the following expiration actions:
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">local-destroy</span></td>
 <td>Removes the region or entry from the local cache, but does not distribute the removal operation to remote members. You cannot use this action on partitioned region entries.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">destroy</span></td>
 <td>Removes the region or entry completely from the cache. Destroy actions are distributed according to the region's distribution settings. Use this option when the region or entry is no longer needed for any application in the cluster.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword option">invalidate</span></td>
 <td>Default expiration action. Marks an entry or all entries in the region as invalid. Distributes the invalidation according to the region's scope. This is the proper choice when the region or the entry is no longer valid for any application in the cluster.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword option">local-invalidate</span></td>
 <td>Marks an entry or all entries in the region as invalid but does not distribute the operation. You cannot use this action on partitioned region entries. Local region invalidation is only supported for regions that are not configured as replicated regions.</td>
 </tr>
@@ -2217,25 +2217,25 @@ Establishes reliability requirements and behavior for a region. Use this to conf
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>loss-action</td>
 <td><p>Set one of the following values to specify how access to the region is affected when one or more required roles are lost.</p>
 <div class="p">
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td>full-access</td>
 <td>Access to the region is unaffected when required roles are missing.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>limited-access</td>
 <td>Only local access to the region is allowed when required roles are missing.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>no-access</td>
 <td>The region is unavailable when required roles are missing.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>reconnect</td>
 <td>Loss of required roles causes the entire cache to be closed.</td>
 </tr>
@@ -2244,17 +2244,17 @@ Establishes reliability requirements and behavior for a region. Use this to conf
 </div></td>
 <td>no_access</td>
 </tr>
-<tr class="even">
+<tr>
 <td>resumption-action</td>
 <td><div class="p">
 Specifies how the region is affected by resumption of reliability when one or more missing required roles return to the distributed membership. Set one of the following values:
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td>none</td>
 <td>No special action takes place when reliability resumes.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>reinitialize</td>
 <td>Resumption of reliability causes the region to be cleared of all data and replicated regions will do a new getInitialImage operation to repopulate the region.</td>
 </tr>
@@ -2329,17 +2329,17 @@ The interest policy determines which events are delivered, but the `data-policy`
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>interest-policy</td>
 <td>The two <code class="ph codeph">interest-policy</code> options are:
 <div class="p">
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td>cache-content</td>
 <td>The default, registers interest in events only for entries that are already in the local region. For partitioned regions, the local member must hold the primary copy of the entry’s data.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>all</td>
 <td>Registers interest in events for all entries that are anywhere in the distributed or partitioned region, regardless of whether they are already present in the local cache.</td>
 </tr>
@@ -2471,13 +2471,13 @@ Using the maximum attribute, specifies maximum region capacity based on entry co
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>action</td>
 <td>Set one of the following eviction actions:
 <div class="p">
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td>local-destroy</td>
 <td>Removes the entry from the local cache, but does not distribute the removal operation to remote
 members.  This action can be applied to an entry in a partitioned region, but is not recommended
@@ -2485,7 +2485,7 @@ if redundancy is enabled (redundant-copies > 0), as it introduces inconsistencie
 redundant buckets.  When applied to an entry in a replicated region, <%=vars.product_name%> silently changes
 the region type to "preloaded" to accommodate the local modification.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>overflow-to-disk</td>
 <td>The entry's value is overflowed to disk and set to null in memory. The
 entry's key is retained in the cache.</td>
@@ -2495,7 +2495,7 @@ entry's key is retained in the cache.</td>
 </div></td>
 <td>local-destroy</td>
 </tr>
-<tr class="even">
+<tr>
 <td>maximum</td>
 <td>The maximum number of entries allowed in a region.</td>
 <td> </td>
@@ -2528,13 +2528,13 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>action</td>
 <td>Set one of the following eviction actions:
 <div class="p">
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td>local-destroy</td>
 <td>Removes the entry from the local cache, but does not distribute the removal operation to remote
 members.  This action can be applied to an entry in a partitioned region, but is not recommended
@@ -2542,7 +2542,7 @@ if redundancy is enabled (redundant-copies > 0), as it introduces inconsistencie
 redundant buckets.  When applied to an entry in a replicated region, <%=vars.product_name%> silently changes
 the region type to "preloaded" to accommodate the local modification.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>overflow-to-disk</td>
 <td>The entry's value is overflowed to disk and set to null in memory. The
 entry's key is retained in the cache.</td>
@@ -2577,13 +2577,13 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>action</td>
 <td>Set one of the following eviction actions:
 <div class="p">
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td>local-destroy</td>
 <td>Removes the entry from the local cache, but does not distribute the removal operation to remote
 members.  This action can be applied to an entry in a partitioned region, but is not recommended
@@ -2591,7 +2591,7 @@ if redundancy is enabled (redundant-copies > 0), as it introduces inconsistencie
 redundant buckets.  When applied to an entry in a replicated region, <%=vars.product_name%> silently changes
 the region type to "preloaded" to accommodate the local modification.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>overflow-to-disk</td>
 <td>The entry's value is overflowed to disk and set to null in memory. The
 entry's key is retained in the cache.</td>
@@ -2601,7 +2601,7 @@ entry's key is retained in the cache.</td>
 </div></td>
 <td>local-destroy</td>
 </tr>
-<tr class="even">
+<tr>
 <td>maximum</td>
 <td>The maximum amount of memory used in the region, in megabytes.</td>
 <td> </td>
@@ -2669,17 +2669,17 @@ We recommend that you set the username and password with the `user-name` and `pa
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>blocking-timeout-seconds</td>
 <td>The number of seconds that a connection remains associated with a transaction. If this value is exceeded, the connection is disassociated from the transaction.</td>
 <td>120</td>
 </tr>
-<tr class="even">
+<tr>
 <td>conn-pooled-datasource-class</td>
 <td>Java class used for the <code class="ph codeph">PooledDataSource</code> type.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td>connection-url</td>
 <td>URL for connecting to the datasource.
 <p>
@@ -2687,27 +2687,27 @@ We recommend that you set the username and password with the `user-name` and `pa
 <p>If you are connecting to a JCA data source driver that implements XA transactions (where the jndi-binding type is <strong>XAPooledDataSource</strong>), do not use this attribute. Instead, define configuration properties for your database. See <a href="#config-property">&lt;config-property&gt</a> for an example.</p></td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td>idle-timeout-seconds</td>
 <td>The maximum number of seconds that a connection can remain idle in a pool. When this threshold is reached, the connection is removed.</td>
 <td>600</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>init-pool-size</td>
 <td>The initial pool size of a PooledConnection (an XAConnection or a non-XAConnection).</td>
 <td>10</td>
 </tr>
-<tr class="even">
+<tr>
 <td>jdbc-driver-class</td>
 <td>Java class used for the <code class="ph codeph">SimpleDataSource</code> type.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td>jndi-name</td>
 <td>The <code class="ph codeph">jndi-name</code> attribute is the key binding parameter. If the value of jndi-name is a DataSource, it is bound as java:/myDatabase, where myDatabase is the name you assign to your data source. If the data source cannot be bound to JNDI at runtime, <%=vars.product_name%> logs a warning.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td>login-timeout-seconds</td>
 <td><p>The maximum number of seconds for which a thread seeking a connection from a connection pool may be blocked. If the thread is unable to obtain connection in the stipulated time, a <span class="keyword apiname">PoolException</span> is thrown</p>
 <p>If a connection is available the thread returns immediately.</p>
@@ -2715,36 +2715,36 @@ We recommend that you set the username and password with the `user-name` and `pa
 <p>If a connection is not available, the thread blocks for the specified time while waiting for an available connection.</p></td>
 <td>30</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>managed-conn-factory-class</td>
 <td>If the Resource Adapter is of type <span class="keyword apiname">ManagedDataSource</span>, this class becomes the source of the <span class="keyword apiname">PooledConnection</span>. (This class interface complies with the J2CA Java 2 Connector Architecture.)</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td>max-pool-size</td>
 <td>The maximum size of the PooledConnection.</td>
 <td>30</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>password</td>
 <td>Password to access the datasource.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td>transaction-type</td>
 <td>When the <code class="ph codeph">type</code> attribute is set to <code class="ph codeph">ManagedDataSource</code>, specifies the type of transaction. Set one of the following <code class="ph codeph">transaction-type</code>s:
 <div class="p">
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td>XATransaction</td>
 <td>Select this option when you want to use a<span class="keyword apiname">ManagedConnection</span> interface with a Java Transaction Manager to define transaction boundries. This option allows a <span class="keyword apiname">ManagedDataSource</span> to participate in a transaction with a <%=vars.product_name%> cache.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>NoTransaction</td>
 <td>No transactional behavior is used.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>LocalTransaction</td>
 <td>Select this option when using a <span class="keyword apiname">ManagedDataSource</span> that is not managed by the Java Transaction manager.</td>
 </tr>
@@ -2753,25 +2753,25 @@ We recommend that you set the username and password with the `user-name` and `pa
 </div></td>
 <td>none</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>type</td>
 <td><div class="p">
 Set one of the following types:
 <table>
 <tbody>
-<tr class="odd">
+<tr>
 <td>XAPooledDataSource</td>
 <td>Pooled SQL connections. For this type, you must also set the <code class="ph codeph">xa-datasource-class</code> attribute.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>ManagedDataSource</td>
 <td>JNDI binding type for the J2EE Connector Architecture (JCA). ManagedConnectionFactory. For information on the ManagedConnection interface, See the [Oracle ManagedConnection docs](http://docs.oracle.com/javaee/6/api/javax/resource/spi/ManagedConnection.html).</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>PooledDataSource</td>
 <td>Pooled SQL connections. For this type, you must also set the <code class="ph codeph">conn-pooled-datasource-class</code> attribute.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>SimpleDataSource</td>
 <td>Single SQL connection. No pooling of SQL connections is done. Connections are generated on the fly and cannot be reused. For this type, you must also set the <code class="ph codeph">jdbc-driver-class</code> attribute.</td>
 </tr>
@@ -2780,12 +2780,12 @@ Set one of the following types:
 </div></td>
 <td>none</td>
 </tr>
-<tr class="even">
+<tr>
 <td>user-name</td>
 <td>User name to access to the datasource.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td>xa-datasource-class</td>
 <td>Java class used for the <code class="ph codeph">XAPooledDataSource</code> type.</td>
 <td> </td>
@@ -3141,13 +3141,13 @@ A memory monitor that tracks cache size as a percentage of total heap or off-hea
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>critical-heap-percentage</td>
 <td>Percentage of heap at or above which the cache is considered in danger of becoming inoperable due to garbage collection pauses or out of memory exceptions.
 <p>Only one change to this attribute or critical heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed. This feature requires additional VM flags to perform properly. See <code class="ph codeph">setCriticalHeapPercentage()</code> for details.</p></td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td>eviction-heap-percentage</td>
 <td><p>Set the percentage of heap at or above which the eviction should begin on regions configured for HeapLRU eviction.</p>
 <p>Changing this value may cause eviction to begin immediately.</p>
@@ -3159,12 +3159,12 @@ A memory monitor that tracks cache size as a percentage of total heap or off-hea
 </td>
 <td>0</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>critical-off-heap-percentage</td>
 <td>Percentage of off-heap memory at or above which the cache is considered in danger of becoming inoperable due to garbage collection pauses or out of memory exceptions.</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td>eviction-off-heap-percentage</td>
 <td>Set the percentage of off-heap memory at or above which the eviction should begin on Regions configured for HeapLRU eviction.
 <ul>

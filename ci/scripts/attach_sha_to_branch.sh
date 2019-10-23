@@ -23,6 +23,6 @@ DESIRED_BRANCH=${2:--}
 
 pushd ${REPO_DIR}
   DESIRED_SHA=$(git rev-parse HEAD)
-  git checkout ${DESIRED_BRANCH}
+  git checkout --force ${DESIRED_BRANCH}
   git reset --hard ${DESIRED_SHA}
 popd

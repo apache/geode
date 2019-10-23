@@ -116,7 +116,7 @@ tests:
   GRADLE_TASK: upgradeTest
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
-  RAM: '160'
+  RAM: '210'
   name: Upgrade
 - ARTIFACT_SLUG: stressnewtestfiles
   CALL_STACK_TIMEOUT: '7200'

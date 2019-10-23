@@ -104,7 +104,7 @@ public class InternalHttpService implements HttpService {
     httpConfig.setSecurePort(port);
 
     if (sslConfig.isEnabled()) {
-      SslContextFactory sslContextFactory = new SslContextFactory();
+      SslContextFactory sslContextFactory = new SslContextFactory.Server();
 
       if (StringUtils.isNotBlank(sslConfig.getAlias())) {
         sslContextFactory.setCertAlias(sslConfig.getAlias());

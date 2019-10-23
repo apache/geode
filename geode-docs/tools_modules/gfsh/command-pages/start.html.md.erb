@@ -265,7 +265,7 @@ In addition, if gfsh is not already connected to a JMX Manager, the gfsh console
 
 ``` pre
 start locator --name=value [--bind-address=value] [--force(=value)]
- [--groups=value(,value)*] [--hostname-for-clients=value]
+ [--groups=value(,value)*] [--hostname-for-clients=value] [--classpath=value]
  [--locators=value] [--log-level=value] [--mcast-address=value] [--mcast-port=value] [--port=value] [--dir=value]
  [--properties-file=value] [--security-properties-file=value] [--initial-heap=value] [--max-heap=value]
  [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-cluster-configuration-from-dir(=value)]
@@ -290,72 +290,77 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-name</span></td>
 <td>Name to be used for this <%=vars.product_name%> locator service. If not specified, gfsh generates a random name.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-bind-address</span></td>
 <td>IP address on which the locator will be bound.</td>
 <td>bind to all addresses</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-force</span></td>
 <td>Whether to allow the PID file from a previous locator run to be overwritten.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-groups</span></td>
 <td>Group(s) the locator will be a part of.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-hostname-for-clients</span></td>
 <td>Host name or IP address that will be sent to clients so they can connect to this locator.</td>
 <td>uses <code>bind-address</code></td>
 </tr>
-<tr class="even">
+<tr>
+<td><span class="keyword parmname">\-\-classpath</span></td>
+<td>Application classes to be added to the locator's CLASSPATH after the core jar file. See <a href="../../../getting_started/setup_classpath.html">Setting Up the CLASSPATH</a> for details.</td>
+<td> </td>
+</tr>
+<tr>
 <td><span class="keyword parmname">\-\-locators</span></td>
 <td>List of locators used by this locator to join the appropriate <%=vars.product_name%> cluster.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-log-level</span></td>
 <td>Level of output logged to the locator log file. Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-mcast-address </span></td>
 <td>IP address or hostname used to bind the UPD socket for multi-cast networking so the locator can locate other members in the <%=vars.product_name%> cluster. If mcast-port is zero, then mcast-address is ignored.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-mcast-port</span></td>
 <td>Port used for multi-cast networking so the locator can locate other members of the <%=vars.product_name%> cluster. A zero value disables mcast.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-port</span></td>
 <td>Port the locator will listen on.</td>
 <td>10334</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-dir</span></td>
 <td>Directory in which the Locator will be started and run.</td>
 <td><span class="ph filepath">./&lt;locator-member-name&gt;</span></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-properties-file</span></td>
 <td>Specify the <code class="ph codeph">gemfire.properties</code> file for configuring the locator's cluster. The file's path should be absolute or relative to gfsh's working directory.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-security-properties-file</span></td>
 <td>The <span class="ph filepath">gfsecurity.properties</span> file for configuring the Locator's security configuration in the cluster. The file's path can be absolute or relative to gfsh's working directory.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-initial-heap</span></td>
 <td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options.
 <div class="note note">
@@ -363,7 +368,7 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 </div></td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-max-heap</span></td>
 <td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options
 <div class="note note">
@@ -372,44 +377,44 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 </div></td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-connect</span></td>
 <td>When connect is set to false, gfsh does not automatically connect to the locator which is started using this command.</td>
 <td>true</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-enable-cluster-configuration</span></td>
 <td>Enables cluster configuration behavior where locators maintain configurations for all members of the cluster. 
 See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of the Cluster Configuration Service</a>.</td>
 <td>true</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-load-cluster-configuration-from-dir</span></td>
 <td><b>Deprecated. Use <code>gfsh import cluster-configuration</code> for this functionality.</b> Loads the cluster configuration from the <span class="ph filepath">shared-config</span> directory. (When set to false, the configuration is loaded from the disk store of the internal, persistent region used by the locator to persist the configuration.)</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-cluster-config-dir</span></td>
 <td>Directory used by the cluster configuration service to store the cluster configuration on the filesystem</td>
 <td>cluster-config</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-redirect-output</span></td>
 <td>When true, redirect standard output and standard error to the locator log file. If specified without a value, the value is set to true.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-http-service-port</span></td>
 <td>Specifies the HTTP service port.</td>
 <td>7070</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-http-service-bind-address</span></td>
 <td>Specifies the IP address to which the HTTP service will be bound.
 </td>
 <td>the local host machine's address</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-J </span></td>
 <td>Argument passed to the JVM on which the Locator will run. For example, specifying <code class="ph codeph">--J=-Dfoo.bar=true</code> sets property &quot;foo.bar&quot; to &quot;true&quot;.
 <div class="note note">
@@ -508,138 +513,138 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-name</span></td>
 <td>Member name for this server. If not specified, gfsh generates a random name.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-assign-buckets</span></td>
 <td>Whether to assign buckets to the partitioned regions of the cache on server start.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-bind-address</span></td>
 <td>The IP address on which the server will be bound.</td>
 <td>binds to all local addresses</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-cache-xml-file</span></td>
 <td>Specifies the name of the XML file or resource to initialize the cache with when it is created.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-classpath</span></td>
-<td>Application classes added to the server's CLASSPATH after the core jar file. See <a href="../../../getting_started/setup_classpath.html">Setting Up the CLASSPATH</a> for details.</td>
+<td>Application classes to be added to the server's CLASSPATH after the core jar file. See <a href="../../../getting_started/setup_classpath.html">Setting Up the CLASSPATH</a> for details.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-include-system-classpath</span></td>
 <td>When true, include the System CLASSPATH on the Server's CLASSPATH, as the System CLASSPATH is not included by default. If specified without a value, the value is set to true.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-disable-default-server</span></td>
 <td>Whether the cache server will be started by default. If the parameter is specified without a value, the value is set to true. If set to true, the cache server acts as a peer.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-disable-exit-when-out-of-memory</span></td>
 <td>Prevents the JVM from exiting when an OutOfMemoryError occurs.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-enable-time-statistics</span></td>
 <td>Causes additional time-based statistics to be gathered for <%=vars.product_name%> operations.</td>
 <td>true</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-properties-file</span></td>
 <td>The <span class="ph filepath">gemfire.properties</span> file for configuring the server's cluster. The file's path can be absolute or relative to the gfsh working directory.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-security-properties-file</span></td>
 <td>The <span class="ph filepath">gfsecurity.properties</span> file for configuring the server's security configuration in the cluster. The file's path can be absolute or relative to gfsh directory.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-groups</span></td>
 <td>Group(s) the Cache Server will be a part of.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-force</span></td>
 <td>Whether to allow the PID file from a previous Cache Server run to be overwritten.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-locators </span></td>
 <td>Sets the list of locators used by the Cache Server to join the appropriate <%=vars.product_name%> cluster.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-locator-wait-time</span></td>
 <td>Sets the number of seconds the server will wait for a locator to become available during startup before giving up.</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-log-level</span></td>
 <td>Sets the level of output logged to the Cache Server log file. Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-mcast-address</span></td>
 <td>The IP address or hostname used to bind the UDP socket for multi-cast networking so the Cache Server can locate other members in the <%=vars.product_name%> cluster. If mcast-port is zero, then mcast-address is ignored.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-mcast-port</span></td>
 <td>Sets the port used for multi-cast networking so the Cache Server can locate other members of the <%=vars.product_name%> cluster. A zero value disables mcast.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-memcached-port</span></td>
 <td>If specified and is non-zero, sets the port number for an embedded Gemcached server and starts the Gemcached server.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-memcached-protocol</span></td>
 <td>Sets the protocol used by an embedded Gemcached server. Valid values are <code class="ph codeph">BINARY</code> and <code class="ph codeph">ASCII.</code> If you omit this property, the ASCII protocol is used.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-server-bind-address</span></td>
 <td>Overrides the <code>bind-address</code> on which this server will listen for client connections. Set this option in a multi-homed server environment to distinguish communications from clients. Setting a value of the empty string (&quot;&quot;) uses the value of <code>bind-address</code>.</td>
 <td>value of <code>bind-address</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-server-port</span></td>
 <td>Port the Server will listen on for client connections.</td>
 <td>40404</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-spring-xml-location</span></td>
 <td>Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a <%=vars.product_name%> Server. This configuration file can exist on the CLASSPATH (default) or any location supported by Spring's Resource(Loader) location specifiers (for example, classpath:, file:, etc). ResourceLoader is described in the 
 <a href="http://docs.spring.io/spring/docs/4.0.9.RELEASE/spring-framework-reference/htmlsingle/#resources-resourceloader">Spring documentation</a>.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-rebalance</span></td>
 <td>Whether to initiate rebalancing across the <%=vars.product_name%> cluster.</td>
 <td>false</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-dir</span></td>
 <td>Specify the directory in which the server will run in. This directory is written to the location where you started <code class="ph codeph">gfsh</code>.</td>
 <td>If not specified, the directory is named after the server.</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-statistic-archive-file </span></td>
 <td>The file that statistic samples are written to. For example: &quot;StatisticsArchiveFile.gfs&quot;. Must be defined to store the archiving to a file. An empty string (default) disables statistic archival.</td>
 <td><em>not set</em></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-initial-heap</span></td>
 <td>Initial size of the heap in the same format as the JVM -Xms parameter.
 <div class="note note">
@@ -647,7 +652,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </div></td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-max-heap</span></td>
 <td>Maximum size of the heap in the same format as the JVM -Xmx parameter.
 <div class="note note">
@@ -656,29 +661,29 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 </div></td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-J</span></td>
 <td>Argument passed to the JVM on which the Cache Server will run. For example, <code class="ph codeph">--J=-Dfoo.bar=true</code> will set the property &quot;foo.bar&quot; to &quot;true&quot;.
 <p>If the argument you are passing contains spaces or commas, enclose the option in single quotes.</p></td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-use-cluster-configuration</span></td>
 <td>Specifies whether the server requests a cluster configuration from the locator. 
 See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of the Cluster Configuration Service</a>.</td>
 <td>true</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-critical-heap-percentage</span></td>
 <td>Set the percentage of heap at or above which the cache is considered in danger of becoming inoperable due to garbage collection pauses or out of memory exceptions. Past the threshold, operations that require heap space will throw a <code class="ph codeph">LowMemoryException</code>. This feature requires additional VM flags to perform properly; you must set <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code> or the corresponding JVM properties to use this threshold. You must also set <code class="ph codeph">--max-heap</code> and <code class="ph codeph">--initial-heap</code> to the same value.</td>
 <td>0 (no critical heap threshold enforced)</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-critical-off-heap-percentage</span></td>
 <td>The percentage of off-heap memory used at or above which the cache is considered in danger of becoming inoperable due to out of memory exceptions. Past the threshold, operations that require heap space will throw a <code class="ph codeph">LowMemoryException</code>.</td>
 <td>0 (no critical off-heap threshold enforced)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-eviction-heap-percentage</span></td>
 <td>Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction. Changing this value may cause eviction to begin immediately. Only one change to this attribute or critical heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed. This feature requires additional VM flags to perform properly; you must set <code class="ph codeph">--initial-heap</code> and <code class="ph codeph">--max-heap</code> or the corresponding JVM properties to use this threshold. You must also set <code class="ph codeph">--max-heap</code> and <code class="ph codeph">--initial-heap</code> to the same value.</td>
 <td><ul>
@@ -687,7 +692,7 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <li>80%, if <code class="ph codeph">critical-heap-percentage</code> is not configured.</li>
 </ul></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-eviction-off-heap-percentage</span></td>
 <td>The percentage of off-heap memory used at or above which the eviction should begin on regions configured for off-heap and HeapLRU eviction. Changing this value may cause eviction to begin immediately. Only one change to this attribute or critical off-heap percentage will be allowed at any given time, and its effect will be fully realized before the next change is allowed.</td>
 <td><ul>
@@ -696,68 +701,68 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <li>80%, if <code class="ph codeph">critical-off-heap-percentage</code> is not configured.</li>
 </ul></td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-hostname-for-clients</span></td>
 <td>Sets the IP address or host name that a locator will provide to clients. Clients use the address to connect to a server. Set this value when clients use a different address to connect with the server than the <code>bind-address</code>, as those clients might with servers in a private cloud or multi-homed environment. Not specifying this option or setting this option to the empty string (&quot;&quot;) causes the <code>bind-address</code> to be given to clients.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-max-connections</span></td>
 <td>Sets the maximum number of client connections allowed. When the maximum is reached the cache server will stop accepting connections</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-message-time-to-live</span></td>
 <td>Sets the time (in seconds ) after which a message in the client queue will expire.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-max-message-count</span></td>
 <td>Sets maximum number of messages that can be enqueued in a client-queue.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-max-threads</span></td>
 <td>Sets the maximum number of threads allowed in this cache server to service client requests. The default of 0 causes the cache server to dedicate a thread for every client connection.</td>
 <td> </td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-socket-buffer-size</span></td>
 <td>Sets the buffer size in bytes of the socket connection for this CacheServer. The default is 32768 bytes.</td>
 <td> </td>
 </tr>
-<tr class="odd">
+<tr>
 <td><span class="keyword parmname">\-\-lock-memory</span></td>
 <td>(Linux only) When true, the member's heap and off-heap memory are locked in RAM, preventing them from being paged to disk. You must increase the related <code class="ph codeph">ulimit</code> operating system resource to allow the OS to lock memory chunks of sufficient size.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-off-heap-memory-size</span></td>
 <td>The integer quantity of off-heap memory to be used for storing region values. Specified in Gigabytes with a 'g' suffix, or Megabytes with an 'm' suffix. For example, allocate a 2 Gigabyte off-heap space with <code class="ph codeph">--off-heap-memory-size=2g</code>. The default value of 0 does not use any off-heap memory.</td>
 <td>0</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-start-rest-api</span></td>
 <td>When true, starts the REST API service.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-redirect-output</span></td>
 <td>When true, redirect standard output and standard error to the server log file. If specified without a value, the value is set to true.</td>
 <td>false</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-http-service-port</span></td>
 <td>Specifies the HTTP service port.</td>
 <td>7070</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-http-service-bind-address</span></td>
 <td>Specifies the IP address to which the HTTP service will be bound.
 </td>
 <td>the local host machine's address</td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-user</span></td>
 <td>The user name of the credential to use in authenticating to the cluster.
 When specified, if the <code>--password</code> option is not also specified,
@@ -765,7 +770,7 @@ then <code>gfsh</code> will prompt for the password.
 </td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td><span class="keyword parmname">\-\-password</span></td>
 <td>The password portion of the credential to use in authenticating to
 the cluster.
