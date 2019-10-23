@@ -52,7 +52,6 @@ import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.ManagementException;
 
@@ -77,17 +76,19 @@ public class FederatingManager extends Manager {
    * unbounded in practical situation as number of members will be a finite set at any given point
    * of time
    */
-  private ExecutorService pooledMembershipExecutor;
-  private MBeanProxyFactory proxyFactory;
-  private MemberMessenger messenger;
+  private final ExecutorService executorService;
+  private final MBeanProxyFactory proxyFactory;
+  private final MemberMessenger messenger;
 
-  FederatingManager(MBeanJMXAdapter jmxAdapter, ManagementResourceRepo repo,
-      InternalDistributedSystem system, SystemManagementService service, InternalCache cache,
-      StatisticsFactory statisticsFactory, StatisticsClock statisticsClock) {
+  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
+      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+      ExecutorService executorService) {
     super(repo, system, cache, statisticsFactory, statisticsClock);
     this.service = service;
-    proxyFactory = new MBeanProxyFactory(jmxAdapter, service);
-    messenger = new MemberMessenger(jmxAdapter, system);
+    this.proxyFactory = proxyFactory;
+    this.messenger = messenger;
+    this.executorService = executorService;
   }
 
   /**
@@ -100,9 +101,6 @@ public class FederatingManager extends Manager {
       if (logger.isDebugEnabled()) {
         logger.debug("Starting the Federating Manager.... ");
       }
-
-      pooledMembershipExecutor = LoggingExecutors.newFixedThreadPool("FederatingManager", true,
-          Runtime.getRuntime().availableProcessors());
 
       running = true;
       startManagingActivity();
@@ -202,7 +200,7 @@ public class FederatingManager extends Manager {
    */
   private void stopManagingActivity() {
     try {
-      pooledMembershipExecutor.shutdownNow();
+      executorService.shutdownNow();
 
       for (DistributedMember distributedMember : repo.getMonitoringRegionMap().keySet()) {
         removeMemberArtifacts(distributedMember, false);
@@ -214,7 +212,7 @@ public class FederatingManager extends Manager {
 
   private void executeTask(Runnable task) {
     try {
-      pooledMembershipExecutor.execute(task);
+      executorService.execute(task);
     } catch (RejectedExecutionException ignored) {
       // Ignore, we are getting shutdown
     }
@@ -240,7 +238,7 @@ public class FederatingManager extends Manager {
         logger.debug("Management Resource creation started  : ");
       }
       List<Future<InternalDistributedMember>> futureTaskList =
-          pooledMembershipExecutor.invokeAll(giiTaskList);
+          executorService.invokeAll(giiTaskList);
 
       for (Future<InternalDistributedMember> futureTask : futureTaskList) {
         try {
@@ -285,11 +283,6 @@ public class FederatingManager extends Manager {
     }
   }
 
-  @VisibleForTesting
-  void setProxyFactory(MBeanProxyFactory newProxyFactory) {
-    proxyFactory = newProxyFactory;
-  }
-
   /**
    * This method will be invoked from MembershipListener which is registered when the member becomes
    * a Management node.
@@ -313,11 +306,11 @@ public class FederatingManager extends Manager {
 
   @VisibleForTesting
   void removeMemberArtifacts(DistributedMember member, boolean crashed) {
-    Region<String, Object> proxyRegion = repo.getEntryFromMonitoringRegionMap(member);
+    Region<String, Object> monitoringRegion = repo.getEntryFromMonitoringRegionMap(member);
     Region<NotificationKey, Notification> notificationRegion =
         repo.getEntryFromNotifRegionMap(member);
 
-    if (proxyRegion == null && notificationRegion == null) {
+    if (monitoringRegion == null && notificationRegion == null) {
       return;
     }
 
@@ -326,9 +319,13 @@ public class FederatingManager extends Manager {
 
     // If cache is closed all the regions would have been destroyed implicitly
     if (!cache.isClosed()) {
-      proxyFactory.removeAllProxies(member, proxyRegion);
       try {
-        proxyRegion.localDestroyRegion();
+        proxyFactory.removeAllProxies(member, monitoringRegion);
+      } catch (RegionDestroyedException ignore) {
+        // ignored
+      }
+      try {
+        monitoringRegion.localDestroyRegion();
       } catch (RegionDestroyedException ignore) {
         // ignored
       }
@@ -347,11 +344,6 @@ public class FederatingManager extends Manager {
   @VisibleForTesting
   public MBeanProxyFactory getProxyFactory() {
     return proxyFactory;
-  }
-
-  @VisibleForTesting
-  void setMessenger(MemberMessenger messenger) {
-    this.messenger = messenger;
   }
 
   @VisibleForTesting

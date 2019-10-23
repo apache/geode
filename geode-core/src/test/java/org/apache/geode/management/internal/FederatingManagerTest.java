@@ -39,6 +39,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.test.junit.categories.JMXTest;
@@ -82,8 +83,12 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesMonitoringRegion() throws Exception {
-    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
-        cache, statisticsFactory, statisticsClock);
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock,
+        new MBeanProxyFactory(jmxAdapter, service),
+        new MemberMessenger(jmxAdapter, system),
+        LoggingExecutors.newFixedThreadPool("FederatingManager", true,
+            Runtime.getRuntime().availableProcessors()));
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(1, 20));
@@ -94,8 +99,12 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesMonitoringRegionWithHasOwnStats() throws Exception {
-    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
-        cache, statisticsFactory, statisticsClock);
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock,
+        new MBeanProxyFactory(jmxAdapter, service),
+        new MemberMessenger(jmxAdapter, system),
+        LoggingExecutors.newFixedThreadPool("FederatingManager", true,
+            Runtime.getRuntime().availableProcessors()));
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(2, 40));
@@ -111,8 +120,12 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesNotificationRegion() throws Exception {
-    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
-        cache, statisticsFactory, statisticsClock);
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock,
+        new MBeanProxyFactory(jmxAdapter, service),
+        new MemberMessenger(jmxAdapter, system),
+        LoggingExecutors.newFixedThreadPool("FederatingManager", true,
+            Runtime.getRuntime().availableProcessors()));
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(3, 60));
@@ -123,8 +136,12 @@ public class FederatingManagerTest {
 
   @Test
   public void addMemberArtifactsCreatesNotificationRegionWithHasOwnStats() throws Exception {
-    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
-        cache, statisticsFactory, statisticsClock);
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock,
+        new MBeanProxyFactory(jmxAdapter, service),
+        new MemberMessenger(jmxAdapter, system),
+        LoggingExecutors.newFixedThreadPool("FederatingManager", true,
+            Runtime.getRuntime().availableProcessors()));
     federatingManager.startManager();
 
     federatingManager.addMemberArtifacts(member(4, 80));
@@ -149,8 +166,12 @@ public class FederatingManagerTest {
         .thenReturn(mock(Region.class));
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
-        cache, statisticsFactory, statisticsClock);
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock,
+        new MBeanProxyFactory(jmxAdapter, service),
+        new MemberMessenger(jmxAdapter, system),
+        LoggingExecutors.newFixedThreadPool("FederatingManager", true,
+            Runtime.getRuntime().availableProcessors()));
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -168,8 +189,12 @@ public class FederatingManagerTest {
         .thenReturn(notificationRegion);
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
-        cache, statisticsFactory, statisticsClock);
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock,
+        new MBeanProxyFactory(jmxAdapter, service),
+        new MemberMessenger(jmxAdapter, system),
+        LoggingExecutors.newFixedThreadPool("FederatingManager", true,
+            Runtime.getRuntime().availableProcessors()));
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -189,8 +214,12 @@ public class FederatingManagerTest {
         .thenReturn(mock(Region.class));
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
-        cache, statisticsFactory, statisticsClock);
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock,
+        new MBeanProxyFactory(jmxAdapter, service),
+        new MemberMessenger(jmxAdapter, system),
+        LoggingExecutors.newFixedThreadPool("FederatingManager", true,
+            Runtime.getRuntime().availableProcessors()));
 
     federatingManager.removeMemberArtifacts(member, false);
 
@@ -210,13 +239,22 @@ public class FederatingManagerTest {
         .thenReturn(notificationRegion);
     when(system.getDistributedMember())
         .thenReturn(member);
-    FederatingManager federatingManager = new FederatingManager(jmxAdapter, repo, system, service,
-        cache, statisticsFactory, statisticsClock);
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock,
+        new MBeanProxyFactory(jmxAdapter, service),
+        new MemberMessenger(jmxAdapter, system),
+        LoggingExecutors.newFixedThreadPool("FederatingManager", true,
+            Runtime.getRuntime().availableProcessors()));
 
     federatingManager.removeMemberArtifacts(member, false);
 
     verify(notificationRegion)
         .localDestroyRegion();
+  }
+
+  @Test
+  public void removeMemberArtifactsDoesNotThrowIfMBeanProxyFactoryThrowsRegionDestroyedException() {
+
   }
 
   private InternalDistributedMember member() {

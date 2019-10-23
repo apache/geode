@@ -14,10 +14,13 @@
  */
 package org.apache.geode.management.internal;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 import javax.management.Notification;
@@ -27,6 +30,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -36,6 +41,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.AlreadyRunningException;
 import org.apache.geode.management.AsyncEventQueueMXBean;
@@ -64,6 +70,10 @@ import org.apache.geode.management.membership.MembershipListener;
  */
 public class SystemManagementService extends BaseManagementService {
   private static final Logger logger = LogService.getLogger();
+
+  @Immutable
+  @VisibleForTesting
+  static final String FEDERATING_MANAGER_FACTORY_PROPERTY = "FEDERATING_MANAGER_FACTORY";
 
   /**
    * The concrete implementation of DistributedSystem that provides internal-only functionality.
@@ -122,6 +132,7 @@ public class SystemManagementService extends BaseManagementService {
 
   private final StatisticsFactory statisticsFactory;
   private final StatisticsClock statisticsClock;
+  private final FederatingManagerFactory federatingManagerFactory;
 
   public static BaseManagementService newSystemManagementService(
       InternalCacheForClientAccess cache) {
@@ -155,6 +166,8 @@ public class SystemManagementService extends BaseManagementService {
     ManagementFunction function = new ManagementFunction(notificationHub);
     FunctionService.registerFunction(function);
     this.proxyListeners = new CopyOnWriteArrayList<>();
+
+    federatingManagerFactory = createFederatingManagerFactory();
   }
 
   /**
@@ -471,8 +484,17 @@ public class SystemManagementService extends BaseManagementService {
       }
       system.handleResourceEvent(ResourceEvent.MANAGER_CREATE, null);
       // An initialised copy of federating manager
-      federatingManager = new FederatingManager(jmxAdapter, repo, system, this, cache,
-          statisticsFactory, statisticsClock);
+      federatingManager = federatingManagerFactory.create(repo, system, this, cache,
+          statisticsFactory, statisticsClock, new MBeanProxyFactory(jmxAdapter, this),
+          new MemberMessenger(jmxAdapter, system),
+          LoggingExecutors.newFixedThreadPool("FederatingManager", true,
+              Runtime.getRuntime().availableProcessors()));
+      // federatingManager = new FederatingManager(repo, system, this, cache, statisticsFactory,
+      // statisticsClock,
+      // new MBeanProxyFactory(jmxAdapter, this),
+      // new MemberMessenger(jmxAdapter, system),
+      // LoggingExecutors.newFixedThreadPool("FederatingManager", true,
+      // Runtime.getRuntime().availableProcessors()));
       getInternalCache().getJmxManagerAdvisor().broadcastChange();
       return true;
     }
@@ -697,9 +719,57 @@ public class SystemManagementService extends BaseManagementService {
     }
   }
 
+  public UniversalListenerContainer getUniversalListenerContainer() {
+    return universalListenerContainer;
+  }
+
+  @Override
+  public void addMembershipListener(MembershipListener listener) {
+    universalListenerContainer.addMembershipListener(listener);
+
+  }
+
+  @Override
+  public void removeMembershipListener(MembershipListener listener) {
+    universalListenerContainer.removeMembershipListener(listener);
+  }
+
+  private static FederatingManagerFactory createFederatingManagerFactory() {
+    try {
+      String federatingManagerFactoryName =
+          System.getProperty(FEDERATING_MANAGER_FACTORY_PROPERTY,
+              FederatingManagerFactoryImpl.class.getName());
+      Class<? extends FederatingManagerFactory> federatingManagerFactoryClass =
+          Class.forName(federatingManagerFactoryName)
+              .asSubclass(FederatingManagerFactory.class);
+      Constructor<? extends FederatingManagerFactory> constructor =
+          federatingManagerFactoryClass.getConstructor();
+      return constructor.newInstance();
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+        | NoSuchMethodException | InvocationTargetException e) {
+      return new FederatingManagerFactoryImpl();
+    }
+  }
+
+  private static class FederatingManagerFactoryImpl implements FederatingManagerFactory {
+
+    public FederatingManagerFactoryImpl() {
+      // must be public for instantiation by reflection
+    }
+
+    @Override
+    public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
+        SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+        StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+        ExecutorService executorService) {
+      return new FederatingManager(repo, system, service, cache, statisticsFactory,
+          statisticsClock, proxyFactory, messenger, executorService);
+    }
+  }
+
   public static class UniversalListenerContainer {
 
-    private List<MembershipListener> membershipListeners = new CopyOnWriteArrayList<>();
+    private final List<MembershipListener> membershipListeners = new CopyOnWriteArrayList<>();
 
     public void memberJoined(InternalDistributedMember id) {
       MembershipEvent event = createEvent(id);
@@ -770,20 +840,5 @@ public class SystemManagementService extends BaseManagementService {
     public void removeMembershipListener(MembershipListener listener) {
       membershipListeners.remove(listener);
     }
-  }
-
-  public UniversalListenerContainer getUniversalListenerContainer() {
-    return universalListenerContainer;
-  }
-
-  @Override
-  public void addMembershipListener(MembershipListener listener) {
-    universalListenerContainer.addMembershipListener(listener);
-
-  }
-
-  @Override
-  public void removeMembershipListener(MembershipListener listener) {
-    universalListenerContainer.removeMembershipListener(listener);
   }
 }

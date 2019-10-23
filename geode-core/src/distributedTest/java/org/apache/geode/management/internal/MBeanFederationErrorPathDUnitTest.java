@@ -14,113 +14,199 @@
  */
 package org.apache.geode.management.internal;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.management.internal.SystemManagementService.FEDERATING_MANAGER_FACTORY_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.VM.getController;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
-import java.rmi.RemoteException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.concurrent.ExecutorService;
 
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.test.dunit.internal.InternalBlackboard;
-import org.apache.geode.test.dunit.internal.InternalBlackboardImpl;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.JMXTest;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
-@Category({JMXTest.class})
-public class MBeanFederationErrorPathDUnitTest {
-  private static final int SERVER_1_VM_INDEX = 1;
+@Category(JMXTest.class)
+public class MBeanFederationErrorPathDUnitTest implements Serializable {
+
   private static final String REGION_NAME = "test-region-1";
 
-  public MemberVM server1, server2, server3;
+  private static LocatorLauncher locatorLauncher;
+  private static ServerLauncher serverLauncher;
+  private static MBeanProxyFactory proxyFactory;
+
+  private ObjectName regionMXBeanName;
+  private String locatorName;
+  private String serverName;
+  private int locatorPort;
+  private VM locatorVM;
+  private VM serverVM;
 
   @Rule
-  public LocatorStarterRule locator1 = new LocatorStarterRule();
+  public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule();
+  public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
-  private InternalBlackboard bb;
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Before
-  public void before() throws Exception {
-    locator1.withJMXManager().startLocator();
+  public void setUp() throws Exception {
+    locatorName = "locator";
+    serverName = "server";
+    regionMXBeanName =
+        new ObjectName(String.format("GemFire:service=Region,name=\"%s\",type=Member,member=%s",
+            SEPARATOR + REGION_NAME, serverName));
 
-    bb = InternalBlackboardImpl.getInstance();
+    locatorVM = getController();
+    serverVM = getVM(0);
+
+    locatorPort = locatorVM.invoke(this::startLocator);
+
+    serverVM.invoke(this::startServer);
+  }
+
+  @After
+  public void tearDown() {
+    locatorVM.invoke(() -> {
+      if (locatorLauncher != null) {
+        locatorLauncher.stop();
+        locatorLauncher = null;
+        proxyFactory = null;
+      }
+    });
+
+    serverVM.invoke(() -> {
+      if (serverLauncher != null) {
+        serverLauncher.stop();
+        serverLauncher = null;
+      }
+    });
   }
 
   @Test
-  public void destroyMBeanBeforeFederationCompletes()
-      throws MalformedObjectNameException, RemoteException {
-    String bbKey = "sync1";
+  public void destroyMBeanBeforeFederationCompletes() {
+    locatorVM.invoke(() -> doAnswer((Answer<Void>) invocation -> {
+      serverVM.invoke(() -> {
+        Region region = serverLauncher.getCache().getRegion(REGION_NAME);
+        region.destroyRegion();
+      });
 
-    String beanName = "GemFire:service=Region,name=\"/test-region-1\",type=Member,member=server-1";
-    ObjectName objectName = new ObjectName(beanName);
+      Region<String, Object> monitoringRegion = invocation.getArgument(2);
+      monitoringRegion.destroy(regionMXBeanName.toString());
 
-    InternalCache cache = locator1.getCache();
-    SystemManagementService service =
-        (SystemManagementService) ManagementService.getManagementService(cache);
-    FederatingManager federatingManager = service.getFederatingManager();
-    MBeanProxyFactory mBeanProxyFactory = federatingManager.getProxyFactory();
-    MBeanProxyFactory spy = spy(mBeanProxyFactory);
-    service.getFederatingManager().setProxyFactory(spy);
+      assertThat(monitoringRegion.get(regionMXBeanName.toString())).isNull();
 
-    Answer answer1 = new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        server1.invoke(() -> {
-          InternalCache serverCache = ClusterStartupRule.getCache();
-          Region region = serverCache.getRegionByPath("/" + REGION_NAME);
-          region.destroyRegion();
-        });
-
-        Region<String, Object> monitoringRegion = invocation.getArgument(2);
-        monitoringRegion.destroy(objectName.toString());
-
-        assertThat((monitoringRegion).get(objectName.toString())).isNull();
-
-        try {
-          invocation.callRealMethod();
-        } catch (Exception e) {
-          bb.setMailbox(bbKey, e);
-          return null;
+      try {
+        invocation.callRealMethod();
+      } catch (Exception e) {
+        if (!locatorLauncher.getCache().isClosed()) {
+          errorCollector.addError(e);
         }
-        bb.setMailbox(bbKey, "this is fine");
-        return null;
       }
-    };
 
-    doAnswer(answer1).when(spy).createProxy(any(), eq(objectName), any(), any());
+      return null;
+    })
+        .when(proxyFactory).createProxy(any(), eq(regionMXBeanName), any(), any()));
 
-    server1 = lsRule.startServerVM(SERVER_1_VM_INDEX, locator1.getPort());
-
-    server1.invoke(() -> {
-      InternalCache cache1 = ClusterStartupRule.getCache();
-      cache1.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    serverVM.invoke(() -> {
+      serverLauncher.getCache().createRegionFactory(REPLICATE).create(REGION_NAME);
     });
 
-    await().until(() -> bb.getMailbox(bbKey) != null);
-    Object e = bb.getMailbox("sync1");
+    locatorVM.invoke(() -> {
+      await().untilAsserted(
+          () -> verify(proxyFactory).createProxy(any(), eq(regionMXBeanName), any(), any()));
+    });
+  }
 
-    assertThat(e).isNotInstanceOf(NullPointerException.class);
-    assertThat((String) e).contains("this is fine");
+  private int startLocator() throws IOException {
+    System.setProperty(FEDERATING_MANAGER_FACTORY_PROPERTY,
+        FederatingManagerFactoryWithSpy.class.getName());
+
+    locatorLauncher = new LocatorLauncher.Builder()
+        .setMemberName(locatorName)
+        .setPort(0)
+        .setWorkingDirectory(temporaryFolder.newFolder(locatorName).getAbsolutePath())
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(JMX_MANAGER_PORT, "0")
+        .build();
+
+    locatorLauncher.start();
+
+    Cache cache = locatorLauncher.getCache();
+
+    SystemManagementService service =
+        (SystemManagementService) ManagementService.getManagementService(cache);
+    service.startManager();
+    FederatingManager federatingManager = service.getFederatingManager();
+    proxyFactory = federatingManager.getProxyFactory();
+
+    return locatorLauncher.getPort();
+  }
+
+  private void startServer() throws IOException {
+    serverLauncher = new ServerLauncher.Builder()
+        .setDisableDefaultServer(true)
+        .setMemberName(serverName)
+        .setWorkingDirectory(temporaryFolder.newFolder(serverName).getAbsolutePath())
+        .set(HTTP_SERVICE_PORT, "0")
+        .set(LOCATORS, "localHost[" + locatorPort + "]")
+        .build();
+
+    serverLauncher.start();
+  }
+
+  private static class FederatingManagerFactoryWithSpy implements FederatingManagerFactory {
+
+    public FederatingManagerFactoryWithSpy() {
+      // must be public for instantiation by reflection
+    }
+
+    @Override
+    public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
+        SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+        StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+        ExecutorService executorService) {
+      return new FederatingManager(repo, system, service, cache, statisticsFactory,
+          statisticsClock, spy(proxyFactory), messenger, executorService);
+    }
   }
 }

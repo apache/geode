@@ -16,21 +16,28 @@ package org.apache.geode.management.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
+import static org.apache.geode.management.internal.SystemManagementService.FEDERATING_MANAGER_FACTORY_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.net.UnknownHostException;
+import java.util.concurrent.ExecutorService;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.junit.categories.JMXTest;
 
@@ -40,15 +47,22 @@ public class FederatingManagerIntegrationTest {
   private InternalCache cache;
   private FederatingManager federatingManager;
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   @Before
   public void setUp() {
-    cache = (InternalCache) new CacheFactory().set(LOCATORS, "").create();
+    System.setProperty(FEDERATING_MANAGER_FACTORY_PROPERTY,
+        FederatingManagerFactoryWithMockMessenger.class.getName());
+
+    cache = (InternalCache) new CacheFactory()
+        .set(LOCATORS, "")
+        .create();
 
     SystemManagementService managementService =
         (SystemManagementService) ManagementService.getExistingManagementService(cache);
     managementService.createManager();
     federatingManager = managementService.getFederatingManager();
-    federatingManager.setMessenger(mock(MemberMessenger.class));
     federatingManager.startManager();
   }
 
@@ -75,5 +89,22 @@ public class FederatingManagerIntegrationTest {
     when(member.getInetAddress()).thenReturn(getLocalHost());
     when(member.getId()).thenReturn("member-1");
     return member;
+  }
+
+  private static class FederatingManagerFactoryWithMockMessenger
+      implements FederatingManagerFactory {
+
+    public FederatingManagerFactoryWithMockMessenger() {
+      // must be public for instantiation by reflection
+    }
+
+    @Override
+    public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
+        SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+        StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+        ExecutorService executorService) {
+      return new FederatingManager(repo, system, service, cache, statisticsFactory,
+          statisticsClock, proxyFactory, mock(MemberMessenger.class), executorService);
+    }
   }
 }
