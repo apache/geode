@@ -62,23 +62,26 @@ public class CqAttributesFactory {
    * Adds a CQ listener to the end of the list of cq listeners on this factory.
    *
    * @param cqListener the CqListener to add to the factory.
+   * @return this object
    * @throws IllegalArgumentException if <code>cqListener</code> is null
    */
-  public void addCqListener(CqListener cqListener) {
+  public CqAttributesFactory addCqListener(CqListener cqListener) {
     if (cqListener == null) {
       throw new IllegalArgumentException(
           "addCqListener parameter was null");
     }
     this.cqAttributes.addCqListener(cqListener);
+    return this;
   }
 
   /**
    * Removes all Cq listeners and then adds each listener in the specified array.
    *
    * @param cqListeners a possibly null or empty array of listeners to add to this factory.
+   * @return this object
    * @throws IllegalArgumentException if the <code>cqListeners</code> array has a null element
    */
-  public void initCqListeners(CqListener[] cqListeners) {
+  public CqAttributesFactory initCqListeners(CqListener[] cqListeners) {
     if (cqListeners == null || cqListeners.length == 0) {
       this.cqAttributes.setCqListeners(null);
     } else {
@@ -89,6 +92,7 @@ public class CqAttributesFactory {
       }
       this.cqAttributes.setCqListeners(new ArrayList(nl));
     }
+    return this;
   }
 
   /**

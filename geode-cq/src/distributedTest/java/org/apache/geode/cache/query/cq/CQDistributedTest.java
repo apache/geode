@@ -68,10 +68,8 @@ public class CQDistributedTest implements Serializable {
         clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
 
     qs = clientCache.getQueryService();
-    CqAttributesFactory cqaf = new CqAttributesFactory();
     testListener = new TestCqListener();
-    cqaf.addCqListener(testListener);
-    cqa = cqaf.create();
+    cqa = new CqAttributesFactory().addCqListener(testListener).create();
   }
 
   @Test

@@ -388,10 +388,8 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     }
 
     // Create CQ Attributes.
-    CqAttributesFactory cqf = new CqAttributesFactory();
     CqListener[] cqListeners = {new CqQueryTestListener(getLogWriter())};
-    cqf.initCqListeners(cqListeners);
-    CqAttributes cqa = cqf.create();
+    CqAttributes cqa = new CqAttributesFactory().initCqListeners(cqListeners).create();
 
     String cqName = "CQForHARegionQueueTest";
     String queryStr = "Select * from " + Region.SEPARATOR + REGION_NAME;
