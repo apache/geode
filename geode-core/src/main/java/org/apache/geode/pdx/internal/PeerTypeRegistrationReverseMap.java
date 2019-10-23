@@ -89,7 +89,7 @@ public class PeerTypeRegistrationReverseMap {
       return false;
     }
     return ((typeToId.size() + pendingTypeToId.size() + enumToId.size()
-        + pendingEnumToId.size()) != pdxRegion.size());
+        + pendingEnumToId.size()) != pdxRegion.entrySet().size());
   }
 
   void flushPendingReverseMap() {

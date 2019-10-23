@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Set;
+
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
@@ -96,12 +98,15 @@ public class PeerTypeRegistrationReverseMapTest {
     assertThat(map.shouldReloadFromRegion(null)).isFalse();
 
     Region region = mock(Region.class);
+    Set entrySet = mock(Set.class);
 
-    when(region.size()).thenReturn(0);
+    when(region.entrySet()).thenReturn(entrySet);
+
+    when(entrySet.size()).thenReturn(0);
     // When everything is empty, we do not need to reload
     assertThat(map.shouldReloadFromRegion(region)).isFalse();
 
-    when(region.size()).thenReturn(2);
+    when(entrySet.size()).thenReturn(2);
     // Region size is 2, reverse maps size total is 0, so we should reload
     assertThat(map.shouldReloadFromRegion(region)).isTrue();
 
