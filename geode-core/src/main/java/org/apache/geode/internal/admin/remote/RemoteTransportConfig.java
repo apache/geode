@@ -77,7 +77,7 @@ public class RemoteTransportConfig implements TransportConfig {
     this.vmKind = vmKind;
     this.tcpPort = config.getTcpPort();
     this.membershipPortRange = getMembershipPortRangeString(config.getMembershipPortRange());
-    this.sslConfig = new SSLConfig();
+    this.sslConfig = new SSLConfig.Builder().build();
 
     String initialHosts = config.getLocators();
     if (initialHosts == null) {
