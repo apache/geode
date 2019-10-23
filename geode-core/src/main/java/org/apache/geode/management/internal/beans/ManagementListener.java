@@ -128,7 +128,7 @@ public class ManagementListener implements ResourceEventsListener {
           break;
         case CACHE_REMOVE:
           InternalCache removedCache = (InternalCache) resource;
-          adapter.handleCacheRemoval(removedCache);
+          adapter.handleCacheRemoval();
           break;
         case REGION_CREATE:
           Region createdRegion = (Region) resource;
@@ -152,7 +152,7 @@ public class ManagementListener implements ResourceEventsListener {
           break;
         case GATEWAYRECEIVER_DESTROY:
           GatewayReceiver destroyedRecv = (GatewayReceiver) resource;
-          adapter.handleGatewayReceiverDestroy(destroyedRecv);
+          adapter.handleGatewayReceiverDestroy();
           break;
         case GATEWAYRECEIVER_START:
           GatewayReceiver startedRecv = (GatewayReceiver) resource;
@@ -160,7 +160,7 @@ public class ManagementListener implements ResourceEventsListener {
           break;
         case GATEWAYRECEIVER_STOP:
           GatewayReceiver stoppededRecv = (GatewayReceiver) resource;
-          adapter.handleGatewayReceiverStop(stoppededRecv);
+          adapter.handleGatewayReceiverStop();
           break;
         case GATEWAYSENDER_CREATE:
           GatewaySender sender = (GatewaySender) resource;
