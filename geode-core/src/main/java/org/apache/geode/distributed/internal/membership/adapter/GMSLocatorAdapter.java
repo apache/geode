@@ -23,14 +23,14 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
+import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.distributed.internal.membership.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
-import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 
-public class GMSLocatorAdapter implements TcpHandler, NetLocator {
+public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
 
   private final GMSLocator gmsLocator;
 

@@ -12,30 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.tcpserver;
+package org.apache.geode.test.assertj;
 
-import java.io.IOException;
+import org.assertj.core.api.Condition;
 
-public interface TcpHandler {
-  /**
-   * Process a request and return a response
-   *
-   * @return the response, or null if there is no reponse
-   */
-  Object processRequest(Object request) throws IOException;
-
-  void endRequest(Object request, long startTime);
-
-  void endResponse(Object request, long startTime);
-
-  /**
-   * Perform any shutdown code in the handler after the TCP server has closed the socket.
-   */
-  void shutDown();
-
-  /**
-   * Initialize the handler with the TcpServer. Called before the TcpServer starts accepting
-   * connections.
-   */
-  void init(TcpServer tcpServer);
+public class Conditions {
+  public static <T> Condition<T> equalTo(T value) {
+    return new Condition<>(value::equals, value.toString());
+  }
 }

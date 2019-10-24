@@ -38,7 +38,7 @@ public class AbstractMeterAssert<A extends AbstractMeterAssert<A, M>, M extends 
    */
   AbstractMeterAssert(M meter, Class<A> selfType) {
     super(meter, selfType);
-    meterId = meter.getId();
+    meterId = meter == null ? null : meter.getId();
   }
 
   /**

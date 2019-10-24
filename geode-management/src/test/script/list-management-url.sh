@@ -24,7 +24,7 @@ fi
 GEODE=$1
 
 $GEODE/bin/gfsh -e "start locator --name=temp-for-api" > /dev/null
-curl -H "Content-Type: application/json" http://localhost:7070/management/experimental/api-docs --fail --silent --show-error | jq -r '.paths | to_entries[] | {url:.key, method:.value|keys[]} | .method + " " + .url'
+curl -H "Content-Type: application/json" http://localhost:7070/management/v1/api-docs --fail --silent --show-error | jq -r '.paths | to_entries[] | {url:.key, method:.value|keys[]} | .method + " " + .url'
 
 $GEODE/bin/gfsh -e "stop locator --dir=temp-for-api" > /dev/null
 rm -r temp-for-api

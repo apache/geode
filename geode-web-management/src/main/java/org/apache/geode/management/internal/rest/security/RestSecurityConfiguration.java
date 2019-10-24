@@ -39,6 +39,7 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.Links;
 
 @Configuration
 @EnableWebSecurity
@@ -68,7 +69,7 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         .authorizeRequests()
-        .antMatchers("/ping", "/docs/**", "/swagger-ui.html", "/v1/api-docs/**",
+        .antMatchers("/ping", "/docs/**", "/swagger-ui.html", Links.URI_VERSION + "/api-docs/**",
             "/webjars/springfox-swagger-ui/**", "/swagger-resources/**")
         .permitAll()
         .anyRequest().authenticated().and().csrf().disable();
