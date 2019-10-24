@@ -50,6 +50,7 @@ import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.Banner;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.HostName;
 import org.apache.geode.internal.util.SunAPINotFoundException;
@@ -672,8 +673,13 @@ public class Gfsh extends JLineShell {
     if (full) {
       return GemFireVersion.asString();
     } else {
+
       return GemFireVersion.getGemFireVersion();
     }
+  }
+
+  public String getGeodeSerializationVersion() {
+    return Version.CURRENT.getName();
   }
 
   public String getWelcomeMessage() {

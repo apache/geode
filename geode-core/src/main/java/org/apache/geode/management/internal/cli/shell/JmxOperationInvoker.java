@@ -186,6 +186,11 @@ public class JmxOperationInvoker implements OperationInvoker {
   }
 
   @Override
+  public String getRemoteGeodeSerializationVersion() {
+    return memberMXBeanProxy.getGeodeReleaseVersion();
+  }
+
+  @Override
   public Object invoke(String resourceName, String operationName, Object[] params,
       String[] signature) throws JMXInvocationException {
     try {

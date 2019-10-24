@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.configuration.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import java.util.Properties;
@@ -27,6 +28,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.ParameterType;
+import org.apache.geode.management.configuration.ClassName;
+import org.apache.geode.management.internal.cli.domain.MyCacheWriter;
 
 public class DeclarableTypeInstantiatorTest {
 
@@ -84,5 +87,27 @@ public class DeclarableTypeInstantiatorTest {
 
     assertThat(innerDeclarable.props.getProperty("value1")).isEqualTo("5");
     assertThat(innerDeclarable.props.getProperty("value2")).isEqualTo("some string");
+  }
+
+  @Test
+  public void getInstance() {
+    ClassName klass = new ClassName("java.lang.String");
+    String s = DeclarableTypeInstantiator.newInstance(klass, null);
+    assertThat(s).isEqualTo("");
+  }
+
+  @Test
+  public void getInstanceWithProps() {
+    String json = "{\"k\":\"v\"}";
+    ClassName cacheWriter = new ClassName(MyCacheWriter.class.getName(), json);
+    MyCacheWriter obj = DeclarableTypeInstantiator.newInstance(cacheWriter, null);
+    assertThat(obj.getProperties()).containsEntry("k", "v").containsOnlyKeys("k");
+  }
+
+  @Test
+  public void emptyCanNotInstantiate() {
+    assertThatThrownBy(() -> DeclarableTypeInstantiator.newInstance(ClassName.EMPTY, null))
+        .isInstanceOf(RuntimeException.class)
+        .hasMessageContaining("Error instantiating class");
   }
 }

@@ -14,7 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.ManagementHelper.isClassNameValid;
+
+
+import static org.apache.geode.management.configuration.ClassName.isClassNameValid;
 
 import java.util.ArrayList;
 import java.util.Arrays;
