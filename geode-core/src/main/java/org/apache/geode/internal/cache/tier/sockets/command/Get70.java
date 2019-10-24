@@ -223,7 +223,9 @@ public class Get70 extends BaseCommand {
     stats.incWriteGetResponseTime(DistributionStats.getStatTime() - start);
 
     CachePerfStats regionPerfStats = ((InternalRegion) region).getRegionPerfStats();
-    regionPerfStats.endGetForClient(startparam, entry.keyNotPresent);
+    if (regionPerfStats != null) {
+      regionPerfStats.endGetForClient(startparam, entry.keyNotPresent);
+    }
   }
 
   /**

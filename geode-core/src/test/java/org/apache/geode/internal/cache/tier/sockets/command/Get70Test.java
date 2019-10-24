@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -119,8 +120,6 @@ public class Get70Test {
     when(valuePart.getObject()).thenReturn(CALLBACK_ARG);
 
     when(securityService.isClientSecurityRequired()).thenReturn(false);
-
-    when(region.getRegionPerfStats()).thenReturn(mock(CachePerfStats.class));
   }
 
   @Test
@@ -208,6 +207,14 @@ public class Get70Test {
     get70.cmdExecute(message, serverConnection, securityService, 0);
 
     verify(regionPerfStats, never()).endGetForClient(anyLong(), anyBoolean());
+  }
+
+  @Test
+  public void doesNotThrow_ifRegionPerfStatsIsNull() {
+    when(region.getRegionPerfStats()).thenReturn(null);
+
+    assertThatCode(() -> get70.cmdExecute(message, serverConnection, securityService, 0))
+        .doesNotThrowAnyException();
   }
 
   private void givenIntegratedSecurity() {
