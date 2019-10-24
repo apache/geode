@@ -33,7 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
@@ -59,8 +58,7 @@ public class QueryConfigurationServiceImplTest {
 
   @Test
   public void initThrowsExceptionWhenCacheIsNull() {
-    Cache nullCache = null;
-    assertThatThrownBy(() -> configService.init(nullCache))
+    assertThatThrownBy(() -> configService.init(null))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -208,6 +206,7 @@ public class QueryConfigurationServiceImplTest {
     verify(configService).logError(any(String.class));
   }
 
+  @SuppressWarnings("unused")
   private Object[] getMethodAuthorizerClasses() {
     return new Object[] {
         RestrictedMethodAuthorizer.class,

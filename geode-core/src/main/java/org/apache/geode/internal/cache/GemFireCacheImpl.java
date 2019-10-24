@@ -75,7 +75,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-import javax.management.ServiceNotFoundException;
 import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
@@ -4193,11 +4192,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public QueryService getLocalQueryService() {
-    try {
-      return new DefaultQueryService(this);
-    } catch (ServiceNotFoundException e) {
-      throw new IllegalStateException(e.getMessage(), e.getCause());
-    }
+    return new DefaultQueryService(this);
   }
 
   /**

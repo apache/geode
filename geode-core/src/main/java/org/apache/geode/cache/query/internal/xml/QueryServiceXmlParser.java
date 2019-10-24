@@ -15,7 +15,6 @@
 package org.apache.geode.cache.query.internal.xml;
 
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 
 import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
 
@@ -36,8 +35,7 @@ public class QueryServiceXmlParser extends AbstractXmlParser {
   }
 
   @Override
-  public void startElement(String uri, String localName, String qName, Attributes attributes)
-      throws SAXException {
+  public void startElement(String uri, String localName, String qName, Attributes attributes) {
     if (!NAMESPACE.equals(uri)) {
       return;
     }
@@ -45,7 +43,7 @@ public class QueryServiceXmlParser extends AbstractXmlParser {
   }
 
   @Override
-  public void endElement(String uri, String localName, String qName) throws SAXException {
+  public void endElement(String uri, String localName, String qName) {
     if (!NAMESPACE.equals(uri)) {
       return;
     }

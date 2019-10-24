@@ -12,9 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.query;
+package org.apache.geode.cache.query.internal;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.distributed.internal.DistributionConfig.LOG_FILE_NAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,10 +26,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl;
 import org.apache.geode.test.assertj.LogFileAssert;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class DefaultQueryServiceDeprecationTest implements Serializable {
 
@@ -36,35 +35,26 @@ public class DefaultQueryServiceDeprecationTest implements Serializable {
   public static TemporaryFolder folderRule = new TemporaryFolder();
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  public ServerStarterRule server = new ServerStarterRule();
 
   @Test
   public void warningMessageIsOnlyLoggedOnceWhenDeprecatedPropertyUsed() throws IOException {
     File logFile = folderRule.newFile("customLog1.log");
-
-    MemberVM server = cluster.startServerVM(1,
-        x -> x.withSystemProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation",
-            "true")
-            .withProperty("log-file", logFile.getAbsolutePath()));
-
-    server.invoke(() -> {
-      ClusterStartupRule.getCache().getQueryService();
-      ClusterStartupRule.getCache().getQueryService();
-      LogFileAssert.assertThat(logFile)
-          .containsOnlyOnce(QueryConfigurationServiceImpl.DEPRECATION_WARNING);
-    });
+    System.setProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation",
+        "true");
+    server.withProperty(LOG_FILE_NAME, logFile.getAbsolutePath()).startServer();
+    server.getCache().getQueryService();
+    server.getCache().getQueryService();
+    LogFileAssert.assertThat(logFile)
+        .containsOnlyOnce(QueryConfigurationServiceImpl.DEPRECATION_WARNING);
   }
 
   @Test
   public void warningMessageIsNotLoggedWhenDeprecatedPropertyIsNotUsed() throws IOException {
     File logFile = folderRule.newFile("customLog2.log");
-
-    MemberVM server =
-        cluster.startServerVM(1, x -> x.withProperty("log-file", logFile.getAbsolutePath()));
-    server.invoke(() -> {
-      ClusterStartupRule.getCache().getQueryService();
-      LogFileAssert.assertThat(logFile)
-          .doesNotContain(QueryConfigurationServiceImpl.DEPRECATION_WARNING);
-    });
+    server.withProperty(LOG_FILE_NAME, logFile.getAbsolutePath()).startServer();
+    server.getCache().getQueryService();
+    LogFileAssert.assertThat(logFile)
+        .doesNotContain(QueryConfigurationServiceImpl.DEPRECATION_WARNING);
   }
 }

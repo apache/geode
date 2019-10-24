@@ -29,6 +29,8 @@ public class TestMethodAuthorizer implements MethodInvocationAuthorizer {
   private Set<String> parameters;
 
   public TestMethodAuthorizer(Cache cache, Set<String> parameters) {
+    // To allow an exception to be thrown from a mock
+    cache.isClosed();
     this.parameters = parameters;
   }
 

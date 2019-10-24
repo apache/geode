@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.management.ServiceNotFoundException;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
@@ -93,14 +91,12 @@ public class DefaultQueryService implements InternalQueryService {
    * false.
    */
   public static final boolean QUERY_HETEROGENEOUS_OBJECTS = Boolean
-      .valueOf(System.getProperty(
-          GEMFIRE_PREFIX + "QueryService.QueryHeterogeneousObjects", "true"))
-      .booleanValue();
+      .parseBoolean(System.getProperty(
+          GEMFIRE_PREFIX + "QueryService.QueryHeterogeneousObjects", "true"));
 
   public static final boolean COPY_ON_READ_AT_ENTRY_LEVEL = Boolean
-      .valueOf(System.getProperty(
-          GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"))
-      .booleanValue();
+      .parseBoolean(System.getProperty(
+          GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"));
 
   /** Test purpose only */
   @MutableForTesting
@@ -120,9 +116,9 @@ public class DefaultQueryService implements InternalQueryService {
     if (cache == null)
       throw new IllegalArgumentException("cache must not be null");
     this.cache = cache;
-      QueryConfigurationService queryConfigurationService =
-              cache.getService(QueryConfigurationService.class);
-      this.methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
+    QueryConfigurationService queryConfigurationService =
+        cache.getService(QueryConfigurationService.class);
+    this.methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
   }
 
   /**

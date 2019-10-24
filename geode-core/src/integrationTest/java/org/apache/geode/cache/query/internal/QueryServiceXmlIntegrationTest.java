@@ -12,10 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.query.dunit;
+package org.apache.geode.cache.query.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -26,7 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -36,7 +34,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl;
 import org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
@@ -45,15 +42,14 @@ import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
 import org.apache.geode.cache.util.TestMethodAuthorizer;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.compiler.ClassBuilder;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @RunWith(JUnitParamsRunner.class)
-public class QueryServiceXmlDUnitTest {
+public class QueryServiceXmlIntegrationTest {
+
   @Rule
-  public ClusterStartupRule clusterRule = new ClusterStartupRule();
+  public ServerStarterRule serverRule = new ServerStarterRule();
 
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
@@ -69,13 +65,11 @@ public class QueryServiceXmlDUnitTest {
 
   @Test
   public void queryServiceUsesRestrictedMethodAuthorizerWithNoQueryServiceInXmlAndSecurityEnabled() {
-    MemberVM server = clusterRule.startServerVM(1,
-        s -> s.withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName()));
+    serverRule.withSecurityManager(SimpleSecurityManager.class).startServer();
 
-    server.invoke(() -> {
-      MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
-      assertThat(authorizer).isInstanceOf(RestrictedMethodAuthorizer.class);
-    });
+    MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
+
+    assertThat(authorizer).isInstanceOf(RestrictedMethodAuthorizer.class);
   }
 
   @Test
@@ -85,13 +79,10 @@ public class QueryServiceXmlDUnitTest {
   public void queryServiceUsesNoOpAuthorizerWithAuthorizerSpecifiedInXmlAndSecurityDisabled(
       final String xmlFile) throws IOException {
     String cacheXmlFilePath = getFilePath(xmlFile);
-    MemberVM server =
-        clusterRule.startServerVM(1, s -> s.withProperty(CACHE_XML_FILE, cacheXmlFilePath));
+    serverRule.withProperty(CACHE_XML_FILE, cacheXmlFilePath).startServer();
 
-    server.invoke(() -> {
-      MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
-      assertThat(authorizer).isEqualTo(QueryConfigurationServiceImpl.getNoOpAuthorizer());
-    });
+    MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
+    assertThat(authorizer).isEqualTo(QueryConfigurationServiceImpl.getNoOpAuthorizer());
   }
 
   @Test
@@ -100,82 +91,66 @@ public class QueryServiceXmlDUnitTest {
   public void queryServiceWithAuthorizerCanBeLoadedFromXml(final String xmlFile,
       final Class expectedAuthorizerClass) throws IOException {
     String cacheXmlFilePath = getFilePath(xmlFile);
-    MemberVM server =
-        clusterRule.startServerVM(1, s -> s.withProperty(CACHE_XML_FILE, cacheXmlFilePath)
-            .withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName()));
+    serverRule.withProperty(CACHE_XML_FILE, cacheXmlFilePath)
+        .withSecurityManager(SimpleSecurityManager.class).startServer();
 
-    server.invoke(() -> {
-      MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
-      assertThat(authorizer.getClass()).isEqualTo(expectedAuthorizerClass);
-    });
+    MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
+    assertThat(authorizer.getClass()).isEqualTo(expectedAuthorizerClass);
   }
 
   @Test
   @Parameters({JAVA_BEAN_AUTHORIZER_XML, REGEX_AUTHORIZER_XML})
-  public void queryServiceWithParameterCanBeLoadedFromXml(final String xmlFile) throws IOException {
+  public void queryServiceWithParameterCanBeLoadedFromXml(final String xmlFile)
+      throws IOException, NoSuchMethodException {
     String cacheXmlFilePath = getFilePath(xmlFile);
-    MemberVM server =
-        clusterRule.startServerVM(1, s -> s.withProperty(CACHE_XML_FILE, cacheXmlFilePath)
-            .withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName()));
+    serverRule.withProperty(CACHE_XML_FILE, cacheXmlFilePath)
+        .withSecurityManager(SimpleSecurityManager.class).startServer();
 
-    server.invoke(() -> {
-      MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
+    MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
 
-      // Verify that the parameters specified in the xml have been loaded correctly.
-      String testString = "testString";
-      Method allowedMethod = String.class.getMethod("isEmpty");
+    // Verify that the parameters specified in the xml have been loaded correctly.
+    String testString = "testString";
+    Method allowedMethod = String.class.getMethod("isEmpty");
 
-      assertThat(authorizer.authorize(allowedMethod, testString)).isTrue();
+    assertThat(authorizer.authorize(allowedMethod, testString)).isTrue();
 
-      List testList = new ArrayList();
-      Method disallowedMethod = List.class.getMethod("isEmpty");
+    List testList = new ArrayList();
+    Method disallowedMethod = List.class.getMethod("isEmpty");
 
-      assertThat(authorizer.authorize(disallowedMethod, testList)).isFalse();
-    });
+    assertThat(authorizer.authorize(disallowedMethod, testList)).isFalse();
   }
 
   @Test
-  public void queryServiceWithUserDefinedAuthorizerCanBeLoadedFromXml() throws IOException {
-    // First start a locator so that the server will be able to obtain the TestMethodAuthorizer
-    // class from it when it starts
-    MemberVM locator =
-        clusterRule.startLocatorVM(0, LocatorStarterRule::withoutClusterConfigurationService);
-
+  public void queryServiceWithUserDefinedAuthorizerCanBeLoadedFromXml()
+      throws IOException, NoSuchMethodException {
     String className = TestMethodAuthorizer.class.getName();
-
     String classContent =
         new String(Files.readAllBytes(Paths.get(getFilePath(TEST_AUTHORIZER_TXT))));
 
-    File workingDir = locator.getWorkingDir();
-    File jarFile = new File(workingDir.getAbsolutePath() + "testJar.jar");
+    File jarFile = temporaryFolder.newFile("testJar.jar");
 
     // Write a jar containing the TestMethodAuthorizer class (parsed from TestMthodAuthorizer.txt)
-    // to the locator's working directory
+    // to the server's working directory
     new ClassBuilder().writeJarFromContent(className, classContent, jarFile);
 
     String cacheXmlFilePath = getFilePath(USER_AUTHORIZER_XML);
+    serverRule.withProperty(CACHE_XML_FILE, cacheXmlFilePath)
+        .withSecurityManager(SimpleSecurityManager.class).startServer();
 
-    MemberVM server = clusterRule.startServerVM(2, s -> s.withConnectionToLocator(locator.getPort())
-        .withProperty(CACHE_XML_FILE, cacheXmlFilePath)
-        .withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName()));
+    MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
 
-    server.invoke(() -> {
-      MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
+    assertThat(authorizer).isInstanceOf(TestMethodAuthorizer.class);
 
-      assertThat(authorizer).isInstanceOf(TestMethodAuthorizer.class);
+    String testString = "testString";
+    Method allowedMethod = String.class.getMethod("toString");
+    assertThat(authorizer.authorize(allowedMethod, testString)).isTrue();
 
-      String testString = "testString";
-      Method allowedMethod = String.class.getMethod("toString");
-      assertThat(authorizer.authorize(allowedMethod, testString)).isTrue();
-
-      Method disallowedMethod = String.class.getMethod("isEmpty");
-      assertThat(authorizer.authorize(disallowedMethod, testString)).isFalse();
-    });
+    Method disallowedMethod = String.class.getMethod("isEmpty");
+    assertThat(authorizer.authorize(disallowedMethod, testString)).isFalse();
   }
 
-  private static MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
-    return Objects.requireNonNull(ClusterStartupRule.getCache()).getQueryService()
-        .getMethodInvocationAuthorizer();
+  private MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
+    return serverRule.getCache().getQueryService().getMethodInvocationAuthorizer();
   }
 
   private String getFilePath(String fileName) throws IOException {
@@ -186,6 +161,7 @@ public class QueryServiceXmlDUnitTest {
     return cacheXmlFile.getAbsolutePath();
   }
 
+  @SuppressWarnings("unused")
   private Object[] authorizerXmlAndClassParams() {
     return new Object[] {
         new Object[] {RESTRICTED_AUTHORIZER_XML, RestrictedMethodAuthorizer.class},

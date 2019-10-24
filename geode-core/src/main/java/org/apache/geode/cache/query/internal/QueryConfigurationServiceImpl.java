@@ -41,15 +41,15 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   private static final Logger logger = LogService.getLogger();
   private static final String UPDATE_ERROR_MESSAGE =
       "Exception while updating MethodInvocationAuthorizer: ";
-  public static final String NULL_CLASS_NAME =
+  private static final String NULL_CLASS_NAME =
       "Null class name found for MethodInvocationAuthorizer. ";
-  public static final String NO_CLASS_FOUND =
+  private static final String NO_CLASS_FOUND =
       "No MethodInvocationAuthorizer class found with name ";
-  public static final String NO_VALID_CONSTRUCTOR =
+  private static final String NO_VALID_CONSTRUCTOR =
       "No valid MethodInvocationAuthorizer constructor available. ";
-  public static final String INSTANTIATION_ERROR =
+  private static final String INSTANTIATION_ERROR =
       "Error occurred while instantiating MethodInvocationAuthorizer. ";
-  public static final String AUTHORIZER_NOT_UPDATED = "The authorizer was not updated.";
+  private static final String AUTHORIZER_NOT_UPDATED = "The authorizer was not updated.";
 
   private MethodInvocationAuthorizer authorizer;
 
@@ -66,7 +66,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
       "instead";
 
   public QueryConfigurationServiceImpl() {
-    ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.valueOf(
+    ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.parseBoolean(
         System.getProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation"));
   }
 
@@ -83,7 +83,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
 
     if (System
         .getProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation") != null) {
-      logWarning(DEPRECATION_WARNING);
+      logger.warn(DEPRECATION_WARNING);
     }
 
     if (isSecurityDisabled((InternalCache) cache) || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
@@ -170,10 +170,6 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   }
 
   // For testing
-  void logWarning(String message) {
-    logger.warn(message);
-  }
-
   void logError(String message) {
     logger.error(message);
   }
