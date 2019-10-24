@@ -55,6 +55,8 @@ dependencies {
     distributedTestRuntime(project(':geode-old-versions'))
     upgradeTestRuntime(project(':geode-old-versions'))
 
+    testImplementation('com.tngtech.archunit:archunit-junit4')
+
 }
 
 distributedTest {

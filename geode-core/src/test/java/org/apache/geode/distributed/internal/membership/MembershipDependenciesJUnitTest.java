@@ -98,12 +98,22 @@ public class MembershipDependenciesJUnitTest {
       .should()
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
+
+              // OK to depend on this one because it is a "leaf" dependency
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
+
+              /*
+               * TODO: once these three classes (from the geode-logging module) move to their own
+               * package: org.apache.geode.logging.internal (not org.apache.geode.internal.logging)
+               * replace these three clauses with a single .or(resideInPackage...
+               */
               .or(type(LogService.class))
               .or(type(LoggingExecutors.class))
               .or(type(LoggingThread.class))
 
               .or(not(resideInAPackage("org.apache.geode..")))
+
+              // TODO: we dursn't depend on the test package cause it depends on pkgs in geode-core
               .or(resideInAPackage("org.apache.geode.test.."))
 
               // TODO: Create a new stats interface for membership
