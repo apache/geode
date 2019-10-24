@@ -244,56 +244,63 @@ public class GMSHealthMonitor implements HealthMonitor {
     @Override
     public void run() {
 
-      if (GMSHealthMonitor.this.isStopping) {
-        return;
+      GMSMember neighbor = nextNeighbor;
+      if (logger.isDebugEnabled()) {
+        logger.debug("cluster health monitor invoked with {}", neighbor);
       }
-
-      GMSMember neighbour = nextNeighbor;
-
-      long currentTime = System.currentTimeMillis();
-      // this is the start of interval to record member activity
-      GMSHealthMonitor.this.currentTimeStamp = currentTime;
-
-
-      long oldTimeStamp = currentTimeStamp;
-      currentTimeStamp = System.currentTimeMillis();
-
-      GMSMembershipView myView = GMSHealthMonitor.this.currentView;
-      if (myView == null) {
-        return;
-      }
-
-      if (currentTimeStamp - oldTimeStamp > monitorInterval + MONITOR_DELAY_THRESHOLD) {
-        // delay in running this task - don't suspect anyone for a while
-        logger.info(
-            "Failure detector has noticed a JVM pause and is giving all members a heartbeat in view {}",
-            currentView);
-        for (GMSMember member : myView.getMembers()) {
-          contactedBy(member);
-        }
-        return;
-      }
-
-      if (neighbour != null) {
-        TimeStamp nextNeighborTS;
-        synchronized (GMSHealthMonitor.this) {
-          nextNeighborTS = GMSHealthMonitor.this.memberTimeStamps.get(neighbour);
-        }
-
-        if (nextNeighborTS == null) {
-          logger.debug("timestamp for {} was found null - setting current time as timestamp",
-              neighbour);
-          TimeStamp customTS = new TimeStamp(currentTime);
-          memberTimeStamps.put(neighbour, customTS);
+      try {
+        if (GMSHealthMonitor.this.isStopping) {
           return;
         }
 
-        long interval = memberTimeoutInMillis / GMSHealthMonitor.LOGICAL_INTERVAL;
-        long lastTS = currentTime - nextNeighborTS.getTime();
-        if (lastTS + interval >= memberTimeoutInMillis) {
-          logger.debug("Checking member {} ", neighbour);
-          // now do check request for this member;
-          checkMember(neighbour);
+        long currentTime = System.currentTimeMillis();
+        // this is the start of interval to record member activity
+        GMSHealthMonitor.this.currentTimeStamp = currentTime;
+
+        long oldTimeStamp = currentTimeStamp;
+        currentTimeStamp = System.currentTimeMillis();
+
+        GMSMembershipView myView = GMSHealthMonitor.this.currentView;
+        if (myView == null) {
+          return;
+        }
+
+        if (currentTimeStamp - oldTimeStamp > monitorInterval + MONITOR_DELAY_THRESHOLD) {
+          // delay in running this task - don't suspect anyone for a while
+          logger.info(
+              "Failure detector has noticed a JVM pause and is giving all members a heartbeat in view {}",
+              currentView);
+          for (GMSMember member : myView.getMembers()) {
+            contactedBy(member);
+          }
+          return;
+        }
+
+        if (neighbor != null) {
+          TimeStamp nextNeighborTS;
+          synchronized (GMSHealthMonitor.this) {
+            nextNeighborTS = GMSHealthMonitor.this.memberTimeStamps.get(neighbor);
+          }
+
+          if (nextNeighborTS == null) {
+            logger.debug("timestamp for {} was found null - setting current time as timestamp",
+                neighbor);
+            TimeStamp customTS = new TimeStamp(currentTime);
+            memberTimeStamps.put(neighbor, customTS);
+            return;
+          }
+
+          long interval = memberTimeoutInMillis / GMSHealthMonitor.LOGICAL_INTERVAL;
+          long lastTS = currentTime - nextNeighborTS.getTime();
+          if (lastTS + interval >= memberTimeoutInMillis) {
+            logger.debug("Checking member {} ", neighbor);
+            // now do check request for this member;
+            checkMember(neighbor);
+          }
+        }
+      } finally {
+        if (logger.isDebugEnabled()) {
+          logger.debug("cluster health monitor pausing");
         }
       }
     }
@@ -545,9 +552,9 @@ public class GMSHealthMonitor implements HealthMonitor {
       boolean retryIfConnectFails) {
     Socket clientSocket = null;
     // make sure we try to check on the member for the contracted memberTimeout period
-    // in case a timed socket.connect() returns immediately
-    long giveupTime = System.nanoTime() + TimeUnit.NANOSECONDS.convert(
-        services.getConfig().getMemberTimeout(), TimeUnit.MILLISECONDS);
+    // in case a timed socket.connect() returns immediately. Use milliseconds to be in
+    // sync with the socket timeout parameter unit of measure
+    long giveupTime = System.currentTimeMillis() + services.getConfig().getMemberTimeout();
     boolean passed = false;
     int iteration = 0;
     do {
@@ -587,7 +594,7 @@ public class GMSHealthMonitor implements HealthMonitor {
         }
       }
     } while (retryIfConnectFails && !passed && !this.isShutdown()
-        && System.nanoTime() < giveupTime);
+        && System.currentTimeMillis() < giveupTime);
     return passed;
   }
 
@@ -651,6 +658,9 @@ public class GMSHealthMonitor implements HealthMonitor {
   @Override
   public boolean checkIfAvailable(GMSMember mbr, String reason,
       boolean initiateRemoval) {
+    if (membersInFinalCheck.contains(mbr)) {
+      return true; // status unknown for now but someone is checking
+    }
     return inlineCheckIfAvailable(localAddress, currentView, initiateRemoval,
         mbr, reason);
   }
@@ -898,7 +908,7 @@ public class GMSHealthMonitor implements HealthMonitor {
     if (nextNeighbor != null && nextNeighbor.equals(localAddress)) {
       if (logger.isDebugEnabled()) {
         logger.debug("Health monitor is unable to find a neighbor to watch.  "
-            + "Current suspects are {}", suspectedMemberIds);
+            + "Current suspects are {}", suspectedMemberIds.keySet());
       }
       nextNeighbor = null;
     }
@@ -1143,6 +1153,8 @@ public class GMSHealthMonitor implements HealthMonitor {
       return;
     }
 
+    logSuspectRequests(incomingRequest, incomingRequest.getSender());
+
     this.stats.incSuspectsReceived();
 
     GMSMembershipView cv = currentView;
@@ -1179,12 +1191,9 @@ public class GMSHealthMonitor implements HealthMonitor {
       }
     }
 
-    logger.debug(
-        "Processing suspect requests {}\nproposed view is currently {}\nwith coordinator {}",
-        suspectRequests, cv, cv.getCoordinator());
+    logger.debug("Processing {}", incomingRequest);
     if (cv.getCoordinator().equals(localAddress)) {
       // This process is the membership coordinator and should perform a final check
-      logSuspectRequests(incomingRequest, sender);
       checkIfAvailable(sender, suspectRequests, cv);
 
     } else {
@@ -1212,7 +1221,7 @@ public class GMSHealthMonitor implements HealthMonitor {
         logger.debug("Current leave requests are {}", membersLeaving);
         check.removeAll(membersLeaving);
       }
-      logger.trace(
+      logger.debug(
           "Proposed view with suspects & leaving members removed is {}\nwith coordinator {}\nmy address is {}",
           check,
           check.getCoordinator(), localAddress);
@@ -1220,7 +1229,6 @@ public class GMSHealthMonitor implements HealthMonitor {
       GMSMember coordinator = check.getCoordinator();
       if (coordinator != null && coordinator.equals(localAddress)) {
         // new coordinator
-        logSuspectRequests(incomingRequest, sender);
         checkIfAvailable(sender, membersToCheck, cv);
       }
     }
@@ -1296,8 +1304,18 @@ public class GMSHealthMonitor implements HealthMonitor {
     }
   }
 
+  /**
+   * Check to see if a member is available
+   *
+   * @param initiator member who initiated this check
+   * @param cv the view we're basing the check upon
+   * @param isFinalCheck whether the member should be kicked out if it fails the check
+   * @param mbr the member to check
+   * @param reason why we're doing this check
+   * @return true if the check passes
+   */
   protected boolean inlineCheckIfAvailable(final GMSMember initiator,
-      final GMSMembershipView cv, boolean forceRemovalIfCheckFails, final GMSMember mbr,
+      final GMSMembershipView cv, boolean isFinalCheck, final GMSMember mbr,
       final String reason) {
 
     if (services.getJoinLeave().isMemberLeaving(mbr)) {
@@ -1339,7 +1357,7 @@ public class GMSHealthMonitor implements HealthMonitor {
         doCheckMember(mbr, false);
         // now, while waiting for a heartbeat, try connecting to the suspect's failure detection
         // port
-        final boolean retryIfConnectFails = forceRemovalIfCheckFails;
+        final boolean retryIfConnectFails = isFinalCheck;
         pinged = doTCPCheckMember(mbr, port, retryIfConnectFails);
       }
 
@@ -1350,7 +1368,7 @@ public class GMSHealthMonitor implements HealthMonitor {
           logger.info("Availability check failed for member {}", mbr);
           // if the final check fails & this VM is the coordinator we don't need to do another final
           // check
-          if (forceRemovalIfCheckFails) {
+          if (isFinalCheck) {
             logger.info("Requesting removal of suspect member {}", mbr);
             services.getJoinLeave().remove(mbr, reason);
             // make sure it is still suspected
@@ -1379,18 +1397,29 @@ public class GMSHealthMonitor implements HealthMonitor {
           }
         } else {
           logger.info(
-              "Availability check failed but detected recent message traffic for suspect member "
+              "Availability check detected recent message traffic for suspect member "
                   + mbr + " at time " + new Date(ts.getTime()));
           failed = false;
         }
       }
 
       if (!failed) {
-        if (!isStopping && !initiator.equals(localAddress)
+        if (!isStopping
             && initiator.getVersionOrdinal() >= Version.GEODE_1_4_0.ordinal()) {
-          // let the sender know that it's okay to monitor this member again
+          // let others know that this member is no longer suspect
           FinalCheckPassedMessage message = new FinalCheckPassedMessage(initiator, mbr);
-          services.getMessenger().send(message);
+          List<GMSMember> members = cv.getMembers();
+          List<GMSMember> recipients = new ArrayList<>(members.size());
+          for (GMSMember member : members) {
+            if (!isSuspectMember(member) && !membersInFinalCheck.contains(member) &&
+                !member.equals(localAddress)) {
+              recipients.add(member);
+            }
+          }
+          if (recipients.size() > 0) {
+            message.setRecipients(recipients);
+            services.getMessenger().send(message);
+          }
         }
 
         logger.info("Availability check passed for suspect member " + mbr);

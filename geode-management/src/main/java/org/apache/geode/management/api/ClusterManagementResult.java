@@ -17,8 +17,10 @@ package org.apache.geode.management.api;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.configuration.Links;
 
 /**
  * This base class provides the common attributes returned from all {@link ClusterManagementService}
@@ -31,6 +33,8 @@ public class ClusterManagementResult {
    * REST controller
    */
   public enum StatusCode {
+    /** operation is successful, configuration is realized and persisted */
+    OK,
     /** configuration failed validation */
     ILLEGAL_ARGUMENT,
     /** user is not authenticated */
@@ -55,15 +59,14 @@ public class ClusterManagementResult {
     /** async operation launched successfully */
     ACCEPTED,
     /** async operation has not yet completed */
-    IN_PROGRESS,
-    /** operation is successful, configuration is realized and persisted */
-    OK
+    IN_PROGRESS
   }
 
   // we will always have statusCode when the object is created
   protected StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
-  private String uri;
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+  private Links links;
 
   /**
    * for internal use only
@@ -83,7 +86,7 @@ public class ClusterManagementResult {
   public ClusterManagementResult(ClusterManagementResult copyFrom) {
     this.statusCode = copyFrom.statusCode;
     this.statusMessage = copyFrom.statusMessage;
-    this.uri = copyFrom.uri;
+    this.links = copyFrom.links;
   }
 
   /**
@@ -128,18 +131,10 @@ public class ClusterManagementResult {
   }
 
   /**
-   * Returns the full path (not including http://server:port) by which this result can be referenced
-   * via REST
-   */
-  public String getUri() {
-    return uri;
-  }
-
-  /**
    * for internal use only
    */
-  public void setUri(String uri) {
-    this.uri = uri;
+  public void setLinks(Links links) {
+    this.links = links;
   }
 
   /**

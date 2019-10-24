@@ -1,5 +1,5 @@
 ---
-title:  PUT /gemfire-api/v1/{region}/{key1},{key2},...{keyN}
+title:  PUT /geode/v1/{region}/{key1},{key2},...{keyN}
 ---
 
 <!--
@@ -24,19 +24,19 @@ Update or insert (put) data for multiple keys in the region.
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{key},{key2},...{keyN}
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{region}/{key},{key2},...{keyN}
 ```
 
 ## Parameters
 
-See [PUT /gemfire-api/v1/{region}/{key}?op=REPLACE](put_replace_data.html#topic_itv_mg5_m4) and [PUT /gemfire-api/v1/{region}/{key}?op=CAS](put_update_cas_data.html#topic_itv_mg5_m4).
+See [PUT /geode/v1/{region}/{key}?op=REPLACE](put_replace_data.html#topic_itv_mg5_m4) and [PUT /geode/v1/{region}/{key}?op=CAS](put_update_cas_data.html#topic_itv_mg5_m4).
 
 ## Example Request
 
 ``` pre
 Request Payload: application/json
 
-PUT /gemfire-api/v1/orders/4,5
+PUT /geode/v1/orders/4,5
 
 Accept: application/json
 Content-Type: application/json

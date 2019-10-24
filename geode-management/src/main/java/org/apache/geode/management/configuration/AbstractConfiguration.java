@@ -18,8 +18,6 @@ package org.apache.geode.management.configuration;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
@@ -77,70 +75,16 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
   }
 
   /**
-   * Returns the portion of the URI that uniquely, in the scope of {@link #getEndpoint()},
-   * identifies this instance.
-   * Some implementations of this class require that some other attribute be set
-   * (for example {@link Region#setName(String)}) before this method will return
-   * a non-null value. Refer to the javadocs on subclasses for details.
+   * Returns the attribute of the configuration that uniquely identifies it
    */
   @Override
   public abstract String getId();
 
-  public static final String URI_CONTEXT = "/management";
-  public static final String URI_VERSION = "/experimental";
-
   /**
-   * Returns the portion of the URI, after {@link #URI_VERSION}, that specifies the type of this
-   * instance.
-   * It is possible that more than once instance of this type can exist.
-   *
-   * @return the portion of the URI that identifies the type of this instance
+   * for internal usage only
    */
   @JsonIgnore
-  public abstract String getEndpoint();
-
-  /**
-   * Returns the portion of the URI, after {@link #URI_VERSION}, that specifies the type and id of
-   * this instance.
-   * This result will uniquely identify a single instance.
-   * If the id is null, then null is returned.
-   *
-   * <p>
-   * Note that the result does not include the prefix: <code>http://hostname:port</code>
-   * it should return the URI part after /experimental
-   *
-   * @return {@link #getEndpoint()} + "/" + {@link #getId()}
-   */
-  @JsonIgnore
-  public String getIdentityEndpoint() {
-    String id = getId();
-    if (StringUtils.isBlank(id))
-      return null;
-    else {
-      String endpoint = getEndpoint();
-      if (StringUtils.isBlank(endpoint))
-        return null;
-      else
-        return getEndpoint() + "/" + getId();
-    }
-  }
-
-  /**
-   * Returns the full URI path that uniquely identifies this instance.
-   * If the id is null, then null is returned.
-   *
-   * <p>
-   * Note that the result does not include the prefix: <code>http://hostname:port</code>
-   *
-   * @return {@link #URI_CONTEXT} + {@link #URI_VERSION} + {@link #getIdentityEndpoint()}
-   */
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  public String getUri() {
-    if (getIdentityEndpoint() == null) {
-      return null;
-    }
-    return URI_CONTEXT + URI_VERSION + getIdentityEndpoint();
-  }
+  public abstract Links getLinks();
 
   /**
    * Returns true if the RuntimeInfo will be the same on all members;

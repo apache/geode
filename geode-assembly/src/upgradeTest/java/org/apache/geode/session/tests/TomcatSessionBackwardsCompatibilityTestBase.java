@@ -88,13 +88,7 @@ public abstract class TomcatSessionBackwardsCompatibilityTestBase {
 
   protected TomcatSessionBackwardsCompatibilityTestBase(String version) {
     VersionManager versionManager = VersionManager.getInstance();
-    String installLocation = null;
-    try {
-      installLocation = versionManager.getInstall(version);
-    } finally {
-      System.out.println(
-          "BRUCE: for version " + version + " the installation directory is " + installLocation);
-    }
+    String installLocation = installLocation = versionManager.getInstall(version);
     oldBuild = new File(installLocation);
     oldModules = new File(installLocation + "/tools/Modules/");
   }

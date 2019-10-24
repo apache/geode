@@ -54,7 +54,6 @@ public class CompiledGroupBySelectIntegrationTest {
     List<String> queries = Arrays.asList(
         "SELECT MIN(pf.ID) FROM /portfolio pf WHERE pf.ID > 0",
         "SELECT pf.status, MIN(pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
-        "SELECT pf.status, MIN(pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",
 
         "SELECT MAX(pf.ID) FROM /portfolio pf WHERE pf.ID > 0",
         "SELECT pf.status, MAX(pf.ID) FROM /portfolio pf WHERE pf.ID > 0 GROUP BY pf.status",

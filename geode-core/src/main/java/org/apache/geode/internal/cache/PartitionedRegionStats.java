@@ -24,6 +24,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
@@ -718,6 +719,11 @@ public class PartitionedRegionStats {
 
   public void incGetRetries() {
     this.stats.incLong(getRetriesId, 1);
+  }
+
+  @VisibleForTesting
+  public long getGetRetries() {
+    return this.stats.getLong(getRetriesId);
   }
 
   public void incCreateOpsRetried() {

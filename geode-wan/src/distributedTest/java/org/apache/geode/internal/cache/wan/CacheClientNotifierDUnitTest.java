@@ -30,14 +30,15 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
@@ -265,11 +266,10 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
-    AttributesFactory factory = new AttributesFactory();
-    factory.setPoolName(p.getName());
-    factory.setDataPolicy(DataPolicy.NORMAL);
-    RegionAttributes attrs = factory.create();
-    region = cache.createRegion(regionName, attrs);
+    RegionFactory factory = cache.createRegionFactory(RegionShortcut.LOCAL)
+        .setScope(Scope.DISTRIBUTED_NO_ACK)
+        .setPoolName(p.getName());
+    region = factory.create(regionName);
     region.registerInterest("ALL_KEYS");
     assertNotNull(region);
     if (isDurable) {

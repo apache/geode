@@ -30,17 +30,17 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;
 
-
 public class CacheMeterRegistryFactoryBindersTest {
 
   private static final String[] COMMON_TAG_KEYS = {"cluster", "member", "host"};
+
   private CompositeMeterRegistry registry;
 
   @Before
   public void before() {
     CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
 
-    registry = factory.create(42, "member-name", "host-name");
+    registry = factory.create(42, "member-name", "host-name", false);
     registry.add(new SimpleMeterRegistry());
   }
 

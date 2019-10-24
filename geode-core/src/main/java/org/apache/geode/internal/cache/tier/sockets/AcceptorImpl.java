@@ -89,8 +89,8 @@ import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.LoggingThreadFactory.CommandWrapper;
 import org.apache.geode.internal.logging.LoggingThreadFactory.ThreadInitializer;
@@ -645,7 +645,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         "Handshaker " + serverSock.getInetAddress() + ":" + localPort + " Thread ";
     try {
       logger.warn("Handshaker max Pool size: " + HANDSHAKE_POOL_SIZE);
-      return LoggingExecutors.newThreadPoolWithSynchronousFeedThatHandlesRejection(threadName,
+      return CoreLoggingExecutors.newThreadPoolWithSynchronousFeedThatHandlesRejection(threadName,
           thread -> getStats().incAcceptThreadsCreated(), null, 1, HANDSHAKE_POOL_SIZE, 60);
     } catch (IllegalArgumentException poolInitException) {
       stats.close();
@@ -656,7 +656,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
   }
 
   private ExecutorService initializeClientQueueInitializerThreadPool() {
-    return LoggingExecutors.newThreadPoolWithSynchronousFeed("Client Queue Initialization Thread ",
+    return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(
+        "Client Queue Initialization Thread ",
         command -> {
           try {
             command.run();
@@ -681,11 +682,11 @@ public class AcceptorImpl implements Acceptor, Runnable {
     try {
       String threadName = "ServerConnection on port " + localPort + " Thread ";
       if (isSelector()) {
-        return LoggingExecutors.newThreadPoolWithUnlimitedFeed(threadName, threadInitializer,
+        return CoreLoggingExecutors.newThreadPoolWithUnlimitedFeed(threadName, threadInitializer,
             commandWrapper, maxThreads,
             getStats().getCnxPoolHelper(), Integer.MAX_VALUE, getThreadMonitorObj());
       }
-      return LoggingExecutors.newThreadPoolWithSynchronousFeed(threadName, threadInitializer,
+      return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed(threadName, threadInitializer,
           commandWrapper,
           MINIMUM_MAX_CONNECTIONS, maxConnections, 0L);
     } catch (IllegalArgumentException poolInitException) {

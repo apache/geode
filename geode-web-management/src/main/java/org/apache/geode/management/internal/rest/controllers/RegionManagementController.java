@@ -15,8 +15,8 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
+import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.configuration.Region.REGION_CONFIG_ENDPOINT;
-import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -27,13 +27,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
@@ -45,18 +46,18 @@ import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
-@Controller("regionManagement")
-@RequestMapping(MANAGEMENT_API_VERSION)
+@RestController("regionManagement")
+@RequestMapping(URI_VERSION)
 public class RegionManagementController extends AbstractManagementController {
+  private static final String INDEXES = "/indexes";
 
   @ApiOperation(value = "create region")
-  @ApiResponses({@ApiResponse(code = 200, message = "OK."),
-      @ApiResponse(code = 401, message = "Invalid Username or Password."),
-      @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
-      @ApiResponse(code = 409, message = "Region already exist."),
-      @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
+  @ApiResponses({
+      @ApiResponse(code = 400, message = "Bad request."),
+      @ApiResponse(code = 409, message = "Region already exists."),
+      @ApiResponse(code = 500, message = "Internal error.")})
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
-  @RequestMapping(method = RequestMethod.POST, value = REGION_CONFIG_ENDPOINT)
+  @PostMapping(REGION_CONFIG_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> createRegion(
       @RequestBody Region regionConfig) {
     ClusterManagementResult result =
@@ -70,8 +71,7 @@ public class RegionManagementController extends AbstractManagementController {
           @ExtensionProperty(name = "jqFilter",
               value = ".result[] | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
-  @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT)
-  @ResponseBody
+  @GetMapping(REGION_CONFIG_ENDPOINT)
   public ClusterManagementListResult<Region, RuntimeRegionInfo> listRegion(
       @RequestParam(required = false) String id,
       @RequestParam(required = false) String group) {
@@ -89,8 +89,7 @@ public class RegionManagementController extends AbstractManagementController {
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
-  @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT + "/{id}")
-  @ResponseBody
+  @GetMapping(REGION_CONFIG_ENDPOINT + "/{id}")
   public ClusterManagementGetResult<Region, RuntimeRegionInfo> getRegion(
       @PathVariable(name = "id") String id) {
     securityService.authorize(Resource.CLUSTER, Operation.READ, id);
@@ -101,8 +100,7 @@ public class RegionManagementController extends AbstractManagementController {
 
   @ApiOperation(value = "delete region")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
-  @RequestMapping(method = RequestMethod.DELETE, value = REGION_CONFIG_ENDPOINT + "/{id}")
-  @ResponseBody
+  @DeleteMapping(REGION_CONFIG_ENDPOINT + "/{id}")
   public ClusterManagementResult deleteRegion(
       @PathVariable(name = "id") String id,
       @RequestParam(required = false) String group) {
@@ -118,9 +116,7 @@ public class RegionManagementController extends AbstractManagementController {
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result[] | .configuration | {name:.name,expression:.expression}")})})
-  @RequestMapping(method = RequestMethod.GET,
-      value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
-  @ResponseBody
+  @GetMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES)
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementListResult<Index, RuntimeInfo> listIndex(
       @PathVariable String regionName,
@@ -138,8 +134,7 @@ public class RegionManagementController extends AbstractManagementController {
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result[] | .configuration | {name:.name,expression:.expression,regionPath:.regionPath}")})})
-  @RequestMapping(method = RequestMethod.GET, value = "/indexes")
-  @ResponseBody
+  @GetMapping(INDEXES)
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementListResult<Index, RuntimeInfo> listAllIndex(
       @RequestParam(required = false, name = "id") String indexName) {
@@ -154,9 +149,7 @@ public class RegionManagementController extends AbstractManagementController {
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result | .configuration | {name:.name,expression:.expression}")})})
-  @RequestMapping(method = RequestMethod.GET,
-      value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
-  @ResponseBody
+  @GetMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{id}")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementGetResult<Index, RuntimeInfo> getIndex(
       @PathVariable String regionName,

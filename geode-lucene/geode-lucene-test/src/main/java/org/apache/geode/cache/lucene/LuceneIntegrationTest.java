@@ -12,9 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.lucene;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import org.junit.After;
@@ -24,8 +24,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.distributed.ConfigurationProperties;
-
 
 public class LuceneIntegrationTest {
 
@@ -34,28 +32,27 @@ public class LuceneIntegrationTest {
 
   @After
   public void closeCache() {
-    if (this.cache != null) {
-      this.cache.close();
+    if (cache != null) {
+      cache.close();
     }
   }
 
   @Before
   public void createCache() {
     CacheFactory cf = getCacheFactory();
-    this.cache = cf.create();
+    cache = cf.create();
 
-    luceneService = LuceneServiceProvider.get(this.cache);
+    luceneService = LuceneServiceProvider.get(cache);
   }
 
   protected CacheFactory getCacheFactory() {
     CacheFactory cf = new CacheFactory();
     cf.set(MCAST_PORT, "0");
-    cf.set(ConfigurationProperties.LOCATORS, "");
-    cf.set(ConfigurationProperties.LOG_LEVEL, System.getProperty("logLevel", "info"));
+    cf.set(LOCATORS, "");
     return cf;
   }
 
   protected Region createRegion(String regionName, RegionShortcut shortcut) {
-    return this.cache.createRegionFactory(shortcut).create(regionName);
+    return cache.createRegionFactory(shortcut).create(regionName);
   }
 }

@@ -15,20 +15,28 @@
 package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
+import java.time.Instant;
 
 public class StackTracesPerMember implements Serializable {
 
   private static final long serialVersionUID = 1L;
   private final String memberNameOrId;
+  private final Instant timestamp;
   private final byte[] stackTraces;
 
-  public StackTracesPerMember(String memberNameOrId, byte[] stackTraces) {
+  public StackTracesPerMember(String memberNameOrId, Instant timestamp,
+      byte[] stackTraces) {
     this.memberNameOrId = memberNameOrId;
+    this.timestamp = timestamp;
     this.stackTraces = stackTraces;
   }
 
   public String getMemberNameOrId() {
     return this.memberNameOrId;
+  }
+
+  public Instant getTimestamp() {
+    return this.timestamp;
   }
 
   public byte[] getStackTraces() {

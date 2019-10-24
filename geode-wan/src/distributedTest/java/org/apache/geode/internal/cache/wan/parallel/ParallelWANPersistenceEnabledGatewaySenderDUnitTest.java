@@ -22,9 +22,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.internal.cache.ColocationHelper;
@@ -63,14 +63,14 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
       try {
         GatewaySender sender1 = fact.create("NYSender", 2);
 
-        AttributesFactory rFact = new AttributesFactory();
-        rFact.addGatewaySenderId(sender1.getId());
+        RegionFactory regionFactory = cache.createRegionFactory();
+        regionFactory.addGatewaySenderId(sender1.getId());
 
         PartitionAttributesFactory pFact = new PartitionAttributesFactory();
         pFact.setTotalNumBuckets(100);
         pFact.setRedundantCopies(1);
-        rFact.setPartitionAttributes(pFact.create());
-        Region r = cache.createRegionFactory(rFact.create()).create("MyRegion");
+        regionFactory.setPartitionAttributes(pFact.create());
+        Region r = regionFactory.create("MyRegion");
         sender1.start();
       } finally {
         ex.remove();

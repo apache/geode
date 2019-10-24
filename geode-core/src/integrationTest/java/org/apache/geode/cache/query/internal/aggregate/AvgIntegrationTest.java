@@ -115,6 +115,18 @@ public class AvgIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
             .filter(p -> p.getID() > 0 && p.isActive() && p.getPositions().containsKey("IBM"))
             .mapToInt(Portfolio::getID).average().orElse(Double.NaN)));
 
+    // Aggregate used as as WHERE condition within inner query.
+    queries.put("SELECT AVG(p.ID) FROM /" + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+        downCast(supplierOne.get()
+            .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).min().orElse(-1))
+            .mapToInt(Portfolio::getID).average().orElse(Double.NaN)));
+    queries.put("SELECT AVG(p.ID) FROM /" + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+        downCast(supplierOne.get()
+            .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).max().orElse(-1))
+            .mapToInt(Portfolio::getID).average().orElse(Double.NaN)));
+
     // Equi Join Queries
     equiJoinQueries.put("SELECT AVG(p.ID) from /" + firstRegionName + " p, /" + secondRegionName
         + " e WHERE p.ID = e.ID AND p.ID > 0",
@@ -203,6 +215,20 @@ public class AvgIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
         + " p, p.positions.values pos WHERE p.ID > 0 AND p.status = 'active' AND pos.secId = 'IBM'",
         downCast(supplierOne.get()
             .filter(p -> p.getID() > 0 && p.isActive() && p.getPositions().containsKey("IBM"))
+            .mapToInt(PortfolioPdx::getID).average().orElse(Double.NaN)));
+
+    // Aggregate used as as WHERE condition within inner query.
+    queries.put("SELECT AVG(p.ID) FROM /" + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+        downCast(supplierOne.get()
+            .filter(
+                p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).min().orElse(-1))
+            .mapToInt(PortfolioPdx::getID).average().orElse(Double.NaN)));
+    queries.put("SELECT AVG(p.ID) FROM /" + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+        downCast(supplierOne.get()
+            .filter(
+                p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).max().orElse(-1))
             .mapToInt(PortfolioPdx::getID).average().orElse(Double.NaN)));
 
     // Equi Join Queries

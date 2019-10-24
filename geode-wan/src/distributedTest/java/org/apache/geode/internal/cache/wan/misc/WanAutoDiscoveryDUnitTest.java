@@ -124,10 +124,11 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
         .invoke(() -> WANTestBase.createSecondRemoteLocator(2, nyLocPort1, lnLocPort1));
     locatorPorts.add(new InetSocketAddress("localhost", nyLocPort2));
 
-    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
+    final int siteSizeToCheck = dsVsPort.size();
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
   }
 
   /**
@@ -156,10 +157,11 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
         () -> WANTestBase.createSecondRemoteLocatorWithAPI(2, nyLocPort1, lnLocPort1, "localhost"));
     locatorPorts.add(new InetSocketAddress("localhost", nyLocPort2));
 
-    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
+    final int siteSizeToCheck = dsVsPort.size();
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
   }
 
   /**
@@ -195,10 +197,11 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
         (Integer) vm3.invoke(() -> WANTestBase.createFirstRemoteLocator(4, lnLocPort1));
     locatorPorts.add(new InetSocketAddress("localhost", hkLocPort));
 
-    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
+    final int siteSizeToCheck = dsVsPort.size();
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
   }
 
   @Test
@@ -224,10 +227,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
         (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, nyLocPort1));
     locatorPorts.add(new InetSocketAddress("localhost", tkLocPort));
 
-
-    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
+    final int siteSizeToCheck = dsVsPort.size();
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
   }
 
   @Category({WanTest.class})
@@ -279,10 +282,11 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     locatorPortsln.add(new InetSocketAddress("localhost", (Integer) async[2].getReturnValue()));
     locatorPortsny.add(new InetSocketAddress("localhost", (Integer) async[3].getReturnValue()));
 
-    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
+    final int siteSizeToCheck = dsVsPort.size();
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
   }
 
 
@@ -499,8 +503,9 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
         (Integer) vm1.invoke(() -> WANTestBase.createSecondPeerLocator(1, lnLocPort1));
     locatorPorts.add(new InetSocketAddress("localhost", lnLocPort2));
 
-    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
+    final int siteSizeToCheck = dsVsPort.size();
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
   }
 
   @Test
@@ -539,14 +544,14 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
     // pause(5000);
 
-    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm4.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm5.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-    vm6.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort));
-
+    final int siteSizeToCheck = dsVsPort.size();
+    vm0.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm1.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm2.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm3.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm4.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm5.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
+    vm6.invoke(() -> WANTestBase.checkAllSiteMetaData(dsVsPort, siteSizeToCheck));
   }
 
   @Test

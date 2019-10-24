@@ -1,5 +1,5 @@
 ---
-title:  PUT /gemfire-api/v1/{region}/{key}?op=REPLACE
+title:  PUT /geode/v1/{region}/{key}?op=REPLACE
 ---
 
 <!--
@@ -24,8 +24,8 @@ Update (replace) data with key(s) if and only if the key(s) exists in region. Th
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{key}?op=REPLACE
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}/{key1},{key2},...{keyN}?op=REPLACE
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{region}/{key}?op=REPLACE
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{region}/{key1},{key2},...{keyN}?op=REPLACE
 ```
 
 ## Parameters
@@ -39,7 +39,7 @@ http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v
 
 ``` pre
 Request Payload: application/json
-PUT //gemfire-api/v1/orders/2?op=REPLACE
+PUT //geode/v1/orders/2?op=REPLACE
 
 Accept: application/json
 Content-Type: application/json

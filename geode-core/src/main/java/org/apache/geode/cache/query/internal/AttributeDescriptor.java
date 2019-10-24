@@ -49,8 +49,8 @@ import org.apache.geode.security.NotAuthorizedException;
  */
 public class AttributeDescriptor {
   private final String _name;
-  private final MethodInvocationAuthorizer _methodInvocationAuthorizer;
   private final TypeRegistry _pdxRegistry;
+  private final MethodInvocationAuthorizer _methodInvocationAuthorizer;
   /** cache for remembering the correct Member for a class and attribute */
   @MakeNotStatic
   static final ConcurrentMap<List, Member> _localCache = new ConcurrentHashMap<>();
@@ -72,22 +72,23 @@ public class AttributeDescriptor {
     }
   }
 
-  public Object read(Object target) throws NameNotFoundException, QueryInvocationTargetException {
+  public Object read(Object target, ExecutionContext executionContext)
+      throws NameNotFoundException, QueryInvocationTargetException {
     if (target == null || target == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;
     }
 
     if (target instanceof InternalPdxInstance) {
-      return readPdx((InternalPdxInstance) target);
+      return readPdx((InternalPdxInstance) target, executionContext);
     }
 
     // for non pdx objects
-    return readReflection(target);
+    return readReflection(target, executionContext);
   }
 
   // used when the resolution of an attribute must be on a superclass
   // instead of the runtime class
-  Object readReflection(Object target)
+  Object readReflection(Object target, ExecutionContext executionContext)
       throws NameNotFoundException, QueryInvocationTargetException {
     Support.Assert(target != null);
     Support.Assert(target != QueryService.UNDEFINED);
@@ -100,11 +101,26 @@ public class AttributeDescriptor {
     try {
       if (m instanceof Method) {
         try {
-          if (!_methodInvocationAuthorizer.authorize((Method) m, target)) {
-            throw new NotAuthorizedException(UNAUTHORIZED_STRING + m.getName());
+          Method method = (Method) m;
+          // Try to use previous result so authorizer gets invoked only once per query.
+          boolean authorizationResult;
+          String cacheKey = target.getClass().getCanonicalName() + "." + method.getName();
+          Boolean cachedResult = (Boolean) executionContext.cacheGet(cacheKey);
+
+          if (cachedResult == null) {
+            // First time, evaluate and cache result.
+            authorizationResult = _methodInvocationAuthorizer.authorize(method, target);
+            executionContext.cachePut(cacheKey, authorizationResult);
+          } else {
+            // Use cached result.
+            authorizationResult = cachedResult;
           }
 
-          return ((Method) m).invoke(target, (Object[]) null);
+          if (!authorizationResult) {
+            throw new NotAuthorizedException(UNAUTHORIZED_STRING + method.getName());
+          }
+
+          return method.invoke(target, (Object[]) null);
         } catch (EntryDestroyedException e) {
           // eat the Exception
           return QueryService.UNDEFINED;
@@ -202,7 +218,7 @@ public class AttributeDescriptor {
    *
    * @return the value of the field from PdxInstance
    */
-  private Object readPdx(InternalPdxInstance pdxInstance)
+  private Object readPdx(InternalPdxInstance pdxInstance, ExecutionContext executionContext)
       throws NameNotFoundException, QueryInvocationTargetException {
     // if the field is present in the pdxinstance
     if (pdxInstance.hasField(_name)) {
@@ -233,7 +249,7 @@ public class AttributeDescriptor {
       // invoke implicit method call
       if (!this.isMethodAlreadySearchedAndNotFound(className, _name)) {
         try {
-          return readFieldFromDeserializedObject(pdxInstance);
+          return readFieldFromDeserializedObject(pdxInstance, executionContext);
         } catch (NameNotFoundException ex) {
           updateClassToMethodsMap(pdxInstance.getClassName(), _name);
           throw ex;
@@ -243,7 +259,8 @@ public class AttributeDescriptor {
     }
   }
 
-  private Object readFieldFromDeserializedObject(InternalPdxInstance pdxInstance)
+  private Object readFieldFromDeserializedObject(InternalPdxInstance pdxInstance,
+      ExecutionContext executionContext)
       throws NameNotFoundException, QueryInvocationTargetException {
     Object obj;
 
@@ -255,7 +272,7 @@ public class AttributeDescriptor {
               _name, e.getMessage()));
     }
 
-    return readReflection(obj);
+    return readReflection(obj, executionContext);
   }
 
   private void updateClassToFieldsMap(String className, String field) {

@@ -29,12 +29,12 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
@@ -257,11 +257,9 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     try {
       GatewaySender sender1 = fact.create("TKSender", 2);
 
-      AttributesFactory factory = new AttributesFactory();
-      factory.addGatewaySenderId(sender1.getId());
-      factory.setDataPolicy(DataPolicy.PARTITION);
-      Region region = cache.createRegionFactory(factory.create())
-          .create("test_ValidateGatewaySenderAttributes");
+      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+      regionFactory.addGatewaySenderId(sender1.getId());
+      Region region = regionFactory.create("test_ValidateGatewaySenderAttributes");
       Set<GatewaySender> senders = cache.getGatewaySenders();
       assertEquals(senders.size(), 1);
       GatewaySender gatewaySender = senders.iterator().next();
@@ -309,12 +307,9 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     final IgnoredException exp = IgnoredException.addIgnoredException("Could not connect");
     try {
       GatewaySender sender1 = fact.create("TKSender", 2);
-
-      AttributesFactory factory = new AttributesFactory();
-      factory.addGatewaySenderId(sender1.getId());
-      factory.setDataPolicy(DataPolicy.PARTITION);
-      Region region = cache.createRegionFactory(factory.create())
-          .create("test_ValidateGatewaySenderAttributes");
+      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+      regionFactory.addGatewaySenderId(sender1.getId());
+      Region region = regionFactory.create("test_ValidateGatewaySenderAttributes");
       Set<GatewaySender> senders = cache.getGatewaySenders();
       assertEquals(senders.size(), 1);
       GatewaySender gatewaySender = senders.iterator().next();

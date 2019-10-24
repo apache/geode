@@ -46,21 +46,21 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
   @Test
   public void startCreatesPidFile() {
-    startLocator();
+    startLocator(withPort(0));
 
     assertThat(getPidFile()).exists();
   }
 
   @Test
   public void pidFileContainsServerPid() {
-    startLocator();
+    startLocator(withPort(0));
 
     assertThatPidIsAlive(getLocatorPid());
   }
 
   @Test
   public void startCreatesLogFile() {
-    startLocator();
+    startLocator(withPort(0));
 
     assertThat(getLogFile()).exists();
   }
@@ -71,7 +71,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
     File statusRequestFile = givenControlFile(getStatusRequestFileName());
     File statusFile = givenControlFile(getStatusFileName());
 
-    startLocator();
+    startLocator(withPort(0));
 
     assertDeletionOf(stopRequestFile);
     assertDeletionOf(statusRequestFile);
@@ -85,7 +85,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   public void startOverwritesStalePidFile() {
     givenPidFile(fakePid);
 
-    startLocator();
+    startLocator(withPort(0));
 
     assertThat(getLocatorPid()).isNotEqualTo(fakePid);
   }
@@ -97,7 +97,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
   public void startWithForceOverwritesExistingPidFile() {
     givenPidFile(localPid);
 
-    startLocator(withForce());
+    startLocator(withForce().withPort(0));
 
     assertThatPidIsAlive(getLocatorPid());
     assertThat(getLocatorPid()).isNotEqualTo(localPid);
@@ -125,7 +125,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
   @Test
   public void statusWithPidReturnsOnlineWithDetails() throws Exception {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     LocatorState locatorState = new Builder()
         .setPid(getLocatorPid())
@@ -147,7 +147,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
   @Test
   public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws Exception {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     LocatorState locatorState = new Builder()
         .setWorkingDirectory(getWorkingDirectoryPath())
@@ -219,7 +219,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
   @Test
   public void stopWithPidReturnsStopped() {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     LocatorState serverState = new Builder()
         .setPid(getLocatorPid())
@@ -231,7 +231,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
   @Test
   public void stopWithPidStopsLocatorProcess() {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     new Builder().setPid(getLocatorPid())
         .build()
@@ -242,7 +242,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
   @Test
   public void stopWithPidDeletesPidFile() {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     new Builder()
         .setPid(getLocatorPid())
@@ -254,7 +254,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
   @Test
   public void stopWithWorkingDirectoryReturnsStopped() {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     LocatorState serverState = new Builder()
         .setWorkingDirectory(getWorkingDirectoryPath())
@@ -266,7 +266,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
   @Test
   public void stopWithWorkingDirectoryStopsLocatorProcess() {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     new Builder()
         .setWorkingDirectory(getWorkingDirectoryPath())
@@ -278,7 +278,7 @@ public class LocatorLauncherRemoteIntegrationTest extends LocatorLauncherRemoteI
 
   @Test
   public void stopWithWorkingDirectoryDeletesPidFile() {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     new Builder()
         .setWorkingDirectory(getWorkingDirectoryPath())

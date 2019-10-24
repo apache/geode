@@ -379,20 +379,26 @@ jobs:
       run:
         path: bash
         args:
-        - -ecx
+        - -cx
         - |-
           pushd geode
             GEODE_SHA=$(git rev-parse HEAD)
           popd
           GEODE_SEMVER=$(cat geode-build-version/number)
 
-          cat > geode-passing-tokens/passing-build-tokens.json <<JSON
+          GS_PATH=gs://((artifact-bucket))/semvers/((pipeline-prefix))((geode-build-branch))/passing-build-tokens.json
+          CURRENT_PASSING_SHA=$(gsutil cat ${GS_PATH} | jq -r .ref)
+          set -e
+          # Check that the incoming GEODE_SHA is a descendent of the currently stored value.
+          # Keeps us from winding back the repository in the case of an out-of-order pipeline pass
+          if [ -z "${CURRENT_PASSING_SHA}" ] || (cd geode; git merge-base --is-ancestor ${CURRENT_PASSING_SHA} ${GEODE_SHA}); then
+            cat > geode-passing-tokens/passing-build-tokens.json <<JSON
           {
             "ref": "${GEODE_SHA}",
             "semver": "${GEODE_SEMVER}"
           }
           JSON
-          echo "${GEODE_SHA}" > geode-passing-tokens/sha
+          fi
   - aggregate:
     - put: geode-passing-tokens
       params:
@@ -416,8 +422,8 @@ jobs:
       {{ all_gating_jobs() | indent(6) }}
     - put: concourse-metadata-resource
   - aggregate:
-    {% for ssl_var in [{'title': '_without_ssl', 'flag':''}, {'title': '_with_ssl', 'flag': '-PwithSsl'}] %}
-    - task: run_benchmarks{{ ssl_var.title }}
+    {% for run_var in [{'title': '', 'flag':'', 'options': ''}, {'title': '_with_ssl', 'flag': '-PwithSsl', 'options': '--tests=*GetBenchmark --tests=*PutBenchmark'}, {'title': '_with_security_manager', 'flag': '-PwithSecurityManager', 'options': '--tests=Partitioned*'}] %}
+    - task: run_benchmarks{{ run_var.title }}
       image: alpine-tools-image
       config:
         platform: linux
@@ -430,7 +436,9 @@ jobs:
           BENCHMARKS_BRANCH: {{benchmarks.benchmark_branch}}
           BASELINE_BRANCH: {{benchmarks.baseline_branch}}
           BASELINE_VERSION: {{benchmarks.baseline_version}}
-          WITH_SSL: {{ ssl_var.flag }}
+          FLAGS: {{ run_var.flag }}
+          TAG_POSTFIX: {{ run_var.title }}
+          TEST_OPTIONS: {{ run_var.options }}
         run:
           path: geode-ci/ci/scripts/run_benchmarks.sh
         inputs:
@@ -455,7 +463,9 @@ jobs:
               ARTIFACT_BUCKET: ((artifact-bucket))
               BASELINE_BRANCH: {{benchmarks.baseline_branch}}
               BASELINE_VERSION: {{benchmarks.baseline_version}}
-              WITH_SSL: {{ ssl_var.flag }}
+              FLAGS: {{ run_var.flag }}
+              TAG_POSTFIX: {{ run_var.title }}
+              TEST_OPTIONS: {{ run_var.options }}
             run:
               path: geode-ci/ci/scripts/cleanup_benchmarks.sh
             inputs:

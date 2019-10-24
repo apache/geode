@@ -75,6 +75,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
         region.setExpirations(expirations);
       }
     }
+
     return region;
   }
 

@@ -638,7 +638,7 @@ public class Connection implements Runnable {
   private void sendOKHandshakeReply() throws IOException, ConnectionException {
     ByteBuffer my_okHandshakeBuf;
     if (this.isReceiver) {
-      DistributionConfig cfg = owner.getConduit().config;
+      DistributionConfig cfg = owner.getConduit().getConfig();
       ByteBuffer bb;
       if (BufferPool.useDirectBuffers) {
         bb = ByteBuffer.allocateDirect(128);
@@ -1474,7 +1474,7 @@ public class Connection implements Runnable {
       // if network partition detection is enabled or this is an admin vm
       // we can't wait for the reader thread when running in an IBM JRE. See
       // bug 41889
-      if (this.conduit.config.getEnableNetworkPartitionDetection()
+      if (this.conduit.getConfig().getEnableNetworkPartitionDetection()
           || this.conduit.getMemberId().getVmKind() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
           || this.conduit.getMemberId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
         isIBM = "IBM Corporation".equals(System.getProperty("java.vm.vendor"));
@@ -3281,7 +3281,7 @@ public class Connection implements Runnable {
     }
   }
 
-  private void readHandshakeForSender(DataInputStream dis, ByteBuffer peerDataBuffer) {
+  void readHandshakeForSender(DataInputStream dis, ByteBuffer peerDataBuffer) {
     try {
       this.replyCode = dis.readUnsignedByte();
       switch (replyCode) {
@@ -3309,17 +3309,15 @@ public class Connection implements Runnable {
           return;
         default:
           String err =
-              "Unknown handshake reply code: %s nioMessageLength: %s";
-          Object[] errArgs = new Object[] {this.replyCode,
-              messageLength};
+              String.format("Unknown handshake reply code: %s messageLength: %s", this.replyCode,
+                  this.messageLength);
           if (replyCode == 0 && logger.isDebugEnabled()) { // bug 37113
-            logger.debug(
-                String.format(err, errArgs) + " (peer probably departed ungracefully)");
+            logger.debug(err + " (peer probably departed ungracefully)");
           } else {
-            logger.fatal(err, errArgs);
+            logger.fatal(err);
           }
           this.readerShuttingDown = true;
-          requestClose(String.format(err, errArgs));
+          requestClose(err);
           return;
       }
     } catch (Exception e) {

@@ -24,12 +24,13 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.management.internal.ManagementHelper;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /**
- * This is used by gfsh and ClusterManagementService client to represent a class that can be
- * instantiated on the server using DeclarableTypeInstantiator. It defines a class name and
- * a set of initialization properties.
+ * Used to configure an attribute that represents an instance of a java class.
+ * If the class implements {@link org.apache.geode.cache.Declarable} then
+ * properties can also be configured that will be used to initialize the instance.
  */
 public class ClassName implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -38,9 +39,11 @@ public class ClassName implements Serializable {
   private Properties initProperties = new Properties();
   private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
-  // used to remove a Declarable through gfsh command
-  // e.g. alter region --name=regionA --cache-loader=''
-  public static ClassName EMPTY = new ClassName("");
+  /**
+   * Can be used when updating an attribute to configure
+   * it with no class name.
+   */
+  public static final ClassName EMPTY = new ClassName("");
 
   /**
    * Default constructor used for serialization.
@@ -50,22 +53,24 @@ public class ClassName implements Serializable {
   /**
    * Object to be instantiated using the empty param constructor of the className
    *
-   * @param className this class needs to have an empty param constructor
+   * @param className this class needs to a no-arg constructor.
    */
   public ClassName(String className) {
     this(className, "{}");
   }
 
   /**
-   * @param className this class needs to have an empty param constructor
-   * @param jsonInitProperties a json representation of the initialization properties if this class
-   *        is to be initialized as Declarable type
+   * @param className this class needs to have a no-arg constructor
+   * @param jsonInitProperties a json representation of the initialization properties
+   *        that will be passed to {@link org.apache.geode.cache.Declarable#initialize}.
+   * @throws IllegalArgumentException if the class name is not valid
+   * @throws IllegalArgumentException if jsonInitProperties is invalid JSON
    */
   public ClassName(String className, String jsonInitProperties) {
     if (StringUtils.isBlank(className)) {
       return;
     }
-    if (!isClassNameValid(className)) {
+    if (!ManagementHelper.isClassNameValid(className)) {
       throw new IllegalArgumentException("Invalid className");
     }
     this.className = className;
@@ -76,20 +81,31 @@ public class ClassName implements Serializable {
     }
   }
 
+  /**
+   * @param className this class needs to have a no-arg constructor
+   * @param properties the initialization properties
+   *        that will be passed to {@link org.apache.geode.cache.Declarable#initialize}.
+   */
   public ClassName(String className, Properties properties) {
     this.className = className;
     this.initProperties = properties;
   }
 
+  /**
+   * @return the name of the class
+   */
   public String getClassName() {
     return className;
   }
 
+  /**
+   * @return the properties that will be used when an instance is created.
+   */
   public Properties getInitProperties() {
     return initProperties;
   }
 
-  public static boolean isClassNameValid(String fqcn) {
+  private static boolean isClassNameValid(String fqcn) {
     if (StringUtils.isBlank(fqcn)) {
       return false;
     }

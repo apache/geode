@@ -43,7 +43,7 @@ public class ClusterManagementOperationResultTest {
     result1.setStatus(StatusCode.OK, "Success!!");
     ClusterManagementOperationResult<TestOperationResult> result =
         new ClusterManagementOperationResult<>(result1, operationResult, new Date(),
-            new CompletableFuture<>(), "operator");
+            new CompletableFuture<>(), "operator", "id");
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
     ClusterManagementOperationResult value =

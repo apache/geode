@@ -14,6 +14,7 @@
  */
 package org.apache.geode.metrics;
 
+import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -41,7 +42,6 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.rules.ServiceJarRule;
-import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class MicrometerBinderTest {
@@ -86,8 +86,7 @@ public class MicrometerBinderTest {
     gfshRule.execute(startServerCommand);
 
     Path functionJarPath = serverFolder.resolve("function.jar").toAbsolutePath();
-    new ClassBuilder().writeJarFromClass(CheckIfMeterExistsFunction.class,
-        functionJarPath.toFile());
+    writeJarFromClasses(functionJarPath.toFile(), CheckIfMeterExistsFunction.class);
 
     String connectCommand = "connect --jmx-manager=localhost[" + jmxRmiPort + "]";
     String deployCommand = "deploy --jar=" + functionJarPath.toAbsolutePath();

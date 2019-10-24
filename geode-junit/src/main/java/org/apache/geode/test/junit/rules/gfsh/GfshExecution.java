@@ -23,7 +23,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,7 +37,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
 
 public class GfshExecution {
-
   private static final String DOUBLE_QUOTE = "\"";
 
   private final Process process;
@@ -45,7 +46,9 @@ public class GfshExecution {
   protected GfshExecution(Process process, File workingDir) {
     this.process = process;
     this.workingDir = workingDir;
-    this.processLogger = new ProcessLogger(process, workingDir.getName());
+
+    processLogger = new ProcessLogger(process, workingDir.getName());
+    processLogger.start();
   }
 
   public String getOutputText() {
@@ -116,7 +119,8 @@ public class GfshExecution {
         .filter(file -> file.getName().toLowerCase().endsWith(".log"));
   }
 
-  protected void awaitTermination(GfshScript script) throws InterruptedException {
+  void awaitTermination(GfshScript script)
+      throws InterruptedException, TimeoutException, ExecutionException {
     boolean exited = process.waitFor(script.getTimeout(), script.getTimeoutTimeUnit());
 
     try {
@@ -126,6 +130,9 @@ public class GfshExecution {
     } catch (AssertionError error) {
       printLogFiles();
       throw error;
+    } finally {
+      processLogger.awaitTermination(script.getTimeout(), script.getTimeoutTimeUnit());
+      processLogger.close();
     }
   }
 
@@ -133,7 +140,7 @@ public class GfshExecution {
    * this only kills the process of "gfsh -e command", it does not kill the child processes started
    * by this command.
    */
-  public void killProcess() {
+  void killProcess() {
     process.destroyForcibly();
     if (process.isAlive()) {
       // process may not terminate immediately after destroyForcibly

@@ -1,5 +1,5 @@
 ---
-title:  DELETE /gemfire-api/v1/{region}
+title:  DELETE /geode/v1/{region}
 ---
 
 <!--
@@ -20,11 +20,12 @@ limitations under the License.
 -->
 
 Delete all entries in the region.
+Limited to replicated regions only; not available for partitioned regions.
 
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/{region}
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{region}
 ```
 
 ## Parameters
@@ -35,7 +36,7 @@ None.
 
 ``` pre
 Request Payload: null
-DELETE /gemfire-api/v1/orders
+DELETE /geode/v1/orders
 Accept: application/json
 ```
 

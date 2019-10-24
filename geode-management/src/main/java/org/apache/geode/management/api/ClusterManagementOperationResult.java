@@ -44,7 +44,7 @@ public class ClusterManagementOperationResult<V extends OperationResult>
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   private Date operationStart;
-
+  private String operationId;
   private String operator;
 
   /**
@@ -61,12 +61,13 @@ public class ClusterManagementOperationResult<V extends OperationResult>
    */
   public ClusterManagementOperationResult(ClusterManagementResult result,
       CompletableFuture<V> operationResult, Date operationStart,
-      CompletableFuture<Date> futureOperationEnded, String operator) {
+      CompletableFuture<Date> futureOperationEnded, String operator, String operationId) {
     super(result);
     this.operationResult = operationResult;
     this.operationStart = operationStart;
     this.futureOperationEnded = futureOperationEnded;
     this.operator = operator;
+    this.operationId = operationId;
   }
 
   /**
@@ -119,5 +120,12 @@ public class ClusterManagementOperationResult<V extends OperationResult>
    */
   public String getOperator() {
     return operator;
+  }
+
+  /**
+   * returns the operation id started by this operation.
+   */
+  public String getOperationId() {
+    return operationId;
   }
 }

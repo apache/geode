@@ -38,13 +38,14 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.InternalFunctionExecutionService;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.InternalFunctionService;
 import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender65;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
@@ -192,7 +193,7 @@ public class ExecuteFunction66 extends BaseCommand {
         functionObject = (Function) function;
       }
 
-      FunctionStats stats = FunctionStats.getFunctionStats(functionObject.getId());
+      FunctionStats stats = FunctionStatsManager.getFunctionStats(functionObject.getId());
 
       // check if the caller is authorized to do this operation on server
       functionObject.getRequiredPermissions(null, args).forEach(securityService::authorize);
@@ -256,10 +257,8 @@ public class ExecuteFunction66 extends BaseCommand {
           writeReply(clientMessage, serverConnection);
         }
       } catch (FunctionException e) {
-        stats.endFunctionExecutionWithException(functionObject.hasResult());
         throw e;
       } catch (Exception e) {
-        stats.endFunctionExecutionWithException(functionObject.hasResult());
         throw new FunctionException(e);
       } finally {
         handshake.setClientReadTimeout(earlierClientReadTimeout);
@@ -314,14 +313,19 @@ public class ExecuteFunction66 extends BaseCommand {
   private void executeFunctionLocally(final Function fn, final FunctionContext cx,
       final ServerToClientFunctionResultSender65 sender, DistributionManager dm,
       final FunctionStats stats) throws IOException {
-    long startExecution = stats.startTime();
-    stats.startFunctionExecution(fn.hasResult());
 
     if (fn.hasResult()) {
-      fn.execute(cx);
-      if (sender.isOkayToSendResult() && !sender.isLastResultReceived() && fn.hasResult()) {
-        throw new FunctionException(
-            String.format("The function, %s, did not send last result", fn.getId()));
+      long startExecution = stats.startFunctionExecution(fn.hasResult());
+      try {
+        fn.execute(cx);
+        if (sender.isOkayToSendResult() && !sender.isLastResultReceived() && fn.hasResult()) {
+          throw new FunctionException(
+              String.format("The function, %s, did not send last result", fn.getId()));
+        }
+        stats.endFunctionExecution(startExecution, fn.hasResult());
+      } catch (Exception e) {
+        stats.endFunctionExecutionWithException(startExecution, fn.hasResult());
+        throw e;
       }
     } else {
       /*
@@ -331,6 +335,7 @@ public class ExecuteFunction66 extends BaseCommand {
       TXStateProxy txState = TXManagerImpl.getCurrentTXState();
       Runnable functionExecution = () -> {
         InternalCache cache = null;
+        long startExecution = stats.startFunctionExecution(fn.hasResult());
         try {
           if (txState != null) {
             cache = GemFireCacheImpl.getExisting("executing function");
@@ -342,14 +347,15 @@ public class ExecuteFunction66 extends BaseCommand {
             }
           }
           fn.execute(cx);
+          stats.endFunctionExecution(startExecution, fn.hasResult());
         } catch (InternalFunctionInvocationTargetException e) {
           // TRAC #44709: InternalFunctionInvocationTargetException should not be logged
-          stats.endFunctionExecutionWithException(fn.hasResult());
+          stats.endFunctionExecutionWithException(startExecution, fn.hasResult());
           if (logger.isDebugEnabled()) {
             logger.debug("Exception on server while executing function: {}", fn, e);
           }
         } catch (Exception e) {
-          stats.endFunctionExecutionWithException(fn.hasResult());
+          stats.endFunctionExecutionWithException(startExecution, fn.hasResult());
           logger.warn("Exception on server while executing function: {}", fn, e);
         } finally {
           if (txState != null && cache != null) {
@@ -369,7 +375,6 @@ public class ExecuteFunction66 extends BaseCommand {
         newDM.getExecutors().getFunctionExecutor().execute(functionExecution);
       }
     }
-    stats.endFunctionExecution(startExecution, fn.hasResult());
   }
 
   private void sendException(byte hasResult, Message msg, String message,

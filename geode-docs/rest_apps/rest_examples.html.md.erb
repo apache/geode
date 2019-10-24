@@ -92,7 +92,7 @@ package org.apache.geode.restclient;
     HttpEntity< String> entity =  new HttpEntity< String>(PERSON1_AS_JSON, headers);
      try {
       ResponseEntity< String> result = RestClientUtils.getRestTemplate().exchange(
-             "http://localhost:8080/gemfire-api/v1/People?key=1" , HttpMethod.POST,
+             "http://localhost:8080/geode/v1/People?key=1" , HttpMethod.POST,
             entity,  String.class);
 
        System.out.println( "STATUS_CODE = " + result.getStatusCode().value());
@@ -216,7 +216,6 @@ package org.apache.geode.util;
  import java.util.List;
  import org.springframework.http.converter.ByteArrayHttpMessageConverter;
  import org.springframework.http.converter.HttpMessageConverter;
- //import  org.springframework.http.converter.ResourceHttpMessageConverter;
  import org.springframework.http.converter.StringHttpMessageConverter;
  import org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean;
  import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -226,10 +225,10 @@ package org.apache.geode.util;
  public class RestClientUtils {
 
    public static final String BASE_URL =  "http://192.0.2.0:8080" ;
- public static final String GEMFIRE_REST_API_CONTEXT =  "/gemfire-api";
-   public static final String GEMFIRE_REST_API_VERSION =  "/v1";
-   public static final URI GEMFIRE_REST_API_WEB_SERVICE_URL = URI
-      .create(BASE_URL + GEMFIRE_REST_API_CONTEXT + GEMFIRE_REST_API_VERSION);
+   public static final String GEODE_REST_API_CONTEXT =  "/geode";
+   public static final String GEODE_REST_API_VERSION =  "/v1";
+   public static final URI GEODE_REST_API_WEB_SERVICE_URL = URI
+      .create(BASE_URL + GEODE_REST_API_CONTEXT + GEODE_REST_API_VERSION);
 
    public static RestTemplate restTemplate;
    public static RestTemplate getRestTemplate() {
@@ -238,10 +237,8 @@ package org.apache.geode.util;
        final List<HttpMessageConverter<?>> messageConverters =  new ArrayList<HttpMessageConverter<?>>();
 
       messageConverters.add( new ByteArrayHttpMessageConverter());
-       //messageConverters.add(new  ResourceHttpMessageConverter());
       messageConverters.add( new StringHttpMessageConverter());
       messageConverters.add(createMappingJackson2HttpMessageConverter());
-       // messageConverters.add(createMarshallingHttpMessageConverter());
 
       restTemplate.setMessageConverters(messageConverters);
     }
@@ -268,7 +265,7 @@ package org.apache.geode.util;
   }
 
    public static URI toUri( final String... pathSegments) {
-     return toUri(GEMFIRE_REST_API_WEB_SERVICE_URL, pathSegments);
+     return toUri(GEODE_REST_API_WEB_SERVICE_URL, pathSegments);
   }
 
    public static URI toUri( final URI baseUrl,  final String... pathSegments) {
@@ -565,7 +562,7 @@ if __FILE__ == $0
   #puts p.inspect
   #puts p.to_json
 
-  uri = URI("http://localhost:8080/gemfire-api/v1/People/1");
+  uri = URI("http://localhost:8080/geode/v1/People/1");
 
   personJson = Net::HTTP::get(uri);
 
@@ -636,7 +633,7 @@ import uuid
 import requests
 
 REGION = "demoRegion"
-BASE_URI = "http://localhost:8080/gemfire-api/v1"
+BASE_URI = "http://localhost:8080/geode/v1"
 
 headers = {'content-type': 'application/json'}
 

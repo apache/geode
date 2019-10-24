@@ -94,6 +94,7 @@ import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LogWithToString;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -106,7 +107,7 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
  */
 @SuppressWarnings("deprecation")
 public abstract class AbstractRegion implements InternalRegion, AttributesMutator, CacheStatistics,
-    DataSerializableFixedID, Extensible<Region<?, ?>>, EvictableRegion {
+    DataSerializableFixedID, Extensible<Region<?, ?>>, EvictableRegion, LogWithToString {
 
   private static final Logger logger = LogService.getLogger();
   private final ReentrantReadWriteLock readWriteLockForCacheLoader = new ReentrantReadWriteLock();

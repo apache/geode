@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.rest;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,6 +41,7 @@ import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -58,13 +61,15 @@ public class StandaloneClientManagementAPIAcceptanceTest {
 
   private static String trustStorePath;
 
-  @Parameter
-  public Boolean useSsl;
-
   @Parameters
   public static Collection<Boolean> data() {
     return Arrays.asList(true, false);
   }
+
+  @Parameter
+  public Boolean useSsl;
+
+  private ProcessLogger clientProcessLogger;
 
   @BeforeClass
   public static void beforeClass() {
@@ -80,6 +85,12 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     assertThat(trustStorePath).as("java file resource not found").isNotBlank();
   }
 
+  @After
+  public void tearDown() throws Exception {
+    clientProcessLogger.awaitTermination(GeodeAwaitility.getTimeout().getValueInMS(), MILLISECONDS);
+    clientProcessLogger.close();
+  }
+
   @Test
   public void clientCreatesRegionUsingClusterManagementService() throws Exception {
     JarBuilder jarBuilder = new JarBuilder();
@@ -91,14 +102,15 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     File outputJar = new File(tempDir.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, new File(filePath));
 
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     int locatorPort = availablePorts[0];
     int httpPort = availablePorts[1];
+    int jmxPort = availablePorts[2];
     GfshExecution startCluster =
-        GfshScript.of(String.format("start locator --port=%d --J=-Dgemfire.http-service-port=%d %s",
-            locatorPort,
-            httpPort,
-            getSslParameters()),
+        GfshScript.of(
+            String.format(
+                "start locator --port=%d --http-service-port=%d --J=-Dgemfire.JMX_MANAGER_PORT=%d %s",
+                locatorPort, httpPort, jmxPort, getSslParameters()),
             String.format("start server --locators=localhost[%d] --server-port=0", locatorPort))
             .withName("startCluster").execute(gfsh);
 
@@ -167,7 +179,8 @@ public class StandaloneClientManagementAPIAcceptanceTest {
     System.out.format("Launching client command: %s\n", command);
 
     Process process = pBuilder.start();
-    new ProcessLogger(process, "clientCreateRegion");
+    clientProcessLogger = new ProcessLogger(process, "clientCreateRegion");
+    clientProcessLogger.start();
     return process;
   }
 
@@ -185,12 +198,13 @@ public class StandaloneClientManagementAPIAcceptanceTest {
   }
 
   private String getJarOrClassesForModule(String module) {
-    String classPath = Arrays.stream(System.getProperty("java.class.path")
+    String classPathValue = System.getProperty("java.class.path");
+    String classPath = Arrays.stream(classPathValue
         .split(File.pathSeparator))
-        .filter(x -> x.contains(module)
-            && (x.endsWith("/classes") || x.endsWith("/classes/java/main")
-                || x.endsWith("/resources") || x.endsWith("/resources/main")
-                || x.endsWith(".jar")))
+        .filter(x -> x.contains(module))
+        // && (x.endsWith("/classes") || x.endsWith("/classes/java/main")
+        // || x.endsWith("/resources") || x.endsWith("/resources/main")
+        // || x.endsWith(".jar")))
         .collect(Collectors.joining(File.pathSeparator));
 
     assertThat(classPath).as("no classes found for module: " + module)

@@ -16,6 +16,7 @@
 package org.apache.geode.metrics;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -37,7 +38,6 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.rules.ServiceJarRule;
-import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.MetricsTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
@@ -230,7 +230,7 @@ public class GatewayReceiverMetricsTest {
 
   private String newJarForFunctionClass(Class clazz, String jarName) throws IOException {
     File jar = temporaryFolder.newFile(jarName);
-    new ClassBuilder().writeJarFromClass(clazz, jar);
+    writeJarFromClasses(jar, clazz);
     return jar.getAbsolutePath();
   }
 

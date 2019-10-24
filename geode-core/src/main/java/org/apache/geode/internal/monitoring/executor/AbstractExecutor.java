@@ -28,6 +28,7 @@ public abstract class AbstractExecutor {
 
   private static final int THREAD_DUMP_DEPTH = 40;
   private static final Logger logger = LogService.getLogger();
+  public static final String LOCK_OWNER_THREAD_STACK = "Lock owner thread stack";
   private long threadID;
   private String groupName;
   private short numIterationsStuck;
@@ -47,10 +48,10 @@ public abstract class AbstractExecutor {
 
   public void handleExpiry(long stuckTime) {
     this.incNumIterationsStuck();
-    logger.warn(handleLogMessage(stuckTime));
+    logger.warn(createThreadReport(stuckTime));
   }
 
-  private String handleLogMessage(long stuckTime) {
+  String createThreadReport(long stuckTime) {
 
     DateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy HH:mm:ss zzz");
 
@@ -58,42 +59,57 @@ public abstract class AbstractExecutor {
         ManagementFactory.getThreadMXBean().getThreadInfo(this.threadID, THREAD_DUMP_DEPTH);
     boolean logThreadDetails = (thread != null);
 
-    StringBuilder strb = new StringBuilder();
+    StringBuilder stringBuilder = new StringBuilder();
+    final String lineSeparator = System.lineSeparator();
 
-    strb.append("Thread <").append(this.threadID).append("> (0x")
+    stringBuilder.append("Thread <").append(this.threadID).append("> (0x")
         .append(Long.toHexString(this.threadID)).append(") that was executed at <")
         .append(dateFormat.format(this.getStartTime())).append("> has been stuck for <")
         .append((float) stuckTime / 1000)
         .append(" seconds> and number of thread monitor iteration <")
-        .append(this.numIterationsStuck).append("> ").append(System.lineSeparator());
+        .append(this.numIterationsStuck).append("> ").append(lineSeparator);
     if (logThreadDetails) {
-      strb.append("Thread Name <").append(thread.getThreadName()).append(">")
+      stringBuilder.append("Thread Name <").append(thread.getThreadName()).append(">")
           .append(" state <").append(thread.getThreadState())
-          .append(">").append(System.lineSeparator());
+          .append(">").append(lineSeparator);
 
       if (thread.getLockName() != null)
-        strb.append("Waiting on <").append(thread.getLockName()).append(">")
-            .append(System.lineSeparator());
+        stringBuilder.append("Waiting on <").append(thread.getLockName()).append(">")
+            .append(lineSeparator);
 
       if (thread.getLockOwnerName() != null)
-        strb.append("Owned By <").append(thread.getLockOwnerName()).append("> with ID <")
-            .append(thread.getLockOwnerId()).append(">").append(System.lineSeparator());
+        stringBuilder.append("Owned By <").append(thread.getLockOwnerName()).append("> with ID <")
+            .append(thread.getLockOwnerId()).append(">").append(lineSeparator);
     }
 
 
-    strb.append("Executor Group <").append(groupName).append(">").append(System.lineSeparator())
+    stringBuilder.append("Executor Group <").append(groupName).append(">").append(
+        lineSeparator)
         .append("Monitored metric <ResourceManagerStats.numThreadsStuck>")
-        .append(System.lineSeparator());
+        .append(lineSeparator);
 
     if (logThreadDetails) {
-      strb.append("Thread Stack:").append(System.lineSeparator());
-      for (int i = 0; i < thread.getStackTrace().length; i++) {
-        String row = thread.getStackTrace()[i].toString();
-        strb.append(row).append(System.lineSeparator());
+      writeThreadStack(thread, "Thread stack:", stringBuilder);
+    }
+
+    if (logThreadDetails && thread.getLockOwnerName() != null) {
+      ThreadInfo lockOwnerThread = ManagementFactory.getThreadMXBean()
+          .getThreadInfo(thread.getLockOwnerId(), THREAD_DUMP_DEPTH);
+      if (lockOwnerThread != null) {
+        writeThreadStack(lockOwnerThread, LOCK_OWNER_THREAD_STACK, stringBuilder);
       }
     }
 
-    return strb.toString();
+    return stringBuilder.toString();
+  }
+
+  private void writeThreadStack(ThreadInfo thread, String header, StringBuilder strb) {
+    final String lineSeparator = System.lineSeparator();
+    strb.append(header).append(lineSeparator);
+    for (int i = 0; i < thread.getStackTrace().length; i++) {
+      String row = thread.getStackTrace()[i].toString();
+      strb.append(row).append(lineSeparator);
+    }
   }
 
   public long getStartTime() {

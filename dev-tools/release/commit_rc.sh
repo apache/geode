@@ -116,7 +116,7 @@ echo "============================================================"
 cd ${GEODE}/../..
 echo "1. ${0%/*}/deploy_rc_pipeline.sh -v ${VERSION}"
 echo "2. Monitor https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-release-${VERSION//./-}-rc until all green"
-echo "3. Send the following email to announce the RC:
+echo "3. Send the following email to announce the RC:"
 echo "To: dev@geode.apache.org"
 echo "Subject: [VOTE] Apache Geode ${FULL_VERSION}"
 ${0%/*}/print_rc_email.sh -v ${FULL_VERSION} -m ${MAVEN}

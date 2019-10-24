@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
 
 import java.io.BufferedReader;
@@ -79,12 +79,12 @@ public class LogFileParser {
   private final boolean suppressBlanks;
 
   /**
-   * Creates a new <code>LogFileParser</code> that reads a log from a given
-   * <code>BufferedReader</code>. Blanks are not suppressed, and non-timestamped lines are emitted
+   * Creates a new {@code LogFileParser} that reads a log from a given
+   * {@code BufferedReader}. Blanks are not suppressed, and non-timestamped lines are emitted
    * as-is.
    *
    * @param logFileName The name of the log file being parsed. This is appended to the entry. If
-   *        <code>logFileName</code> is <code>null</code> nothing will be appended.
+   *        {@code logFileName} is {@code null} nothing will be appended.
    * @param br Where to read the log from
    */
   public LogFileParser(final String logFileName, final BufferedReader br) {
@@ -92,11 +92,11 @@ public class LogFileParser {
   }
 
   /**
-   * Creates a new <code>LogFileParser</code> that reads a log from a given
-   * <code>BufferedReader</code>.
+   * Creates a new {@code LogFileParser} that reads a log from a given
+   * {@code BufferedReader}.
    *
    * @param logFileName The name of the log file being parsed. This is appended to the entry. If
-   *        <code>logFileName</code> is <code>null</code> nothing will be appended.
+   *        {@code logFileName} is {@code null} nothing will be appended.
    * @param br Where to read the log from
    * @param tabOut Whether to add white-space to non-timestamped lines to align them with lines
    *        containing file names.
@@ -220,7 +220,7 @@ public class LogFileParser {
         }
       }
 
-      StringBuffer line = new StringBuffer(lineStr);
+      StringBuilder line = new StringBuilder(lineStr);
       if (lend != llen) {
         line.setLength(lend);
         llen = lend;
@@ -260,7 +260,7 @@ public class LogFileParser {
             if (idx > 0) {
               idx = line.indexOf("]", idx + 4);
               if (idx + 1 < line.length()) {
-                line.insert(idx + 1, LINE_SEPARATOR + " ");
+                line.insert(idx + 1, lineSeparator() + " ");
               }
             }
           }
@@ -308,7 +308,7 @@ public class LogFileParser {
           }
           sb.append("[dump ");
           sb.append(timestamp);
-          sb.append("]").append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+          sb.append("]").append(lineSeparator()).append(lineSeparator());
 
         } catch (ParseException ex) {
           // Oh well...
@@ -319,7 +319,7 @@ public class LogFileParser {
       }
 
       sb.append(line);
-      sb.append(LINE_SEPARATOR);
+      sb.append(lineSeparator());
 
       if (entry != null) {
         return entry;
@@ -339,7 +339,7 @@ public class LogFileParser {
       LocalLogWriter tempLogger = new LocalLogWriter(ALL.intLevel(), pw);
       tempLogger.info("MISSING TIME STAMP");
       pw.flush();
-      sb.insert(0, LINE_SEPARATOR + LINE_SEPARATOR);
+      sb.insert(0, lineSeparator() + lineSeparator());
       sb.insert(0, sw.toString().trim());
       sb.insert(0, extLogFileName);
     }
@@ -373,10 +373,11 @@ public class LogFileParser {
 
   /**
    * A parsed entry in a log file. Note that we maintain the entry's timestamp as a
-   * <code>String</code>. {@link DateFormat#parse(String) Parsing} it was too
+   * {@code String}. {@link DateFormat#parse(String) Parsing} it was too
    * expensive.
    */
   static class LogEntry {
+
     /** Timestamp of the log entry */
     private final String timestamp;
 
@@ -420,7 +421,7 @@ public class LogFileParser {
     }
 
     /**
-     * Writes the contents of this log entry to a <code>PrintWriter</code>.
+     * Writes the contents of this log entry to a {@code PrintWriter}.
      */
     public void writeTo(final PrintWriter pw) {
       pw.println(contents);
@@ -440,7 +441,7 @@ public class LogFileParser {
 
   /**
    * The last log entry read from a log file. We use a separate class to avoid the overhead of an
-   * extra <code>boolean</code> field in each {@link LogFileParser.LogEntry}.
+   * extra {@code boolean} field in each {@link LogFileParser.LogEntry}.
    */
   static class LastLogEntry extends LogEntry {
 

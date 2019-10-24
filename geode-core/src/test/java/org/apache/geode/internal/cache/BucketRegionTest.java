@@ -456,6 +456,8 @@ public class BucketRegionTest {
     doReturn(false).when(partitionedRegion).isInitialized();
     doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
 
+    CacheClientNotifier.resetInstance();
+
     bucketRegion.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, false, false);
 
     verify(partitionedRegion, never()).invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY,
@@ -503,6 +505,8 @@ public class BucketRegionTest {
     doReturn(false).when(partitionedRegion).isInitialized();
     doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
 
+    CacheClientNotifier.resetInstance();
+
     bucketRegion.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event, false);
 
     verify(partitionedRegion, never()).invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE,
@@ -549,6 +553,8 @@ public class BucketRegionTest {
     doReturn(true).when(event).isGenerateCallbacks();
     doReturn(false).when(partitionedRegion).isInitialized();
     doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
+
+    CacheClientNotifier.resetInstance();
 
     bucketRegion.invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event, false, false);
 

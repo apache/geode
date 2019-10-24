@@ -17,6 +17,7 @@
 
 package org.apache.geode.management.internal.api;
 
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -62,6 +63,7 @@ import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.GroupableConfiguration;
 import org.apache.geode.management.configuration.Index;
+import org.apache.geode.management.configuration.Links;
 import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.configuration.Region;
@@ -190,7 +192,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     // add the config object which includes the HATEOAS information of the element created
     if (result.isSuccessful()) {
-      result.setUri(config.getUri());
+      result.setLinks(config.getLinks());
     }
     return assertSuccessful(result);
   }
@@ -432,9 +434,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
       ClusterManagementResult status, OperationInstance<A, V> operationInstance) {
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
         operationInstance.getFutureResult(), operationInstance.getOperationStart(),
-        operationInstance.getFutureOperationEnded(), operationInstance.getOperator());
-    result.setUri(AbstractConfiguration.URI_CONTEXT + AbstractConfiguration.URI_VERSION
-        + operationInstance.getOperation().getEndpoint() + "/" + operationInstance.getId());
+        operationInstance.getFutureOperationEnded(), operationInstance.getOperator(),
+        operationInstance.getId());
+    result.setLinks(
+        new Links(operationInstance.getId(), operationInstance.getOperation().getEndpoint()));
     return result;
   }
 

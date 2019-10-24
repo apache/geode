@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.query.internal;
 
 import java.io.StringReader;
@@ -200,6 +199,22 @@ public class QCompiler implements OQLLexerTokenTypes {
     Assert.assertTrue(stackSize() == 0, "stack size = " + stackSize() + ";stack=" + this.stack);
   }
 
+  private void checkWhereClauseForAggregates(CompiledValue compiledValue) {
+    if (compiledValue instanceof CompiledAggregateFunction) {
+      throw new QueryInvalidException(
+          "Aggregate functions can not be used as part of the WHERE clause.");
+    }
+
+    // Inner queries are supported.
+    if (compiledValue instanceof CompiledSelect) {
+      return;
+    }
+
+    for (Object compiledChildren : compiledValue.getChildren()) {
+      checkWhereClauseForAggregates((CompiledValue) compiledChildren);
+    }
+  }
+
   public void select(Map<Integer, Object> queryComponents) {
 
     CompiledValue limit = null;
@@ -241,6 +256,8 @@ public class QCompiler implements OQLLexerTokenTypes {
 
     if (queryComponents.size() == 1) {
       where = (CompiledValue) queryComponents.values().iterator().next();
+      // Where clause can not contain aggregate functions.
+      checkWhereClauseForAggregates(where);
     } else if (queryComponents.size() > 1) {
       throw new QueryInvalidException("Unexpected/unsupported query clauses found");
     }

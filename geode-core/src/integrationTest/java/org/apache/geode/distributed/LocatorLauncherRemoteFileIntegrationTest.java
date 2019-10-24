@@ -44,7 +44,7 @@ public class LocatorLauncherRemoteFileIntegrationTest extends LocatorLauncherRem
   @Test
   @Override
   public void statusWithPidReturnsOnlineWithDetails() {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     Throwable thrown = catchThrowable(() -> new Builder()
         .setPid(getLocatorPid())
@@ -58,7 +58,7 @@ public class LocatorLauncherRemoteFileIntegrationTest extends LocatorLauncherRem
   @Test
   @Override
   public void stopWithPidDeletesPidFile() {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     Throwable thrown = catchThrowable(() -> new Builder()
         .setPid(getLocatorPid())
@@ -72,7 +72,7 @@ public class LocatorLauncherRemoteFileIntegrationTest extends LocatorLauncherRem
   @Test
   @Override
   public void stopWithPidReturnsStopped() {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     Throwable thrown = catchThrowable(() -> new Builder()
         .setPid(getLocatorPid())
@@ -86,7 +86,7 @@ public class LocatorLauncherRemoteFileIntegrationTest extends LocatorLauncherRem
   @Test
   @Override
   public void stopWithPidStopsLocatorProcess() {
-    givenRunningLocator();
+    givenRunningLocator(withPort(0));
 
     Throwable thrown = catchThrowable(() -> new Builder()
         .setPid(getLocatorPid())

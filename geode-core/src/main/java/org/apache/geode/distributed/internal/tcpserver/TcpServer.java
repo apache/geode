@@ -60,8 +60,8 @@ import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingF
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionNotFoundException;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -187,7 +187,7 @@ public class TcpServer {
   }
 
   private static ExecutorService createExecutor(PoolStatHelper poolHelper) {
-    return LoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
+    return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
         MAX_POOL_SIZE, poolHelper, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
@@ -229,10 +229,10 @@ public class TcpServer {
         srv_sock = getSocketCreator().createServerSocket(port, BACKLOG, bind_address);
       }
       // GEODE-4176 - set the port from a wild-card bind so that handlers know the correct value
+
       if (this.port <= 0) {
         this.port = srv_sock.getLocalPort();
       }
-
       if (log.isInfoEnabled()) {
         log.info("Locator was created at " + new Date());
         log.info("Listening on port " + getPort() + " bound on address " + bind_address);

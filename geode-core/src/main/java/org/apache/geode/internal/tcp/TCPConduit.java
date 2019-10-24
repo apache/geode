@@ -181,7 +181,7 @@ public class TCPConduit implements Runnable {
    *
    * @since GemFire 4.2.1
    */
-  DistributionConfig config;
+  private DistributionConfig config;
 
   ////////////////// runtime state that is re-initialized on a restart
 
@@ -728,6 +728,12 @@ public class TCPConduit implements Runnable {
   public void setMemberId(InternalDistributedMember addr) {
     localAddr = addr;
   }
+
+  public DistributionConfig getConfig() {
+    return config;
+  }
+
+
 
   /**
    * Return a connection to the given member. This method must continue to attempt to create a

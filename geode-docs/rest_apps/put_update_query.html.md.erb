@@ -1,5 +1,5 @@
 ---
-title:  PUT /gemfire-api/v1/queries/{queryId}
+title:  PUT /geode/v1/queries/{queryId}
 ---
 
 <!--
@@ -24,7 +24,7 @@ Update a named, parameterized query.
 ## Resource URL
 
 ``` pre
-http://<hostname_or_http-service-bind-address>:<http-service-port>/gemfire-api/v1/queries/{queryId}
+http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/queries/{queryId}
 ```
 
 ## Parameters
@@ -57,7 +57,7 @@ For this release, you cannot specify the query string inside the request body (a
 ## Example Request
 
 ``` pre
-PUT /gemfire-api/v1/queries/selectOrders?q="SELECT DISTINCT from /customers where lastName=$1"
+PUT /geode/v1/queries/selectOrders?q="SELECT DISTINCT from /customers where lastName=$1"
 
 Accept: application/json
 Content-Length: <#-of-bytes>

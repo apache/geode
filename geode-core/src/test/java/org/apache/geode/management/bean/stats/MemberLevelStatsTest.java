@@ -38,7 +38,7 @@ import org.apache.geode.distributed.internal.locks.DLockStats;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DiskStoreStats;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
-import org.apache.geode.internal.cache.execute.FunctionServiceStats;
+import org.apache.geode.internal.cache.execute.metrics.FunctionServiceStats;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.StatSamplerStats;
 import org.apache.geode.internal.statistics.StatisticsConfig;

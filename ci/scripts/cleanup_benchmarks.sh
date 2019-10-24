@@ -35,14 +35,8 @@ GEODE_SHA=$(git rev-parse --verify HEAD)
 GEODE_SHA_COMMIT_MESSAGE=$(git log -n 1 ${GEODE_SHA})
 popd
 
-if [ -z "${WITH_SSL}" ]; then
-  SSL_TAG_POSTFIX=""
-else
-  SSL_TAG_POSTFIX="-wSSL"
-fi
-
 source concourse-metadata-resource/concourse_metadata
-CLUSTER_TAG="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}-${BUILD_ID}${SSL_TAG_POSTFIX}"
+CLUSTER_TAG="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}-${BUILD_ID}${TAG_POSTFIX}"
 RESULTS_BASE_DIR=$(pwd)/results
 BENCHMARKS_DIR=benchmarks-${CLUSTER_TAG}
 RESULTS_DIR=${RESULTS_BASE_DIR}/benchmarks-${CLUSTER_TAG}

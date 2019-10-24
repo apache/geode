@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal;
 
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
@@ -34,12 +35,12 @@ public abstract class Manager {
   /**
    * depicts whether this node is a Managing node or not
    */
-  protected volatile boolean running = false;
+  protected volatile boolean running;
 
   /**
    * depicts whether this node is a Managing node or not
    */
-  protected volatile boolean stopCacheOps = false;
+  protected volatile boolean stopCacheOps;
 
   /**
    * This is a single window to manipulate region resources for management
@@ -70,9 +71,7 @@ public abstract class Manager {
 
   public abstract void stopManager();
 
-  /**
-   * For internal use only
-   */
+  @VisibleForTesting
   public ManagementResourceRepo getManagementResourceRepo() {
     return repo;
   }

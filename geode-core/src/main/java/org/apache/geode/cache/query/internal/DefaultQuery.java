@@ -447,7 +447,7 @@ public class DefaultQuery implements Query {
     }
   }
 
-  private QueryExecutor checkQueryOnPR(Object[] parameters)
+  QueryExecutor checkQueryOnPR(Object[] parameters)
       throws RegionNotFoundException, PartitionOfflineException {
 
     // check for PartitionedRegions. If a PartitionedRegion is referred to in the query,

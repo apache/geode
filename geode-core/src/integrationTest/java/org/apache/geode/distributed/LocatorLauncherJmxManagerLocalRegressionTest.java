@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
@@ -104,8 +105,10 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
   }
 
   private void assertThatThreadsStopped() {
-    await().untilAsserted(() -> assertThat(currentThreadCount())
-        .isLessThanOrEqualTo(initialThreadCountPlusAwaitility()));
+    await()
+        .atMost(AWAIT_MILLIS, MILLISECONDS)
+        .untilAsserted(() -> assertThat(currentThreadCount())
+            .isLessThanOrEqualTo(initialThreadCountPlusAwaitility()));
   }
 
   private int currentThreadCount() {

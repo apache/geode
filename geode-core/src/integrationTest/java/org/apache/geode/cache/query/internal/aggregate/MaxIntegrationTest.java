@@ -110,6 +110,18 @@ public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
                 || p.getPositions().containsKey("IBM"))
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
 
+    // Aggregate used as as WHERE condition within inner query.
+    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+        supplierOne.get()
+            .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).min().orElse(-1))
+            .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
+    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+        supplierOne.get()
+            .filter(p -> p.getID() == supplierOne.get().mapToInt(Portfolio::getID).max().orElse(-1))
+            .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
+
     // Equi Join Queries
     equiJoinQueries.put("SELECT MAX(p.shortID) from /" + firstRegionName + " p, /"
         + secondRegionName + " e WHERE p.ID = e.ID AND p.ID > 0",
@@ -200,6 +212,20 @@ public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
         supplierOne.get()
             .filter(p -> p.getID() > 0 || p.isActive() || !p.isActive()
                 || p.getPositions().containsKey("IBM"))
+            .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
+
+    // Aggregate used as as WHERE condition within inner query.
+    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
+        + " p WHERE p.ID IN (SELECT MIN(o.ID) FROM /" + firstRegionName + " o)",
+        supplierOne.get()
+            .filter(
+                p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).min().orElse(-1))
+            .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
+    queries.put("SELECT MAX(p.shortID) FROM /" + firstRegionName
+        + " p WHERE p.ID = ELEMENT(SELECT MAX(o.ID) FROM /" + firstRegionName + " o)",
+        supplierOne.get()
+            .filter(
+                p -> p.getID() == supplierOne.get().mapToInt(PortfolioPdx::getID).max().orElse(-1))
             .max(Comparator.comparing(p -> p.shortID)).map(p -> p.shortID).orElse((short) -1));
 
     // Equi Join Queries

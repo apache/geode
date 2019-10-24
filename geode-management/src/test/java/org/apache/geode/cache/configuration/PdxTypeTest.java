@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Pdx;
 
 public class PdxTypeTest {
@@ -27,10 +26,10 @@ public class PdxTypeTest {
   @Test
   public void getUri() {
     Pdx config = new Pdx();
-    assertThat(config.getEndpoint())
+    assertThat(config.getLinks().getList())
         .isEqualTo("/configurations/pdx");
-    assertThat(config.getUri())
-        .isEqualTo(AbstractConfiguration.URI_CONTEXT + "/experimental/configurations/pdx");
+    assertThat(config.getLinks().getSelf())
+        .isEqualTo("/configurations/pdx");
   }
 
 }

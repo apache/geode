@@ -33,8 +33,8 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
+import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
@@ -220,7 +220,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
                 stats.getSerialQueueHelper());
         poolQueue = serialQueue;
       }
-      serialThread = LoggingExecutors.newSerialThreadPool("Serial Message Processor",
+      serialThread = CoreLoggingExecutors.newSerialThreadPool("Serial Message Processor",
           thread -> stats.incSerialThreadStarts(),
           this::doSerialThread, stats.getSerialProcessorHelper(),
           threadMonitor, poolQueue);
@@ -228,17 +228,17 @@ public class ClusterOperationExecutors implements OperationExecutors {
     }
 
     viewThread =
-        LoggingExecutors.newSerialThreadPoolWithUnlimitedFeed("View Message Processor",
+        CoreLoggingExecutors.newSerialThreadPoolWithUnlimitedFeed("View Message Processor",
             thread -> stats.incViewThreadStarts(), this::doViewThread,
             stats.getViewProcessorHelper(), threadMonitor);
 
     threadPool =
-        LoggingExecutors.newThreadPoolWithFeedStatistics("Pooled Message Processor ",
+        CoreLoggingExecutors.newThreadPoolWithFeedStatistics("Pooled Message Processor ",
             thread -> stats.incProcessingThreadStarts(), this::doProcessingThread,
             MAX_THREADS, stats.getNormalPoolHelper(), threadMonitor,
             INCOMING_QUEUE_LIMIT, stats.getOverflowQueueHelper());
 
-    highPriorityPool = LoggingExecutors.newThreadPoolWithFeedStatistics(
+    highPriorityPool = CoreLoggingExecutors.newThreadPoolWithFeedStatistics(
         "Pooled High Priority Message Processor ",
         thread -> stats.incHighPriorityThreadStarts(), this::doHighPriorityThread,
         MAX_THREADS, stats.getHighPriorityPoolHelper(), threadMonitor,
@@ -252,26 +252,28 @@ public class ClusterOperationExecutors implements OperationExecutors {
       } else {
         poolQueue = new OverflowQueueWithDMStats<>(stats.getWaitingQueueHelper());
       }
-      waitingPool = LoggingExecutors.newThreadPool("Pooled Waiting Message Processor ",
+      waitingPool = CoreLoggingExecutors.newThreadPool("Pooled Waiting Message Processor ",
           thread -> stats.incWaitingThreadStarts(), this::doWaitingThread,
           MAX_WAITING_THREADS, stats.getWaitingPoolHelper(), threadMonitor, poolQueue);
     }
 
     // should this pool using the waiting pool stats?
     prMetaDataCleanupThreadPool =
-        LoggingExecutors.newThreadPoolWithFeedStatistics("PrMetaData cleanup Message Processor ",
+        CoreLoggingExecutors.newThreadPoolWithFeedStatistics(
+            "PrMetaData cleanup Message Processor ",
             thread -> stats.incWaitingThreadStarts(), this::doWaitingThread,
             MAX_PR_META_DATA_CLEANUP_THREADS, stats.getWaitingPoolHelper(), threadMonitor,
             0, stats.getWaitingQueueHelper());
 
     if (MAX_PR_THREADS > 1) {
       partitionedRegionPool =
-          LoggingExecutors.newThreadPoolWithFeedStatistics("PartitionedRegion Message Processor",
+          CoreLoggingExecutors.newThreadPoolWithFeedStatistics(
+              "PartitionedRegion Message Processor",
               thread -> stats.incPartitionedRegionThreadStarts(), this::doPartitionRegionThread,
               MAX_PR_THREADS, stats.getPartitionedRegionPoolHelper(), threadMonitor,
               INCOMING_QUEUE_LIMIT, stats.getPartitionedRegionQueueHelper());
     } else {
-      partitionedRegionThread = LoggingExecutors.newSerialThreadPoolWithFeedStatistics(
+      partitionedRegionThread = CoreLoggingExecutors.newSerialThreadPoolWithFeedStatistics(
           "PartitionedRegion Message Processor",
           thread -> stats.incPartitionedRegionThreadStarts(), this::doPartitionRegionThread,
           stats.getPartitionedRegionPoolHelper(), threadMonitor,
@@ -279,14 +281,14 @@ public class ClusterOperationExecutors implements OperationExecutors {
     }
     if (MAX_FE_THREADS > 1) {
       functionExecutionPool =
-          LoggingExecutors.newFunctionThreadPoolWithFeedStatistics(
+          CoreLoggingExecutors.newFunctionThreadPoolWithFeedStatistics(
               FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX,
               thread -> stats.incFunctionExecutionThreadStarts(), this::doFunctionExecutionThread,
               MAX_FE_THREADS, stats.getFunctionExecutionPoolHelper(), threadMonitor,
               INCOMING_QUEUE_LIMIT, stats.getFunctionExecutionQueueHelper());
     } else {
       functionExecutionThread =
-          LoggingExecutors.newSerialThreadPoolWithFeedStatistics(
+          CoreLoggingExecutors.newSerialThreadPoolWithFeedStatistics(
               FUNCTION_EXECUTION_PROCESSOR_THREAD_PREFIX,
               thread -> stats.incFunctionExecutionThreadStarts(), this::doFunctionExecutionThread,
               stats.getFunctionExecutionPoolHelper(), threadMonitor,
@@ -847,7 +849,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
 
       serialQueuedMap.put(id, poolQueue);
 
-      return LoggingExecutors.newSerialThreadPool("Pooled Serial Message Processor" + id + "-",
+      return CoreLoggingExecutors.newSerialThreadPool("Pooled Serial Message Processor" + id + "-",
           thread -> stats.incSerialPooledThreadStarts(), this::doSerialPooledThread,
           stats.getSerialPooledProcessorHelper(), threadMonitoring, poolQueue);
     }

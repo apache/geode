@@ -1234,13 +1234,12 @@ public class PartitionedRegion extends LocalRegion
 
   public void updatePRConfigWithNewSetOfAsynchronousEventDispatchers(
       Set<String> asynchronousEventDispatchers) {
-    PartitionRegionHelper.assignBucketsToPartitions(this);
     updatePartitionRegionConfig(prConfig -> {
       prConfig.setGatewaySenderIds(asynchronousEventDispatchers);
     });
   }
 
-  public void updatePRConfigWithNewGatewaySender(String aeqId) {
+  public void updatePRConfigWithNewGatewaySenderAfterAssigningBuckets(String aeqId) {
     PartitionRegionHelper.assignBucketsToPartitions(this);
     updatePartitionRegionConfig(prConfig -> {
       Set<String> newGateWayIds;
