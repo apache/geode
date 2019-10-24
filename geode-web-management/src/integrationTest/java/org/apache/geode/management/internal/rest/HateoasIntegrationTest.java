@@ -17,7 +17,9 @@ package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -103,5 +105,24 @@ public class HateoasIntegrationTest {
       assertThat(cme.getResult().getStatusCode())
           .isEqualTo(ClusterManagementResult.StatusCode.ENTITY_EXISTS);
     }
+  }
+
+  @Test
+  public void listRootLinks() throws Exception {
+    context.perform(get("/"))
+        .andExpect(status().isOk())
+        .andExpect(content().string(containsString("\"links\"")))
+        .andExpect(
+            jsonPath("$.links.swagger",
+                Matchers.containsString("swagger-ui.html")))
+        .andExpect(
+            jsonPath("$.links.docs",
+                Matchers.containsString("/docs")))
+        .andExpect(
+            jsonPath("$.links.wiki",
+                Matchers.containsString("cwiki")))
+        .andExpect(
+            jsonPath("$.links.['list regions']",
+                Matchers.containsString("/regions")));
   }
 }
