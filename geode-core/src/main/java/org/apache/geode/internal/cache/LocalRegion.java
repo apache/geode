@@ -3240,7 +3240,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return cachePerfStats;
   }
 
-  @Override
   public CachePerfStats getRegionPerfStats() {
     return cachePerfStats;
   }

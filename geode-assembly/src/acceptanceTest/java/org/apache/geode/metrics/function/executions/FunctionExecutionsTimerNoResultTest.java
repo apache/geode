@@ -56,7 +56,6 @@ public class FunctionExecutionsTimerNoResultTest {
   private Region<Object, Object> replicateRegion;
   private Region<Object, Object> partitionRegion;
   private FunctionToTimeWithoutResult functionWithNoResult;
-  private Duration functionDuration;
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
@@ -66,6 +65,7 @@ public class FunctionExecutionsTimerNoResultTest {
 
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
+  private Duration functionDuration;
 
   @Before
   public void setUp() throws IOException {
