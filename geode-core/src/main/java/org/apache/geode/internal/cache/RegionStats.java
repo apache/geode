@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+
 public interface RegionStats {
 
   void incReliableQueuedOps(int inc);
@@ -87,6 +88,8 @@ public interface RegionStats {
   void incConflatedEventsCount();
 
   void endGet(long start, boolean miss);
+
+  void endGetForClient(long start, boolean miss);
 
   long endPut(long start, boolean isUpdate);
 

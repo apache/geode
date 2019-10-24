@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.micrometer;
 
+import static org.apache.geode.test.assertj.Conditions.equalTo;
+
 import java.util.concurrent.TimeUnit;
 
 import io.micrometer.core.instrument.Timer;
@@ -35,6 +37,18 @@ public class TimerAssert extends AbstractMeterAssert<TimerAssert, Timer> {
   /**
    * Verifies that the timer's count satisfies the given condition.
    *
+   * @param count the expected value of the timer's count
+   * @return this assertion object
+   * @throws AssertionError if the timer is {@code null}
+   * @throws AssertionError if the timer's count is not equal to the given count
+   */
+  public TimerAssert hasCount(long count) {
+    return hasCount(equalTo(count));
+  }
+
+  /**
+   * Verifies that the timer's count satisfies the given condition.
+   *
    * @param condition the criteria against which to evaluate the timer's count
    * @return this assertion object
    * @throws AssertionError if the timer is {@code null}
@@ -47,6 +61,19 @@ public class TimerAssert extends AbstractMeterAssert<TimerAssert, Timer> {
       failWithMessage("Expected timer to have count <%s> but count was <%s>", condition, count);
     }
     return myself;
+  }
+
+  /**
+   * Verifies that the timer's total time satisfies the given condition.
+   *
+   * @param timeUnit the time unit to which to convert the total time before evaluating
+   * @param totalTime the expected value of the timer's total time
+   * @return this assertion object
+   * @throws AssertionError if the timer is {@code null}
+   * @throws AssertionError if the timer's converted total time is not equal to the given total time
+   */
+  public TimerAssert hasTotalTime(TimeUnit timeUnit, double totalTime) {
+    return hasTotalTime(timeUnit, equalTo(totalTime));
   }
 
   /**
