@@ -63,7 +63,7 @@ public class PdxManagementTest {
     pdx.setDiskStoreName("diskStoreName");
     pdx.setPdxSerializer(new ClassName("className"));
     try {
-      context.perform(post("/experimental/configurations/pdx")
+      context.perform(post("/v1/configurations/pdx")
           .with(httpBasic("clusterManage", "clusterManage"))
           .content(mapper.writeValueAsString(pdx)))
           .andExpect(status().isCreated())
@@ -73,12 +73,12 @@ public class PdxManagementTest {
                   containsString("Successfully updated configuration for cluster.")))
           .andExpect(jsonPath("$.statusCode", is("OK")))
           .andExpect(
-              jsonPath("$.links.self", is("http://localhost/experimental/configurations/pdx")));
+              jsonPath("$.links.self", is("http://localhost/v1/configurations/pdx")));
     }
     // this is a hack to make StressNewTest pass, rework this once "delete pdx" end point is
     // implemented.
     catch (AssertionError e) {
-      context.perform(post("/experimental/configurations/pdx")
+      context.perform(post("/v1/configurations/pdx")
           .with(httpBasic("clusterManage", "clusterManage"))
           .content(mapper.writeValueAsString(pdx)))
           .andExpect(status().isConflict());
@@ -90,7 +90,7 @@ public class PdxManagementTest {
   public void invalidClassName() throws Exception {
     String json = "{\"readSerialized\":true,\"pdxSerializer\":{\"className\":\"class name\"}}";
 
-    context.perform(post("/experimental/configurations/pdx")
+    context.perform(post("/v1/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
         .content(json))
         .andExpect(status().isBadRequest())

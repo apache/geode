@@ -67,7 +67,7 @@ public class MemberManagementServiceRestIntegrationTest {
 
   @Test
   public void listLocator() throws Exception {
-    webContext.perform(get("/experimental/members")
+    webContext.perform(get("/v1/members")
         .param("id", "locator-0"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -85,7 +85,7 @@ public class MemberManagementServiceRestIntegrationTest {
 
   @Test
   public void getLocator() throws Exception {
-    webContext.perform(get("/experimental/members/locator-0"))
+    webContext.perform(get("/v1/members/locator-0"))
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
@@ -102,7 +102,7 @@ public class MemberManagementServiceRestIntegrationTest {
 
   @Test
   public void listServer() throws Exception {
-    webContext.perform(get("/experimental/members")
+    webContext.perform(get("/v1/members")
         .param("id", "server-1"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -124,7 +124,7 @@ public class MemberManagementServiceRestIntegrationTest {
 
   @Test
   public void listAllMembers() throws Exception {
-    webContext.perform(get("/experimental/members"))
+    webContext.perform(get("/v1/members"))
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())

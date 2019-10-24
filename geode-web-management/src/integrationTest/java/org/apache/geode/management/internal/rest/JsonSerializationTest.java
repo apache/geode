@@ -68,7 +68,7 @@ public class JsonSerializationTest {
   public void invalidAttributes() throws Exception {
     String json = "{'name':'test','Group1':'group1','Group2':'group2'}";
     when(cms.create(any())).thenReturn(new ClusterManagementRealizationResult());
-    context.perform(post("/experimental/regions").content(json))
+    context.perform(post("/v1/regions").content(json))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ILLEGAL_ARGUMENT")))
         .andExpect(jsonPath("$.statusMessage",
@@ -80,7 +80,7 @@ public class JsonSerializationTest {
   public void validAttributes() throws Exception {
     String json = "{'name':'test','group':'group1'}";
     when(cms.create(any())).thenReturn(new ClusterManagementRealizationResult());
-    context.perform(post("/experimental/regions").content(json))
+    context.perform(post("/v1/regions").content(json))
         .andExpect(status().isCreated());
     verify(cms, atLeastOnce()).create(regionConfigCaptor.capture());
     Region value = regionConfigCaptor.getValue();

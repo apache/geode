@@ -65,7 +65,7 @@ public class HateoasIntegrationTest {
   public void listRegionHateoas() throws Exception {
     prepRegion();
 
-    context.perform(get("/experimental/regions"))
+    context.perform(get("/v1/regions"))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.result[0].links.self",
@@ -82,7 +82,7 @@ public class HateoasIntegrationTest {
   public void getRegionHateoas() throws Exception {
     prepRegion();
 
-    context.perform(get("/experimental/regions/customers"))
+    context.perform(get("/v1/regions/customers"))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.result.links.self",
