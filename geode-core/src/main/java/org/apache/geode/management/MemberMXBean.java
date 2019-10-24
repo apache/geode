@@ -299,6 +299,12 @@ public interface MemberMXBean {
   String getReleaseVersion();
 
   /**
+   * returns only the Geode version string
+   */
+  @ResourceOperation()
+  String getGeodeReleaseVersion();
+
+  /**
    * Returns whether this member is attached to at least one Locator.
    *
    * @return True if this member is attached to a Locator, false otherwise.
