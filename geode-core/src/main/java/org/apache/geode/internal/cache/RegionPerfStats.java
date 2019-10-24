@@ -14,26 +14,19 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 class RegionPerfStats extends CachePerfStats implements RegionStats {
-  private static final String HIT_TAG_VALUE = "hit";
-  private static final String MISS_TAG_VALUE = "miss";
 
   private final CachePerfStats cachePerfStats;
   private final StatisticsClock clock;
   private final MeterRegistry meterRegistry;
   private final Gauge entriesGauge;
-  private final Timer cacheGetsHitTimer;
-  private final Timer cacheGetsMissTimer;
 
   RegionPerfStats(StatisticsFactory statisticsFactory, String textId, CachePerfStats cachePerfStats,
       InternalRegion region, MeterRegistry meterRegistry, StatisticsClock clock) {
@@ -43,40 +36,24 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @VisibleForTesting
   RegionPerfStats(StatisticsFactory statisticsFactory, String textId, StatisticsClock clock,
-      CachePerfStats cachePerfStats, InternalRegion region, MeterRegistry meterRegistry) {
-    this(statisticsFactory, textId, clock, cachePerfStats, region, meterRegistry,
-        registerEntriesGauge(region, meterRegistry),
-        registerCacheGetsTimer(region, meterRegistry, HIT_TAG_VALUE),
-        registerCacheGetsTimer(region, meterRegistry, MISS_TAG_VALUE));
-  }
-
-  @VisibleForTesting
-  RegionPerfStats(StatisticsFactory statisticsFactory, String textId, StatisticsClock clock,
-      CachePerfStats cachePerfStats, InternalRegion region, MeterRegistry meterRegistry,
-      Gauge entriesGauge, Timer cacheGetsHitTimer, Timer cacheGetsMissTimer) {
+      CachePerfStats cachePerfStats, InternalRegion region,
+      MeterRegistry meterRegistry) {
     super(statisticsFactory, textId, clock);
-
     this.clock = clock;
     this.cachePerfStats = cachePerfStats;
     this.meterRegistry = meterRegistry;
-    this.entriesGauge = entriesGauge;
-    this.cacheGetsHitTimer = cacheGetsHitTimer;
-    this.cacheGetsMissTimer = cacheGetsMissTimer;
-
+    entriesGauge = Gauge.builder("geode.cache.entries", region::getLocalSize)
+        .description("Current number of entries in the region.")
+        .tag("region", region.getName())
+        .tag("data.policy", region.getDataPolicy().toString())
+        .baseUnit("entries")
+        .register(meterRegistry);
     stats.setLongSupplier(entryCountId, region::getLocalSize);
   }
 
   @Override
   protected void close() {
     meterRegistry.remove(entriesGauge);
-    entriesGauge.close();
-
-    meterRegistry.remove(cacheGetsHitTimer);
-    cacheGetsHitTimer.close();
-
-    meterRegistry.remove(cacheGetsMissTimer);
-    cacheGetsMissTimer.close();
-
     super.close();
   }
 
@@ -348,16 +325,6 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
   }
 
   @Override
-  public void endGetForClient(long start, boolean miss) {
-    long totalNanos = clock.isEnabled() ? getTime() - start : 0;
-    if (miss) {
-      cacheGetsMissTimer.record(totalNanos, NANOSECONDS);
-    } else {
-      cacheGetsHitTimer.record(totalNanos, NANOSECONDS);
-    }
-  }
-
-  @Override
   public long endPut(long start, boolean isUpdate) {
     long totalNanos = 0;
     if (isUpdate) {
@@ -591,23 +558,5 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
       stats.incLong(compressionDecompressTimeId, time);
       cachePerfStats.stats.incLong(compressionDecompressTimeId, time);
     }
-  }
-
-  private static Gauge registerEntriesGauge(InternalRegion region, MeterRegistry meterRegistry) {
-    return Gauge.builder("geode.cache.entries", region::getLocalSize)
-        .description("Current number of entries in the region.")
-        .tag("region", region.getName())
-        .tag("data.policy", region.getDataPolicy().toString())
-        .baseUnit("entries")
-        .register(meterRegistry);
-  }
-
-  private static Timer registerCacheGetsTimer(InternalRegion region, MeterRegistry meterRegistry,
-      String resultTagValue) {
-    return Timer.builder("geode.cache.gets")
-        .description("Total time and count for GET requests from Java or native clients.")
-        .tag("region", region.getName())
-        .tag("result", resultTagValue)
-        .register(meterRegistry);
   }
 }

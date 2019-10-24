@@ -64,6 +64,11 @@ public class GetEntry70 extends Get70 {
       data = snap;
       tag = snap.getVersionTag();
     }
-    return new Entry(data, true, false, tag);
+    Get70.Entry result = new Get70.Entry();
+    result.value = data;
+    result.isObject = true;
+    result.keyNotPresent = false;
+    result.versionTag = tag;
+    return result;
   }
 }

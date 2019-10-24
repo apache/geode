@@ -14,28 +14,23 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.operations.GetOperationContext;
-import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -57,6 +52,7 @@ public class Get70Test {
   private static final String REGION_NAME = "region1";
   private static final String KEY = "key1";
   private static final Object CALLBACK_ARG = "arg";
+  private static final byte[] EVENT = new byte[8];
 
   @Mock
   private SecurityService securityService;
@@ -84,149 +80,95 @@ public class Get70Test {
   private Part valuePart;
   @Mock
   private GetOperationContext getOperationContext;
-
+  @InjectMocks
   private Get70 get70;
 
   @Before
   public void setUp() throws Exception {
-    get70 = new Get70();
+    this.get70 = new Get70();
     MockitoAnnotations.initMocks(this);
 
-    when(authzRequest.getAuthorize(any(), any(), any())).thenReturn(getOperationContext);
+    when(this.authzRequest.getAuthorize(any(), any(), any())).thenReturn(this.getOperationContext);
 
-    when(cache.getRegion(isA(String.class))).thenReturn(region);
-    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(this.cache.getRegion(isA(String.class))).thenReturn(this.region);
+    when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
-    when(getOperationContext.getCallbackArg()).thenReturn(CALLBACK_ARG);
+    when(this.getOperationContext.getCallbackArg()).thenReturn(CALLBACK_ARG);
 
-    when(keyPart.getStringOrObject()).thenReturn(KEY);
+    when(this.keyPart.getStringOrObject()).thenReturn(KEY);
 
-    when(message.getNumberOfParts()).thenReturn(3);
-    when(message.getPart(eq(0))).thenReturn(regionNamePart);
-    when(message.getPart(eq(1))).thenReturn(keyPart);
-    when(message.getPart(eq(2))).thenReturn(valuePart);
+    when(this.message.getNumberOfParts()).thenReturn(3);
+    when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
+    when(this.message.getPart(eq(1))).thenReturn(this.keyPart);
+    when(this.message.getPart(eq(2))).thenReturn(this.valuePart);
 
-    when(regionNamePart.getCachedString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
-    when(serverConnection.getCache()).thenReturn(cache);
-    when(serverConnection.getCacheServerStats()).thenReturn(cacheServerStats);
-    when(serverConnection.getAuthzRequest()).thenReturn(authzRequest);
-    when(serverConnection.getResponseMessage()).thenReturn(responseMessage);
-    when(serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
-    when(serverConnection.getErrorResponseMessage()).thenReturn(errorResponseMessage);
-    when(serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
+    when(this.serverConnection.getCache()).thenReturn(this.cache);
+    when(this.serverConnection.getCacheServerStats()).thenReturn(this.cacheServerStats);
+    when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
+    when(this.serverConnection.getResponseMessage()).thenReturn(this.responseMessage);
+    when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
+    when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
+    when(this.serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
 
-    when(valuePart.getObject()).thenReturn(CALLBACK_ARG);
-
-    when(securityService.isClientSecurityRequired()).thenReturn(false);
-
-    when(region.getRegionPerfStats()).thenReturn(mock(CachePerfStats.class));
+    when(this.valuePart.getObject()).thenReturn(CALLBACK_ARG);
   }
 
   @Test
   public void noSecurityShouldSucceed() throws Exception {
-    when(securityService.isClientSecurityRequired()).thenReturn(false);
+    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
 
-    get70.cmdExecute(message, serverConnection, securityService, 0);
-    verify(responseMessage).send(serverConnection);
+    this.get70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    verify(this.responseMessage).send(this.serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldSucceedIfAuthorized() throws Exception {
-    givenIntegratedSecurity();
+    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
+    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
 
-    get70.cmdExecute(message, serverConnection, securityService, 0);
+    this.get70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
-    verify(responseMessage).send(serverConnection);
+    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
+    verify(this.responseMessage).send(this.serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
-    givenIntegratedSecurity();
-    givenIntegratedSecurityNotAuthorized();
+    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
+    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
+    doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+        Operation.READ, REGION_NAME, KEY);
 
-    get70.cmdExecute(message, serverConnection, securityService, 0);
+    this.get70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
-    verify(errorResponseMessage).send(eq(serverConnection));
+    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
+    verify(this.errorResponseMessage).send(eq(this.serverConnection));
   }
 
   @Test
   public void oldSecurityShouldSucceedIfAuthorized() throws Exception {
-    givenOldSecurity();
+    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
+    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    get70.cmdExecute(message, serverConnection, securityService, 0);
+    this.get70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    verify(authzRequest).getAuthorize(eq(REGION_NAME), eq(KEY), eq(CALLBACK_ARG));
-    verify(responseMessage).send(serverConnection);
+    verify(this.authzRequest).getAuthorize(eq(REGION_NAME), eq(KEY), eq(CALLBACK_ARG));
+    verify(this.responseMessage).send(this.serverConnection);
   }
 
   @Test
   public void oldSecurityShouldFailIfNotAuthorized() throws Exception {
-    givenOldSecurity();
-    givenOldSecurityNotAuthorized();
-
-    get70.cmdExecute(message, serverConnection, securityService, 0);
-
-    verify(authzRequest).getAuthorize(eq(REGION_NAME), eq(KEY), eq(CALLBACK_ARG));
-    verify(errorResponseMessage).send(eq(serverConnection));
-  }
-
-  @Test
-  public void callsEndGetForClient_ifGetSucceedsWithHit() throws IOException {
-    CachePerfStats regionPerfStats = mock(CachePerfStats.class);
-    when(region.getRegionPerfStats()).thenReturn(regionPerfStats);
-    when(region.getRetained(any(), any(), anyBoolean(), anyBoolean(), any(), any(), anyBoolean()))
-        .thenReturn("data");
-
-    get70.cmdExecute(message, serverConnection, securityService, 0);
-
-    verify(regionPerfStats).endGetForClient(0, false);
-  }
-
-  @Test
-  public void callsEndGetForClient_ifGetSucceedsWithMiss() throws IOException {
-    CachePerfStats regionPerfStats = mock(CachePerfStats.class);
-    when(region.getRegionPerfStats()).thenReturn(regionPerfStats);
-    when(region.getRetained(any(), any(), anyBoolean(), anyBoolean(), any(), any(), anyBoolean()))
-        .thenReturn(null);
-
-    get70.cmdExecute(message, serverConnection, securityService, 0);
-
-    verify(regionPerfStats).endGetForClient(0, true);
-  }
-
-  @Test
-  public void doesNotCallEndGetForClient_ifGetFails() throws IOException {
-    givenIntegratedSecurity();
-    givenIntegratedSecurityNotAuthorized();
-
-    CachePerfStats regionPerfStats = mock(CachePerfStats.class);
-    when(region.getRegionPerfStats()).thenReturn(regionPerfStats);
-
-    get70.cmdExecute(message, serverConnection, securityService, 0);
-
-    verify(regionPerfStats, never()).endGetForClient(anyLong(), anyBoolean());
-  }
-
-  private void givenIntegratedSecurity() {
-    when(securityService.isClientSecurityRequired()).thenReturn(true);
-    when(securityService.isIntegratedSecurity()).thenReturn(true);
-  }
-
-  private void givenOldSecurity() {
-    when(securityService.isClientSecurityRequired()).thenReturn(true);
-    when(securityService.isIntegratedSecurity()).thenReturn(false);
-  }
-
-  private void givenIntegratedSecurityNotAuthorized() {
-    doThrow(new NotAuthorizedException("")).when(securityService).authorize(Resource.DATA,
-        Operation.READ, REGION_NAME, KEY);
-  }
-
-  private void givenOldSecurityNotAuthorized() {
-    doThrow(new NotAuthorizedException("")).when(authzRequest).getAuthorize(eq(REGION_NAME),
+    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
+    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
+    doThrow(new NotAuthorizedException("")).when(this.authzRequest).getAuthorize(eq(REGION_NAME),
         eq(KEY), eq(CALLBACK_ARG));
+
+    this.get70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+
+    verify(this.authzRequest).getAuthorize(eq(REGION_NAME), eq(KEY), eq(CALLBACK_ARG));
+    verify(this.errorResponseMessage).send(eq(this.serverConnection));
   }
+
 }

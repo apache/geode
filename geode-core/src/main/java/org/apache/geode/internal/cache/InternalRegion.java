@@ -438,5 +438,4 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   Set<String> getVisibleAsyncEventQueueIds();
 
-  CachePerfStats getRegionPerfStats();
 }
