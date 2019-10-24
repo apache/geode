@@ -29,21 +29,11 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
-import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
-import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -80,19 +70,11 @@ public class TcpServerDependenciesTest {
               .or(type(DataSerializable.class))
 
               // TODO - TCP socket related classes
-              .or(type(CommunicationMode.class))
               .or(type(SocketCreator.class))
               .or(type(SSLConfigurationFactory.class))
               .or(type(SecurableCommunicationChannel.class))
               .or(type(SocketCreatorFactory.class))
               .or(type(SSLConfigurationFactory.class))
-
-              // TODO - client protocol service
-              .or(type(ClientProtocolServiceLoader.class))
-              .or(type(ClientProtocolService.class))
-              .or(type(ClientProtocolProcessor.class))
-
-
 
               // TODO - stats
               .or(type(DistributionStats.class))
@@ -109,12 +91,6 @@ public class TcpServerDependenciesTest {
 
 
               // TODO - god classes
-              .or(type(DistributedSystem.class))
-              .or(type(InternalConfigurationPersistenceService.class))
-              .or(type(GemFireCache.class))
-              .or(type(InternalLocator.class))
-              .or(type(InternalCache.class))
-              .or(type(InternalDistributedSystem.class))
               .or(type(SystemFailure.class))
 
               // TODO - version class? Version.java is in serialization, what is

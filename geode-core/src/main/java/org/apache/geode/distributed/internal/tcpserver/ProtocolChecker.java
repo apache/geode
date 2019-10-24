@@ -14,28 +14,10 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
-import java.io.IOException;
+import java.io.DataInputStream;
+import java.net.Socket;
 
-public interface TcpHandler {
-  /**
-   * Process a request and return a response
-   *
-   * @return the response, or null if there is no reponse
-   */
-  Object processRequest(Object request) throws IOException;
-
-  void endRequest(Object request, long startTime);
-
-  void endResponse(Object request, long startTime);
-
-  /**
-   * Perform any shutdown code in the handler after the TCP server has closed the socket.
-   */
-  void shutDown();
-
-  /**
-   * Initialize the handler with the TcpServer. Called before the TcpServer starts accepting
-   * connections.
-   */
-  void init(TcpServer tcpServer);
+public interface ProtocolChecker {
+  boolean checkProtocol(Socket socket, DataInputStream input,
+      int firstByte) throws Exception;
 }

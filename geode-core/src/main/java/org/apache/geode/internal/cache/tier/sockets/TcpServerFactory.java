@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.ProtocolCheckerImpl;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
@@ -41,6 +42,6 @@ public class TcpServerFactory {
       String threadName, InternalLocator internalLocator) {
 
     return new TcpServer(port, bind_address, sslConfig, cfg, handler, poolHelper,
-        threadName, internalLocator, clientProtocolServiceLoader);
+        threadName, new ProtocolCheckerImpl(internalLocator, clientProtocolServiceLoader));
   }
 }
