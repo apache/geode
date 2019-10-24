@@ -56,7 +56,9 @@ public enum Patterns {
   /** RegionVersionVector bit set message */
   RVV_BIT_SET_MESSAGE(compile("RegionVersionVector.+bsv\\d+.+bs=\\{\\d+\\}")),
   /** "{}" literal which is probably unused Log4J parameter */
-  MALFORMED_LOG4J_MESSAGE(compile("\\{\\}"));
+  MALFORMED_LOG4J_MESSAGE(compile("\\{\\}")),
+  /** "{}" literal used for hydra master locators wildcard */
+  HYDRA_MASTER_LOCATORS_WILDCARD(compile("hydra\\.MasterDescription\\.master\\.locators=\\{\\}"));
 
   private final Pattern pattern;
 
