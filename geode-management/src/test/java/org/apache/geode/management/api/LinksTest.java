@@ -41,7 +41,7 @@ public class LinksTest {
     String json = mapper.writeValueAsString(links);
     System.out.println(json);
     assertThat(json).doesNotContain("others")
-        .contains("\"list\":\"#HREF/management/experimental/regions\"");
+        .contains("\"list\":\"#HREF/management/v1/regions\"");
     // this is to make sure nothing get de-serialized.
     Links links2 = mapper.readValue(json, Links.class);
     assertThat(links2.getSelf()).isNull();
@@ -53,8 +53,8 @@ public class LinksTest {
   public void getUri() throws Exception {
     assertThat(links.getSelf()).isEqualTo("/regions/regionA");
     assertThat(links.getList()).isEqualTo("/regions");
-    assertThat(links.getLinks().get("list")).isEqualTo("#HREF/management/experimental/regions");
+    assertThat(links.getLinks().get("list")).isEqualTo("#HREF/management/v1/regions");
     assertThat(links.getLinks().get("self"))
-        .isEqualTo("#HREF/management/experimental/regions/regionA");
+        .isEqualTo("#HREF/management/v1/regions/regionA");
   }
 }

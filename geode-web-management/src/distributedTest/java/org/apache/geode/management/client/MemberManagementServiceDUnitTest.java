@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -49,6 +50,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = LocatorLauncherContextLoader.class)
 @WebAppConfiguration
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class MemberManagementServiceDUnitTest {
 
   @Autowired
@@ -151,7 +153,7 @@ public class MemberManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void noMatchWithFilter() throws Exception {
-    webContext.perform(get("/experimental/members?id=server"))
+    webContext.perform(get("/v1/members?id=server"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.statusCode", is("OK")));
   }
@@ -159,7 +161,7 @@ public class MemberManagementServiceDUnitTest {
   @Test
   @WithMockUser
   public void noMatchWithUriVariable() throws Exception {
-    webContext.perform(get("/experimental/members/server"))
+    webContext.perform(get("/v1/members/server"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", is("ENTITY_NOT_FOUND")))
         .andExpect(jsonPath("$.statusMessage",

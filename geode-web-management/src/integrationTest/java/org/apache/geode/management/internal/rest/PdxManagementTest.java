@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -40,6 +41,7 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class PdxManagementTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -63,7 +65,7 @@ public class PdxManagementTest {
     pdx.setDiskStoreName("diskStoreName");
     pdx.setPdxSerializer(new ClassName("className"));
     try {
-      context.perform(post("/experimental/configurations/pdx")
+      context.perform(post("/v1/configurations/pdx")
           .with(httpBasic("clusterManage", "clusterManage"))
           .content(mapper.writeValueAsString(pdx)))
           .andExpect(status().isCreated())
@@ -73,12 +75,12 @@ public class PdxManagementTest {
                   containsString("Successfully updated configuration for cluster.")))
           .andExpect(jsonPath("$.statusCode", is("OK")))
           .andExpect(
-              jsonPath("$.links.self", is("http://localhost/experimental/configurations/pdx")));
+              jsonPath("$.links.self", is("http://localhost/v1/configurations/pdx")));
     }
     // this is a hack to make StressNewTest pass, rework this once "delete pdx" end point is
     // implemented.
     catch (AssertionError e) {
-      context.perform(post("/experimental/configurations/pdx")
+      context.perform(post("/v1/configurations/pdx")
           .with(httpBasic("clusterManage", "clusterManage"))
           .content(mapper.writeValueAsString(pdx)))
           .andExpect(status().isConflict());
@@ -90,7 +92,7 @@ public class PdxManagementTest {
   public void invalidClassName() throws Exception {
     String json = "{\"readSerialized\":true,\"pdxSerializer\":{\"className\":\"class name\"}}";
 
-    context.perform(post("/experimental/configurations/pdx")
+    context.perform(post("/v1/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
         .content(json))
         .andExpect(status().isBadRequest())

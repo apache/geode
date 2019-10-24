@@ -30,7 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 public class Links {
   public static final String HREF_PREFIX = "#HREF";
   public static final String URI_CONTEXT = "/management";
-  public static final String URI_VERSION = "/experimental";
+  public static final String URI_VERSION = "/v1";
   private String self;
   private String list;
   private Map<String, String> links;

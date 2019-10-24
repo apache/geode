@@ -93,7 +93,7 @@ public class JQFilterVerificationDUnitTest {
 
     client = new GeodeDevRestClient("/management", "localhost", locator.getHttpPort(), false);
     JsonNode jsonObject =
-        client.doGetAndAssert("/experimental/api-docs").getJsonObject().get("paths");
+        client.doGetAndAssert("/v1/api-docs").getJsonObject().get("paths");
     Iterator<Map.Entry<String, JsonNode>> urls = jsonObject.fields();
     while (urls.hasNext()) {
       Map.Entry<String, JsonNode> url = urls.next();
@@ -118,7 +118,7 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void getMembers() throws IOException {
-    String uri = "/experimental/members";
+    String uri = "/v1/members";
     JqResponse response =
         getJqResponse(uri, apiWithJQFilters.remove(uri).get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
@@ -128,9 +128,9 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void getMember() throws Exception {
-    String uri = "/experimental/members/locator-0";
+    String uri = "/v1/members/locator-0";
     JqResponse response = getJqResponse(uri,
-        apiWithJQFilters.remove("/experimental/members/{id}").get("jqFilter").textValue());
+        apiWithJQFilters.remove("/v1/members/{id}").get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
     Assertions.assertThat(response.getOutput()).contains("\"name\": \"locator-0\"");
@@ -138,7 +138,7 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void listRegions() throws Exception {
-    String uri = "/experimental/regions";
+    String uri = "/v1/regions";
     JqResponse response =
         getJqResponse(uri, apiWithJQFilters.remove(uri).get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
@@ -155,9 +155,9 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void getRegion() throws Exception {
-    String uri = "/experimental/regions/regionA";
+    String uri = "/v1/regions/regionA";
     JqResponse response = getJqResponse(uri,
-        apiWithJQFilters.remove("/experimental/regions/{id}").get("jqFilter").textValue());
+        apiWithJQFilters.remove("/v1/regions/{id}").get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
     Assertions.assertThat(response.getOutput()).contains("\"name\": \"regionA\"");
@@ -165,7 +165,7 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void listIndex() throws Exception {
-    String uri = "/experimental/indexes";
+    String uri = "/v1/indexes";
     JqResponse response =
         getJqResponse(uri, apiWithJQFilters.remove(uri).get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
@@ -175,9 +175,9 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void listRegionIndex() throws Exception {
-    String uri = "/experimental/regions/regionA/indexes";
+    String uri = "/v1/regions/regionA/indexes";
     JqResponse response = getJqResponse(uri, apiWithJQFilters
-        .remove("/experimental/regions/{regionName}/indexes").get("jqFilter").textValue());
+        .remove("/v1/regions/{regionName}/indexes").get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
     Assertions.assertThat(response.getOutput()).contains("\"name\": \"index1\"");
@@ -185,9 +185,9 @@ public class JQFilterVerificationDUnitTest {
 
   @Test
   public void getIndex() throws Exception {
-    String uri = "/experimental/regions/regionA/indexes/index1";
+    String uri = "/v1/regions/regionA/indexes/index1";
     JqResponse response = getJqResponse(uri, apiWithJQFilters
-        .remove("/experimental/regions/{regionName}/indexes/{id}").get("jqFilter").textValue());
+        .remove("/v1/regions/{regionName}/indexes/{id}").get("jqFilter").textValue());
     Assertions.assertThat(response.hasErrors()).isFalse();
     System.out.println("JQ output: " + response.getOutput());
     Assertions.assertThat(response.getOutput()).contains("\"name\": \"index1\"");
