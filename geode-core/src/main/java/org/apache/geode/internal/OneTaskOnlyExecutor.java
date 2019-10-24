@@ -20,7 +20,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 
 /**
  * A decorator for a ScheduledExecutorService which tries to make sure that there is only one task

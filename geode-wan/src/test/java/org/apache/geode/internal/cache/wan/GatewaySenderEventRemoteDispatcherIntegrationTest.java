@@ -45,7 +45,7 @@ import org.apache.geode.distributed.internal.membership.gms.membership.HostAddre
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 

@@ -17,7 +17,8 @@ package org.apache.geode.internal.monitoring;
 
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
+import org.apache.geode.internal.logging.AbstractExecutor;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 
 public class ThreadsMonitoringImplDummy implements ThreadsMonitoring {
 

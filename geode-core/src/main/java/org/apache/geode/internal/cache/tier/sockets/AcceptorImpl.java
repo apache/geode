@@ -94,7 +94,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.LoggingThreadFactory.CommandWrapper;
 import org.apache.geode.internal.logging.LoggingThreadFactory.ThreadInitializer;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.Version;

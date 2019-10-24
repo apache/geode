@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 
 import org.apache.geode.Statistics;
-import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.internal.logging.PoolStatHelper;
 
 /**
  * @since GemFire 5.7

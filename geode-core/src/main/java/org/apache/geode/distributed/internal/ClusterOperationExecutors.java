@@ -35,8 +35,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.tcp.Connection;
@@ -172,7 +172,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
   /**
    * Thread Monitor mechanism to monitor system threads
    *
-   * @see org.apache.geode.internal.monitoring.ThreadsMonitoring
+   * @see ThreadsMonitoring
    */
   private ThreadsMonitoring threadMonitor;
 

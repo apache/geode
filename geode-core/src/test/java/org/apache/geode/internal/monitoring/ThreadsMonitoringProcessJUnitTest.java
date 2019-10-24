@@ -23,8 +23,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring.Mode;
-import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
+import org.apache.geode.internal.logging.AbstractExecutor;
+import org.apache.geode.internal.logging.ThreadsMonitoring.Mode;
 import org.apache.geode.internal.monitoring.executor.PooledExecutorGroup;
 
 /**

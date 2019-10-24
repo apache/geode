@@ -37,7 +37,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 
 public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEventProcessor {
 

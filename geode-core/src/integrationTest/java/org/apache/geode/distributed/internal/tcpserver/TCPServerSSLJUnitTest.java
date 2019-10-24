@@ -41,10 +41,10 @@ import org.mockito.Mockito;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.logging.PoolStatHelper;
 import org.apache.geode.internal.net.DummySocketCreator;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;

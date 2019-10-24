@@ -31,7 +31,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.logging.PoolStatHelper;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 
 /**
  * A ThreadPoolExecutor with stat support. This executor also has a buffer that rejected executions

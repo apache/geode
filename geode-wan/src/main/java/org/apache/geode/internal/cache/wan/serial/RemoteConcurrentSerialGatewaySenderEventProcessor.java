@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 
 public class RemoteConcurrentSerialGatewaySenderEventProcessor
     extends ConcurrentSerialGatewaySenderEventProcessor {

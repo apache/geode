@@ -111,4 +111,12 @@ public class LoggingExecutors {
       int keepAliveSeconds) {
     return newFixedThreadPool(threadName, true, keepAliveSeconds, poolSize);
   }
+
+  public static ExecutorService newThreadPoolWithSynchronousFeed(String threadName, int poolSize,
+      PoolStatHelper stats, int msTimeout, RejectedExecutionHandler rejectionHandler) {
+    final SynchronousQueue<Runnable> feed = new SynchronousQueue<>();
+    ThreadFactory threadFactory = new LoggingThreadFactory(threadName);
+    return new PooledExecutorWithDMStats(feed, poolSize, stats, threadFactory, msTimeout,
+        rejectionHandler, null);
+  }
 }

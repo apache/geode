@@ -23,8 +23,9 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
-import org.apache.geode.internal.monitoring.executor.FunctionExecutionPooledExecutorGroup;
+import org.apache.geode.internal.logging.AbstractExecutor;
+import org.apache.geode.internal.logging.FunctionExecutionPooledExecutorGroup;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.executor.GatewaySenderEventProcessorGroup;
 import org.apache.geode.internal.monitoring.executor.OneTaskOnlyExecutorGroup;
 import org.apache.geode.internal.monitoring.executor.PooledExecutorGroup;

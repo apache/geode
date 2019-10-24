@@ -18,9 +18,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import org.apache.geode.internal.logging.AbstractExecutor;
+import org.apache.geode.internal.logging.FunctionExecutionPooledExecutorGroup;
+
 /**
  * Contains simple tests for the {@link
- * org.apache.geode.internal.monitoring.executor.FunctionExecutionPooledExecutorGroup}.
+ * FunctionExecutionPooledExecutorGroup}.
  *
  * @since Geode 1.5
  */
@@ -30,7 +33,7 @@ public class FunctionExecutionPooledExecutorGroupJUnitTest {
 
   /**
    * Tests that {@link
-   * org.apache.geode.internal.monitoring.executor.FunctionExecutionPooledExecutorGroup} is setting
+   * FunctionExecutionPooledExecutorGroup} is setting
    * the correct Group name
    */
   @Test

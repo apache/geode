@@ -19,7 +19,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.server.ServerLoad;
-import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.internal.logging.PoolStatHelper;
 
 /**
  * Cache Server statistic definitions

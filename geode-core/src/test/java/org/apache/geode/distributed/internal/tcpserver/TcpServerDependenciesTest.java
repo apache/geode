@@ -32,12 +32,11 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.logging.PoolStatHelper;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -49,7 +48,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 public class TcpServerDependenciesTest {
 
   @ArchTest
-  public static final ArchRule membershipDoesntDependOnCoreProvisional = classes()
+  public static final ArchRule tcpServerDoesntDependOnCore = classes()
       .that()
       .resideInAPackage("org.apache.geode.distributed.internal.tcpserver..")
 
@@ -60,6 +59,7 @@ public class TcpServerDependenciesTest {
               .or(type(LogService.class))
               .or(type(LoggingExecutors.class))
               .or(type(LoggingThread.class))
+              .or(type(PoolStatHelper.class))
 
               .or(not(resideInAPackage("org.apache.geode..")))
               .or(resideInAPackage("org.apache.geode.test.."))
@@ -78,8 +78,6 @@ public class TcpServerDependenciesTest {
 
               // TODO - stats
               .or(type(DistributionStats.class))
-              .or(type(PoolStatHelper.class))
-              .or(type(CoreLoggingExecutors.class))
 
               // TODO - cancel excpetion
               .or(type(CancelException.class))

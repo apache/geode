@@ -20,9 +20,10 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 
 /**
- * Contains simple tests for the {@link org.apache.geode.internal.monitoring.ThreadsMonitoring}.
+ * Contains simple tests for the {@link ThreadsMonitoring}.
  *
  * @since Geode 1.5
  */

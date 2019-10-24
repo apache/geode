@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.monitoring.executor;
 
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.logging.AbstractExecutor;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 
 public class ScheduledThreadPoolExecutorWKAGroup extends AbstractExecutor {
 

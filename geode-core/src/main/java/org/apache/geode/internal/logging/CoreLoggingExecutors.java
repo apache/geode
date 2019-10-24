@@ -30,14 +30,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.geode.distributed.internal.FunctionExecutionPooledExecutor;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
-import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import org.apache.geode.internal.logging.LoggingThreadFactory.CommandWrapper;
 import org.apache.geode.internal.logging.LoggingThreadFactory.ThreadInitializer;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * Utility class that creates instances of ExecutorService
@@ -147,14 +144,6 @@ public class CoreLoggingExecutors {
     SynchronousQueue<Runnable> feed = new SynchronousQueue<>();
     return new PooledExecutorWithDMStats(feed, poolSize, poolStats, threadFactory, msTimeout,
         threadsMonitoring);
-  }
-
-  public static ExecutorService newThreadPoolWithSynchronousFeed(String threadName, int poolSize,
-      PoolStatHelper stats, int msTimeout, RejectedExecutionHandler rejectionHandler) {
-    final SynchronousQueue<Runnable> feed = new SynchronousQueue<>();
-    ThreadFactory threadFactory = new LoggingThreadFactory(threadName);
-    return new PooledExecutorWithDMStats(feed, poolSize, stats, threadFactory, msTimeout,
-        rejectionHandler, null);
   }
 
   public static ExecutorService newThreadPoolWithSynchronousFeed(String threadName,

@@ -46,11 +46,11 @@ import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.logging.PoolStatHelper;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -173,7 +173,7 @@ public class TcpServer {
   }
 
   private static ExecutorService createExecutor(PoolStatHelper poolHelper) {
-    return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
+    return LoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
         MAX_POOL_SIZE, poolHelper, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
   }
 

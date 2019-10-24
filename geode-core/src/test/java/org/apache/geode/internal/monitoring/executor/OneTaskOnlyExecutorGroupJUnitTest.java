@@ -18,6 +18,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import org.apache.geode.internal.logging.AbstractExecutor;
+
 /**
  * Contains simple tests for the {@link
  * org.apache.geode.internal.monitoring.executor.OneTaskOnlyExecutorGroup}.

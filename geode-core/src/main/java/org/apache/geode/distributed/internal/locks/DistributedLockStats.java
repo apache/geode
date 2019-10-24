@@ -15,8 +15,8 @@
 
 package org.apache.geode.distributed.internal.locks;
 
-import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.QueueStatHelper;
+import org.apache.geode.internal.logging.PoolStatHelper;
 
 /**
  * Defines the interface used to access and modify distributed lock statistics.

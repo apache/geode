@@ -52,7 +52,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LoggingExecutors;
-import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.logging.ThreadsMonitoring;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoringImplDummy;
 import org.apache.geode.internal.net.SocketCreator;
@@ -73,7 +73,7 @@ public class LonerDistributionManager implements DistributionManager {
   /**
    * Thread Monitor mechanism to monitor system threads
    *
-   * @see org.apache.geode.internal.monitoring.ThreadsMonitoring
+   * @see ThreadsMonitoring
    */
   private final ThreadsMonitoring threadMonitor;
 

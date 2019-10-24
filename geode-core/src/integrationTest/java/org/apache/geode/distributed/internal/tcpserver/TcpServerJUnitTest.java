@@ -45,10 +45,10 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
+import org.apache.geode.internal.logging.PoolStatHelper;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
