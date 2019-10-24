@@ -159,11 +159,11 @@ public class RegionPerfStatsTest {
   }
 
   @Test
-  public void endGet_recordsHitTimerCountAndTotalTime_ifCacheHitAndClockEnabled() {
+  public void endGetForClient_recordsHitTimerCountAndTotalTime_ifCacheHitAndClockEnabled() {
     when(statisticsClock.isEnabled()).thenReturn(true);
     when(statisticsClock.getTime()).thenReturn(CLOCK_VALUE);
 
-    regionPerfStats.endGet(0, false);
+    regionPerfStats.endGetForClient(0, false);
 
     assertThat(cacheGetsHitTimer())
         .as("geode.cache.gets timer with tag result=hit")
@@ -172,11 +172,11 @@ public class RegionPerfStatsTest {
   }
 
   @Test
-  public void endGet_doesNotRecordMissTimerCountOrTotalTime_ifCacheHitAndClockEnabled() {
+  public void endGetForClient_doesNotRecordMissTimerCountOrTotalTime_ifCacheHitAndClockEnabled() {
     when(statisticsClock.isEnabled()).thenReturn(true);
     when(statisticsClock.getTime()).thenReturn(CLOCK_VALUE);
 
-    regionPerfStats.endGet(0, false);
+    regionPerfStats.endGetForClient(0, false);
 
     assertThat(cacheGetsMissTimer())
         .as("geode.cache.gets timer with tag result=miss")
@@ -185,10 +185,10 @@ public class RegionPerfStatsTest {
   }
 
   @Test
-  public void endGet_recordsHitTimerCountOnly_ifCacheHitAndClockDisabled() {
+  public void endGetForClient_recordsHitTimerCountOnly_ifCacheHitAndClockDisabled() {
     when(statisticsClock.isEnabled()).thenReturn(false);
 
-    regionPerfStats.endGet(0, false);
+    regionPerfStats.endGetForClient(0, false);
 
     assertThat(cacheGetsHitTimer())
         .as("geode.cache.gets timer with tag result=hit")
@@ -197,11 +197,11 @@ public class RegionPerfStatsTest {
   }
 
   @Test
-  public void endGet_recordsMissTimerCountAndTotalTime_ifCacheMissAndClockEnabled() {
+  public void endGetForClient_recordsMissTimerCountAndTotalTime_ifCacheMissAndClockEnabled() {
     when(statisticsClock.isEnabled()).thenReturn(true);
     when(statisticsClock.getTime()).thenReturn(CLOCK_VALUE);
 
-    regionPerfStats.endGet(0, true);
+    regionPerfStats.endGetForClient(0, true);
 
     assertThat(cacheGetsMissTimer())
         .as("geode.cache.gets timer with tag result=miss")
@@ -210,11 +210,11 @@ public class RegionPerfStatsTest {
   }
 
   @Test
-  public void endGet_doesNotRecordHitTimerCountOrTotalTime_ifCacheMissAndClockEnabled() {
+  public void endGetForClient_doesNotRecordHitTimerCountOrTotalTime_ifCacheMissAndClockEnabled() {
     when(statisticsClock.isEnabled()).thenReturn(true);
     when(statisticsClock.getTime()).thenReturn(CLOCK_VALUE);
 
-    regionPerfStats.endGet(0, true);
+    regionPerfStats.endGetForClient(0, true);
 
     assertThat(cacheGetsHitTimer())
         .as("geode.cache.gets timer with tag result=hit")
@@ -223,10 +223,10 @@ public class RegionPerfStatsTest {
   }
 
   @Test
-  public void endGet_recordsMissTimerCountOnly_ifCacheMissAndClockDisabled() {
+  public void endGetForClient_recordsMissTimerCountOnly_ifCacheMissAndClockDisabled() {
     when(statisticsClock.isEnabled()).thenReturn(false);
 
-    regionPerfStats.endGet(0, true);
+    regionPerfStats.endGetForClient(0, true);
 
     assertThat(cacheGetsMissTimer())
         .as("geode.cache.gets timer with tag result=miss")

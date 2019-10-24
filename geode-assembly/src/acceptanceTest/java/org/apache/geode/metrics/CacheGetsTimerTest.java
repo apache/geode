@@ -49,6 +49,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
@@ -83,7 +84,7 @@ public class CacheGetsTimerTest {
   @Test
   public void hitTimerRecordsCountAndTotalTime_ifGetsPerformedOnReplicateRegionWithExistingKey()
       throws IOException {
-    startWithTimeStatisticsEnabled();
+    givenClusterWithTimeStatisticsEnabled();
 
     for (int i = 0; i < 5; i++) {
       replicateRegion.put(i, i);
@@ -112,7 +113,7 @@ public class CacheGetsTimerTest {
   @Test
   public void missTimerRecordsCountAndTotalTime_ifGetsPerformedOnReplicateRegionWithMissingKey()
       throws IOException {
-    startWithTimeStatisticsEnabled();
+    givenClusterWithTimeStatisticsEnabled();
 
     for (int i = 0; i < 5; i++) {
       replicateRegion.get(i);
@@ -140,7 +141,7 @@ public class CacheGetsTimerTest {
   @Test
   public void hitTimerRecordsCountAndTotalTime_ifGetsPerformedOnPartitionRegionWithExistingKey()
       throws IOException {
-    startWithTimeStatisticsEnabled();
+    givenClusterWithTimeStatisticsEnabled();
 
     for (int i = 0; i < 5; i++) {
       partitionRegion.put(i, i);
@@ -169,7 +170,7 @@ public class CacheGetsTimerTest {
   @Test
   public void missTimerRecordsCountAndTotalTime_ifGetsPerformedOnPartitionRegionWithMissingKey()
       throws IOException {
-    startWithTimeStatisticsEnabled();
+    givenClusterWithTimeStatisticsEnabled();
 
     for (int i = 0; i < 5; i++) {
       partitionRegion.get(i);
@@ -196,7 +197,7 @@ public class CacheGetsTimerTest {
 
   @Test
   public void timersExistWithInitialValues_ifNoGetsPerformedOnReplicateRegion() throws IOException {
-    startWithTimeStatisticsEnabled();
+    givenClusterWithTimeStatisticsEnabled();
 
     assertThat(allTimerValuesForRegion(replicateRegion))
         .as("All timer values for region " + replicateRegion.getName())
@@ -209,7 +210,7 @@ public class CacheGetsTimerTest {
 
   @Test
   public void allTimersRemoved_ifReplicateRegionDestroyed() throws IOException {
-    startWithTimeStatisticsEnabled();
+    givenClusterWithTimeStatisticsEnabled();
 
     assertThat(allTimerValuesForRegion(replicateRegion))
         .as("All timer values before destroying region " + replicateRegion.getName())
@@ -224,7 +225,7 @@ public class CacheGetsTimerTest {
 
   @Test
   public void timersExistWithInitialValues_ifNoGetsPerformedOnPartitionRegion() throws IOException {
-    startWithTimeStatisticsEnabled();
+    givenClusterWithTimeStatisticsEnabled();
 
     assertThat(allTimerValuesForRegion(partitionRegion))
         .as("All timer values for region " + partitionRegion.getName())
@@ -237,7 +238,7 @@ public class CacheGetsTimerTest {
 
   @Test
   public void allTimersRemoved_ifPartitionRegionDestroyed() throws IOException {
-    startWithTimeStatisticsEnabled();
+    givenClusterWithTimeStatisticsEnabled();
 
     assertThat(allTimerValuesForRegion(partitionRegion))
         .as("All timer values before destroying region " + partitionRegion.getName())
@@ -252,7 +253,7 @@ public class CacheGetsTimerTest {
 
   @Test
   public void timersRecordCountForReplicateRegion_ifTimeStatisticsDisabled() throws IOException {
-    startWithTimeStatisticsDisabled();
+    givenClusterWithTimeStatisticsDisabled();
 
     replicateRegion.put("existing-key", "existing-value");
     replicateRegion.get("existing-key");
@@ -269,7 +270,7 @@ public class CacheGetsTimerTest {
 
   @Test
   public void timersRecordCountForPartitionRegion_ifTimeStatisticsDisabled() throws IOException {
-    startWithTimeStatisticsDisabled();
+    givenClusterWithTimeStatisticsDisabled();
 
     partitionRegion.put("existing-key", "existing-value");
     partitionRegion.get("existing-key");
@@ -285,15 +286,14 @@ public class CacheGetsTimerTest {
   }
 
   @Test
-  public void timersDoNotRecord_ifNotAuthorized() throws IOException {
-    startWithSecurityEnabled();
+  public void timersDoNotRecord_ifGetThrows() throws IOException {
+    givenClusterWithSecurityThatDeniesAllGetOperations();
 
-    Throwable thrown =
-        catchThrowable(() -> replicateRegion.get(DenyUnauthorizedKey.UNAUTHORIZED_KEY));
+    Throwable thrown = catchThrowable(() -> replicateRegion.get("key"));
 
     assertThat(thrown)
-        .as("Exception from unauthorized GET operation")
-        .isNotNull();
+        .as("Exception from get operation")
+        .hasCauseInstanceOf(NotAuthorizedException.class);
 
     assertThat(allTimerValuesForRegion(replicateRegion))
         .as("All timer values for region " + replicateRegion.getName())
@@ -301,15 +301,15 @@ public class CacheGetsTimerTest {
         .allMatch(tv -> tv.count == 0, "All timers have count of zero");
   }
 
-  private void startWithTimeStatisticsEnabled() throws IOException {
+  private void givenClusterWithTimeStatisticsEnabled() throws IOException {
     startCluster(true, false);
   }
 
-  private void startWithTimeStatisticsDisabled() throws IOException {
+  private void givenClusterWithTimeStatisticsDisabled() throws IOException {
     startCluster(false, false);
   }
 
-  private void startWithSecurityEnabled() throws IOException {
+  private void givenClusterWithSecurityThatDeniesAllGetOperations() throws IOException {
     startCluster(true, true);
   }
 
@@ -326,7 +326,7 @@ public class CacheGetsTimerTest {
     Path helpersJarPath = temporaryFolder.getRoot().toPath()
         .resolve("helpers.jar").toAbsolutePath();
     writeJarFromClasses(helpersJarPath.toFile(), TimerValue.class,
-        FetchCacheGetsTimerValues.class, DenyUnauthorizedKey.class, ClientCacheAuthInit.class);
+        FetchCacheGetsTimerValues.class, DenyAllDataRead.class, ClientSecurityConfig.class);
 
     String startLocatorCommand = String.join(" ",
         "start locator",
@@ -373,7 +373,7 @@ public class CacheGetsTimerTest {
 
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
     if (enableSecurity) {
-      clientCacheFactory.set("security-client-auth-init", ClientCacheAuthInit.class.getName());
+      clientCacheFactory.set("security-client-auth-init", ClientSecurityConfig.class.getName());
     }
 
     clientCache = clientCacheFactory
@@ -390,11 +390,7 @@ public class CacheGetsTimerTest {
   }
 
   private File createSecurityPropertiesFile() throws IOException {
-    Properties securityProperties = new Properties();
-    securityProperties.setProperty(SECURITY_MANAGER, DenyUnauthorizedKey.class.getName());
-    securityProperties.setProperty("security-username", DenyUnauthorizedKey.AUTHENTICATED_USER);
-    securityProperties.setProperty("security-password", DenyUnauthorizedKey.AUTHENTICATED_PASSWORD);
-
+    Properties securityProperties = ClientSecurityConfig.securityProperties();
     File securityPropertiesFile = gfshRule.getTemporaryFolder().newFile("security.properties");
     securityProperties.store(new FileOutputStream(securityPropertiesFile), null);
     return securityPropertiesFile;
@@ -492,30 +488,40 @@ public class CacheGetsTimerTest {
     }
   }
 
-  public static class DenyUnauthorizedKey implements org.apache.geode.security.SecurityManager {
-    static final String AUTHENTICATED_USER = "user";
-    static final String AUTHENTICATED_PASSWORD = "password";
-    static final String UNAUTHORIZED_KEY = "unauthorized-key";
-
+  public static class DenyAllDataRead implements org.apache.geode.security.SecurityManager {
     @Override
     public Object authenticate(Properties credentials) throws AuthenticationFailedException {
-      return AUTHENTICATED_USER;
+      String userName = credentials.getProperty(USER_NAME);
+      if (userName == null) {
+        throw new AuthenticationFailedException("No user name provided");
+      }
+      return userName;
     }
 
     @Override
     public boolean authorize(Object principal, ResourcePermission permission) {
-      return !UNAUTHORIZED_KEY.equals(permission.getKey());
+      return !isDataRead(permission);
+    }
+
+    private static boolean isDataRead(ResourcePermission permission) {
+      return ResourcePermission.Resource.DATA.equals(permission.getResource())
+          && ResourcePermission.Operation.READ.equals(permission.getOperation());
     }
   }
 
-  public static class ClientCacheAuthInit implements AuthInitialize {
+  public static class ClientSecurityConfig implements AuthInitialize {
     @Override
     public Properties getCredentials(Properties securityProps, DistributedMember server,
         boolean isPeer) throws AuthenticationFailedException {
-      Properties properties = new Properties();
-      properties.setProperty("security-username", DenyUnauthorizedKey.AUTHENTICATED_USER);
-      properties.setProperty("security-password", DenyUnauthorizedKey.AUTHENTICATED_PASSWORD);
-      return properties;
+      return securityProperties();
+    }
+
+    static Properties securityProperties() {
+      Properties securityProperties = new Properties();
+      securityProperties.setProperty(SECURITY_MANAGER, DenyAllDataRead.class.getName());
+      securityProperties.setProperty("security-username", "user");
+      securityProperties.setProperty("security-password", "pass");
+      return securityProperties;
     }
   }
 }

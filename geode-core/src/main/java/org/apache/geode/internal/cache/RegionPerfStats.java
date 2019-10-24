@@ -336,19 +336,25 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @Override
   public void endGet(long start, boolean miss) {
-    long totalNanos = 0;
     if (clock.isEnabled()) {
-      totalNanos = getTime() - start;
+      long totalNanos = getTime() - start;
       stats.incLong(getTimeId, totalNanos);
     }
     stats.incLong(getsId, 1L);
     if (miss) {
       stats.incLong(missesId, 1L);
+    }
+    cachePerfStats.endGet(start, miss);
+  }
+
+  @Override
+  public void endGetForClient(long start, boolean miss) {
+    long totalNanos = clock.isEnabled() ? getTime() - start : 0;
+    if (miss) {
       cacheGetsMissTimer.record(totalNanos, NANOSECONDS);
     } else {
       cacheGetsHitTimer.record(totalNanos, NANOSECONDS);
     }
-    cachePerfStats.endGet(start, miss);
   }
 
   @Override
@@ -599,7 +605,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
   private static Timer registerCacheGetsTimer(InternalRegion region, MeterRegistry meterRegistry,
       String resultTagValue) {
     return Timer.builder("geode.cache.gets")
-        .description("Total time and count for GET requests from clients.")
+        .description("Total time and count for GET requests from Java or native clients.")
         .tag("region", region.getName())
         .tag("result", resultTagValue)
         .register(meterRegistry);

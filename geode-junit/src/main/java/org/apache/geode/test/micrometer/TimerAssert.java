@@ -40,7 +40,7 @@ public class TimerAssert extends AbstractMeterAssert<TimerAssert, Timer> {
    * @param count the expected value of the timer's count
    * @return this assertion object
    * @throws AssertionError if the timer is {@code null}
-   * @throws AssertionError if the condition rejects the timer's count
+   * @throws AssertionError if the timer's count is not equal to the given count
    */
   public TimerAssert hasCount(long count) {
     return hasCount(equalTo(count));
@@ -70,7 +70,7 @@ public class TimerAssert extends AbstractMeterAssert<TimerAssert, Timer> {
    * @param totalTime the expected value of the timer's total time
    * @return this assertion object
    * @throws AssertionError if the timer is {@code null}
-   * @throws AssertionError if the condition rejects the timer's total time
+   * @throws AssertionError if the timer's converted total time is not equal to the given total time
    */
   public TimerAssert hasTotalTime(TimeUnit timeUnit, double totalTime) {
     return hasTotalTime(timeUnit, equalTo(totalTime));
