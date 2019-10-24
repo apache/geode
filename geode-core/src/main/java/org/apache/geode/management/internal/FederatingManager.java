@@ -326,12 +326,16 @@ public class FederatingManager extends Manager {
         // ignored
       }
       try {
-        monitoringRegion.localDestroyRegion();
+        if (monitoringRegion != null) {
+          monitoringRegion.localDestroyRegion();
+        }
       } catch (CancelException | RegionDestroyedException ignore) {
         // ignored
       }
       try {
-        notificationRegion.localDestroyRegion();
+        if (notificationRegion != null) {
+          notificationRegion.localDestroyRegion();
+        }
       } catch (CancelException | RegionDestroyedException ignore) {
         // ignored
       }
