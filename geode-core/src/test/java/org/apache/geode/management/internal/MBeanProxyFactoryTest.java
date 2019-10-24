@@ -12,21 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal;
 
+import static java.util.Collections.singleton;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.EntryNotFoundException;
@@ -34,24 +33,35 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 
 public class MBeanProxyFactoryTest {
+
+  private MBeanJMXAdapter jmxAdapter;
+  private Region<String, Object> region;
+  private Map.Entry<String, Object> regionEntry;
+  private SystemManagementService managementService;
+
+  @Before
+  public void setUp() {
+    jmxAdapter = mock(MBeanJMXAdapter.class);
+    managementService = mock(SystemManagementService.class);
+    region = mock(Region.class);
+    regionEntry = mock(Map.Entry.class);
+  }
+
   @Test
   public void removeAllProxiesEntryNotFoundLogged() {
-    MBeanProxyFactory mBeanProxyFactory =
-        spy(new MBeanProxyFactory(mock(MBeanJMXAdapter.class),
-            mock(SystemManagementService.class)));
-    Region mockRegion = mock(Region.class);
-    Set entrySet = new HashSet<Map.Entry<String, Object>>();
+    Set<Map.Entry<String, Object>> entrySet = new HashSet<>(singleton(regionEntry));
+    when(region.entrySet())
+        .thenReturn(entrySet);
+    when(regionEntry.getKey())
+        .thenThrow(new EntryNotFoundException("test"));
 
-    Map.Entry mockEntry = mock(Map.Entry.class);
-    doThrow(new EntryNotFoundException("Test EntryNotFoundException")).when(mockEntry).getKey();
+    MBeanProxyFactory mBeanProxyFactory = spy(new MBeanProxyFactory(jmxAdapter, managementService));
 
-    entrySet.add(mockEntry);
-
-    doReturn(entrySet).when(mockRegion).entrySet();
-    mBeanProxyFactory.removeAllProxies(mock(DistributedMember.class), mockRegion);
+    mBeanProxyFactory.removeAllProxies(mock(DistributedMember.class), region);
 
     // EntryNotFoundException should just result in a warning as it implies
     // the proxy has already been removed and the entry has already been destroyed
-    verify(mBeanProxyFactory, times(1)).logProxyAlreadyRemoved(any(), any());
+    verify(mBeanProxyFactory)
+        .logProxyAlreadyRemoved(any(), any());
   }
 }
