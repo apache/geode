@@ -15,34 +15,36 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.management.api.RestfulEndpoint.URI_VERSION;
 import static org.apache.geode.management.configuration.Member.MEMBER_ENDPOINT;
+import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.Extension;
 import io.swagger.annotations.ExtensionProperty;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.runtime.MemberInformation;
 
-@RestController("members")
-@RequestMapping(URI_VERSION)
+@Controller("members")
+@RequestMapping(MANAGEMENT_API_VERSION)
 public class MemberManagementController extends AbstractManagementController {
   @ApiOperation(value = "get member",
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result | .runtimeInfo[] | {name:.memberName,status:.status}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
-  @GetMapping(MEMBER_ENDPOINT + "/{id}")
+  @RequestMapping(method = RequestMethod.GET, value = MEMBER_ENDPOINT + "/{id}")
+  @ResponseBody
   public ClusterManagementGetResult<Member, MemberInformation> getMember(
       @PathVariable(name = "id") String id) {
     Member config = new Member();
@@ -55,7 +57,8 @@ public class MemberManagementController extends AbstractManagementController {
           @ExtensionProperty(name = "jqFilter",
               value = ".result[] | .runtimeInfo[] | {name:.memberName,status:.status}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
-  @GetMapping(MEMBER_ENDPOINT)
+  @RequestMapping(method = RequestMethod.GET, value = MEMBER_ENDPOINT)
+  @ResponseBody
   public ClusterManagementListResult<Member, MemberInformation> listMembers(
       @RequestParam(required = false) String id, @RequestParam(required = false) String group) {
     Member filter = new Member();

@@ -15,22 +15,23 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.management.api.RestfulEndpoint.URI_VERSION;
+
+import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 @ApiOperation(value = "ping")
 @Controller("ping")
-@RequestMapping(URI_VERSION)
+@RequestMapping(MANAGEMENT_API_VERSION)
 public class PingManagementController extends AbstractManagementController {
 
-  @GetMapping("/ping")
+  @RequestMapping(method = RequestMethod.GET, value = "/ping")
   public ResponseEntity<String> ping() {
-    return new ResponseEntity<String>("pong", HttpStatus.OK);
+    return new ResponseEntity<>("pong", HttpStatus.OK);
   }
 }

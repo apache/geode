@@ -71,7 +71,7 @@ public class ConfigurePDXDUnitTest {
   }
 
   @After
-  public void after() {
+  public void after() throws Exception {
     // for the test to be run multiple times, we need to clean out the cluster config
     InternalConfigurationPersistenceService cps = getLocator().getConfigurationPersistenceService();
     cps.updateCacheConfig("cluster", config -> {
@@ -80,17 +80,17 @@ public class ConfigurePDXDUnitTest {
     });
   }
 
-  private InternalLocator getLocator() {
+  InternalLocator getLocator() {
     return ((PlainLocatorContextLoader) webContext.getLocator()).getLocatorStartupRule()
         .getLocator();
   }
 
   @Test
-  public void configureWithNoServer() {
+  public void configureWithNoServer() throws Exception {
     ClusterManagementRealizationResult result = client.create(pdxType);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getUri()).endsWith("/management/experimental/configurations/pdx");
+    assertThat(result.getUri()).isEqualTo("/management/experimental/configurations/pdx");
     assertThat(result.getMemberStatuses()).hasSize(0);
 
     // call create the 2nd time
@@ -107,7 +107,7 @@ public class ConfigurePDXDUnitTest {
     ClusterManagementRealizationResult result = client.create(pdxType);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getUri()).endsWith("/management/experimental/configurations/pdx");
+    assertThat(result.getUri()).isEqualTo("/management/experimental/configurations/pdx");
 
     RealizationResult status = result.getMemberStatuses().get(0);
     assertThat(status.getMemberName()).isEqualTo("server-1");

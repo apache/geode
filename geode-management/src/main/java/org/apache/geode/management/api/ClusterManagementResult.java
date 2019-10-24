@@ -16,14 +16,9 @@ package org.apache.geode.management.api;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.internal.Links;
 
 /**
  * This base class provides the common attributes returned from all {@link ClusterManagementService}
@@ -68,18 +63,7 @@ public class ClusterManagementResult {
   // we will always have statusCode when the object is created
   protected StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
-  private Map<String, String> links = new LinkedHashMap<>();
-
-  @JsonIgnore
-  private boolean topLevel = true;
-
-  /**
-   * for internal use only
-   */
-  @JsonIgnore
-  void setTopLevel(boolean topLevel) {
-    this.topLevel = topLevel;
-  }
+  private String uri;
 
   /**
    * for internal use only
@@ -99,8 +83,7 @@ public class ClusterManagementResult {
   public ClusterManagementResult(ClusterManagementResult copyFrom) {
     this.statusCode = copyFrom.statusCode;
     this.statusMessage = copyFrom.statusMessage;
-    this.links = copyFrom.links;
-    this.topLevel = copyFrom.topLevel;
+    this.uri = copyFrom.uri;
   }
 
   /**
@@ -148,35 +131,15 @@ public class ClusterManagementResult {
    * Returns the full path (not including http://server:port) by which this result can be referenced
    * via REST
    */
-  @JsonIgnore
   public String getUri() {
-    return (links == null) ? null : links.get(Links.SELF);
+    return uri;
   }
 
   /**
    * for internal use only
    */
-  public void setUri(RestfulEndpoint config) {
-    this.links = Links.singleItem(config);
-  }
-
-  /**
-   * Returns the HATEOAS rel links for each static configuration
-   */
-  @JsonProperty(value = "_links")
-  public Map<String, String> getLinks() {
-    if (topLevel) {
-      Links.addApiRoot(links);
-    }
-    return links;
-  }
-
-  /**
-   * for internal use only
-   */
-  @JsonProperty(value = "_links")
-  public void setLinks(Map<String, String> links) {
-    this.links = links;
+  public void setUri(String uri) {
+    this.uri = uri;
   }
 
   /**

@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.Region;
@@ -36,9 +35,9 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class ListIndexManagementDUnitTest {
+  private static MemberVM locator, server;
 
   private Region regionConfig;
 
@@ -52,8 +51,8 @@ public class ListIndexManagementDUnitTest {
 
   @BeforeClass
   public static void beforeclass() throws Exception {
-    MemberVM locator = lsRule.startLocatorVM(0, MemberStarterRule::withHttpService);
-    lsRule.startServerVM(1, locator.getPort());
+    locator = lsRule.startLocatorVM(0, l -> l.withHttpService());
+    server = lsRule.startServerVM(1, locator.getPort());
 
     cms = ClusterManagementServiceBuilder.buildWithHostAddress()
         .setHostAddress("localhost", locator.getHttpPort())
@@ -109,7 +108,7 @@ public class ListIndexManagementDUnitTest {
   }
 
   @Test
-  public void listAllIndex() {
+  public void listAllIndex() throws Exception {
     Index index = new Index();
     ClusterManagementListResult<Index, RuntimeInfo> list = cms.list(index);
     List<Index> result = list.getConfigResult();
@@ -126,9 +125,6 @@ public class ListIndexManagementDUnitTest {
     assertThat(runtimeIndex.getName()).isEqualTo("index1");
     assertThat(runtimeIndex.getRegionPath()).isEqualTo("/region1");
     assertThat(runtimeIndex.getExpression()).isEqualTo("id");
-    ConfigurationResult<Index, RuntimeInfo> wrapper = cms.get(index).getResult();
-    assertThat(wrapper.getLinks()).containsKey("region");
-    assertThat(wrapper.getLinks().get("region")).endsWith("regions/region1");
   }
 
   @Test
@@ -147,12 +143,22 @@ public class ListIndexManagementDUnitTest {
   }
 
   @Test
-  public void listIndexWithoutRegionName() {
+  public void getIndexWithoutRegionName() {
     Index index = new Index();
-    commonIndexAssertions(index);
+    index.setName("index1");
+    ClusterManagementListResult<Index, RuntimeInfo> list = cms.list(index);
+    List<Index> result = list.getConfigResult();
+    assertThat(result).hasSize(1);
+    Index runtimeIndex = result.get(0);
+    assertThat(runtimeIndex.getRegionName()).isEqualTo("region1");
+    assertThat(runtimeIndex.getName()).isEqualTo("index1");
+    assertThat(runtimeIndex.getRegionPath()).isEqualTo("/region1");
+    assertThat(runtimeIndex.getExpression()).isEqualTo("id");
   }
 
-  private void commonIndexAssertions(Index index) {
+  @Test
+  public void listIndexWithoutRegionName() {
+    Index index = new Index();
     index.setName("index1");
     ClusterManagementListResult<Index, RuntimeInfo> list = cms.list(index);
     List<Index> result = list.getConfigResult();
@@ -168,7 +174,15 @@ public class ListIndexManagementDUnitTest {
   public void listIndexesWithIdFilter() {
     Index index = new Index();
     index.setRegionPath("region1");
-    commonIndexAssertions(index);
+    index.setName("index1");
+    ClusterManagementListResult<Index, RuntimeInfo> list = cms.list(index);
+    List<Index> result = list.getConfigResult();
+    assertThat(result).hasSize(1);
+    Index runtimeIndex = result.get(0);
+    assertThat(runtimeIndex.getRegionName()).isEqualTo("region1");
+    assertThat(runtimeIndex.getName()).isEqualTo("index1");
+    assertThat(runtimeIndex.getRegionPath()).isEqualTo("/region1");
+    assertThat(runtimeIndex.getExpression()).isEqualTo("id");
   }
 
   @Test

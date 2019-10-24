@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.management.api.RestfulEndpoint.URI_CONTEXT;
 import static org.apache.geode.management.internal.rest.controllers.ManagementControllerAdvice.removeClassFromJsonText;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,31 +38,5 @@ public class ManagementControllerAdviceTest {
     String after =
         "{\"statusCode\":\"OK\",\"result\":[{\"runtimeInfo\":[{\"memberName\":\"locator-0\",\"id\":\"10.0.0.2(locator-0:81569:locator)<ec><v0>:41000\",\"workingDirPath\":\"/geode/geode-web-management\",\"logFilePath\":\"/private/var/folders/y_/d_csfs5966gdq5rgt_n6wy040000gn/T/junit2892068854793149212/locator-0.log\",\"statArchiveFilePath\":\"/geode/geode-web-management\",\"locators\":\"10.0.0.2[51844]\",\"status\":\"online\",\"heapUsage\":171,\"maxHeapSize\":3641,\"initHeapSize\":256,\"cacheXmlFilePath\":\"/geode/geode-web-management\",\"host\":\"10.0.0.2\",\"processId\":81569,\"locatorPort\":51844,\"httpServicePort\":7070,\"clientCount\":0,\"cpuUsage\":0.0,\"webSSL\":false,\"coordinator\":true,\"server\":false,\"secured\":false},{\"memberName\":\"server-1\",\"id\":\"10.0.0.2(server-1:81573)<v1>:41002\",\"workingDirPath\":\"/geode/geode-web-management/dunit/vm1\",\"groups\":\"group-1,group-2\",\"logFilePath\":\"/geode/geode-web-management/dunit/vm1/server-1.log\",\"statArchiveFilePath\":\"/geode/geode-web-management/dunit/vm1\",\"locators\":\"localhost[51844]\",\"heapUsage\":29,\"maxHeapSize\":455,\"initHeapSize\":256,\"cacheXmlFilePath\":\"/geode/geode-web-management/dunit/vm1/cache.xml\",\"host\":\"10.0.0.2\",\"processId\":81573,\"locatorPort\":0,\"httpServicePort\":0,\"clientCount\":0,\"cpuUsage\":0.0,\"webSSL\":false,\"coordinator\":false,\"server\":true,\"cacheServerInfo\":[{\"port\":51888,\"maxConnections\":800,\"maxThreads\":0,\"running\":true}],\"secured\":false}]}]}";
     assertThat(removeClassFromJsonText(before)).isEqualTo(after);
-  }
-
-  @Test
-  public void testQualifyHrefsInJsonTextForApiDocs() {
-    String apiJson = "{\"href\": \"" + URI_CONTEXT + "\"}";
-    String requestUrl = "http://localhost:7070/management/experimental/api-docs";
-    String result = ManagementControllerAdvice.qualifyHrefsInJsonText(apiJson, requestUrl);
-    assertThat(result).isSameAs(apiJson);
-  }
-
-  @Test
-  public void testQualifyHrefsInJsonTextForOurs() {
-    String apiJson = "{\"href\": \"" + URI_CONTEXT + "\", \"href2\": \"" + URI_CONTEXT + "\"}";
-    String expected =
-        "{\"href\": \"http://localhost:7070/management\", \"href2\": \"http://localhost:7070/management\"}";
-    String requestUrl = "http://localhost:7070/management/experimental/regions";
-    String result = ManagementControllerAdvice.qualifyHrefsInJsonText(apiJson, requestUrl);
-    assertThat(result).isEqualTo(expected);
-  }
-
-  @Test
-  public void testQualifyHrefsInJsonTextForBaseUrlNotFound() {
-    String apiJson = "{\"href\": \"" + URI_CONTEXT + "\"}";
-    String requestUrl = "/shorty";
-    String result = ManagementControllerAdvice.qualifyHrefsInJsonText(apiJson, requestUrl);
-    assertThat(result).isSameAs(apiJson);
   }
 }

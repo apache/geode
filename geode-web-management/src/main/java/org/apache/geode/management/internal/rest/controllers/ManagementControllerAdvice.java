@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.management.api.RestfulEndpoint.URI_CONTEXT;
 import static org.apache.geode.management.internal.Constants.INCLUDE_CLASS_HEADER;
 
 import java.nio.charset.Charset;
@@ -38,7 +37,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementException;
@@ -53,12 +51,8 @@ import org.apache.geode.security.NotAuthorizedException;
 public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   private static final Logger logger = LogService.getLogger();
 
-  private Jackson2ObjectMapperFactoryBean objectMapperFactory;
-
   @Autowired
-  public ManagementControllerAdvice(Jackson2ObjectMapperFactoryBean objectMapperFactory) {
-    this.objectMapperFactory = objectMapperFactory;
-  }
+  private Jackson2ObjectMapperFactoryBean objectMapperFactory;
 
   @Override
   public boolean supports(MethodParameter returnType, Class converterType) {
@@ -79,7 +73,6 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
       if (!includeClass) {
         json = removeClassFromJsonText(json);
       }
-      json = qualifyHrefsInJsonText(json, requestUrl());
       response.getHeaders().add(HttpHeaders.CONTENT_TYPE,
           "application/json; charset=" + Charset.defaultCharset().toString());
       response.getBody().write(json.getBytes());
@@ -90,40 +83,12 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
     }
   }
 
-  private static String requestUrl() {
-    return ServletUriComponentsBuilder.fromCurrentRequest().build().toString();
-  }
-
   public static String removeClassFromJsonText(String json) {
     // remove entire key and object if class was the only attribute present
     // otherwise remove just the class attribute
     return json
         .replaceAll("\"[^\"]*\":\\{\"class\":\"[^\"]*\"},?", "")
         .replaceAll("\"class\":\"[^\"]*\",", "");
-  }
-
-  private static String baseUrl(String requestUrl) {
-    int pos = requestUrl.indexOf(URI_CONTEXT);
-    if (pos >= 0) {
-      return requestUrl.substring(0, pos + URI_CONTEXT.length());
-    } else {
-      pos = requestUrl.indexOf('/', 8);
-      if (pos >= 0) {
-        // for MockMVC tests the URI_CONTEXT will be absent, but tests expect it so fake it
-        return requestUrl.substring(0, pos) + URI_CONTEXT;
-      } else {
-        return null;
-      }
-    }
-  }
-
-  static String qualifyHrefsInJsonText(String json, String requestUrl) {
-    if (requestUrl.contains("/api-docs")) {
-      return json;
-    }
-    String baseUrl = baseUrl(requestUrl);
-
-    return baseUrl == null ? json : json.replace("\"" + URI_CONTEXT, "\"" + baseUrl);
   }
 
   @ExceptionHandler(Exception.class)

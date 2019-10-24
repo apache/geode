@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -56,14 +55,7 @@ public class PdxManagementTest {
   }
 
   @Test
-  public void successThenConflict() throws Exception {
-    createPdx();
-    createPdx();
-  }
-
-  private static boolean firstTime = true;
-
-  public void createPdx() throws Exception {
+  public void success() throws Exception {
     Pdx pdx = new Pdx();
     pdx.setReadSerialized(true);
     pdx.setIgnoreUnreadFields(true);
@@ -73,16 +65,12 @@ public class PdxManagementTest {
     context.perform(post("/experimental/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
         .content(mapper.writeValueAsString(pdx)))
-        .andExpect(firstTime ? status().isCreated() : status().isConflict())
+        .andExpect(status().isCreated())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(
             jsonPath("$.statusMessage",
-                containsString(firstTime ? "Successfully updated configuration for cluster."
-                    : "Pdx 'PDX' already exists in group cluster.")))
-        .andExpect(jsonPath("$.statusCode", is(firstTime ? "OK" : "ENTITY_EXISTS")))
-        .andExpect(firstTime
-            ? jsonPath("$._links.self", endsWith("/management/experimental/configurations/pdx"))
-            : jsonPath("$._links.self").doesNotExist());
-    firstTime = false;
+                containsString("Successfully updated configuration for cluster.")))
+        .andExpect(jsonPath("$.statusCode", is("OK")))
+        .andExpect(jsonPath("$.uri", is("/management/experimental/configurations/pdx")));
   }
 }
