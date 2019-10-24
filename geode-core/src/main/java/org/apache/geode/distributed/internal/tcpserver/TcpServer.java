@@ -45,7 +45,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -126,12 +125,23 @@ public class TcpServer {
   private final PoolStatHelper poolHelper;
   private final TcpHandler handler;
 
-
   private ExecutorService executor;
   private final String threadName;
   private volatile Thread serverThread;
 
   protected SocketCreator socketCreator;
+
+  /*
+   * We define this interface rather than using Supplier<Long> so as to avoid
+   * constructing a Long object ever time we need nano time.
+   */
+  @FunctionalInterface
+  public interface NanoTimeSupplier {
+    long get();
+  }
+
+  private final NanoTimeSupplier nanoTimeSupplier;
+
 
   /*
    * Initialize versions map. Warning: This map must be compatible with all GemFire versions being
@@ -147,7 +157,8 @@ public class TcpServer {
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
-      String threadName, ProtocolChecker protocolChecker) {
+      String threadName, ProtocolChecker protocolChecker,
+      final NanoTimeSupplier nanoTimeSupplier) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
@@ -155,6 +166,7 @@ public class TcpServer {
     this.protocolChecker = protocolChecker;
     this.executor = createExecutor(poolHelper);
     this.threadName = threadName;
+    this.nanoTimeSupplier = nanoTimeSupplier;
 
     if (cfg == null) {
       if (sslConfig == null) {
@@ -284,6 +296,7 @@ public class TcpServer {
           shuttingDown = true;
           continue;
         }
+
         processRequest(sock);
       } catch (Exception ex) {
         if (!shuttingDown) {
@@ -322,7 +335,8 @@ public class TcpServer {
    */
   private void processRequest(final Socket socket) {
     executor.execute(() -> {
-      long startTime = DistributionStats.getStatTime();
+
+      final long startTime = nanoTimeSupplier.get();
       DataInputStream input = null;
       try {
         socket.setSoTimeout(READ_TIMEOUT);
@@ -457,7 +471,7 @@ public class TcpServer {
 
       handler.endRequest(request, startTime);
 
-      startTime = DistributionStats.getStatTime();
+      startTime = nanoTimeSupplier.get();
       if (response != null) {
         DataOutputStream output = new DataOutputStream(socket.getOutputStream());
         if (versionOrdinal != Version.CURRENT_ORDINAL) {

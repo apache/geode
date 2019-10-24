@@ -31,7 +31,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -75,9 +74,6 @@ public class TcpServerDependenciesTest {
               .or(type(SecurableCommunicationChannel.class))
               .or(type(SocketCreatorFactory.class))
               .or(type(SSLConfigurationFactory.class))
-
-              // TODO - stats
-              .or(type(DistributionStats.class))
 
               // TODO - cancel excpetion
               .or(type(CancelException.class))

@@ -40,6 +40,7 @@ import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.admin.SSLConfig;
@@ -200,7 +201,7 @@ public class TCPClientSSLIntegrationTest {
         DistributionConfigImpl cfg, RestartableTcpHandler handler, PoolStatHelper poolHelper,
         String threadName) {
       super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadName,
-          (socket, input, firstByte) -> false);
+          (socket, input, firstByte) -> false, DistributionStats::getStatTime);
       if (cfg == null) {
         cfg = new DistributionConfigImpl(sslConfig);
       }
