@@ -14,21 +14,31 @@
  */
 package org.apache.geode.security.query;
 
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.apache.geode.cache.query.CqEvent;
+import org.apache.geode.cache.query.CqListener;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+public class TestCqListener implements CqListener {
+  private int numEvents = 0;
+  private int numErrors = 0;
 
-@Category({SecurityTest.class})
-@RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class PartitionedIndexSecurityDUnitTest extends IndexSecurityDUnitTest {
-  @Override
-  public RegionShortcut getRegionType() {
-    return RegionShortcut.PARTITION;
+  public int getNumEvents() {
+    return numEvents;
   }
 
+  public int getNumErrors() {
+    return numErrors;
+  }
+
+  @Override
+  public void onEvent(CqEvent aCqEvent) {
+    numEvents++;
+  }
+
+  @Override
+  public void onError(CqEvent aCqEvent) {
+    numErrors++;
+  }
+
+  @Override
+  public void close() {}
 }
