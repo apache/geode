@@ -96,7 +96,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, theMetricsServiceMeterRegistry, emptyList(), meterBinder,
-            system, false);
+            system, false, false, true);
 
     assertThat(metricsService.getMeterRegistry())
         .isSameAs(theMetricsServiceMeterRegistry);
@@ -109,7 +109,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(theMetricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder,
-            system, false);
+            system, false, false, true);
 
     assertThat(metricsService.getRebuilder())
         .isSameAs(theMetricsServiceBuilder);
@@ -122,7 +122,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     assertThatThrownBy(() -> metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder,
-            system, false)).isInstanceOf(NullPointerException.class);
+            system, false, false, true)).isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -132,9 +132,8 @@ public class InternalDistributedSystemMetricsServiceTest {
     assertThatThrownBy(
         () -> metricsService =
             new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
-                publishingServiceLoader,
-                metricsServiceMeterRegistry, emptyList(), meterBinder, system, false))
-                    .isInstanceOf(IllegalArgumentException.class);
+                publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder,
+                system, false, false, true)).isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -144,7 +143,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     assertThatThrownBy(() -> metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder,
-            system, false)).isInstanceOf(NullPointerException.class);
+            system, false, false, true)).isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -155,7 +154,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     MetricsService metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder, system,
-            false);
+            false, false, true);
 
     Meter meter = metricsService.getMeterRegistry()
         .counter("my.meter");
@@ -171,7 +170,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     MetricsService metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder, system,
-            false);
+            false, false, true);
 
     Meter meter = metricsService.getMeterRegistry()
         .counter("my.meter");
@@ -189,7 +188,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder, system,
-            false);
+            false, false, true);
 
     Meter meter = metricsService.getMeterRegistry()
         .counter("my.meter");
@@ -207,7 +206,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     MetricsService metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder, system,
-            false);
+            false, false, true);
 
     Meter meter = metricsService.getMeterRegistry()
         .counter("my.meter");
@@ -224,7 +223,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     MetricsService metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder, system,
-            true);
+            true, false, true);
 
     Meter meter = metricsService.getMeterRegistry()
         .counter("my.meter");
@@ -234,13 +233,80 @@ public class InternalDistributedSystemMetricsServiceTest {
   }
 
   @Test
+  public void meterRegistry_registerMeter_addsLocatorMemberTypeTag_ifHasLocatorAndHasNoCacheServer() {
+    boolean hasCacheServer = false;
+    boolean hasLocator = true;
+
+
+    MetricsService metricsService =
+        new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
+            publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder, system,
+            true, hasLocator, hasCacheServer);
+
+    Meter meter = metricsService.getMeterRegistry()
+        .counter("my.meter");
+
+    assertThat(meter)
+        .hasTag("member.type", "locator");
+  }
+
+  @Test
+  public void meterRegistry_registerMeter_addsServerMemberTypeTag_ifHasCacheServerAndHasNoLocator() {
+    boolean hasCacheServer = true;
+    boolean hasLocator = false;
+
+    MetricsService metricsService =
+        new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
+            publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder, system,
+            true, hasLocator, hasCacheServer);
+
+    Meter meter = metricsService.getMeterRegistry()
+        .counter("my.meter");
+
+    assertThat(meter)
+        .hasTag("member.type", "server");
+  }
+
+  @Test
+  public void meterRegistry_registerMeter_addsEmbeddedCacheMemberTypeTag_ifHasNoCacheServerAndHasNoLocator() {
+    boolean hasCacheServer = false;
+    boolean hasLocator = false;
+
+    MetricsService metricsService =
+        new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
+            publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder, system,
+            true, hasLocator, hasCacheServer);
+    Meter meter = metricsService.getMeterRegistry()
+        .counter("my.meter");
+
+    assertThat(meter)
+        .hasTag("member.type", "embedded-cache");
+  }
+
+  @Test
+  public void meterRegistry_registerMeter_addsServerLocatorMemberTypeTag_ifHasLocatorAndHasCacheServer() {
+    boolean hasLocator = true;
+    boolean hasCacheServer = true;
+
+    MetricsService metricsService =
+        new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
+            publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder, system,
+            true, hasLocator, hasCacheServer);
+    Meter meter = metricsService.getMeterRegistry()
+        .counter("my.meter");
+
+    assertThat(meter)
+        .hasTag("member.type", "server-locator");
+  }
+
+  @Test
   public void start_addsPersistentMeterRegistriesToMetricsServiceMeterRegistry() {
     Set<MeterRegistry> thePersistentMeterRegistries = setOf(3, MeterRegistry.class);
 
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, thePersistentMeterRegistries,
-            meterBinder, system, false);
+            meterBinder, system, false, false, true);
 
     metricsService.start();
 
@@ -255,7 +321,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, theMetricsServiceMeterRegistry, emptyList(), meterBinder,
-            system, false);
+            system, false, false, true);
 
     metricsService.start();
 
@@ -276,7 +342,7 @@ public class InternalDistributedSystemMetricsServiceTest {
 
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger, serviceLoader,
-            metricsServiceMeterRegistry, emptyList(), meterBinder, system, false);
+            metricsServiceMeterRegistry, emptyList(), meterBinder, system, false, false, true);
 
     metricsService.start();
 
@@ -301,7 +367,7 @@ public class InternalDistributedSystemMetricsServiceTest {
 
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger, serviceLoader,
-            metricsServiceMeterRegistry, emptyList(), meterBinder, system, false);
+            metricsServiceMeterRegistry, emptyList(), meterBinder, system, false, false, true);
 
     metricsService.start();
 
@@ -319,7 +385,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, theMetricsServiceMeterRegistry, emptyList(), meterBinder,
-            system, false);
+            system, false, false, true);
 
     metricsService.start();
 
@@ -349,7 +415,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, persistentMeterRegistries,
-            binderThatAddsManyMeters, system, false);
+            binderThatAddsManyMeters, system, false, false, true);
 
     metricsService.start();
 
@@ -372,7 +438,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, emptySet(),
-            binderThatAddsManyMeters, system, false);
+            binderThatAddsManyMeters, system, false, false, true);
 
     metricsService.start();
 
@@ -402,7 +468,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), theMeterBinder,
-            system, false);
+            system, false, false, true);
 
     metricsService.start();
 
@@ -425,7 +491,7 @@ public class InternalDistributedSystemMetricsServiceTest {
 
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger, serviceLoader,
-            metricsServiceMeterRegistry, emptyList(), meterBinder, system, false);
+            metricsServiceMeterRegistry, emptyList(), meterBinder, system, false, false, true);
 
     metricsService.start();
 
@@ -448,7 +514,7 @@ public class InternalDistributedSystemMetricsServiceTest {
 
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger, serviceLoader,
-            metricsServiceMeterRegistry, emptyList(), meterBinder, system, false);
+            metricsServiceMeterRegistry, emptyList(), meterBinder, system, false, false, true);
 
     metricsService.start();
 
@@ -475,7 +541,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, theMetricsServiceMeterRegistry, persistentMeterRegistries,
-            meterBinder, system, false);
+            meterBinder, system, false, false, true);
 
     metricsService.start();
 
@@ -493,7 +559,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, persistentMeterRegistries,
-            meterBinder, system, false);
+            meterBinder, system, false, false, true);
 
     metricsService.start();
 
@@ -508,7 +574,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, metricsServiceMeterRegistry, emptyList(), meterBinder, system,
-            false);
+            false, false, true);
 
     metricsService.start();
 
@@ -527,8 +593,7 @@ public class InternalDistributedSystemMetricsServiceTest {
     metricsService =
         new InternalDistributedSystemMetricsService(metricsServiceBuilder, logger,
             publishingServiceLoader, theMetricsServiceMeterRegistry, emptyList(), meterBinder,
-            system,
-            false);
+            system, false, false, true);
 
     metricsService.start();
     metricsService.stop();

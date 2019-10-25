@@ -77,9 +77,9 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
   public void usesFactoryToCreateSession_ifFactorySet() {
     MetricsService metricsServiceCreatedByFactory = mock(MetricsService.class);
 
-    when(
-        metricsServiceFactory.create(any(), any(), any(), any(), any(), any(), any(), anyBoolean()))
-            .thenReturn(metricsServiceCreatedByFactory);
+    when(metricsServiceFactory
+        .create(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(),
+            anyBoolean())).thenReturn(metricsServiceCreatedByFactory);
 
     MetricsService metricsService = serviceBuilder
         .setMetricsServiceFactory(metricsServiceFactory)
@@ -95,7 +95,8 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
         .build(system);
 
     verify(metricsServiceFactory)
-        .create(same(serviceBuilder), any(), any(), any(), any(), any(), any(), anyBoolean());
+        .create(same(serviceBuilder), any(), any(), any(), any(), any(), any(), anyBoolean(),
+            anyBoolean(), anyBoolean());
   }
 
   @Test
@@ -108,7 +109,8 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
         .build(system);
 
     verify(metricsServiceFactory)
-        .create(any(), any(), same(theServiceLoader), any(), any(), any(), any(), anyBoolean());
+        .create(any(), any(), same(theServiceLoader), any(), any(), any(), any(), anyBoolean(),
+            anyBoolean(), anyBoolean());
   }
 
   @Test
@@ -119,7 +121,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(CollectingServiceLoader.class), any(), any(), any(), any(),
-            anyBoolean());
+            anyBoolean(), anyBoolean(), anyBoolean());
   }
 
   @Test
@@ -132,7 +134,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), same(theMetricsServiceMeterRegistry), any(), any(), any(),
-            anyBoolean());
+            anyBoolean(), anyBoolean(), anyBoolean());
   }
 
   @Test
@@ -142,7 +144,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(CompositeMeterRegistry.class), any(), any(), any(),
-            anyBoolean());
+            anyBoolean(), anyBoolean(), anyBoolean());
   }
 
   @Test
@@ -159,7 +161,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), clientMeterRegistriesPassedToFactory.capture(), any(),
-            any(), anyBoolean());
+            any(), anyBoolean(), anyBoolean(), anyBoolean());
 
     assertThat(clientMeterRegistriesPassedToFactory.getValue())
         .containsExactlyInAnyOrderElementsOf(individuallyAddedClientMeterRegistries);
@@ -179,7 +181,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), clientMeterRegistriesPassedToFactory.capture(), any(),
-            any(), anyBoolean());
+            any(), anyBoolean(), anyBoolean(), anyBoolean());
 
     assertThat(clientMeterRegistriesPassedToFactory.getValue())
         .containsExactlyInAnyOrderElementsOf(bulkAddedClientMeterRegistries);
@@ -196,7 +198,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), clientMeterRegistriesPassedToFactory.capture(), any(),
-            any(), anyBoolean());
+            any(), anyBoolean(), anyBoolean(), anyBoolean());
 
     assertThat(clientMeterRegistriesPassedToFactory.getValue())
         .isEmpty();
@@ -211,7 +213,8 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
         .build(system);
 
     verify(metricsServiceFactory)
-        .create(any(), any(), any(), any(), any(), same(theBinder), any(), anyBoolean());
+        .create(any(), any(), any(), any(), any(), same(theBinder), any(), anyBoolean(),
+            anyBoolean(), anyBoolean());
   }
 
   @Test
@@ -221,7 +224,7 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
 
     verify(metricsServiceFactory)
         .create(any(), any(), any(), any(), any(), any(StandardMeterBinder.class), any(),
-            anyBoolean());
+            anyBoolean(), anyBoolean(), anyBoolean());
   }
 
   @Test
@@ -233,7 +236,45 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
         .build(system);
 
     verify(metricsServiceFactory)
-        .create(any(), same(theLogger), any(), any(), any(), any(), any(), anyBoolean());
+        .create(any(), same(theLogger), any(), any(), any(), any(), any(), anyBoolean(),
+            anyBoolean(), anyBoolean());
+  }
+
+  @Test
+  public void usesGivenLocatorDetectorToDetectLocator() {
+    serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
+        .setLocatorDetector(() -> true)
+        .build(system);
+
+    verify(metricsServiceFactory)
+        .create(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), eq(true),
+            anyBoolean());
+
+    serviceBuilder.setLocatorDetector(() -> false)
+        .build(system);
+
+    verify(metricsServiceFactory)
+        .create(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), eq(false),
+            anyBoolean());
+  }
+
+  @Test
+  public void usesGivenCacheServerDetectorToDetectCacheServer() {
+    serviceBuilder.setMetricsServiceFactory(metricsServiceFactory)
+        .setCacheServerDetector(() -> true)
+        .build(system);
+
+    verify(metricsServiceFactory)
+        .create(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(),
+            eq(true));
+
+    serviceBuilder
+        .setCacheServerDetector(() -> false)
+        .build(system);
+
+    verify(metricsServiceFactory)
+        .create(any(), any(), any(), any(), any(), any(), any(), anyBoolean(), anyBoolean(),
+            eq(false));
   }
 
   @Test
@@ -242,7 +283,8 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
         .build(system);
 
     verify(metricsServiceFactory)
-        .create(any(), any(Logger.class), any(), any(), any(), any(), any(), anyBoolean());
+        .create(any(), any(Logger.class), any(), any(), any(), any(), any(), anyBoolean(),
+            anyBoolean(), anyBoolean());
   }
 
   @Test
@@ -252,7 +294,8 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
         .build(system);
 
     verify(metricsServiceFactory)
-        .create(any(), any(), any(), any(), any(), any(), any(), eq(true));
+        .create(any(), any(), any(), any(), any(), any(), any(), eq(true), anyBoolean(),
+            anyBoolean());
   }
 
   @Test
@@ -261,7 +304,8 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
         .build(system);
 
     verify(metricsServiceFactory)
-        .create(any(), any(), any(), any(), any(), any(), any(), eq(false));
+        .create(any(), any(), any(), any(), any(), any(), any(), eq(false), anyBoolean(),
+            anyBoolean());
   }
 
   @Test
@@ -272,7 +316,8 @@ public class InternalDistributedSystemMetricsServiceBuilderTest {
         .build(theSystem);
 
     verify(metricsServiceFactory)
-        .create(any(), any(), any(), any(), any(), any(), same(theSystem), anyBoolean());
+        .create(any(), any(), any(), any(), any(), any(), same(theSystem), anyBoolean(),
+            anyBoolean(), anyBoolean());
   }
 
   private static <T> Set<T> setOf(int count, Class<? extends T> type) {
