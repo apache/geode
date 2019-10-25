@@ -20,7 +20,7 @@ import static org.junit.Assert.fail;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * <code>ThreadUtils</code> provides static utility methods to perform thread related actions such

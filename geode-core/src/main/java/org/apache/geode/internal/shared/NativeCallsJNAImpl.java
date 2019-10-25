@@ -46,8 +46,8 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.signal.Signal;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
 /**

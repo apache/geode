@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class OverflowOplogSet implements OplogSet {
   private static final Logger logger = LogService.getLogger();

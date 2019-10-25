@@ -23,8 +23,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ConnectionException;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class represent a runnable task which exchange the locator information with local

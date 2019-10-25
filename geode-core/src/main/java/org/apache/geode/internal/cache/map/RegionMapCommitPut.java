@@ -30,9 +30,9 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TXEntryState;
 import org.apache.geode.internal.cache.TXRmtEvent;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Does a put for a transaction that is being committed.

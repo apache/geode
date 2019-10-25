@@ -23,13 +23,13 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ProtocolVersionHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class RequireVersion implements ConnectionState {
   private static final Logger logger = LogService.getLogger();

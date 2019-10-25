@@ -29,7 +29,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;

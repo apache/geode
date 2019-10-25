@@ -28,8 +28,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Integration TestCase for StatSampler.

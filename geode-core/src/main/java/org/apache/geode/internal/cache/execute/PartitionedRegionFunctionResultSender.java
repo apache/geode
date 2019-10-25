@@ -27,8 +27,8 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionFunctionStreamingMessage;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * ResultSender needs ResultCollector in which to add results one by one. In case of localExecution

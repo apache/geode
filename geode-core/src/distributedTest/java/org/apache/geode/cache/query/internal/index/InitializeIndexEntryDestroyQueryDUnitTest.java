@@ -44,7 +44,7 @@ import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.cache.query.internal.Undefined;
 import org.apache.geode.cache.query.partitioned.PRQueryDUnitHelper;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.ThreadUtils;

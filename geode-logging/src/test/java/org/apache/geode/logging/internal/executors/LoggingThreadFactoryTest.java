@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.internal.logging;
+package org.apache.geode.logging.internal.executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
@@ -27,11 +27,13 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.logging.LoggingThreadFactory.CommandWrapper;
-import org.apache.geode.internal.logging.LoggingThreadFactory.ThreadInitializer;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory.CommandWrapper;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory.ThreadInitializer;
+import org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandler;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/** Unit tests for {@link org.apache.geode.internal.logging.LoggingThreadFactory}. */
+/** Unit tests for {@link LoggingThreadFactory}. */
 @Category(LoggingTest.class)
 public class LoggingThreadFactoryTest {
 

@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.test.GrandSubCustomer;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ToplevelObjectSerializerOnGrandSubclassIntegrationTest extends LuceneIntegrationTest {
   protected static int WAIT_FOR_FLUSH_TIME = 10000;

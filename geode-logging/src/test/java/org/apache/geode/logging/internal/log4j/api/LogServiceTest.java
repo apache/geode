@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging;
+package org.apache.geode.logging.internal.log4j.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,8 +23,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.internal.logging.log4j.FastLogger;
-import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
+import org.apache.geode.logging.internal.log4j.api.FastLogger;
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.logging.internal.log4j.api.message.GemFireParameterizedMessageFactory;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**

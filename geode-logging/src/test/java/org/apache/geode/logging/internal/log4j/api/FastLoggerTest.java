@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.logging.log4j.internal;
+package org.apache.geode.logging.internal.log4j.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -37,7 +37,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
-import org.apache.geode.internal.logging.log4j.FastLogger;
+import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**

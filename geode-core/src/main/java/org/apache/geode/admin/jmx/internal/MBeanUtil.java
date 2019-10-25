@@ -44,7 +44,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.RuntimeAdminException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Common support for MBeans and {@link ManagedResource}s. Static loading of this class creates the

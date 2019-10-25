@@ -25,7 +25,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ProcessLogger implements AutoCloseable {
 

@@ -27,8 +27,8 @@ import java.util.concurrent.Callable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.internal.ChildVMLauncher;
 import org.apache.geode.test.dunit.internal.MethodInvokerResult;
 import org.apache.geode.test.dunit.internal.ProcessHolder;

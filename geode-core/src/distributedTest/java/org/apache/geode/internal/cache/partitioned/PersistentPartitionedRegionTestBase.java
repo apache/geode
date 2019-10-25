@@ -48,7 +48,7 @@ import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.test.awaitility.GeodeAwaitility;

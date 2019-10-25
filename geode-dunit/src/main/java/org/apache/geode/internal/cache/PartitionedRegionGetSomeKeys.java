@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.partitioned.FetchKeysMessage;
 import org.apache.geode.internal.cache.partitioned.FetchKeysMessage.FetchKeysResponse;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.tier.InterestType;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Extracted from {@link PartitionedRegion}. This is a utility used by Hydra test code only.

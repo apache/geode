@@ -27,8 +27,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
 public class ThreadsMonitoringProcess extends TimerTask {
