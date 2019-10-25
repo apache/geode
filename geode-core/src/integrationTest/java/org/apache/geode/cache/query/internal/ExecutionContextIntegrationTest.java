@@ -155,7 +155,8 @@ public class ExecutionContextIntegrationTest {
   }
 
   @Test
-  public void testFunctionalAddToIndependentRuntimeItrMapWithoutIndex() throws Exception {
+  public void addToIndependentRuntimeItrMapShouldCorrectlySetTheIndexInternalIdUsedToIdentifyAvailableIndexes()
+      throws Exception {
     QCompiler compiler = new QCompiler();
     List list = compiler.compileFromClause("/portfolio p, p.positions");
     ExecutionContext context = new QueryExecutionContext(null, server.getCache());
@@ -166,26 +167,26 @@ public class ExecutionContextIntegrationTest {
       @SuppressWarnings("unchecked")
       Set<RuntimeIterator> dependencies = iterDef.computeDependencies(context);
       context.addDependencies(new CompiledID("dummy"), dependencies);
-      RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
-      context.bindIterator(rIter);
+      RuntimeIterator runtimeIterator = iterDef.getRuntimeIterator(context);
+      context.bindIterator(runtimeIterator);
       context.addToIndependentRuntimeItrMap(iterDef);
 
-      assertThat(rIter.getInternalId())
+      assertThat(runtimeIterator.getInternalId())
           .as(" The index_internal_id is not set as per expectation of iter'n'")
-          .isEqualTo(rIter.getIndexInternalID());
+          .isEqualTo(runtimeIterator.getIndexInternalID());
     }
   }
 
   @Test
   public void testFunctionalAddToIndependentRuntimeItrMapWithIndex() throws Exception {
+    QCompiler compiler = new QCompiler();
     DefaultQueryService qs = new DefaultQueryService(server.getCache());
     qs.createIndex("myindex", "pf.id", "/portfolio pf, pf.positions pos");
-    // compileFromClause returns a List<CompiledIteratorDef>
-    QCompiler compiler = new QCompiler();
     List list = compiler.compileFromClause("/portfolio p, p.positions");
     ExecutionContext context = new QueryExecutionContext(null, server.getCache());
     context.newScope(context.associateScopeID());
     Iterator iter = list.iterator();
+
     int i = 0;
     while (iter.hasNext()) {
       CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
@@ -194,20 +195,24 @@ public class ExecutionContextIntegrationTest {
   }
 
   @Test
-  public void testObtainingRegionPath() throws Exception {
+  public void addToIndependentRuntimeItrMapShouldCorrectlySetTheRuntimeIteratorRegionPath()
+      throws Exception {
+    QCompiler compiler = new QCompiler();
     DefaultQueryService qs = new DefaultQueryService(server.getCache());
     qs.createIndex("myindex", "pf.id", "/portfolio pf, pf.positions pos");
-    // compileFromClause returns a List<CompiledIteratorDef>
-    QCompiler compiler = new QCompiler();
-    List list = compiler.compileFromClause("/portfolio p, p.positions");
+
+    @SuppressWarnings("unchecked")
+    List<CompiledIteratorDef> list =
+        (List<CompiledIteratorDef>) compiler.compileFromClause("/portfolio p, p.positions");
     ExecutionContext context = new QueryExecutionContext(null, server.getCache());
     context.newScope(context.associateScopeID());
-    Iterator iter = list.iterator();
+    Iterator<CompiledIteratorDef> iter = list.iterator();
+
     int i = 0;
     CompiledIteratorDef iterDef = null;
 
     while (iter.hasNext()) {
-      iterDef = (CompiledIteratorDef) iter.next();
+      iterDef = iter.next();
       i = computeEvaluateAndAssertIterator(context, i, iterDef);
     }
 
@@ -215,8 +220,8 @@ public class ExecutionContextIntegrationTest {
     context.computeUltimateDependencies(iterDef, temp);
     String regionPath = context.getRegionPathForIndependentRuntimeIterator(temp.iterator().next());
 
-    assertThat((regionPath != null && regionPath.equals("/portfolio")))
-        .as("Region path " + regionPath + " is either null or not equal to /portfolio.")
+    assertThat(regionPath.equals("/portfolio"))
+        .as("Region path " + regionPath + " should be equal to /portfolio.")
         .isTrue();
   }
 
@@ -265,28 +270,31 @@ public class ExecutionContextIntegrationTest {
   }
 
   @Test
-  public void testScopeIndex1() throws Exception {
+  public void runtimeIteratorScopeShouldBeCorrectlySetAfterCompilingQueryAndEvaluatingDependencies()
+      throws Exception {
     server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("positions");
     // compileFromClause returns a List<CompiledIteratorDef>
     String qry =
         "select distinct p.pf, ELEMENT(select distinct pf1 from /portfolio pf1 where pf1.getID = p.pf.getID )  from (select distinct pf, pos from /portfolio pf, pf.positions.values pos) p, (select distinct * from /positions rtPos where rtPos.secId = p.pos.secId) as y "
             + "where ( select distinct pf2 from /portfolio pf2 ).size() <> 0 ";
-    ExecutionContext context = new QueryExecutionContext(null, server.getCache());
+
     QCompiler compiler = new QCompiler();
     CompiledValue query = compiler.compileQuery(qry);
-    query.computeDependencies(context);
-    Set runtimeItrs = context.getDependencySet(query, true);
-    Iterator itr = runtimeItrs.iterator();
+    ExecutionContext context = new QueryExecutionContext(null, server.getCache());
 
-    assertIteratorScope(itr);
+    query.computeDependencies(context);
+    Set runtimeIterators = context.getDependencySet(query, true);
+    Iterator runtimeIterator = runtimeIterators.iterator();
+    assertIteratorScope(runtimeIterator);
+
     query.evaluate(context);
-    runtimeItrs = context.getDependencySet(query, true);
-    itr = runtimeItrs.iterator();
-    assertIteratorScope(itr);
+    runtimeIterators = context.getDependencySet(query, true);
+    runtimeIterator = runtimeIterators.iterator();
+    assertIteratorScope(runtimeIterator);
   }
 
   @Test
-  public void testMultiThreadedScopeIndex() {
+  public void runtimeIteratorScopeShouldBeCorrectlySetAfterCompilingQueryAndEvaluatingDependenciesConcurrently() {
     server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("positions");
     // compileFromClause returns a List<CompiledIteratorDef>
     String qry =
@@ -302,19 +310,19 @@ public class ExecutionContextIntegrationTest {
         latch.await();
         ExecutionContext context = new QueryExecutionContext(null, server.getCache());
         query.computeDependencies(context);
-        Set runtimeItrs = context.getDependencySet(query, true);
-        Iterator itr = runtimeItrs.iterator();
+        Set runtimeIterators = context.getDependencySet(query, true);
+        Iterator runtimeIterator = runtimeIterators.iterator();
 
-        while (itr.hasNext()) {
-          assertIteratorScopeMultiThreaded(itr);
+        while (runtimeIterator.hasNext()) {
+          assertIteratorScopeMultiThreaded(runtimeIterator);
           Thread.yield();
         }
 
         query.evaluate(context);
-        runtimeItrs = context.getDependencySet(query, true);
-        itr = runtimeItrs.iterator();
-        while (itr.hasNext()) {
-          assertIteratorScopeMultiThreaded(itr);
+        runtimeIterators = context.getDependencySet(query, true);
+        runtimeIterator = runtimeIterators.iterator();
+        while (runtimeIterator.hasNext()) {
+          assertIteratorScopeMultiThreaded(runtimeIterator);
         }
       } catch (VirtualMachineError e) {
         SystemFailure.initiateFailure(e);

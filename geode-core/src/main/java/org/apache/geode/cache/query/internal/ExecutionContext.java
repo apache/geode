@@ -61,8 +61,8 @@ public class ExecutionContext {
 
   /**
    * a Sequentially increasing number identifying a scope & also indicating whether a given scope
-   * came prior or later to another scope. It is needed to distiguish between two scopes having same
-   * nesting level relative to the top scope
+   * came prior or later to another scope. It is needed to distinguish between two scopes having
+   * same nesting level relative to the top scope
    */
   private int scopeNum = 0;
 
