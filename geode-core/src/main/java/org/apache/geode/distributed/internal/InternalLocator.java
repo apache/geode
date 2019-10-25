@@ -58,6 +58,7 @@ import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListe
 import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.InfoRequestHandler;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectListener;
 import org.apache.geode.distributed.internal.membership.NetLocator;
@@ -65,6 +66,7 @@ import org.apache.geode.distributed.internal.membership.NetLocatorFactory;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.locator.PeerLocatorRequest;
+import org.apache.geode.distributed.internal.tcpserver.InfoRequest;
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -842,6 +844,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     handler.addHandler(ClientReplacementRequest.class, serverLocator);
     handler.addHandler(GetAllServersRequest.class, serverLocator);
     handler.addHandler(LocatorStatusRequest.class, serverLocator);
+
     this.serverLocator = serverLocator;
     if (!server.isAlive()) {
       startTcpServer();
@@ -1390,6 +1393,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       handler.addHandler(ClusterManagementServiceInfoRequest.class,
           new ClusterManagementServiceInfoRequestHandler());
       logger.info("ClusterManagementServiceInfoRequestHandler installed");
+    }
+    if (!handler.isHandled(InfoRequest.class)) {
+      handler.addHandler(InfoRequest.class, new InfoRequestHandler());
+      logger.info("InfoRequestHandler installed");
     }
   }
 

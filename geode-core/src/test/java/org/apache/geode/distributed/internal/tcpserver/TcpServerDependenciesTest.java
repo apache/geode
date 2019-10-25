@@ -32,7 +32,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -91,9 +90,9 @@ public class TcpServerDependenciesTest {
               // TODO - god classes
               .or(type(SystemFailure.class))
 
-              // TODO - version class? Version.java is in serialization, what is
-              // GemFireVersion?
-              .or(type(GemFireVersion.class))
+  // TODO - version class? Version.java is in serialization, what is
+  // GemFireVersion?
+  // .or(type(GemFireVersion.class))
 
   );
 
