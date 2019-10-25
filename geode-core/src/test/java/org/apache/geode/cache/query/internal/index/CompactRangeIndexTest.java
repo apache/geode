@@ -30,7 +30,9 @@ import org.mockito.junit.MockitoRule;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
+import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.index.AbstractIndex.InternalIndexStatistics;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CachePerfStats;
@@ -64,6 +66,9 @@ public class CompactRangeIndexTest {
     when(ids.createAtomicStatistics(any(), eq("Index1"))).thenReturn(stats);
     when(cache.getRegion(any())).thenReturn(region);
     when(img.putCanonicalizedIteratorNameIfAbsent(any())).thenReturn("index_iter");
+    when(cache.getQueryService()).thenReturn(mock(InternalQueryService.class));
+    when(cache.getQueryService().getMethodInvocationAuthorizer())
+        .thenReturn(mock(MethodInvocationAuthorizer.class));
 
     IndexCreationHelper helper = new FunctionalIndexCreationHelper("/exampleRegion", "status",
         "*", null, cache, null, img);

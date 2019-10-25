@@ -29,7 +29,6 @@ import org.apache.geode.cache.query.NameNotFoundException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
-import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
@@ -40,14 +39,12 @@ public class MethodDispatch {
   private final Class _targetClass;
   private final String _methodName;
   private final Class[] _argTypes;
-  private final MethodInvocationAuthorizer _methodInvocationAuthorizer;
 
-  public MethodDispatch(MethodInvocationAuthorizer methodInvocationAuthorizer, Class targetClass,
-      String methodName, List argTypes) throws NameResolutionException {
+  public MethodDispatch(Class targetClass, String methodName, List argTypes)
+      throws NameResolutionException {
     _targetClass = targetClass;
     _methodName = methodName;
     _argTypes = (Class[]) argTypes.toArray(new Class[0]);
-    _methodInvocationAuthorizer = methodInvocationAuthorizer;
 
     resolve();
     // override security in case this is a method on a nonpublic class
@@ -70,7 +67,8 @@ public class MethodDispatch {
         authorizationResult = cachedResult;
       } else {
         // First time, evaluate and cache result.
-        authorizationResult = _methodInvocationAuthorizer.authorize(_method, target);
+        authorizationResult =
+            executionContext.getMethodInvocationAuthorizer().authorize(_method, target);
         executionContext.cachePut(cacheKey, authorizationResult);
       }
 

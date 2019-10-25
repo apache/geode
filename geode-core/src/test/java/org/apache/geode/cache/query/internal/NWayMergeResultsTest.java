@@ -14,37 +14,51 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.cache.InternalCache;
 
-public class NWayMergeResultsJUnitTest {
+public class NWayMergeResultsTest {
+  private ExecutionContext context;
+
+  @Before
+  public void setUp() {
+    InternalCache mockCache = mock(InternalCache.class);
+    when(mockCache.getQueryService()).thenReturn(mock(InternalQueryService.class));
+    when(mockCache.getQueryService().getMethodInvocationAuthorizer())
+        .thenReturn(mock(MethodInvocationAuthorizer.class));
+
+    context = new ExecutionContext(null, mockCache);
+  }
 
   @Test
   public void testNonDistinct() throws Exception {
     final int numSortedLists = 40;
-    Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
+    Collection<List<Integer>> listOfSortedLists = new ArrayList<>();
     for (int i = 0; i < numSortedLists; ++i) {
-      listOfSortedLists.add(new ArrayList<Integer>());
+      listOfSortedLists.add(new ArrayList<>());
     }
     int step = 0;
     for (List<Integer> list : listOfSortedLists) {
@@ -58,11 +72,11 @@ public class NWayMergeResultsJUnitTest {
       totalElements += list.size();
     }
 
-    int combinedArray[] = new int[totalElements];
+    int[] combinedArray = new int[totalElements];
     int i = 0;
     for (List<Integer> list : listOfSortedLists) {
       for (Integer num : list) {
-        combinedArray[i++] = num.intValue();
+        combinedArray[i++] = num;
       }
     }
     Arrays.sort(combinedArray);
@@ -71,25 +85,22 @@ public class NWayMergeResultsJUnitTest {
         createSingleFieldMergedResult(listOfSortedLists, false, -1);
     Iterator<Integer> iter = mergedResults.iterator();
     for (int elem : combinedArray) {
-      assertEquals(elem, iter.next().intValue());
-    }
-    assertFalse(iter.hasNext());
-    try {
-      iter.next();
-      fail("next should have thrown NoSuchElementException");
-    } catch (NoSuchElementException nsee) {
-      // Ok.
+      assertThat(iter.next().intValue()).isEqualTo(elem);
     }
 
-    assertEquals(combinedArray.length, mergedResults.size());
+    assertThat(iter.hasNext()).isFalse();
+    assertThatThrownBy(iter::next)
+        .as("next should have thrown NoSuchElementException")
+        .isInstanceOf(NoSuchElementException.class);
+    assertThat(mergedResults.size()).isEqualTo(combinedArray.length);
   }
 
   @Test
   public void testDistinct() throws Exception {
     final int numSortedLists = 40;
-    Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
+    Collection<List<Integer>> listOfSortedLists = new ArrayList<>();
     for (int i = 0; i < numSortedLists; ++i) {
-      listOfSortedLists.add(new ArrayList<Integer>());
+      listOfSortedLists.add(new ArrayList<>());
     }
     int step = 0;
     for (List<Integer> list : listOfSortedLists) {
@@ -99,12 +110,10 @@ public class NWayMergeResultsJUnitTest {
       }
     }
 
-    SortedSet<Integer> sortedSet = new TreeSet<Integer>();
+    SortedSet<Integer> sortedSet = new TreeSet<>();
 
     for (List<Integer> list : listOfSortedLists) {
-      for (Integer num : list) {
-        sortedSet.add(num);
-      }
+      sortedSet.addAll(list);
     }
 
     NWayMergeResults<Integer> mergedResults =
@@ -112,27 +121,24 @@ public class NWayMergeResultsJUnitTest {
 
     Iterator<Integer> iter = mergedResults.iterator();
     for (int elem : sortedSet) {
-      assertEquals(elem, iter.next().intValue());
+      assertThat(iter.next().intValue()).isEqualTo(elem);
     }
-    assertFalse(iter.hasNext());
+    assertThat(iter.hasNext()).isFalse();
 
-    try {
-      iter.next();
-      fail("next should have thrown NoSuchElementException");
-    } catch (NoSuchElementException nsee) {
-      // Ok.
-    }
+    assertThatThrownBy(iter::next)
+        .as("next should have thrown NoSuchElementException")
+        .isInstanceOf(NoSuchElementException.class);
 
-    assertEquals(sortedSet.size(), mergedResults.size());
+    assertThat(mergedResults.size()).isEqualTo(sortedSet.size());
   }
 
   @Test
   public void testLimitNoDistinct() throws Exception {
     final int numSortedLists = 40;
     final int limit = 53;
-    Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
+    Collection<List<Integer>> listOfSortedLists = new ArrayList<>();
     for (int i = 0; i < numSortedLists; ++i) {
-      listOfSortedLists.add(new ArrayList<Integer>());
+      listOfSortedLists.add(new ArrayList<>());
     }
     int step = 0;
     for (List<Integer> list : listOfSortedLists) {
@@ -146,11 +152,11 @@ public class NWayMergeResultsJUnitTest {
       totalElements += list.size();
     }
 
-    int combinedArray[] = new int[totalElements];
+    int[] combinedArray = new int[totalElements];
     int i = 0;
     for (List<Integer> list : listOfSortedLists) {
       for (Integer num : list) {
-        combinedArray[i++] = num.intValue();
+        combinedArray[i++] = num;
       }
     }
     Arrays.sort(combinedArray);
@@ -164,27 +170,24 @@ public class NWayMergeResultsJUnitTest {
       if (count == limit) {
         break;
       }
-      assertEquals(elem, iter.next().intValue());
+      assertThat(iter.next().intValue()).isEqualTo(elem);
       ++count;
     }
-    assertFalse(iter.hasNext());
-    try {
-      iter.next();
-      fail("next should have thrown NoSuchElementException");
-    } catch (NoSuchElementException nsee) {
-      // Ok.
-    }
 
-    assertEquals(limit, mergedResults.size());
+    assertThat(iter.hasNext()).isFalse();
+    assertThatThrownBy(iter::next)
+        .as("next should have thrown NoSuchElementException")
+        .isInstanceOf(NoSuchElementException.class);
+    assertThat(mergedResults.size()).isEqualTo(limit);
   }
 
   @Test
   public void testLimitDistinct() throws Exception {
     final int numSortedLists = 40;
     final int limit = 53;
-    Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
+    Collection<List<Integer>> listOfSortedLists = new ArrayList<>();
     for (int i = 0; i < numSortedLists; ++i) {
-      listOfSortedLists.add(new ArrayList<Integer>());
+      listOfSortedLists.add(new ArrayList<>());
     }
     int step = 0;
     for (List<Integer> list : listOfSortedLists) {
@@ -194,12 +197,10 @@ public class NWayMergeResultsJUnitTest {
       }
     }
 
-    SortedSet<Integer> sortedSet = new TreeSet<Integer>();
+    SortedSet<Integer> sortedSet = new TreeSet<>();
 
     for (List<Integer> list : listOfSortedLists) {
-      for (Integer num : list) {
-        sortedSet.add(num);
-      }
+      sortedSet.addAll(list);
     }
 
     NWayMergeResults<Integer> mergedResults =
@@ -213,18 +214,14 @@ public class NWayMergeResultsJUnitTest {
       if (count == limit) {
         break;
       }
-      assertEquals(elem, iter.next().intValue());
+      assertThat(iter.next().intValue()).isEqualTo(elem);
       ++count;
     }
-    assertFalse(iter.hasNext());
-
-    try {
-      iter.next();
-      fail("next should have thrown NoSuchElementException");
-    } catch (NoSuchElementException nsee) {
-      // Ok.
-    }
-    assertEquals(limit, mergedResults.size());
+    assertThat(iter.hasNext()).isFalse();
+    assertThatThrownBy(iter::next)
+        .as("next should have thrown NoSuchElementException")
+        .isInstanceOf(NoSuchElementException.class);
+    assertThat(mergedResults.size()).isEqualTo(limit);
   }
 
   @Test
@@ -232,9 +229,9 @@ public class NWayMergeResultsJUnitTest {
     final int numSortedLists = 40;
     StructTypeImpl structType = new StructTypeImpl(new String[] {"a", "b"},
         new ObjectType[] {new ObjectTypeImpl(Integer.TYPE), new ObjectTypeImpl(Integer.TYPE)});
-    Collection<List<Struct>> listOfSortedLists = new ArrayList<List<Struct>>();
+    Collection<List<Struct>> listOfSortedLists = new ArrayList<>();
     for (int i = 0; i < numSortedLists; ++i) {
-      listOfSortedLists.add(new ArrayList<Struct>());
+      listOfSortedLists.add(new ArrayList<>());
     }
     int step = 0;
     for (List<Struct> list : listOfSortedLists) {
@@ -242,7 +239,7 @@ public class NWayMergeResultsJUnitTest {
       int j = 1000;
       for (int i = -500; i < 500; i = i + step) {
         Struct struct = new StructImpl(structType,
-            new Object[] {Integer.valueOf(i), Integer.valueOf(j - step)});
+            new Object[] {i, j - step});
         list.add(struct);
       }
     }
@@ -251,41 +248,36 @@ public class NWayMergeResultsJUnitTest {
       totalElements += list.size();
     }
 
-    Struct combinedArray[] = new Struct[totalElements];
+    Struct[] combinedArray = new Struct[totalElements];
     int i = 0;
     for (List<Struct> list : listOfSortedLists) {
       for (Struct struct : list) {
         combinedArray[i++] = struct;
       }
     }
-    Arrays.sort(combinedArray, new Comparator<Struct>() {
-      @Override
-      public int compare(Struct o1, Struct o2) {
-        Object[] fields_1 = o1.getFieldValues();
-        Object[] fields_2 = o2.getFieldValues();
-        int compare = ((Comparable) fields_1[0]).compareTo((Comparable) fields_2[0]);
-        if (compare == 0) {
-          // second field is descending
-          compare = ((Comparable) fields_2[1]).compareTo((Comparable) fields_1[1]);
-        }
-        return compare;
+
+    Arrays.sort(combinedArray, (o1, o2) -> {
+      Object[] fields_1 = o1.getFieldValues();
+      Object[] fields_2 = o2.getFieldValues();
+      int compare = ((Comparable) fields_1[0]).compareTo(fields_2[0]);
+      if (compare == 0) {
+        // second field is descending
+        compare = ((Comparable) fields_2[1]).compareTo(fields_1[1]);
       }
+      return compare;
     });
 
     NWayMergeResults<Struct> mergedResults =
-        createStructFieldMergedResult(listOfSortedLists, false, -1, structType);
+        createStructFieldMergedResult(listOfSortedLists, structType);
 
     Iterator<Struct> iter = mergedResults.iterator();
     for (Struct elem : combinedArray) {
-      assertEquals(elem, iter.next());
+      assertThat(iter.next()).isEqualTo(elem);
     }
-    assertFalse(iter.hasNext());
-    try {
-      iter.next();
-      fail("next should have thrown NoSuchElementException");
-    } catch (NoSuchElementException nsee) {
-      // Ok.
-    }
+    assertThat(iter.hasNext()).isFalse();
+    assertThatThrownBy(iter::next)
+        .as("next should have thrown NoSuchElementException")
+        .isInstanceOf(NoSuchElementException.class);
   }
 
   @Test
@@ -293,9 +285,9 @@ public class NWayMergeResultsJUnitTest {
     final int numSortedLists = 40;
     StructTypeImpl structType = new StructTypeImpl(new String[] {"a", "b"},
         new ObjectType[] {new ObjectTypeImpl(Integer.TYPE), new ObjectTypeImpl(Integer.TYPE)});
-    Collection<List<Struct>> listOfSortedLists = new ArrayList<List<Struct>>();
+    Collection<List<Struct>> listOfSortedLists = new ArrayList<>();
     for (int i = 0; i < numSortedLists; ++i) {
-      listOfSortedLists.add(new ArrayList<Struct>());
+      listOfSortedLists.add(new ArrayList<>());
     }
     int step = 0;
     for (List<Struct> list : listOfSortedLists) {
@@ -303,54 +295,48 @@ public class NWayMergeResultsJUnitTest {
       int j = 1000;
       for (int i = -500; i < 500; i = i + step) {
         Struct struct = new StructImpl(structType,
-            new Object[] {Integer.valueOf(i), Integer.valueOf(j - step)});
+            new Object[] {i, j - step});
         list.add(struct);
       }
     }
 
-    SortedSet<Struct> sortedSet = new TreeSet<Struct>(new Comparator<Struct>() {
-      @Override
-      public int compare(Struct o1, Struct o2) {
-        Object[] fields_1 = o1.getFieldValues();
-        Object[] fields_2 = o2.getFieldValues();
-        int compare = ((Comparable) fields_1[0]).compareTo((Comparable) fields_2[0]);
-        if (compare == 0) {
-          // second field is descending
-          compare = ((Comparable) fields_2[1]).compareTo((Comparable) fields_1[1]);
-        }
-        return compare;
+    @SuppressWarnings("unchecked")
+    SortedSet<Struct> sortedSet = new TreeSet<>((o1, o2) -> {
+      Object[] fields_1 = o1.getFieldValues();
+      Object[] fields_2 = o2.getFieldValues();
+
+      @SuppressWarnings("unchecked")
+      int compare = ((Comparable) fields_1[0]).compareTo(fields_2[0]);
+      if (compare == 0) {
+        // second field is descending
+        compare = ((Comparable) fields_2[1]).compareTo(fields_1[1]);
       }
+      return compare;
     });
 
-    int i = 0;
     for (List<Struct> list : listOfSortedLists) {
-      for (Struct struct : list) {
-        sortedSet.add(struct);
-      }
+      sortedSet.addAll(list);
     }
 
     NWayMergeResults<Struct> mergedResults =
-        createStructFieldMergedResult(listOfSortedLists, true, -1, structType);
+        createStructFieldMergedResult(listOfSortedLists, structType);
 
     Iterator<Struct> iter = mergedResults.iterator();
     for (Struct elem : sortedSet) {
-      assertEquals(elem, iter.next());
+      assertThat(iter.next()).isEqualTo(elem);
     }
-    assertFalse(iter.hasNext());
-    try {
-      iter.next();
-      fail("next should have thrown NoSuchElementException");
-    } catch (NoSuchElementException nsee) {
-      // Ok.
-    }
+    assertThat(iter.hasNext()).isFalse();
+    assertThatThrownBy(iter::next)
+        .as("next should have thrown NoSuchElementException")
+        .isInstanceOf(NoSuchElementException.class);
   }
 
   @Test
   public void testOccurrenceNonDistinct() throws Exception {
     final int numSortedLists = 40;
-    Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
+    Collection<List<Integer>> listOfSortedLists = new ArrayList<>();
     for (int i = 0; i < numSortedLists; ++i) {
-      listOfSortedLists.add(new ArrayList<Integer>());
+      listOfSortedLists.add(new ArrayList<>());
     }
     int step = 0;
     for (List<Integer> list : listOfSortedLists) {
@@ -364,11 +350,11 @@ public class NWayMergeResultsJUnitTest {
       totalElements += list.size();
     }
 
-    int combinedArray[] = new int[totalElements];
+    int[] combinedArray = new int[totalElements];
     int i = 0;
     for (List<Integer> list : listOfSortedLists) {
       for (Integer num : list) {
-        combinedArray[i++] = num.intValue();
+        combinedArray[i++] = num;
       }
     }
     Arrays.sort(combinedArray);
@@ -387,18 +373,18 @@ public class NWayMergeResultsJUnitTest {
     }
     NWayMergeResults<Integer> mergedResults =
         createSingleFieldMergedResult(listOfSortedLists, false, -1);
-    assertEquals(num70, mergedResults.occurrences(Integer.valueOf(70)));
-    assertEquals(num72, mergedResults.occurrences(Integer.valueOf(72)));
-    assertEquals(num73, mergedResults.occurrences(Integer.valueOf(73)));
-    assertEquals(num75, mergedResults.occurrences(Integer.valueOf(75)));
+    assertThat(mergedResults.occurrences(70)).isEqualTo(num70);
+    assertThat(mergedResults.occurrences(72)).isEqualTo(num72);
+    assertThat(mergedResults.occurrences(73)).isEqualTo(num73);
+    assertThat(mergedResults.occurrences(75)).isEqualTo(num75);
   }
 
   @Test
   public void testOccurrenceDistinct() throws Exception {
     final int numSortedLists = 40;
-    Collection<List<Integer>> listOfSortedLists = new ArrayList<List<Integer>>();
+    Collection<List<Integer>> listOfSortedLists = new ArrayList<>();
     for (int i = 0; i < numSortedLists; ++i) {
-      listOfSortedLists.add(new ArrayList<Integer>());
+      listOfSortedLists.add(new ArrayList<>());
     }
     int step = 0;
     for (List<Integer> list : listOfSortedLists) {
@@ -408,22 +394,13 @@ public class NWayMergeResultsJUnitTest {
       }
     }
 
-    SortedSet<Integer> sortedSet = new TreeSet<Integer>();
-
-    for (List<Integer> list : listOfSortedLists) {
-      for (Integer num : list) {
-        sortedSet.add(num);
-      }
-    }
-
     NWayMergeResults<Integer> mergedResults =
         createSingleFieldMergedResult(listOfSortedLists, true, -1);
 
-    assertEquals(1, mergedResults.occurrences(Integer.valueOf(70)));
-    assertEquals(1, mergedResults.occurrences(Integer.valueOf(72)));
-    assertEquals(1, mergedResults.occurrences(Integer.valueOf(73)));
-    assertEquals(1, mergedResults.occurrences(Integer.valueOf(75)));
-
+    assertThat(mergedResults.occurrences(70)).isEqualTo(1);
+    assertThat(mergedResults.occurrences(72)).isEqualTo(1);
+    assertThat(mergedResults.occurrences(73)).isEqualTo(1);
+    assertThat(mergedResults.occurrences(75)).isEqualTo(1);
   }
 
   private <E> NWayMergeResults<E> createSingleFieldMergedResult(
@@ -435,17 +412,16 @@ public class NWayMergeResultsJUnitTest {
         .getDeclaredMethod("substituteExpressionWithProjectionField", Integer.TYPE);
     method.setAccessible(true);
     method.invoke(csc, 0);
-    List<CompiledSortCriterion> orderByAttribs = new ArrayList<CompiledSortCriterion>();
+    List<CompiledSortCriterion> orderByAttribs = new ArrayList<>();
     orderByAttribs.add(csc);
-    ExecutionContext context = new ExecutionContext(null, null);
     ObjectType elementType = new ObjectTypeImpl(Object.class);
 
-    return new NWayMergeResults<E>(sortedResults, isDistinct, limit, orderByAttribs, context,
+    return new NWayMergeResults<>(sortedResults, isDistinct, limit, orderByAttribs, context,
         elementType);
   }
 
   private NWayMergeResults<Struct> createStructFieldMergedResult(
-      Collection<? extends Collection<Struct>> sortedResults, boolean isDistinct, int limit,
+      Collection<? extends Collection<Struct>> sortedResults,
       StructTypeImpl structType) throws Exception {
     CompiledSortCriterion csc1 = new CompiledSortCriterion(false,
         CompiledSortCriterion.ProjectionField.getProjectionField());
@@ -456,30 +432,29 @@ public class NWayMergeResultsJUnitTest {
     method.setAccessible(true);
     method.invoke(csc1, 0);
     method.invoke(csc2, 1);
-    List<CompiledSortCriterion> orderByAttribs = new ArrayList<CompiledSortCriterion>();
+    List<CompiledSortCriterion> orderByAttribs = new ArrayList<>();
     orderByAttribs.add(csc1);
     orderByAttribs.add(csc2);
-    ExecutionContext context = new ExecutionContext(null, null);
 
-    return new NWayMergeResults<Struct>(sortedResults, false, -1, orderByAttribs, context,
+    return new NWayMergeResults<>(sortedResults, false, -1, orderByAttribs, context,
         structType);
   }
 
   @Test
   public void testCombination() throws Exception {
-    List<String> results1 = new ArrayList<String>();
+    List<String> results1 = new ArrayList<>();
     results1.add("IBM");
     results1.add("YHOO");
 
-    List<String> results2 = new ArrayList<String>();
+    List<String> results2 = new ArrayList<>();
     results2.add("APPL");
     results2.add("ORCL");
 
-    List<String> results3 = new ArrayList<String>();
+    List<String> results3 = new ArrayList<>();
     results3.add("DELL");
     results3.add("RHAT");
 
-    List<String> results4 = new ArrayList<String>();
+    List<String> results4 = new ArrayList<>();
     results4.add("ORCL");
     results4.add("SAP");
 
@@ -487,7 +462,7 @@ public class NWayMergeResultsJUnitTest {
     List<String> results6 = Collections.emptyList();
     List<String> results7 = Collections.emptyList();
 
-    List<Collection<String>> sortedLists = new ArrayList<Collection<String>>();
+    List<Collection<String>> sortedLists = new ArrayList<>();
     sortedLists.add(results1);
     sortedLists.add(results2);
     sortedLists.add(results3);
@@ -498,7 +473,7 @@ public class NWayMergeResultsJUnitTest {
 
     NWayMergeResults<String> mergedResults = createSingleFieldMergedResult(sortedLists, true, -1);
 
-    List<String> results8 = new ArrayList<String>();
+    List<String> results8 = new ArrayList<>();
     results8.add("DELL");
     results8.add("GOOG");
     results8.add("HP");
@@ -506,7 +481,7 @@ public class NWayMergeResultsJUnitTest {
     results8.add("SAP");
     results8.add("SUN");
 
-    List<String> results9 = new ArrayList<String>();
+    List<String> results9 = new ArrayList<>();
     results9.add("AOL");
     results9.add("APPL");
     results9.add("GOOG");
@@ -514,7 +489,7 @@ public class NWayMergeResultsJUnitTest {
     results9.add("SUN");
     results9.add("YHOO");
 
-    List<Collection<String>> sortedLists1 = new ArrayList<Collection<String>>();
+    List<Collection<String>> sortedLists1 = new ArrayList<>();
     sortedLists1.add(mergedResults);
     sortedLists1.add(results8);
     sortedLists1.add(results9);
@@ -522,7 +497,7 @@ public class NWayMergeResultsJUnitTest {
     NWayMergeResults<String> netMergedResults =
         createSingleFieldMergedResult(sortedLists1, true, -1);
 
-    assertEquals(12, netMergedResults.size());
+    assertThat(netMergedResults.size()).isEqualTo(12);
   }
 
 }

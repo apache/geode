@@ -14,49 +14,64 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
+import org.apache.geode.internal.cache.InternalCache;
 
-public class QueryExecutionContextJUnitTest {
+
+public class QueryExecutionContextTest {
+  private QueryExecutionContext context;
+
+  @Before
+  public void setUp() {
+    InternalCache mockCache = mock(InternalCache.class);
+    when(mockCache.getQueryService()).thenReturn(mock(InternalQueryService.class));
+    when(mockCache.getQueryService().getMethodInvocationAuthorizer())
+        .thenReturn(mock(MethodInvocationAuthorizer.class));
+
+    context = new QueryExecutionContext(null, mockCache);
+  }
 
   @Test
   public void testNullReturnedFromCacheGetWhenNoValueWasPut() {
     Object key = new Object();
-    QueryExecutionContext context = new QueryExecutionContext(null, null);
-    assertNull(context.cacheGet(key));
+    assertThat(context.cacheGet(key)).isNull();
   }
 
   @Test
   public void testPutValueReturnedFromCacheGet() {
     Object key = new Object();
     Object value = new Object();
-    QueryExecutionContext context = new QueryExecutionContext(null, null);
+
     context.cachePut(key, value);
-    assertEquals(value, context.cacheGet(key));
+    assertThat(context.cacheGet(key)).isEqualTo(value);
   }
 
   @Test
   public void testDefaultReturnedFromCacheGetWhenNoValueWasPut() {
     Object key = new Object();
     Object value = new Object();
-    QueryExecutionContext context = new QueryExecutionContext(null, null);
-    assertEquals(value, context.cacheGet(key, value));
+
+    assertThat(context.cacheGet(key, value)).isEqualTo(value);
   }
 
   @Test
   public void testExecCachesCanBePushedAndValuesRetrievedAtTheCorrectLevel() {
     Object key = new Object();
     Object value = new Object();
-    QueryExecutionContext context = new QueryExecutionContext(null, null);
+
     context.pushExecCache(1);
     context.cachePut(key, value);
     context.pushExecCache(2);
-    assertNull(context.cacheGet(key));
-    context.popExecCache();
-    assertEquals(value, context.cacheGet(key));
-  }
+    assertThat(context.cacheGet(key)).isNull();
 
+    context.popExecCache();
+    assertThat(context.cacheGet(key)).isEqualTo(value);
+  }
 }
