@@ -18,15 +18,11 @@ import static java.util.Objects.requireNonNull;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS_PROPERTY;
 
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -44,9 +40,8 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SecurityConfig;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.metrics.CacheLifecycleMetricsSession;
-import org.apache.geode.internal.metrics.CacheMeterRegistryFactory;
-import org.apache.geode.internal.metrics.CompositeMeterRegistryFactory;
+import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
+import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -64,16 +59,13 @@ public class InternalCacheBuilder {
   private static final boolean IS_EXISTING_OK_DEFAULT = true;
   private static final boolean IS_CLIENT_DEFAULT = false;
 
-  private final Set<MeterRegistry> meterSubregistries = new HashSet<>();
-
   private final Properties configProperties;
   private final CacheConfig cacheConfig;
-  private final CompositeMeterRegistryFactory compositeMeterRegistryFactory;
-  private final Consumer<CompositeMeterRegistry> metricsSessionInitializer;
   private final Supplier<InternalDistributedSystem> singletonSystemSupplier;
   private final Supplier<InternalCache> singletonCacheSupplier;
   private final InternalDistributedSystemConstructor internalDistributedSystemConstructor;
   private final InternalCacheConstructor internalCacheConstructor;
+  private final MetricsService.Builder metricsSessionBuilder;
 
   private boolean isExistingOk = IS_EXISTING_OK_DEFAULT;
   private boolean isClient = IS_CLIENT_DEFAULT;
@@ -116,34 +108,29 @@ public class InternalCacheBuilder {
   private InternalCacheBuilder(Properties configProperties, CacheConfig cacheConfig) {
     this(configProperties,
         cacheConfig,
-        new CacheMeterRegistryFactory(),
-        CacheLifecycleMetricsSession.builder()::build,
+        new InternalDistributedSystemMetricsService.Builder(),
         InternalDistributedSystem::getConnectedInstance,
         InternalDistributedSystem::connectInternal,
         GemFireCacheImpl::getInstance,
-        (isClient1, poolFactory1, internalDistributedSystem, cacheConfig1, useAsyncEventListeners1,
-            typeRegistry1, meterRegistry, addedMeterSubregistries) -> new GemFireCacheImpl(
-                isClient1, poolFactory1, internalDistributedSystem, cacheConfig1,
-                useAsyncEventListeners1, typeRegistry1, meterRegistry, addedMeterSubregistries));
+        GemFireCacheImpl::new);
   }
 
   @VisibleForTesting
   InternalCacheBuilder(Properties configProperties,
       CacheConfig cacheConfig,
-      CompositeMeterRegistryFactory compositeMeterRegistryFactory,
-      Consumer<CompositeMeterRegistry> metricsSessionInitializer,
+      MetricsService.Builder metricsSessionBuilder,
       Supplier<InternalDistributedSystem> singletonSystemSupplier,
       InternalDistributedSystemConstructor internalDistributedSystemConstructor,
       Supplier<InternalCache> singletonCacheSupplier,
       InternalCacheConstructor internalCacheConstructor) {
     this.configProperties = configProperties;
     this.cacheConfig = cacheConfig;
-    this.compositeMeterRegistryFactory = compositeMeterRegistryFactory;
-    this.metricsSessionInitializer = metricsSessionInitializer;
     this.singletonSystemSupplier = singletonSystemSupplier;
     this.internalDistributedSystemConstructor = internalDistributedSystemConstructor;
     this.internalCacheConstructor = internalCacheConstructor;
     this.singletonCacheSupplier = singletonCacheSupplier;
+    this.metricsSessionBuilder = metricsSessionBuilder;
+    this.metricsSessionBuilder.setIsClient(isClient);
   }
 
   /**
@@ -167,7 +154,7 @@ public class InternalCacheBuilder {
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
     synchronized (InternalCacheBuilder.class) {
       InternalDistributedSystem internalDistributedSystem = findInternalDistributedSystem()
-          .orElseGet(() -> createInternalDistributedSystem());
+          .orElseGet(this::createInternalDistributedSystem);
       return create(internalDistributedSystem);
     }
   }
@@ -196,28 +183,12 @@ public class InternalCacheBuilder {
           InternalCache cache =
               existingCache(internalDistributedSystem::getCache, singletonCacheSupplier);
           if (cache == null) {
-
-            int systemId = internalDistributedSystem.getConfig().getDistributedSystemId();
-            String memberName = internalDistributedSystem.getName();
-            String hostName = internalDistributedSystem.getDistributedMember().getHost();
-
-            CompositeMeterRegistry compositeMeterRegistry = compositeMeterRegistryFactory
-                .create(systemId, memberName, hostName, isClient);
-
-            for (MeterRegistry meterSubregistry : meterSubregistries) {
-              compositeMeterRegistry.add(meterSubregistry);
-            }
-
-            metricsSessionInitializer.accept(compositeMeterRegistry);
-
             cache =
                 internalCacheConstructor.construct(isClient, poolFactory, internalDistributedSystem,
-                    cacheConfig, useAsyncEventListeners, typeRegistry, compositeMeterRegistry,
-                    meterSubregistries);
+                    cacheConfig, useAsyncEventListeners, typeRegistry);
 
             internalDistributedSystem.setCache(cache);
             cache.initialize();
-
           } else {
             internalDistributedSystem.setCache(cache);
           }
@@ -318,6 +289,7 @@ public class InternalCacheBuilder {
    */
   public InternalCacheBuilder setIsClient(boolean isClient) {
     this.isClient = isClient;
+    metricsSessionBuilder.setIsClient(isClient);
     return this;
   }
 
@@ -350,7 +322,8 @@ public class InternalCacheBuilder {
    * @see CacheFactory#addMeterSubregistry(MeterRegistry)
    */
   public InternalCacheBuilder addMeterSubregistry(MeterRegistry subregistry) {
-    meterSubregistries.add(subregistry);
+    requireNonNull(subregistry, "meter registry");
+    metricsSessionBuilder.addPersistentMeterRegistry(subregistry);
     return this;
   }
 
@@ -369,7 +342,8 @@ public class InternalCacheBuilder {
         cacheConfig.getSecurityManager(),
         cacheConfig.getPostProcessor());
 
-    return internalDistributedSystemConstructor.construct(configProperties, securityConfig);
+    return internalDistributedSystemConstructor
+        .construct(configProperties, securityConfig, metricsSessionBuilder);
   }
 
   private InternalCache existingCache(Supplier<? extends InternalCache> systemCacheSupplier,
@@ -430,16 +404,17 @@ public class InternalCacheBuilder {
     return Boolean.getBoolean(ALLOW_MULTIPLE_SYSTEMS_PROPERTY);
   }
 
+
   @VisibleForTesting
-  interface InternalCacheConstructor {
+  public interface InternalCacheConstructor {
     InternalCache construct(boolean isClient, PoolFactory poolFactory,
         InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
-        boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry,
-        Set<MeterRegistry> addedMeterSubregistries);
+        boolean useAsyncEventListeners, TypeRegistry typeRegistry);
   }
 
   @VisibleForTesting
-  interface InternalDistributedSystemConstructor {
-    InternalDistributedSystem construct(Properties configProperties, SecurityConfig securityConfig);
+  public interface InternalDistributedSystemConstructor {
+    InternalDistributedSystem construct(Properties configProperties, SecurityConfig securityConfig,
+        MetricsService.Builder metricsSessionBuilder);
   }
 }

@@ -12,13 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.metrics.internal;
 
-import java.util.Set;
+import io.micrometer.core.instrument.binder.MeterBinder;
 
-import io.micrometer.core.instrument.MeterRegistry;
-
-public interface ReconnectableCache {
-
-  Set<MeterRegistry> getMeterSubregistries();
+public interface CloseableMeterBinder extends MeterBinder, AutoCloseable {
 }

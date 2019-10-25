@@ -28,12 +28,13 @@ import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
+import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
+import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -239,7 +240,8 @@ public class ClientCacheFactory {
         String propValue = dsProps.getProperty(LOCATORS);
         if (propValue != null && !propValue.isEmpty()) {
           throw new IllegalStateException(
-              "On a client cache the locators property must be set to an empty string or not set. It was set to \""
+              "On a client cache the locators property must be set to an empty string or not set."
+                  + " It was set to \""
                   + propValue + "\".");
         }
       }
@@ -271,9 +273,11 @@ public class ClientCacheFactory {
     }
   }
 
-  @SuppressWarnings("deprecation")
   private InternalDistributedSystem connectInternalDistributedSystem() {
-    return (InternalDistributedSystem) DistributedSystem.connect(dsProps);
+    MetricsService.Builder metricsServiceBuilder =
+        new InternalDistributedSystemMetricsService.Builder()
+            .setIsClient(true);
+    return InternalDistributedSystem.connectInternal(dsProps, null, metricsServiceBuilder);
   }
 
   private PoolFactory getPoolFactory() {
@@ -689,8 +693,8 @@ public class ClientCacheFactory {
    *
    * @param pdxReadSerialized true to prefer PdxInstance
    * @return this ClientCacheFactory
-   * @since GemFire 6.6
    * @see org.apache.geode.pdx.PdxInstance
+   * @since GemFire 6.6
    */
   public ClientCacheFactory setPdxReadSerialized(boolean pdxReadSerialized) {
     cacheConfig.setPdxReadSerialized(pdxReadSerialized);
@@ -704,8 +708,8 @@ public class ClientCacheFactory {
    *
    * @param serializer the serializer to use
    * @return this ClientCacheFactory
-   * @since GemFire 6.6
    * @see PdxSerializer
+   * @since GemFire 6.6
    */
   public ClientCacheFactory setPdxSerializer(PdxSerializer serializer) {
     cacheConfig.setPdxSerializer(serializer);

@@ -19,8 +19,9 @@ import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.geode.annotations.Experimental;
 
 /**
- * Provides the ability to add and remove a meter registry for publishing cache metrics to external
- * monitoring systems.
+ * A session that manages Geode metrics. Users can implement and register
+ * {@link MetricsPublishingService}s to publish the session's metrics to external monitoring
+ * systems.
  *
  * <p>
  * Experimental: Micrometer metrics is a new addition to Geode and the API may change.
@@ -32,20 +33,20 @@ import org.apache.geode.annotations.Experimental;
 public interface MetricsSession {
 
   /**
-   * Adds the given registry to the cache's composite registry.
+   * Adds the given registry to this metrics session.
    *
-   * @param subregistry the registry to add
+   * @param registry the registry to add
    */
-  void addSubregistry(MeterRegistry subregistry);
+  void addSubregistry(MeterRegistry registry);
 
   /**
-   * Removes the given registry from the cache's composite registry.
+   * Removes the given registry from this metrics session.
    *
    * <p>
-   * <strong>Caution:</strong> This method deletes from the sub-registry each meter that corresponds
-   * to a meter in the cache's composite registry.
+   * <strong>Caution:</strong> For each meter in this metrics session, this method deletes the
+   * corresponding meter from the given registry.
    *
-   * @param subregistry the registry to remove
+   * @param registry the registry to remove
    */
-  void removeSubregistry(MeterRegistry subregistry);
+  void removeSubregistry(MeterRegistry registry);
 }
