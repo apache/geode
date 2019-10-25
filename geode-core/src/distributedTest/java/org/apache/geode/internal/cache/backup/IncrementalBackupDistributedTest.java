@@ -268,7 +268,9 @@ public class IncrementalBackupDistributedTest implements Serializable {
 
     // Perform performBackupBaseline and make sure that list of offline disk stores contains our
     // missing member.
+    logger.info("JASON TEST BACKUP BEGIN");
     BackupStatus baselineStatus = vm1.invoke(() -> performBackup(getBaselinePath()));
+    logger.info("JASON TEST COMPLETE");
 //    validateBackupStatus(baselineStatus);
 //    assertThat(baselineStatus.getOfflineDiskStores()).isNotNull().hasSize(2);
 //
