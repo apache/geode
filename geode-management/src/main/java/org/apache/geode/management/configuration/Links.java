@@ -16,6 +16,7 @@
 package org.apache.geode.management.configuration;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -36,7 +37,7 @@ public class Links {
   private Map<String, String> links;
 
   public Links() {
-    links = new HashMap<>();
+    links = new LinkedHashMap<>();
   }
 
   public Links(String id, String listUri) {
