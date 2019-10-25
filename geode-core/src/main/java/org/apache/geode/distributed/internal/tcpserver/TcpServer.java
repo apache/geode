@@ -133,7 +133,7 @@ public class TcpServer {
 
   /*
    * We define this interface rather than using Supplier<Long> so as to avoid
-   * constructing a Long object ever time we need nano time.
+   * constructing a Long object every time we need nano time.
    */
   @FunctionalInterface
   public interface NanoTimeSupplier {
@@ -424,7 +424,7 @@ public class TcpServer {
     });
   }
 
-  private void processOneConnection(Socket socket, long startTime, DataInputStream input)
+  private void processOneConnection(Socket socket, final long startTime, DataInputStream input)
       throws IOException, UnsupportedSerializationVersionException, ClassNotFoundException {
     // At this point we've read the leading byte of the gossip version and found it to be 0,
     // continue reading the next three bytes
@@ -471,7 +471,7 @@ public class TcpServer {
 
       handler.endRequest(request, startTime);
 
-      startTime = nanoTimeSupplier.get();
+      final long startTime2 = nanoTimeSupplier.get();
       if (response != null) {
         DataOutputStream output = new DataOutputStream(socket.getOutputStream());
         if (versionOrdinal != Version.CURRENT_ORDINAL) {
@@ -482,7 +482,7 @@ public class TcpServer {
         output.flush();
       }
 
-      handler.endResponse(request, startTime);
+      handler.endResponse(request, startTime2);
     } else {
       // Close the socket. We can not accept requests from a newer version
       rejectUnknownProtocolConnection(socket, gossipVersion);
