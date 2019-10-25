@@ -34,6 +34,10 @@ import org.apache.geode.internal.serialization.Version;
 public class MemberIdentifierImpl implements MemberIdentifier, Comparable<MemberIdentifierImpl> {
   private MemberData memberData;
 
+  public MemberIdentifierImpl() {
+    // required by DataSerializableFixedID deserialization
+  }
+
   public MemberIdentifierImpl(MemberData memberInfo) {
     memberData = memberInfo;
   }

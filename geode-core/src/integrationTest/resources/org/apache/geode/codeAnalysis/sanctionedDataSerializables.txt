@@ -272,23 +272,23 @@ toData,17
 
 org/apache/geode/distributed/internal/membership/InternalDistributedMember,6
 fromData,39
-fromDataPre_GFE_7_1_0_0,279
-fromDataPre_GFE_9_0_0_0,279
+fromDataPre_GFE_7_1_0_0,310
+fromDataPre_GFE_9_0_0_0,310
 toData,35
-toDataPre_GFE_7_1_0_0,278
-toDataPre_GFE_9_0_0_0,274
+toDataPre_GFE_7_1_0_0,279
+toDataPre_GFE_9_0_0_0,275
 
 org/apache/geode/distributed/internal/membership/adapter/LocalViewMessage,2
 fromData,8
 toData,8
 
-org/apache/geode/distributed/internal/membership/gms/GMSMember,2
-fromData,200
-toData,215
-
 org/apache/geode/distributed/internal/membership/gms/GMSMembershipView,2
 fromData,111
 toData,65
+
+org/apache/geode/distributed/internal/membership/gms/MemberIdentifierImpl,2
+fromData,23
+toData,12
 
 org/apache/geode/distributed/internal/membership/gms/locator/FindCoordinatorRequest,2
 fromData,95

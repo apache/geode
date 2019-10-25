@@ -157,7 +157,7 @@ public class Services {
     serializer.registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
     serializer.registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
     serializer.registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
-    serializer.registerDSFID(MEMBER_IDENTIFIER, MemberIdentifier.class);
+    serializer.registerDSFID(MEMBER_IDENTIFIER, MemberIdentifierImpl.class);
     serializer.registerDSFID(NETVIEW, GMSMembershipView.class);
     serializer.registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
     serializer.registerDSFID(GET_VIEW_RESP, GetViewResponse.class);
