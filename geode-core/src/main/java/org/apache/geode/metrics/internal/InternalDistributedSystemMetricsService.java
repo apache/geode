@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import io.micrometer.core.instrument.MeterRegistry;
@@ -28,6 +29,8 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.CollectingServiceLoader;
@@ -65,8 +68,8 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
         CollectingServiceLoader<MetricsPublishingService> publishingServiceLoader,
         CompositeMeterRegistry metricsServiceMeterRegistry,
         Collection<MeterRegistry> persistentMeterRegistries, CloseableMeterBinder binder,
-        InternalDistributedSystem system,
-        boolean isClient);
+        InternalDistributedSystem system, boolean isClient, boolean hasLocator,
+        boolean hasCacheServer);
   }
 
   @VisibleForTesting
@@ -74,14 +77,15 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
       CollectingServiceLoader<MetricsPublishingService> publishingServiceLoader,
       CompositeMeterRegistry metricsServiceMeterRegistry,
       Collection<MeterRegistry> persistentMeterRegistries, CloseableMeterBinder binder,
-      InternalDistributedSystem system, boolean isClient) {
+      InternalDistributedSystem system, boolean isClient, boolean hasLocator,
+      boolean hasCacheServer) {
     this.builder = builder;
     this.logger = logger;
     this.meterRegistry = metricsServiceMeterRegistry;
     this.publishingServiceLoader = publishingServiceLoader;
     this.binder = binder;
     this.persistentMeterRegistries.addAll(persistentMeterRegistries);
-    meterRegistry.config().commonTags(commonTags(system, isClient));
+    addCommonTags(system, isClient, hasLocator, hasCacheServer);
   }
 
   /**
@@ -144,28 +148,49 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
     meterRegistry.remove(subregistry);
   }
 
-  private static Set<Tag> commonTags(InternalDistributedSystem system, boolean isClient) {
-    Set<Tag> commonTags = new HashSet<>();
-
-    if (!isClient) {
-      String systemId = String.valueOf(system.getConfig().getDistributedSystemId());
-      commonTags.add(Tag.of("cluster", systemId));
-    }
+  private void addCommonTags(InternalDistributedSystem system, boolean isClient,
+      boolean hasLocators, boolean hasCacheServer) {
+    int clusterId = system.getConfig().getDistributedSystemId();
 
     String memberName = system.getName();
-    requireNonNull(memberName);
-    if (!memberName.isEmpty()) {
-      commonTags.add(Tag.of("member", memberName));
-    }
-
     String hostName = system.getDistributedMember().getHost();
-    requireNonNull(hostName);
+
+    requireNonNull(memberName, "Member Name is null.");
+    requireNonNull(hostName, "Host Name is null.");
 
     if (hostName.isEmpty()) {
       throw new IllegalArgumentException("Host name must not be empty");
     }
-    commonTags.add(Tag.of("host", hostName));
-    return commonTags;
+    Set<Tag> tags = new HashSet<>();
+
+    if (!isClient) {
+      tags.add(Tag.of("cluster", String.valueOf(clusterId)));
+
+    }
+
+    if (!memberName.isEmpty()) {
+      tags.add(Tag.of("member", memberName));
+    }
+
+    tags.add(Tag.of("host", hostName));
+    tags.add(Tag.of("member.type", memberTypeFor(hasLocators, hasCacheServer)));
+    meterRegistry.config().commonTags(tags);
+  }
+
+  private static String memberTypeFor(boolean hasLocator, boolean hasCacheServer) {
+    if (hasCacheServer && hasLocator) {
+      return "server-locator";
+    }
+
+    if (hasCacheServer) {
+      return "server";
+    }
+
+    if (hasLocator) {
+      return "locator";
+    }
+
+    return "embedded-cache";
   }
 
   private void startMetricsPublishingService(MetricsPublishingService service) {
@@ -216,12 +241,14 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
     private Supplier<CollectingServiceLoader<MetricsPublishingService>> serviceLoaderSupplier =
         ListCollectingServiceLoader::new;
     private Set<MeterRegistry> persistentMeterRegistries = new HashSet<>();
+    private BooleanSupplier hasLocator = Locator::hasLocator;
+    private BooleanSupplier hasCacheServer = () -> ServerLauncher.getInstance() != null;
 
     @Override
     public MetricsService build(InternalDistributedSystem system) {
       return metricsServiceFactory.create(this, loggerSupplier.get(), serviceLoaderSupplier.get(),
           compositeRegistrySupplier.get(), persistentMeterRegistries, meterBinderSupplier.get(),
-          system, isClient);
+          system, isClient, hasLocator.getAsBoolean(), hasCacheServer.getAsBoolean());
     }
 
     @Override
@@ -249,8 +276,20 @@ public class InternalDistributedSystemMetricsService implements MetricsService {
     }
 
     @VisibleForTesting
+    Builder setCacheServerDetector(BooleanSupplier hasCacheServer) {
+      this.hasCacheServer = hasCacheServer;
+      return this;
+    }
+
+    @VisibleForTesting
     Builder setCompositeMeterRegistry(CompositeMeterRegistry registry) {
       compositeRegistrySupplier = () -> registry;
+      return this;
+    }
+
+    @VisibleForTesting
+    Builder setLocatorDetector(BooleanSupplier hasLocator) {
+      this.hasLocator = hasLocator;
       return this;
     }
 
