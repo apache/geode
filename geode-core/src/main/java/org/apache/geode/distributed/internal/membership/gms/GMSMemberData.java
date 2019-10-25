@@ -23,8 +23,8 @@ import java.net.InetAddress;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
@@ -33,7 +33,7 @@ import org.apache.geode.internal.serialization.Version;
 /**
  * GMSMember is the membership identifier class for Group Membership Services.
  */
-public class GMSMember implements DataSerializableFixedID {
+public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   /** The type for regular members */
   public static final int NORMAL_DM_TYPE = 10;
 
@@ -71,11 +71,10 @@ public class GMSMember implements DataSerializableFixedID {
     return isPartial;
   }
 
-  // Used only by Externalization
-  public GMSMember() {}
+  public GMSMemberData() {}
 
   @VisibleForTesting
-  public GMSMember(String localhost, int udpPort, Version version) {
+  public GMSMemberData(String localhost, int udpPort, Version version) {
     this.hostName = localhost;
     this.inetAddr = SocketCreator.toInetAddress(localhost);
     this.udpPort = udpPort;
@@ -96,7 +95,7 @@ public class GMSMember implements DataSerializableFixedID {
    * @param p the membership listening port
    */
   @VisibleForTesting
-  public GMSMember(String i, int p) {
+  public GMSMemberData(String i, int p) {
     this(i, p, Version.getCurrentVersion());
   }
 
@@ -112,12 +111,13 @@ public class GMSMember implements DataSerializableFixedID {
    * @param msbs - most significant bytes of UUID
    * @param lsbs - least significant bytes of UUID
    */
-  public GMSMember(InetAddress i, String hostName, int p, int processId, byte vmKind,
+  public GMSMemberData(InetAddress i, String hostName, int p, int processId, byte vmKind,
       int directPort, int vmViewId,
       String name, String[] groups,
       String durableId, int durableTimeout,
-      boolean networkPartitionDetectionEnabled, boolean preferredForCoordinator, short version,
-      long msbs, long lsbs) {
+      boolean networkPartitionDetectionEnabled, boolean preferredForCoordinator,
+      short version,
+      long msbs, long lsbs, byte memberWeight) {
     this.inetAddr = i;
     this.hostName = hostName;
     this.udpPort = p;
@@ -134,9 +134,10 @@ public class GMSMember implements DataSerializableFixedID {
     this.versionOrdinal = version;
     this.uuidMSBs = msbs;
     this.uuidLSBs = lsbs;
+    this.memberWeight = memberWeight;
   }
 
-  public GMSMember(InetAddress i, int p, short version, long msbs, long lsbs, int viewId) {
+  public GMSMemberData(InetAddress i, int p, short version, long msbs, long lsbs, int viewId) {
     this.inetAddr = i;
     this.hostName = i.getHostName();
     this.udpPort = p;
@@ -148,11 +149,11 @@ public class GMSMember implements DataSerializableFixedID {
 
 
   /**
-   * Clone a GMSMember
+   * Clone a GMSMemberInfo
    *
    * @param other the member to create a copy of
    */
-  public GMSMember(GMSMember other) {
+  public GMSMemberData(GMSMemberData other) {
     this.hostName = other.hostName;
     this.udpPort = other.udpPort;
     this.preferredForCoordinator = other.preferredForCoordinator;
@@ -173,42 +174,51 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
 
+  @Override
   public int getPort() {
     return this.udpPort;
   }
 
 
+  @Override
   public boolean preferredForCoordinator() {
     return this.preferredForCoordinator;
   }
 
 
+  @Override
   public void setPreferredForCoordinator(boolean preferred) {
     this.preferredForCoordinator = preferred;
   }
 
 
+  @Override
   public String getDurableId() {
     return durableId;
   }
 
+  @Override
   public int getDurableTimeout() {
     return durableTimeout;
   }
 
+  @Override
   public InetAddress getInetAddress() {
     return this.inetAddr;
   }
 
+  @Override
 
   public short getVersionOrdinal() {
     return this.versionOrdinal;
   }
 
+  @Override
   public void setVersionOrdinal(short versionOrdinal) {
     this.versionOrdinal = versionOrdinal;
   }
 
+  @Override
   public void setUUID(UUID u) {
     this.uuidLSBs = u.getLeastSignificantBits();
     this.uuidMSBs = u.getMostSignificantBits();
@@ -217,6 +227,7 @@ public class GMSMember implements DataSerializableFixedID {
   /**
    * return the jgroups logical address for this member, if it's been established
    */
+  @Override
   public UUID getUUID() {
     if (this.uuidLSBs == 0 && this.uuidMSBs == 0) {
       return null;
@@ -224,10 +235,12 @@ public class GMSMember implements DataSerializableFixedID {
     return new UUID(this.uuidMSBs, this.uuidLSBs);
   }
 
+  @Override
   public long getUuidMSBs() {
     return this.uuidMSBs;
   }
 
+  @Override
   public long getUuidLSBs() {
     return this.uuidLSBs;
   }
@@ -246,11 +259,18 @@ public class GMSMember implements DataSerializableFixedID {
    * compared to this Object.
    */
 
-  public int compareTo(GMSMember o) {
+  @Override
+  public int compareTo(GMSMemberData o) {
     return compareTo(o, true);
   }
 
-  public int compareTo(GMSMember o, boolean compareUUIDs) {
+  @Override
+  public int compareTo(MemberData o, boolean compareUUIDs) {
+    return compareTo(o, compareUUIDs, true);
+  }
+
+  @Override
+  public int compareTo(MemberData o, boolean compareUUIDs, boolean compareViewIds) {
     if (o == this) {
       return 0;
     }
@@ -260,7 +280,7 @@ public class GMSMember implements DataSerializableFixedID {
           "GMSMember.compareTo(): comparison between different classes");
     }
     byte[] myAddr = inetAddr.getAddress();
-    GMSMember his = o;
+    GMSMemberData his = (GMSMemberData) o;
     byte[] hisAddr = his.inetAddr.getAddress();
     if (myAddr != hisAddr) {
       for (int idx = 0; idx < myAddr.length; idx++) {
@@ -286,7 +306,7 @@ public class GMSMember implements DataSerializableFixedID {
 
     // bug #41983, address of kill-9'd member is reused
     // before it can be ejected from membership
-    if (this.vmViewId >= 0 && his.vmViewId >= 0) {
+    if (compareViewIds && this.vmViewId >= 0 && his.vmViewId >= 0) {
       if (this.vmViewId < his.vmViewId) {
         result = -1;
       } else if (his.vmViewId < this.vmViewId) {
@@ -308,7 +328,9 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
 
-  public int compareAdditionalData(GMSMember his) {
+  @Override
+  public int compareAdditionalData(MemberData o) {
+    GMSMemberData his = (GMSMemberData) o;
     int result = 0;
     if (this.uuidMSBs != 0 && his.uuidMSBs != 0) {
       if (this.uuidMSBs < his.uuidMSBs) {
@@ -327,10 +349,10 @@ public class GMSMember implements DataSerializableFixedID {
   @Override
   public boolean equals(Object obj) {
     // GemStone fix for 29125
-    if ((obj == null) || !(obj instanceof GMSMember)) {
+    if ((obj == null) || !(obj instanceof GMSMemberData)) {
       return false;
     }
-    return compareTo((GMSMember) obj) == 0;
+    return compareTo((GMSMemberData) obj) == 0;
   }
 
   @Override
@@ -345,7 +367,7 @@ public class GMSMember implements DataSerializableFixedID {
   public String toString() {
     StringBuilder sb = new StringBuilder(100);
 
-    sb.append("GMSMember[");
+    sb.append("MemberData[");
     if (name != null && name.length() > 0) {
       sb.append("name=").append(name);
     }
@@ -360,111 +382,127 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
 
+  @Override
   public boolean isNetworkPartitionDetectionEnabled() {
     return networkPartitionDetectionEnabled;
   }
 
 
+  @Override
   public byte getMemberWeight() {
     return memberWeight;
   }
 
+  @Override
   public InetAddress getInetAddr() {
     return inetAddr;
   }
 
 
+  @Override
   public int getProcessId() {
     return processId;
   }
 
 
+  @Override
   public byte getVmKind() {
     return vmKind;
   }
 
 
+  @Override
   public int getVmViewId() {
     return vmViewId;
   }
 
 
+  @Override
   public void setVmViewId(int id) {
     this.vmViewId = id;
   }
 
 
-  public int getDirectPort() {
+  @Override
+  public int getDirectChannelPort() {
     return directPort;
   }
 
 
+  @Override
   public String getName() {
     return name;
   }
 
 
+  @Override
   public String[] getRoles() {
     return groups;
   }
 
+  @Override
   public void setUdpPort(int udpPort) {
     this.udpPort = udpPort;
   }
 
 
+  @Override
   public void setNetworkPartitionDetectionEnabled(boolean networkPartitionDetectionEnabled) {
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
   }
 
+  @Override
   public void setMemberWeight(byte memberWeight) {
     this.memberWeight = memberWeight;
   }
 
+  @Override
   public void setInetAddr(InetAddress inetAddr) {
     this.inetAddr = inetAddr;
   }
 
 
+  @Override
   public void setProcessId(int processId) {
     this.processId = processId;
   }
 
 
+  @Override
   public void setVmKind(int vmKind) {
     this.vmKind = (byte) vmKind;
   }
 
 
+  @Override
   public void setVersion(Version v) {
     this.versionOrdinal = v.ordinal();
   }
 
-  public void setBirthViewId(int birthViewId) {
-    this.vmViewId = birthViewId;
-  }
-
-
-  public void setDirectPort(int directPort) {
+  @Override
+  public void setDirectChannelPort(int directPort) {
     this.directPort = directPort;
   }
 
 
+  @Override
   public void setName(String name) {
     this.name = name;
   }
 
 
+  @Override
   public String[] getGroups() {
     return groups;
   }
 
-
+  @Override
   public void setGroups(String[] groups) {
     this.groups = groups;
   }
 
 
+  @Override
   public void setPort(int p) {
     this.udpPort = p;
   }
@@ -472,68 +510,16 @@ public class GMSMember implements DataSerializableFixedID {
   /**
    * checks to see if this address has UUID information needed to send messages via JGroups
    */
+  @Override
   public boolean hasUUID() {
     return !(this.uuidLSBs == 0 && this.uuidMSBs == 0);
-  }
-
-  @Override
-  public Version[] getSerializationVersions() {
-    return null;
-  }
-
-  @Override
-  public int getDSFID() {
-    return GMSMEMBER;
   }
 
   static final int NPD_ENABLED_BIT = 0x01;
   static final int PREFERRED_FOR_COORD_BIT = 0x02;
   static final int VERSION_BIT = 0x8;
 
-  static final int LONER_VM_TYPE = 13; // from ClusterDistributionManager
-
   @Override
-  public void toData(DataOutput out,
-      SerializationContext context) throws IOException {
-    StaticSerialization.writeInetAddress(getInetAddress(), out);
-    out.writeInt(getPort());
-
-    StaticSerialization.writeString(hostName, out);
-
-    int flags = 0;
-    if (isNetworkPartitionDetectionEnabled())
-      flags |= NPD_ENABLED_BIT;
-    if (preferredForCoordinator())
-      flags |= PREFERRED_FOR_COORD_BIT;
-    // always write product version but enable reading from older versions
-    // that do not have it
-    flags |= VERSION_BIT;
-
-    out.writeByte((byte) (flags & 0xff));
-
-    out.writeInt(getDirectPort());
-    out.writeInt(getProcessId());
-    int vmKind = getVmKind();
-    out.writeByte(vmKind);
-    StaticSerialization.writeStringArray(getGroups(), out);
-
-    StaticSerialization.writeString(getName(), out);
-    if (vmKind == LONER_VM_TYPE) {
-      StaticSerialization.writeString("", out);
-    } else { // added in 6.5 for unique identifiers in P2P
-      StaticSerialization.writeString(String.valueOf(getVmViewId()), out);
-    }
-    StaticSerialization
-        .writeString(durableId == null ? "" : durableId, out);
-    out.writeInt(durableId == null ? 300 : durableTimeout);
-
-    Version.writeOrdinal(out, versionOrdinal, true);
-
-    if (versionOrdinal >= Version.GFE_90.ordinal()) {
-      writeAdditionalData(out);
-    }
-  }
-
   public void writeEssentialData(DataOutput out,
       SerializationContext context) throws IOException {
     Version.writeOrdinal(out, this.versionOrdinal, true);
@@ -556,62 +542,16 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
   @Override
-  public void fromData(DataInput in,
-      DeserializationContext context) throws IOException, ClassNotFoundException {
-    inetAddr = StaticSerialization.readInetAddress(in);
-    udpPort = in.readInt();
-
-    this.hostName = StaticSerialization.readString(in);
-
-    int flags = in.readUnsignedByte();
-    preferredForCoordinator = (flags & PREFERRED_FOR_COORD_BIT) != 0;
-    this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;
-
-    directPort = in.readInt();
-    processId = in.readInt();
-    vmKind = (byte) in.readUnsignedByte();
-    groups = StaticSerialization.readStringArray(in);
-    vmViewId = -1;
-
-    name = StaticSerialization.readString(in);
-    if (vmKind == LONER_DM_TYPE) {
-      StaticSerialization.readString(in);
-    } else {
-      String str = StaticSerialization.readString(in);
-      if (str != null) { // backward compatibility from earlier than 6.5
-        vmViewId = Integer.parseInt(str);
-      }
-    }
-
-    durableId = StaticSerialization.readString(in);
-    durableTimeout = in.readInt();
-
-    versionOrdinal = readVersion(flags, in, context);
-
-    if (versionOrdinal >= Version.GFE_90.ordinal()) {
-      readAdditionalData(in);
-    }
-  }
-
-  private short readVersion(int flags, DataInput in,
-      DeserializationContext context) throws IOException {
-    if ((flags & VERSION_BIT) != 0) {
-      return Version.readOrdinal(in);
-    } else {
-      // prior to 7.1 member IDs did not serialize their version information
-      Version v = context.getSerializationVersion();
-      return v.ordinal();
-    }
-  }
-
   public String getHostName() {
     return hostName;
   }
 
+  @Override
   public void setHostName(String hostName) {
     this.hostName = hostName;
   }
 
+  @Override
   public void readEssentialData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.versionOrdinal = Version.readOrdinal(in);
@@ -637,11 +577,13 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
 
+  @Override
   public boolean hasAdditionalData() {
     return uuidMSBs != 0 || uuidLSBs != 0 || memberWeight != 0;
   }
 
 
+  @Override
   public void writeAdditionalData(DataOutput out) throws IOException {
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
@@ -649,6 +591,7 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
 
+  @Override
   public void readAdditionalData(DataInput in) throws ClassNotFoundException, IOException {
     try {
       this.uuidMSBs = in.readLong();
@@ -659,50 +602,13 @@ public class GMSMember implements DataSerializableFixedID {
     }
   }
 
-  private String formatUUID() {
-    UUID uuid = getUUID();
-    return ";uuid=" + (uuid == null ? "none" : getUUID().toStringLong());
-  }
-
+  @Override
   public void setDurableTimeout(int newValue) {
     durableTimeout = newValue;
   }
 
+  @Override
   public void setDurableId(String id) {
     durableId = id;
   }
-
-
-  public static class GMSMemberWrapper {
-    GMSMember mbr;
-
-    public GMSMemberWrapper(GMSMember m) {
-      this.mbr = m;
-    }
-
-    public GMSMember getMbr() {
-      return mbr;
-    }
-
-    @Override
-    public int hashCode() {
-      return mbr.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (obj == null || !(obj instanceof GMSMemberWrapper)) {
-        return false;
-      }
-      GMSMember other = ((GMSMemberWrapper) obj).mbr;
-      return mbr.compareTo(other) == 0;
-    }
-
-    @Override
-    public String toString() {
-      return "GMSMemberWrapper [mbr=" + mbr + "]";
-    }
-  }
-
-
 }

@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
@@ -30,7 +30,7 @@ import org.apache.geode.internal.serialization.Version;
 public class SuspectMembersMessage extends AbstractGMSMessage {
   final List<SuspectRequest> suspectRequests;
 
-  public SuspectMembersMessage(List<GMSMember> recipients, List<SuspectRequest> s) {
+  public SuspectMembersMessage(List<MemberIdentifier> recipients, List<SuspectRequest> s) {
     super();
     setRecipients(recipients);
     this.suspectRequests = s;

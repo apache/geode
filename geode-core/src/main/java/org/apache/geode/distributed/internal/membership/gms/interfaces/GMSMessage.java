@@ -16,13 +16,13 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import java.util.List;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
 public interface GMSMessage {
 
-  void setRecipient(GMSMember member);
+  void setRecipient(MemberIdentifier member);
 
-  void setRecipients(List<GMSMember> recipients);
+  void setRecipients(List<MemberIdentifier> recipients);
 
   /** is this a high priority message that should be sent out-of-band? */
   boolean isHighPriority();
@@ -31,7 +31,7 @@ public interface GMSMessage {
   /** register any reply processor prior to transmission, if necessary */
   void registerProcessor();
 
-  List<GMSMember> getRecipients();
+  List<MemberIdentifier> getRecipients();
 
   /** from DataSerializableFixedID */
   int getDSFID();
@@ -47,9 +47,9 @@ public interface GMSMessage {
   }
 
   /** establishes the sender of a message on the receiving side of a communications channel */
-  void setSender(GMSMember sender);
+  void setSender(MemberIdentifier sender);
 
-  GMSMember getSender();
+  MemberIdentifier getSender();
 
   void resetTimestamp();
 

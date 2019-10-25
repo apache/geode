@@ -18,8 +18,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
@@ -30,14 +30,14 @@ public class ViewAckMessage extends AbstractGMSMessage {
   boolean preparing;
   GMSMembershipView alternateView;
 
-  public ViewAckMessage(GMSMember recipient, int viewId, boolean preparing) {
+  public ViewAckMessage(MemberIdentifier recipient, int viewId, boolean preparing) {
     super();
     setRecipient(recipient);
     this.viewId = viewId;
     this.preparing = preparing;
   }
 
-  public ViewAckMessage(int viewId, GMSMember recipient, GMSMembershipView alternateView) {
+  public ViewAckMessage(int viewId, MemberIdentifier recipient, GMSMembershipView alternateView) {
     super();
     setRecipient(recipient);
     this.viewId = viewId;

@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -40,6 +39,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -54,9 +55,11 @@ import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
@@ -185,13 +188,13 @@ public class MembershipJUnitTest {
       }
 
       GMSMembershipView view = jl1.getView();
-      GMSMember notCreator;
+      MemberIdentifier notCreator;
       if (view.getCreator().equals(jl1.getMemberID())) {
         notCreator = view.getMembers().get(1);
       } else {
         notCreator = view.getMembers().get(0);
       }
-      List<String> result = Arrays.asList(notCreator.getGroups());
+      List<String> result = notCreator.getGroups();
 
       System.out.println("sending SerialAckedMessage from m1 to m2");
       SerialAckedMessage msg = new SerialAckedMessage();
@@ -251,6 +254,13 @@ public class MembershipJUnitTest {
     final InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
     final SecurityService securityService = SecurityServiceFactory.create();
     DSFIDSerializer serializer = InternalDataSerializer.getDSFIDSerializer();
+    final MemberIdentifierFactory memberFactory = mock(MemberIdentifierFactory.class);
+    when(memberFactory.create(isA(GMSMemberData.class))).thenAnswer(new Answer<MemberIdentifier>() {
+      @Override
+      public MemberIdentifier answer(InvocationOnMock invocation) throws Throwable {
+        return new InternalDistributedMember((GMSMemberData) invocation.getArgument(0));
+      }
+    });
     final MembershipManager m1 =
         MembershipBuilder.newMembershipBuilder(null)
             .setAuthenticator(new GMSAuthenticator(config.getSecurityProps(), securityService,

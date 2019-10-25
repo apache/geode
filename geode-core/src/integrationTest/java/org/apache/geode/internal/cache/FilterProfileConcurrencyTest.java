@@ -27,7 +27,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
@@ -63,7 +62,7 @@ public class FilterProfileConcurrencyTest {
 
   private FilterProfile createFilterProfile() throws UnknownHostException {
     DistributedMember member = new InternalDistributedMember(InetAddress.getLocalHost(), 0, false,
-        false, MemberAttributes.DEFAULT);
+        false);
     return new FilterProfile(null, member, true);
   }
 

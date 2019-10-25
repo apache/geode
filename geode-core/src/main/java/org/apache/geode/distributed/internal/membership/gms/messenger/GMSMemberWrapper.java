@@ -12,12 +12,40 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.messages;
+package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
-public interface HasMemberID {
+/**
+ * A wrapper for GMSMember objects used in encryption services
+ */
+public class GMSMemberWrapper {
 
-  MemberIdentifier getMemberID();
+  MemberIdentifier mbr;
 
+  public GMSMemberWrapper(MemberIdentifier m) {
+    this.mbr = m;
+  }
+
+  public MemberIdentifier getMbr() {
+    return mbr;
+  }
+
+  @Override
+  public int hashCode() {
+    return mbr.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    MemberIdentifier other = ((GMSMemberWrapper) obj).mbr;
+    // here we must compare member data rather than identifiers since the view identifiers and
+    // UUID identifiers need to be ignored
+    return mbr.getMemberData().compareTo(other.getMemberData(), false, false) == 0;
+  }
+
+  @Override
+  public String toString() {
+    return "GMSMemberWrapper [mbr=" + mbr + "]";
+  }
 }

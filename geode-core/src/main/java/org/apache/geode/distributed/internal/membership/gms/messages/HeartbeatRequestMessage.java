@@ -18,8 +18,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
@@ -27,16 +27,16 @@ import org.apache.geode.internal.serialization.Version;
 public class HeartbeatRequestMessage extends AbstractGMSMessage {
 
   int requestId;
-  GMSMember target;
+  MemberIdentifier target;
 
-  public HeartbeatRequestMessage(GMSMember neighbour, int id) {
+  public HeartbeatRequestMessage(MemberIdentifier neighbour, int id) {
     requestId = id;
     this.target = neighbour;
   }
 
   public HeartbeatRequestMessage() {}
 
-  public GMSMember getTarget() {
+  public MemberIdentifier getTarget() {
     return target;
   }
 

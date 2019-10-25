@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -41,8 +43,11 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * The GMSMembershipView class represents a membership view. Note that this class is not
- * synchronized, so take
+ * The GMSMembershipView class represents a membership view For Geode this is translated
+ * into a MembershipView by GMSMembershipManager. The membership identifiers are GMSMembers,
+ * which for Geode means they are InternalDistributedMember instances.
+ *
+ * Note that this class is not synchronized, so take
  * that under advisement if you decide to modify a view with add() or remove().
  *
  */
@@ -50,14 +55,14 @@ public class GMSMembershipView implements DataSerializableFixedID {
   private static final Logger logger = LogService.getLogger();
 
   private int viewId;
-  private List<GMSMember> members;
+  private List<MemberIdentifier> members;
   // TODO this should be a List
-  private final Map<GMSMember, Object> publicKeys = new ConcurrentHashMap<>();
+  private final Map<MemberIdentifier, Object> publicKeys = new ConcurrentHashMap<>();
   private int[] failureDetectionPorts = new int[10];
-  private Set<GMSMember> shutdownMembers;
-  private Set<GMSMember> crashedMembers;
-  private GMSMember creator;
-  private Set<GMSMember> hashedMembers;
+  private Set<MemberIdentifier> shutdownMembers;
+  private Set<MemberIdentifier> crashedMembers;
+  private MemberIdentifier creator;
+  private Set<MemberIdentifier> hashedMembers;
   private final Object membersLock = new Object();
   @Immutable
   public static final Random RANDOM = new Random();
@@ -73,7 +78,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
     Arrays.fill(failureDetectionPorts, -1);
   }
 
-  public GMSMembershipView(GMSMember creator) {
+  public GMSMembershipView(MemberIdentifier creator) {
     viewId = 0;
     members = new ArrayList<>(4);
     members.add(creator);
@@ -84,8 +89,8 @@ public class GMSMembershipView implements DataSerializableFixedID {
     Arrays.fill(failureDetectionPorts, -1);
   }
 
-  public GMSMembershipView(GMSMember creator, int viewId,
-      List<GMSMember> members) {
+  public GMSMembershipView(MemberIdentifier creator, int viewId,
+      List<MemberIdentifier> members) {
     this.viewId = viewId;
     this.members = new ArrayList<>(members);
     hashedMembers = new HashSet<>(this.members);
@@ -128,9 +133,9 @@ public class GMSMembershipView implements DataSerializableFixedID {
     this.publicKeys.putAll(other.publicKeys);
   }
 
-  public GMSMembershipView(GMSMember creator, int viewId,
-      List<GMSMember> mbrs, Set<GMSMember> shutdowns,
-      Set<GMSMember> crashes) {
+  public GMSMembershipView(MemberIdentifier creator, int viewId,
+      List<MemberIdentifier> mbrs, Set<MemberIdentifier> shutdowns,
+      Set<MemberIdentifier> crashes) {
     this.creator = creator;
     this.viewId = viewId;
     this.members = mbrs;
@@ -147,19 +152,19 @@ public class GMSMembershipView implements DataSerializableFixedID {
   }
 
 
-  public GMSMember getCreator() {
+  public MemberIdentifier getCreator() {
     return this.creator;
   }
 
-  public void setCreator(GMSMember creator) {
+  public void setCreator(MemberIdentifier creator) {
     this.creator = creator;
   }
 
-  public Object getPublicKey(GMSMember mbr) {
+  public Object getPublicKey(MemberIdentifier mbr) {
     return publicKeys.get(mbr);
   }
 
-  public void setPublicKey(GMSMember mbr, Object key) {
+  public void setPublicKey(MemberIdentifier mbr, Object key) {
     if (mbr != null && key != null) {
       publicKeys.put(mbr, key);
     }
@@ -181,7 +186,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
     return this.failureDetectionPorts;
   }
 
-  public int getFailureDetectionPort(GMSMember mbr) {
+  public int getFailureDetectionPort(MemberIdentifier mbr) {
     int idx = members.indexOf(mbr);
     if (idx < 0 || idx >= failureDetectionPorts.length) {
       return -1;
@@ -190,7 +195,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
   }
 
 
-  public void setFailureDetectionPort(GMSMember mbr, int port) {
+  public void setFailureDetectionPort(MemberIdentifier mbr, int port) {
     int idx = members.indexOf(mbr);
     if (idx < 0) {
       throw new IllegalArgumentException("element not found in members list:" + mbr);
@@ -207,7 +212,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
     if (ports != null) {
       int idx = 0;
       int portsSize = ports.length;
-      for (GMSMember mbr : otherView.getMembers()) {
+      for (MemberIdentifier mbr : otherView.getMembers()) {
         if (contains(mbr)) {
           // unit tests create views w/o failure detection ports, so we must check the length
           // of the array
@@ -240,7 +245,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
     return this.members.get(i);
   }
 
-  public void add(GMSMember mbr) {
+  public void add(MemberIdentifier mbr) {
     this.hashedMembers.add(mbr);
     this.members.add(mbr);
     int idx = members.size() - 1;
@@ -248,15 +253,15 @@ public class GMSMembershipView implements DataSerializableFixedID {
     this.failureDetectionPorts[idx] = -1;
   }
 
-  public void addCrashedMembers(Set<GMSMember> mbr) {
+  public void addCrashedMembers(Set<MemberIdentifier> mbr) {
     this.crashedMembers.addAll(mbr);
   }
 
   /**
    * return members that are i this view but not the given old view
    */
-  public List<GMSMember> getNewMembers(GMSMembershipView olderView) {
-    List<GMSMember> result = new ArrayList<>(members);
+  public List<MemberIdentifier> getNewMembers(GMSMembershipView olderView) {
+    List<MemberIdentifier> result = new ArrayList<>(members);
     result.removeAll(olderView.getMembers());
     return result;
   }
@@ -264,14 +269,14 @@ public class GMSMembershipView implements DataSerializableFixedID {
   /**
    * return members added in this view
    */
-  public List<GMSMember> getNewMembers() {
-    List<GMSMember> result = new ArrayList<>(5);
+  public List<MemberIdentifier> getNewMembers() {
+    List<MemberIdentifier> result = new ArrayList<>(5);
     result.addAll(this.members.stream().filter(mbr -> mbr.getVmViewId() == this.viewId)
         .collect(Collectors.toList()));
     return result;
   }
 
-  public boolean remove(GMSMember mbr) {
+  public boolean remove(MemberIdentifier mbr) {
     this.hashedMembers.remove(mbr);
     int idx = this.members.indexOf(mbr);
     if (idx >= 0) {
@@ -282,12 +287,12 @@ public class GMSMembershipView implements DataSerializableFixedID {
     return this.members.remove(mbr);
   }
 
-  public void removeAll(Collection<GMSMember> ids) {
+  public void removeAll(Collection<MemberIdentifier> ids) {
     this.hashedMembers.removeAll(ids);
     ids.forEach(this::remove);
   }
 
-  public boolean contains(GMSMember mbr) {
+  public boolean contains(MemberIdentifier mbr) {
     return this.hashedMembers.contains(mbr);
   }
 
@@ -295,18 +300,18 @@ public class GMSMembershipView implements DataSerializableFixedID {
     return this.members.size();
   }
 
-  public GMSMember getLeadMember() {
-    for (GMSMember mbr : this.members) {
-      if (mbr.getVmKind() == GMSMember.NORMAL_DM_TYPE) {
+  public MemberIdentifier getLeadMember() {
+    for (MemberIdentifier mbr : this.members) {
+      if (mbr.getVmKind() == MemberIdentifier.NORMAL_DM_TYPE) {
         return mbr;
       }
     }
     return null;
   }
 
-  public GMSMember getCoordinator() {
+  public MemberIdentifier getCoordinator() {
     synchronized (membersLock) {
-      for (GMSMember addr : members) {
+      for (MemberIdentifier addr : members) {
         if (addr.preferredForCoordinator()) {
           return addr;
         }
@@ -321,18 +326,18 @@ public class GMSMembershipView implements DataSerializableFixedID {
   /**
    * Returns the coordinator of this view, rejecting any in the given collection of IDs
    */
-  public GMSMember getCoordinator(
-      Collection<GMSMember> rejections) {
+  public MemberIdentifier getCoordinator(
+      Collection<MemberIdentifier> rejections) {
     if (rejections == null) {
       return getCoordinator();
     }
     synchronized (membersLock) {
-      for (GMSMember addr : members) {
+      for (MemberIdentifier addr : members) {
         if (addr.preferredForCoordinator() && !rejections.contains(addr)) {
           return addr;
         }
       }
-      for (GMSMember addr : members) {
+      for (MemberIdentifier addr : members) {
         if (!rejections.contains(addr)) {
           return addr;
         }
@@ -351,14 +356,14 @@ public class GMSMembershipView implements DataSerializableFixedID {
    * @param maxNumberDesired number of preferred coordinators to return
    * @return list of preferred coordinators
    */
-  public List<GMSMember> getPreferredCoordinators(
-      Set<GMSMember> filter, GMSMember localAddress,
+  public List<MemberIdentifier> getPreferredCoordinators(
+      Set<MemberIdentifier> filter, MemberIdentifier localAddress,
       int maxNumberDesired) {
-    List<GMSMember> results = new ArrayList<>();
-    List<GMSMember> notPreferredCoordinatorList = new ArrayList<>();
+    List<MemberIdentifier> results = new ArrayList<>();
+    List<MemberIdentifier> notPreferredCoordinatorList = new ArrayList<>();
 
     synchronized (membersLock) {
-      for (GMSMember addr : members) {
+      for (MemberIdentifier addr : members) {
         if (addr.equals(localAddress)) {
           continue;// this is must to add
         }
@@ -375,7 +380,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
       results.add(localAddress);// to add local address
 
       if (results.size() < maxNumberDesired && notPreferredCoordinatorList.size() > 0) {
-        Iterator<GMSMember> it = notPreferredCoordinatorList.iterator();
+        Iterator<MemberIdentifier> it = notPreferredCoordinatorList.iterator();
         while (it.hasNext() && results.size() < maxNumberDesired) {
           results.add(it.next());
         }
@@ -387,29 +392,29 @@ public class GMSMembershipView implements DataSerializableFixedID {
 
   /* NetView implementation method */
 
-  public List<GMSMember> getGMSMembers() {
-    return (List<GMSMember>) (List<?>) Collections.unmodifiableList(this.members);
+  public List<MemberIdentifier> getGMSMembers() {
+    return (List<MemberIdentifier>) (List<?>) Collections.unmodifiableList(this.members);
   }
 
 
-  public List<GMSMember> getMembers() {
+  public List<MemberIdentifier> getMembers() {
     return Collections.unmodifiableList(this.members);
   }
 
-  public Set<GMSMember> getShutdownMembers() {
+  public Set<MemberIdentifier> getShutdownMembers() {
     return this.shutdownMembers;
   }
 
-  public Set<GMSMember> getCrashedMembers() {
+  public Set<MemberIdentifier> getCrashedMembers() {
     return this.crashedMembers;
   }
 
   /** check to see if the given address is next in line to be coordinator */
-  public boolean shouldBeCoordinator(GMSMember who) {
-    Iterator<GMSMember> it = this.members.iterator();
-    GMSMember firstNonPreferred = null;
+  public boolean shouldBeCoordinator(MemberIdentifier who) {
+    Iterator<MemberIdentifier> it = this.members.iterator();
+    MemberIdentifier firstNonPreferred = null;
     while (it.hasNext()) {
-      GMSMember mbr = it.next();
+      MemberIdentifier mbr = it.next();
       if (mbr.preferredForCoordinator()) {
         return mbr.equals(who);
       } else if (firstNonPreferred == null) {
@@ -424,20 +429,20 @@ public class GMSMembershipView implements DataSerializableFixedID {
    */
   public int memberWeight() {
     int result = 0;
-    GMSMember lead = getLeadMember();
-    for (GMSMember mbr : this.members) {
+    MemberIdentifier lead = getLeadMember();
+    for (MemberIdentifier mbr : this.members) {
       result += mbr.getMemberWeight();
       switch (mbr.getVmKind()) {
-        case GMSMember.NORMAL_DM_TYPE:
+        case MemberIdentifier.NORMAL_DM_TYPE:
           result += 10;
           if (lead != null && mbr.equals(lead)) {
             result += 5;
           }
           break;
-        case GMSMember.LOCATOR_DM_TYPE:
+        case MemberIdentifier.LOCATOR_DM_TYPE:
           result += 3;
           break;
-        case GMSMember.ADMIN_ONLY_DM_TYPE:
+        case MemberIdentifier.ADMIN_ONLY_DM_TYPE:
           break;
         default:
           throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
@@ -452,23 +457,23 @@ public class GMSMembershipView implements DataSerializableFixedID {
    */
   public int getCrashedMemberWeight(GMSMembershipView oldView) {
     int result = 0;
-    GMSMember lead = oldView.getLeadMember();
-    for (GMSMember mbr : this.crashedMembers) {
+    MemberIdentifier lead = oldView.getLeadMember();
+    for (MemberIdentifier mbr : this.crashedMembers) {
       if (!oldView.contains(mbr)) {
         continue;
       }
       result += mbr.getMemberWeight();
       switch (mbr.getVmKind()) {
-        case GMSMember.NORMAL_DM_TYPE:
+        case MemberIdentifier.NORMAL_DM_TYPE:
           result += 10;
           if (lead != null && mbr.equals(lead)) {
             result += 5;
           }
           break;
-        case GMSMember.LOCATOR_DM_TYPE:
+        case MemberIdentifier.LOCATOR_DM_TYPE:
           result += 3;
           break;
-        case GMSMember.ADMIN_ONLY_DM_TYPE:
+        case MemberIdentifier.ADMIN_ONLY_DM_TYPE:
           break;
         default:
           throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
@@ -481,10 +486,10 @@ public class GMSMembershipView implements DataSerializableFixedID {
    * returns the members of this views crashedMembers collection that were members of the given
    * view. Admin-only members are not counted
    */
-  public Set<GMSMember> getActualCrashedMembers(GMSMembershipView oldView) {
-    Set<GMSMember> result = new HashSet<>(this.crashedMembers.size());
+  public Set<MemberIdentifier> getActualCrashedMembers(GMSMembershipView oldView) {
+    Set<MemberIdentifier> result = new HashSet<>(this.crashedMembers.size());
     result.addAll(this.crashedMembers.stream()
-        .filter(mbr -> (mbr.getVmKind() != GMSMember.ADMIN_ONLY_DM_TYPE))
+        .filter(mbr -> (mbr.getVmKind() != MemberIdentifier.ADMIN_ONLY_DM_TYPE))
         .filter(mbr -> oldView == null || oldView.contains(mbr)).collect(Collectors.toList()));
     return result;
   }
@@ -493,24 +498,24 @@ public class GMSMembershipView implements DataSerializableFixedID {
    * logs the weight of failed members wrt the given previous view
    */
   public void logCrashedMemberWeights(GMSMembershipView oldView, Logger log) {
-    GMSMember lead = oldView.getLeadMember();
-    for (GMSMember mbr : this.crashedMembers) {
+    MemberIdentifier lead = oldView.getLeadMember();
+    for (MemberIdentifier mbr : this.crashedMembers) {
       if (!oldView.contains(mbr)) {
         continue;
       }
       int mbrWeight = mbr.getMemberWeight();
       switch (mbr.getVmKind()) {
-        case GMSMember.NORMAL_DM_TYPE:
+        case MemberIdentifier.NORMAL_DM_TYPE:
           if (lead != null && mbr.equals(lead)) {
             mbrWeight += 15;
           } else {
             mbrWeight += 10;
           }
           break;
-        case GMSMember.LOCATOR_DM_TYPE:
+        case MemberIdentifier.LOCATOR_DM_TYPE:
           mbrWeight += 3;
           break;
-        case GMSMember.ADMIN_ONLY_DM_TYPE:
+        case MemberIdentifier.ADMIN_ONLY_DM_TYPE:
           break;
         default:
           throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
@@ -520,12 +525,12 @@ public class GMSMembershipView implements DataSerializableFixedID {
   }
 
   public String toString() {
-    GMSMember lead = getLeadMember();
+    MemberIdentifier lead = getLeadMember();
 
     StringBuilder sb = new StringBuilder(200);
     sb.append("View[").append(creator).append('|').append(viewId).append("] members: [");
     boolean first = true;
-    for (GMSMember mbr : this.members) {
+    for (MemberIdentifier mbr : this.members) {
       if (!first)
         sb.append(", ");
       sb.append(mbr);
@@ -537,7 +542,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
     if (!this.shutdownMembers.isEmpty()) {
       sb.append("]  shutdown: [");
       first = true;
-      for (GMSMember mbr : this.shutdownMembers) {
+      for (MemberIdentifier mbr : this.shutdownMembers) {
         if (!first)
           sb.append(", ");
         sb.append(mbr);
@@ -547,7 +552,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
     if (!this.crashedMembers.isEmpty()) {
       sb.append("]  crashed: [");
       first = true;
-      for (GMSMember mbr : this.crashedMembers) {
+      for (MemberIdentifier mbr : this.crashedMembers) {
         if (!first)
           sb.append(", ");
         sb.append(mbr);
@@ -571,9 +576,9 @@ public class GMSMembershipView implements DataSerializableFixedID {
    * Returns the ID from this view that is equal to the argument. If no such ID exists the argument
    * is returned.
    */
-  public synchronized GMSMember getCanonicalID(GMSMember id) {
+  public synchronized MemberIdentifier getCanonicalID(MemberIdentifier id) {
     if (hashedMembers.contains(id)) {
-      for (GMSMember m : this.members) {
+      for (MemberIdentifier m : this.members) {
         if (id.equals(m)) {
           return m;
         }
@@ -629,7 +634,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
   }
 
   /** this will deserialize as an ArrayList */
-  private void writeAsArrayList(List<GMSMember> list, DataOutput out,
+  private void writeAsArrayList(List<MemberIdentifier> list, DataOutput out,
       SerializationContext context) throws IOException {
     int size;
     if (list == null) {

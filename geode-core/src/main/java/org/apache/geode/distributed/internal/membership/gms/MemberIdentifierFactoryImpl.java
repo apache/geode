@@ -12,12 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.messages;
+package org.apache.geode.distributed.internal.membership.gms;
 
+import java.util.Comparator;
+
+import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 
-public interface HasMemberID {
+class MemberIdentifierFactoryImpl implements MemberIdentifierFactory {
+  static final Comparator<MemberIdentifier> idComparator =
+      (o1, o2) -> ((MemberIdentifierImpl) o1).compareTo((MemberIdentifierImpl) o2);
 
-  MemberIdentifier getMemberID();
+  @Override
+  public MemberIdentifier create(MemberData memberInfo) {
+    return new MemberIdentifierImpl(memberInfo);
+  }
 
+  @Override
+  public Comparator<MemberIdentifier> getComparator() {
+    return idComparator;
+  }
 }

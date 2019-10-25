@@ -58,7 +58,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.membership.MemberAttributes;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
@@ -751,7 +751,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   public String[] getCombinedGroups() {
     ArrayList<String> groupList = new ArrayList<String>();
     if (includeMembershipGroups) {
-      for (String g : MemberAttributes.parseGroups(null, getSystem().getConfig().getGroups())) {
+      for (String g : MemberDataBuilder.parseGroups(null, getSystem().getConfig().getGroups())) {
         if (!groupList.contains(g)) {
           groupList.add(g);
         }

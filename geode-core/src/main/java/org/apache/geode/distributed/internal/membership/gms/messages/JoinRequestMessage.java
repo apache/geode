@@ -19,20 +19,20 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
 public class JoinRequestMessage extends AbstractGMSMessage {
-  private GMSMember memberID;
+  private MemberIdentifier memberID;
   private Object credentials;
   private int failureDetectionPort = -1;
   private int requestId;
   private boolean useMulticast;
 
-  public JoinRequestMessage(GMSMember coord, GMSMember id,
+  public JoinRequestMessage(MemberIdentifier coord, MemberIdentifier id,
       Object credentials, int fdPort, int requestId) {
     super();
     if (coord != null) {
@@ -67,7 +67,7 @@ public class JoinRequestMessage extends AbstractGMSMessage {
     this.useMulticast = useMulticast;
   }
 
-  public GMSMember getMemberID() {
+  public MemberIdentifier getMemberID() {
     return memberID;
   }
 
