@@ -17,6 +17,7 @@ package org.apache.geode.cache.query.cq.internal;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -128,10 +129,12 @@ public class CqSecurityExecutionContextTamperingDistributedTest implements Seria
     });
 
     client.invoke(() -> {
-      assertThat(CqSecurityExecutionContextTamperingDistributedTest.cqListener.getNumEvents())
-          .isEqualTo(0);
-      assertThat(CqSecurityExecutionContextTamperingDistributedTest.cqListener.getNumErrors())
-          .isEqualTo(1);
+      await().untilAsserted(() -> assertThat(
+          CqSecurityExecutionContextTamperingDistributedTest.cqListener.getNumEvents())
+              .isEqualTo(0));
+      await().untilAsserted(() -> assertThat(
+          CqSecurityExecutionContextTamperingDistributedTest.cqListener.getNumErrors())
+              .isEqualTo(1));
     });
   }
 }
