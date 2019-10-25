@@ -23,15 +23,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = {"classpath*:WEB-INF-servlet.xml"},
+@ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class RootManagementIntegrationTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -54,7 +56,8 @@ public class RootManagementIntegrationTest {
             jsonPath("$.links.swagger").value("http://localhost/swagger-ui.html"))
         .andExpect(jsonPath("$.links.docs").value("https://geode.apache.org/docs"))
         .andExpect(jsonPath("$.links.wiki")
-            .value("https://cwiki.apache.org/confluence/display/pages/viewpage.action?pageId=115511910"))
+            .value(
+                "https://cwiki.apache.org/confluence/display/pages/viewpage.action?pageId=115511910"))
         .andExpect(jsonPath("$.links.['get gateway-receiver']")
             .value("http://localhost/v1/gateways/receivers/{id}"))
         .andExpect(jsonPath("$.links.['create gateway-receiver']")

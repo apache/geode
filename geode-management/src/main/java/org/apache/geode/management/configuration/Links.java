@@ -87,6 +87,9 @@ public class Links {
   }
 
   private static String qualifyUrl(String uri) {
+    if (uri.startsWith("http")) {
+      return uri;
+    }
     if (uri.startsWith(URI_VERSION)) {
       return HREF_PREFIX + URI_CONTEXT + uri;
     }
