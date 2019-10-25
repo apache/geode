@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal.tcpserver;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.net.InetAddress;
@@ -26,7 +25,6 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +44,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -445,8 +442,6 @@ public class TcpServer {
         // Closing the socket will cause our acceptor thread to shutdown the executor
         srv_sock.close();
         response = new ShutdownResponse();
-      } else if (request instanceof InfoRequest) {
-        response = handleInfoRequest(request);
       } else if (request instanceof VersionRequest) {
         response = handleVersionRequest(request);
       } else {
@@ -485,23 +480,7 @@ public class TcpServer {
     }
   }
 
-  protected Object handleInfoRequest(Object request) {
-    String[] info = new String[2];
-    info[0] = System.getProperty("user.dir");
 
-    URL url = GemFireVersion.getJarURL();
-    if (url == null) {
-      String s = "Could not find gemfire jar";
-      throw new IllegalStateException(s);
-    }
-
-    File gemfireJar = new File(url.getPath());
-    File lib = gemfireJar.getParentFile();
-    File product = lib.getParentFile();
-    info[1] = product.getAbsolutePath();
-
-    return new InfoResponse(info);
-  }
 
   protected Object handleVersionRequest(Object request) {
     VersionResponse response = new VersionResponse();

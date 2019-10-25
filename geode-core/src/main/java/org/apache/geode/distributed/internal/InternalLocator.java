@@ -65,6 +65,7 @@ import org.apache.geode.distributed.internal.membership.NetLocatorFactory;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.locator.PeerLocatorRequest;
+import org.apache.geode.distributed.internal.tcpserver.InfoRequest;
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -523,6 +524,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       locatorListener.setConfig(getConfig());
     }
     handler = new PrimaryHandler(this, locatorListener);
+    handler.addHandler(InfoRequest.class, new InfoRequestHandler());
 
     locatorStats = new LocatorStats();
 
@@ -842,6 +844,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     handler.addHandler(ClientReplacementRequest.class, serverLocator);
     handler.addHandler(GetAllServersRequest.class, serverLocator);
     handler.addHandler(LocatorStatusRequest.class, serverLocator);
+
     this.serverLocator = serverLocator;
     if (!server.isAlive()) {
       startTcpServer();
