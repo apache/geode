@@ -1384,8 +1384,7 @@ public class PoolImpl implements InternalPool {
    */
   @Override
   public QueryService getQueryService() {
-    DefaultQueryService queryService = null;
-    queryService = new DefaultQueryService(cache);
+    DefaultQueryService queryService = new DefaultQueryService(cache);
     queryService.setPool(this);
     return queryService;
   }

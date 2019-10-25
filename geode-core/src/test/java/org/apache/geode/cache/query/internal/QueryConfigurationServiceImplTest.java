@@ -14,10 +14,17 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.AUTHORIZER_NOT_UPDATED;
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.INSTANTIATION_ERROR;
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.NO_CLASS_FOUND;
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.NO_VALID_CONSTRUCTOR;
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.NULL_CLASS_NAME;
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.UPDATE_ERROR_MESSAGE;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -102,7 +109,7 @@ public class QueryConfigurationServiceImplTest {
     assertThat(authorizer).isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
 
     configService.updateMethodAuthorizer(mockCache,
-        RestrictedMethodAuthorizer.class.getSimpleName(), new HashSet<>());
+        RestrictedMethodAuthorizer.class.getName(), new HashSet<>());
 
     assertThat(configService.getMethodAuthorizer()).isSameAs(authorizer);
   }
@@ -121,7 +128,7 @@ public class QueryConfigurationServiceImplTest {
       assertThat(authorizer).isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
 
       configService.updateMethodAuthorizer(mockCache,
-          RestrictedMethodAuthorizer.class.getSimpleName(), new HashSet<>());
+          RestrictedMethodAuthorizer.class.getName(), new HashSet<>());
 
       assertThat(configService.getMethodAuthorizer()).isSameAs(authorizer);
     } finally {
@@ -135,7 +142,7 @@ public class QueryConfigurationServiceImplTest {
   public void updateMethodAuthorizerSetsCorrectAuthorizer(Class methodAuthorizerClass) {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
 
-    configService.updateMethodAuthorizer(mockCache, methodAuthorizerClass.getSimpleName(),
+    configService.updateMethodAuthorizer(mockCache, methodAuthorizerClass.getName(),
         new HashSet<>());
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(methodAuthorizerClass);
   }
@@ -167,7 +174,9 @@ public class QueryConfigurationServiceImplTest {
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     configService.updateMethodAuthorizer(mockCache, null, new HashSet<>());
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
-    verify(configService).logError(any(String.class));
+    verify(configService).logError(
+        eq(UPDATE_ERROR_MESSAGE + NULL_CLASS_NAME + AUTHORIZER_NOT_UPDATED),
+        any(NullPointerException.class));
   }
 
   @Test
@@ -176,9 +185,12 @@ public class QueryConfigurationServiceImplTest {
 
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
-    configService.updateMethodAuthorizer(mockCache, "FakeClassName", new HashSet<>());
+    String className = "FakeClassName";
+    configService.updateMethodAuthorizer(mockCache, className, new HashSet<>());
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
-    verify(configService).logError(any(String.class));
+    verify(configService).logError(
+        eq(UPDATE_ERROR_MESSAGE + NO_CLASS_FOUND + className + ". " + AUTHORIZER_NOT_UPDATED),
+        any(ClassNotFoundException.class));
   }
 
   @Test
@@ -189,7 +201,9 @@ public class QueryConfigurationServiceImplTest {
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     configService.updateMethodAuthorizer(mockCache, this.getClass().getName(), new HashSet<>());
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
-    verify(configService).logError(any(String.class));
+    verify(configService).logError(
+        eq(UPDATE_ERROR_MESSAGE + NO_VALID_CONSTRUCTOR + AUTHORIZER_NOT_UPDATED),
+        any(Exception.class));
   }
 
   @Test
@@ -203,7 +217,9 @@ public class QueryConfigurationServiceImplTest {
     configService.updateMethodAuthorizer(mockCache, TestMethodAuthorizer.class.getName(),
         new HashSet<>());
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
-    verify(configService).logError(any(String.class));
+    verify(configService).logError(
+        eq(UPDATE_ERROR_MESSAGE + INSTANTIATION_ERROR + AUTHORIZER_NOT_UPDATED),
+        any(Exception.class));
   }
 
   @SuppressWarnings("unused")

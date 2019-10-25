@@ -29,7 +29,7 @@ import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 
 public enum ElementType {
-  QUERY_SERVICE(PARENT_QUERY_ELEMENT) {
+  QUERY_CONFIG_SERVICE(PARENT_QUERY_ELEMENT) {
     @Override
     void startElement(Stack<Object> stack, Attributes attributes) {
       if (!(stack.peek() instanceof CacheCreation)) {

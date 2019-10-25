@@ -16,7 +16,7 @@
   ~ limitations under the License.
   -->
 <xsd:schema
-        targetNamespace="http://geode.apache.org/schema/query-service"
+        targetNamespace="http://geode.apache.org/schema/query-config-service"
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         elementFormDefault="qualified"
         attributeFormDefault="unqualified"
@@ -24,21 +24,21 @@
 
     <xsd:annotation>
         <xsd:documentation><![CDATA[
-XML schema for configuring the query-service in Geode.
+XML schema for configuring the query-config-service in Geode.
 
   <cache
     xmlns="http://geode.apache.org/schema/cache"
-    xmlns:query="http://geode.apache.org/schema/query-service"
+    xmlns:query="http://geode.apache.org/schema/query-config-service"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://geode.apache.org/schema/cache
         http://geode.apache.org/schema/cache/cache-1.0.xsd
-        http://geode.apache.org/schema/query-service
-        http://geode.apache.org/schema/query-service/query-service-1.0.xsd"
+        http://geode.apache.org/schema/query-config-service
+        http://geode.apache.org/schema/query-config-service/query-config-service-1.0.xsd"
     version="1.0">
 
     ]]></xsd:documentation>
     </xsd:annotation>
-    <xsd:element name="query-service">
+    <xsd:element name="query-config-service">
         <xsd:complexType>
             <xsd:all>
                 <xsd:element name="method-authorizer" minOccurs="0">

@@ -72,25 +72,26 @@ import org.apache.geode.cache.configuration.XSDRootElement;
 @XmlType(name = "", propOrder = {
 
 })
-@XmlRootElement(name = "query-service", namespace = "http://geode.apache.org/schema/query-service")
-@XSDRootElement(namespace = "http://geode.apache.org/schema/query-service",
-    schemaLocation = "http://geode.apache.org/schema/query-service/query-service-1.0.xsd")
-public class QueryService extends CacheElement {
+@XmlRootElement(name = "query-config-service",
+    namespace = "http://geode.apache.org/schema/query-config-service")
+@XSDRootElement(namespace = "http://geode.apache.org/schema/query-config-service",
+    schemaLocation = "http://geode.apache.org/schema/query-config-service/query-config-service-1.0.xsd")
+public class QueryConfigurationService extends CacheElement {
 
   @XmlElement(name = "method-authorizer",
-      namespace = "http://geode.apache.org/schema/query-service")
-  protected QueryService.MethodAuthorizer methodAuthorizer;
+      namespace = "http://geode.apache.org/schema/query-config-service")
+  protected QueryConfigurationService.MethodAuthorizer methodAuthorizer;
 
-  public static final String ELEMENT_ID = "query-service";
+  public static final String ELEMENT_ID = "query-config-service";
 
   /**
    * Gets the value of the methodAuthorizer property.
    *
    * possible object is
-   * {@link QueryService.MethodAuthorizer }
+   * {@link QueryConfigurationService.MethodAuthorizer }
    *
    */
-  public QueryService.MethodAuthorizer getMethodAuthorizer() {
+  public QueryConfigurationService.MethodAuthorizer getMethodAuthorizer() {
     return methodAuthorizer;
   }
 
@@ -98,10 +99,10 @@ public class QueryService extends CacheElement {
    * Sets the value of the methodAuthorizer property.
    *
    * allowed object is
-   * {@link QueryService.MethodAuthorizer }
+   * {@link QueryConfigurationService.MethodAuthorizer }
    *
    */
-  public void setMethodAuthorizer(QueryService.MethodAuthorizer value) {
+  public void setMethodAuthorizer(QueryConfigurationService.MethodAuthorizer value) {
     this.methodAuthorizer = value;
   }
 
@@ -147,8 +148,8 @@ public class QueryService extends CacheElement {
   })
   public static class MethodAuthorizer {
 
-    @XmlElement(namespace = "http://geode.apache.org/schema/query-service")
-    protected List<QueryService.MethodAuthorizer.Parameter> parameter;
+    @XmlElement(namespace = "http://geode.apache.org/schema/query-config-service")
+    protected List<QueryConfigurationService.MethodAuthorizer.Parameter> parameter;
     @XmlAttribute(name = "class-name", required = true)
     protected String className;
 
@@ -171,13 +172,13 @@ public class QueryService extends CacheElement {
      *
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link QueryService.MethodAuthorizer.Parameter }
+     * {@link QueryConfigurationService.MethodAuthorizer.Parameter }
      *
      *
      */
-    public List<QueryService.MethodAuthorizer.Parameter> getParameter() {
+    public List<QueryConfigurationService.MethodAuthorizer.Parameter> getParameter() {
       if (parameter == null) {
-        parameter = new ArrayList<QueryService.MethodAuthorizer.Parameter>();
+        parameter = new ArrayList<QueryConfigurationService.MethodAuthorizer.Parameter>();
       }
       return this.parameter;
     }

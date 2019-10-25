@@ -39,17 +39,17 @@ import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 public class QueryConfigurationServiceImpl implements QueryConfigurationService {
 
   private static final Logger logger = LogService.getLogger();
-  private static final String UPDATE_ERROR_MESSAGE =
+  public static final String UPDATE_ERROR_MESSAGE =
       "Exception while updating MethodInvocationAuthorizer: ";
-  private static final String NULL_CLASS_NAME =
+  public static final String NULL_CLASS_NAME =
       "Null class name found for MethodInvocationAuthorizer. ";
-  private static final String NO_CLASS_FOUND =
+  public static final String NO_CLASS_FOUND =
       "No MethodInvocationAuthorizer class found with name ";
-  private static final String NO_VALID_CONSTRUCTOR =
-      "No valid MethodInvocationAuthorizer constructor available. ";
-  private static final String INSTANTIATION_ERROR =
+  public static final String NO_VALID_CONSTRUCTOR =
+      "No valid public MethodInvocationAuthorizer constructor available. ";
+  public static final String INSTANTIATION_ERROR =
       "Error occurred while instantiating MethodInvocationAuthorizer. ";
-  private static final String AUTHORIZER_NOT_UPDATED = "The authorizer was not updated.";
+  public static final String AUTHORIZER_NOT_UPDATED = "The authorizer was not updated.";
 
   private MethodInvocationAuthorizer authorizer;
 
@@ -126,17 +126,18 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
     }
 
     if (className == null) {
-      logError(UPDATE_ERROR_MESSAGE + NULL_CLASS_NAME + AUTHORIZER_NOT_UPDATED);
+      logError(UPDATE_ERROR_MESSAGE + NULL_CLASS_NAME + AUTHORIZER_NOT_UPDATED,
+          new NullPointerException());
       return;
     }
 
-    if (className.equals(RestrictedMethodAuthorizer.class.getSimpleName())) {
+    if (className.equals(RestrictedMethodAuthorizer.class.getName())) {
       this.authorizer = new RestrictedMethodAuthorizer(cache);
-    } else if (className.equals(UnrestrictedMethodAuthorizer.class.getSimpleName())) {
+    } else if (className.equals(UnrestrictedMethodAuthorizer.class.getName())) {
       this.authorizer = new UnrestrictedMethodAuthorizer(cache);
-    } else if (className.equals(JavaBeanAccessorMethodAuthorizer.class.getSimpleName())) {
+    } else if (className.equals(JavaBeanAccessorMethodAuthorizer.class.getName())) {
       this.authorizer = new JavaBeanAccessorMethodAuthorizer(cache, parameters);
-    } else if (className.equals(RegExMethodAuthorizer.class.getSimpleName())) {
+    } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
       this.authorizer = new RegExMethodAuthorizer(cache, parameters);
     } else {
       try {
@@ -158,19 +159,17 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
 
   private void logErrorMessage(String className, Exception e) {
     if (e instanceof ClassNotFoundException) {
-      logError(UPDATE_ERROR_MESSAGE + NO_CLASS_FOUND + className + ". " + AUTHORIZER_NOT_UPDATED
-          + " Reason: " + e.toString());
+      logError(UPDATE_ERROR_MESSAGE + NO_CLASS_FOUND + className + ". " + AUTHORIZER_NOT_UPDATED,
+          e);
     } else if (e instanceof NoSuchMethodException || e instanceof SecurityException) {
-      logError(UPDATE_ERROR_MESSAGE + NO_VALID_CONSTRUCTOR + AUTHORIZER_NOT_UPDATED + " Reason: "
-          + e.toString());
+      logError(UPDATE_ERROR_MESSAGE + NO_VALID_CONSTRUCTOR + AUTHORIZER_NOT_UPDATED, e);
     } else {
-      logError(UPDATE_ERROR_MESSAGE + INSTANTIATION_ERROR + AUTHORIZER_NOT_UPDATED + " Reason: "
-          + e.toString());
+      logError(UPDATE_ERROR_MESSAGE + INSTANTIATION_ERROR + AUTHORIZER_NOT_UPDATED, e);
     }
   }
 
   // For testing
-  void logError(String message) {
-    logger.error(message);
+  void logError(String message, Exception e) {
+    logger.error(message, e);
   }
 }

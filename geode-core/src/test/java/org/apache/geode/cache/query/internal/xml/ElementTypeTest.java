@@ -54,7 +54,7 @@ public class ElementTypeTest {
   @Test
   public void startElementForQueryServiceThrowsCacheXmlExceptionWhenParentElementIsIncorrect() {
     stack.push("wrongClass");
-    assertThatThrownBy(() -> ElementType.QUERY_SERVICE.startElement(stack, attributes))
+    assertThatThrownBy(() -> ElementType.QUERY_CONFIG_SERVICE.startElement(stack, attributes))
         .isInstanceOf(
             CacheXmlException.class);
   }
@@ -66,7 +66,7 @@ public class ElementTypeTest {
         new QueryConfigurationServiceCreation();
     stack.push(queryConfigurationServiceCreation);
 
-    ElementType.QUERY_SERVICE.endElement(stack);
+    ElementType.QUERY_CONFIG_SERVICE.endElement(stack);
 
     verify(cacheCreation).setQueryConfigurationServiceCreation(queryConfigurationServiceCreation);
   }

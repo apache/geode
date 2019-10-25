@@ -13,9 +13,9 @@
  * the License.
  */
 
-@XmlSchema(namespace = "http://geode.apache.org/schema/query-service",
-    xmlns = {@XmlNs(prefix = "query-service",
-        namespaceURI = "http://geode.apache.org/schema/query-service")},
+@XmlSchema(namespace = "http://geode.apache.org/schema/query-config-service",
+    xmlns = {@XmlNs(prefix = "query-config-service",
+        namespaceURI = "http://geode.apache.org/schema/query-config-service")},
     elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 
 package org.apache.geode.cache.query.management.configuration;

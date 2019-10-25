@@ -19,10 +19,10 @@ import org.xml.sax.Attributes;
 import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
 
 public class QueryServiceXmlParser extends AbstractXmlParser {
-  public static final String NAMESPACE = "http://geode.apache.org/schema/query-service";
-  static final String PREFIX = "query-service";
+  public static final String NAMESPACE = "http://geode.apache.org/schema/query-config-service";
+  static final String PREFIX = "query-config-service";
 
-  static final String PARENT_QUERY_ELEMENT = "query-service";
+  static final String PARENT_QUERY_ELEMENT = "query-config-service";
   static final String QUERY_METHOD_AUTHORIZER = "method-authorizer";
   static final String AUTHORIZER_PARAMETER = "parameter";
 

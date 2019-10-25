@@ -17,16 +17,16 @@
 -->
 <cache
         xmlns="http://geode.apache.org/schema/cache"
-        xmlns:query-service="http://geode.apache.org/schema/query-service"
+        xmlns:query-config-service="http://geode.apache.org/schema/query-config-service"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://geode.apache.org/schema/cache
                             http://geode.apache.org/schema/cache/cache-1.0.xsd
-                            http://geode.apache.org/schema/query-service
-                            http://geode.apache.org/schema/query-service/query-service-1.0.xsd"
+                            http://geode.apache.org/schema/query-config-service
+                            http://geode.apache.org/schema/query-config-service/query-config-service-1.0.xsd"
         version="1.0">
-    <query-service:query-service>
-        <query-service:method-authorizer class-name="JavaBeanAccessorMethodAuthorizer">
-            <query-service:parameter parameter-value="java.lang"/>
-        </query-service:method-authorizer>
-    </query-service:query-service>
+    <query-config-service:query-config-service>
+        <query-config-service:method-authorizer class-name="org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer">
+            <query-config-service:parameter parameter-value="java.lang"/>
+        </query-config-service:method-authorizer>
+    </query-config-service:query-config-service>
 </cache>

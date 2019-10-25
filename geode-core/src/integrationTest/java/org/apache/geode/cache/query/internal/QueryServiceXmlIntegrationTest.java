@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +39,6 @@ import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
 import org.apache.geode.cache.util.TestMethodAuthorizer;
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
@@ -61,7 +58,6 @@ public class QueryServiceXmlIntegrationTest {
   private static final String JAVA_BEAN_AUTHORIZER_XML = "QueryServiceWithJavaBeanAuthorizer.xml";
   private static final String REGEX_AUTHORIZER_XML = "QueryServiceWithRegExAuthorizer.xml";
   private static final String USER_AUTHORIZER_XML = "QueryServiceWithUserDefinedAuthorizer.xml";
-  private static final String TEST_AUTHORIZER_TXT = "TestMethodAuthorizer.txt";
 
   @Test
   public void queryServiceUsesRestrictedMethodAuthorizerWithNoQueryServiceInXmlAndSecurityEnabled() {
@@ -123,16 +119,6 @@ public class QueryServiceXmlIntegrationTest {
   @Test
   public void queryServiceWithUserDefinedAuthorizerCanBeLoadedFromXml()
       throws IOException, NoSuchMethodException {
-    String className = TestMethodAuthorizer.class.getName();
-    String classContent =
-        new String(Files.readAllBytes(Paths.get(getFilePath(TEST_AUTHORIZER_TXT))));
-
-    File jarFile = temporaryFolder.newFile("testJar.jar");
-
-    // Write a jar containing the TestMethodAuthorizer class (parsed from TestMthodAuthorizer.txt)
-    // to the server's working directory
-    new ClassBuilder().writeJarFromContent(className, classContent, jarFile);
-
     String cacheXmlFilePath = getFilePath(USER_AUTHORIZER_XML);
     serverRule.withProperty(CACHE_XML_FILE, cacheXmlFilePath)
         .withSecurityManager(SimpleSecurityManager.class).startServer();
