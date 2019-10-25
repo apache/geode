@@ -12,26 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.query.cq.dunit;
+package org.apache.geode.cache.query.internal;
 
+/**
+ * Test class to manually try to modify the ExecutionContext cache after a CQ has been created.
+ * It needs to be part of the {@link org.apache.geode.cache.query.internal} package because the
+ * method {@link ExecutionContext#cachePut(Object, Object)} has package access.
+ */
+public class ExecutionContextTamperer {
 
-
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-
-@Category({SecurityTest.class})
-@RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class CqSecurityPartitionedUnauthorizedUserDUnitTest
-    extends CqSecurityUnauthorizedUserDUnitTest {
-  @Override
-  public RegionShortcut getRegionType() {
-    return RegionShortcut.PARTITION;
+  public static void tamperContextCache(ExecutionContext context, Object key, Object value) {
+    context.cachePut(key, value);
   }
-
 }
