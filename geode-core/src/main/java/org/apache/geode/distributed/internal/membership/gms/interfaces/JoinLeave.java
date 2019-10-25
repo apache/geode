@@ -14,8 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
 public interface JoinLeave extends Service {
 
@@ -33,23 +33,23 @@ public interface JoinLeave extends Service {
   /**
    * force another member out of the system
    */
-  void remove(GMSMember m, String reason);
+  void remove(MemberIdentifier m, String reason);
 
   /**
    * Invoked by the Manager, this notifies the HealthMonitor that a ShutdownMessage has been
    * received from the given member
    */
-  void memberShutdown(GMSMember mbr, String reason);
+  void memberShutdown(MemberIdentifier mbr, String reason);
 
   /**
    * returns the local address
    */
-  GMSMember getMemberID();
+  MemberIdentifier getMemberID();
 
   /**
    * Get canonical "GMSMember" from current view or prepared view.
    */
-  GMSMember getMemberID(GMSMember m);
+  MemberIdentifier getMemberID(MemberIdentifier m);
 
   /**
    * returns the current membership view
@@ -66,7 +66,7 @@ public interface JoinLeave extends Service {
    * check to see if a member is already in the process of leaving or being removed (in the next
    * view)
    */
-  boolean isMemberLeaving(GMSMember mbr);
+  boolean isMemberLeaving(MemberIdentifier mbr);
 
   /**
    * test hook

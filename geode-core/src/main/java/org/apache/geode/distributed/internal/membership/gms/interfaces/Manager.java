@@ -16,9 +16,9 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import java.util.Collection;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
@@ -41,7 +41,7 @@ public interface Manager extends Service, MessageHandler<GMSMessage> {
   /**
    * notifies the manager that membership quorum has been lost
    */
-  void quorumLost(Collection<GMSMember> failures, GMSMembershipView view);
+  void quorumLost(Collection<MemberIdentifier> failures, GMSMembershipView view);
 
   /**
    * sometimes we cannot perform multicast messaging, such as during a rolling upgrade.

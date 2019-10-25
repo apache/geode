@@ -19,13 +19,13 @@ import static org.apache.geode.internal.serialization.DataSerializableFixedID.FI
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_RESP;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.GET_VIEW_REQ;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.GET_VIEW_RESP;
-import static org.apache.geode.internal.serialization.DataSerializableFixedID.GMSMEMBER;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.HEARTBEAT_REQUEST;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.HEARTBEAT_RESPONSE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.INSTALL_VIEW_MESSAGE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_RESPONSE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.MEMBER_IDENTIFIER;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETVIEW;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
@@ -41,6 +41,8 @@ import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
@@ -84,6 +86,8 @@ public class Services {
   private final Stopper cancelCriterion;
   private final DSFIDSerializer serializer;
 
+  private final MemberIdentifierFactory memberFactory;
+
   private volatile boolean stopping;
   private volatile boolean stopped;
   private volatile Exception shutdownCause;
@@ -123,11 +127,12 @@ public class Services {
     this.messenger = null;
     this.auth = null;
     this.serializer = null;
+    this.memberFactory = null;
   }
 
   public Services(Manager membershipManager, MembershipStatistics stats,
       final Authenticator authenticator, MembershipConfig membershipConfig,
-      DSFIDSerializer serializer) {
+      DSFIDSerializer serializer, MemberIdentifierFactory memberFactory) {
     this.cancelCriterion = new Stopper();
     this.stats = stats;
     this.config = membershipConfig;
@@ -137,6 +142,7 @@ public class Services {
     this.messenger = new JGroupsMessenger();
     this.auth = authenticator;
     this.serializer = serializer;
+    this.memberFactory = memberFactory;
     registerSerializables(serializer);
   }
 
@@ -151,7 +157,7 @@ public class Services {
     serializer.registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
     serializer.registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
     serializer.registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
-    serializer.registerDSFID(GMSMEMBER, GMSMember.class);
+    serializer.registerDSFID(MEMBER_IDENTIFIER, MemberIdentifier.class);
     serializer.registerDSFID(NETVIEW, GMSMembershipView.class);
     serializer.registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
     serializer.registerDSFID(GET_VIEW_RESP, GetViewResponse.class);
@@ -214,7 +220,7 @@ public class Services {
     }
   }
 
-  public void setLocalAddress(GMSMember address) {
+  public void setLocalAddress(MemberIdentifier address) {
     this.messenger.setLocalAddress(address);
     this.joinLeave.setLocalAddress(address);
     this.healthMon.setLocalAddress(address);
@@ -291,8 +297,8 @@ public class Services {
     this.manager.installView(v);
   }
 
-  public void memberSuspected(GMSMember initiator,
-      GMSMember suspect, String reason) {
+  public void memberSuspected(MemberIdentifier initiator,
+      MemberIdentifier suspect, String reason) {
     try {
       this.joinLeave.memberSuspected(initiator, suspect, reason);
     } finally {
@@ -338,6 +344,10 @@ public class Services {
 
   public MembershipStatistics getStatistics() {
     return this.stats;
+  }
+
+  public MemberIdentifierFactory getMemberFactory() {
+    return memberFactory;
   }
 
   public Stopper getCancelCriterion() {

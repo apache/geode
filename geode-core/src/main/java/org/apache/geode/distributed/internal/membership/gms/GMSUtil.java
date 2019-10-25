@@ -17,8 +17,6 @@ package org.apache.geode.distributed.internal.membership.gms;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -31,6 +29,7 @@ import java.util.StringTokenizer;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
@@ -65,31 +64,19 @@ public class GMSUtil {
     return parseLocators(locatorsString, addr);
   }
 
-  public static GMSMember readMemberID(DataInput in,
+  public static MemberIdentifier readMemberID(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    Object id = context.getDeserializer().readObject(in);
-    if (id == null || id instanceof GMSMember) {
-      return (GMSMember) id;
-    }
-    // return ((GMSMemberAdapter)((InternalDistributedMember)id).getNetMember()).getGmsMember();
-    try {
-      Method getNetMember = id.getClass().getMethod("getNetMember");
-      Object netMember = getNetMember.invoke(id);
-      Method getGmsMember = netMember.getClass().getMethod("getGmsMember");
-      return (GMSMember) getGmsMember.invoke(netMember);
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-      throw new IllegalStateException("Unable to deserialize a member ID", e);
-    }
+    return (MemberIdentifier) context.getDeserializer().readObject(in);
   }
 
-  public static Set<GMSMember> readHashSetOfMemberIDs(DataInput in,
+  public static Set<MemberIdentifier> readHashSetOfMemberIDs(DataInput in,
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
     int size = StaticSerialization.readArrayLength(in);
     if (size == -1) {
       return null;
     }
-    Set<GMSMember> result = new HashSet<>();
+    Set<MemberIdentifier> result = new HashSet<>();
     for (int i = 0; i < size; i++) {
       result.add(readMemberID(in, context));
     }
@@ -222,27 +209,27 @@ public class GMSUtil {
     return sb.toString();
   }
 
-  public static List<GMSMember> readArrayOfIDs(DataInput in,
+  public static List<MemberIdentifier> readArrayOfIDs(DataInput in,
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
     int size = StaticSerialization.readArrayLength(in);
     if (size == -1) {
       return null;
     }
-    List<GMSMember> result = new ArrayList<>(size);
+    List<MemberIdentifier> result = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
       result.add(readMemberID(in, context));
     }
     return result;
   }
 
-  private static void writeAsInternalDistributedMember(GMSMember suspect, DataOutput out,
+  private static void writeAsInternalDistributedMember(MemberIdentifier suspect, DataOutput out,
       SerializationContext context) throws IOException {
     context.getSerializer().writeDSFID(suspect, DataSerializableFixedID.DISTRIBUTED_MEMBER,
         out);
   }
 
-  public static void writeMemberID(GMSMember id, DataOutput out,
+  public static void writeMemberID(MemberIdentifier id, DataOutput out,
       SerializationContext context) throws IOException {
     if (id == null) {
       context.getSerializer().writeObject(id, out);
@@ -256,7 +243,7 @@ public class GMSUtil {
     }
   }
 
-  public static void writeSetOfMemberIDs(Set<GMSMember> set, DataOutput out,
+  public static void writeSetOfMemberIDs(Set<MemberIdentifier> set, DataOutput out,
       SerializationContext context) throws IOException {
     int size;
     if (set == null) {
@@ -266,7 +253,7 @@ public class GMSUtil {
     }
     StaticSerialization.writeArrayLength(size, out);
     if (size > 0) {
-      for (GMSMember member : set) {
+      for (MemberIdentifier member : set) {
         GMSUtil.writeMemberID(member, out, context);
       }
     }

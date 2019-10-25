@@ -40,22 +40,23 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class GMSQuorumCheckerJUnitTest {
 
-  private GMSMember[] mockMembers;
+  private MemberIdentifier[] mockMembers;
   private JChannel channel;
   private JGAddress address;
 
   @Before
   public void initMocks() {
-    mockMembers = new GMSMember[12];
+    mockMembers = new MemberIdentifier[12];
     for (int i = 0; i < mockMembers.length; i++) {
-      mockMembers[i] = new GMSMember("localhost", 8888 + i);
+      mockMembers[i] = new InternalDistributedMember("localhost", 8888 + i);
     }
     channel = mock(JChannel.class);
     address = mock(JGAddress.class);
@@ -135,8 +136,8 @@ public class GMSQuorumCheckerJUnitTest {
   @Test
   public void testQuorumChecker10Servers2Locators4ServersLost() throws Exception {
     GMSMembershipView view = prepareView();
-    mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
-    mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[0].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[1].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
@@ -162,8 +163,8 @@ public class GMSQuorumCheckerJUnitTest {
   @Test
   public void testQuorumChecker10Servers2Locators4ServersAnd1LocatorLost() throws Exception {
     GMSMembershipView view = prepareView();
-    mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
-    mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[0].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[1].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
@@ -193,8 +194,8 @@ public class GMSQuorumCheckerJUnitTest {
   public void testQuorumChecker10Servers2Locators5ServersAnd2LocatorsButNotLeadMemberLost()
       throws Exception {
     GMSMembershipView view = prepareView();
-    mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
-    mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[0].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[1].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
@@ -226,8 +227,8 @@ public class GMSQuorumCheckerJUnitTest {
   public void testQuorumChecker10Servers2Locators5ServerAnd1LocatorWithLeadMemberLost()
       throws Exception {
     GMSMembershipView view = prepareView();
-    mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
-    mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[0].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[1].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
@@ -257,8 +258,8 @@ public class GMSQuorumCheckerJUnitTest {
   public void testQuorumChecker2Servers2LocatorsLeadMemberLost() throws Exception {
     int numMembers = 4;
     GMSMembershipView view = prepareView(numMembers);
-    mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
-    mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[0].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[1].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < numMembers; i++) {
@@ -281,8 +282,8 @@ public class GMSQuorumCheckerJUnitTest {
   public void testQuorumChecker2Servers2LocatorsLeadMemberAnd1LocatorLost() throws Exception {
     int numMembers = 4;
     GMSMembershipView view = prepareView(numMembers);
-    mockMembers[0].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
-    mockMembers[1].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[0].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    mockMembers[1].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < numMembers; i++) {
@@ -308,7 +309,7 @@ public class GMSQuorumCheckerJUnitTest {
 
   private GMSMembershipView prepareView(int numMembers) {
     int viewId = 1;
-    List<GMSMember> mbrs = new LinkedList<>();
+    List<MemberIdentifier> mbrs = new LinkedList<>();
     for (int i = 0; i < numMembers; i++) {
       mbrs.add(mockMembers[i]);
     }

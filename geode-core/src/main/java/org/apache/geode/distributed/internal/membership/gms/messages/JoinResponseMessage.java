@@ -20,9 +20,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
@@ -39,19 +39,19 @@ public class JoinResponseMessage extends AbstractGMSMessage {
 
   private GMSMembershipView currentView;
   private String rejectionMessage;
-  private GMSMember memberID;
+  private MemberIdentifier memberID;
   private byte[] messengerData;
   private int requestId;
   private byte[] secretPk;
 
-  public JoinResponseMessage(GMSMember memberID, GMSMembershipView view, int requestId) {
+  public JoinResponseMessage(MemberIdentifier memberID, GMSMembershipView view, int requestId) {
     this.currentView = view;
     this.memberID = memberID;
     this.requestId = requestId;
     setRecipient(memberID);
   }
 
-  public JoinResponseMessage(GMSMember memberID, byte[] sPk, int requestId) {
+  public JoinResponseMessage(MemberIdentifier memberID, byte[] sPk, int requestId) {
     this.memberID = memberID;
     this.requestId = requestId;
     this.secretPk = sPk;
@@ -79,7 +79,7 @@ public class JoinResponseMessage extends AbstractGMSMessage {
     return currentView;
   }
 
-  public GMSMember getMemberID() {
+  public MemberIdentifier getMemberID() {
     return memberID;
   }
 

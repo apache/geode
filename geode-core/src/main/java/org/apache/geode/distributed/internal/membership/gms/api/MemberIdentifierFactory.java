@@ -12,12 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.messages;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import java.util.Comparator;
 
-public interface HasMemberID {
 
-  MemberIdentifier getMemberID();
+/**
+ * A MemberIdentifierFactory is provided when building a membership service. It must provide
+ * implementations of the MemberIdentifier interface for use as identifiers in the membership
+ * service. For Geode this implementation is InternalDistributedMember.<br>
+ * See {@link MembershipBuilder} - where you inject your factory into GMS
+ */
+public interface MemberIdentifierFactory {
+  /**
+   * Create a new identifier instance
+   */
+  MemberIdentifier create(MemberData memberInfo);
 
+  /**
+   * Create a Comparator for the implementation of identifiers provided by this factory
+   */
+  Comparator<MemberIdentifier> getComparator();
 }

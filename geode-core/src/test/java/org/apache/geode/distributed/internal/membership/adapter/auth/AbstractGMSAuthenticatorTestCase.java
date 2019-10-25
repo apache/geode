@@ -28,7 +28,7 @@ import org.mockito.MockitoAnnotations;
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.internal.net.SocketCreator;
@@ -48,7 +48,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
   @Mock
   protected Services services;
   @Mock
-  protected GMSMember member;
+  protected InternalDistributedMember member;
   @Mock
   protected Subject subject;
 

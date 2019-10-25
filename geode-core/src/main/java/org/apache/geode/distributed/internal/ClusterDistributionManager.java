@@ -21,6 +21,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,6 +63,9 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -118,16 +122,16 @@ public class ClusterDistributionManager implements DistributionManager {
 
 
   /** The DM type for regular distribution managers */
-  public static final int NORMAL_DM_TYPE = 10;
+  public static final int NORMAL_DM_TYPE = MemberIdentifier.NORMAL_DM_TYPE;
 
   /** The DM type for locator distribution managers */
-  public static final int LOCATOR_DM_TYPE = 11;
+  public static final int LOCATOR_DM_TYPE = MemberIdentifier.LOCATOR_DM_TYPE;
 
   /** The DM type for Console (admin-only) distribution managers */
-  public static final int ADMIN_ONLY_DM_TYPE = 12;
+  public static final int ADMIN_ONLY_DM_TYPE = MemberIdentifier.ADMIN_ONLY_DM_TYPE;
 
   /** The DM type for stand-alone members */
-  public static final int LONER_DM_TYPE = 13;
+  public static final int LONER_DM_TYPE = MemberIdentifier.LONER_DM_TYPE;
 
 
 
@@ -456,6 +460,7 @@ public class ClusterDistributionManager implements DistributionManager {
           .setMembershipListener(listener)
           .setConfig(new ServiceConfig(transport, system.getConfig()))
           .setSerializer(InternalDataSerializer.getDSFIDSerializer())
+          .setMemberIDFactory(new ClusterDistributionManagerIDFactory())
           .create();
 
       sb.append(System.currentTimeMillis() - start);
@@ -2819,6 +2824,25 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public CancelCriterion getCancelCriterion() {
     return stopper;
+  }
+
+  static class ClusterDistributionManagerIDFactory implements MemberIdentifierFactory {
+    static final Comparator<MemberIdentifier> idComparator = new Comparator() {
+      @Override
+      public int compare(Object o1, Object o2) {
+        return ((DistributedMember) o1).compareTo((DistributedMember) o2);
+      }
+    };
+
+    @Override
+    public MemberIdentifier create(MemberData memberInfo) {
+      return new InternalDistributedMember(memberInfo);
+    }
+
+    @Override
+    public Comparator<MemberIdentifier> getComparator() {
+      return idComparator;
+    }
   }
 
 }

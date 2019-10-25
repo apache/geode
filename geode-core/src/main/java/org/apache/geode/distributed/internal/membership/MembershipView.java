@@ -183,7 +183,7 @@ public class MembershipView {
 
   public InternalDistributedMember getCoordinator() {
     for (InternalDistributedMember addr : members) {
-      if (addr.getNetMember().preferredForCoordinator()) {
+      if (addr.getMemberData().preferredForCoordinator()) {
         return addr;
       }
     }

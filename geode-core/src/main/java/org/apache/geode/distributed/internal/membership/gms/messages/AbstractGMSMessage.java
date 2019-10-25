@@ -18,15 +18,15 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public abstract class AbstractGMSMessage implements DataSerializableFixedID, GMSMessage {
   @Immutable
-  public static final GMSMember ALL_RECIPIENTS = null;
-  private List<GMSMember> recipients;
-  private GMSMember sender;
+  public static final MemberIdentifier ALL_RECIPIENTS = null;
+  private List<MemberIdentifier> recipients;
+  private MemberIdentifier sender;
 
   @Override
   public void registerProcessor() {
@@ -39,17 +39,17 @@ public abstract class AbstractGMSMessage implements DataSerializableFixedID, GMS
   }
 
   @Override
-  public void setRecipient(GMSMember member) {
+  public void setRecipient(MemberIdentifier member) {
     recipients = Collections.singletonList(member);
   }
 
   @Override
-  public void setRecipients(List<GMSMember> recipients) {
+  public void setRecipients(List<MemberIdentifier> recipients) {
     this.recipients = recipients;
   }
 
   @Override
-  public List<GMSMember> getRecipients() {
+  public List<MemberIdentifier> getRecipients() {
     if (getMulticast()) {
       return Collections.singletonList(ALL_RECIPIENTS);
     } else if (this.recipients != null) {
@@ -64,18 +64,18 @@ public abstract class AbstractGMSMessage implements DataSerializableFixedID, GMS
     if (getMulticast()) {
       return true;
     }
-    List<GMSMember> recipients = getRecipients();
+    List<MemberIdentifier> recipients = getRecipients();
     return recipients == ALL_RECIPIENTS ||
         (recipients.size() == 1 && recipients.get(0) == ALL_RECIPIENTS);
   }
 
   @Override
-  public void setSender(GMSMember sender) {
+  public void setSender(MemberIdentifier sender) {
     this.sender = sender;
   }
 
   @Override
-  public GMSMember getSender() {
+  public MemberIdentifier getSender() {
     return sender;
   }
 

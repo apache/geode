@@ -56,8 +56,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -346,7 +345,7 @@ public class ClientCacheFactoryJUnitTest {
     clientCache = new ClientCacheFactory().create();
     InternalDistributedMember memberID =
         (InternalDistributedMember) clientCache.getDistributedSystem().getDistributedMember();
-    GMSMember gmsID = ((GMSMemberAdapter) memberID.getNetMember()).getGmsMember();
+    MemberIdentifier gmsID = memberID;
     memberID.setVersionObjectForTest(Version.GFE_82);
     assertThat(memberID.getVersionObject()).isEqualTo(Version.GFE_82);
 
@@ -363,11 +362,10 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.GFE_82);
     assertThat(newID.getClientVersion()).isEqualTo(Version.GFE_82);
 
-    GMSMember newGmsID = ((GMSMemberAdapter) newMemberID.getNetMember()).getGmsMember();
-    assertThat(newGmsID.getUuidLSBs()).isEqualTo(0);
-    assertThat(newGmsID.getUuidMSBs()).isEqualTo(0);
+    assertThat(newMemberID.getMemberData().getUuidLSBs()).isEqualTo(0);
+    assertThat(newMemberID.getMemberData().getUuidMSBs()).isEqualTo(0);
 
-    gmsID.setUUID(new UUID(1234L, 5678L));
+    gmsID.getMemberData().setUUID(new UUID(1234L, 5678L));
     memberID.setVersionObjectForTest(Version.CURRENT);
     clientID = ClientProxyMembershipID.getClientId(memberID);
     out = new HeapDataOutputStream(Version.CURRENT);
@@ -380,9 +378,10 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.CURRENT);
     assertThat(newID.getClientVersion()).isEqualTo(Version.CURRENT);
 
-    newGmsID = ((GMSMemberAdapter) newMemberID.getNetMember()).getGmsMember();
-    assertThat(newGmsID.getUuidLSBs()).isEqualTo(gmsID.getUuidLSBs());
-    assertThat(newGmsID.getUuidMSBs()).isEqualTo(gmsID.getUuidMSBs());
+    assertThat(newMemberID.getMemberData().getUuidLSBs())
+        .isEqualTo(gmsID.getMemberData().getUuidLSBs());
+    assertThat(newMemberID.getMemberData().getUuidMSBs())
+        .isEqualTo(gmsID.getMemberData().getUuidMSBs());
   }
 
   @Test

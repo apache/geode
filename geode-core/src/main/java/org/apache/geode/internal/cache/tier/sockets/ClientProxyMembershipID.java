@@ -463,7 +463,7 @@ public class ClientProxyMembershipID
    */
   public void updateDurableTimeout(int newValue) {
     InternalDistributedMember member = (InternalDistributedMember) getDistributedMember();
-    member.getNetMember().setDurableTimeout(newValue);
+    member.getMemberData().setDurableTimeout(newValue);
   }
 
   /**
