@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.LongSupplier;
 
 import javax.net.ssl.SSLException;
 
@@ -131,16 +132,7 @@ public class TcpServer {
 
   protected SocketCreator socketCreator;
 
-  /*
-   * We define this interface rather than using Supplier<Long> so as to avoid
-   * constructing a Long object every time we need nano time.
-   */
-  @FunctionalInterface
-  public interface NanoTimeSupplier {
-    long get();
-  }
-
-  private final NanoTimeSupplier nanoTimeSupplier;
+  private final LongSupplier nanoTimeSupplier;
 
 
   /*
@@ -158,7 +150,7 @@ public class TcpServer {
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
       String threadName, ProtocolChecker protocolChecker,
-      final NanoTimeSupplier nanoTimeSupplier) {
+      final LongSupplier nanoTimeSupplier) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
@@ -336,7 +328,7 @@ public class TcpServer {
   private void processRequest(final Socket socket) {
     executor.execute(() -> {
 
-      final long startTime = nanoTimeSupplier.get();
+      final long startTime = nanoTimeSupplier.getAsLong();
       DataInputStream input = null;
       try {
         socket.setSoTimeout(READ_TIMEOUT);
@@ -471,7 +463,7 @@ public class TcpServer {
 
       handler.endRequest(request, startTime);
 
-      final long startTime2 = nanoTimeSupplier.get();
+      final long startTime2 = nanoTimeSupplier.getAsLong();
       if (response != null) {
         DataOutputStream output = new DataOutputStream(socket.getOutputStream());
         if (versionOrdinal != Version.CURRENT_ORDINAL) {
