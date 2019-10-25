@@ -432,11 +432,13 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 </tr>
 <tr>
 <td>member-timeout</td>
-<td><%=vars.product_name%> uses the <code class="ph codeph">member-timeout</code> server configuration, specified in milliseconds, to detect the abnormal termination of members. <%=vars.product_name%> members use a combination of UDP heartbeat messages and TCP sockets to monitor the health of other members. If a member is suspected to be unreachable, two active checks of the member are performed. Each of those checks waits a maximum of one <code class="ph codeph">member-timeout</code>. If those health checks receive a connection failure or no response within the timeout, the member is considered dead and is removed from the list of members.
+<td><%=vars.product_name%> uses the <code class="ph codeph">member-timeout</code> server configuration, specified in milliseconds, to detect unresponsive members.
+
+<%=vars.product_name%> members use a combination of UDP heartbeat messages and TCP sockets to monitor the health of other members. If a member is suspected to be unreachable, two active checks of the member are performed. Each of those checks waits a maximum of one <code class="ph codeph">member-timeout</code>. If those health checks receive a connection failure or no response within the timeout, the member is considered dead and is removed from the list of members.
 
 This setting also controls how frequently heartbeat messages are sent. They are sent at a frequency of half the <code class="ph codeph">member-timeout</code>.
 
-The total time it takes to remove a member that is not responding to any network traffic is therefore 2 to 3 times the <code class="ph codeph">member-timeout</code>. This is not the minimum time it takes to remove a member. If the Java process has crashed but the operating system can still return a connection failure response to the health checks, the crashed member may be removed immediately. 
+The total time it takes to remove a member that is not responding to any network traffic is therefore 2 to 3 times the <code class="ph codeph">member-timeout</code>. This is not the minimum time it takes to remove a member from the list of members in the cluster. If the Java process has crashed, but the operating system can still return a connection failure response to the health checks, the crashed member may be removed from the membership list immediately.
 
 <p>Valid values are in the range 1000..600000.</p></td>
 <td>S, L</td>
