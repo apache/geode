@@ -111,7 +111,7 @@ public class HateoasIntegrationTest {
 
   @Test
   public void listRootLinks() throws Exception {
-    context.perform(get("/"))
+    context.perform(get("/v1/"))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("\"links\"")))
         .andExpect(
