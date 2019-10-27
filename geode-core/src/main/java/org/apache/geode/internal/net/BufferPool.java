@@ -20,7 +20,9 @@ import java.util.IdentityHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.tcp.Connection;
 
 public class BufferPool {
   private final DMStats stats;
@@ -47,6 +49,18 @@ public class BufferPool {
       new ConcurrentLinkedQueue<>();
 
   /**
+   * A list of soft references to small byte buffers.
+   */
+  private final ConcurrentLinkedQueue<BBSoftReference> bufferSmallQueue =
+      new ConcurrentLinkedQueue<>();
+
+  /**
+   * A list of soft references to middle byte buffers.
+   */
+  private final ConcurrentLinkedQueue<BBSoftReference> bufferMiddleQueue =
+      new ConcurrentLinkedQueue<>();
+
+  /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
    */
   public static final boolean useDirectBuffers = !Boolean.getBoolean("p2p.nodirectBuffers");
@@ -69,13 +83,21 @@ public class BufferPool {
    */
   private ByteBuffer acquireDirectBuffer(int size, boolean send) {
     ByteBuffer result;
+
     if (useDirectBuffers) {
+      if (size <= Connection.SMALL_BUFFER_SIZE) {
+        return acquireSmallBuffer(send);
+      } else if (size <= DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE) {
+        return acquireMiddleBuffer(send);
+      }
+
       IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
                                                                             // set
       BBSoftReference ref = bufferQueue.poll();
       while (ref != null) {
         ByteBuffer bb = ref.getBB();
         if (bb == null) {
+
           // it was garbage collected
           int refSize = ref.consumeSize();
           if (refSize > 0) {
@@ -86,10 +108,12 @@ public class BufferPool {
             }
           }
         } else if (bb.capacity() >= size) {
+
           bb.rewind();
           bb.limit(size);
           return bb;
         } else {
+
           // wasn't big enough so put it back in the queue
           Assert.assertTrue(bufferQueue.offer(ref));
           if (alreadySeen == null) {
@@ -126,6 +150,74 @@ public class BufferPool {
   public ByteBuffer acquireNonDirectReceiveBuffer(int size) {
     ByteBuffer result = ByteBuffer.allocate(size);
     stats.incReceiverBufferSize(size, false);
+    return result;
+  }
+
+  private ByteBuffer acquireSmallBuffer(boolean send) {
+    // set
+    int size = Connection.SMALL_BUFFER_SIZE;
+    ByteBuffer result;
+
+    BBSoftReference ref = bufferSmallQueue.poll();
+    while (ref != null) {
+      ByteBuffer bb = ref.getBB();
+      if (bb == null) {
+
+        // it was garbage collected
+        if (size > 0) {
+          if (ref.getSend()) { // fix bug 46773
+            stats.incSenderBufferSize(-size, true);
+          } else {
+            stats.incReceiverBufferSize(-size, true);
+          }
+        }
+      } else {
+        bb.rewind();
+        bb.limit(size);
+        return bb;
+      }
+      ref = bufferSmallQueue.poll();
+    }
+    result = ByteBuffer.allocateDirect(size);
+    if (send) {
+      stats.incSenderBufferSize(size, true);
+    } else {
+      stats.incReceiverBufferSize(size, true);
+    }
+    return result;
+  }
+
+  private ByteBuffer acquireMiddleBuffer(boolean send) {
+    // set
+    int size = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
+    ByteBuffer result;
+
+    BBSoftReference ref = bufferMiddleQueue.poll();
+    while (ref != null) {
+      ByteBuffer bb = ref.getBB();
+      if (bb == null) {
+
+        // it was garbage collected
+        if (size > 0) {
+          if (ref.getSend()) { // fix bug 46773
+            stats.incSenderBufferSize(-size, true);
+          } else {
+            stats.incReceiverBufferSize(-size, true);
+          }
+        }
+      } else {
+        bb.rewind();
+        bb.limit(size);
+        return bb;
+      }
+      ref = bufferSmallQueue.poll();
+    }
+    result = ByteBuffer.allocateDirect(size);
+    if (send) {
+      stats.incSenderBufferSize(size, true);
+    } else {
+      stats.incReceiverBufferSize(size, true);
+    }
     return result;
   }
 
@@ -228,7 +320,13 @@ public class BufferPool {
   private void releaseBuffer(ByteBuffer bb, boolean send) {
     if (bb.isDirect()) {
       BBSoftReference bbRef = new BBSoftReference(bb, send);
-      bufferQueue.offer(bbRef);
+      if (bb.capacity() <= Connection.SMALL_BUFFER_SIZE) {
+        bufferSmallQueue.offer(bbRef);
+      } else if (bb.capacity() <= DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE) {
+        bufferMiddleQueue.offer(bbRef);
+      } else {
+        bufferQueue.offer(bbRef);
+      }
     } else {
       if (send) {
         stats.incSenderBufferSize(-bb.capacity(), false);

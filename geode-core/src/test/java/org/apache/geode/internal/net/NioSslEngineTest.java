@@ -62,8 +62,8 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class NioSslEngineTest {
-  private static final int netBufferSize = 10000;
-  private static final int appBufferSize = 20000;
+  private static final int netBufferSize = 4096;
+  private static final int appBufferSize = 32768;
 
   private SSLEngine mockEngine;
   private DMStats mockStats;
