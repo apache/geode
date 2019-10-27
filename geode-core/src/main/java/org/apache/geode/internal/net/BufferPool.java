@@ -206,7 +206,7 @@ public class BufferPool {
         bb.limit(size);
         return bb;
       }
-      ref = bufferSmallQueue.poll();
+      ref = bufferMiddleQueue.poll();
     }
     result = ByteBuffer.allocateDirect(size);
     if (send) {
