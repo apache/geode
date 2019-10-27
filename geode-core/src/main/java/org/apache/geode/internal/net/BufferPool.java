@@ -164,12 +164,10 @@ public class BufferPool {
       if (bb == null) {
 
         // it was garbage collected
-        if (size > 0) {
-          if (ref.getSend()) { // fix bug 46773
-            stats.incSenderBufferSize(-size, true);
-          } else {
-            stats.incReceiverBufferSize(-size, true);
-          }
+        if (ref.getSend()) { // fix bug 46773
+          stats.incSenderBufferSize(-size, true);
+        } else {
+          stats.incReceiverBufferSize(-size, true);
         }
       } else {
         bb.rewind();
@@ -198,12 +196,10 @@ public class BufferPool {
       if (bb == null) {
 
         // it was garbage collected
-        if (size > 0) {
-          if (ref.getSend()) { // fix bug 46773
-            stats.incSenderBufferSize(-size, true);
-          } else {
-            stats.incReceiverBufferSize(-size, true);
-          }
+        if (ref.getSend()) { // fix bug 46773
+          stats.incSenderBufferSize(-size, true);
+        } else {
+          stats.incReceiverBufferSize(-size, true);
         }
       } else {
         bb.rewind();
