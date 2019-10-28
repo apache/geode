@@ -14,6 +14,7 @@
  */
 package org.apache.geode.session.tests;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
 
@@ -27,6 +28,7 @@ public class TomcatSessionBackwardsCompatibilityTomcat7079WithOldModuleCanDoPuts
     super(version);
   }
 
+  @Ignore
   @Test
   public void test() throws Exception {
     startClusterWithTomcat(classPathTomcat7079);
