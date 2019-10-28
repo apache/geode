@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.query.internal.xml.QueryMethodAuthorizerCreation;
 import org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer;
@@ -32,8 +31,6 @@ import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
 import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -140,31 +137,25 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
       return;
     }
 
-    lock(cache);
-    try {
-
-      if (className.equals(RestrictedMethodAuthorizer.class.getName())) {
-        this.authorizer = new RestrictedMethodAuthorizer(cache);
-      } else if (className.equals(UnrestrictedMethodAuthorizer.class.getName())) {
-        this.authorizer = new UnrestrictedMethodAuthorizer(cache);
-      } else if (className.equals(JavaBeanAccessorMethodAuthorizer.class.getName())) {
-        this.authorizer = new JavaBeanAccessorMethodAuthorizer(cache, parameters);
-      } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
-        this.authorizer = new RegExMethodAuthorizer(cache, parameters);
-      } else {
-        try {
-          @SuppressWarnings("unchecked")
-          Class<MethodInvocationAuthorizer> userClass =
-              (Class<MethodInvocationAuthorizer>) ClassPathLoader.getLatest().forName(className);
-          Constructor<MethodInvocationAuthorizer> userConstructor =
-              userClass.getDeclaredConstructor(Cache.class, Set.class);
-          this.authorizer = userConstructor.newInstance(cache, parameters);
-        } catch (Exception e) {
-          logErrorMessage(className, e);
-        }
+    if (className.equals(RestrictedMethodAuthorizer.class.getName())) {
+      this.authorizer = new RestrictedMethodAuthorizer(cache);
+    } else if (className.equals(UnrestrictedMethodAuthorizer.class.getName())) {
+      this.authorizer = new UnrestrictedMethodAuthorizer(cache);
+    } else if (className.equals(JavaBeanAccessorMethodAuthorizer.class.getName())) {
+      this.authorizer = new JavaBeanAccessorMethodAuthorizer(cache, parameters);
+    } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
+      this.authorizer = new RegExMethodAuthorizer(cache, parameters);
+    } else {
+      try {
+        @SuppressWarnings("unchecked")
+        Class<MethodInvocationAuthorizer> userClass =
+            (Class<MethodInvocationAuthorizer>) ClassPathLoader.getLatest().forName(className);
+        Constructor<MethodInvocationAuthorizer> userConstructor =
+            userClass.getDeclaredConstructor(Cache.class, Set.class);
+        this.authorizer = userConstructor.newInstance(cache, parameters);
+      } catch (Exception e) {
+        logErrorMessage(className, e);
       }
-    } finally {
-      unlock(cache);
     }
   }
 
@@ -181,53 +172,6 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
     } else {
       logError(UPDATE_ERROR_MESSAGE + INSTANTIATION_ERROR + AUTHORIZER_NOT_UPDATED, e);
     }
-  }
-
-  private void lock(Cache cache) {
-    DistributedLockService dls = getLockService((InternalCache) cache);
-    try {
-      if (!dls.lock(LOCK_NAME, -1, -1)) {
-        // this should be impossible
-        throw new InternalGemFireException("Could not obtain query configuration service lock");
-      }
-    } catch (LockServiceDestroyedException e) {
-      cache.getCancelCriterion().checkCancelInProgress(e);
-      throw e;
-    }
-  }
-
-  private void unlock(Cache cache) {
-    try {
-      DistributedLockService dls = getLockService((InternalCache) cache);
-      dls.unlock(LOCK_NAME);
-    } catch (LockServiceDestroyedException e) {
-      cache.getCancelCriterion().checkCancelInProgress(e);
-      throw e;
-    }
-  }
-
-  protected DistributedLockService getLockService(InternalCache cache) {
-    if (distributedLockService != null) {
-      return distributedLockService;
-    }
-    synchronized (getLockServiceSynchronizer) {
-      if (distributedLockService == null) {
-        distributedLockService = getExistingDistributedLockService();
-        if (distributedLockService == null) {
-          distributedLockService = createDistributedLockService(cache);
-        }
-      }
-      return distributedLockService;
-    }
-  }
-
-  DistributedLockService getExistingDistributedLockService() {
-    return DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME);
-  }
-
-  DistributedLockService createDistributedLockService(InternalCache cache) {
-    return DLockService.create(LOCK_SERVICE_NAME, cache.getInternalDistributedSystem(), true, true,
-        true);
   }
 
   // For testing
