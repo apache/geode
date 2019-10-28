@@ -215,6 +215,10 @@ public class QueryConfigurationServiceImplTest {
   public void updateMethodAuthorizerDoesNotChangeMethodAuthorizerWhenSecurityIsEnabledAndSpecifiedClassHasNoValidConstructor() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
 
+    doReturn(mockDistributedLockService).when(configService).getLockService(mockCache);
+    when(mockDistributedLockService.lock(any(String.class), any(long.class), any(long.class)))
+        .thenReturn(true);
+
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     configService.updateMethodAuthorizer(mockCache, this.getClass().getName(), new HashSet<>());
