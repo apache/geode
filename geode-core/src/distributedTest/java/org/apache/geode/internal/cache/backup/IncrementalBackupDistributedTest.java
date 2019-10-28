@@ -40,6 +40,11 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.geode.internal.cache.CacheLifecycleListener;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.offheap.LifecycleListener;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -261,11 +266,16 @@ public class IncrementalBackupDistributedTest implements Serializable {
   public void testMissingMemberInBaseline() {
     // Simulate the missing member by forcing a persistent member to go offline.
     PersistentID missingMember = vm0.invoke(() -> getPersistentID(diskStoreName1));
-    vm0.invoke(() -> cacheRule.getCache().close());
-    logger.info("JASON expected vm0 to be closed" + vm0);
-//    await()
-//        .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember)));
+    TestCacheLifeCycleListener cacheLifecycleListenerForVm0 = new TestCacheLifeCycleListener();
+    vm0.invoke(() -> {
+      GemFireCacheImpl.addCacheLifecycleListener(cacheLifecycleListenerForVm0);
+    };
 
+    vm0.invoke(() -> cacheRule.getCache().close());
+    await().until(() -> cacheLifecycleListenerForVm0.isCacheClosed);
+    logger.info("JASON expected vm0 to be closed" + vm0);
+    await()
+        .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember)));
     // Perform performBackupBaseline and make sure that list of offline disk stores contains our
     // missing member.
     logger.info("JASON TEST BACKUP BEGIN");
@@ -697,4 +707,16 @@ public class IncrementalBackupDistributedTest implements Serializable {
       Files.delete(file.toPath());
     }
   }
+
+
+  public static class TestCacheLifeCycleListener implements CacheLifecycleListener {
+    Boolean isCacheClosed = false;
+      public void cacheCreated(InternalCache cache) {
+
+      }
+
+      public void cacheClosed(InternalCache cache) {
+        isCacheClosed = true;
+      }
+    }
 }
