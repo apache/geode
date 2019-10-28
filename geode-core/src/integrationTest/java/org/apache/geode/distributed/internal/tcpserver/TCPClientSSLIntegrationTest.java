@@ -45,6 +45,7 @@ import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -200,8 +201,9 @@ public class TCPClientSSLIntegrationTest {
     public FakeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
         DistributionConfigImpl cfg, RestartableTcpHandler handler, PoolStatHelper poolHelper,
         String threadName) {
-      super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadName,
-          (socket, input, firstByte) -> false, DistributionStats::getStatTime);
+      super(port, bind_address, sslConfig, cfg, handler, threadName,
+          (socket, input, firstByte) -> false, DistributionStats::getStatTime,
+          TcpServerFactory.createExecutorServiceSupplier(poolHelper));
       if (cfg == null) {
         cfg = new DistributionConfigImpl(sslConfig);
       }
