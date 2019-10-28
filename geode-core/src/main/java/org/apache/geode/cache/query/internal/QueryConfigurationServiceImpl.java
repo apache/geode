@@ -58,7 +58,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   private static final String LOCK_NAME = "QUERY_CONFIG_SERVICE_LOCK";
   private static final String LOCK_SERVICE_NAME = "__QUERY_CONFIG_SERVICE";
   private DistributedLockService distributedLockService;
-  private final Object distributedLockServiceLock = new Object();
+  private final Object getLockServiceSynchronizer = new Object();
 
   private MethodInvocationAuthorizer authorizer;
 
@@ -183,32 +183,24 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
     }
   }
 
-  // For testing
-  void logError(String message, Exception e) {
-    logger.error(message, e);
+  private void lock(Cache cache) {
+    DistributedLockService dls = getLockService((InternalCache) cache);
+    try {
+      if (!dls.lock(LOCK_NAME, -1, -1)) {
+        // this should be impossible
+        throw new InternalGemFireException("Could not obtain query configuration service lock");
+      }
+    } catch (LockServiceDestroyedException e) {
+      cache.getCancelCriterion().checkCancelInProgress(e);
+      throw e;
+    }
   }
-
 
   private void unlock(Cache cache) {
     try {
       DistributedLockService dls = getLockService((InternalCache) cache);
       dls.unlock(LOCK_NAME);
     } catch (LockServiceDestroyedException e) {
-      // fix for bug 43574
-      cache.getCancelCriterion().checkCancelInProgress(e);
-      throw e;
-    }
-  }
-
-  private void lock(Cache cache) {
-    DistributedLockService dls = getLockService((InternalCache) cache);
-    try {
-      if (!dls.lock(LOCK_NAME, -1, -1)) {
-        // this should be impossible
-        throw new InternalGemFireException("Could not obtain pdx lock");
-      }
-    } catch (LockServiceDestroyedException e) {
-      // fix for bug 43172
       cache.getCancelCriterion().checkCancelInProgress(e);
       throw e;
     }
@@ -218,20 +210,28 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
     if (distributedLockService != null) {
       return distributedLockService;
     }
-    synchronized (distributedLockServiceLock) {
+    synchronized (getLockServiceSynchronizer) {
       if (distributedLockService == null) {
-        try {
-          distributedLockService = DLockService.create(LOCK_SERVICE_NAME,
-              cache.getInternalDistributedSystem(), true /* distributed */,
-              true /* destroyOnDisconnect */, true /* automateFreeResources */);
-        } catch (IllegalArgumentException e) {
-          distributedLockService = DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME);
-          if (distributedLockService == null) {
-            throw e;
-          }
+        distributedLockService = getExistingDistributedLockService();
+        if (distributedLockService == null) {
+          distributedLockService = createDistributedLockService(cache);
         }
       }
       return distributedLockService;
     }
+  }
+
+  DistributedLockService getExistingDistributedLockService() {
+    return DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME);
+  }
+
+  DistributedLockService createDistributedLockService(InternalCache cache) {
+    return DLockService.create(LOCK_SERVICE_NAME, cache.getInternalDistributedSystem(), true, true,
+        true);
+  }
+
+  // For testing
+  void logError(String message, Exception e) {
+    logger.error(message, e);
   }
 }

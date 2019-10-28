@@ -25,8 +25,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,6 +49,7 @@ import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
 import org.apache.geode.cache.util.TestMethodAuthorizer;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 
@@ -54,6 +58,7 @@ public class QueryConfigurationServiceImplTest {
   private InternalCache mockCache;
   private SecurityService mockSecurity;
   private QueryConfigurationServiceImpl configService;
+  private DistributedLockService mockDistributedLockService;
 
   @Before
   public void setUp() {
@@ -61,6 +66,7 @@ public class QueryConfigurationServiceImplTest {
     mockSecurity = mock(SecurityService.class);
     when(mockCache.getSecurityService()).thenReturn(mockSecurity);
     configService = spy(new QueryConfigurationServiceImpl());
+    mockDistributedLockService = mock(DistributedLockService.class);
   }
 
   @Test
@@ -140,6 +146,10 @@ public class QueryConfigurationServiceImplTest {
   @TestCaseName("{method} Authorizer={0}")
   @Parameters(method = "getMethodAuthorizerClasses")
   public void updateMethodAuthorizerSetsCorrectAuthorizer(Class methodAuthorizerClass) {
+    doReturn(mockDistributedLockService).when(configService).getLockService(mockCache);
+    when(mockDistributedLockService.lock(any(String.class), any(long.class), any(long.class)))
+        .thenReturn(true);
+
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
 
     configService.updateMethodAuthorizer(mockCache, methodAuthorizerClass.getName(),
@@ -156,6 +166,10 @@ public class QueryConfigurationServiceImplTest {
     String testParam2 = "test2";
     parameters.add(testParam1);
     parameters.add(testParam2);
+
+    doReturn(mockDistributedLockService).when(configService).getLockService(mockCache);
+    when(mockDistributedLockService.lock(any(String.class), any(long.class), any(long.class)))
+        .thenReturn(true);
 
     configService.updateMethodAuthorizer(mockCache, testAuthorizerName, parameters);
 
@@ -182,6 +196,10 @@ public class QueryConfigurationServiceImplTest {
   @Test
   public void updateMethodAuthorizerDoesNotChangeMethodAuthorizerWhenSecurityIsEnabledAndClassNameIsNotFound() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
+
+    doReturn(mockDistributedLockService).when(configService).getLockService(mockCache);
+    when(mockDistributedLockService.lock(any(String.class), any(long.class), any(long.class)))
+        .thenReturn(true);
 
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
@@ -212,6 +230,10 @@ public class QueryConfigurationServiceImplTest {
 
     when(mockCache.isClosed()).thenThrow(new RuntimeException("Test exception"));
 
+    doReturn(mockDistributedLockService).when(configService).getLockService(mockCache);
+    when(mockDistributedLockService.lock(any(String.class), any(long.class), any(long.class)))
+        .thenReturn(true);
+
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     configService.updateMethodAuthorizer(mockCache, TestMethodAuthorizer.class.getName(),
@@ -220,6 +242,43 @@ public class QueryConfigurationServiceImplTest {
     verify(configService).logError(
         eq(UPDATE_ERROR_MESSAGE + INSTANTIATION_ERROR + AUTHORIZER_NOT_UPDATED),
         any(Exception.class));
+  }
+
+  @Test
+  public void getLockServiceReturnsLocalLockServiceIfNotNull() {
+    doReturn(mockDistributedLockService).when(configService).getExistingDistributedLockService();
+
+    // Call getLockService() once to set the distributedLockService field in
+    // QueryConfigurationServiceImpl
+    DistributedLockService existingLockService = configService.getLockService(mockCache);
+    assertThat(existingLockService).isSameAs(mockDistributedLockService);
+
+    reset(configService);
+
+    assertThat(configService.getLockService(mockCache)).isSameAs(existingLockService);
+
+    verify(configService, times(0)).getExistingDistributedLockService();
+    verify(configService, times(0)).createDistributedLockService(mockCache);
+  }
+
+  @Test
+  public void getLockServiceDoesNotCreateLockServiceIfOneAlreadyExistsRemotely() {
+    doReturn(mockDistributedLockService).when(configService).getExistingDistributedLockService();
+
+    assertThat(configService.getLockService(mockCache)).isSameAs(mockDistributedLockService);
+
+    verify(configService, times(0)).createDistributedLockService(mockCache);
+  }
+
+  @Test
+  public void getLockServiceCreatesLockServiceIfNoneExists() {
+    doReturn(null).when(configService).getExistingDistributedLockService();
+    doReturn(mockDistributedLockService).when(configService)
+        .createDistributedLockService(mockCache);
+
+    assertThat(configService.getLockService(mockCache)).isSameAs(mockDistributedLockService);
+
+    verify(configService).createDistributedLockService(mockCache);
   }
 
   @SuppressWarnings("unused")
