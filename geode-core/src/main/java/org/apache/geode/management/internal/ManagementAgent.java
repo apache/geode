@@ -349,8 +349,12 @@ public class ManagementAgent {
     // Retrieve the PlatformMBeanServer.
     MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
-    // Environment map. why is this declared as HashMap?
+    // Environment map
     final HashMap<String, Object> env = new HashMap<>();
+    env.put("jmx.remote.rmi.server.credential.types", new String[] {
+        String[].class.getName(),
+        String.class.getName(),
+        Properties.class.getName()});
 
     // Manually creates and binds a JMX RMI Connector Server stub with the
     // registry created above: the port we pass here is the port that can
@@ -396,12 +400,12 @@ public class ManagementAgent {
 
           @Override
           public synchronized void start() throws IOException {
+            super.start();
             try {
-              registry.bind("jmxrmi", stub);
+              registry.bind("jmxrmi", stub.toStub());
             } catch (AlreadyBoundException x) {
               throw new IOException(x.getMessage(), x);
             }
-            super.start();
           }
         };
 
