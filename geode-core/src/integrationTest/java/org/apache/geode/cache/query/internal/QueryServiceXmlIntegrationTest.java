@@ -58,6 +58,7 @@ public class QueryServiceXmlIntegrationTest {
   private static final String JAVA_BEAN_AUTHORIZER_XML = "QueryServiceWithJavaBeanAuthorizer.xml";
   private static final String REGEX_AUTHORIZER_XML = "QueryServiceWithRegExAuthorizer.xml";
   private static final String USER_AUTHORIZER_XML = "QueryServiceWithUserDefinedAuthorizer.xml";
+  private static final String INVALID_AUTHORIZER_XML = "QueryServiceWithInvalidAuthorizer.xml";
 
   @Test
   public void queryServiceUsesRestrictedMethodAuthorizerWithNoQueryServiceInXmlAndSecurityEnabled() {
@@ -133,6 +134,17 @@ public class QueryServiceXmlIntegrationTest {
 
     Method disallowedMethod = String.class.getMethod("isEmpty");
     assertThat(authorizer.authorize(disallowedMethod, testString)).isFalse();
+  }
+
+  @Test
+  public void queryServiceXmlWithInvalidAuthorizerDoesNotChangeAuthorizer() throws IOException {
+    String cacheXmlFilePath = getFilePath(INVALID_AUTHORIZER_XML);
+    serverRule.withProperty(CACHE_XML_FILE, cacheXmlFilePath)
+        .withSecurityManager(SimpleSecurityManager.class).startServer();
+
+    MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
+
+    assertThat(authorizer).isInstanceOf(RestrictedMethodAuthorizer.class);
   }
 
   private MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
