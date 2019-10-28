@@ -262,7 +262,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
     // Simulate the missing member by forcing a persistent member to go offline.
     PersistentID missingMember = vm0.invoke(() -> getPersistentID(diskStoreName1));
     vm0.invoke(() -> cacheRule.getCache().close());
-
+    logger.info("JASON expected vm0 to be closed" + vm0);
 //    await()
 //        .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember)));
 
@@ -270,9 +270,9 @@ public class IncrementalBackupDistributedTest implements Serializable {
     // missing member.
     logger.info("JASON TEST BACKUP BEGIN");
     BackupStatus baselineStatus = vm1.invoke(() -> performBackup(getBaselinePath()));
+    validateBackupStatus(baselineStatus);
+    assertThat(baselineStatus.getOfflineDiskStores()).isNotNull().hasSize(2);
     logger.info("JASON TEST COMPLETE");
-//    validateBackupStatus(baselineStatus);
-//    assertThat(baselineStatus.getOfflineDiskStores()).isNotNull().hasSize(2);
 //
 //    // Find all of the member's oplogs in the missing member's diskstore directory structure
 //    // (*.crf,*.krf,*.drf)
