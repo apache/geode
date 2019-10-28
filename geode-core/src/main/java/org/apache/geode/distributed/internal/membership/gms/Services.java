@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.DISTRIBUTED_MEMBER;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FINAL_CHECK_PASSED_MESSAGE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_REQ;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_RESP;
@@ -25,7 +26,6 @@ import static org.apache.geode.internal.serialization.DataSerializableFixedID.IN
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_RESPONSE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
-import static org.apache.geode.internal.serialization.DataSerializableFixedID.MEMBER_IDENTIFIER;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETVIEW;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
 import static org.apache.geode.internal.serialization.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
@@ -40,6 +40,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
@@ -157,7 +158,7 @@ public class Services {
     serializer.registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
     serializer.registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
     serializer.registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
-    serializer.registerDSFID(MEMBER_IDENTIFIER, MemberIdentifierImpl.class);
+    serializer.registerDSFID(DISTRIBUTED_MEMBER, InternalDistributedMember.class);
     serializer.registerDSFID(NETVIEW, GMSMembershipView.class);
     serializer.registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
     serializer.registerDSFID(GET_VIEW_RESP, GetViewResponse.class);

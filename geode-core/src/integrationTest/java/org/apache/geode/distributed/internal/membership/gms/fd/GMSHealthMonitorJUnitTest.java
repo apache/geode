@@ -59,7 +59,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.jgroups.util.UUID;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -78,8 +77,11 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor.ClientSocketHandler;
@@ -157,6 +159,7 @@ public class GMSHealthMonitorJUnitTest {
     when(services.getStatistics()).thenReturn(new DistributionStats(system, statsId));
     when(services.getTimer()).thenReturn(new Timer("Geode Membership Timer", true));
     when(stopper.isCancelInProgress()).thenReturn(false);
+    when(services.getMemberFactory()).thenReturn(new MemberIdentifierFactoryImpl());
 
     if (mockMembers == null) {
       mockMembers = new ArrayList<>();
@@ -164,8 +167,8 @@ public class GMSHealthMonitorJUnitTest {
         MemberIdentifier mbr = new InternalDistributedMember("localhost", 8888 + i);
 
         if (i == 0 || i == 1) {
-          mbr.getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
-          mbr.getMemberData().setPreferredForCoordinator(true);
+          mbr.setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+          mbr.setPreferredForCoordinator(true);
         }
         mockMembers.add(mbr);
       }
@@ -189,7 +192,7 @@ public class GMSHealthMonitorJUnitTest {
 
     MemberIdentifier mbr =
         new InternalDistributedMember("localhost", 12345);
-    mbr.getMemberData().setVmViewId(1);
+    mbr.setVmViewId(1);
     when(messenger.getMemberID()).thenReturn(mbr);
     gmsHealthMonitor.started();
 
@@ -825,7 +828,7 @@ public class GMSHealthMonitorJUnitTest {
     testMember.getMemberData().setUdpPort(9000);
 
     // We set to our expected test viewId in the IDM as well as resetting the gms member
-    gmsMember.getMemberData().setVmViewId(viewId);
+    gmsMember.setVmViewId(viewId);
 
 
     // Set up the incoming/received bytes. We just wrap output streams and write out the gms member
@@ -968,12 +971,13 @@ public class GMSHealthMonitorJUnitTest {
 
   private MemberIdentifier createGMSMember(short version, int viewId, long msb, long lsb)
       throws UnknownHostException {
-    MemberIdentifier gmsMember = new InternalDistributedMember();
-    ((InternalDistributedMember) gmsMember)
-        .setVersionObjectForTest(Version.fromOrdinalNoThrow(version, false));
-    gmsMember.getMemberData().setVmViewId(viewId);
-    gmsMember.getMemberData().setUUID(new UUID(msb, lsb));
-    gmsMember.getMemberData().setInetAddr(InetAddress.getLocalHost());
+    MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("localhost")
+        .setVersionOrdinal(version)
+        .setVmViewId(viewId)
+        .setUuidMostSignificantBits(msb)
+        .setUuidLeastSignificantBits(lsb)
+        .build();
+    MemberIdentifier gmsMember = services.getMemberFactory().create(memberData);
     return gmsMember;
   }
 

@@ -95,4 +95,25 @@ public interface MemberIdentifier extends DataSerializableFixedID {
    * Returns the server group names associated with this identifier
    */
   List<String> getGroups();
+
+  /**
+   * Set the view number in which this node joined the cluster
+   */
+  void setVmViewId(int viewNumber);
+
+  /**
+   * Set whether this member is preferred to be the membership coordinator
+   * over nodes that have this set to false
+   */
+  void setPreferredForCoordinator(boolean preferred);
+
+  /**
+   * Set the tcp/ip communications port on which this node listens
+   */
+  void setDirectChannelPort(int dcPort);
+
+  /**
+   * Set the type of node
+   */
+  void setVmKind(int dmType);
 }

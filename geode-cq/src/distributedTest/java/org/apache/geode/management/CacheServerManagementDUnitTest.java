@@ -345,7 +345,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
               mbeanServer.addNotificationListener(getClientServiceMBeanName(
                   serverPort, cache.getDistributedSystem().getMemberId()), nt, null, null);
             } catch (InstanceNotFoundException e) {
-              fail("Failed With Exception " + e);
+              throw new RuntimeException("Failed With Exception ", e);
             }
 
           }

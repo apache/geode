@@ -51,6 +51,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.alerting.internal.api.AlertingService;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
@@ -2827,7 +2828,8 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   static class ClusterDistributionManagerIDFactory implements MemberIdentifierFactory {
-    static final Comparator<MemberIdentifier> idComparator = new Comparator() {
+    @Immutable
+    private static final Comparator<MemberIdentifier> idComparator = new Comparator() {
       @Override
       public int compare(Object o1, Object o2) {
         return ((DistributedMember) o1).compareTo((DistributedMember) o2);

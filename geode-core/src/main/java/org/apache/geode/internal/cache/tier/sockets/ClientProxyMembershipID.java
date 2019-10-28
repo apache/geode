@@ -246,7 +246,7 @@ public class ClientProxyMembershipID
     if (identity != null) {
       DurableClientAttributes dca = getDurableAttributes();
       if (dca.getId().length() > 0) {
-        sb.append(",durableAttributes=").append(getDurableAttributes()).append(')').toString();
+        sb.append(",durableAttributes=").append(dca).append(')').toString();
       }
     }
     return sb.toString();
@@ -463,7 +463,7 @@ public class ClientProxyMembershipID
    */
   public void updateDurableTimeout(int newValue) {
     InternalDistributedMember member = (InternalDistributedMember) getDistributedMember();
-    member.getMemberData().setDurableTimeout(newValue);
+    member.setDurableTimeout(newValue);
   }
 
   /**

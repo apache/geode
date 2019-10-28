@@ -64,6 +64,8 @@ public class InternalDistributedMember
     DataSerializableFixedID, ProfileId, VersionSource<DistributedMember> {
   private static final long serialVersionUID = -2785249969777296507L;
 
+  private DurableClientAttributes durableAttributes;
+
   private MemberData memberData; // the underlying member object
 
   /**
@@ -108,6 +110,10 @@ public class InternalDistributedMember
     return compareTo(o, false, true);
   }
 
+  public void setDurableTimeout(int newValue) {
+    memberData.setDurableTimeout(newValue);
+  }
+
   @FunctionalInterface
   public interface HostnameResolver {
     InetAddress getInetAddress(ServerLocation location) throws UnknownHostException;
@@ -143,7 +149,7 @@ public class InternalDistributedMember
   }
 
 
-  // Used only by Externalization
+  // Used only by deserialization
   public InternalDistributedMember() {}
 
   /**
@@ -284,6 +290,7 @@ public class InternalDistributedMember
     if (attr != null) {
       builder.setDurableId(attr.getId())
           .setDurableTimeout(attr.getTimeout());
+      this.durableAttributes = attr;
     }
     memberData = builder.build();
     defaultToCurrentHost();
@@ -433,8 +440,27 @@ public class InternalDistributedMember
     }
   }
 
+  @Override
   public void setVmViewId(int p) {
     memberData.setVmViewId(p);
+    cachedToString = null;
+  }
+
+  @Override
+  public void setPreferredForCoordinator(boolean preferred) {
+    memberData.setPreferredForCoordinator(preferred);
+    cachedToString = null;
+  }
+
+  @Override
+  public void setDirectChannelPort(int dcPort) {
+    memberData.setDirectChannelPort(dcPort);
+    cachedToString = null;
+  }
+
+  @Override
+  public void setVmKind(int dmType) {
+    memberData.setVmKind(dmType);
     cachedToString = null;
   }
 
@@ -860,6 +886,7 @@ public class InternalDistributedMember
         // old version
       }
     }
+    getDurableClientAttributes();
     Assert.assertTrue(memberData.getVmKind() > 0);
   }
 
@@ -914,7 +941,7 @@ public class InternalDistributedMember
     } else { // added in 6.5 for unique identifiers in P2P
       DataSerializer.writeString(String.valueOf(memberData.getVmViewId()), out);
     }
-    String durableId = memberData.getDurableId();
+    String durableId = getDurableIdForSerialization();
     DataSerializer.writeString(durableId == null ? "" : durableId, out);
     DataSerializer.writeInteger(
         Integer.valueOf(durableId == null ? 300 : memberData.getDurableTimeout()),
@@ -963,11 +990,19 @@ public class InternalDistributedMember
     } else { // added in 6.5 for unique identifiers in P2P
       DataSerializer.writeString(String.valueOf(memberData.getVmViewId()), out);
     }
-    String durableId = memberData.getDurableId();
+    String durableId = getDurableIdForSerialization();
     DataSerializer.writeString(durableId == null ? "" : durableId, out);
     DataSerializer.writeInteger(
         Integer.valueOf(durableId == null ? 300 : memberData.getDurableTimeout()),
         out);
+  }
+
+  private String getDurableIdForSerialization() {
+    // due to terrible code in ClientProxyMembershipID and client pools the getId() method
+    // in DurableClientAttributes may return different values depending on the setting of
+    // system properties and thread-local variables. Here we use the original attributes, if
+    // available, in order to get the correct ID string
+    return durableAttributes != null ? durableAttributes.getId() : memberData.getDurableId();
   }
 
 

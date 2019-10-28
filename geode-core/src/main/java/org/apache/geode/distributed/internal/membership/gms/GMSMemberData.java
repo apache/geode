@@ -220,8 +220,13 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
   @Override
   public void setUUID(UUID u) {
-    this.uuidLSBs = u.getLeastSignificantBits();
-    this.uuidMSBs = u.getMostSignificantBits();
+    if (u == null) {
+      this.uuidLSBs = 0;
+      this.uuidMSBs = 0;
+    } else {
+      this.uuidLSBs = u.getLeastSignificantBits();
+      this.uuidMSBs = u.getMostSignificantBits();
+    }
   }
 
   /**

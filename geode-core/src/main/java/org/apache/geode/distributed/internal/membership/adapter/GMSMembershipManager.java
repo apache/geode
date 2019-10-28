@@ -2453,7 +2453,7 @@ public class GMSMembershipManager implements MembershipManager {
         directChannel = new DirectChannel(GMSMembershipManager.this, dcReceiver, dm);
         dcPort = directChannel.getPort();
       }
-      services.getMessenger().getMemberID().getMemberData().setDirectChannelPort(dcPort);
+      services.getMessenger().getMemberID().setDirectChannelPort(dcPort);
     }
 
     /* Service interface */

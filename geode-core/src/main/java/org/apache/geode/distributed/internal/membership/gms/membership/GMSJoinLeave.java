@@ -791,7 +791,7 @@ public class GMSJoinLeave implements JoinLeave {
       GMSMembershipView newView = new GMSMembershipView(this.localAddress);
       newView.setFailureDetectionPort(localAddress,
           services.getHealthMonitor().getFailureDetectionPort());
-      this.localAddress.getMemberData().setVmViewId(0);
+      this.localAddress.setVmViewId(0);
       installView(newView);
       isJoined = true;
       createAndStartViewCreator(newView);
@@ -827,7 +827,7 @@ public class GMSJoinLeave implements JoinLeave {
       int rand = testing ? 0 : GMSMembershipView.RANDOM.nextInt(10);
       int viewNumber = currentView.getViewId() + 5 + rand;
       if (this.localAddress.getVmViewId() < 0) {
-        this.localAddress.getMemberData().setVmViewId(viewNumber);
+        this.localAddress.setVmViewId(viewNumber);
       }
       List<MemberIdentifier> mbrs = new ArrayList<>(currentView.getMembers());
       if (!mbrs.contains(localAddress)) {
@@ -1034,9 +1034,9 @@ public class GMSJoinLeave implements JoinLeave {
         for (MemberIdentifier mbr : view.getMembers()) {
           if (this.localAddress.equals(mbr)) {
             this.birthViewId = mbr.getVmViewId();
-            this.localAddress.getMemberData().setVmViewId(this.birthViewId);
+            this.localAddress.setVmViewId(this.birthViewId);
             MemberIdentifier me = this.localAddress;
-            me.getMemberData().setVmViewId(birthViewId);
+            me.setVmViewId(birthViewId);
             break;
           }
         }
@@ -1482,9 +1482,9 @@ public class GMSJoinLeave implements JoinLeave {
           if (this.localAddress.equals(mbr)) {
             found = true;
             this.birthViewId = mbr.getVmViewId();
-            this.localAddress.getMemberData().setVmViewId(this.birthViewId);
+            this.localAddress.setVmViewId(this.birthViewId);
             MemberIdentifier me = this.localAddress;
-            me.getMemberData().setVmViewId(birthViewId);
+            me.setVmViewId(birthViewId);
             break;
           }
         }
@@ -1700,9 +1700,9 @@ public class GMSJoinLeave implements JoinLeave {
             .info("This member is hosting a locator will be preferred as a membership coordinator");
         preferred = true;
       }
-      mbr.getMemberData().setPreferredForCoordinator(preferred);
+      mbr.setPreferredForCoordinator(preferred);
     } else {
-      mbr.getMemberData().setPreferredForCoordinator(true);
+      mbr.setPreferredForCoordinator(true);
     }
   }
 
@@ -2522,7 +2522,7 @@ public class GMSJoinLeave implements JoinLeave {
 
       for (MemberIdentifier mbr : joinReqs) {
         if (mbr.getVmViewId() < 0) {
-          mbr.getMemberData().setVmViewId(newView.getViewId());
+          mbr.setVmViewId(newView.getViewId());
         }
       }
 

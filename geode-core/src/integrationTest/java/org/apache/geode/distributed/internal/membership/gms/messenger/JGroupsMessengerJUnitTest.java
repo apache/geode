@@ -77,6 +77,7 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -182,6 +183,7 @@ public class JGroupsMessengerJUnitTest {
 
     // if I do this earlier then test this return messenger as null
     when(services.getMessenger()).thenReturn(messenger);
+    when(services.getMemberFactory()).thenReturn(new MemberIdentifierFactoryImpl());
 
     String jgroupsConfig = messenger.jgStackConfig;
     int startIdx = jgroupsConfig.indexOf("<org");
@@ -1140,7 +1142,7 @@ public class JGroupsMessengerJUnitTest {
   private MemberIdentifier createAddress(int port) {
     MemberIdentifier gms = new InternalDistributedMember("localhost", port);
     gms.getMemberData().setUUID(UUID.randomUUID());
-    gms.getMemberData().setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
+    gms.setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
     gms.getMemberData().setVersionOrdinal(Version.getCurrentVersion().ordinal());
     return gms;
   }

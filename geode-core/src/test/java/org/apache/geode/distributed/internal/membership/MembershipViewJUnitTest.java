@@ -49,19 +49,19 @@ public class MembershipViewJUnitTest {
       members.add(new InternalDistributedMember(SocketCreator.getLocalHost(), 1000 + i));
     }
     // view creator is a locator
-    members.get(0).getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
-    members.get(0).getMemberData().setVmViewId(0);
-    members.get(0).getMemberData().setPreferredForCoordinator(true);
+    members.get(0).setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    members.get(0).setVmViewId(0);
+    members.get(0).setPreferredForCoordinator(true);
 
     // members who joined in view #1
     for (int i = 1; i < (numMembers - 1); i++) {
-      members.get(i).getMemberData().setVmViewId(1);
-      members.get(i).getMemberData().setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
-      members.get(i).getMemberData().setPreferredForCoordinator(false);
+      members.get(i).setVmViewId(1);
+      members.get(i).setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+      members.get(i).setPreferredForCoordinator(false);
     }
 
     // member joining in this view
-    members.get(numMembers - 1).getMemberData().setVmViewId(2);
+    members.get(numMembers - 1).setVmViewId(2);
     members.get(numMembers - 1).getMemberData()
         .setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
   }
@@ -99,10 +99,10 @@ public class MembershipViewJUnitTest {
     assertTrue(view.shouldBeCoordinator(members.get(0)));
     assertEquals(members.get(numMembers - 1),
         view.getCoordinator(Collections.singletonList(members.get(0))));
-    members.get(numMembers - 1).getMemberData().setPreferredForCoordinator(false);
+    members.get(numMembers - 1).setPreferredForCoordinator(false);
     assertEquals(members.get(1), view.getCoordinator(Collections.singletonList(members.get(0))));
 
-    members.get(numMembers - 1).getMemberData().setPreferredForCoordinator(true);
+    members.get(numMembers - 1).setPreferredForCoordinator(true);
     List<MemberIdentifier> preferred = view.getPreferredCoordinators(
         Collections.<MemberIdentifier>singleton(members.get(1)), members.get(0), 2);
     assertEquals(2, preferred.size());
@@ -183,8 +183,8 @@ public class MembershipViewJUnitTest {
     int oldSize = view.size();
     for (int i = 0; i < 100; i++) {
       MemberIdentifier mbr = new InternalDistributedMember(SocketCreator.getLocalHost(), 2000 + i);
-      mbr.getMemberData().setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
-      mbr.getMemberData().setVmViewId(2);
+      mbr.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+      mbr.setVmViewId(2);
       view.add(mbr);
       view.setFailureDetectionPort(mbr, 2000 + i);
     }
@@ -231,23 +231,23 @@ public class MembershipViewJUnitTest {
             new InternalDistributedMember("localhost", 6)};
     int i = 0;
     // weight 3
-    members[i].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
-    members[i++].getMemberData().setPreferredForCoordinator(true);
+    members[i].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    members[i++].setPreferredForCoordinator(true);
     // weight 3
-    members[i].getMemberData().setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
-    members[i++].getMemberData().setPreferredForCoordinator(true);
+    members[i].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    members[i++].setPreferredForCoordinator(true);
     // weight 15 (cache+leader)
-    members[i].getMemberData().setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
-    members[i++].getMemberData().setPreferredForCoordinator(false);
+    members[i].setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+    members[i++].setPreferredForCoordinator(false);
     // weight 0
-    members[i].getMemberData().setVmKind(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
-    members[i++].getMemberData().setPreferredForCoordinator(false);
+    members[i].setVmKind(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
+    members[i++].setPreferredForCoordinator(false);
     // weight 0
-    members[i].getMemberData().setVmKind(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
-    members[i++].getMemberData().setPreferredForCoordinator(false);
+    members[i].setVmKind(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
+    members[i++].setPreferredForCoordinator(false);
     // weight 10
-    members[i].getMemberData().setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
-    members[i++].getMemberData().setPreferredForCoordinator(false);
+    members[i].setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+    members[i++].setPreferredForCoordinator(false);
 
     List<MemberIdentifier> vmbrs = new ArrayList<>(members.length);
     for (i = 0; i < members.length; i++) {
@@ -260,8 +260,8 @@ public class MembershipViewJUnitTest {
     assertTrue(!leader.preferredForCoordinator());
 
     MemberIdentifier joiningMember = new InternalDistributedMember("localhost", 7);
-    joiningMember.getMemberData().setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
-    joiningMember.getMemberData().setPreferredForCoordinator(false);
+    joiningMember.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+    joiningMember.setPreferredForCoordinator(false);
 
     // have the joining member and another cache process (weight 10) in the failed members
     // collection and check to make sure that the joining member is not included in failed
