@@ -16,6 +16,7 @@ package org.apache.geode.internal.logging;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.GEMFIRE_PREFIX;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -129,7 +130,7 @@ public class CoreLoggingExecutors {
     ThreadFactory threadFactory =
         new LoggingThreadFactory(threadName, threadInitializer, commandWrapper);
     return new PooledExecutorWithDMStats(feed, poolSize, poolStats, threadFactory,
-        threadsMonitoring);
+        threadsMonitoring, GEMFIRE_PREFIX);
   }
 
   public static ExecutorService newThreadPoolWithSynchronousFeed(String threadName,
@@ -137,7 +138,8 @@ public class CoreLoggingExecutors {
       int poolSize) {
     ThreadFactory threadFactory = new LoggingThreadFactory(threadName, commandWrapper);
     SynchronousQueue<Runnable> feed = new SynchronousQueue<>();
-    return new PooledExecutorWithDMStats(feed, poolSize, threadFactory, null);
+    return new PooledExecutorWithDMStats(feed, poolSize, threadFactory, null,
+        GEMFIRE_PREFIX);
   }
 
   public static ExecutorService newThreadPoolWithSynchronousFeed(String threadName,
