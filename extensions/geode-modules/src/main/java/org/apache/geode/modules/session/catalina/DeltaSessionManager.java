@@ -52,6 +52,7 @@ import org.apache.juli.logging.LogFactory;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
@@ -806,7 +807,14 @@ public abstract class DeltaSessionManager extends ManagerBase
         if (getLogger().isDebugEnabled()) {
           getLogger().debug("Locally destroying session " + session.getId());
         }
-        getSessionCache().getOperatingRegion().localDestroy(session.getId());
+        try {
+          getSessionCache().getOperatingRegion().localDestroy(session.getId());
+        } catch (EntryNotFoundException ex) {
+          // This can be thrown if an entry is evicted during or immediately after a session is
+          // written
+          // to disk. This isn't a problem, but the resulting exception messages can be confusing in
+          // testing
+        }
       }
     }
 
