@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.micrometer;
 
+
 import java.util.Objects;
 
 import io.micrometer.core.instrument.Meter;
@@ -27,9 +28,6 @@ import org.assertj.core.api.AbstractAssert;
  */
 public class AbstractMeterAssert<A extends AbstractMeterAssert<A, M>, M extends Meter>
     extends AbstractAssert<A, M> {
-
-  private final Meter.Id meterId;
-
   /**
    * Creates an assertion to evaluate the given meter.
    *
@@ -38,7 +36,14 @@ public class AbstractMeterAssert<A extends AbstractMeterAssert<A, M>, M extends 
    */
   AbstractMeterAssert(M meter, Class<A> selfType) {
     super(meter, selfType);
-    meterId = meter == null ? null : meter.getId();
+  }
+
+  public void hasId(Meter.Id expectedId) {
+    isNotNull();
+    Meter.Id actualId = actualId();
+    if (!Objects.equals(actualId, expectedId)) {
+      failWithMessage("Expected meter to have id <%s> but id was <%s>", expectedId, actualId);
+    }
   }
 
   /**
@@ -51,7 +56,11 @@ public class AbstractMeterAssert<A extends AbstractMeterAssert<A, M>, M extends 
    */
   public A hasName(String expectedName) {
     isNotNull();
-    String meterName = meterId.getName();
+    Meter.Id actualId = actualId();
+    if (actualId == null) {
+      failWithMessage("Expected meter to have name <%s> but id was null", expectedName);
+    }
+    String meterName = actualId.getName();
     if (!Objects.equals(meterName, expectedName)) {
       failWithMessage("Expected meter to have name <%s> but name was <%s>", expectedName,
           meterName);
@@ -69,10 +78,11 @@ public class AbstractMeterAssert<A extends AbstractMeterAssert<A, M>, M extends 
    */
   public A hasTag(String key) {
     isNotNull();
-    if (meterId.getTag(key) == null) {
+    Meter.Id actualId = actualId();
+    if (actualId.getTag(key) == null) {
       failWithMessage("Expected meter to have tag with key <%s>"
           + " but meter had no tag with that key in <%s>",
-          key, meterId.getTags());
+          key, actualId.getTags());
     }
     return myself;
   }
@@ -89,13 +99,22 @@ public class AbstractMeterAssert<A extends AbstractMeterAssert<A, M>, M extends 
    */
   public A hasTag(String key, String expectedValue) {
     hasTag(key);
-    String tagValue = meterId.getTag(key);
+    String tagValue = actualId().getTag(key);
     if (!Objects.equals(tagValue, expectedValue)) {
-      failWithMessage("Expected meter's <%s> tag to have value <%s>"
-          + " but value was <%s>",
+      failWithMessage("Expected meter's <%s> tag to have value <%s> but value was <%s>",
           key, expectedValue, tagValue);
     }
     return myself;
+  }
+
+  public void hasNoTag(String key) {
+    isNotNull();
+    Meter.Id actualId = actualId();
+    if (actualId.getTag(key) != null) {
+      failWithMessage(
+          "Expected meter to have no tag with key <%s> but meter had that tag with value <%s>",
+          key, actualId.getTag(key));
+    }
   }
 
   /**
@@ -108,11 +127,15 @@ public class AbstractMeterAssert<A extends AbstractMeterAssert<A, M>, M extends 
    */
   public A hasBaseUnit(String expectedBaseUnit) {
     isNotNull();
-    String meterBaseUnit = meterId.getBaseUnit();
+    String meterBaseUnit = actualId().getBaseUnit();
     if (!Objects.equals(meterBaseUnit, expectedBaseUnit)) {
       failWithMessage("Expected meter to have base unit <%s> but base unit was <%s>",
           expectedBaseUnit, meterBaseUnit);
     }
     return myself;
+  }
+
+  private Meter.Id actualId() {
+    return actual.getId();
   }
 }

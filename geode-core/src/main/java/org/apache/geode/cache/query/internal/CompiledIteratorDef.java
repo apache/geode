@@ -223,7 +223,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
   }
 
   /**
-   * TODO: We need to implement the belwo method of computeDependencies Once we come to implement
+   * TODO: We need to implement the below method of computeDependencies Once we come to implement
    * changes for partitioned region querying, as in that case if first iterator itself is a Select
    * Query , then ideally we cannot call that CompiledIteratorDef independent ( which will be the
    * case at present). When we use this commented function we will also need to take care of

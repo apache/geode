@@ -14,15 +14,19 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -31,6 +35,13 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 public class InternalDistributedSystemSecurityIntegrationTest {
 
   private InternalDistributedSystem system;
+  private MetricsService.Builder metricsSessionBuilder;
+
+  @Before
+  public void setup() {
+    metricsSessionBuilder = mock(MetricsService.Builder.class);
+    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));
+  }
 
   @After
   public void tearDown() {
@@ -45,7 +56,9 @@ public class InternalDistributedSystemSecurityIntegrationTest {
         new SecurityConfig(theSecurityManager, mock(PostProcessor.class));
     Properties configProperties = new Properties();
 
-    system = InternalDistributedSystem.connectInternal(configProperties, securityConfig);
+    system =
+        InternalDistributedSystem.connectInternal(configProperties, securityConfig,
+            metricsSessionBuilder);
 
     system.disconnect();
 
@@ -60,7 +73,8 @@ public class InternalDistributedSystemSecurityIntegrationTest {
         new SecurityConfig(mock(SecurityManager.class), thePostProcessor);
     Properties configProperties = new Properties();
 
-    system = InternalDistributedSystem.connectInternal(configProperties, securityConfig);
+    system = InternalDistributedSystem.connectInternal(
+        configProperties, securityConfig, metricsSessionBuilder);
 
     system.disconnect();
 

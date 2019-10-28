@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.LongSupplier;
 
 import javax.net.ssl.SSLException;
 
@@ -45,7 +46,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
@@ -126,12 +126,14 @@ public class TcpServer {
   private final PoolStatHelper poolHelper;
   private final TcpHandler handler;
 
-
   private ExecutorService executor;
   private final String threadName;
   private volatile Thread serverThread;
 
   protected SocketCreator socketCreator;
+
+  private final LongSupplier nanoTimeSupplier;
+
 
   /*
    * Initialize versions map. Warning: This map must be compatible with all GemFire versions being
@@ -147,7 +149,8 @@ public class TcpServer {
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
-      String threadName, ProtocolChecker protocolChecker) {
+      String threadName, ProtocolChecker protocolChecker,
+      final LongSupplier nanoTimeSupplier) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
@@ -155,6 +158,7 @@ public class TcpServer {
     this.protocolChecker = protocolChecker;
     this.executor = createExecutor(poolHelper);
     this.threadName = threadName;
+    this.nanoTimeSupplier = nanoTimeSupplier;
 
     if (cfg == null) {
       if (sslConfig == null) {
@@ -284,6 +288,7 @@ public class TcpServer {
           shuttingDown = true;
           continue;
         }
+
         processRequest(sock);
       } catch (Exception ex) {
         if (!shuttingDown) {
@@ -322,7 +327,8 @@ public class TcpServer {
    */
   private void processRequest(final Socket socket) {
     executor.execute(() -> {
-      long startTime = DistributionStats.getStatTime();
+
+      final long startTime = nanoTimeSupplier.getAsLong();
       DataInputStream input = null;
       try {
         socket.setSoTimeout(READ_TIMEOUT);
@@ -410,7 +416,7 @@ public class TcpServer {
     });
   }
 
-  private void processOneConnection(Socket socket, long startTime, DataInputStream input)
+  private void processOneConnection(Socket socket, final long startTime, DataInputStream input)
       throws IOException, UnsupportedSerializationVersionException, ClassNotFoundException {
     // At this point we've read the leading byte of the gossip version and found it to be 0,
     // continue reading the next three bytes
@@ -457,7 +463,7 @@ public class TcpServer {
 
       handler.endRequest(request, startTime);
 
-      startTime = DistributionStats.getStatTime();
+      final long startTime2 = nanoTimeSupplier.getAsLong();
       if (response != null) {
         DataOutputStream output = new DataOutputStream(socket.getOutputStream());
         if (versionOrdinal != Version.CURRENT_ORDINAL) {
@@ -468,7 +474,7 @@ public class TcpServer {
         output.flush();
       }
 
-      handler.endResponse(request, startTime);
+      handler.endResponse(request, startTime2);
     } else {
       // Close the socket. We can not accept requests from a newer version
       rejectUnknownProtocolConnection(socket, gossipVersion);

@@ -30,13 +30,14 @@ import java.util.stream.IntStream;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -54,6 +55,8 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @RunWith(JUnitParamsRunner.class)
 @Category({OQLQueryTest.class, SecurityTest.class})
 public class DefaultQuerySecurityIntegrationTest {
+  private int entries = 500;
+  private int executions = 20;
   private InternalCache spiedCache;
 
   @Rule
@@ -66,7 +69,7 @@ public class DefaultQuerySecurityIntegrationTest {
       .withProperty("security-password", "cluster")
       .withAutoStart();
 
-  private void createAndPopulateRegion(String name, RegionShortcut shortcut, int entries) {
+  private void createAndPopulateRegion(String name, RegionShortcut shortcut) {
     Cache cache = server.getCache();
     Region<Integer, QueryTestObject> region =
         cache.<Integer, QueryTestObject>createRegionFactory(shortcut).create(name);
@@ -75,41 +78,15 @@ public class DefaultQuerySecurityIntegrationTest {
     await().untilAsserted(() -> assertThat(region.size()).isEqualTo(entries));
   }
 
-  @Before
-  public void setUp() {
-    spiedCache = spy(server.getCache());
-    InternalQueryService spyQueryService = spy(new DefaultQueryService(server.getCache()));
-    doReturn(new SpyAuthorizer()).when(spyQueryService).getMethodInvocationAuthorizer();
-    when(spiedCache.getQueryService()).thenReturn(spyQueryService);
-  }
-
-  @After
-  public void tearDown() {
-    SpyAuthorizer.authorizations.set(0);
-  }
-
   private void executeQueryAndAssertThatCachedAuthorizationsWereUsed(String queryString,
-      int methodInvocations, int executions, int entries) {
-    // Every new query has a new context and, thus, authorization should be executed again.
+      int methodInvocations) {
     IntStream.range(1, executions).forEach(counter -> {
       try {
         DefaultQuery query = spy(new DefaultQuery(queryString, spiedCache, false));
-
-        // Make sure the PR Executor uses our spy cache.
-        doAnswer(answer -> {
-          QueryExecutor executor = (QueryExecutor) answer.callRealMethod();
-          if (executor instanceof PartitionedRegion) {
-            PartitionedRegion prExecutor = spy((PartitionedRegion) executor);
-            when(prExecutor.getCache()).thenReturn(spiedCache);
-            return prExecutor;
-          }
-
-          return executor;
-        }).when(query).checkQueryOnPR(any());
+        doAnswer(new SpyQueryExecutor(spiedCache)).when(query).checkQueryOnPR(any());
 
         SelectResults result = (SelectResults) query.execute();
         assertThat(result.size()).isEqualTo(entries);
-
         assertThat(SpyAuthorizer.authorizations.get()).isEqualTo(methodInvocations * counter);
       } catch (Exception exception) {
         throw new RuntimeException(exception);
@@ -117,17 +94,51 @@ public class DefaultQuerySecurityIntegrationTest {
     });
   }
 
+  private void executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(
+      String queryString, RegionShortcut regionShortcut) {
+    IntStream.range(1, executions).forEach(counter -> {
+      try {
+        DefaultQuery query = spy(new DefaultQuery(queryString, spiedCache, false));
+        doAnswer(new SpyQueryExecutor(spiedCache)).when(query).checkQueryOnPR(any());
+
+        SelectResults result = (SelectResults) query.execute();
+        assertThat(result.size()).isEqualTo(entries);
+        if (!regionShortcut.equals(RegionShortcut.PARTITION)) {
+          assertThat(SpyAuthorizer.instantiations.get()).isEqualTo(counter);
+        } else {
+          // execute + getEmptyResultSet + executeOnLocalNode
+          assertThat(SpyAuthorizer.instantiations.get()).isEqualTo(3 * counter);
+        }
+      } catch (Exception exception) {
+        throw new RuntimeException(exception);
+      }
+    });
+  }
+
+  @Before
+  public void setUp() {
+    SpyAuthorizer.instantiations.set(0);
+    SpyAuthorizer.authorizations.set(0);
+
+    spiedCache = spy(server.getCache());
+    doAnswer(answer -> {
+      InternalQueryService spyQueryService = spy((InternalQueryService) answer.callRealMethod());
+      doReturn(new SpyAuthorizer()).when(spyQueryService).getMethodInvocationAuthorizer();
+
+      return spyQueryService;
+    }).when(spiedCache).getQueryService();
+  }
+
   @Test
   @Parameters({"LOCAL", "REPLICATE", "PARTITION"})
   @TestCaseName("[{index}] {method}(RegionType:{0}")
   public void queryWithSingleProjectionFieldShouldUseCachingForImplicitMethodAuthorizations(
       RegionShortcut regionShortcut) {
-    int entries = 100;
     String regionName = testName.getMethodName();
-    createAndPopulateRegion(regionName, regionShortcut, entries);
+    createAndPopulateRegion(regionName, regionShortcut);
     String queryString = "SELECT object.name FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 1, 10, entries);
+    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 1);
   }
 
   @Test
@@ -135,12 +146,11 @@ public class DefaultQuerySecurityIntegrationTest {
   @TestCaseName("[{index}] {method}(RegionType:{0}")
   public void queryWithMultipleProjectionFieldsShouldUseCachingForImplicitMethodAuthorizations(
       RegionShortcut regionShortcut) {
-    int entries = 200;
     String regionName = testName.getMethodName();
-    createAndPopulateRegion(regionName, regionShortcut, entries);
+    createAndPopulateRegion(regionName, regionShortcut);
     String queryString = "SELECT object.privateID, object.name FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 2, 10, entries);
+    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 2);
   }
 
   @Test
@@ -148,12 +158,11 @@ public class DefaultQuerySecurityIntegrationTest {
   @TestCaseName("[{index}] {method}(RegionType:{0}")
   public void queryWithSingleProjectionMethodShouldUseCachingForExplicitMethodAuthorizations(
       RegionShortcut regionShortcut) {
-    int entries = 100;
     String regionName = testName.getMethodName();
-    createAndPopulateRegion(regionName, regionShortcut, entries);
+    createAndPopulateRegion(regionName, regionShortcut);
     String queryString = "SELECT object.getName() FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 1, 20, entries);
+    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 1);
   }
 
   @Test
@@ -161,22 +170,99 @@ public class DefaultQuerySecurityIntegrationTest {
   @TestCaseName("[{index}] {method}(RegionType:{0}")
   public void queryWithMultipleProjectionMethodsShouldUseCachingForExplicitMethodAuthorizations(
       RegionShortcut regionShortcut) {
-    int entries = 200;
     String regionName = testName.getMethodName();
-    createAndPopulateRegion(regionName, regionShortcut, entries);
+    createAndPopulateRegion(regionName, regionShortcut);
     String queryString = "SELECT object.getId(), object.getName() FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 2, 20, entries);
+    executeQueryAndAssertThatCachedAuthorizationsWereUsed(queryString, 2);
+  }
+
+  @Test
+  @Parameters({"LOCAL", "REPLICATE", "PARTITION"})
+  @TestCaseName("[{index}] {method}(RegionType:{0}")
+  public void queryWithSingleProjectionFieldShouldUseAuthorizerFromExecutionContext(
+      RegionShortcut regionShortcut) {
+    String regionName = testName.getMethodName();
+    createAndPopulateRegion(regionName, regionShortcut);
+    String queryString = "SELECT object.name FROM /" + regionName + " object";
+
+    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString,
+        regionShortcut);
+  }
+
+  @Test
+  @Parameters({"LOCAL", "REPLICATE", "PARTITION"})
+  @TestCaseName("[{index}] {method}(RegionType:{0}")
+  public void queryWithMultipleProjectionFieldShouldUseAuthorizerFromExecutionContext(
+      RegionShortcut regionShortcut) {
+    String regionName = testName.getMethodName();
+    createAndPopulateRegion(regionName, regionShortcut);
+    String queryString = "SELECT object.privateID, object.name FROM /" + regionName + " object";
+
+    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString,
+        regionShortcut);
+  }
+
+  @Test
+  @Parameters({"LOCAL", "REPLICATE", "PARTITION"})
+  @TestCaseName("[{index}] {method}(RegionType:{0}")
+  public void queryWithSingleProjectionMethodShouldUseAuthorizerFromExecutionContext(
+      RegionShortcut regionShortcut) {
+    String regionName = testName.getMethodName();
+    createAndPopulateRegion(regionName, regionShortcut);
+    String queryString = "SELECT object.getName() FROM /" + regionName + " object";
+
+    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString,
+        regionShortcut);
+  }
+
+  @Test
+  @Parameters({"LOCAL", "REPLICATE", "PARTITION"})
+  @TestCaseName("[{index}] {method}(RegionType:{0}")
+  public void queryWithMultipleProjectionMethodsShouldUseAuthorizerFromExecutionContext(
+      RegionShortcut regionShortcut) {
+    String regionName = testName.getMethodName();
+    createAndPopulateRegion(regionName, regionShortcut);
+    String queryString = "SELECT object.getId(), object.getName() FROM /" + regionName + " object";
+
+    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString,
+        regionShortcut);
+  }
+
+  private static class SpyQueryExecutor implements Answer {
+    private final InternalCache spyCache;
+
+    SpyQueryExecutor(InternalCache spyCache) {
+      this.spyCache = spyCache;
+    }
+
+    @Override
+    public Object answer(InvocationOnMock invocation) throws Throwable {
+      QueryExecutor executor = (QueryExecutor) invocation.callRealMethod();
+
+      if (executor instanceof PartitionedRegion) {
+        PartitionedRegion prExecutor = spy((PartitionedRegion) executor);
+        when(prExecutor.getCache()).thenReturn(this.spyCache);
+
+        return prExecutor;
+      }
+
+      return executor;
+    }
   }
 
   private static class SpyAuthorizer implements MethodInvocationAuthorizer {
+    static final AtomicInteger instantiations = new AtomicInteger(0);
     static final AtomicInteger authorizations = new AtomicInteger(0);
 
-    SpyAuthorizer() {}
+    SpyAuthorizer() {
+      instantiations.incrementAndGet();
+    }
 
     @Override
     public boolean authorize(Method method, Object target) {
       authorizations.incrementAndGet();
+
       return true;
     }
   }

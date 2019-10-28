@@ -19,14 +19,13 @@
  *
  * <p>
  * The {@link org.apache.geode.metrics.MetricsSession MetricsSession} provides the ability to add
- * and remove a meter registry for publishing cache metrics to external monitoring systems.
+ * and remove a meter registry for publishing metrics to external monitoring systems.
  *
  * <p>
  * The {@link org.apache.geode.metrics.MetricsPublishingService MetricsPublishingService} defines
  * a service that users can implement to be notified when a metrics session starts or stops. When
- * a session starts, the service can add a meter registry to the cache's composite registry. When
- * the session stops, the service can clean up any resources and remove its meter registry from the
- * cache's composite registry.
+ * a session starts, the service can add a meter registry to the session. When the session stops,
+ * the service should clean up any resources and remove its meter registry from the session.
  *
  * @see <a href="https://micrometer.io/docs">Micrometer Documentation</a>
  * @see <a href="https://micrometer.io/docs/concepts">Micrometer Concepts</a>

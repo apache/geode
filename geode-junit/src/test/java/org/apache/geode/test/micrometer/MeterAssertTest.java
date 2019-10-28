@@ -123,6 +123,29 @@ public class MeterAssertTest {
   }
 
   @Test
+  public void hasNoTagWithKey_failsDescriptively_ifMeterHasTagWithGivenKey() {
+    String unexpectedKey = "unexpected-key";
+    String unexpectedValue = "value-for-unexpected-key";
+
+    when(meter.getId().getTag(unexpectedKey)).thenReturn(unexpectedValue);
+
+    assertThatThrownBy(() -> assertThat(meter).hasNoTag(unexpectedKey))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining(unexpectedKey)
+        .hasMessageContaining(unexpectedValue);
+  }
+
+  @Test
+  public void hasNoTagWithKey_doesNotThrow_ifMeterHasNoTagWithGivenKey() {
+    String unexpectedKey = "unexpected-key";
+
+    when(meter.getId().getTag(unexpectedKey)).thenReturn(null);
+
+    assertThatCode(() -> assertThat(meter).hasNoTag(unexpectedKey))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
   public void hasBaseUnit_doesNotThrow_ifMeterHasGivenBaseUnit() {
     String expectedBaseUnit = "expected-base_unit";
 

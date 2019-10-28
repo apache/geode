@@ -36,6 +36,7 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachePerfStats;
@@ -60,8 +61,8 @@ public class ExecutionContext {
 
   /**
    * a Sequentially increasing number identifying a scope & also indicating whether a given scope
-   * came prior or later to another scope. It is needed to distiguish between two scopes having same
-   * nesting level relative to the top scope
+   * came prior or later to another scope. It is needed to distinguish between two scopes having
+   * same nesting level relative to the top scope
    */
   private int scopeNum = 0;
 
@@ -101,6 +102,21 @@ public class ExecutionContext {
   static final ThreadLocal<AtomicBoolean> isCanceled =
       ThreadLocal.withInitial(AtomicBoolean::new);
 
+  // Authorizer to use during the query execution.
+  private final MethodInvocationAuthorizer methodInvocationAuthorizer;
+
+  /**
+   * Returns the {@link MethodInvocationAuthorizer} that will be used, if needed, during the
+   * execution
+   * of the query associated with this context.
+   *
+   * @return the {@link MethodInvocationAuthorizer} that will be used, if needed, during the
+   *         execution of the query associated with this context.
+   */
+  public MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
+    return methodInvocationAuthorizer;
+  }
+
   /**
    * Param specialIteratorVar name of special variable to use to denote the current iteration
    * element. Used to implement the "this" var in the query shortcut methods
@@ -111,6 +127,13 @@ public class ExecutionContext {
     this.bindArguments = bindArguments;
     this.cache = cache;
     this.cancelationTask = Optional.empty();
+
+    // Authorization & authentication logic happens on server side only.
+    if (cache.isClient()) {
+      this.methodInvocationAuthorizer = DefaultQueryService.NO_OP_AUTHORIZER;
+    } else {
+      this.methodInvocationAuthorizer = cache.getQueryService().getMethodInvocationAuthorizer();
+    }
   }
 
   Optional<ScheduledFuture> getCancelationTask() {

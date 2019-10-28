@@ -142,14 +142,15 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
    * Sets timeout to IDLE_THREAD_TIMEOUT
    */
   public PooledExecutorWithDMStats(BlockingQueue<Runnable> q, int poolSize, PoolStatHelper stats,
-      ThreadFactory tf, ThreadsMonitoring tMonitoring) {
+      ThreadFactory tf, ThreadsMonitoring tMonitoring,
+      String systemPropertyPrefix) {
     /**
      * How long an idle thread will wait, in milliseconds, before it is removed from its thread
      * pool. Default is (30000 * 60) ms (30 minutes). It is not static so it can be set at runtime
      * and pick up different values.
      */
     this(q, poolSize, stats, tf,
-        Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "IDLE_THREAD_TIMEOUT", 30000 * 60)
+        Integer.getInteger(systemPropertyPrefix + "IDLE_THREAD_TIMEOUT", 30000 * 60)
             .intValue(),
         tMonitoring);
   }
@@ -158,8 +159,8 @@ public class PooledExecutorWithDMStats extends ThreadPoolExecutor {
    * Default timeout with no stats.
    */
   public PooledExecutorWithDMStats(BlockingQueue<Runnable> q, int poolSize, ThreadFactory tf,
-      ThreadsMonitoring tMonitoring) {
-    this(q, poolSize, null/* no stats */, tf, tMonitoring);
+      ThreadsMonitoring tMonitoring, String systemPropertyPrefix) {
+    this(q, poolSize, null/* no stats */, tf, tMonitoring, systemPropertyPrefix);
   }
 
   @Override
