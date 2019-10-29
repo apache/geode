@@ -27,13 +27,11 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory.CommandWrapper;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory.ThreadInitializer;
-import org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandler;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/** Unit tests for {@link LoggingThreadFactory}. */
+/** Unit tests for {@link org.apache.geode.logging.internal.executors.LoggingThreadFactory}. */
 @Category(LoggingTest.class)
 public class LoggingThreadFactoryTest {
 

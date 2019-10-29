@@ -37,12 +37,11 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
-import org.apache.geode.logging.internal.log4j.api.FastLogger;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Unit tests for {@link FastLogger} which wraps and delegates to an actual Logger with
- * optimizations for isDebugEnabled and isTraceEnabled.
+ * Unit tests for {@link org.apache.geode.logging.internal.log4j.api.FastLogger} which wraps and
+ * delegates to an actual Logger with optimizations for isDebugEnabled and isTraceEnabled.
  */
 @Category(LoggingTest.class)
 public class FastLoggerTest {

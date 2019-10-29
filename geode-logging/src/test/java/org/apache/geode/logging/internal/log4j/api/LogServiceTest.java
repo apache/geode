@@ -23,14 +23,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import org.apache.geode.logging.internal.log4j.api.FastLogger;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.log4j.api.message.GemFireParameterizedMessageFactory;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/**
- * Unit tests for {@link LogService}.
- */
+/** Unit tests for {@link org.apache.geode.logging.internal.log4j.api.LogService}. */
 @Category(LoggingTest.class)
 public class LogServiceTest {
 
