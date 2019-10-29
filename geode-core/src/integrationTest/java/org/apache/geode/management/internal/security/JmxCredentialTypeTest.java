@@ -44,6 +44,6 @@ public class JmxCredentialTypeTest {
     Map<String, Object> env = new HashMap<>();
     env.put(JMXConnector.CREDENTIALS, new Integer(0));
     assertThatThrownBy(() -> connectionRule.connect("localhost", locator.getJmxPort(), env))
-        .isInstanceOf(ClassCastException.class);
+        .hasMessageContaining("filter status: REJECTED");
   }
 }
