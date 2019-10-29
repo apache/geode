@@ -351,10 +351,12 @@ public class ManagementAgent {
 
     // Environment map
     final HashMap<String, Object> env = new HashMap<>();
+
+    // this makes sure the credentials passed to make the connection has to be in the form of String
+    // or String[]. Other form of credentials will not get de-serialized
     env.put("jmx.remote.rmi.server.credential.types", new String[] {
         String[].class.getName(),
-        String.class.getName(),
-        Properties.class.getName()});
+        String.class.getName()});
 
     // Manually creates and binds a JMX RMI Connector Server stub with the
     // registry created above: the port we pass here is the port that can
