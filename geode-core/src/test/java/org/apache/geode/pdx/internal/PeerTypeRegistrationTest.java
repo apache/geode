@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.pdx.PdxInitializationException;
 
@@ -84,6 +85,20 @@ public class PeerTypeRegistrationTest {
     PeerTypeRegistration peerTypeRegistration = new PeerTypeRegistration(internalCache);
     assertThatThrownBy(peerTypeRegistration::getLocalSize)
         .isInstanceOf(PdxInitializationException.class);
+  }
+
+  @Test
+  public void shouldReloadFromRegionWillNotInvokeInTX() {
+    TXStateProxy txStateProxy = mock(TXStateProxy.class);
+    when(txStateProxy.getTxMgr()).thenReturn(txManager);
+    when(txManager.internalSuspend()).thenReturn(txStateProxy);
+
+    PeerTypeRegistration peerTypeRegistration = new PeerTypeRegistration(internalCache);
+    peerTypeRegistration.initialize();
+    peerTypeRegistration.shouldReload();
+
+    verify(txManager, times(1)).internalSuspend();
+    verify(txManager, times(1)).internalResume(txStateProxy);
   }
 
   @Test
