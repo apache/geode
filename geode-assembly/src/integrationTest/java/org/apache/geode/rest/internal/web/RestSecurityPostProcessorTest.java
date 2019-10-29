@@ -60,8 +60,7 @@ public class RestSecurityPostProcessorTest {
 
   @BeforeClass
   public static void before() throws Exception {
-    Region region =
-        serverStarter.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("customers");
+    Region region = serverStarter.createRegion(RegionShortcut.REPLICATE, "customers");
     region.put("1", new Customer(1L, "John", "Doe", "555555555"));
     region.put("2", new Customer(2L, "Richard", "Roe", "222533554"));
     region.put("3", new Customer(3L, "Jane", "Doe", "555223333"));
@@ -80,8 +79,8 @@ public class RestSecurityPostProcessorTest {
             .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
             .getJsonObject();
 
-    assertEquals("*********", jsonNode.get("socialSecurityNumber").asText());
-    assertEquals(1L, jsonNode.get("customerId").asLong());
+    assertEquals("*********", jsonNode.get("ssn").asText());
+    assertEquals(1L, jsonNode.get("id").asLong());
 
     // Try with super-user
     jsonNode =
@@ -89,8 +88,8 @@ public class RestSecurityPostProcessorTest {
             .hasStatusCode(200)
             .hasContentType(MediaType.APPLICATION_JSON_UTF8_VALUE)
             .getJsonObject();
-    assertEquals("555555555", jsonNode.get("socialSecurityNumber").asText());
-    assertEquals(1L, jsonNode.get("customerId").asLong());
+    assertEquals("555555555", jsonNode.get("ssn").asText());
+    assertEquals(1L, jsonNode.get("id").asLong());
   }
 
   // Test multiple keys
@@ -106,11 +105,11 @@ public class RestSecurityPostProcessorTest {
     final int length = customers.size();
     assertEquals(2, length);
     JsonNode customer = customers.get(0);
-    assertEquals("*********", customer.get("socialSecurityNumber").asText());
-    assertEquals(1, customer.get("customerId").asLong());
+    assertEquals("*********", customer.get("ssn").asText());
+    assertEquals(1, customer.get("id").asLong());
     customer = customers.get(1);
-    assertEquals("*********", customer.get("socialSecurityNumber").asText());
-    assertEquals(3, customer.get("customerId").asLong());
+    assertEquals("*********", customer.get("ssn").asText());
+    assertEquals(3, customer.get("id").asLong());
   }
 
   @Test
@@ -124,8 +123,8 @@ public class RestSecurityPostProcessorTest {
     final int length = customers.size();
     for (int index = 0; index < length; ++index) {
       JsonNode customer = customers.get(index);
-      assertEquals("*********", customer.get("socialSecurityNumber").asText());
-      assertEquals((long) index + 1, customer.get("customerId").asLong());
+      assertEquals("*********", customer.get("ssn").asText());
+      assertEquals((long) index + 1, customer.get("id").asLong());
     }
   }
 
@@ -141,8 +140,8 @@ public class RestSecurityPostProcessorTest {
     final int length = jsonArray.size();
     for (int index = 0; index < length; ++index) {
       JsonNode customer = jsonArray.get(index);
-      assertEquals("*********", customer.get("socialSecurityNumber").asText());
-      assertEquals((long) index + 1, customer.get("customerId").asLong());
+      assertEquals("*********", customer.get("ssn").asText());
+      assertEquals((long) index + 1, customer.get("id").asLong());
     }
   }
 
@@ -172,7 +171,7 @@ public class RestSecurityPostProcessorTest {
 
     assertTrue(jsonArray.size() == 1);
     JsonNode customer = jsonArray.get(0);
-    assertEquals("*********", customer.get("socialSecurityNumber").asText());
-    assertEquals(1L, customer.get("customerId").asLong());
+    assertEquals("*********", customer.get("ssn").asText());
+    assertEquals(1L, customer.get("id").asLong());
   }
 }

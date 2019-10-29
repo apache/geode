@@ -34,8 +34,6 @@ j2objc-annotations
 jackson-annotations
 jackson-core
 jackson-databind
-jackson-module-paranamer
-jackson-module-scala
 jansi
 javax.activation
 javax.activation-api
@@ -75,11 +73,9 @@ mx4j
 mx4j-remote
 mx4j-tools
 netty-all
-paranamer
 protobuf-java
 ra.jar
 rmiio
-scala-library
 shiro-cache
 shiro-config-core
 shiro-config-ogdl
