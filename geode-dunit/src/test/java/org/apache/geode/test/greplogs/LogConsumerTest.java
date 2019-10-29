@@ -143,4 +143,14 @@ public class LogConsumerTest {
 
     assertThat(value).contains(line);
   }
+
+  @Test
+  public void closeReturnsNullIfLineContainsHydraMasterLocatorsWildcard() {
+    String line = "hydra.MasterDescription.master.locators={}";
+    logConsumer.consume(line);
+
+    StringBuilder value = logConsumer.close();
+
+    assertThat(value).isNull();
+  }
 }

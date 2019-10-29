@@ -22,23 +22,17 @@ public class SimpleMetricsPublishingService implements MetricsPublishingService 
 
   private static final MeterRegistry registry = new SimpleMeterRegistry();
 
-  private volatile MetricsSession session;
-
   public static MeterRegistry getRegistry() {
     return registry;
   }
 
   @Override
   public void start(MetricsSession session) {
-    this.session = session;
-
-    // add your registry as a sub-registry to the cache's composite registry
     session.addSubregistry(registry);
   }
 
   @Override
-  public void stop() {
-    // clean up any resources used by your meter registry
+  public void stop(MetricsSession session) {
     session.removeSubregistry(registry);
   }
 }

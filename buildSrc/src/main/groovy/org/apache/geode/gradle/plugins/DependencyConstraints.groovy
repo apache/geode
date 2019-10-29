@@ -57,7 +57,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
-    deps.put("jetty.version", "9.4.12.v20180830")
+    deps.put("jetty.version", "9.4.21.v20190926")
 
     // These version numbers are consumed by protobuf configurations that are plugin-specific and not
     // part of the typical Gradle dependency configurations.
@@ -159,6 +159,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'redis.clients', name: 'jedis', version: '2.9.0')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
         api(group: 'com.arakelian', name: 'java-jq', version: '0.10.1')
+        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: '2.9.8')
+        api(group: 'joda-time', name: 'joda-time', version: '2.9.8')
       }
     }
 

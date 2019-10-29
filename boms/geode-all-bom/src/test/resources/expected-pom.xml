@@ -364,13 +364,13 @@
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-webapp</artifactId>
-        <version>9.4.12.v20180830</version>
+        <version>9.4.21.v20190926</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
         <groupId>org.eclipse.jetty</groupId>
         <artifactId>jetty-server</artifactId>
-        <version>9.4.12.v20180830</version>
+        <version>9.4.21.v20190926</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
@@ -485,6 +485,18 @@
         <groupId>com.arakelian</groupId>
         <artifactId>java-jq</artifactId>
         <version>0.10.1</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.datatype</groupId>
+        <artifactId>jackson-datatype-joda</artifactId>
+        <version>2.9.8</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <version>2.9.8</version>
         <scope>compile</scope>
       </dependency>
       <dependency>

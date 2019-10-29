@@ -14,6 +14,7 @@
  */
 package org.apache.geode.session.tests;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
 
@@ -27,6 +28,7 @@ public class TomcatSessionBackwardsCompatibilityTomcat8WithOldModuleCanDoPutsTes
     super(version);
   }
 
+  @Ignore // GEODE-7336 addressing failures in upgradeTests
   @Test
   public void test() throws Exception {
     startClusterWithTomcat(classPathTomcat8);

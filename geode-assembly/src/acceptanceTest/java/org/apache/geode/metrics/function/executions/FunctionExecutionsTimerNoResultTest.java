@@ -56,6 +56,7 @@ public class FunctionExecutionsTimerNoResultTest {
   private Region<Object, Object> replicateRegion;
   private Region<Object, Object> partitionRegion;
   private FunctionToTimeWithoutResult functionWithNoResult;
+  private Duration functionDuration;
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
@@ -65,7 +66,6 @@ public class FunctionExecutionsTimerNoResultTest {
 
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
-  private Duration functionDuration;
 
   @Before
   public void setUp() throws IOException {
@@ -81,7 +81,7 @@ public class FunctionExecutionsTimerNoResultTest {
         .resolve("functions.jar").toAbsolutePath();
     writeJarFromClasses(functionsJarPath.toFile(),
         GetFunctionExecutionTimerValues.class, FunctionToTimeWithoutResult.class,
-        ExecutionsTimerValues.class);
+        ExecutionsTimerValues.class, ThreadSleep.class);
 
     String startLocatorCommand = String.join(" ",
         "start locator",

@@ -96,7 +96,7 @@ public abstract class AbstractSessionCache implements SessionCache {
   }
 
   RegionConfiguration createRegionConfiguration() {
-    RegionConfiguration configuration = new RegionConfiguration();
+    RegionConfiguration configuration = getNewRegionConfiguration();
     configuration.setRegionName(getSessionManager().getRegionName());
     configuration.setRegionAttributesId(getSessionManager().getRegionAttributesId());
     if (getSessionManager()
@@ -109,5 +109,10 @@ public abstract class AbstractSessionCache implements SessionCache {
     configuration.setEnableGatewayReplication(getSessionManager().getEnableGatewayReplication());
     configuration.setEnableDebugListener(getSessionManager().getEnableDebugListener());
     return configuration;
+  }
+
+  // Helper methods added to improve unit testing of class
+  RegionConfiguration getNewRegionConfiguration() {
+    return new RegionConfiguration();
   }
 }

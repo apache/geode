@@ -32,7 +32,7 @@ public class RegionManagementAcceptanceTest {
 
     // verify the management rest api is started correctly
     GeodeDevRestClient client =
-        new GeodeDevRestClient("/management/experimental", "localhost", 7070, false);
+        new GeodeDevRestClient("/management/v1", "localhost", 7070, false);
 
     client.doGetAndAssert("/ping").hasStatusCode(200).hasResponseBody().isEqualTo("pong");
   }

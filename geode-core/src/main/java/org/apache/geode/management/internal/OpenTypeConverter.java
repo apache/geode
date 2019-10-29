@@ -402,7 +402,7 @@ public abstract class OpenTypeConverter {
       if (propertyName == null)
         continue;
 
-      Method old = getterMap.put(OpenTypeUtil.decapitalize(propertyName), method);
+      Method old = getterMap.put(OpenTypeUtil.toCamelCase(propertyName), method);
       if (old != null) {
         final String msg = "Class " + c.getName() + " has method name clash: " + old.getName()
             + ", " + method.getName();

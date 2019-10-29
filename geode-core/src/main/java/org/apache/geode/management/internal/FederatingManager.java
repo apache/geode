@@ -32,6 +32,7 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesFactory;
@@ -40,6 +41,7 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
@@ -51,7 +53,6 @@ import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.ManagementException;
 
@@ -65,7 +66,10 @@ import org.apache.geode.management.ManagementException;
  * @since GemFire 7.0
  */
 public class FederatingManager extends Manager {
-  public static final Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
+
+  private final SystemManagementService service;
+  private final AtomicReference<Exception> latestException = new AtomicReference<>();
 
   /**
    * This Executor uses a pool of thread to execute the member addition /removal tasks, This will
@@ -73,31 +77,19 @@ public class FederatingManager extends Manager {
    * unbounded in practical situation as number of members will be a finite set at any given point
    * of time
    */
-  private ExecutorService pooledMembershipExecutor;
+  private final ExecutorService executorService;
+  private final MBeanProxyFactory proxyFactory;
+  private final MemberMessenger messenger;
 
-  /**
-   * Proxy factory is used to create , remove proxies
-   */
-  private MBeanProxyFactory proxyFactory;
-
-  private MemberMessenger messenger;
-
-  private final SystemManagementService service;
-
-  private final AtomicReference<Exception> latestException = new AtomicReference<>(null);
-
-  FederatingManager(MBeanJMXAdapter jmxAdapter, ManagementResourceRepo repo,
-      InternalDistributedSystem system, SystemManagementService service, InternalCache cache,
-      StatisticsFactory statisticsFactory, StatisticsClock statisticsClock) {
+  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
+      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+      ExecutorService executorService) {
     super(repo, system, cache, statisticsFactory, statisticsClock);
     this.service = service;
-    proxyFactory = new MBeanProxyFactory(jmxAdapter, service);
-    messenger = new MemberMessenger(jmxAdapter, system);
-  }
-
-  @VisibleForTesting
-  void setProxyFactory(MBeanProxyFactory newProxyFactory) {
-    proxyFactory = newProxyFactory;
+    this.proxyFactory = proxyFactory;
+    this.messenger = messenger;
+    this.executorService = executorService;
   }
 
   /**
@@ -110,9 +102,6 @@ public class FederatingManager extends Manager {
       if (logger.isDebugEnabled()) {
         logger.debug("Starting the Federating Manager.... ");
       }
-
-      pooledMembershipExecutor = LoggingExecutors.newFixedThreadPool("FederatingManager", true,
-          Runtime.getRuntime().availableProcessors());
 
       running = true;
       startManagingActivity();
@@ -136,46 +125,13 @@ public class FederatingManager extends Manager {
     stopManagingActivity();
   }
 
-  /**
-   * This method will be invoked whenever a member stops being a managing node. The
-   * {@code ManagementException} has to be handled by the caller.
-   */
-  private void stopManagingActivity() {
-    try {
-      pooledMembershipExecutor.shutdownNow();
-
-      for (DistributedMember distributedMember : repo.getMonitoringRegionMap().keySet()) {
-        removeMemberArtifacts(distributedMember, false);
-      }
-    } catch (Exception e) {
-      throw new ManagementException(e);
-    }
-  }
-
   @Override
   public boolean isRunning() {
     return running;
   }
 
-  /**
-   * This method will be invoked from MembershipListener which is registered when the member becomes
-   * a Management node.
-   *
-   * <p>
-   * This method will delegate task to another thread and exit, so that it wont block the membership
-   * listener
-   */
-  @VisibleForTesting
-  public void addMember(InternalDistributedMember member) {
-    GIITask giiTask = new GIITask(member);
-    executeTask(() -> {
-      try {
-        giiTask.call();
-      } catch (RuntimeException e) {
-        logger.warn("Error federating new member {}", member.getId(), e);
-        latestException.set(e);
-      }
-    });
+  public MemberMessenger getMessenger() {
+    return messenger;
   }
 
   /**
@@ -190,38 +146,6 @@ public class FederatingManager extends Manager {
     executeTask(new RemoveMemberTask(member, crashed));
   }
 
-  private void executeTask(Runnable task) {
-    try {
-      pooledMembershipExecutor.execute(task);
-    } catch (RejectedExecutionException ignored) {
-      // Ignore, we are getting shutdown
-    }
-  }
-
-  private void removeMemberArtifacts(DistributedMember member, boolean crashed) {
-    Region<String, Object> proxyRegion = repo.getEntryFromMonitoringRegionMap(member);
-    Region<NotificationKey, Notification> notificationRegion =
-        repo.getEntryFromNotifRegionMap(member);
-
-    if (proxyRegion == null && notificationRegion == null) {
-      return;
-    }
-
-    repo.romoveEntryFromMonitoringRegionMap(member);
-    repo.removeEntryFromNotifRegionMap(member);
-
-    // If cache is closed all the regions would have been destroyed implicitly
-    if (!cache.isClosed()) {
-      proxyFactory.removeAllProxies(member, proxyRegion);
-      proxyRegion.localDestroyRegion();
-      notificationRegion.localDestroyRegion();
-    }
-
-    if (!system.getDistributedMember().equals(member)) {
-      service.memberDeparted((InternalDistributedMember) member, crashed);
-    }
-  }
-
   /**
    * This method will be invoked from MembershipListener which is registered when the member becomes
    * a Management node.
@@ -233,6 +157,66 @@ public class FederatingManager extends Manager {
   void suspectMember(DistributedMember member, InternalDistributedMember whoSuspected,
       String reason) {
     service.memberSuspect((InternalDistributedMember) member, whoSuspected, reason);
+  }
+
+  /**
+   * This will return the last updated time of the proxyMBean.
+   *
+   * @param objectName {@link ObjectName} of the MBean
+   *
+   * @return last updated time of the proxy
+   */
+  long getLastUpdateTime(ObjectName objectName) {
+    return proxyFactory.getLastUpdateTime(objectName);
+  }
+
+  /**
+   * Find a particular proxy instance for a {@link ObjectName}, {@link DistributedMember} and
+   * interface class If the proxy interface does not implement the given interface class a
+   * {@link ClassCastException} will be thrown
+   *
+   * @param objectName {@link ObjectName} of the MBean
+   * @param interfaceClass interface class implemented by proxy
+   *
+   * @return an instance of proxy exposing the given interface
+   */
+  <T> T findProxy(ObjectName objectName, Class<T> interfaceClass) {
+    return proxyFactory.findProxy(objectName, interfaceClass);
+  }
+
+  /**
+   * Find a set of proxies given a {@link DistributedMember}.
+   *
+   * @param member {@link DistributedMember}
+   *
+   * @return a set of {@link ObjectName}
+   */
+  Set<ObjectName> findAllProxies(DistributedMember member) {
+    return proxyFactory.findAllProxies(member);
+  }
+
+  /**
+   * This method will be invoked whenever a member stops being a managing node. The
+   * {@code ManagementException} has to be handled by the caller.
+   */
+  private void stopManagingActivity() {
+    try {
+      executorService.shutdownNow();
+
+      for (DistributedMember distributedMember : repo.getMonitoringRegionMap().keySet()) {
+        removeMemberArtifacts(distributedMember, false);
+      }
+    } catch (Exception e) {
+      throw new ManagementException(e);
+    }
+  }
+
+  private void executeTask(Runnable task) {
+    try {
+      executorService.execute(task);
+    } catch (RejectedExecutionException ignored) {
+      // Ignore, we are getting shutdown
+    }
   }
 
   /**
@@ -255,7 +239,7 @@ public class FederatingManager extends Manager {
         logger.debug("Management Resource creation started  : ");
       }
       List<Future<InternalDistributedMember>> futureTaskList =
-          pooledMembershipExecutor.invokeAll(giiTaskList);
+          executorService.invokeAll(giiTaskList);
 
       for (Future<InternalDistributedMember> futureTask : futureTaskList) {
         try {
@@ -301,60 +285,78 @@ public class FederatingManager extends Manager {
   }
 
   /**
-   * For internal Use only
+   * This method will be invoked from MembershipListener which is registered when the member becomes
+   * a Management node.
+   *
+   * <p>
+   * This method will delegate task to another thread and exit, so that it wont block the membership
+   * listener
    */
+  @VisibleForTesting
+  void addMember(InternalDistributedMember member) {
+    GIITask giiTask = new GIITask(member);
+    executeTask(() -> {
+      try {
+        giiTask.call();
+      } catch (RuntimeException e) {
+        logger.warn("Error federating new member {}", member.getId(), e);
+        latestException.set(e);
+      }
+    });
+  }
+
+  @VisibleForTesting
+  void removeMemberArtifacts(DistributedMember member, boolean crashed) {
+    Region<String, Object> monitoringRegion = repo.getEntryFromMonitoringRegionMap(member);
+    Region<NotificationKey, Notification> notificationRegion =
+        repo.getEntryFromNotifRegionMap(member);
+
+    if (monitoringRegion == null && notificationRegion == null) {
+      return;
+    }
+
+    repo.romoveEntryFromMonitoringRegionMap(member);
+    repo.removeEntryFromNotifRegionMap(member);
+
+    // If cache is closed all the regions would have been destroyed implicitly
+    if (!cache.isClosed()) {
+      try {
+        proxyFactory.removeAllProxies(member, monitoringRegion);
+      } catch (CancelException | RegionDestroyedException ignore) {
+        // ignored
+      }
+      try {
+        if (monitoringRegion != null) {
+          monitoringRegion.localDestroyRegion();
+        }
+      } catch (CancelException | RegionDestroyedException ignore) {
+        // ignored
+      }
+      try {
+        if (notificationRegion != null) {
+          notificationRegion.localDestroyRegion();
+        }
+      } catch (CancelException | RegionDestroyedException ignore) {
+        // ignored
+      }
+    }
+
+    if (!system.getDistributedMember().equals(member)) {
+      try {
+        service.memberDeparted((InternalDistributedMember) member, crashed);
+      } catch (CancelException | RegionDestroyedException ignore) {
+        // ignored
+      }
+    }
+  }
+
   @VisibleForTesting
   public MBeanProxyFactory getProxyFactory() {
     return proxyFactory;
   }
 
-  /**
-   * This will return the last updated time of the proxyMBean.
-   *
-   * @param objectName {@link ObjectName} of the MBean
-   *
-   * @return last updated time of the proxy
-   */
-  long getLastUpdateTime(ObjectName objectName) {
-    return proxyFactory.getLastUpdateTime(objectName);
-  }
-
-  /**
-   * Find a particular proxy instance for a {@link ObjectName}, {@link DistributedMember} and
-   * interface class If the proxy interface does not implement the given interface class a
-   * {@link ClassCastException} will be thrown
-   *
-   * @param objectName {@link ObjectName} of the MBean
-   * @param interfaceClass interface class implemented by proxy
-   *
-   * @return an instance of proxy exposing the given interface
-   */
-  <T> T findProxy(ObjectName objectName, Class<T> interfaceClass) {
-    return proxyFactory.findProxy(objectName, interfaceClass);
-  }
-
-  /**
-   * Find a set of proxies given a {@link DistributedMember}.
-   *
-   * @param member {@link DistributedMember}
-   *
-   * @return a set of {@link ObjectName}
-   */
-  Set<ObjectName> findAllProxies(DistributedMember member) {
-    return proxyFactory.findAllProxies(member);
-  }
-
-  public MemberMessenger getMessenger() {
-    return messenger;
-  }
-
   @VisibleForTesting
-  public void setMessenger(MemberMessenger messenger) {
-    this.messenger = messenger;
-  }
-
-  @VisibleForTesting
-  public synchronized Exception getAndResetLatestException() {
+  synchronized Exception getAndResetLatestException() {
     return latestException.getAndSet(null);
   }
 
@@ -500,7 +502,7 @@ public class FederatingManager extends Manager {
 
       // Before completing task intimate all listening ProxyListener which might send
       // notifications.
-      service.memberJoined((InternalDistributedMember) member);
+      service.memberJoined(member);
 
       // Send manager info to the added member
       messenger.sendManagerInfo(member);
@@ -538,7 +540,7 @@ public class FederatingManager extends Manager {
 
     private final InternalDistributedMember member;
 
-    GIITask(InternalDistributedMember member) {
+    private GIITask(InternalDistributedMember member) {
       this.member = member;
     }
 
@@ -554,7 +556,7 @@ public class FederatingManager extends Manager {
     private final DistributedMember member;
     private final boolean crashed;
 
-    RemoveMemberTask(DistributedMember member, boolean crashed) {
+    private RemoveMemberTask(DistributedMember member, boolean crashed) {
       this.member = member;
       this.crashed = crashed;
     }

@@ -53,7 +53,7 @@ public class SwaggerConfig {
         .licenseUrl("http://www.apache.org/licenses/")
         .contact(new Contact("the Apache Geode Community",
             "http://geode.apache.org",
-            "dev@geode.apache.org"))
+            "user@geode.apache.org"))
         .build();
   }
 }

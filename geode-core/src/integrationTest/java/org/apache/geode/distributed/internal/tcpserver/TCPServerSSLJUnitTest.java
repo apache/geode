@@ -41,7 +41,9 @@ import org.mockito.Mockito;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.DummySocketCreator;
@@ -77,7 +79,7 @@ public class TCPServerSSLJUnitTest {
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
     server = new DummyTcpServer(port, localhost, sslProperties, null,
-        Mockito.mock(TcpHandler.class), Mockito.mock(PoolStatHelper.class),
+        Mockito.mock(RestartableTcpHandler.class), Mockito.mock(PoolStatHelper.class),
         "server thread");
     server.start();
   }
@@ -138,9 +140,10 @@ public class TCPServerSSLJUnitTest {
     private List<Integer> recordedSocketsTimeouts = new ArrayList<>();
 
     public DummyTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-        DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
+        DistributionConfigImpl cfg, RestartableTcpHandler handler, PoolStatHelper poolHelper,
         String threadName) {
-      super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadName, null, null);
+      super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadName,
+          (socket, input, firstByte) -> false, DistributionStats::getStatTime);
       if (cfg == null) {
         cfg = new DistributionConfigImpl(sslConfig);
       }

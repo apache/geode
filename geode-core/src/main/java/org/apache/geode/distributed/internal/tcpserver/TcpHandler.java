@@ -16,15 +16,6 @@ package org.apache.geode.distributed.internal.tcpserver;
 
 import java.io.IOException;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-
-/**
- * A handler which responds to messages for the {@link TcpServer}
- *
- * @since GemFire 5.7
- */
 public interface TcpHandler {
   /**
    * Process a request and return a response
@@ -41,19 +32,6 @@ public interface TcpHandler {
    * Perform any shutdown code in the handler after the TCP server has closed the socket.
    */
   void shutDown();
-
-  /**
-   * Informs the handler that TcpServer is restarting with the given distributed system and cache
-   *
-   * @param sharedConfig TODO
-   */
-  void restarting(DistributedSystem ds, GemFireCache cache,
-      InternalConfigurationPersistenceService sharedConfig);
-
-  /**
-   * Informs the handler that restart has completed
-   */
-  default void restartCompleted(DistributedSystem ds) {}
 
   /**
    * Initialize the handler with the TcpServer. Called before the TcpServer starts accepting

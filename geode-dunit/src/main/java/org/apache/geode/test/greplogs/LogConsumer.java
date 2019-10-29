@@ -25,6 +25,7 @@ import static org.apache.geode.test.greplogs.Patterns.EXCEPTION;
 import static org.apache.geode.test.greplogs.Patterns.EXCEPTION_2;
 import static org.apache.geode.test.greplogs.Patterns.EXCEPTION_3;
 import static org.apache.geode.test.greplogs.Patterns.EXCEPTION_4;
+import static org.apache.geode.test.greplogs.Patterns.HYDRA_MASTER_LOCATORS_WILDCARD;
 import static org.apache.geode.test.greplogs.Patterns.IGNORED_EXCEPTION;
 import static org.apache.geode.test.greplogs.Patterns.JAVA_LANG_ERROR;
 import static org.apache.geode.test.greplogs.Patterns.LOG_STATEMENT;
@@ -165,6 +166,7 @@ public class LogConsumer {
         JAVA_LANG_ERROR.matcher(line).find() ||
         MALFORMED_I18N_MESSAGE.matcher(line).find() ||
         MALFORMED_LOG4J_MESSAGE.matcher(line).find()) &&
+        !(HYDRA_MASTER_LOCATORS_WILDCARD.matcher(line).find()) &&
         !(WARN_OR_LESS_LOG_LEVEL.matcher(line).find() &&
             RVV_BIT_SET_MESSAGE.matcher(line).find());
   }

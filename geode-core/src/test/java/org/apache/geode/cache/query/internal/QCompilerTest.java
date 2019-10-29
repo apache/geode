@@ -17,6 +17,8 @@ package org.apache.geode.cache.query.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.TreeMap;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -32,12 +35,24 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category(OQLQueryTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class QCompilerTest {
-  private QueryExecutionContext context = new QueryExecutionContext(null, null);
+  private QueryExecutionContext context;
+
+  @Before
+  public void setUp() {
+    InternalCache mockCache = mock(InternalCache.class);
+    when(mockCache.getQueryService()).thenReturn(mock(InternalQueryService.class));
+    when(mockCache.getQueryService().getMethodInvocationAuthorizer())
+        .thenReturn(mock(MethodInvocationAuthorizer.class));
+
+    context = new QueryExecutionContext(null, mockCache);
+  }
 
   @Test
   public void testStringConditioningForLike_1() {

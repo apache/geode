@@ -1838,6 +1838,9 @@ public class CacheClientProxy implements ClientSession {
     this._messageDispatcher._messageQueue.setPrimary(ip);
     this._messageDispatcher._messageQueue.setClientConflation(cc);
 
+    // Reset the _socketClosed AtomicBoolean
+    this._socketClosed.compareAndSet(true, false);
+
     reinitializeClientAuths();
     this.creationDate = new Date();
     if (logger.isDebugEnabled()) {

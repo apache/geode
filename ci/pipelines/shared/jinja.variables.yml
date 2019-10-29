@@ -89,10 +89,10 @@ tests:
   RAM: '12'
   name: Acceptance
 - ARTIFACT_SLUG: distributedtestfiles
-  CALL_STACK_TIMEOUT: '7200'
+  CALL_STACK_TIMEOUT: '9900'
   CPUS: '96'
   DUNIT_PARALLEL_FORKS: '24'
-  EXECUTE_TEST_TIMEOUT: 2h15m
+  EXECUTE_TEST_TIMEOUT: 3h00m
   GRADLE_TASK: distributedTest
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
@@ -116,7 +116,7 @@ tests:
   GRADLE_TASK: upgradeTest
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
-  RAM: '160'
+  RAM: '210'
   name: Upgrade
 - ARTIFACT_SLUG: stressnewtestfiles
   CALL_STACK_TIMEOUT: '7200'

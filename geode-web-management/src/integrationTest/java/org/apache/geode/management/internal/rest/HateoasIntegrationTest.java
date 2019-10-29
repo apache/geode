@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -42,6 +43,7 @@ import org.apache.geode.management.configuration.RegionType;
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class HateoasIntegrationTest {
 
   @Autowired
@@ -63,7 +65,7 @@ public class HateoasIntegrationTest {
   public void listRegionHateoas() throws Exception {
     prepRegion();
 
-    context.perform(get("/experimental/regions"))
+    context.perform(get("/v1/regions"))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.result[0].links.self",
@@ -80,7 +82,7 @@ public class HateoasIntegrationTest {
   public void getRegionHateoas() throws Exception {
     prepRegion();
 
-    context.perform(get("/experimental/regions/customers"))
+    context.perform(get("/v1/regions/customers"))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.result.links.self",

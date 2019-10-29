@@ -32,6 +32,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -43,6 +44,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = LocatorLauncherContextLoader.class)
 @WebAppConfiguration
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class MemberManagementServiceRestIntegrationTest {
 
   @Autowired
@@ -67,7 +69,7 @@ public class MemberManagementServiceRestIntegrationTest {
 
   @Test
   public void listLocator() throws Exception {
-    webContext.perform(get("/experimental/members")
+    webContext.perform(get("/v1/members")
         .param("id", "locator-0"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -85,7 +87,7 @@ public class MemberManagementServiceRestIntegrationTest {
 
   @Test
   public void getLocator() throws Exception {
-    webContext.perform(get("/experimental/members/locator-0"))
+    webContext.perform(get("/v1/members/locator-0"))
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
@@ -102,7 +104,7 @@ public class MemberManagementServiceRestIntegrationTest {
 
   @Test
   public void listServer() throws Exception {
-    webContext.perform(get("/experimental/members")
+    webContext.perform(get("/v1/members")
         .param("id", "server-1"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -124,7 +126,7 @@ public class MemberManagementServiceRestIntegrationTest {
 
   @Test
   public void listAllMembers() throws Exception {
-    webContext.perform(get("/experimental/members"))
+    webContext.perform(get("/v1/members"))
         .andDo(print())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())

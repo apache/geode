@@ -50,6 +50,7 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
+import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.fake.Fakes;
 
@@ -368,10 +369,26 @@ public class GemFireCacheImplTest {
   }
 
   @Test
-  public void getMeterRegistryReturnsTheMeterRegistry() {
-    gemFireCacheImpl = createGemFireCacheImpl();
+  public void getMeterRegistry_returnsTheSystemMeterRegistry() {
+    MeterRegistry systemMeterRegistry = mock(MeterRegistry.class);
 
-    assertThat(gemFireCacheImpl.getMeterRegistry()).isInstanceOf(MeterRegistry.class);
+    InternalDistributedSystem internalDistributedSystem = Fakes.distributedSystem();
+    when(internalDistributedSystem.getMeterRegistry()).thenReturn(systemMeterRegistry);
+
+    InternalCacheBuilder cacheBuilder =
+        new InternalCacheBuilder(new Properties(), new CacheConfig(),
+            new InternalDistributedSystemMetricsService.Builder(),
+            InternalDistributedSystem::getConnectedInstance,
+            InternalDistributedSystem::connectInternal, GemFireCacheImpl::getInstance,
+            GemFireCacheImpl::new);
+
+    gemFireCacheImpl = (GemFireCacheImpl) cacheBuilder
+        .setUseAsyncEventListeners(true)
+        .setTypeRegistry(mock(TypeRegistry.class))
+        .create(internalDistributedSystem);
+
+    assertThat(gemFireCacheImpl.getMeterRegistry())
+        .isSameAs(systemMeterRegistry);
   }
 
   @Test
@@ -565,16 +582,16 @@ public class GemFireCacheImplTest {
   }
 
   @Test
-  public void closeDoesNotCloseMeterSubregistries() {
-    MeterRegistry subregistry = spy(new SimpleMeterRegistry());
+  public void closeDoesNotCloseUserMeterRegistries() {
+    MeterRegistry userRegistry = spy(new SimpleMeterRegistry());
     gemFireCacheImpl = (GemFireCacheImpl) new InternalCacheBuilder()
-        .addMeterSubregistry(subregistry)
+        .addMeterSubregistry(userRegistry)
         .setTypeRegistry(mock(TypeRegistry.class))
         .create(distributedSystem());
 
     gemFireCacheImpl.close();
 
-    assertThat(subregistry.isClosed()).isFalse();
+    assertThat(userRegistry.isClosed()).isFalse();
   }
 
   private static GemFireCacheImpl createGemFireCacheImpl() {

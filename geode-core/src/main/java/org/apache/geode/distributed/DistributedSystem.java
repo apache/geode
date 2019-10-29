@@ -43,6 +43,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
 
 /**
  * A "connection" to a GemFire distributed system. A <code>DistributedSystem</code> is created by
@@ -155,7 +156,8 @@ public abstract class DistributedSystem implements StatisticsFactory {
    *
    */
   public static DistributedSystem connect(Properties config) {
-    return InternalDistributedSystem.connectInternal(config, null);
+    return InternalDistributedSystem.connectInternal(config, null,
+        new InternalDistributedSystemMetricsService.Builder());
   }
 
   protected static void addSystem(InternalDistributedSystem newSystem) {
@@ -667,5 +669,4 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * Returns the new DistributedSystem if there was an auto-reconnect
    */
   public abstract DistributedSystem getReconnectedSystem();
-
 }

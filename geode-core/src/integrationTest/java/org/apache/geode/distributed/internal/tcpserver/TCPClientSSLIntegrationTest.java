@@ -40,7 +40,9 @@ import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -103,7 +105,7 @@ public class TCPClientSSLIntegrationTest {
     localhost = InetAddress.getLocalHost();
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
-    TcpHandler tcpHandler = Mockito.mock(TcpHandler.class);
+    RestartableTcpHandler tcpHandler = Mockito.mock(RestartableTcpHandler.class);
     when(tcpHandler.processRequest(any())).thenReturn("Running!");
 
     server = new FakeTcpServer(port, localhost, sslProperties, null,
@@ -196,9 +198,10 @@ public class TCPClientSSLIntegrationTest {
     private DistributionConfig distributionConfig;
 
     public FakeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-        DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
+        DistributionConfigImpl cfg, RestartableTcpHandler handler, PoolStatHelper poolHelper,
         String threadName) {
-      super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadName, null, null);
+      super(port, bind_address, sslConfig, cfg, handler, poolHelper, threadName,
+          (socket, input, firstByte) -> false, DistributionStats::getStatTime);
       if (cfg == null) {
         cfg = new DistributionConfigImpl(sslConfig);
       }

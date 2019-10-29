@@ -21,10 +21,11 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.management.internal.ManagementHelper;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /**
@@ -35,8 +36,8 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 public class ClassName implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private String className = "";
-  private Properties initProperties = new Properties();
+  private String className;
+  private Properties initProperties;
   private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   /**
@@ -46,49 +47,62 @@ public class ClassName implements Serializable {
   public static final ClassName EMPTY = new ClassName("");
 
   /**
-   * Default constructor used for serialization.
-   */
-  public ClassName() {}
-
-  /**
    * Object to be instantiated using the empty param constructor of the className
    *
-   * @param className this class needs to a no-arg constructor.
+   * @param className this class needs a no-arg constructor.
    */
   public ClassName(String className) {
     this(className, "{}");
   }
 
   /**
+   * this is a convenient way to create a ClassName object using json represented properties
+   *
    * @param className this class needs to have a no-arg constructor
    * @param jsonInitProperties a json representation of the initialization properties
    *        that will be passed to {@link org.apache.geode.cache.Declarable#initialize}.
+   *        If the className is not Declarable, then these properties will be ignored
    * @throws IllegalArgumentException if the class name is not valid
    * @throws IllegalArgumentException if jsonInitProperties is invalid JSON
    */
   public ClassName(String className, String jsonInitProperties) {
-    if (StringUtils.isBlank(className)) {
-      return;
+    this(className, createProperties(jsonInitProperties));
+  }
+
+  private static Properties createProperties(String jsonInitProperties) {
+    if (StringUtils.isBlank(jsonInitProperties)) {
+      return new Properties();
     }
-    if (!ManagementHelper.isClassNameValid(className)) {
-      throw new IllegalArgumentException("Invalid className");
-    }
-    this.className = className;
     try {
-      initProperties = mapper.readValue(jsonInitProperties, Properties.class);
+      return mapper.readValue(jsonInitProperties, Properties.class);
     } catch (IOException e) {
       throw new IllegalArgumentException("Invalid JSON: " + jsonInitProperties, e);
     }
   }
 
   /**
-   * @param className this class needs to have a no-arg constructor
+   * @param className the name of the class to be instantiated. This class needs to have
+   *        a no-arg constructor.
    * @param properties the initialization properties
    *        that will be passed to {@link org.apache.geode.cache.Declarable#initialize}.
+   *        If the className is not Declarable, then these properties will be ignored
+   *
+   * @throws IllegalArgumentException if classname contains illegal classname characters
    */
-  public ClassName(String className, Properties properties) {
+  @JsonCreator
+  public ClassName(@JsonProperty("className") String className,
+      @JsonProperty("initProperties") Properties properties) {
+    if (StringUtils.isBlank(className)) {
+      this.className = "";
+      this.initProperties = new Properties();
+      return;
+    }
+    // validate the className
+    if (!isClassNameValid(className)) {
+      throw new IllegalArgumentException("Invalid className");
+    }
     this.className = className;
-    this.initProperties = properties;
+    this.initProperties = properties == null ? new Properties() : properties;
   }
 
   /**
@@ -103,14 +117,6 @@ public class ClassName implements Serializable {
    */
   public Properties getInitProperties() {
     return initProperties;
-  }
-
-  private static boolean isClassNameValid(String fqcn) {
-    if (StringUtils.isBlank(fqcn)) {
-      return false;
-    }
-    String regex = "([\\p{L}_$][\\p{L}\\p{N}_$]*\\.)*[\\p{L}_$][\\p{L}\\p{N}_$]*";
-    return Pattern.matches(regex, fqcn);
   }
 
   @Override
@@ -132,6 +138,19 @@ public class ClassName implements Serializable {
 
     return this.className.equals(that.getClassName())
         && this.getInitProperties().equals(that.getInitProperties());
+  }
+
+  /**
+   * this provides a convenient method to validate if the given name is a valid classname
+   *
+   * @return false if classname is blank or has invalid classname characters
+   */
+  public static boolean isClassNameValid(String className) {
+    if (StringUtils.isBlank(className)) {
+      return false;
+    }
+    String regex = "([\\p{L}_$][\\p{L}\\p{N}_$]*\\.)*[\\p{L}_$][\\p{L}\\p{N}_$]*";
+    return Pattern.matches(regex, className);
   }
 
 }

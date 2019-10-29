@@ -14,10 +14,10 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
+import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 
-public interface NetLocator extends TcpHandler {
+public interface NetLocator extends RestartableTcpHandler {
 
   /**
    * This must be called after booting the membership manager so that the locator can use its

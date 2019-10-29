@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.LongSupplier;
 
 import javax.net.ssl.SSLException;
 
@@ -43,23 +44,10 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
-import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
-import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
-import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingFailureException;
-import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionNotFoundException;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
@@ -105,6 +93,7 @@ public class TcpServer {
   @MutableForTesting("The map used here is mutable, because some tests modify it")
   private static final Map<Integer, Short> GOSSIP_TO_GEMFIRE_VERSION_MAP =
       createGossipToVersionMap();
+  public static final int GOSSIP_BYTE = 0;
 
   // For test purpose only
   @MutableForTesting
@@ -120,7 +109,7 @@ public class TcpServer {
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100);
   private static final int POOL_IDLE_TIMEOUT = 60 * 1000;
 
-  private static final Logger log = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   // no longer static so that tests can test this system property
   private final int READ_TIMEOUT =
@@ -128,22 +117,23 @@ public class TcpServer {
   private static final int P2P_BACKLOG = Integer.getInteger("p2p.backlog", 1000);
   private static final int BACKLOG =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG);
+  private final ProtocolChecker protocolChecker;
 
   private int port;
   private ServerSocket srv_sock = null;
   private InetAddress bind_address;
   private volatile boolean shuttingDown = false;
   private final PoolStatHelper poolHelper;
-  private final InternalLocator internalLocator;
   private final TcpHandler handler;
-  private final ClientProtocolServiceLoader clientProtocolServiceLoader;
-
 
   private ExecutorService executor;
   private final String threadName;
   private volatile Thread serverThread;
 
   protected SocketCreator socketCreator;
+
+  private final LongSupplier nanoTimeSupplier;
+
 
   /*
    * Initialize versions map. Warning: This map must be compatible with all GemFire versions being
@@ -159,16 +149,16 @@ public class TcpServer {
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
-      String threadName, InternalLocator internalLocator,
-      ClientProtocolServiceLoader clientProtocolServiceLoader) {
+      String threadName, ProtocolChecker protocolChecker,
+      final LongSupplier nanoTimeSupplier) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
     this.poolHelper = poolHelper;
-    this.internalLocator = internalLocator;
-    this.clientProtocolServiceLoader = clientProtocolServiceLoader;
+    this.protocolChecker = protocolChecker;
     this.executor = createExecutor(poolHelper);
     this.threadName = threadName;
+    this.nanoTimeSupplier = nanoTimeSupplier;
 
     if (cfg == null) {
       if (sslConfig == null) {
@@ -191,19 +181,13 @@ public class TcpServer {
         MAX_POOL_SIZE, poolHelper, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
-  public void restarting(InternalDistributedSystem ds, InternalCache cache,
-      InternalConfigurationPersistenceService sharedConfig) throws IOException {
+  public void restarting() throws IOException {
     this.shuttingDown = false;
-    this.handler.restarting(ds, cache, sharedConfig);
     startServerThread();
     this.executor = createExecutor(this.poolHelper);
-    log.info("TcpServer@" + System.identityHashCode(this)
+    logger.info("TcpServer@" + System.identityHashCode(this)
         + " restarting: completed.  Server thread=" + this.serverThread + '@'
         + System.identityHashCode(this.serverThread) + ";alive=" + this.serverThread.isAlive());
-  }
-
-  public void restartCompleted(InternalDistributedSystem ds) {
-    this.handler.restartCompleted(ds);
   }
 
   public void start() throws IOException {
@@ -233,9 +217,9 @@ public class TcpServer {
       if (this.port <= 0) {
         this.port = srv_sock.getLocalPort();
       }
-      if (log.isInfoEnabled()) {
-        log.info("Locator was created at " + new Date());
-        log.info("Listening on port " + getPort() + " bound on address " + bind_address);
+      if (logger.isInfoEnabled()) {
+        logger.info("Locator was created at " + new Date());
+        logger.info("Listening on port " + getPort() + " bound on address " + bind_address);
       }
       srv_sock.setReuseAddress(true);
     }
@@ -300,14 +284,15 @@ public class TcpServer {
           // SW: This is the case when there is a problem in locator
           // SSL configuration, so need to exit otherwise goes into an
           // infinite loop just filling the logs
-          log.error("Locator stopping due to SSL configuration problem.", ex);
+          logger.error("Locator stopping due to SSL configuration problem.", ex);
           shuttingDown = true;
           continue;
         }
+
         processRequest(sock);
       } catch (Exception ex) {
         if (!shuttingDown) {
-          log.error("exception=", ex);
+          logger.error("exception=", ex);
         }
         continue;
       }
@@ -317,12 +302,12 @@ public class TcpServer {
       try {
         srv_sock.close();
       } catch (java.io.IOException ex) {
-        log.warn("exception closing server socket during shutdown", ex);
+        logger.warn("exception closing server socket during shutdown", ex);
       }
     }
 
     if (shuttingDown) {
-      log.info("locator shutting down");
+      logger.info("locator shutting down");
       executor.shutdown();
       try {
         executor.awaitTermination(SHUTDOWN_WAIT_TIME, TimeUnit.MILLISECONDS);
@@ -342,7 +327,8 @@ public class TcpServer {
    */
   private void processRequest(final Socket socket) {
     executor.execute(() -> {
-      long startTime = DistributionStats.getStatTime();
+
+      final long startTime = nanoTimeSupplier.getAsLong();
       DataInputStream input = null;
       try {
         socket.setSoTimeout(READ_TIMEOUT);
@@ -353,24 +339,22 @@ public class TcpServer {
         } catch (StreamCorruptedException e) {
           // Some garbage can be left on the socket stream
           // if a peer disappears at exactly the wrong moment.
-          log.debug("Discarding illegal request from "
+          logger.debug("Discarding illegal request from "
               + (socket.getInetAddress().getHostAddress() + ":" + socket.getPort()), e);
           return;
         }
         // read the first byte & check for an improperly configured client pool trying
         // to contact a cache server
         int firstByte = input.readUnsignedByte();
-        if (firstByte == CommunicationMode.ReservedForGossip.getModeNumber()) {
-          processOneConnection(socket, startTime, input);
-        } else if (firstByte == CommunicationMode.ProtobufClientServerProtocol.getModeNumber()) {
-          handleProtobufConnection(socket, input);
-        } else if (CommunicationMode.isValidMode(firstByte)) {
-          socket.getOutputStream().write(Handshake.REPLY_SERVER_IS_LOCATOR);
-          throw new Exception("Improperly configured client detected - use addPoolLocator to "
-              + "configure its locators instead of addPoolServer.");
 
-        } else {
-          rejectUnknownProtocolConnection(socket, firstByte);
+        boolean handled = protocolChecker.checkProtocol(socket, input, firstByte);
+
+        if (!handled) {
+          if (firstByte == GOSSIP_BYTE) {
+            processOneConnection(socket, startTime, input);
+          } else {
+            rejectUnknownProtocolConnection(socket, firstByte);
+          }
         }
       } catch (EOFException | SocketException ignore) {
         // client went away - ignore
@@ -382,13 +366,13 @@ public class TcpServer {
           sender = socket.getInetAddress().getHostAddress();
         }
         // Do not want the full stack trace to fill up the logs
-        log.info("Exception in processing request from " + sender + ": " + ex.getMessage());
+        logger.info("Exception in processing request from " + sender + ": " + ex.getMessage());
       } catch (ClassNotFoundException ex) {
         String sender = null;
         if (socket != null) {
           sender = socket.getInetAddress().getHostAddress();
         }
-        log.info("Unable to process request from " + sender + " exception=" + ex.getMessage());
+        logger.info("Unable to process request from " + sender + " exception=" + ex.getMessage());
       } catch (Exception ex) {
         String sender = null;
         if (socket != null) {
@@ -398,10 +382,10 @@ public class TcpServer {
           // IOException could be caused by a client failure. Don't
           // log with severe.
           if (!socket.isClosed()) {
-            log.info("Exception in processing request from " + sender, ex);
+            logger.info("Exception in processing request from " + sender, ex);
           }
         } else {
-          log.fatal("Exception in processing request from " + sender, ex);
+          logger.fatal("Exception in processing request from " + sender, ex);
         }
 
       } catch (VirtualMachineError err) {
@@ -414,7 +398,7 @@ public class TcpServer {
           sender = socket.getInetAddress().getHostAddress();
         }
         try {
-          log.fatal("Exception in processing request from " + sender, ex);
+          logger.fatal("Exception in processing request from " + sender, ex);
         } catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
           throw err;
@@ -432,7 +416,7 @@ public class TcpServer {
     });
   }
 
-  private void processOneConnection(Socket socket, long startTime, DataInputStream input)
+  private void processOneConnection(Socket socket, final long startTime, DataInputStream input)
       throws IOException, UnsupportedSerializationVersionException, ClassNotFoundException {
     // At this point we've read the leading byte of the gossip version and found it to be 0,
     // continue reading the next three bytes
@@ -454,14 +438,14 @@ public class TcpServer {
         versionOrdinal = input.readShort();
       }
 
-      if (log.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
-        log.debug("Locator reading request from " + socket.getInetAddress() + " with version "
+      if (logger.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
+        logger.debug("Locator reading request from " + socket.getInetAddress() + " with version "
             + Version.fromOrdinal(versionOrdinal));
       }
       input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal));
       request = DataSerializer.readObject(input);
-      if (log.isDebugEnabled()) {
-        log.debug("Locator received request " + request + " from " + socket.getInetAddress());
+      if (logger.isDebugEnabled()) {
+        logger.debug("Locator received request " + request + " from " + socket.getInetAddress());
       }
       if (request instanceof ShutdownRequest) {
         shuttingDown = true;
@@ -479,7 +463,7 @@ public class TcpServer {
 
       handler.endRequest(request, startTime);
 
-      startTime = DistributionStats.getStatTime();
+      final long startTime2 = nanoTimeSupplier.getAsLong();
       if (response != null) {
         DataOutputStream output = new DataOutputStream(socket.getOutputStream());
         if (versionOrdinal != Version.CURRENT_ORDINAL) {
@@ -490,7 +474,7 @@ public class TcpServer {
         output.flush();
       }
 
-      handler.endResponse(request, startTime);
+      handler.endResponse(request, startTime2);
     } else {
       // Close the socket. We can not accept requests from a newer version
       rejectUnknownProtocolConnection(socket, gossipVersion);
@@ -503,38 +487,9 @@ public class TcpServer {
       socket.getOutputStream().flush();
       socket.close();
     } catch (IOException e) {
-      log.debug("exception in sending reply to process using unknown protocol " + gossipVersion, e);
-    }
-  }
-
-  private void handleProtobufConnection(Socket socket, DataInputStream input) throws Exception {
-    if (!Boolean.getBoolean("geode.feature-protobuf-protocol")) {
-      log.warn("Incoming protobuf connection, but protobuf not enabled on this locator.");
-      socket.close();
-      return;
-    }
-
-    try {
-      ClientProtocolService clientProtocolService = clientProtocolServiceLoader.lookupService();
-      clientProtocolService.initializeStatistics("LocatorStats",
-          internalLocator.getDistributedSystem());
-      try (ClientProtocolProcessor pipeline = clientProtocolService.createProcessorForLocator(
-          internalLocator, internalLocator.getCache().getSecurityService())) {
-        while (!pipeline.socketProcessingIsFinished()) {
-          pipeline.processMessage(input, socket.getOutputStream());
-        }
-      } catch (IncompatibleVersionException e) {
-        // should not happen on the locator as there is no handshake.
-        log.error("Unexpected exception in client message processing", e);
-      }
-    } catch (ServiceLoadingFailureException e) {
-      log.error("There was an error looking up the client protocol service", e);
-      socket.close();
-      throw new IOException("There was an error looking up the client protocol service", e);
-    } catch (ServiceVersionNotFoundException e) {
-      log.error("Unable to find service matching the client protocol version byte", e);
-      socket.close();
-      throw new IOException("Unable to find service matching the client protocol version byte", e);
+      logger
+          .debug("exception in sending reply to process using unknown protocol " + gossipVersion,
+              e);
     }
   }
 

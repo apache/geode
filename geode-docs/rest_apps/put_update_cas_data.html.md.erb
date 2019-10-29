@@ -44,17 +44,17 @@ http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{reg
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>op</td>
 <td>URL parameter. When you specify CAS for this parameter, data is only updated if the @old value specified in the request body matches the existing value in the region.</td>
 <td>CAS</td>
 </tr>
-<tr class="even">
+<tr>
 <td>@type</td>
 <td>Specified in the response body for both the old and new value. Use this to declare the domain object type of the entry's value.</td>
 <td>com.mycompany.ObjectName</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>@old</td>
 <td>Compare this value to the existing value in the region.</td>
 <td><pre class="pre codeblock"><code>{
@@ -79,7 +79,7 @@ http://<hostname_or_http-service-bind-address>:<http-service-port>/geode/v1/{reg
          &quot;totalPrice&quot;: 225
     }</code></pre></td>
 </tr>
-<tr class="even">
+<tr>
 <td>@new</td>
 <td>If @old value matches existing value, use this value to replace the existing value.</td>
 <td><pre class="pre codeblock"><code>{

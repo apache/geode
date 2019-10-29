@@ -34,6 +34,10 @@ dependencies {
     // Remove everything related to Tomcat 6.x
     exclude group: 'org.apache.tomcat'
   }
+  testCompile(project(':extensions:geode-modules')) {
+    // Remove everything related to Tomcat 6.x
+    exclude group: 'org.apache.tomcat'
+  }
 
   compile('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat7.version')) {
     exclude module: 'tomcat-annotations-api'
@@ -44,6 +48,12 @@ dependencies {
   }
   compile('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat7.version'))
 
+
+  testCompile('org.httpunit:httpunit')
+  testCompile('junit:junit')
+  testCompile('org.assertj:assertj-core')
+  testCompile('org.mockito:mockito-core')
+  testCompile(project(':extensions:geode-modules-test'))
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
