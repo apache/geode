@@ -28,8 +28,7 @@ public class TomcatSessionBackwardsCompatibilityTomcat8WithOldModulesMixedWithCu
       String version) {
     super(version);
   }
-
-  @Ignore
+  
   @Test
   public void test() throws Exception {
     startClusterWithTomcat(classPathTomcat8);
