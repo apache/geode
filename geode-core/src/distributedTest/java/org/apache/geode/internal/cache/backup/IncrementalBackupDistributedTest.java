@@ -216,7 +216,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
 
     // Shut down our member so we can perform a restore
     PersistentID id = vm1.invoke(() -> getPersistentID(diskStoreName1));
-    vm1.invoke(() -> cacheRule.getCache().close());
+    vm1.invoke(() -> cacheRule.closeAndWaitForLifecycleEvent());
 
     // Execute the restore
     performRestore(new File(id.getDirectory()),
@@ -261,7 +261,9 @@ public class IncrementalBackupDistributedTest implements Serializable {
   public void testMissingMemberInBaseline() {
     // Simulate the missing member by forcing a persistent member to go offline.
     PersistentID missingMember = vm0.invoke(() -> getPersistentID(diskStoreName1));
-    vm0.invoke(() -> cacheRule.getCache().close());
+    vm0.invoke(() -> {
+      cacheRule.closeAndWaitForLifecycleEvent();
+    });
 
     await()
         .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember)));
@@ -441,7 +443,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
 
     // Shut down our member so we can perform a restore
     PersistentID id = vm0.invoke(() -> getPersistentID(diskStoreName1));
-    vm0.invoke(() -> cacheRule.getCache().close());
+    vm0.invoke(() -> cacheRule.closeAndWaitForLifecycleEvent());
 
     // Get the VM's user directory.
     String vmDir = vm0.invoke(() -> System.getProperty("user.dir"));
@@ -695,4 +697,5 @@ public class IncrementalBackupDistributedTest implements Serializable {
       Files.delete(file.toPath());
     }
   }
+
 }
