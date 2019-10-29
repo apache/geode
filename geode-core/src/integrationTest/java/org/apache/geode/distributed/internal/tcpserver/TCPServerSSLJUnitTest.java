@@ -150,9 +150,9 @@ public class TCPServerSSLJUnitTest {
     @Override
     protected SocketCreator getSocketCreator() {
       if (this.socketCreator == null) {
-        SSLConfigurationFactory.setDistributionConfig(distributionConfig);
         SSLConfig sslConfig =
-            SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.LOCATOR);
+            SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
+                SecurableCommunicationChannel.LOCATOR);
         this.socketCreator = new DummySocketCreator(sslConfig, recordedSocketsTimeouts);
       }
       return socketCreator;
