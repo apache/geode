@@ -43,12 +43,6 @@ public class BufferPool {
   }
 
   /**
-   * A list of soft references to byte buffers.
-   */
-  private final ConcurrentLinkedQueue<BBSoftReference> bufferQueue =
-      new ConcurrentLinkedQueue<>();
-
-  /**
    * A list of soft references to small byte buffers.
    */
   private final ConcurrentLinkedQueue<BBSoftReference> bufferSmallQueue =
@@ -59,6 +53,13 @@ public class BufferPool {
    */
   private final ConcurrentLinkedQueue<BBSoftReference> bufferMiddleQueue =
       new ConcurrentLinkedQueue<>();
+
+  /**
+   * A list of soft references to large byte buffers.
+   */
+  private final ConcurrentLinkedQueue<BBSoftReference> bufferLargeQueue =
+      new ConcurrentLinkedQueue<>();
+
 
   /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
@@ -85,59 +86,16 @@ public class BufferPool {
     ByteBuffer result;
 
     if (useDirectBuffers) {
-      if (size <= Connection.SMALL_BUFFER_SIZE) {
-        return acquireSmallBuffer(send);
-      } else if (size <= DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE) {
-        return acquireMiddleBuffer(send);
+      if (size <= DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE) {
+        return acquirePredefinedFixedBuffer(send, size);
+      } else {
+        return acquireLargeBuffer(send, size);
       }
-
-      IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
-                                                                            // set
-      BBSoftReference ref = bufferQueue.poll();
-      while (ref != null) {
-        ByteBuffer bb = ref.getBB();
-        if (bb == null) {
-
-          // it was garbage collected
-          int refSize = ref.consumeSize();
-          if (refSize > 0) {
-            if (ref.getSend()) { // fix bug 46773
-              stats.incSenderBufferSize(-refSize, true);
-            } else {
-              stats.incReceiverBufferSize(-refSize, true);
-            }
-          }
-        } else if (bb.capacity() >= size) {
-
-          bb.rewind();
-          bb.limit(size);
-          return bb;
-        } else {
-
-          // wasn't big enough so put it back in the queue
-          Assert.assertTrue(bufferQueue.offer(ref));
-          if (alreadySeen == null) {
-            alreadySeen = new IdentityHashMap<>();
-          }
-          if (alreadySeen.put(ref, ref) != null) {
-            // if it returns non-null then we have already seen this item
-            // so we have worked all the way through the queue once.
-            // So it is time to give up and allocate a new buffer.
-            break;
-          }
-        }
-        ref = bufferQueue.poll();
-      }
-      result = ByteBuffer.allocateDirect(size);
     } else {
       // if we are using heap buffers then don't bother with keeping them around
       result = ByteBuffer.allocate(size);
     }
-    if (send) {
-      stats.incSenderBufferSize(size, useDirectBuffers);
-    } else {
-      stats.incReceiverBufferSize(size, useDirectBuffers);
-    }
+    updateBufferStats(size, send, false);
     return result;
   }
 
@@ -153,67 +111,79 @@ public class BufferPool {
     return result;
   }
 
-  private ByteBuffer acquireSmallBuffer(boolean send) {
+  /**
+   * Acquire direct buffer with predefined default capacity (4096 or 32768)
+   */
+  private ByteBuffer acquirePredefinedFixedBuffer(boolean send, int size) {
     // set
-    int size = Connection.SMALL_BUFFER_SIZE;
+    int defaultSize;
+    ConcurrentLinkedQueue<BBSoftReference> bufferTempQueue;
     ByteBuffer result;
 
-    BBSoftReference ref = bufferSmallQueue.poll();
+    if (size <= Connection.SMALL_BUFFER_SIZE) {
+      defaultSize = Connection.SMALL_BUFFER_SIZE;
+      bufferTempQueue = bufferSmallQueue;
+    } else {
+      defaultSize = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
+      bufferTempQueue = bufferMiddleQueue;
+    }
+
+    BBSoftReference ref = bufferTempQueue.poll();
     while (ref != null) {
       ByteBuffer bb = ref.getBB();
       if (bb == null) {
-
         // it was garbage collected
-        if (ref.getSend()) { // fix bug 46773
-          stats.incSenderBufferSize(-size, true);
-        } else {
-          stats.incReceiverBufferSize(-size, true);
-        }
+        updateBufferStats(-defaultSize, ref.getSend(), true);
       } else {
         bb.rewind();
         bb.limit(size);
         return bb;
       }
-      ref = bufferSmallQueue.poll();
+      ref = bufferTempQueue.poll();
     }
-    result = ByteBuffer.allocateDirect(size);
-    if (send) {
-      stats.incSenderBufferSize(size, true);
-    } else {
-      stats.incReceiverBufferSize(size, true);
+    result = ByteBuffer.allocateDirect(defaultSize);
+    updateBufferStats(defaultSize, send, true);
+    if (defaultSize > size) {
+      result.limit(size);
     }
     return result;
   }
 
-  private ByteBuffer acquireMiddleBuffer(boolean send) {
+  private ByteBuffer acquireLargeBuffer(boolean send, int size) {
     // set
-    int size = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
     ByteBuffer result;
-
-    BBSoftReference ref = bufferMiddleQueue.poll();
+    IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
+    // set
+    BBSoftReference ref = bufferLargeQueue.poll();
     while (ref != null) {
       ByteBuffer bb = ref.getBB();
       if (bb == null) {
-
         // it was garbage collected
-        if (ref.getSend()) { // fix bug 46773
-          stats.incSenderBufferSize(-size, true);
-        } else {
-          stats.incReceiverBufferSize(-size, true);
+        int refSize = ref.consumeSize();
+        if (refSize > 0) {
+          updateBufferStats(-refSize, ref.getSend(), true);
         }
-      } else {
+      } else if (bb.capacity() >= size) {
         bb.rewind();
         bb.limit(size);
         return bb;
+      } else {
+        // wasn't big enough so put it back in the queue
+        Assert.assertTrue(bufferLargeQueue.offer(ref));
+        if (alreadySeen == null) {
+          alreadySeen = new IdentityHashMap<>();
+        }
+        if (alreadySeen.put(ref, ref) != null) {
+          // if it returns non-null then we have already seen this item
+          // so we have worked all the way through the queue once.
+          // So it is time to give up and allocate a new buffer.
+          break;
+        }
       }
-      ref = bufferMiddleQueue.poll();
+      ref = bufferLargeQueue.poll();
     }
     result = ByteBuffer.allocateDirect(size);
-    if (send) {
-      stats.incSenderBufferSize(size, true);
-    } else {
-      stats.incReceiverBufferSize(size, true);
-    }
+    updateBufferStats(size, send, true);
     return result;
   }
 
@@ -321,14 +291,21 @@ public class BufferPool {
       } else if (bb.capacity() <= DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE) {
         bufferMiddleQueue.offer(bbRef);
       } else {
-        bufferQueue.offer(bbRef);
+        bufferLargeQueue.offer(bbRef);
       }
     } else {
-      if (send) {
-        stats.incSenderBufferSize(-bb.capacity(), false);
-      } else {
-        stats.incReceiverBufferSize(-bb.capacity(), false);
-      }
+      updateBufferStats(-bb.capacity(), send, false);
+    }
+  }
+
+  /**
+   * Update buffer stats.
+   */
+  private void updateBufferStats(int size, boolean send, boolean direct) {
+    if (send) {
+      stats.incSenderBufferSize(size, direct);
+    } else {
+      stats.incReceiverBufferSize(size, direct);
     }
   }
 
