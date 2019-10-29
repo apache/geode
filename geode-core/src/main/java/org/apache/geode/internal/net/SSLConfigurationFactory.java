@@ -15,14 +15,11 @@
 
 package org.apache.geode.internal.net;
 
-import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
@@ -41,9 +38,6 @@ public class SSLConfigurationFactory {
 
   @MakeNotStatic
   private static SSLConfigurationFactory instance = new SSLConfigurationFactory();
-  private DistributionConfig distributionConfig = null;
-  private Map<SecurableCommunicationChannel, SSLConfig> registeredSSLConfig =
-      new ConcurrentHashMap<>();
 
   private SSLConfigurationFactory() {}
 
@@ -52,45 +46,6 @@ public class SSLConfigurationFactory {
       instance = new SSLConfigurationFactory();
     }
     return instance;
-  }
-
-  private DistributionConfig getDistributionConfig() {
-    if (distributionConfig == null) {
-      throw new GemFireConfigException("SSL Configuration requires a valid distribution config.");
-    }
-    return distributionConfig;
-  }
-
-  public static void setDistributionConfig(final DistributionConfig distributionConfig) {
-    if (distributionConfig == null) {
-      throw new GemFireConfigException("SSL Configuration requires a valid distribution config.");
-    }
-    getInstance().distributionConfig = distributionConfig;
-  }
-
-  /**
-   * @deprecated since GEODE 1.3, use #{getSSLConfigForComponent({@link DistributionConfig} ,
-   *             {@link SecurableCommunicationChannel})} instead
-   */
-  @Deprecated
-  public static SSLConfig getSSLConfigForComponent(
-      SecurableCommunicationChannel sslEnabledComponent) {
-    SSLConfig sslConfig = getInstance().getRegisteredSSLConfigForComponent(sslEnabledComponent);
-    if (sslConfig == null) {
-      sslConfig = getInstance().createSSLConfigForComponent(sslEnabledComponent);
-      getInstance().registeredSSLConfigForComponent(sslEnabledComponent, sslConfig);
-    }
-    return sslConfig;
-  }
-
-  private void registeredSSLConfigForComponent(
-      final SecurableCommunicationChannel sslEnabledComponent, final SSLConfig sslConfig) {
-    registeredSSLConfig.put(sslEnabledComponent, sslConfig);
-  }
-
-  private SSLConfig createSSLConfigForComponent(
-      final SecurableCommunicationChannel sslEnabledComponent) {
-    return createSSLConfigForComponent(getDistributionConfig(), sslEnabledComponent);
   }
 
   private SSLConfig createSSLConfigForComponent(final DistributionConfig distributionConfig,
@@ -353,20 +308,6 @@ public class SSLConfigurationFactory {
       }
     }
     return propertyValue;
-  }
-
-  private SSLConfig getRegisteredSSLConfigForComponent(
-      final SecurableCommunicationChannel sslEnabledComponent) {
-    return registeredSSLConfig.get(sslEnabledComponent);
-  }
-
-  public static void close() {
-    getInstance().clearSSLConfigForAllComponents();
-    getInstance().distributionConfig = null;
-  }
-
-  private synchronized void clearSSLConfigForAllComponents() {
-    registeredSSLConfig.clear();
   }
 
   @Deprecated

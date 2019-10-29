@@ -117,7 +117,8 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
       if (port != 0) {
         if (!usingJdkConfig) {
           SSLConfig jmxSSL =
-              SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.JMX);
+              SSLConfigurationFactory.getSSLConfigForComponent(dc,
+                  SecurableCommunicationChannel.JMX);
           ssl = jmxSSL.isEnabled();
           host = dc.getJmxManagerHostnameForClients();
           if (host == null || host.equals("")) {
