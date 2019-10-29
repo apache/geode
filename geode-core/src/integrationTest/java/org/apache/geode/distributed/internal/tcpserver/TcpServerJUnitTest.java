@@ -44,9 +44,9 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.distributed.InfoRequestHandler;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -81,21 +81,20 @@ public class TcpServerJUnitTest {
   }
 
   @Test
-  public void test() throws Exception {
-    EchoHandler handler = new EchoHandler();
+  public void testClientGetInfo() throws Exception {
+    TcpHandler handler = new InfoRequestHandler();
     start(handler);
 
     TcpClient tcpClient = new TcpClient();
 
-    TestObject test = new TestObject();
-    test.id = 5;
-    TestObject result =
-        (TestObject) tcpClient.requestToServer(localhost, port, test, 60 * 1000);
-    assertEquals(test.id, result.id);
+    InfoRequest testInfoRequest = new InfoRequest();
+    InfoResponse testInfoResponse =
+        (InfoResponse) tcpClient.requestToServer(localhost, port, testInfoRequest, 60 * 1000);
+    assertTrue(testInfoResponse.getInfo()[0].contains("geode-core"));
 
-    String[] info = tcpClient.getInfo(localhost, port);
-    assertNotNull(info);
-    assertTrue(info.length > 1);
+    String[] requrestedInfo = tcpClient.getInfo(localhost, port);
+    assertNotNull(requrestedInfo);
+    assertTrue(requrestedInfo.length > 1);
 
     try {
       tcpClient.stop(localhost, port);
@@ -104,7 +103,6 @@ public class TcpServerJUnitTest {
     }
     server.join(60 * 1000);
     assertFalse(server.isAlive());
-    assertTrue(handler.shutdown);
 
     assertEquals(4, stats.started.get());
     assertEquals(4, stats.ended.get());
@@ -162,7 +160,7 @@ public class TcpServerJUnitTest {
       ClassNotFoundException, InterruptedException {
     // Initially mock the handler to throw a SocketException. We want to verify that the server
     // can recover and serve new client requests after a SocketException is thrown.
-    RestartableTcpHandler mockTcpHandler = mock(RestartableTcpHandler.class);
+    TcpHandler mockTcpHandler = mock(TcpHandler.class);
     doThrow(SocketException.class).when(mockTcpHandler).processRequest(any(Object.class));
     start(mockTcpHandler);
 
@@ -190,9 +188,6 @@ public class TcpServerJUnitTest {
         (TestObject) tcpClient.requestToServer(localhost, port, test, 60 * 1000);
 
     assertEquals(test.id, result.id);
-    String[] info = tcpClient.getInfo(localhost, port);
-    assertNotNull(info);
-    assertTrue(info.length > 1);
 
     try {
       tcpClient.stop(localhost, port);
@@ -202,8 +197,8 @@ public class TcpServerJUnitTest {
     server.join(60 * 1000);
     assertFalse(server.isAlive());
 
-    assertEquals(5, stats.started.get());
-    assertEquals(5, stats.ended.get());
+    assertEquals(4, stats.started.get());
+    assertEquals(4, stats.ended.get());
   }
 
   private static class TestObject implements DataSerializable {

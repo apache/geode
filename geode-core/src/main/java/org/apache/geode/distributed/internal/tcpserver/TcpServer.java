@@ -450,8 +450,6 @@ public class TcpServer {
         // Closing the socket will cause our acceptor thread to shutdown the executor
         srv_sock.close();
         response = new ShutdownResponse();
-      } else if (request instanceof InfoRequest) {
-        response = handler.processRequest(request);
       } else if (request instanceof VersionRequest) {
         response = handleVersionRequest(request);
       } else {

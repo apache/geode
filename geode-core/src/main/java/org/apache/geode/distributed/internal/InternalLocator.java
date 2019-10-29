@@ -525,6 +525,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       locatorListener.setConfig(getConfig());
     }
     handler = new PrimaryHandler(this, locatorListener);
+    handler.addHandler(InfoRequest.class, new InfoRequestHandler());
 
     locatorStats = new LocatorStats();
 
@@ -1393,10 +1394,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       handler.addHandler(ClusterManagementServiceInfoRequest.class,
           new ClusterManagementServiceInfoRequestHandler());
       logger.info("ClusterManagementServiceInfoRequestHandler installed");
-    }
-    if (!handler.isHandled(InfoRequest.class)) {
-      handler.addHandler(InfoRequest.class, new InfoRequestHandler());
-      logger.info("InfoRequestHandler installed");
     }
   }
 
