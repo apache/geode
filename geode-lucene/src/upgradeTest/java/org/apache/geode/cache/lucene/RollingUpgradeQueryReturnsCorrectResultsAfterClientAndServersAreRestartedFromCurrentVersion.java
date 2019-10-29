@@ -46,7 +46,7 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRes
   @Parameterized.Parameter(1)
   public Boolean singleHopEnabled;
 
-  @Parameterized.Parameters(name = "from_currentVersion, with reindex={0}, singleHopEnabled={1}")
+  @Parameterized.Parameters(name = "currentVersion, reindex={0}, singleHopEnabled={1}")
   public static Collection<Object[]> data() {
     Collection<Object[]> rval = new ArrayList<>();
     rval.add(new Object[] {true, true});
@@ -57,7 +57,7 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRes
   }
 
   @Test
-  public void luceneFunctionsShouldFailOverByRetryWhenRestartOneServerWithRebalance()
+  public void functionsFailOverWhenRestartOneServer()
       throws Exception {
     // Since the changes relating to GEODE-7258 is not applied on 1.10.0,
     // use this test to roll from develop to develop to verify.
@@ -145,4 +145,5 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRes
       invokeRunnableInVMs(true, invokeCloseCache(), client, server2);
     }
   }
+
 }
