@@ -267,7 +267,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
     TestCacheLifeCycleListener cacheLifecycleListenerForVm0 = new TestCacheLifeCycleListener();
     vm0.invoke(() -> {
       GemFireCacheImpl.addCacheLifecycleListener(cacheLifecycleListenerForVm0);
-    };
+    });
 
     vm0.invoke(() -> cacheRule.getCache().close());
     await().until(() -> cacheLifecycleListenerForVm0.isCacheClosed);
