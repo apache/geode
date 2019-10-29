@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.Method;
 import java.net.ConnectException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -300,7 +301,9 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
     assertNotNull(r);
     CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
-    cqAttributesFactory.addCqListener(Mockito.mock(CqListener.class));
+    Method method = cqAttributesFactory.getClass().getMethod("addCqListener" , CqListener.class);
+    method.setAccessible(true);
+    method.invoke(cqAttributesFactory, Mockito.mock(CqListener.class));
     final CqQuery cq = cache.getQueryService().newCq("testCQ", "select * from " + r.getFullPath(),
         cqAttributesFactory.create());
     cq.execute();
