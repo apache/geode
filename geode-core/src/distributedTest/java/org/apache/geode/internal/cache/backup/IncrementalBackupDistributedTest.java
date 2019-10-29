@@ -43,8 +43,6 @@ import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.offheap.LifecycleListener;
-import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
