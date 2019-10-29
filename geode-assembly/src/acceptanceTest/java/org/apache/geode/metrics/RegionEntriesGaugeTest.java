@@ -23,6 +23,7 @@ import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,10 +82,11 @@ public class RegionEntriesGaugeTest {
   public void startMembers() throws Exception {
     serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int[] availablePorts = getRandomAvailableTCPPorts(4);
     int locatorPort = availablePorts[0];
-    int serverPort1 = availablePorts[1];
-    int serverPort2 = availablePorts[2];
+    int locatorJmxPort = availablePorts[1];
+    int serverPort1 = availablePorts[2];
+    int serverPort2 = availablePorts[3];
 
     locatorString = "localhost[" + locatorPort + "]";
 
@@ -96,7 +98,9 @@ public class RegionEntriesGaugeTest {
         "start locator",
         "--name=" + "locator",
         "--dir=" + folderForLocator.getAbsolutePath(),
-        "--port=" + locatorPort);
+        "--port=" + locatorPort,
+        "--http-service-port=0",
+        "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort);
 
     String startServer1Command = startServerCommand("server1", serverPort1, folderForServer1);
     String startServer2Command = startServerCommand("server2", serverPort2, folderForServer2);
@@ -121,11 +125,14 @@ public class RegionEntriesGaugeTest {
         .create("server1pool");
   }
 
-
   @After
   public void stopMembers() {
-    clientCache.close();
-    server1Pool.destroy();
+    if (clientCache != null) {
+      clientCache.close();
+    }
+    if (server1Pool != null) {
+      server1Pool.destroy();
+    }
 
     String shutdownCommand = String.join(" ",
         "shutdown",
@@ -332,7 +339,6 @@ public class RegionEntriesGaugeTest {
   }
 
   private String startServerCommand(String serverName, int serverPort, File folderForServer) {
-    System.out.println("DHE: Assigning port " + serverPort + " to server " + serverName);
     return String.join(" ",
         "start server",
         "--name=" + serverName,
