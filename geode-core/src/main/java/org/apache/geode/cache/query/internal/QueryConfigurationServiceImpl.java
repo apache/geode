@@ -30,7 +30,6 @@ import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
-import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -51,11 +50,6 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   static final String INSTANTIATION_ERROR =
       "Error occurred while instantiating MethodInvocationAuthorizer. ";
   static final String AUTHORIZER_NOT_UPDATED = "The authorizer was not updated.";
-
-  private static final String LOCK_NAME = "QUERY_CONFIG_SERVICE_LOCK";
-  private static final String LOCK_SERVICE_NAME = "__QUERY_CONFIG_SERVICE";
-  private DistributedLockService distributedLockService;
-  private final Object getLockServiceSynchronizer = new Object();
 
   private MethodInvocationAuthorizer authorizer;
 
