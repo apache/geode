@@ -1000,7 +1000,7 @@ public class InternalDistributedMember
   private String getDurableIdForSerialization() {
     // due to terrible code in ClientProxyMembershipID and client pools the getId() method
     // in DurableClientAttributes may return different values depending on the setting of
-    // system properties and thread-local variables. Here we use the original attributes, if
+    // multiple system properties. Here we use the original attributes, if
     // available, in order to get the correct ID string
     return durableAttributes != null ? durableAttributes.getId() : memberData.getDurableId();
   }
