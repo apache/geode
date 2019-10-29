@@ -90,9 +90,6 @@ public class TcpServerDependenciesTest {
               // TODO - god classes
               .or(type(SystemFailure.class))
 
-  // TODO - version class? Version.java is in serialization, what is
-  // GemFireVersion?
-  // .or(type(GemFireVersion.class))
 
   );
 
