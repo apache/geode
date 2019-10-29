@@ -24,8 +24,9 @@ apply from: "${project.projectDir}/../gradle/publish-war.gradle"
 jar.enabled = false
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
-  compileOnly(platform(project(':boms:geode-all-bom')))
+  compile(platform(project(':boms:geode-all-bom'))){
+    exclude module: "jackson-annotations"
+  }
 
   compileOnly(project(':geode-core'))
   compileOnly(project(':geode-logging'))
@@ -37,16 +38,26 @@ dependencies {
   compile('commons-fileupload:commons-fileupload') {
     exclude module: 'commons-io'
   }
-  compile('com.fasterxml.jackson.core:jackson-annotations')
+  // jackson-annotations must be accessed from the geode classloader and not the webapp
+  compileOnly('com.fasterxml.jackson.core:jackson-annotations')
   compile('com.fasterxml.jackson.core:jackson-core')
-  compile('com.fasterxml.jackson.core:jackson-databind')
-  compile('com.fasterxml.jackson.module:jackson-module-scala_2.10')
+  compile('com.fasterxml.jackson.core:jackson-databind'){
+    exclude module: 'jackson-annotations'
+  }
+
+  compileOnly('com.fasterxml.jackson.module:jackson-module-scala_2.10')
+  compileOnly('io.swagger:swagger-annotations')
+
   compile('io.springfox:springfox-swagger2') {
     exclude module: 'slf4j-api'
+    exclude module: 'jackson-annotations'
+    exclude module: 'swagger-annotations'
   }
+
   compile('io.springfox:springfox-swagger-ui') {
     exclude module: 'slf4j-api'
   }
+
   compile('org.springframework:spring-beans')
   compile('org.springframework.security:spring-security-core')
   compile('org.springframework.security:spring-security-web')
