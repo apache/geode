@@ -22,7 +22,9 @@ import org.apache.geode.cache.client.internal.GetOp;
 import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.cache.operations.internal.GetOperationContextImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.Token;
@@ -123,8 +125,7 @@ public class Get70 extends BaseCommand {
 
     Region region = serverConnection.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = String.format("%s was not found during get request",
-          regionName);
+      String reason = String.format("%s was not found during get request", regionName);
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
@@ -221,7 +222,10 @@ public class Get70 extends BaseCommand {
     }
     stats.incWriteGetResponseTime(DistributionStats.getStatTime() - start);
 
-
+    CachePerfStats regionPerfStats = ((InternalRegion) region).getRegionPerfStats();
+    if (regionPerfStats != null) {
+      regionPerfStats.endGetForClient(startparam, entry.keyNotPresent);
+    }
   }
 
   /**
@@ -306,12 +310,8 @@ public class Get70 extends BaseCommand {
     } else if (data instanceof byte[]) {
       isObject = false;
     }
-    Entry result = new Entry();
-    result.value = data;
-    result.isObject = isObject;
-    result.keyNotPresent = !wasInvalid && (data == null || data == Token.TOMBSTONE);
-    result.versionTag = versionTag;
-    return result;
+    boolean keyNotPresent = !wasInvalid && (data == null || data == Token.TOMBSTONE);
+    return new Entry(data, isObject, keyNotPresent, versionTag);
   }
 
   /**
@@ -360,20 +360,23 @@ public class Get70 extends BaseCommand {
         data = cd.getValue();
       }
     }
-    Entry result = new Entry();
-    result.value = data;
-    result.isObject = isObject;
-    result.keyNotPresent = !wasInvalid && (data == null || data == Token.TOMBSTONE);
-    result.versionTag = versionTag;
-    return result;
+    boolean keyNotPresent = !wasInvalid && (data == null || data == Token.TOMBSTONE);
+    return new Entry(data, isObject, keyNotPresent, versionTag);
   }
 
   /** this is used to return results from getValueAndIsObject */
   public static class Entry {
-    public Object value;
-    public boolean isObject;
-    public boolean keyNotPresent;
-    public VersionTag versionTag;
+    public final Object value;
+    public final boolean isObject;
+    public final boolean keyNotPresent;
+    public final VersionTag versionTag;
+
+    public Entry(Object value, boolean isObject, boolean keyNotPresent, VersionTag versionTag) {
+      this.value = value;
+      this.isObject = isObject;
+      this.keyNotPresent = keyNotPresent;
+      this.versionTag = versionTag;
+    }
 
     @Override
     public String toString() {

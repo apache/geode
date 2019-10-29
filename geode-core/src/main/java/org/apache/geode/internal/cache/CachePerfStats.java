@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
@@ -1080,6 +1081,8 @@ public class CachePerfStats {
       stats.incLong(missesId, 1L);
     }
   }
+
+  public void endGetForClient(long start, boolean miss) {}
 
   /**
    * @param start the timestamp taken when the operation started
