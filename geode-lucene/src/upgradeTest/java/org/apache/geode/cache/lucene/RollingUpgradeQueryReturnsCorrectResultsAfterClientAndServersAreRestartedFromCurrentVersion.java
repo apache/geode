@@ -57,7 +57,8 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRes
   }
 
   @Test
-  public void test() throws Exception {
+  public void luceneFunctionsShouldFailOverByRetryWhenRestartOneServerWithRebalance()
+      throws Exception {
     // Since the changes relating to GEODE-7258 is not applied on 1.10.0,
     // use this test to roll from develop to develop to verify.
     final Host host = Host.getHost(0);
