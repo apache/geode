@@ -71,11 +71,12 @@ public class FunctionExecutionsTimerClusterTest {
 
   @Before
   public void setUp() throws IOException {
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(4);
 
     locatorPort = availablePorts[0];
-    int server1Port = availablePorts[1];
-    int server2Port = availablePorts[2];
+    int locatorJmxPort = availablePorts[1];
+    int server1Port = availablePorts[2];
+    int server2Port = availablePorts[3];
 
     Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
@@ -89,7 +90,9 @@ public class FunctionExecutionsTimerClusterTest {
         "start locator",
         "--name=" + "locator",
         "--dir=" + temporaryFolder.newFolder("locator").getAbsolutePath(),
-        "--port=" + locatorPort);
+        "--port=" + locatorPort,
+        "--http-service-port=0",
+        "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort);
 
     String server1Name = "server1";
     String server2Name = "server2";
@@ -142,12 +145,18 @@ public class FunctionExecutionsTimerClusterTest {
 
   @After
   public void tearDown() {
-    partitionRegion.close();
-    replicateRegion.close();
-    multiServerPool.destroy();
-    server2Pool.destroy();
-    server1Pool.destroy();
-    clientCache.close();
+    if (clientCache != null) {
+      clientCache.close();
+    }
+    if (multiServerPool != null) {
+      multiServerPool.destroy();
+    }
+    if (server1Pool != null) {
+      server1Pool.destroy();
+    }
+    if (server2Pool != null) {
+      server2Pool.destroy();
+    }
 
     String connectToLocatorCommand = "connect --locator=localhost[" + locatorPort + "]";
     String shutdownCommand = "shutdown --include-locators=true";

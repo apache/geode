@@ -38,6 +38,10 @@ import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
 
 public class GfshExecution {
   private static final String DOUBLE_QUOTE = "\"";
+  private static final String SCRIPT_TIMEOUT_FAILURE_MESSAGE =
+      "Process started by [%s] did not exit after %s %s";
+  private static final String SCRIPT_EXIT_VALUE_DESCRIPTION =
+      "Exit value from process started by [%s]";
 
   private final Process process;
   private final File workingDir;
@@ -124,9 +128,13 @@ public class GfshExecution {
     boolean exited = process.waitFor(script.getTimeout(), script.getTimeoutTimeUnit());
 
     try {
-      assertThat(exited).describedAs("Process of [" + script.toString() + "] did not exit after "
-          + script.getTimeout() + " " + script.getTimeoutTimeUnit().toString()).isTrue();
-      assertThat(process.exitValue()).isEqualTo(script.getExpectedExitValue());
+      assertThat(exited)
+          .withFailMessage(SCRIPT_TIMEOUT_FAILURE_MESSAGE, script, script.getTimeout(),
+              script.getTimeoutTimeUnit())
+          .isTrue();
+      assertThat(process.exitValue())
+          .as(SCRIPT_EXIT_VALUE_DESCRIPTION, script)
+          .isEqualTo(script.getExpectedExitValue());
     } catch (AssertionError error) {
       printLogFiles();
       throw error;
