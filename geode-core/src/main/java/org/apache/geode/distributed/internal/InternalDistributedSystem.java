@@ -823,12 +823,12 @@ public class InternalDistributedSystem extends DistributedSystem
     if (avail < size) {
       if (avoidMemoryLockWhenOvercommitted) {
         logger.warn(
-            "System memory appears to be over committed by {} bytes. So memory will not be locked because -D{} is set to true.",
+            "System memory appears to be over committed by {} bytes. Memory will not be locked because -D{} is set to true.",
             size - avail, AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT);
       } else if (allowMemoryLockWhenOvercommitted) {
         logger.warn(
-            "System memory appears to be over committed by {} bytes.  You may experience instability, performance issues, or terminated processes due to the Linux OOM killer.",
-            size - avail);
+            "System memory appears to be over committed by {} bytes. Memory is locked anyway because -D{} is set to true. You may experience instability, performance issues, or terminated processes due to the Linux OOM killer.",
+            size - avail, ALLOW_MEMORY_OVERCOMMIT);
         lockMemory();
       } else {
         throw new IllegalStateException(
