@@ -70,6 +70,8 @@ public class TXStateProxyImpl implements TXStateProxy {
    */
   private Map<Integer, Boolean> buckets = new HashMap<Integer, Boolean>();
 
+  private boolean firstOperationOnPartitionedRegion = false;
+
   protected volatile TXStateInterface realDeal;
 
   protected boolean inProgress = true;
@@ -164,6 +166,11 @@ public class TXStateProxyImpl implements TXStateProxy {
         logger.debug("Built a new TXState: {} me:{}", this.realDeal, this.txMgr.getDM().getId());
       }
     }
+    if (isRealDealLocal() && !((TXState) realDeal).hasPerformedAnyOperation()) {
+      if (r != null && (r instanceof PartitionedRegion || r.isUsedForPartitionedRegionBucket())) {
+        firstOperationOnPartitionedRegion = true;
+      }
+    }
     return this.realDeal;
   }
 
@@ -237,7 +244,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
-  private TransactionException getTransactionException(KeyInfo keyInfo, GemFireException e) {
+  TransactionException getTransactionException(KeyInfo keyInfo, GemFireException e) {
     if (isRealDealLocal() && !buckets.isEmpty() && !buckets.containsKey(keyInfo.getBucketId())) {
       TransactionException ex = new TransactionDataNotColocatedException(
           String.format("Key %s is not colocated with transaction",
@@ -248,6 +255,14 @@ public class TXStateProxyImpl implements TXStateProxy {
     Throwable ex = e;
     while (ex != null) {
       if (ex instanceof PrimaryBucketException) {
+        if (isRealDealLocal() && !firstOperationOnPartitionedRegion) {
+          return new TransactionDataNotColocatedException(
+              String.format(
+                  "Key %s is not colocated with transaction. First operation in a transaction "
+                      + "should be on a partitioned region when there are operations on both "
+                      + "partitioned regions and replicate regions.",
+                  keyInfo.getKey()));
+        }
         return new TransactionDataRebalancedException(
             "Transactional data moved, due to rebalancing.");
       }
@@ -263,12 +278,22 @@ public class TXStateProxyImpl implements TXStateProxy {
       boolean retVal = getRealDeal(keyInfo, region).containsValueForKey(keyInfo, region);
       trackBucketForTx(keyInfo);
       return retVal;
-    } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
-      throw getTransactionException(keyInfo, re);
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(keyInfo, transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(keyInfo, primaryBucketException);
     }
   }
 
-  private void trackBucketForTx(KeyInfo keyInfo) {
+  private TransactionException handleTransactionDataRebalancedException(KeyInfo keyInfo,
+      TransactionDataRebalancedException transactionDataRebalancedException) {
+    if (isRealDealLocal()) {
+      return getTransactionException(keyInfo, transactionDataRebalancedException);
+    }
+    return transactionDataRebalancedException;
+  }
+
+  void trackBucketForTx(KeyInfo keyInfo) {
     if (keyInfo.getBucketId() >= 0) {
       if (logger.isDebugEnabled()) {
         logger.debug("adding bucket:{} for tx:{}", keyInfo.getBucketId(), getTransactionId());
@@ -287,8 +312,11 @@ public class TXStateProxyImpl implements TXStateProxy {
       getRealDeal(event.getKeyInfo(), event.getRegion()).destroyExistingEntry(event, cacheWrite,
           expectedOldValue);
       trackBucketForTx(event.getKeyInfo());
-    } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
-      throw getTransactionException(event.getKeyInfo(), re);
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(event.getKeyInfo(),
+          transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(event.getKeyInfo(), primaryBucketException);
     }
   }
 
@@ -312,14 +340,21 @@ public class TXStateProxyImpl implements TXStateProxy {
   public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
       boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
       boolean returnTombstones, boolean retainResult, boolean createIfAbsent) {
-    Object val = getRealDeal(keyInfo, localRegion).getDeserializedValue(keyInfo, localRegion,
-        updateStats, disableCopyOnRead, preferCD, null, false, retainResult, createIfAbsent);
-    if (val != null) {
-      // fixes bug 51057: TXStateStub on client always returns null, so do not increment
-      // the operation count it will be incremented in findObject()
-      this.operationCount++;
+    try {
+      Object val = getRealDeal(keyInfo, localRegion).getDeserializedValue(keyInfo, localRegion,
+          updateStats, disableCopyOnRead, preferCD, null, false, retainResult, createIfAbsent);
+      trackBucketForTx(keyInfo);
+      if (val != null) {
+        // fixes bug 51057: TXStateStub on client always returns null, so do not increment
+        // the operation count it will be incremented in findObject()
+        this.operationCount++;
+      }
+      return val;
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(keyInfo, transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(keyInfo, primaryBucketException);
     }
-    return val;
   }
 
   @Override
@@ -329,8 +364,10 @@ public class TXStateProxyImpl implements TXStateProxy {
       Entry retVal = getRealDeal(keyInfo, region).getEntry(keyInfo, region, allowTombstones);
       trackBucketForTx(keyInfo);
       return retVal;
-    } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
-      throw getTransactionException(keyInfo, re);
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(keyInfo, transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(keyInfo, primaryBucketException);
     }
   }
 
@@ -365,8 +402,11 @@ public class TXStateProxyImpl implements TXStateProxy {
       getRealDeal(event.getKeyInfo(), event.getRegion()).invalidateExistingEntry(event,
           invokeCallbacks, forceNewEntry);
       trackBucketForTx(event.getKeyInfo());
-    } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
-      throw getTransactionException(event.getKeyInfo(), re);
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(event.getKeyInfo(),
+          transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(event.getKeyInfo(), primaryBucketException);
     }
   }
 
@@ -422,8 +462,11 @@ public class TXStateProxyImpl implements TXStateProxy {
           .txPutEntry(event, ifNew, requireOldValue, checkResources, expectedOldValue);
       trackBucketForTx(event.getKeyInfo());
       return retVal;
-    } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
-      throw getTransactionException(event.getKeyInfo(), re);
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(event.getKeyInfo(),
+          transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(event.getKeyInfo(), primaryBucketException);
     }
   }
 
@@ -436,8 +479,10 @@ public class TXStateProxyImpl implements TXStateProxy {
           rememberRead, createTxEntryIfAbsent);
       trackBucketForTx(keyInfo);
       return retVal;
-    } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
-      throw getTransactionException(keyInfo, re);
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(keyInfo, transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(keyInfo, primaryBucketException);
     }
   }
 
@@ -485,8 +530,10 @@ public class TXStateProxyImpl implements TXStateProxy {
       boolean retVal = getRealDeal(keyInfo, localRegion).containsKey(keyInfo, localRegion);
       trackBucketForTx(keyInfo);
       return retVal;
-    } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
-      throw getTransactionException(keyInfo, re);
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(keyInfo, transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(keyInfo, primaryBucketException);
     }
   }
 
@@ -531,8 +578,10 @@ public class TXStateProxyImpl implements TXStateProxy {
           disableCopyOnRead, preferCD, requestingClient, clientEvent, false);
       trackBucketForTx(key);
       return retVal;
-    } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
-      throw getTransactionException(key, re);
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(key, transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(key, primaryBucketException);
     }
   }
 
@@ -627,8 +676,11 @@ public class TXStateProxyImpl implements TXStateProxy {
           ifOld, expectedOldValue, requireOldValue, lastModified, overwriteDestroyed);
       trackBucketForTx(event.getKeyInfo());
       return retVal;
-    } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
-      throw getTransactionException(event.getKeyInfo(), re);
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(event.getKeyInfo(),
+          transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(event.getKeyInfo(), primaryBucketException);
     }
   }
 
@@ -647,8 +699,17 @@ public class TXStateProxyImpl implements TXStateProxy {
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) throws DataLocationException {
     this.operationCount++;
-    return getRealDeal(key, localRegion).getSerializedValue(localRegion, key, doNotLockEntry,
-        requestingClient, clientEvent, returnTombstones);
+    try {
+      Object retVal =
+          getRealDeal(key, localRegion).getSerializedValue(localRegion, key, doNotLockEntry,
+              requestingClient, clientEvent, returnTombstones);
+      trackBucketForTx(key);
+      return retVal;
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(key, transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(key, primaryBucketException);
+    }
   }
 
   @Override
@@ -658,8 +719,17 @@ public class TXStateProxyImpl implements TXStateProxy {
     this.operationCount++;
     TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getRegion());
     assert (tx instanceof TXState) : tx.getClass().getSimpleName();
-    return tx.putEntryOnRemote(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
-        overwriteDestroyed);
+    try {
+      boolean retVal = tx.putEntryOnRemote(event, ifNew, ifOld, expectedOldValue, requireOldValue,
+          lastModified, overwriteDestroyed);
+      trackBucketForTx(event.getKeyInfo());
+      return retVal;
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(event.getKeyInfo(),
+          transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(event.getKeyInfo(), primaryBucketException);
+    }
   }
 
   @Override
@@ -673,7 +743,15 @@ public class TXStateProxyImpl implements TXStateProxy {
     this.operationCount++;
     TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getRegion());
     assert (tx instanceof TXState);
-    tx.destroyOnRemote(event, cacheWrite, expectedOldValue);
+    try {
+      tx.destroyOnRemote(event, cacheWrite, expectedOldValue);
+      trackBucketForTx(event.getKeyInfo());
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(event.getKeyInfo(),
+          transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(event.getKeyInfo(), primaryBucketException);
+    }
   }
 
   @Override
@@ -682,7 +760,15 @@ public class TXStateProxyImpl implements TXStateProxy {
     this.operationCount++;
     TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getRegion());
     assert (tx instanceof TXState);
-    tx.invalidateOnRemote(event, invokeCallbacks, forceNewEntry);
+    try {
+      tx.invalidateOnRemote(event, invokeCallbacks, forceNewEntry);
+      trackBucketForTx(event.getKeyInfo());
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(event.getKeyInfo(),
+          transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(event.getKeyInfo(), primaryBucketException);
+    }
   }
 
   @Override
@@ -728,7 +814,13 @@ public class TXStateProxyImpl implements TXStateProxy {
     this.operationCount++;
     TXStateInterface tx = getRealDeal(keyInfo, localRegion);
     assert (tx instanceof TXState);
-    return tx.getEntryOnRemote(keyInfo, localRegion, allowTombstones);
+    try {
+      return tx.getEntryOnRemote(keyInfo, localRegion, allowTombstones);
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(keyInfo, transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(keyInfo, primaryBucketException);
+    }
   }
 
   public void forceLocalBootstrap() {
@@ -893,8 +985,10 @@ public class TXStateProxyImpl implements TXStateProxy {
       Entry retVal = getRealDeal(keyInfo, region).accessEntry(keyInfo, region);
       trackBucketForTx(keyInfo);
       return retVal;
-    } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
-      throw getTransactionException(keyInfo, re);
+    } catch (TransactionDataRebalancedException transactionDataRebalancedException) {
+      throw handleTransactionDataRebalancedException(keyInfo, transactionDataRebalancedException);
+    } catch (PrimaryBucketException primaryBucketException) {
+      throw getTransactionException(keyInfo, primaryBucketException);
     }
   }
 
@@ -1004,4 +1098,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     return onBehalfOfClientMember;
   }
 
+  void setFirstOperationOnPartitionedRegion(boolean firstOperationOnPartitionedRegion) {
+    this.firstOperationOnPartitionedRegion = firstOperationOnPartitionedRegion;
+  }
 }
