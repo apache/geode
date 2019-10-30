@@ -34,13 +34,11 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The GMSMembershipView class represents a membership view For Geode this is translated
@@ -52,8 +50,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  */
 public class GMSMembershipView implements DataSerializableFixedID {
-  private static final Logger logger = LogService.getLogger();
-
   private int viewId;
   private List<MemberIdentifier> members;
   // TODO this should be a List
