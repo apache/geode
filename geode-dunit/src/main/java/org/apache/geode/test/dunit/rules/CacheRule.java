@@ -27,7 +27,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
@@ -228,11 +231,17 @@ public class CacheRule extends AbstractDistributedRule {
 
       @Override
       public void cacheClosed(InternalCache cache) {
-        closed.set(true);
+        //closed.set(true);
       }
     };
     GemFireCacheImpl.addCacheLifecycleListener(adhocListener);
     closeCache();
+    cache.getDistributionManager().addMembershipListener(new MembershipListener() {
+      @Override
+      public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id, boolean crashed) {
+        closed.set(true);
+      }
+    });
     while (closed.get() == false) {
 
     }
