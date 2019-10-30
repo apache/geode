@@ -22,17 +22,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.MembershipListener;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.CacheLifecycleListener;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -219,32 +213,6 @@ public class CacheRule extends AbstractDistributedRule {
   public void closeAndNullCache() {
     closeCache();
     nullCache();
-  }
-
-  public void closeAndWaitForLifecycleEvent() {
-    final AtomicBoolean closed = new AtomicBoolean(false);
-    CacheLifecycleListener adhocListener = new CacheLifecycleListener() {
-      @Override
-      public void cacheCreated(InternalCache cache) {
-
-      }
-
-      @Override
-      public void cacheClosed(InternalCache cache) {
-        //closed.set(true);
-      }
-    };
-    GemFireCacheImpl.addCacheLifecycleListener(adhocListener);
-    closeCache();
-    cache.getDistributionManager().addMembershipListener(new MembershipListener() {
-      @Override
-      public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id, boolean crashed) {
-        closed.set(true);
-      }
-    });
-    while (closed.get() == false) {
-
-    }
   }
 
   private Properties config() {

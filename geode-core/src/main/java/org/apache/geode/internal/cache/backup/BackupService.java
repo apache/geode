@@ -123,7 +123,7 @@ public class BackupService {
     Set allIds =
         cache.getDistributionManager().addAllMembershipListenerAndGetAllIds(membershipListener);
     if (!allIds.contains(sender)) {
-      cleanup();
+      abortBackup();
       throw new IllegalStateException("The member requesting a backup has already departed");
     }
   }

@@ -40,6 +40,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -80,6 +83,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
 
   private static final int DATA_INCREMENT = 10_000;
   private static final RegexFileFilter OPLOG_FILTER = new RegexFileFilter(".*\\.[kdc]rf$");
+  private static BackupMembershipListener backupMembershipListener = new BackupMembershipListener();
 
   private int dataStart;
   private int dataEnd = dataStart + DATA_INCREMENT;
@@ -216,7 +220,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
 
     // Shut down our member so we can perform a restore
     PersistentID id = vm1.invoke(() -> getPersistentID(diskStoreName1));
-    vm1.invoke(() -> cacheRule.closeAndWaitForLifecycleEvent());
+    vm1.invoke(() -> cacheRule.getCache().close());
 
     // Execute the restore
     performRestore(new File(id.getDirectory()),
@@ -261,12 +265,14 @@ public class IncrementalBackupDistributedTest implements Serializable {
   public void testMissingMemberInBaseline() {
     // Simulate the missing member by forcing a persistent member to go offline.
     PersistentID missingMember = vm0.invoke(() -> getPersistentID(diskStoreName1));
+    vm1.invoke(() ->installNewBackupMembershipListener());
+
     vm0.invoke(() -> {
-      cacheRule.closeAndWaitForLifecycleEvent();
+      cacheRule.getCache().close();
     });
 
     await()
-        .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember)));
+        .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember) && backupMembershipListener.hasMemberDeparted()));
 
     // Perform performBackupBaseline and make sure that list of offline disk stores contains our
     // missing member.
@@ -443,7 +449,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
 
     // Shut down our member so we can perform a restore
     PersistentID id = vm0.invoke(() -> getPersistentID(diskStoreName1));
-    vm0.invoke(() -> cacheRule.closeAndWaitForLifecycleEvent());
+    vm0.invoke(() -> cacheRule.getCache().close());
 
     // Get the VM's user directory.
     String vmDir = vm0.invoke(() -> System.getProperty("user.dir"));
@@ -698,4 +704,24 @@ public class IncrementalBackupDistributedTest implements Serializable {
     }
   }
 
+  public static class BackupMembershipListener implements MembershipListener {
+    private boolean memberDeparted = false;
+
+    @Override
+    public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id, boolean crashed) {
+      memberDeparted = true;
+    }
+
+    public boolean hasMemberDeparted() {
+      return memberDeparted;
+    }
+  }
+
+  public void installNewBackupMembershipListener() {
+    if (backupMembershipListener != null) {
+      cacheRule.getCache().getDistributionManager().removeMembershipListener(backupMembershipListener);
+    }
+    backupMembershipListener = new BackupMembershipListener();
+    cacheRule.getCache().getDistributionManager().addMembershipListener(backupMembershipListener);
+  }
 }
