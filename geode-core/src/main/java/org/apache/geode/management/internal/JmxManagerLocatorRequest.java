@@ -22,7 +22,6 @@ import java.net.InetSocketAddress;
 import java.util.Properties;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -90,7 +89,7 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
     if (responseFromServer instanceof JmxManagerLocatorResponse)
       return (JmxManagerLocatorResponse) responseFromServer;
     else {
-      throw new LocatorCancelException(
+      throw new IllegalStateException(
           "Unrecognisable response received: This could be the result of trying to connect a non-SSL-enabled client to an SSL-enabled locator.");
     }
   }

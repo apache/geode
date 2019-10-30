@@ -96,7 +96,7 @@ public class TCPServerSSLJUnitTest {
 
       createTcpClientConnection();
 
-    } catch (LocatorCancelException e) {
+    } catch (IllegalStateException e) {
       // we catching the LocatorCancelException. Expected to have the exception thrown
     }
 

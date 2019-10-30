@@ -93,7 +93,6 @@ import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
@@ -394,7 +393,7 @@ public class LocatorDUnitTest implements Serializable {
   @Test
   public void testNonSSLLocatorDiesWhenConnectingToSSLLocator() {
     addIgnoredException("Unrecognized SSL message, plaintext connection");
-    addIgnoredException(LocatorCancelException.class);
+    addIgnoredException(IllegalStateException.class);
 
     Properties properties = new Properties();
     properties.setProperty(DISABLE_AUTO_RECONNECT, "true");
@@ -424,7 +423,7 @@ public class LocatorDUnitTest implements Serializable {
     // we set port2 so that the state file gets cleaned up later.
     vm2.invoke(() -> {
       assertThatThrownBy(() -> startLocatorBase(properties, 0))
-          .isInstanceOfAny(LocatorCancelException.class, SystemConnectException.class);
+          .isInstanceOfAny(IllegalThreadStateException.class, SystemConnectException.class);
 
       assertThat(Locator.getLocator()).isNull();
     });
@@ -439,7 +438,8 @@ public class LocatorDUnitTest implements Serializable {
   public void testSSLEnabledLocatorDiesWhenConnectingToNonSSLLocator() {
     addIgnoredException("Remote host closed connection during handshake");
     addIgnoredException("Unrecognized SSL message, plaintext connection");
-    addIgnoredException("LocatorCancelException");
+    IgnoredException.addIgnoredException(IllegalStateException.class);
+
 
     Properties properties = getClusterProperties("", "false");
     properties.remove(LOCATORS);
@@ -467,7 +467,7 @@ public class LocatorDUnitTest implements Serializable {
 
     // we set port2 so that the state file gets cleaned up later.
     assertThatThrownBy(() -> startLocatorGetPort(vm2, properties, 0))
-        .isInstanceOfAny(LocatorCancelException.class, RMIException.class);
+        .isInstanceOfAny(IllegalStateException.class, RMIException.class);
     assertThat(Locator.getLocator()).isNull();
 
     vm1.invoke("expectSystemToContainThisManyMembers",
@@ -507,7 +507,7 @@ public class LocatorDUnitTest implements Serializable {
     properties.setProperty(SSL_TRUSTSTORE, getMultiKeyTruststore());
 
     assertThatThrownBy(() -> startLocator(vm2, properties, port2))
-        .isInstanceOfAny(LocatorCancelException.class, RMIException.class);
+        .isInstanceOfAny(IllegalStateException.class, RMIException.class);
     assertThat(Locator.getLocator()).isNull();
 
     vm1.invoke("expectSystemToContainThisManyMembers",

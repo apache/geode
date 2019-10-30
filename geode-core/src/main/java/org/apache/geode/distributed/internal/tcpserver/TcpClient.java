@@ -290,7 +290,7 @@ public class TcpClient {
       sock = socketCreator.connect(ipAddr.getAddress(), ipAddr.getPort(), timeout, null, false);
       sock.setSoTimeout(timeout);
     } catch (SSLException e) {
-      throw new LocatorCancelException("Unable to form SSL connection", e);
+      throw new IllegalStateException("Unable to form SSL connection", e);
     }
 
     try {
@@ -310,7 +310,7 @@ public class TcpClient {
       try {
         Object readObject = DataSerializer.readObject(in);
         if (!(readObject instanceof VersionResponse)) {
-          throw new LocatorCancelException(
+          throw new IllegalThreadStateException(
               "Server version response invalid: " + locatorCancelExceptionString);
         }
 
