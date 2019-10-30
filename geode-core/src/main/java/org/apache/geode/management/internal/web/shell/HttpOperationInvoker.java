@@ -33,8 +33,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;

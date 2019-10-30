@@ -45,7 +45,7 @@ import org.apache.geode.admin.internal.ConfigurationParameterImpl;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * MBean representation of a {@link org.apache.geode.admin.CacheVm}.

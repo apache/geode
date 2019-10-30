@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.control;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class TestMemoryThresholdListener implements ResourceListener<MemoryEvent> {
   private static final Logger logger = LogService.getLogger();

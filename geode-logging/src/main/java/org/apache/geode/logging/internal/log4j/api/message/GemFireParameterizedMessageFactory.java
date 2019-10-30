@@ -12,7 +12,7 @@
  * or implied. See the license for the specific language governing permissions and limitations under
  * the license.
  */
-package org.apache.geode.internal.logging.log4j.message;
+package org.apache.geode.logging.internal.log4j.api.message;
 
 import org.apache.logging.log4j.message.AbstractMessageFactory;
 import org.apache.logging.log4j.message.Message;

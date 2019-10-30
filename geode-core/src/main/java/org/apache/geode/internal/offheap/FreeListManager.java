@@ -31,7 +31,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Manages the free lists and slabs for a MemoryAllocator

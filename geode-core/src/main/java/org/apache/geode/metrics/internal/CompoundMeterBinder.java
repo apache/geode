@@ -22,7 +22,7 @@ import io.micrometer.core.instrument.binder.MeterBinder;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Binds a collection of meter binders to a meter registry.

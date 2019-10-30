@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ConnectionPoolingJUnitTest {
   private static final Logger logger = LogService.getLogger();

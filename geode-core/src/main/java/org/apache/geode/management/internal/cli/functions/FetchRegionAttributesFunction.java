@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;

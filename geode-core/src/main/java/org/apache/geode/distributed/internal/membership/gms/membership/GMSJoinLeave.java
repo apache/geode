@@ -68,9 +68,9 @@ import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPart
 import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.logging.LoggingExecutors;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 

@@ -37,9 +37,9 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.builder.ClusterManagementServiceBuilder;
 import org.apache.geode.management.internal.PlainClusterManagementServiceBuilder;

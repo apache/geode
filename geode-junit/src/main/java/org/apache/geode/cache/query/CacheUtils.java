@@ -40,7 +40,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class CacheUtils {
   private static final Logger logger = LogService.getLogger();

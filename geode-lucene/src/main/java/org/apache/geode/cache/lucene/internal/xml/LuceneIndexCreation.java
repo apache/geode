@@ -35,7 +35,7 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class LuceneIndexCreation implements Extension<Region<?, ?>> {
   private Region region;

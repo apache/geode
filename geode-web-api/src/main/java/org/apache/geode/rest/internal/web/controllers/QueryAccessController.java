@@ -45,7 +45,7 @@ import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.DefaultQuery;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
 import org.apache.geode.rest.internal.web.util.JSONUtils;

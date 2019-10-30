@@ -48,7 +48,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.internal.cache.DirectReplyMessage;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.tcp.BaseMsgStreamer;
@@ -60,6 +59,7 @@ import org.apache.geode.internal.tcp.MsgStreamer;
 import org.apache.geode.internal.tcp.TCPConduit;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * DirectChannel is used to interact directly with other Direct servers to distribute GemFire

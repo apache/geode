@@ -27,7 +27,7 @@ import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHolder;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class DataSerializerRecoveryListener extends EndpointManager.EndpointListenerAdapter {
   private static final Logger logger = LogService.getLogger();

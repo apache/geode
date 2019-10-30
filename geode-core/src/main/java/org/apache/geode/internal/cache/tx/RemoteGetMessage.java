@@ -47,13 +47,13 @@ import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This message is used as the request for a get operation done in a transaction that is hosted on a

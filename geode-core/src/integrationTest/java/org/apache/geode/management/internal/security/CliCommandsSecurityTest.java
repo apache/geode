@@ -25,7 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.TestSecurityManager;

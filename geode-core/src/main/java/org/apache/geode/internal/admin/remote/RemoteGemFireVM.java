@@ -47,7 +47,7 @@ import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.StatListener;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.logging.internal.executors.LoggingThread;
 
 /**
  * Provides access to a remote gemfire VM for purposes of gathering statistics and other info

@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.rest.internal.web.exception.DataTypeNotSupportedException;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;

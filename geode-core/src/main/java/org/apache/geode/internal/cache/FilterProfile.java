@@ -72,7 +72,6 @@ import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.UnregisterAllInterest;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -80,6 +79,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * FilterProfile represents a distributed system member and is used for two purposes: processing

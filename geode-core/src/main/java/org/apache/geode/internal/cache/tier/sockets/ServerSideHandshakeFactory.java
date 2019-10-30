@@ -29,10 +29,10 @@ import org.apache.geode.cache.VersionException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class ServerSideHandshakeFactory {
   private static final Logger logger = LogService.getLogger();

@@ -38,7 +38,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.io.TeePrintStream;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Used to interact with operating system processes. Use <code>exec</code> to create a new process

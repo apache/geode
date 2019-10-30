@@ -32,7 +32,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * TXRegionState is the entity that tracks all the changes a transaction has made to a region.

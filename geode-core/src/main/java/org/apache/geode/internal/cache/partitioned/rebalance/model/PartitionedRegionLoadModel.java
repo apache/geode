@@ -40,7 +40,7 @@ import org.apache.geode.internal.cache.partitioned.PRLoad;
 import org.apache.geode.internal.cache.partitioned.PartitionMemberInfoImpl;
 import org.apache.geode.internal.cache.partitioned.rebalance.BucketOperator;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A model of the load on all of the members for a partitioned region. This model is used to find

@@ -40,7 +40,7 @@ import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.MapType;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class CompiledIteratorDef extends AbstractCompiledValue {

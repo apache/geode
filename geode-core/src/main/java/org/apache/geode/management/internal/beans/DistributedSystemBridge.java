@@ -54,7 +54,7 @@ import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DiskBackupStatus;

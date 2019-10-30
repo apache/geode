@@ -23,8 +23,8 @@ import org.apache.lucene.document.Document;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneSerializer;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
 /**

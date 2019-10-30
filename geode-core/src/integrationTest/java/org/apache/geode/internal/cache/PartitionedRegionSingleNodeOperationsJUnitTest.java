@@ -48,7 +48,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache30.RegionTestCase;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Test for Partitioned Region operations on a single node. Following tests are included:

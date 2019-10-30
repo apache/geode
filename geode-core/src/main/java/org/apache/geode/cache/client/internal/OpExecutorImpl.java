@@ -56,8 +56,8 @@ import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetE
 import org.apache.geode.internal.cache.tier.BatchException;
 import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
 import org.apache.geode.internal.cache.wan.BatchException70;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 

@@ -46,7 +46,7 @@ import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ClientTXStateStub extends TXStateStub {
   private static final Logger logger = LogService.getLogger();

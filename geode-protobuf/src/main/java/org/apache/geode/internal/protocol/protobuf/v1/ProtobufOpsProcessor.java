@@ -19,12 +19,12 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.TerminateConnection;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**

@@ -32,8 +32,8 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ServerToClientFunctionResultSender implements ResultSender {
   private static final Logger logger = LogService.getLogger();

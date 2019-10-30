@@ -24,7 +24,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.DistributedRegionFunctionStreamingMessage;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class DistributedRegionFunctionResultSender implements InternalResultSender {
 

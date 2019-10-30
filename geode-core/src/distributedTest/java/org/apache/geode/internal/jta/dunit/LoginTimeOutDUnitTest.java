@@ -44,7 +44,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.jta.CacheUtils;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;

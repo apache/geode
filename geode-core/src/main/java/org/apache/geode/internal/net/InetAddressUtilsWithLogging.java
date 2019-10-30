@@ -23,7 +23,7 @@ import java.net.UnknownHostException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * @deprecated Please use {@link InetAddressUtils} instead and log any thrown errors within the

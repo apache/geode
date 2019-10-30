@@ -22,7 +22,7 @@ import java.io.UncheckedIOException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Reads the output stream of a Process. Default implementation performs blocking per-line reading

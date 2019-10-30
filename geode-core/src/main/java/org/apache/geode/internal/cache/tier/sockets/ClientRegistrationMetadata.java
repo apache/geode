@@ -27,11 +27,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class ClientRegistrationMetadata {
   private static final Logger logger = LogService.getLogger();
