@@ -60,6 +60,11 @@ public class BufferPool {
   private final ConcurrentLinkedQueue<BBSoftReference> bufferLargeQueue =
       new ConcurrentLinkedQueue<>();
 
+  private final int SMALL_BUFFER_SIZE = Connection.SMALL_BUFFER_SIZE;
+
+
+  private final int MEDIUM_BUFFER_SIZE = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
+
 
   /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
@@ -86,7 +91,7 @@ public class BufferPool {
     ByteBuffer result;
 
     if (useDirectBuffers) {
-      if (size <= DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE) {
+      if (size <= MEDIUM_BUFFER_SIZE) {
         return acquirePredefinedFixedBuffer(send, size);
       } else {
         return acquireLargeBuffer(send, size);
@@ -120,11 +125,11 @@ public class BufferPool {
     ConcurrentLinkedQueue<BBSoftReference> bufferTempQueue;
     ByteBuffer result;
 
-    if (size <= Connection.SMALL_BUFFER_SIZE) {
-      defaultSize = Connection.SMALL_BUFFER_SIZE;
+    if (size <= SMALL_BUFFER_SIZE) {
+      defaultSize = SMALL_BUFFER_SIZE;
       bufferTempQueue = bufferSmallQueue;
     } else {
-      defaultSize = DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE;
+      defaultSize = MEDIUM_BUFFER_SIZE;
       bufferTempQueue = bufferMiddleQueue;
     }
 
@@ -286,9 +291,9 @@ public class BufferPool {
   private void releaseBuffer(ByteBuffer bb, boolean send) {
     if (bb.isDirect()) {
       BBSoftReference bbRef = new BBSoftReference(bb, send);
-      if (bb.capacity() <= Connection.SMALL_BUFFER_SIZE) {
+      if (bb.capacity() <= SMALL_BUFFER_SIZE) {
         bufferSmallQueue.offer(bbRef);
-      } else if (bb.capacity() <= DistributionConfig.DEFAULT_SOCKET_BUFFER_SIZE) {
+      } else if (bb.capacity() <= MEDIUM_BUFFER_SIZE) {
         bufferMiddleQueue.offer(bbRef);
       } else {
         bufferLargeQueue.offer(bbRef);
