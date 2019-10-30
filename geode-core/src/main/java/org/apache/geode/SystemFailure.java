@@ -24,6 +24,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 
 /**
+ *
  * Catches and responds to JVM failure
  * <p>
  * This class represents a catastrophic failure of the system, especially the Java virtual machine.
@@ -142,7 +143,14 @@ import org.apache.geode.logging.internal.executors.LoggingThread;
  * </pre>
  *
  * @since GemFire 5.1
+ *
+ * @deprecated since Geode 1.11 because it is potentially counterproductive to try
+ *             to mitigate a VirtualMachineError since the JVM (spec) makes no guarantees about the
+ *             soundness of the JVM after such an error. In the presence of a VirtualMachineError,
+ *             the simplest solution is really the only solution: exit the JVM as soon as possible.
+ *
  */
+@Deprecated
 @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DM_GC",
     justification = "This class performs System.gc as last ditch effort during out-of-memory condition.")
 public final class SystemFailure {
