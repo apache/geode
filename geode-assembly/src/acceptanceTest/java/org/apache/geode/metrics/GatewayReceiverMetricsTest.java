@@ -68,7 +68,7 @@ public class GatewayReceiverMetricsTest {
 
   @Before
   public void startClusters() throws IOException {
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(8);
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(6);
 
     receiverLocatorPort = ports[0];
     senderLocatorPort = ports[1];
@@ -76,8 +76,6 @@ public class GatewayReceiverMetricsTest {
     int receiverServerPort = ports[3];
     int senderLocatorJmxPort = ports[4];
     int receiverLocatorJmxPort = ports[5];
-    int senderLocatorHttpPort = ports[6];
-    int receiverLocatorHttpPort = ports[7];
 
     int senderSystemId = 2;
     int receiverSystemId = 1;
@@ -93,10 +91,10 @@ public class GatewayReceiverMetricsTest {
         "--dir=" + senderLocatorFolder,
         "--port=" + senderLocatorPort,
         "--locators=localhost[" + senderLocatorPort + "]",
+        "--http-service-port=0",
         "--J=-Dgemfire.remote-locators=localhost[" + receiverLocatorPort + "]",
         "--J=-Dgemfire.distributed-system-id=" + senderSystemId,
         "--J=-Dgemfire.jmx-manager-start=true",
-        "--J=-Dgemfire.jmx-manager-http-port=" + senderLocatorHttpPort,
         "--J=-Dgemfire.jmx-manager-port=" + senderLocatorJmxPort);
 
     String startReceiverLocatorCommand = String.join(GFSH_COMMAND_SEPARATOR,
@@ -105,10 +103,10 @@ public class GatewayReceiverMetricsTest {
         "--dir=" + receiverLocatorFolder,
         "--port=" + receiverLocatorPort,
         "--locators=localhost[" + receiverLocatorPort + "]",
+        "--http-service-port=0",
         "--J=-Dgemfire.remote-locators=localhost[" + senderLocatorPort + "]",
         "--J=-Dgemfire.distributed-system-id=" + receiverSystemId,
         "--J=-Dgemfire.jmx-manager-start=true ",
-        "--J=-Dgemfire.jmx-manager-http-port=" + receiverLocatorHttpPort,
         "--J=-Dgemfire.jmx-manager-port=" + receiverLocatorJmxPort);
 
     String startSenderServerCommand = String.join(GFSH_COMMAND_SEPARATOR,

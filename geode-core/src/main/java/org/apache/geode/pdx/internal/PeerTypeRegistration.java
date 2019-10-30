@@ -359,7 +359,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
     lock();
     try {
-      if (reverseMap.shouldReloadFromRegion(getIdToType())) {
+      if (shouldReload()) {
         buildReverseMapsFromRegion();
       }
       reverseMap.flushPendingReverseMap();
@@ -629,6 +629,17 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
+  boolean shouldReload() {
+    boolean shouldReload = false;
+    TXStateProxy currentState = suspendTX();
+    try {
+      shouldReload = reverseMap.shouldReloadFromRegion(getIdToType());
+    } finally {
+      resumeTX(currentState);
+    }
+    return shouldReload;
+  }
+
   @Override
   public int defineEnum(final EnumInfo newInfo) {
     statistics.enumDefined();
@@ -639,7 +650,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
     lock();
     try {
-      if (reverseMap.shouldReloadFromRegion(getIdToType())) {
+      if (shouldReload()) {
         buildReverseMapsFromRegion();
       }
       reverseMap.flushPendingReverseMap();

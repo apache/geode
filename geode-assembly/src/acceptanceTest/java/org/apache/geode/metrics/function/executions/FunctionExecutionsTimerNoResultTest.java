@@ -56,6 +56,7 @@ public class FunctionExecutionsTimerNoResultTest {
   private Region<Object, Object> replicateRegion;
   private Region<Object, Object> partitionRegion;
   private FunctionToTimeWithoutResult functionWithNoResult;
+  private Duration functionDuration;
 
   @Rule
   public GfshRule gfshRule = new GfshRule();
@@ -65,14 +66,14 @@ public class FunctionExecutionsTimerNoResultTest {
 
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
-  private Duration functionDuration;
 
   @Before
   public void setUp() throws IOException {
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
     locatorPort = availablePorts[0];
-    int serverPort = availablePorts[1];
+    int locatorJmxPort = availablePorts[1];
+    int serverPort = availablePorts[2];
 
     Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
@@ -87,7 +88,9 @@ public class FunctionExecutionsTimerNoResultTest {
         "start locator",
         "--name=" + "locator",
         "--dir=" + temporaryFolder.newFolder("locator").getAbsolutePath(),
-        "--port=" + locatorPort);
+        "--port=" + locatorPort,
+        "--http-service-port=0",
+        "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort);
 
     String serverName = "server1";
     String startServerCommand =

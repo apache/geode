@@ -78,10 +78,10 @@ tests:
   RAM: '16'
   name: Unit
 - ARTIFACT_SLUG: acceptancetestfiles
-  CALL_STACK_TIMEOUT: '1800'
+  CALL_STACK_TIMEOUT: '4500'
   CPUS: '8'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 1h
+  EXECUTE_TEST_TIMEOUT: 1h30m
   GRADLE_TASK: acceptanceTest
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
@@ -89,10 +89,10 @@ tests:
   RAM: '12'
   name: Acceptance
 - ARTIFACT_SLUG: distributedtestfiles
-  CALL_STACK_TIMEOUT: '7200'
+  CALL_STACK_TIMEOUT: '9900'
   CPUS: '96'
   DUNIT_PARALLEL_FORKS: '24'
-  EXECUTE_TEST_TIMEOUT: 2h15m
+  EXECUTE_TEST_TIMEOUT: 3h00m
   GRADLE_TASK: distributedTest
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux

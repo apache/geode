@@ -17,6 +17,7 @@ package org.apache.geode.metrics;
 import static java.io.File.pathSeparator;
 import static org.apache.geode.cache.execute.FunctionService.onMember;
 import static org.apache.geode.cache.execute.FunctionService.onServer;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.apache.geode.test.micrometer.MicrometerAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,13 +48,15 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class MemberTypeCommonTagsTest {
+  private Path locatorFolder;
   private Path serverFolder;
   private Pool serverPool;
+  private ClientCache clientCache;
+  private Cache cache;
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -63,9 +66,6 @@ public class MemberTypeCommonTagsTest {
 
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
-  private ClientCache clientCache;
-  private Path locatorFolder;
-  private Cache cache;
 
   @Test
   public void theMemberTypeTag_forAnEmbeddedCache_isEmbeddedCache() {
@@ -79,7 +79,7 @@ public class MemberTypeCommonTagsTest {
 
   @Test
   public void theMemberTypeTag_forAServer_isServer() throws IOException {
-    startServer("");
+    startServerWithNoEmbeddedLocator();
 
     try {
       assertThat(memberTypeTag(onServer(serverPool))).isEqualTo("server");
@@ -91,7 +91,7 @@ public class MemberTypeCommonTagsTest {
   @Test
   public void theMemberTypeTag_forAMemberServerWithAnEmbeddedLocator_isServerLocator()
       throws IOException {
-    startAMemberServerWithAnEmbeddedLocator();
+    startServerWithEmbeddedLocator();
 
     try {
       assertThat(memberTypeTag(onServer(serverPool))).isEqualTo("server-locator");
@@ -118,12 +118,12 @@ public class MemberTypeCommonTagsTest {
   }
 
   private DistributedMember startLocator() throws IOException {
-    // need a locator for a test
     locatorFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
 
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    int[] ports = getRandomAvailableTCPPorts(2);
 
     int locatorPort = ports[0];
+    int locatorJmxPort = ports[1];
 
     Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
@@ -137,13 +137,13 @@ public class MemberTypeCommonTagsTest {
         "--dir=" + locatorFolder,
         "--port=" + locatorPort,
         "--classpath=" + serviceJarPath + pathSeparator + functionJarPath,
-        "--bind-address=127.0.0.1",
-        "--http-service-port=7075");
+        "--http-service-port=0",
+        "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort);
 
     gfshRule.execute(startLocatorCommand);
 
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.LOCATORS_NAME, "127.0.0.1[" + locatorPort + "]");
+    properties.setProperty(DistributionConfig.LOCATORS_NAME, "localhost[" + locatorPort + "]");
     CacheFactory cacheFactory = new CacheFactory(properties);
     cache = cacheFactory.create();
 
@@ -156,18 +156,28 @@ public class MemberTypeCommonTagsTest {
     gfshRule.execute(stopLocatorCommand);
   }
 
-  private void startAMemberServerWithAnEmbeddedLocator() throws IOException {
-    // need to start a server with the "start-locator" variable
-    startServer("--J=-Dgemfire.start-locator=127.0.0.1[10335]");
+  private void startServerWithEmbeddedLocator() throws IOException {
+    startServer(true);
   }
 
-  private void startServer(String additionalParameters) throws IOException {
+  private void startServerWithNoEmbeddedLocator() throws IOException {
+    startServer(false);
+  }
+
+  private void startServer(boolean withLocator) throws IOException {
     serverFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
 
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] availablePorts = getRandomAvailableTCPPorts(2);
 
-    int serverPort = ports[0];
-    int jmxRmiPort = ports[1];
+    int serverPort = availablePorts[0];
+    int locatorPort = availablePorts[1];
+
+    String additionalParameters = "";
+    if (withLocator) {
+      additionalParameters = String.join(" ",
+          "--J=-Dgemfire.start-locator=localhost[" + locatorPort + "]",
+          "--J=-Dgemfire.jmx-manager=false");
+    }
 
     Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
@@ -181,10 +191,6 @@ public class MemberTypeCommonTagsTest {
         "--dir=" + serverFolder,
         "--server-port=" + serverPort,
         "--classpath=" + serviceJarPath + pathSeparator + functionJarPath,
-        "--J=-Dgemfire.enable-cluster-config=true",
-        "--J=-Dgemfire.jmx-manager=true",
-        "--J=-Dgemfire.jmx-manager-start=true",
-        "--J=-Dgemfire.jmx-manager-port=" + jmxRmiPort,
         additionalParameters);
 
     gfshRule.execute(startServerCommand);
