@@ -23,7 +23,7 @@ import org.apache.geode.internal.cache.partitioned.rebalance.model.BucketRollup;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Member;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.Move;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A director to create redundant copies for buckets in the correct place for a fixed partitioned

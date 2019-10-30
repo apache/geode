@@ -22,8 +22,8 @@ import java.nio.ByteBuffer;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Class <code>ChunkedMessage</code> is used to send messages from a server to a client divided into

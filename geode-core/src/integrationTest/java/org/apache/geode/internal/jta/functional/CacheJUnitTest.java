@@ -52,7 +52,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.jta.CacheUtils;
 import org.apache.geode.internal.jta.JTAUtils;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This JUnit version is created from class org.apache.geode.internal.jta.functional.CacheTest1.

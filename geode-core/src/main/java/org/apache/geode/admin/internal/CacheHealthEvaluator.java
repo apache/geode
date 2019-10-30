@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Contains the logic for evaluating the health of a GemFire {@code Cache} instance according to the

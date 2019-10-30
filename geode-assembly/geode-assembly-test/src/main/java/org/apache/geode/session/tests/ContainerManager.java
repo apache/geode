@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.cargo.container.State;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Manages multiple J2EE containers using cargo.

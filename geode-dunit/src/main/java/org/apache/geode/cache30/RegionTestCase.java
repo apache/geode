@@ -79,7 +79,7 @@ import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.ExpiryTask;
 import org.apache.geode.internal.cache.ExpiryTask.ExpiryTaskListener;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;

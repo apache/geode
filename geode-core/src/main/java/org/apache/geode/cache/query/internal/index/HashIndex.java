@@ -72,8 +72,8 @@ import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.StoredObject;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A HashIndex is an index that can be used for equal and not equals queries It is created only when

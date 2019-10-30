@@ -36,9 +36,11 @@ import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.distributed.internal.SerialQueuedExecutorWithDMStats;
 import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
-import org.apache.geode.internal.logging.LoggingThreadFactory.CommandWrapper;
-import org.apache.geode.internal.logging.LoggingThreadFactory.ThreadInitializer;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory.CommandWrapper;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory.ThreadInitializer;
 
 /**
  * Utility class that creates instances of ExecutorService

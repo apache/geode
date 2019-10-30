@@ -26,7 +26,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A {@link ResultCollector} implementation for collecting and ordering {@link TopEntries}. The

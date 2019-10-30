@@ -64,7 +64,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.internal.AlertDetails;
 import org.apache.geode.test.dunit.VM;

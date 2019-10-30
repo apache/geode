@@ -27,7 +27,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.Statistic;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Provides MBean support for the monitoring of a statistic resource.

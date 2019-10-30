@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * A generic function to act as a conduit between Managing Node and Managed nodes.

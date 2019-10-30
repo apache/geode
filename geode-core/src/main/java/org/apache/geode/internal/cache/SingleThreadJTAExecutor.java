@@ -19,7 +19,7 @@ import java.util.concurrent.Executor;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class ensures that beforeCompletion and afterCompletion are executed in the same thread.

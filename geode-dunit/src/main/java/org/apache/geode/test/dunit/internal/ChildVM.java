@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.version.VersionManager;
 
 public class ChildVM {

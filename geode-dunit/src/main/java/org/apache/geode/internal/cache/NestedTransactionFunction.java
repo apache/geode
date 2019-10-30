@@ -29,7 +29,7 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This function is used by {@link CommitFunction} to commit existing transaction. A

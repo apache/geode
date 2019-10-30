@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 import javax.sql.DataSource;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * AbstractDataSource implements the Datasource interface. This is base class for the datasouce

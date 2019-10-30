@@ -61,10 +61,10 @@ import org.apache.geode.CancelException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.logging.internal.executors.LoggingThread;
 
 /**
  * A hash table supporting full concurrency of retrievals and adjustable expected concurrency for

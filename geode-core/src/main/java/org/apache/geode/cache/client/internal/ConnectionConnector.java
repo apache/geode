@@ -24,8 +24,8 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ConnectionConnector {
   private static final Logger logger = LogService.getLogger();

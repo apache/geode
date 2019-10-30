@@ -45,8 +45,8 @@ import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.persistence.DiskStoreFilter;
 import org.apache.geode.internal.cache.persistence.OplogType;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class PersistentOplogSet implements OplogSet {
   private static final Logger logger = LogService.getLogger();

@@ -20,7 +20,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Implementation of {@link ErrorHandler} interface to handle validation errors while XML parsing.

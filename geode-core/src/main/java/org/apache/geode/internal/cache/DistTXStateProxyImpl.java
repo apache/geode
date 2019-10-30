@@ -17,8 +17,8 @@ package org.apache.geode.internal.cache;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public abstract class DistTXStateProxyImpl extends TXStateProxyImpl {
 

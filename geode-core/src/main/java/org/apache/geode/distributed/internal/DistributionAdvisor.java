@@ -45,13 +45,13 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.versions.VersionSource;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ArrayUtils;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Provides advice on sending distribution messages. For a given operation, this advisor will

@@ -39,7 +39,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SecurityConfig;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.pdx.PdxSerializer;

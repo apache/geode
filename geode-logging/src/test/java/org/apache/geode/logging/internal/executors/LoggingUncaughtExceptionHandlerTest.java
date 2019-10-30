@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.geode.internal.logging;
+package org.apache.geode.logging.internal.executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -26,11 +26,14 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler.FailureSetter;
-import org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler.Implementation;
+import org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandler.FailureSetter;
+import org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandler.Implementation;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/** Unit tests for {@link org.apache.geode.internal.logging.LoggingUncaughtExceptionHandler}. */
+/**
+ * Unit tests for {@link
+ * org.apache.geode.logging.internal.executors.LoggingUncaughtExceptionHandler}.
+ */
 @Category(LoggingTest.class)
 public class LoggingUncaughtExceptionHandlerTest {
 

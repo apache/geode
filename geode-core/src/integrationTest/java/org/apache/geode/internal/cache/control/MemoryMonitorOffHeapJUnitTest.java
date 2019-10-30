@@ -37,7 +37,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class MemoryMonitorOffHeapJUnitTest {
   private static final Logger logger = LogService.getLogger();
