@@ -136,11 +136,6 @@ import org.apache.geode.security.SecurityManager;
 public class InternalDistributedSystem extends DistributedSystem
     implements LogConfigSupplier {
 
-  /**
-   * True if the user is allowed lock when memory resources appear to be overcommitted.
-   */
-  private static final boolean ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED =
-      Boolean.getBoolean(GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT");
   private static final Logger logger = LogService.getLogger();
 
   private static final String DISABLE_MANAGEMENT_PROPERTY =
@@ -148,6 +143,11 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public static final String ALLOW_MULTIPLE_SYSTEMS_PROPERTY =
       GEMFIRE_PREFIX + "ALLOW_MULTIPLE_SYSTEMS";
+
+  public static final String ALLOW_MEMORY_OVERCOMMIT =
+      GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT";
+  public static final String AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT =
+      GEMFIRE_PREFIX + "Cache.AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT";
 
   /**
    * If auto-reconnect is going on this will hold a reference to it
@@ -174,6 +174,16 @@ public class InternalDistributedSystem extends DistributedSystem
   private final StatisticsManager statisticsManager;
   private MetricsService metricsService;
   private final FunctionStatsManager functionStatsManager;
+  /**
+   * True if the user is allowed lock when memory resources appear to be overcommitted.
+   */
+  private final boolean allowMemoryLockWhenOvercommitted =
+      Boolean.getBoolean(ALLOW_MEMORY_OVERCOMMIT);
+  /**
+   * True if memory lock is avoided when memory resources appear to be overcommitted.
+   */
+  private final boolean avoidMemoryLockWhenOvercommitted =
+      Boolean.getBoolean(AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT);
 
   /**
    * The distribution manager that is used to communicate with the distributed system.
@@ -728,28 +738,7 @@ public class InternalDistributedSystem extends DistributedSystem
         // included the available memory calculation.
         long avail = LinuxProcFsStatistics.getAvailableMemory(logger);
         long size = offHeapMemorySize + Runtime.getRuntime().totalMemory();
-        if (avail < size) {
-          if (ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED) {
-            logger.warn(
-                "System memory appears to be over committed by {} bytes.  You may experience "
-                    + "instability, performance issues, or terminated processes due to the Linux "
-                    + "OOM killer.",
-                size - avail);
-          } else {
-            throw new IllegalStateException(
-                String.format(
-                    "Insufficient free memory (%s) when attempting to lock %s bytes.  Either "
-                        + "reduce the amount of heap or off-heap memory requested or free up "
-                        + "additional system memory.  You may also specify -Dgemfire.Cache"
-                        + ".ALLOW_MEMORY_OVERCOMMIT=true on the command-line to override the "
-                        + "constraint check.",
-                    avail, size));
-          }
-        }
-
-        logger.info("Locking memory. This may take a while...");
-        GemFireCacheImpl.lockMemory();
-        logger.info("Finished locking memory.");
+        lockMemory(avail, size);
       }
 
       try {
@@ -828,6 +817,34 @@ public class InternalDistributedSystem extends DistributedSystem
     reconnected = attemptingToReconnect;
     attemptingToReconnect = false;
     reconnectAttemptCounter.set(0);
+  }
+
+  void lockMemory(long avail, long size) {
+    if (avail < size) {
+      if (avoidMemoryLockWhenOvercommitted) {
+        logger.warn(
+            "System memory appears to be over committed by {} bytes. Memory will not be locked because -D{} is set to true.",
+            size - avail, AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT);
+      } else if (allowMemoryLockWhenOvercommitted) {
+        logger.warn(
+            "System memory appears to be over committed by {} bytes. Memory is locked anyway because -D{} is set to true. You may experience instability, performance issues, or terminated processes due to the Linux OOM killer.",
+            size - avail, ALLOW_MEMORY_OVERCOMMIT);
+        lockMemory();
+      } else {
+        throw new IllegalStateException(
+            String.format(
+                "Insufficient free memory (%s) when attempting to lock %s bytes.  Either reduce the amount of heap or off-heap memory requested or free up additional system memory.  You may also specify -D%s=true on the command-line to override the constraint check.",
+                avail, size, ALLOW_MEMORY_OVERCOMMIT));
+      }
+    } else {
+      lockMemory();
+    }
+  }
+
+  void lockMemory() {
+    logger.info("Locking memory. This may take a while...");
+    GemFireCacheImpl.lockMemory();
+    logger.info("Finished locking memory.");
   }
 
   private void startSampler() {
