@@ -52,8 +52,8 @@ import org.apache.geode.internal.datasource.GemFireTransactionDataSource;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.DriverJarUtil;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * <p>

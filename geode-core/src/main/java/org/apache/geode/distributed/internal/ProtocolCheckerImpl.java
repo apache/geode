@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.client.protocol.exception.ServiceLoadingF
 import org.apache.geode.internal.cache.client.protocol.exception.ServiceVersionNotFoundException;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ProtocolCheckerImpl implements ProtocolChecker {
   private static final Logger logger = LogService.getLogger();

@@ -23,7 +23,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.PartitionRebalanceDetailsImpl;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class BucketOperatorWrapper implements BucketOperator {
   private static final Logger logger = LogService.getLogger();

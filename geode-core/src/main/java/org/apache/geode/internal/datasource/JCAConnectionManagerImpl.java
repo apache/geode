@@ -34,7 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class implements a connection pool manager for managed connections (JCA) for transactional

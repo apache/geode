@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging;
+package org.apache.geode.logging.internal.executors;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.text.MessageFormat;
@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class delegates to a static singleton that handles all exceptions not caught by any thread

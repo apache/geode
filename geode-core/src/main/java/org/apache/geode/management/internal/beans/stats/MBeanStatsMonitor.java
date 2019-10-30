@@ -22,12 +22,12 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.statistics.StatisticId;
 import org.apache.geode.internal.statistics.StatisticNotFoundException;
 import org.apache.geode.internal.statistics.StatisticsListener;
 import org.apache.geode.internal.statistics.StatisticsNotification;
 import org.apache.geode.internal.statistics.ValueMonitor;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Class to get mappings of stats name to their values

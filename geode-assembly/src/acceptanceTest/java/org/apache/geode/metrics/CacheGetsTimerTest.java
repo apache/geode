@@ -315,10 +315,11 @@ public class CacheGetsTimerTest {
 
   private void startCluster(boolean enableTimeStatistics, boolean enableSecurity)
       throws IOException {
-    int[] availablePorts = getRandomAvailableTCPPorts(2);
+    int[] availablePorts = getRandomAvailableTCPPorts(3);
 
     locatorPort = availablePorts[0];
-    int serverPort = availablePorts[1];
+    int locatorJmxPort = availablePorts[1];
+    int serverPort = availablePorts[2];
 
     Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
@@ -333,6 +334,8 @@ public class CacheGetsTimerTest {
         "--name=" + "locator",
         "--dir=" + temporaryFolder.newFolder("locator").getAbsolutePath(),
         "--port=" + locatorPort,
+        "--http-service-port=0",
+        "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort,
         "--classpath=" + helpersJarPath);
 
     String serverName = "server";

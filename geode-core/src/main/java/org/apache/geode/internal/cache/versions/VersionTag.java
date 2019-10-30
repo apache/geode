@@ -26,13 +26,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * VersionTags are sent with distribution messages and carry version info for the operation.

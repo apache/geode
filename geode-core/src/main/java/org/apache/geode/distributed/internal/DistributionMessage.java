@@ -33,7 +33,6 @@ import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.MessageLogger;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -42,6 +41,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.internal.util.Breadcrumbs;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * <P>

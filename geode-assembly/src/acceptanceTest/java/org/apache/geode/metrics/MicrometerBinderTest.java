@@ -14,6 +14,7 @@
  */
 package org.apache.geode.metrics;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,7 +41,6 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
@@ -64,7 +64,7 @@ public class MicrometerBinderTest {
   public void startServer() throws IOException {
     serverFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
 
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    int[] ports = getRandomAvailableTCPPorts(2);
 
     int serverPort = ports[0];
     int jmxRmiPort = ports[1];
@@ -78,6 +78,7 @@ public class MicrometerBinderTest {
         "--dir=" + serverFolder,
         "--server-port=" + serverPort,
         "--classpath=" + serviceJarPath,
+        "--http-service-port=0",
         "--J=-Dgemfire.enable-cluster-config=true",
         "--J=-Dgemfire.jmx-manager=true",
         "--J=-Dgemfire.jmx-manager-start=true",

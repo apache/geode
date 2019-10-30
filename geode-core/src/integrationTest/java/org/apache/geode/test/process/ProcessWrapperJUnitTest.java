@@ -19,6 +19,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.After;
 import org.junit.Test;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
+
 
 /**
  * Integration tests for ProcessWrapper.
@@ -64,7 +66,7 @@ public class ProcessWrapperJUnitTest {
 
   public static void main(String... args) throws Exception {
     Class.forName(org.apache.logging.log4j.LogManager.class.getName());
-    Class.forName(org.apache.geode.internal.logging.LogService.class.getName());
+    Class.forName(LogService.class.getName());
     System.out.println(OUTPUT_OF_MAIN);
   }
 }

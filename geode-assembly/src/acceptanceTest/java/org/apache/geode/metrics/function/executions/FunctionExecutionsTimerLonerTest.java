@@ -213,6 +213,7 @@ public class FunctionExecutionsTimerLonerTest {
         "--server-port=" + serverPort,
         "--classpath=" + serviceJarPath + pathSeparatorChar + functionHelpersJarPath,
         "--enable-time-statistics=" + enableTimeStatistics,
+        "--http-service-port=0",
         "--J=-Dgemfire.enable-cluster-config=true",
         "--J=-Dgemfire.jmx-manager=true",
         "--J=-Dgemfire.jmx-manager-start=true",
@@ -231,8 +232,13 @@ public class FunctionExecutionsTimerLonerTest {
   }
 
   private void closeClientAndPool() {
-    serverPool.destroy();
-    clientCache.close();
+    if (serverPool != null) {
+      serverPool.destroy();
+    }
+
+    if (clientCache != null) {
+      clientCache.close();
+    }
   }
 
   private void stopServer() {

@@ -15,7 +15,7 @@
 package org.apache.geode.test.golden;
 
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Verifies that test output containing an unexpected WARN message will fail with that WARN message

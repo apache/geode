@@ -42,9 +42,9 @@ import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
@@ -181,6 +181,12 @@ public class InternalHttpService implements HttpService {
     webapp.setContextPath(webAppContext);
     webapp.setWar(warFilePath.toString());
     webapp.setParentLoaderPriority(false);
+
+    // GEODE-7334: load all jackson classes from war file except jackson annotations
+    webapp.getSystemClasspathPattern().add("com.fasterxml.jackson.annotation.");
+    webapp.getServerClasspathPattern().add("com.fasterxml.jackson.",
+        "-com.fasterxml.jackson.annotation.");
+
     webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
     webapp.addAliasCheck(new AllowSymLinkAliasChecker());
 

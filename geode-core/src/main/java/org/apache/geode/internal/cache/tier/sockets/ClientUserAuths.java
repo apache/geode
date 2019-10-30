@@ -25,9 +25,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ClientUserAuths {
   private static final Logger logger = LogService.getLogger();

@@ -20,7 +20,7 @@ import static org.apache.commons.lang3.Validate.notNull;
 
 import java.io.InputStream;
 
-import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.logging.internal.executors.LoggingThread;
 
 /**
  * Reads the output stream of a Process.

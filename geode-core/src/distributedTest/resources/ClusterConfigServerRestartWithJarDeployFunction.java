@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxInstance;
 
 public class ClusterConfigServerRestartWithJarDeployFunction implements Function {

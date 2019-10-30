@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.logging;
+package org.apache.geode.logging.internal.executors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -87,7 +87,7 @@ public class LoggingExecutors {
     return newScheduledThreadPool(threadName, 1);
   }
 
-  static ThreadPoolExecutor newFixedThreadPool(String threadName, boolean isDaemon,
+  public static ThreadPoolExecutor newFixedThreadPool(String threadName, boolean isDaemon,
       int poolSize, long keepAliveSeconds,
       BlockingQueue<Runnable> feed) {
     ThreadFactory threadFactory = new LoggingThreadFactory(threadName, isDaemon);

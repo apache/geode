@@ -19,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Contains simple tests for the {@link org.apache.geode.internal.monitoring.ThreadsMonitoring}.

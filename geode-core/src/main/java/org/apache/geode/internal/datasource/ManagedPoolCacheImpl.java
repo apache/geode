@@ -23,7 +23,7 @@ import javax.security.auth.Subject;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This class implements a connection pool for Managed connection. Extends the AbstractPoolCache to

@@ -40,7 +40,7 @@ import org.apache.geode.internal.admin.remote.UpdateAlertDefinitionMessage;
 import org.apache.geode.internal.admin.statalerts.DummyStatisticInfoImpl;
 import org.apache.geode.internal.admin.statalerts.StatisticInfo;
 import org.apache.geode.internal.admin.statalerts.StatisticInfoImpl;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The alert manager maintains the list of alert definitions (added by client e.g GFMon 2.0).

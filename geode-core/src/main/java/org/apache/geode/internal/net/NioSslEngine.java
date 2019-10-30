@@ -40,8 +40,8 @@ import javax.net.ssl.SSLSession;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.BufferPool.BufferType;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
 /**

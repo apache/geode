@@ -24,7 +24,7 @@ import org.apache.geode.distributed.internal.DistributionAdvisor.InitializationL
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class SenderIdMonitor implements ProfileListener, InitializationListener {
   private static final Logger logger = LogService.getLogger();

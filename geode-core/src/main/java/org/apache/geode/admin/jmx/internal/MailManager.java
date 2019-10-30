@@ -29,7 +29,7 @@ import javax.mail.internet.MimeMessage;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Provides the ways to send emails to all the registered email id It also provides the way to
