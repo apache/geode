@@ -13,15 +13,14 @@
  * the License.
  */
 
-package org.apache.geode.distributed;
+package org.apache.geode.distributed.internal;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
 import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.InfoResponse;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.GemFireVersion;

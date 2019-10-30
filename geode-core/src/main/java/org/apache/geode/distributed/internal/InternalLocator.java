@@ -58,7 +58,6 @@ import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListe
 import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.InfoRequestHandler;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectListener;
 import org.apache.geode.distributed.internal.membership.NetLocator;
