@@ -28,7 +28,6 @@ import org.junit.runner.RunWith;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -77,14 +76,7 @@ public class TcpServerDependenciesTest {
 
               // TODO - config
               .or(type(DistributionConfigImpl.class))
-              .or(type(DistributionConfig.class))
-
-
-              // TODO - god classes
-              .or(type(SystemFailure.class))
-
-
-  );
+              .or(type(DistributionConfig.class)));
 
 
 }
