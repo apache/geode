@@ -30,9 +30,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 
 import javax.net.ssl.SSLException;
 
@@ -44,8 +44,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.internal.logging.CoreLoggingExecutors;
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
@@ -102,9 +101,6 @@ public class TcpServer {
   public static int OLDTESTVERSION = OLDGOSSIPVERSION;
 
   public static final long SHUTDOWN_WAIT_TIME = 60 * 1000;
-  private static final int MAX_POOL_SIZE =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100);
-  private static final int POOL_IDLE_TIMEOUT = 60 * 1000;
 
   private static final Logger logger = LogService.getLogger();
 
@@ -120,10 +116,11 @@ public class TcpServer {
   private ServerSocket srv_sock = null;
   private InetAddress bind_address;
   private volatile boolean shuttingDown = false;
-  private final PoolStatHelper poolHelper;
   private final TcpHandler handler;
 
   private ExecutorService executor;
+  private final Supplier<ExecutorService> executorServiceSupplier;
+
   private final String threadName;
   private volatile Thread serverThread;
 
@@ -145,15 +142,16 @@ public class TcpServer {
   }
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
-      DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
+      DistributionConfigImpl cfg, TcpHandler handler,
       String threadName, ProtocolChecker protocolChecker,
-      final LongSupplier nanoTimeSupplier) {
+      final LongSupplier nanoTimeSupplier,
+      final Supplier<ExecutorService> executorServiceSupplier) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
-    this.poolHelper = poolHelper;
     this.protocolChecker = protocolChecker;
-    this.executor = createExecutor(poolHelper);
+    this.executorServiceSupplier = executorServiceSupplier;
+    this.executor = executorServiceSupplier.get();
     this.threadName = threadName;
     this.nanoTimeSupplier = nanoTimeSupplier;
 
@@ -173,15 +171,10 @@ public class TcpServer {
     return socketCreator;
   }
 
-  private static ExecutorService createExecutor(PoolStatHelper poolHelper) {
-    return CoreLoggingExecutors.newThreadPoolWithSynchronousFeed("locator request thread ",
-        MAX_POOL_SIZE, poolHelper, POOL_IDLE_TIMEOUT, new ThreadPoolExecutor.CallerRunsPolicy());
-  }
-
   public void restarting() throws IOException {
     this.shuttingDown = false;
     startServerThread();
-    this.executor = createExecutor(this.poolHelper);
+    this.executor = executorServiceSupplier.get();
     logger.info("TcpServer@" + System.identityHashCode(this)
         + " restarting: completed.  Server thread=" + this.serverThread + '@'
         + System.identityHashCode(this.serverThread) + ";alive=" + this.serverThread.isAlive());
