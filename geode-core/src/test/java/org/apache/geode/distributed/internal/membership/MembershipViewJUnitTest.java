@@ -70,7 +70,7 @@ public class MembershipViewJUnitTest {
     int numMembers = members.size();
     // use the membership port as the FD port so it's easy to figure out problems
     for (int i = 0; i < numMembers; i++) {
-      view.setFailureDetectionPort(members.get(i), members.get(i).getPort());
+      view.setFailureDetectionPort(members.get(i), members.get(i).getMembershipPort());
     }
   }
 
@@ -92,7 +92,7 @@ public class MembershipViewJUnitTest {
 
     for (int i = 0; i < numMembers; i++) {
       MemberIdentifier mbr = members.get(i);
-      assertEquals(mbr.getPort(), view.getFailureDetectionPort(mbr));
+      assertEquals(mbr.getMembershipPort(), view.getFailureDetectionPort(mbr));
     }
 
     assertFalse(view.shouldBeCoordinator(members.get(1)));
@@ -124,7 +124,7 @@ public class MembershipViewJUnitTest {
     int num = remainingMembers.size();
     for (int i = 0; i < num; i++) {
       MemberIdentifier mbr = remainingMembers.get(i);
-      assertEquals(mbr.getPort(), view.getFailureDetectionPort((MemberIdentifier) mbr));
+      assertEquals(mbr.getMembershipPort(), view.getFailureDetectionPort((MemberIdentifier) mbr));
     }
   }
 
@@ -149,7 +149,7 @@ public class MembershipViewJUnitTest {
     int num = remainingMembers.size();
     for (int i = 0; i < num; i++) {
       MemberIdentifier mbr = remainingMembers.get(i);
-      assertEquals(mbr.getPort(), view.getFailureDetectionPort((MemberIdentifier) mbr));
+      assertEquals(mbr.getMembershipPort(), view.getFailureDetectionPort((MemberIdentifier) mbr));
     }
   }
 
@@ -191,7 +191,7 @@ public class MembershipViewJUnitTest {
 
     assertEquals(oldSize + 100, view.size());
     for (MemberIdentifier mbr : view.getMembers()) {
-      assertEquals(mbr.getPort(), view.getFailureDetectionPort(mbr));
+      assertEquals(mbr.getMembershipPort(), view.getFailureDetectionPort(mbr));
     }
 
     assertEquals(100, view.getNewMembers(copy).size());

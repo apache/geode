@@ -30,9 +30,9 @@ import org.apache.geode.internal.serialization.SerializationContext;
 public interface MemberData {
   boolean isPartial();
 
-  int getPort();
+  int getMembershipPort();
 
-  boolean preferredForCoordinator();
+  boolean isPreferredForCoordinator();
 
   void setPreferredForCoordinator(boolean preferred);
 
@@ -50,9 +50,9 @@ public interface MemberData {
 
   UUID getUUID();
 
-  long getUuidMSBs();
+  long getUuidMostSignificantBits();
 
-  long getUuidLSBs();
+  long getUuidLeastSignificantBits();
 
   boolean isNetworkPartitionDetectionEnabled();
 
@@ -132,4 +132,5 @@ public interface MemberData {
 
   int compareAdditionalData(MemberData his);
 
+  int getVmPid();
 }

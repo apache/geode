@@ -430,7 +430,7 @@ public class GMSMembershipManagerJUnitTest {
     InternalDistributedMember[] destinations = new InternalDistributedMember[viewmembers.size()];
     for (int i = 0; i < destinations.length; i++) {
       InternalDistributedMember id = viewmembers.get(i);
-      destinations[i] = new InternalDistributedMember(id.getHost(), id.getPort());
+      destinations[i] = new InternalDistributedMember(id.getHost(), id.getMembershipPort());
     }
     manager.checkAddressesForUUIDs(destinations);
     // each destination w/o a UUID should have been replaced with the corresponding

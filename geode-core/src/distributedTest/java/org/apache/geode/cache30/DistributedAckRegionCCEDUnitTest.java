@@ -245,7 +245,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
         InternalDistributedMember mbr = null;
         try {
           mbr = new InternalDistributedMember(nm.getInetAddress().getCanonicalHostName(),
-              nm.getPort() - 1, "fake_id", "fake_id_ustring",
+              nm.getMembershipPort() - 1, "fake_id", "fake_id_ustring",
               ClusterDistributionManager.NORMAL_DM_TYPE, null, null);
           tag.setMemberID(mbr);
         } catch (UnknownHostException e) {

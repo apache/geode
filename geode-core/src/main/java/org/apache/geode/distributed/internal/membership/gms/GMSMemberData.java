@@ -103,7 +103,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
    * Create a CacheMember referring to the current host (as defined by the given string).
    *
    * @param i the hostname, must be for the current host
-   * @param p the membership listening port
+   * @param membershipPort the membership listening port
    * @param networkPartitionDetectionEnabled whether the member has network partition detection
    *        enabled
    * @param preferredForCoordinator whether the member can be group coordinator
@@ -111,7 +111,8 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
    * @param msbs - most significant bytes of UUID
    * @param lsbs - least significant bytes of UUID
    */
-  public GMSMemberData(InetAddress i, String hostName, int p, int processId, byte vmKind,
+  public GMSMemberData(InetAddress i, String hostName, int membershipPort, int processId,
+      byte vmKind,
       int directPort, int vmViewId,
       String name, String[] groups,
       String durableId, int durableTimeout,
@@ -120,7 +121,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
       long msbs, long lsbs, byte memberWeight) {
     this.inetAddr = i;
     this.hostName = hostName;
-    this.udpPort = p;
+    this.udpPort = membershipPort;
     this.processId = processId;
     this.vmKind = vmKind;
     this.directPort = directPort;
@@ -175,13 +176,13 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
 
   @Override
-  public int getPort() {
+  public int getMembershipPort() {
     return this.udpPort;
   }
 
 
   @Override
-  public boolean preferredForCoordinator() {
+  public boolean isPreferredForCoordinator() {
     return this.preferredForCoordinator;
   }
 
@@ -241,12 +242,12 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   }
 
   @Override
-  public long getUuidMSBs() {
+  public long getUuidMostSignificantBits() {
     return this.uuidMSBs;
   }
 
   @Override
-  public long getUuidLSBs() {
+  public long getUuidLeastSignificantBits() {
     return this.uuidLSBs;
   }
 
@@ -349,6 +350,11 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
       }
     }
     return result;
+  }
+
+  @Override
+  public int getVmPid() {
+    return processId;
   }
 
   @Override

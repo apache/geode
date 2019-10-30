@@ -545,7 +545,7 @@ public class MBeanJMXAdapter implements ManagementConstants {
     sb.append(member.getInetAddress().getHostAddress());
     // View ID will be 0 for Loner, but in that case no federation as well
     sb.append("<v").append(member.getVmViewId()).append(">");
-    sb.append(member.getPort());
+    sb.append(member.getMembershipPort());
     // Lower case to handle IPv6
     return makeCompliantName(sb.toString().toLowerCase());
   }

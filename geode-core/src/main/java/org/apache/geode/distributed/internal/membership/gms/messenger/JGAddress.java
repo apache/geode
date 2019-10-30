@@ -56,10 +56,10 @@ public class JGAddress extends UUID {
   public JGAddress(MemberIdentifier mbr) {
     super();
     this.ip_addr = mbr.getInetAddress();
-    this.port = mbr.getPort();
+    this.port = mbr.getMembershipPort();
     MemberData memberData = mbr.getMemberData();
-    this.mostSigBits = memberData.getUuidMSBs();
-    this.leastSigBits = memberData.getUuidLSBs();
+    this.mostSigBits = memberData.getUuidMostSignificantBits();
+    this.leastSigBits = memberData.getUuidLeastSignificantBits();
     this.vmViewId = memberData.getVmViewId();
   }
 

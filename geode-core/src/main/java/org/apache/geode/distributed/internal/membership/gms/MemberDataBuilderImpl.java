@@ -83,7 +83,7 @@ public class MemberDataBuilderImpl implements MemberDataBuilder {
     return this;
   }
 
-  public MemberDataBuilderImpl setDirectPort(int directChannelPort) {
+  public MemberDataBuilderImpl setDirectChannelPort(int directChannelPort) {
     this.directChannelPort = directChannelPort;
     return this;
   }

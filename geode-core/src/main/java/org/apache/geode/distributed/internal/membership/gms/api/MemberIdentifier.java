@@ -63,7 +63,7 @@ public interface MemberIdentifier extends DataSerializableFixedID {
   /**
    * Return the membership port associated with this identifier
    */
-  int getPort();
+  int getMembershipPort();
 
   /**
    * Return the serialization version ordinal associated with this identifier

@@ -394,8 +394,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
   private void verifyMembershipPortsInRange(final InternalDistributedMember member,
       final int lowerBound, final int upperBound) {
-    assertThat(member.getPort()).isGreaterThanOrEqualTo(lowerBound);
-    assertThat(member.getPort()).isLessThanOrEqualTo(upperBound);
+    assertThat(member.getMembershipPort()).isGreaterThanOrEqualTo(lowerBound);
+    assertThat(member.getMembershipPort()).isLessThanOrEqualTo(upperBound);
     assertThat(member.getDirectChannelPort()).isGreaterThanOrEqualTo(lowerBound);
     assertThat(member.getDirectChannelPort()).isLessThanOrEqualTo(upperBound);
   }

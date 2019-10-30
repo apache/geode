@@ -501,8 +501,8 @@ public class JGroupsMessenger implements Messenger {
       MemberIdentifier recipient = null;
       for (MemberIdentifier gmsMbr : members) {
         MemberData memberData = gmsMbr.getMemberData();
-        if (jgMbr.getUUIDLsbs() == memberData.getUuidLSBs()
-            && jgMbr.getUUIDMsbs() == memberData.getUuidMSBs()
+        if (jgMbr.getUUIDLsbs() == memberData.getUuidLeastSignificantBits()
+            && jgMbr.getUUIDMsbs() == memberData.getUuidMostSignificantBits()
             && jgMbr.getVmViewId() == memberData.getVmViewId()) {
           recipient = gmsMbr;
           break;

@@ -64,8 +64,6 @@ public class InternalDistributedMember
     DataSerializableFixedID, ProfileId, VersionSource<DistributedMember> {
   private static final long serialVersionUID = -2785249969777296507L;
 
-  private DurableClientAttributes durableAttributes;
-
   private MemberData memberData; // the underlying member object
 
   /**
@@ -112,6 +110,10 @@ public class InternalDistributedMember
 
   public void setDurableTimeout(int newValue) {
     memberData.setDurableTimeout(newValue);
+  }
+
+  public void setDurableId(String id) {
+    memberData.setDurableId(id);
   }
 
   @FunctionalInterface
@@ -282,7 +284,7 @@ public class InternalDistributedMember
     MemberDataBuilder builder = MemberDataBuilder.newBuilder(addr, host)
         .setName(n)
         .setMembershipPort(p)
-        .setDirectPort(p)
+        .setDirectChannelPort(p)
         .setPreferredForCoordinator(false)
         .setNetworkPartitionDetectionEnabled(true)
         .setVmKind(vmKind)
@@ -290,7 +292,6 @@ public class InternalDistributedMember
     if (attr != null) {
       builder.setDurableId(attr.getId())
           .setDurableTimeout(attr.getTimeout());
-      this.durableAttributes = attr;
     }
     memberData = builder.build();
     defaultToCurrentHost();
@@ -349,8 +350,8 @@ public class InternalDistributedMember
    *
    * @return the underlying membership port
    */
-  public int getPort() {
-    return memberData.getPort();
+  public int getMembershipPort() {
+    return memberData.getMembershipPort();
   }
 
   @Override
@@ -391,7 +392,7 @@ public class InternalDistributedMember
 
   @Override
   public boolean preferredForCoordinator() {
-    return memberData.preferredForCoordinator();
+    return memberData.isPreferredForCoordinator();
   }
 
   /**
@@ -500,8 +501,8 @@ public class InternalDistributedMember
           "InternalDistributedMember.compareTo(): comparison between different classes");
     InternalDistributedMember other = (InternalDistributedMember) o;
 
-    int myPort = getPort();
-    int otherPort = other.getPort();
+    int myPort = getMembershipPort();
+    int otherPort = other.getMembershipPort();
     if (myPort < otherPort)
       return -1;
     if (myPort > otherPort)
@@ -604,8 +605,8 @@ public class InternalDistributedMember
     }
     InternalDistributedMember other = (InternalDistributedMember) obj;
 
-    int myPort = getPort();
-    int otherPort = other.getPort();
+    int myPort = getMembershipPort();
+    int otherPort = other.getMembershipPort();
     if (myPort != otherPort) {
       return false;
     }
@@ -653,7 +654,7 @@ public class InternalDistributedMember
   public int hashCode() {
     int result = 0;
     result = result + memberData.getInetAddress().hashCode();
-    result = result + getPort();
+    result = result + getMembershipPort();
     return result;
   }
 
@@ -746,7 +747,7 @@ public class InternalDistributedMember
       sb.append(")");
     }
     if (vmKind != ClusterDistributionManager.LONER_DM_TYPE
-        && memberData.preferredForCoordinator()) {
+        && memberData.isPreferredForCoordinator()) {
       sb.append("<ec>");
     }
     int vmViewId = getVmViewId();
@@ -754,7 +755,7 @@ public class InternalDistributedMember
       sb.append("<v" + vmViewId + ">");
     }
     sb.append(":");
-    sb.append(getPort());
+    sb.append(getMembershipPort());
 
     if (vmKind == ClusterDistributionManager.LONER_DM_TYPE) {
       // add some more info that was added in 4.2.1 for loner bridge clients
@@ -799,14 +800,14 @@ public class InternalDistributedMember
 
     out.writeInt(address.length); // IPv6 compatible
     out.write(address);
-    out.writeInt(getPort());
+    out.writeInt(getMembershipPort());
 
     DataSerializer.writeString(memberData.getHostName(), out);
 
     int flags = 0;
     if (memberData.isNetworkPartitionDetectionEnabled())
       flags |= NPD_ENABLED_BIT;
-    if (memberData.preferredForCoordinator())
+    if (memberData.isPreferredForCoordinator())
       flags |= COORD_ENABLED_BIT;
     if (this.isPartial)
       flags |= PARTIAL_ID_BIT;
@@ -867,7 +868,7 @@ public class InternalDistributedMember
 
     memberData = MemberDataBuilder.newBuilder(inetAddr, hostName)
         .setMembershipPort(port)
-        .setDirectPort(dcPort)
+        .setDirectChannelPort(dcPort)
         .setName(name)
         .setNetworkPartitionDetectionEnabled(sbEnabled)
         .setPreferredForCoordinator(elCoord)
@@ -886,7 +887,6 @@ public class InternalDistributedMember
         // old version
       }
     }
-    getDurableClientAttributes();
     Assert.assertTrue(memberData.getVmKind() > 0);
   }
 
@@ -912,14 +912,14 @@ public class InternalDistributedMember
     // then bump Connection.HANDSHAKE_VERSION since an
     // instance of this class is sent during Connection handshake.
     DataSerializer.writeInetAddress(getInetAddress(), out);
-    out.writeInt(getPort());
+    out.writeInt(getMembershipPort());
 
     DataSerializer.writeString(memberData.getHostName(), out);
 
     int flags = 0;
     if (memberData.isNetworkPartitionDetectionEnabled())
       flags |= NPD_ENABLED_BIT;
-    if (memberData.preferredForCoordinator())
+    if (memberData.isPreferredForCoordinator())
       flags |= COORD_ENABLED_BIT;
     if (this.isPartial)
       flags |= PARTIAL_ID_BIT;
@@ -941,7 +941,7 @@ public class InternalDistributedMember
     } else { // added in 6.5 for unique identifiers in P2P
       DataSerializer.writeString(String.valueOf(memberData.getVmViewId()), out);
     }
-    String durableId = getDurableIdForSerialization();
+    String durableId = memberData.getDurableId();
     DataSerializer.writeString(durableId == null ? "" : durableId, out);
     DataSerializer.writeInteger(
         Integer.valueOf(durableId == null ? 300 : memberData.getDurableTimeout()),
@@ -965,14 +965,14 @@ public class InternalDistributedMember
     // then bump Connection.HANDSHAKE_VERSION since an
     // instance of this class is sent during Connection handshake.
     DataSerializer.writeInetAddress(getInetAddress(), out);
-    out.writeInt(getPort());
+    out.writeInt(getMembershipPort());
 
     DataSerializer.writeString(memberData.getHostName(), out);
 
     int flags = 0;
     if (memberData.isNetworkPartitionDetectionEnabled())
       flags |= NPD_ENABLED_BIT;
-    if (memberData.preferredForCoordinator())
+    if (memberData.isPreferredForCoordinator())
       flags |= COORD_ENABLED_BIT;
     if (this.isPartial)
       flags |= PARTIAL_ID_BIT;
@@ -990,21 +990,12 @@ public class InternalDistributedMember
     } else { // added in 6.5 for unique identifiers in P2P
       DataSerializer.writeString(String.valueOf(memberData.getVmViewId()), out);
     }
-    String durableId = getDurableIdForSerialization();
+    String durableId = memberData.getDurableId();
     DataSerializer.writeString(durableId == null ? "" : durableId, out);
     DataSerializer.writeInteger(
         Integer.valueOf(durableId == null ? 300 : memberData.getDurableTimeout()),
         out);
   }
-
-  private String getDurableIdForSerialization() {
-    // due to terrible code in ClientProxyMembershipID and client pools the getId() method
-    // in DurableClientAttributes may return different values depending on the setting of
-    // multiple system properties. Here we use the original attributes, if
-    // available, in order to get the correct ID string
-    return durableAttributes != null ? durableAttributes.getId() : memberData.getDurableId();
-  }
-
 
   @Override
   public void fromData(DataInput in,
@@ -1059,7 +1050,7 @@ public class InternalDistributedMember
 
     memberData = MemberDataBuilder.newBuilder(inetAddr, hostName)
         .setMembershipPort(port)
-        .setDirectPort(dcPort)
+        .setDirectChannelPort(dcPort)
         .setName(name)
         .setNetworkPartitionDetectionEnabled(sbEnabled)
         .setPreferredForCoordinator(elCoord)
@@ -1114,7 +1105,7 @@ public class InternalDistributedMember
 
     memberData = MemberDataBuilder.newBuilder(inetAddr, hostName)
         .setMembershipPort(port)
-        .setDirectPort(dcPort)
+        .setDirectChannelPort(dcPort)
         .setName(name)
         .setNetworkPartitionDetectionEnabled(sbEnabled)
         .setPreferredForCoordinator(elCoord)
@@ -1184,12 +1175,12 @@ public class InternalDistributedMember
   public void writeEssentialData(DataOutput out) throws IOException {
     Assert.assertTrue(memberData.getVmKind() > 0);
     DataSerializer.writeInetAddress(getInetAddress(), out);
-    out.writeInt(getPort());
+    out.writeInt(getMembershipPort());
 
     int flags = 0;
     if (memberData.isNetworkPartitionDetectionEnabled())
       flags |= NPD_ENABLED_BIT;
-    if (memberData.preferredForCoordinator())
+    if (memberData.isPreferredForCoordinator())
       flags |= COORD_ENABLED_BIT;
     flags |= PARTIAL_ID_BIT;
     out.writeByte((byte) (flags & 0xff));

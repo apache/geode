@@ -65,7 +65,7 @@ public interface MemberDataBuilder {
 
   MemberDataBuilder setMembershipPort(int membershipPort);
 
-  MemberDataBuilder setDirectPort(int directChannelPort);
+  MemberDataBuilder setDirectChannelPort(int directChannelPort);
 
   MemberDataBuilder setVmPid(int vmPid);
 

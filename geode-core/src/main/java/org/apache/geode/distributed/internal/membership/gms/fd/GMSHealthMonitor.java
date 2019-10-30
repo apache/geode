@@ -645,8 +645,8 @@ public class GMSHealthMonitor implements HealthMonitor {
   void writeMemberToStream(MemberIdentifier gmbr, DataOutputStream out) throws IOException {
     out.writeShort(Version.getCurrentVersion().ordinal());
     out.writeInt(gmbr.getVmViewId());
-    out.writeLong(gmbr.getMemberData().getUuidLSBs());
-    out.writeLong(gmbr.getMemberData().getUuidMSBs());
+    out.writeLong(gmbr.getMemberData().getUuidLeastSignificantBits());
+    out.writeLong(gmbr.getMemberData().getUuidMostSignificantBits());
     out.flush();
   }
 

@@ -86,16 +86,19 @@ public class GMSMemberDataJUnitTest {
   public void testShallowMemberEquals() {
     GMSMemberData member1 = createGMSMember(new byte[] {1, 1, 1, 1, 1}, 1, 1, 1);
     GMSMemberData member2 =
-        new GMSMemberData(member1.getInetAddress(), member1.getPort(), member1.getVersionOrdinal(),
-            member1.getUuidMSBs(), member1.getUuidLSBs(), member1.getVmViewId());
+        new GMSMemberData(member1.getInetAddress(), member1.getMembershipPort(),
+            member1.getVersionOrdinal(),
+            member1.getUuidMostSignificantBits(), member1.getUuidLeastSignificantBits(),
+            member1.getVmViewId());
     assertEquals(0, member1.compareTo(member2));
   }
 
   @Test
   public void testShallowMemberNotEquals() {
     GMSMemberData member1 = createGMSMember(new byte[] {1, 1, 1, 1, 1}, 1, 1, 1);
-    GMSMemberData member2 = new GMSMemberData(member1.getInetAddress(), member1.getPort(),
-        member1.getVersionOrdinal(), member1.getUuidMSBs(), member1.getUuidLSBs(), 100);
+    GMSMemberData member2 = new GMSMemberData(member1.getInetAddress(), member1.getMembershipPort(),
+        member1.getVersionOrdinal(), member1.getUuidMostSignificantBits(),
+        member1.getUuidLeastSignificantBits(), 100);
     assertEquals(false, member1.equals(member2));
   }
 

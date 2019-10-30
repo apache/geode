@@ -72,7 +72,7 @@ public class GMSQuorumCheckerJUnitTest {
     GMSMembershipView view = prepareView();
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
-      pongResponders.add(mockMembers[i].getPort());
+      pongResponders.add(mockMembers[i].getMembershipPort());
     }
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
@@ -92,7 +92,7 @@ public class GMSQuorumCheckerJUnitTest {
     GMSMembershipView view = prepareView();
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length - 1; i++) {
-      pongResponders.add(mockMembers[i].getPort());
+      pongResponders.add(mockMembers[i].getMembershipPort());
     }
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
@@ -108,7 +108,7 @@ public class GMSQuorumCheckerJUnitTest {
   public void testQuorumCheckerNotEnoughWeightForQuorum() throws Exception {
     GMSMembershipView view = prepareView();
     Set<Integer> pongResponders = new HashSet<>();
-    pongResponders.add(mockMembers[0].getPort());
+    pongResponders.add(mockMembers[0].getMembershipPort());
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
@@ -141,14 +141,14 @@ public class GMSQuorumCheckerJUnitTest {
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
-      pongResponders.add(mockMembers[i].getPort());
+      pongResponders.add(mockMembers[i].getMembershipPort());
     }
 
     // remove 4 servers
-    pongResponders.remove(mockMembers[8].getPort());
-    pongResponders.remove(mockMembers[9].getPort());
-    pongResponders.remove(mockMembers[10].getPort());
-    pongResponders.remove(mockMembers[11].getPort());
+    pongResponders.remove(mockMembers[8].getMembershipPort());
+    pongResponders.remove(mockMembers[9].getMembershipPort());
+    pongResponders.remove(mockMembers[10].getMembershipPort());
+    pongResponders.remove(mockMembers[11].getMembershipPort());
 
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
@@ -168,17 +168,17 @@ public class GMSQuorumCheckerJUnitTest {
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
-      pongResponders.add(mockMembers[i].getPort());
+      pongResponders.add(mockMembers[i].getMembershipPort());
     }
 
     // remove 4 servers
-    pongResponders.remove(mockMembers[8].getPort());
-    pongResponders.remove(mockMembers[9].getPort());
-    pongResponders.remove(mockMembers[10].getPort());
-    pongResponders.remove(mockMembers[11].getPort());
+    pongResponders.remove(mockMembers[8].getMembershipPort());
+    pongResponders.remove(mockMembers[9].getMembershipPort());
+    pongResponders.remove(mockMembers[10].getMembershipPort());
+    pongResponders.remove(mockMembers[11].getMembershipPort());
 
     // remove 1 locator
-    pongResponders.remove(mockMembers[1].getPort());
+    pongResponders.remove(mockMembers[1].getMembershipPort());
 
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
@@ -199,19 +199,19 @@ public class GMSQuorumCheckerJUnitTest {
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
-      pongResponders.add(mockMembers[i].getPort());
+      pongResponders.add(mockMembers[i].getMembershipPort());
     }
 
     // remove 5 servers
-    pongResponders.remove(mockMembers[7].getPort());
-    pongResponders.remove(mockMembers[8].getPort());
-    pongResponders.remove(mockMembers[9].getPort());
-    pongResponders.remove(mockMembers[10].getPort());
-    pongResponders.remove(mockMembers[11].getPort());
+    pongResponders.remove(mockMembers[7].getMembershipPort());
+    pongResponders.remove(mockMembers[8].getMembershipPort());
+    pongResponders.remove(mockMembers[9].getMembershipPort());
+    pongResponders.remove(mockMembers[10].getMembershipPort());
+    pongResponders.remove(mockMembers[11].getMembershipPort());
 
     // remove locators
-    pongResponders.remove(mockMembers[0].getPort());
-    pongResponders.remove(mockMembers[1].getPort());
+    pongResponders.remove(mockMembers[0].getMembershipPort());
+    pongResponders.remove(mockMembers[1].getMembershipPort());
 
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
@@ -232,17 +232,17 @@ public class GMSQuorumCheckerJUnitTest {
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < mockMembers.length; i++) {
-      pongResponders.add(mockMembers[i].getPort());
+      pongResponders.add(mockMembers[i].getMembershipPort());
     }
     // remove 5 servers
-    pongResponders.remove(mockMembers[2].getPort()); // lead member
-    pongResponders.remove(mockMembers[8].getPort());
-    pongResponders.remove(mockMembers[9].getPort());
-    pongResponders.remove(mockMembers[10].getPort());
-    pongResponders.remove(mockMembers[11].getPort());
+    pongResponders.remove(mockMembers[2].getMembershipPort()); // lead member
+    pongResponders.remove(mockMembers[8].getMembershipPort());
+    pongResponders.remove(mockMembers[9].getMembershipPort());
+    pongResponders.remove(mockMembers[10].getMembershipPort());
+    pongResponders.remove(mockMembers[11].getMembershipPort());
 
     // remove locator
-    pongResponders.remove(mockMembers[0].getPort());
+    pongResponders.remove(mockMembers[0].getMembershipPort());
 
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
@@ -263,10 +263,10 @@ public class GMSQuorumCheckerJUnitTest {
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < numMembers; i++) {
-      pongResponders.add(mockMembers[i].getPort());
+      pongResponders.add(mockMembers[i].getMembershipPort());
     }
     // remove lead member
-    pongResponders.remove(mockMembers[2].getPort()); // lead member
+    pongResponders.remove(mockMembers[2].getMembershipPort()); // lead member
 
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
@@ -287,11 +287,11 @@ public class GMSQuorumCheckerJUnitTest {
 
     Set<Integer> pongResponders = new HashSet<>();
     for (int i = 0; i < numMembers; i++) {
-      pongResponders.add(mockMembers[i].getPort());
+      pongResponders.add(mockMembers[i].getMembershipPort());
     }
     // remove members
-    pongResponders.remove(mockMembers[2].getPort()); // lead member
-    pongResponders.remove(mockMembers[0].getPort()); // locator
+    pongResponders.remove(mockMembers[2].getMembershipPort()); // lead member
+    pongResponders.remove(mockMembers[0].getMembershipPort()); // locator
 
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));

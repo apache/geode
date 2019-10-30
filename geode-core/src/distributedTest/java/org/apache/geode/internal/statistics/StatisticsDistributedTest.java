@@ -701,8 +701,8 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
         if (!peer.equals(member)) {
           InternalDistributedMember peerIDM = (InternalDistributedMember) peer;
           InternalDistributedMember memberIDM = (InternalDistributedMember) member;
-          sb.append("peer port=").append(peerIDM.getPort()).append(" ");
-          sb.append("member port=").append(memberIDM.getPort()).append(" ");
+          sb.append("peer port=").append(peerIDM.getMembershipPort()).append(" ");
+          sb.append("member port=").append(memberIDM.getMembershipPort()).append(" ");
         }
       }
       return sb.toString();

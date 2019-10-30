@@ -612,7 +612,7 @@ public class GMSJoinLeaveJUnitTest {
     MemberIdentifier previousMemberId = services.getMemberFactory().create(
         MemberDataBuilder.newBuilder(gmsJoinLeaveMemberId.getInetAddress(),
             gmsJoinLeaveMemberId.getHostName())
-            .setMembershipPort(gmsJoinLeaveMemberId.getPort())
+            .setMembershipPort(gmsJoinLeaveMemberId.getMembershipPort())
             .build());
     previousMemberId.setVmViewId(0);
     previousMemberId.getMemberData().setUUID(gmsJoinLeaveMemberId.getMemberData().getUUID());
@@ -1040,7 +1040,7 @@ public class GMSJoinLeaveJUnitTest {
 
     // create a view coming from the locator that conflicts with the installed view
     MemberIdentifier locatorMemberId = new InternalDistributedMember("localhost",
-        mockMembers[mockMembers.length - 1].getPort() + 1);
+        mockMembers[mockMembers.length - 1].getMembershipPort() + 1);
     locatorMemberId.setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     List<MemberIdentifier> newMemberList = new ArrayList<>(members);
     newMemberList.add(locatorMemberId);

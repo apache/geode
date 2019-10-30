@@ -74,7 +74,7 @@ public class GMSQuorumChecker {
     List<MemberIdentifier> members = this.lastView.getMembers();
     for (MemberIdentifier addr : members) {
       SocketAddress sockaddr =
-          new InetSocketAddress(addr.getInetAddress(), addr.getPort());
+          new InetSocketAddress(addr.getInetAddress(), addr.getMembershipPort());
       addressConversionMap.put(sockaddr, addr);
     }
 
