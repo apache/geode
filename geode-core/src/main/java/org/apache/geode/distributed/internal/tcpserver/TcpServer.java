@@ -40,7 +40,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
@@ -252,16 +251,6 @@ public class TcpServer {
     Socket sock = null;
 
     while (!shuttingDown) {
-      if (SystemFailure.getFailure() != null) {
-        // Allocate no objects here!
-        try {
-          srv_sock.close();
-          return;
-        } catch (IOException ignore) {
-          // ignore
-        }
-        SystemFailure.checkFailure(); // throws
-      }
       if (srv_sock.isClosed()) {
         shuttingDown = true;
         break;
@@ -377,22 +366,14 @@ public class TcpServer {
           logger.fatal("Exception in processing request from " + sender, ex);
         }
 
-      } catch (VirtualMachineError err) {
-        SystemFailure.initiateFailure(err);
-        throw err;
       } catch (Throwable ex) {
-        SystemFailure.checkFailure();
         String sender = null;
         if (socket != null) {
           sender = socket.getInetAddress().getHostAddress();
         }
         try {
           logger.fatal("Exception in processing request from " + sender, ex);
-        } catch (VirtualMachineError err) {
-          SystemFailure.initiateFailure(err);
-          throw err;
         } catch (Throwable t) {
-          SystemFailure.checkFailure();
           t.printStackTrace();
         }
       } finally {
