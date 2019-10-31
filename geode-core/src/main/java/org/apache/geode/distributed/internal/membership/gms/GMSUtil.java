@@ -32,11 +32,9 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class GMSUtil {
@@ -64,11 +62,6 @@ public class GMSUtil {
     return parseLocators(locatorsString, addr);
   }
 
-  public static MemberIdentifier readMemberID(DataInput in,
-      DeserializationContext context) throws IOException, ClassNotFoundException {
-    return (MemberIdentifier) context.getDeserializer().readObject(in);
-  }
-
   public static Set<MemberIdentifier> readHashSetOfMemberIDs(DataInput in,
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
@@ -78,7 +71,7 @@ public class GMSUtil {
     }
     Set<MemberIdentifier> result = new HashSet<>();
     for (int i = 0; i < size; i++) {
-      result.add(readMemberID(in, context));
+      result.add(context.getDeserializer().readObject(in));
     }
     return result;
   }
@@ -218,29 +211,9 @@ public class GMSUtil {
     }
     List<MemberIdentifier> result = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
-      result.add(readMemberID(in, context));
+      result.add(context.getDeserializer().readObject(in));
     }
     return result;
-  }
-
-  private static void writeAsInternalDistributedMember(MemberIdentifier suspect, DataOutput out,
-      SerializationContext context) throws IOException {
-    context.getSerializer().writeDSFID(suspect, DataSerializableFixedID.DISTRIBUTED_MEMBER,
-        out);
-  }
-
-  public static void writeMemberID(MemberIdentifier id, DataOutput out,
-      SerializationContext context) throws IOException {
-    if (id == null) {
-      context.getSerializer().writeObject(id, out);
-      return;
-    }
-    short ordinal = context.getSerializationVersion().ordinal();
-    if (ordinal <= Version.GEODE_1_10_0.ordinal()) {
-      writeAsInternalDistributedMember(id, out, context);
-    } else {
-      context.getSerializer().writeObject(id, out);
-    }
   }
 
   public static void writeSetOfMemberIDs(Set<MemberIdentifier> set, DataOutput out,
@@ -254,7 +227,7 @@ public class GMSUtil {
     StaticSerialization.writeArrayLength(size, out);
     if (size > 0) {
       for (MemberIdentifier member : set) {
-        GMSUtil.writeMemberID(member, out, context);
+        context.getSerializer().writeObject(member, out);
       }
     }
   }

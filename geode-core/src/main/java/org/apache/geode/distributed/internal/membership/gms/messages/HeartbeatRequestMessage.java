@@ -18,7 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -70,13 +69,13 @@ public class HeartbeatRequestMessage extends AbstractGMSMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     out.writeInt(requestId);
-    GMSUtil.writeMemberID(target, out, context);
+    context.getSerializer().writeObject(target, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     requestId = in.readInt();
-    target = GMSUtil.readMemberID(in, context);
+    target = context.getDeserializer().readObject(in);
   }
 }

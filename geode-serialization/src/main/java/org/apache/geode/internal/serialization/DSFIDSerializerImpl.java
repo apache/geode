@@ -63,12 +63,6 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       public void invokeToData(Object ds, DataOutput out) throws IOException {
         DSFIDSerializerImpl.this.invokeToData(ds, out);
       }
-
-      @Override
-      public void writeDSFID(DataSerializableFixedID object, int dsfid, DataOutput out)
-          throws IOException {
-        DSFIDSerializerImpl.this.writeDSFID(object, dsfid, out);
-      }
     };
   }
 

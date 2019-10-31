@@ -155,8 +155,8 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    GMSUtil.writeMemberID(coordinator, out, context);
-    GMSUtil.writeMemberID(senderId, out, context);
+    context.getSerializer().writeObject(coordinator, out);
+    context.getSerializer().writeObject(senderId, out);
     StaticSerialization.writeByteArray(coordinatorPublicKey, out);
     StaticSerialization.writeString(rejectionMessage, out);
     out.writeBoolean(isShortForm);
@@ -170,8 +170,8 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    coordinator = GMSUtil.readMemberID(in, context);
-    senderId = GMSUtil.readMemberID(in, context);
+    coordinator = context.getDeserializer().readObject(in);
+    senderId = context.getDeserializer().readObject(in);
     coordinatorPublicKey = StaticSerialization.readByteArray(in);
     rejectionMessage = StaticSerialization.readString(in);
     isShortForm = in.readBoolean();

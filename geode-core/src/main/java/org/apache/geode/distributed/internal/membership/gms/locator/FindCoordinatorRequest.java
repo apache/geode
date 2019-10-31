@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -107,11 +106,11 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    GMSUtil.writeMemberID(memberID, out, context);
+    context.getSerializer().writeObject(memberID, out);
     if (this.rejectedCoordinators != null) {
       out.writeInt(this.rejectedCoordinators.size());
       for (MemberIdentifier mbr : this.rejectedCoordinators) {
-        GMSUtil.writeMemberID(mbr, out, context);
+        context.getSerializer().writeObject(mbr, out);
       }
     } else {
       out.writeInt(0);
@@ -125,11 +124,11 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.memberID = GMSUtil.readMemberID(in, context);
+    this.memberID = context.getDeserializer().readObject(in);
     int size = in.readInt();
     this.rejectedCoordinators = new ArrayList<MemberIdentifier>(size);
     for (int i = 0; i < size; i++) {
-      this.rejectedCoordinators.add(GMSUtil.readMemberID(in, context));
+      this.rejectedCoordinators.add(context.getDeserializer().readObject(in));
     }
     this.lastViewId = in.readInt();
     this.requestId = in.readInt();

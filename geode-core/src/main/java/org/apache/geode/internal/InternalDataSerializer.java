@@ -301,11 +301,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
         InternalDataSerializer.invokeToData(ds, out);
       }
 
-      @Override
-      public void writeDSFID(DataSerializableFixedID object, int dsfid, DataOutput out)
-          throws IOException {
-        InternalDataSerializer.writeDSFID(object, dsfid, out);
-      }
     }).setObjectDeserializer(new ObjectDeserializer() {
       @Override
       public <T> T readObject(DataInput input) throws IOException, ClassNotFoundException {

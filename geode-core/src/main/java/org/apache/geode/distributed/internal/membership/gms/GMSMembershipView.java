@@ -602,7 +602,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    GMSUtil.writeMemberID(creator, out, context);
+    context.getSerializer().writeObject(creator, out);
     out.writeInt(viewId);
     writeAsArrayList(members, out, context);
     GMSUtil.writeSetOfMemberIDs(shutdownMembers, out, context);
@@ -615,7 +615,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
 
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    creator = GMSUtil.readMemberID(in, context);
+    creator = context.getDeserializer().readObject(in);
     viewId = in.readInt();
     members = GMSUtil.readArrayOfIDs(in, context);
     assert members != null;
@@ -641,7 +641,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
     StaticSerialization.writeArrayLength(size, out);
     if (size > 0) {
       for (int i = 0; i < size; i++) {
-        GMSUtil.writeMemberID(list.get(i), out, context);
+        context.getSerializer().writeObject(list.get(i), out);
       }
     }
   }

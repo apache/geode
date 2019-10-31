@@ -30,11 +30,4 @@ public interface ObjectSerializer {
    * backward-compatibility.
    */
   void invokeToData(Object ds, DataOutput out) throws IOException;
-
-  /**
-   * write a DSFID object using a specific fixed ID code
-   */
-  void writeDSFID(DataSerializableFixedID object, int dsfid,
-      DataOutput out) throws IOException;
-
 }
