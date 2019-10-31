@@ -39,6 +39,7 @@ import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.Host.getHost;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -602,7 +603,10 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
           CqQuery cqQuery;
           if ((cqQuery = queryService.getCq("cq1")) == null) {
             CqAttributesFactory cqFact = new CqAttributesFactory();
-            cqFact.addCqListener(new AuthzCqListener());
+            Method method = cqFact.getClass().getMethod("addCqListener", CqListener.class);
+            method.setAccessible(true);
+            method.invoke(cqFact, new AuthzCqListener());
+
             CqAttributes cqAttrs = cqFact.create();
             cqQuery = queryService.newCq("cq1", "SELECT * FROM " + region.getFullPath(), cqAttrs);
           }

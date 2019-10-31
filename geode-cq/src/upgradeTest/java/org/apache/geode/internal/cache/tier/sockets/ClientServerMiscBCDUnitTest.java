@@ -301,7 +301,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTestBase {
     Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
     assertNotNull(r);
     CqAttributesFactory cqAttributesFactory = new CqAttributesFactory();
-    Method method = cqAttributesFactory.getClass().getMethod("addCqListener" , CqListener.class);
+    Method method = cqAttributesFactory.getClass().getMethod("addCqListener", CqListener.class);
     method.setAccessible(true);
     method.invoke(cqAttributesFactory, Mockito.mock(CqListener.class));
     final CqQuery cq = cache.getQueryService().newCq("testCQ", "select * from " + r.getFullPath(),
