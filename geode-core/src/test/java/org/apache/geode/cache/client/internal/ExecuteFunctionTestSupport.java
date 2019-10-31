@@ -30,6 +30,7 @@ import org.mockito.stubbing.OngoingStubbing;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.client.internal.pooling.ConnectionManagerImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -117,7 +118,8 @@ class ExecuteFunctionTestSupport {
         whenPoolExecute.thenReturn(null);
         break;
       case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-        whenPoolExecute.thenThrow(new ServerConnectivityException("testing"));
+        whenPoolExecute.thenThrow(new ServerConnectivityException(
+            ConnectionManagerImpl.SOCKET_TIME_OUT_MSG));
         break;
       case THROW_SERVER_OPERATION_EXCEPTION:
         whenPoolExecute.thenThrow(new ServerOperationException("testing"));
@@ -137,7 +139,7 @@ class ExecuteFunctionTestSupport {
          * we throw this exception first, then we throw ServerConnectivityException
          */
         whenPoolExecute.thenThrow(new InternalFunctionInvocationTargetException("testing"))
-            .thenThrow(new ServerConnectivityException("testing"));
+            .thenThrow(new ServerConnectivityException(ConnectionManagerImpl.SOCKET_TIME_OUT_MSG));
         break;
       default:
         throw new AssertionError("unknown FailureMode type: " + failureMode);

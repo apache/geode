@@ -41,6 +41,7 @@ import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FailureMode;
 import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FunctionIdentifierType;
 import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.HAStatus;
+import org.apache.geode.cache.client.internal.pooling.ConnectionManagerImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
@@ -284,7 +285,8 @@ public class ExecuteRegionFunctionOpRetryTest {
               when.thenReturn(null);
               break;
             case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-              when.thenThrow(new ServerConnectivityException("testing"));
+              when.thenThrow(new ServerConnectivityException(
+                  ConnectionManagerImpl.SOCKET_TIME_OUT_MSG));
               break;
             case THROW_SERVER_OPERATION_EXCEPTION:
               when.thenThrow(new ServerOperationException("testing"));
@@ -304,7 +306,8 @@ public class ExecuteRegionFunctionOpRetryTest {
                * we throw this exception first, then we throw ServerConnectivityException
                */
               when.thenThrow(new InternalFunctionInvocationTargetException("testing"))
-                  .thenThrow(new ServerConnectivityException("testing"));
+                  .thenThrow(
+                      new ServerConnectivityException(ConnectionManagerImpl.SOCKET_TIME_OUT_MSG));
               break;
             default:
               throw new AssertionError("unknown FailureMode type: " + failureMode);
