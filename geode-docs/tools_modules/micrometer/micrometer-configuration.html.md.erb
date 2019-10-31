@@ -1,0 +1,120 @@
+---
+title:  Configuration and Publishing
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+
+# Meter configuration
+
+Out of the box <%=vars.product_name%> is instrumented and can emit meters with a properly created Meter Registry. 
+
+However, any meters that are timers based on the system clock time, similar to the time statistics, they will obey the existing `enable-time-statistics` <%=vars.product_name%>.properties setting, see **[Setting up Statistics](../../managing/statistics/setting_up_statistics.html)**.
+
+
+# Publishing metrics using a meter registry
+
+In order to emit metrics to an Application Performance Monitor (APM) or other such tool that can store or display metrics, a meter registry is required. Micrometer implements many different meter registries as project imports, a list can be found here: https://micrometer.io/docs.
+
+As a simple example, below describes how you might create a publishing service utilizing the `MetricsSession` and `MetricsPublishingService` interface in <%=vars.product_name%>. 
+
+Here is a example class that would enable Prometheus metrics to be emitted:
+
+```java
+public class SimpleMetricsPublishingService implements MetricsPublishingService {
+
+  private static final String PORT_PROPERTY = "prometheus.metrics.port";
+  private static final int DEFAULT_PORT = 0; // If no port specified, use any port
+  private static final String HOSTNAME = "localhost";
+  private static final int PORT = getInteger(PORT_PROPERTY, DEFAULT_PORT);
+
+  private static Logger LOG = getLogger(SimpleMetricsPublishingService.class);
+
+  private final int port;
+  private PrometheusMeterRegistry registry;
+  private HttpServer server;
+
+  public SimpleMetricsPublishingService() {
+    this(PORT);
+  }
+
+  public SimpleMetricsPublishingService(int port) {
+    this.port = port;
+  }
+
+  @Override
+  public void start(MetricsSession session) {
+    registry = new PrometheusMeterRegistry(DEFAULT);
+    session.addSubregistry(registry);
+
+    InetSocketAddress address = new InetSocketAddress(HOSTNAME, port);
+    server = null;
+    try {
+      server = HttpServer.create(address, 0);
+    } catch (IOException thrown) {
+      LOG.error("Exception while starting " + getClass().getSimpleName(), thrown);
+    }
+    HttpContext context = server.createContext("/");
+    context.setHandler(this::requestHandler);
+    server.start();
+
+    int boundPort = server.getAddress().getPort();
+    LOG.info("Started {} http://{}:{}/", getClass().getSimpleName(), HOSTNAME, boundPort);
+  }
+
+  private void requestHandler(HttpExchange httpExchange) throws IOException {
+    final byte[] scrapeBytes = registry.scrape().getBytes();
+    httpExchange.sendResponseHeaders(200, scrapeBytes.length);
+    final OutputStream responseBody = httpExchange.getResponseBody();
+    responseBody.write(scrapeBytes);
+    responseBody.close();
+  }
+
+  @Override
+  public void stop(MetricsSession session) {
+    session.removeSubregistry(registry);
+    registry = null;
+    server.stop(0);
+  }
+}
+```
+
+
+To make your service discoverable, add the following provider-configuration file in the resource directory of your publishing service jar file:
+
+```pre
+META-INF/services/org.apache.geode.metrics.MetricsPublishingService
+```
+Add a line inside the file indicating the fully qualified class name of your implementation:
+
+```pre
+my.domain.SimpleMetricsPublishingService
+```
+Note: The above APIs are considered experimental. Micrometer metrics is a new addition to <%=vars.product_name%> and the API may change.
+
+### Add Your jar File to the classpath When You Start a Server or Locator
+To add your metrics publishing service to a server or locator, add your jar file to the classpath when you start the server or locator via `GFSH` and specify the `prometheus.metrics.port` listed in SimpleMetricsPublishingService:
+
+```pre
+gfsh>create locator --name my-locator --classpath=<path-to-my-jar-file>/my.jar --J=-Dprometheus.metrics.port=9914
+ 
+gfsh>create server --name my-server --classpath=<path-to-my-jar-file>/my.jar --J=-Dprometheus.metrics.port=9915
+```
+Alternatively, you can add your jar file to the extensions directory in your Geode installation and only specify the `prometheus.metrics.port`. Then `GFSH` will add your jar file to the classpath whenever it creates a server or locator.
+
+

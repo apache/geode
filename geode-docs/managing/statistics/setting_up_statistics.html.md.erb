@@ -65,7 +65,7 @@ Alternately, if you are not using the cluster configuration service, configure `
     archive-disk-space-limit=1000
     ```
 
-4.  If you need time-based statistics, enable that. Time-based statistics require statistics sampling and archiving. Example:
+4.  If you need time-based statistics, enable that. Time-based statistics require statistics sampling and archiving. This setting will also enable timer meters out of Micrometer. Example:
 
     ``` pre
     statistic-sampling-enabled=true

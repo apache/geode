@@ -1,0 +1,33 @@
+<% set_title(product_name, "Micrometer") %>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<%=vars.product_name%> Micrometer provides an interface to emit user focused metrics, instrumented in code, out to a variety of different consuming Application Performance Monitoring (APM) tools with ease. <%=vars.product_name%> now has Micrometer instrumentation added to a subset of information available, that can be easily emitted out of a Meter Registry.
+
+By default, it is on and will emit metrics to any meter registry. However, certain meters will only be available with 'time-statistics' turned on.
+
+
+
+-   **[Micrometer configuration and publishing](micrometer-configuration.html)**
+
+    Using Micrometer may require configuration and in order to emit Micrometer metrics out to one of the APM tools supported, or a custom format/tool, a Meter Registry and accompanying publishing service will need to be utilized. 
+
+
+-   **[Micrometer meters and tags](micrometer-meters.html)**
+
+    <%=vars.product_name%> now contains a set of meters, instrumented statistics, that provide information about each individual member of the cluster. Every member within a <%=vars.product_name%> cluster will emit a set of meters of different types, timer, gauge, and counters that are specific to them. Each meter will have a set of common tags, a name/value pair, that help users identify locationally where a meter is in the cluster. There are also meter specific tags that vary based on the meter itself.
