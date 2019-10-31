@@ -164,8 +164,7 @@ resources:
     branch: ((geode-build-branch))
     depth: 1
     paths:
-    - ci/pipelines/geode-build/*
-    - ci/scripts/*
+    - ci/*
     {{ github_access() | indent(4) }}
 - name: geode-benchmarks
   type: git

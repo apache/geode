@@ -62,8 +62,7 @@ resources:
     uri: https://github.com/{{repository.fork}}/geode.git
     branch: {{ repository.branch }}
     paths:
-    - ci/pipelines/geode-build/*
-    - ci/scripts/*
+    - ci/*
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
