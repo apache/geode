@@ -117,12 +117,6 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       return;
     }
     int dsfid = o.getDSFID();
-    writeDSFID(o, dsfid, out);
-  }
-
-  @Override
-  public void writeDSFID(DataSerializableFixedID o, int dsfid, DataOutput out)
-      throws IOException {
     if (dsfid == NO_FIXED_ID) {
       throw new IllegalArgumentException(
           "NO_FIXED_ID is not supported by BasicDSFIDSerializer - use InternalDataSerializer instead: "
