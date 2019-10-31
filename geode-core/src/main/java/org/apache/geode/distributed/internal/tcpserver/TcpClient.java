@@ -26,7 +26,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.net.ssl.SSLException;
 
@@ -34,12 +33,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.net.SSLConfigurationFactory;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -63,33 +56,14 @@ public class TcpClient {
   private static final Map<InetSocketAddress, Short> serverVersions =
       new HashMap<>();
 
-  private final SocketCreator socketCreator;
-
-  public TcpClient(DistributionConfig distributionConfig) {
-    this(SocketCreatorFactory.setDistributionConfig(distributionConfig)
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR));
-  }
-
-  /**
-   * Constructs a new TcpClient using the default (Locator) SocketCreator. SocketCreatorFactory
-   * should be initialized before invoking this method.
-   */
-  public TcpClient() {
-    this(SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR));
-  }
-
-  public TcpClient(Properties properties) {
-    SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(properties,
-        SecurableCommunicationChannel.LOCATOR);
-    this.socketCreator = new SocketCreator(sslConfig);
-  }
+  private final TcpSocketCreator socketCreator;
 
   /**
    * Constructs a new TcpClient
    *
    * @param socketCreator the SocketCreator to use in communicating with the Locator
    */
-  public TcpClient(SocketCreator socketCreator) {
+  public TcpClient(TcpSocketCreator socketCreator) {
     this.socketCreator = socketCreator;
   }
 

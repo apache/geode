@@ -16,6 +16,7 @@ package org.apache.geode.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -87,6 +88,8 @@ import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.MergeLogFiles;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.statistics.StatArchiveReader;
 import org.apache.geode.internal.statistics.StatArchiveReader.ResourceInst;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
@@ -292,7 +295,11 @@ public class SystemAdmin {
       }
 
       try {
-        new TcpClient().stop(addr, port);
+        new TcpClient(
+            asTcpSocketCreator(
+                SocketCreatorFactory
+                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)))
+                        .stop(addr, port);
       } catch (java.net.ConnectException ce) {
         System.out.println(
             "Unable to connect to Locator process. Possible causes are that an incorrect bind address/port combination was specified to the stop-locator command or the process is unresponsive.");

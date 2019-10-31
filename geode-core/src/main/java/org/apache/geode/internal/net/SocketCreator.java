@@ -87,8 +87,8 @@ import org.apache.geode.distributed.ClientSocketFactory;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.ConnectionWatcher;
 import org.apache.geode.internal.GfeConsoleReaderFactory;
 import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
 import org.apache.geode.internal.admin.SSLConfig;
@@ -182,7 +182,7 @@ public class SocketCreator {
    */
   private SSLContext sslContext;
 
-  private SSLConfig sslConfig;
+  private final SSLConfig sslConfig;
 
   static {
     InetAddress inetAddress = null;

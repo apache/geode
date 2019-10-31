@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.client.internal.locator.wan;
 
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,6 +25,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -61,7 +65,10 @@ public class LocatorDiscovery {
     this.locatorId = locator;
     this.request = request;
     this.locatorListener = locatorListener;
-    this.locatorClient = new TcpClient();
+    this.locatorClient = new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)));
   }
 
   /**

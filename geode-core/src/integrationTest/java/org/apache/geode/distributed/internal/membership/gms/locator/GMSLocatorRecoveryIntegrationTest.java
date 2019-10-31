@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.locator;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator.LOCATOR_FILE_STAMP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -57,10 +58,13 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -82,6 +86,9 @@ public class GMSLocatorRecoveryIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
+
+    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
+
     serializer = InternalDataSerializer.getDSFIDSerializer();
     Services.registerSerializables(serializer);
     Version current = Version.CURRENT; // force version initialization
@@ -89,9 +96,11 @@ public class GMSLocatorRecoveryIntegrationTest {
     stateFile = new File(temporaryFolder.getRoot(), getClass().getSimpleName() + "_locator.dat");
 
     gmsLocator = new GMSLocator(null, null, false, false, new LocatorStats(), "",
-        temporaryFolder.getRoot().toPath());
+        temporaryFolder.getRoot().toPath(), new TcpClient(
+            asTcpSocketCreator(
+                SocketCreatorFactory
+                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))));
     gmsLocator.setViewFile(stateFile);
-
   }
 
   @After
@@ -102,6 +111,7 @@ public class GMSLocatorRecoveryIntegrationTest {
     if (locator != null) {
       locator.stop();
     }
+    SocketCreatorFactory.close();
   }
 
   @Test
@@ -173,6 +183,11 @@ public class GMSLocatorRecoveryIntegrationTest {
 
     when(mockSystem.getConfig()).thenReturn(config);
 
+    final TcpClient locatorClient = new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)));
+
     // start the membership manager
     membershipManager =
         MembershipBuilder.newMembershipBuilder(null)
@@ -184,11 +199,12 @@ public class GMSLocatorRecoveryIntegrationTest {
             .setMembershipListener(mockListener)
             .setConfig(new ServiceConfig(transport, config))
             .setSerializer(InternalDataSerializer.getDSFIDSerializer())
+            .setLocatorClient(locatorClient)
             .create();
 
     GMSLocator gmsLocator = new GMSLocator(localHost,
         membershipManager.getLocalMember().getHost() + "[" + port + "]", true, true,
-        new LocatorStats(), "", temporaryFolder.getRoot().toPath());
+        new LocatorStats(), "", temporaryFolder.getRoot().toPath(), locatorClient);
     gmsLocator.setViewFile(new File(temporaryFolder.getRoot(), "locator2.dat"));
     gmsLocator.init(null);
 

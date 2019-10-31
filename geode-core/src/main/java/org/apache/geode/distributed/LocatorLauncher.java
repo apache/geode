@@ -20,6 +20,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetAbsolutePath;
@@ -60,12 +61,14 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
@@ -81,6 +84,7 @@ import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.process.UnableToControlProcessException;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.cli.util.HostUtils;
@@ -290,16 +294,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   @Deprecated
   public static LocatorStatusResponse statusLocator(int port, InetAddress bindAddress)
       throws IOException {
-    // final int timeout = (60 * 2 * 1000); // 2 minutes
-    final int timeout = Integer.MAX_VALUE; // 2 minutes
-
-    try {
-      TcpClient client = new TcpClient(new DistributionConfigImpl(new Properties()));
-      return (LocatorStatusResponse) client.requestToServer(bindAddress, port,
-          new LocatorStatusRequest(), timeout, true);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    return statusLocator(port, bindAddress, new Properties());
   }
 
   /**
@@ -307,11 +302,25 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   public LocatorStatusResponse statusForLocator(int port, InetAddress bindAddress)
       throws IOException {
+    return statusLocator(port, bindAddress, getProperties());
+  }
+
+  private static LocatorStatusResponse statusLocator(
+      final int port, InetAddress bindAddress,
+      final Properties properties)
+      throws IOException {
+
     // final int timeout = (60 * 2 * 1000); // 2 minutes
     final int timeout = Integer.MAX_VALUE; // 2 minutes
 
     try {
-      TcpClient client = new TcpClient(new DistributionConfigImpl(getProperties()));
+
+      final SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
+          properties,
+          SecurableCommunicationChannel.LOCATOR);
+      final TcpSocketCreator socketCreator = asTcpSocketCreator(new SocketCreator(sslConfig));
+      final TcpClient client = new TcpClient(socketCreator);
+
       return (LocatorStatusResponse) client.requestToServer(bindAddress, port,
           new LocatorStatusRequest(), timeout, true);
     } catch (ClassNotFoundException e) {

@@ -22,16 +22,18 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,66 +47,91 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
-import org.apache.geode.internal.net.DummySocketCreator;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.net.SocketCreatorFailHandshake;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class TCPServerSSLJUnitTest {
 
+  Logger logger = LogService.getLogger();
+
   private InetAddress localhost;
   private int port;
-  private DummyTcpServer server;
+  private TcpServer server;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   private final String expectedSocketTimeout = "2000";
+  private ArrayList<Integer> recordedSocketTimeouts = new ArrayList<>();
+  private SocketCreatorFailHandshake socketCreator;
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
+
     SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
-  }
 
-  @After
-  public void teardown() {
-    SocketCreatorFactory.close();
-  }
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+        expectedSocketTimeout);
 
-  private void startTimeDelayedTcpServer(Properties sslProperties) throws IOException {
     localhost = InetAddress.getLocalHost();
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
-    server = new DummyTcpServer(port, localhost, sslProperties, null,
-        Mockito.mock(RestartableTcpHandler.class), Mockito.mock(PoolStatHelper.class),
-        "server thread");
+    socketCreator = new SocketCreatorFailHandshake(
+        SSLConfigurationFactory.getSSLConfigForComponent(
+            new DistributionConfigImpl(getSSLConfigurationProperties()),
+            SecurableCommunicationChannel.LOCATOR),
+        recordedSocketTimeouts);
+
+    server = new TcpServer(
+        port,
+        localhost,
+        Mockito.mock(RestartableTcpHandler.class),
+        "server thread",
+        (socket, input, firstByte) -> false, DistributionStats::getStatTime,
+        TcpServerFactory.createExecutorServiceSupplier(Mockito.mock(PoolStatHelper.class)),
+        asTcpSocketCreator(
+            socketCreator));
+
     server.start();
   }
 
+  @After
+  public void teardown() throws ConnectException, InterruptedException {
+
+    /*
+     * Initially, the DummySocketCreator was set to fail the TLS handshake. In order to shut
+     * the TcpServer down, we have to communicate with it so the handshake has to succeed.
+     */
+    socketCreator.setFailTLSHandshake(false);
+
+    getTcpClient().stop(localhost, port);
+
+    server.join(60 * 1000);
+
+    SocketCreatorFactory.close();
+  }
+
   @Test
-  public void testSSLSocketTimeOut() throws IOException {
+  public void testSSLSocketTimeOut() throws IOException, ClassNotFoundException {
+
     try {
 
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
-          expectedSocketTimeout);
-      Properties sslProperties = getSSLConfigurationProperties();
-      startTimeDelayedTcpServer(sslProperties);
+      getTcpClient().requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000);
+      throw new AssertionError("expected to get an exception but didn't");
 
-      createTcpClientConnection(sslProperties);
-
-    } catch (IllegalStateException e) {
-      // connection will fail; Expected to have the exception thrown
+    } catch (final IllegalStateException | IOException t) {
+      // ok!
     }
 
-    List<Integer> recordedSocketsForSocketCreator = server.getRecordedSocketTimeouts();
+    assertThat(recordedSocketTimeouts.size()).isEqualTo(1);
 
-    Assert.assertEquals(1, recordedSocketsForSocketCreator.size());
-    for (Integer socketTimeOut : recordedSocketsForSocketCreator) {
-      Assert.assertEquals(Integer.parseInt(expectedSocketTimeout), socketTimeOut.intValue());
+    for (final Integer socketTimeOut : recordedSocketTimeouts) {
+      assertThat(Integer.parseInt(expectedSocketTimeout)).isEqualTo(socketTimeOut.intValue());
     }
   }
 
@@ -126,46 +153,13 @@ public class TCPServerSSLJUnitTest {
     return sslProperties;
   }
 
-  private void createTcpClientConnection(final Properties clientProperties) {
-    try {
-      new TcpClient(clientProperties).requestToServer(localhost, port, Boolean.valueOf(false),
-          5 * 1000);
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (ClassNotFoundException e) {
-      e.printStackTrace();
-    }
+  private TcpClient getTcpClient() {
+    return new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(
+                    new DistributionConfigImpl(getSSLConfigurationProperties()),
+                    SecurableCommunicationChannel.LOCATOR)));
   }
 
-  private class DummyTcpServer extends TcpServer {
-    private DistributionConfig distributionConfig;
-    private List<Integer> recordedSocketsTimeouts = new ArrayList<>();
-
-    public DummyTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-        DistributionConfigImpl cfg, RestartableTcpHandler handler, PoolStatHelper poolHelper,
-        String threadName) {
-      super(port, bind_address, sslConfig, cfg, handler, threadName,
-          (socket, input, firstByte) -> false, DistributionStats::getStatTime,
-          TcpServerFactory.createExecutorServiceSupplier(poolHelper));
-      if (cfg == null) {
-        cfg = new DistributionConfigImpl(sslConfig);
-      }
-      this.distributionConfig = cfg;
-    }
-
-    @Override
-    protected SocketCreator getSocketCreator() {
-      if (this.socketCreator == null) {
-        SSLConfig sslConfig =
-            SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
-                SecurableCommunicationChannel.LOCATOR);
-        this.socketCreator = new DummySocketCreator(sslConfig, recordedSocketsTimeouts);
-      }
-      return socketCreator;
-    }
-
-    public List<Integer> getRecordedSocketTimeouts() {
-      return recordedSocketsTimeouts;
-    }
-  }
 }

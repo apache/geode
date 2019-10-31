@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.security.SecurableCommunicationChannels.LOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -38,13 +39,11 @@ import org.mockito.Mockito;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -57,7 +56,7 @@ public class TCPClientSSLIntegrationTest {
 
   private InetAddress localhost;
   private int port;
-  private FakeTcpServer server;
+  private TcpServer server;
   private TcpClient client;
   private CertificateMaterial ca;
 
@@ -72,6 +71,11 @@ public class TCPClientSSLIntegrationTest {
         .commonName("Test CA")
         .isCA()
         .generate();
+  }
+
+  @After
+  public void after() {
+    SocketCreatorFactory.close();
   }
 
   private void startServerAndClient(CertificateMaterial serverCertificate,
@@ -94,12 +98,11 @@ public class TCPClientSSLIntegrationTest {
 
     startTcpServer(serverProperties);
 
-    client = new TcpClient(clientProperties);
-  }
-
-  @After
-  public void teardown() {
-    SocketCreatorFactory.close();
+    client = new TcpClient(
+        asTcpSocketCreator(
+            new SocketCreator(
+                SSLConfigurationFactory.getSSLConfigForComponent(clientProperties,
+                    SecurableCommunicationChannel.LOCATOR))));
   }
 
   private void startTcpServer(Properties sslProperties) throws IOException {
@@ -109,9 +112,20 @@ public class TCPClientSSLIntegrationTest {
     RestartableTcpHandler tcpHandler = Mockito.mock(RestartableTcpHandler.class);
     when(tcpHandler.processRequest(any())).thenReturn("Running!");
 
-    server = new FakeTcpServer(port, localhost, sslProperties, null,
-        tcpHandler, Mockito.mock(PoolStatHelper.class),
-        "server thread");
+    server = new TcpServer(
+        port,
+        localhost,
+        tcpHandler,
+        "server thread",
+        (socket, input, firstByte) -> false,
+        DistributionStats::getStatTime,
+        TcpServerFactory.createExecutorServiceSupplier(Mockito.mock(PoolStatHelper.class)),
+        asTcpSocketCreator(
+            new SocketCreator(
+                SSLConfigurationFactory.getSSLConfigForComponent(
+                    new DistributionConfigImpl(sslProperties),
+                    SecurableCommunicationChannel.LOCATOR))));
+
     server.start();
   }
 
@@ -195,30 +209,4 @@ public class TCPClientSSLIntegrationTest {
             + localhost.getHostName() + " found.");
   }
 
-  private static class FakeTcpServer extends TcpServer {
-    private DistributionConfig distributionConfig;
-
-    public FakeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-        DistributionConfigImpl cfg, RestartableTcpHandler handler, PoolStatHelper poolHelper,
-        String threadName) {
-      super(port, bind_address, sslConfig, cfg, handler, threadName,
-          (socket, input, firstByte) -> false, DistributionStats::getStatTime,
-          TcpServerFactory.createExecutorServiceSupplier(poolHelper));
-      if (cfg == null) {
-        cfg = new DistributionConfigImpl(sslConfig);
-      }
-      this.distributionConfig = cfg;
-    }
-
-    @Override
-    protected SocketCreator getSocketCreator() {
-      if (this.socketCreator == null) {
-        SSLConfig sslConfig =
-            SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
-                SecurableCommunicationChannel.LOCATOR);
-        this.socketCreator = new SocketCreator(sslConfig);
-      }
-      return socketCreator;
-    }
-  }
 }

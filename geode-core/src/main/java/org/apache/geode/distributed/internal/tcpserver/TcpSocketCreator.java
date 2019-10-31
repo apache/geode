@@ -12,20 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership;
 
+package org.apache.geode.distributed.internal.tcpserver;
+
+import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.file.Path;
+import java.net.ServerSocket;
+import java.net.Socket;
 
-import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 
-public class NetLocatorFactory {
-  public static NetLocator newLocatorHandler(InetAddress bindAddress, String locatorString,
-      boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
-      LocatorStats stats, String securityUDPDHAlgo, Path workingDirectory) {
+/**
+ * Create sockets for TcpServer (and TcpClient).
+ */
+public interface TcpSocketCreator {
+  boolean useSSL();
 
-    return new GMSLocatorAdapter(bindAddress, locatorString, usePreferredCoordinators,
-        networkPartitionDetectionEnabled, stats, securityUDPDHAlgo, workingDirectory);
-  }
+  ServerSocket createServerSocket(int nport, int backlog) throws IOException;
+
+  ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr)
+      throws IOException;
+
+  Socket connect(InetAddress inetadd, int port, int timeout,
+      ConnectionWatcher optionalWatcher, boolean clientSide) throws IOException;
+
+  void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException;
 }

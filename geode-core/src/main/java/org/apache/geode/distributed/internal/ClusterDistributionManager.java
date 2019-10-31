@@ -15,6 +15,8 @@
 
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+
 import java.io.NotSerializableException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -68,6 +70,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
@@ -80,6 +83,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.sequencelog.MembershipLogger;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectionTable;
@@ -462,6 +467,10 @@ public class ClusterDistributionManager implements DistributionManager {
           .setConfig(new ServiceConfig(transport, system.getConfig()))
           .setSerializer(InternalDataSerializer.getDSFIDSerializer())
           .setMemberIDFactory(new ClusterDistributionManagerIDFactory())
+          .setLocatorClient(new TcpClient(
+              asTcpSocketCreator(
+                  SocketCreatorFactory
+                      .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))))
           .create();
 
       sb.append(System.currentTimeMillis() - start);
