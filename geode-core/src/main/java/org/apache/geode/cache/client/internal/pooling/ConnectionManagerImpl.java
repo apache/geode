@@ -73,6 +73,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
   public static final String BORROW_CONN_ERROR_MSG = "Could not create a new connection to server ";
   public static final String UNEXPECTED_SOCKET_CLOSED_MSG =
       "Pool unexpected closed socket on server";
+  public static final String SOCKET_TIME_OUT_MSG = "socket timed out on client";
 
   private final String poolName;
   private final PoolStats poolStats;

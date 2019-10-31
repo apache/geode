@@ -91,7 +91,8 @@ public class PoolImplTest {
     when(connectionSource.getAllServers()).thenReturn(servers);
     ServerConnectivityException serverConnectivityException =
         mock(ServerConnectivityException.class);
-    when(serverConnectivityException.getMessage()).thenReturn("Timeout Exception");
+    when(serverConnectivityException.getMessage())
+        .thenReturn(ConnectionManagerImpl.SOCKET_TIME_OUT_MSG);
 
     PoolImpl poolImpl = spy(getPool(PoolFactory.DEFAULT_RETRY_ATTEMPTS));
     when(poolImpl.getConnectionSource()).thenReturn(connectionSource);

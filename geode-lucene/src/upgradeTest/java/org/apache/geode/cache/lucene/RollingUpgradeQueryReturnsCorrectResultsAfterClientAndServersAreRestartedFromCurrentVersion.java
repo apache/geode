@@ -15,6 +15,7 @@
 package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -146,4 +148,89 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRes
     }
   }
 
+  @Test
+  public void stopOneServerThenRerunFunction()
+      throws Throwable {
+    // Since the changes relating to GEODE-7258 is not applied on 1.10.0,
+    // use this test to roll from develop to develop to verify.
+    final Host host = Host.getHost(0);
+    VM locator = host.getVM(VersionManager.CURRENT_VERSION, 0);
+    VM server1 = host.getVM(VersionManager.CURRENT_VERSION, 1);
+    VM server2 = host.getVM(VersionManager.CURRENT_VERSION, 2);
+    VM client = host.getVM(VersionManager.CURRENT_VERSION, 3);
+
+    final String regionName = "aRegion";
+    String regionType = "partitionedRedundant";
+    RegionShortcut shortcut = RegionShortcut.PARTITION_REDUNDANT;
+
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    int[] locatorPorts = new int[] {ports[0]};
+    int[] csPorts = new int[] {ports[1], ports[2]};
+
+    locator
+        .invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
+
+    String hostName = NetworkUtils.getServerHostName(host);
+    String[] hostNames = new String[] {hostName};
+    String locatorString = getLocatorString(locatorPorts);
+
+    try {
+      // Start locator, servers and client in old version
+      locator.invoke(
+          invokeStartLocator(hostName, locatorPorts[0],
+              getLocatorPropertiesPre91(locatorString)));
+
+      // Locators before 1.4 handled configuration asynchronously.
+      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+      locator.invoke(
+          () -> await()
+              .untilAsserted(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig()
+                      .getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
+
+      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)),
+          server1, server2);
+      invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server1);
+      invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server2);
+      invokeRunnableInVMs(
+          invokeCreateClientCache(getClientSystemProperties(), hostNames,
+              locatorPorts, false,
+              singleHopEnabled),
+          client);
+
+      // Create the region on the servers and client
+      invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut.name()),
+          server1, server2);
+      invokeRunnableInVMs(
+          invokeCreateClientRegion(regionName, ClientRegionShortcut.PROXY),
+          client);
+      server1
+          .invoke(() -> FunctionService.registerFunction(new TestFunction()));
+      server2
+          .invoke(() -> FunctionService.registerFunction(new TestFunction()));
+
+      // Put objects on the client so that each bucket is created
+      int numObjects = 113;
+      putSerializableObject(client, regionName, 0, numObjects);
+
+      client.invoke(
+          () -> await().untilAsserted(() -> {
+            ArrayList<Boolean> result = (ArrayList<Boolean>) executeDummyFunction(
+                regionName);
+            assertTrue(result.size() == 2);
+          }));
+
+      server1.invoke(invokeCloseCache());
+
+      client.invoke(() -> {
+        Object result = executeDummyFunction(regionName);
+        ArrayList<Boolean> list = (ArrayList) result;
+        assertThat(list.get(0)).isTrue();
+      });
+    } finally {
+      invokeRunnableInVMs(true, invokeStopLocator(), locator);
+      invokeRunnableInVMs(true, invokeCloseCache(), client, server2);
+    }
+  }
 }

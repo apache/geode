@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -34,12 +35,17 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
@@ -849,6 +855,29 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
    */
   protected static String getDUnitLocatorAddress() {
     return Host.getHost(0).getHostName();
+  }
+
+  protected Object executeDummyFunction(String regionName) {
+    Region region = ((InternalCache) cache).getRegion(regionName);
+    Object result = FunctionService.onRegion(region).execute("TestFunction").getResult();
+    ArrayList<Boolean> list = (ArrayList) result;
+    assertThat(list.get(0)).isTrue();
+    return result;
+  }
+
+  static class TestFunction implements Function, Declarable {
+
+    public void execute(FunctionContext context) {
+      context.getResultSender().lastResult(true);
+    }
+
+    public String getId() {
+      return getClass().getSimpleName();
+    }
+
+    public boolean optimizeForWrite() {
+      return true;
+    }
   }
 
 }

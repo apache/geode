@@ -1592,14 +1592,13 @@ public class PoolImpl implements InternalPool {
       // As calculating number of servers involves sending message to locator, it is
       // done only when there is an exception.
       if (cause instanceof ServerConnectivityException
-          && (cause.getMessage().contains(ConnectionManagerImpl.BORROW_CONN_ERROR_MSG)
-              || cause.getMessage().contains(ConnectionManagerImpl.UNEXPECTED_SOCKET_CLOSED_MSG))) {
+          && cause.getMessage().contains(ConnectionManagerImpl.SOCKET_TIME_OUT_MSG)) {
+        // The request was sent once.
+        maxRetryAttempts = getConnectionSource().getAllServers().size() - 1;
+      } else {
         // The client was unable to establish a connection before sending the
         // request.
         maxRetryAttempts = getConnectionSource().getAllServers().size();
-      } else {
-        // The request was sent once.
-        maxRetryAttempts = getConnectionSource().getAllServers().size() - 1;
       }
     }
 
