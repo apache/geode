@@ -188,7 +188,7 @@ public class ShutdownCommand extends GfshCommand {
 
       Response response = readYesNo(CliStrings.SHUTDOWN__MSG__WARN_USER, Response.YES);
       if (response == Response.NO) {
-        return ResultModel.createInfo(CliStrings.SHUTDOWN__MSG__ABORTING_SHUTDOWN);
+        return ResultModel.createError(CliStrings.SHUTDOWN__MSG__ABORTING_SHUTDOWN);
       } else {
         return ResultModel.createInfo(CliStrings.SHUTDOWN__MSG__SHUTDOWN_ENTIRE_DS);
       }
