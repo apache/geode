@@ -36,7 +36,7 @@ dependencies {
     testCompile('junit:junit')
     testCompile('org.assertj:assertj-core')
 
-    testRuntime(project(':geode-old-versions'))
+    testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
     integrationTestCompile(project(':geode-junit')) {
         exclude module: 'geode-logging'
@@ -52,8 +52,8 @@ dependencies {
         exclude module: 'geode-logging'
     }
     distributedTestCompile('pl.pragmatists:JUnitParams')
-    distributedTestRuntime(project(':geode-old-versions'))
-    upgradeTestRuntime(project(':geode-old-versions'))
+    distributedTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+    upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
     testImplementation('com.tngtech.archunit:archunit-junit4')
 

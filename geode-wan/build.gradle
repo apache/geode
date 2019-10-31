@@ -72,5 +72,5 @@ dependencies {
   upgradeTestCompile('org.assertj:assertj-core')
   upgradeTestCompile('junit:junit')
 
-  upgradeTestRuntime(project(':geode-old-versions'))
+  upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 }
