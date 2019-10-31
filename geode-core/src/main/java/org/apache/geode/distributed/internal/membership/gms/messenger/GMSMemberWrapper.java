@@ -12,59 +12,43 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.messages;
+package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
-public class SuspectRequest {
-  final MemberIdentifier suspectMember;
-  final String reason;
+/**
+ * A wrapper for GMSMember objects used in encryption services
+ */
+public class GMSMemberWrapper {
 
-  public SuspectRequest(MemberIdentifier m, String r) {
-    suspectMember = m;
-    reason = r;
+  MemberIdentifier mbr;
+
+  public GMSMemberWrapper(MemberIdentifier m) {
+    this.mbr = m;
   }
 
-  public MemberIdentifier getSuspectMember() {
-    return suspectMember;
-  }
-
-  public String getReason() {
-    return reason;
+  public MemberIdentifier getMbr() {
+    return mbr;
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((suspectMember == null) ? 0 : suspectMember.hashCode());
-    return result;
+    return mbr.hashCode();
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) {
-      return true;
-    }
-    if (obj == null) {
+    if (!(obj instanceof GMSMemberWrapper)) {
       return false;
     }
-    if (getClass() != obj.getClass()) {
-      return false;
-    }
-    SuspectRequest other = (SuspectRequest) obj;
-    if (suspectMember == null) {
-      if (other.suspectMember != null) {
-        return false;
-      }
-    } else if (!suspectMember.equals(other.suspectMember)) {
-      return false;
-    }
-    return true;
+    MemberIdentifier other = ((GMSMemberWrapper) obj).mbr;
+    // here we must compare member data rather than identifiers since the view identifiers and
+    // UUID identifiers need to be ignored
+    return mbr.getMemberData().compareTo(other.getMemberData(), false, false) == 0;
   }
 
   @Override
   public String toString() {
-    return "SuspectRequest [member=" + suspectMember + ", reason=" + reason + "]";
+    return "GMSMemberWrapper [mbr=" + mbr + "]";
   }
 }

@@ -24,6 +24,7 @@ import java.net.UnknownHostException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -72,9 +73,9 @@ public class InternalDistributedMemberTest {
   @Test
   public void equalsReturnsTrueIfNullInetAddress() throws UnknownHostException {
     InetAddress localHost = InetAddress.getLocalHost();
-    NetMember netMember1 = mock(NetMember.class);
+    GMSMemberData netMember1 = mock(GMSMemberData.class);
     when(netMember1.getInetAddress()).thenReturn(localHost).thenReturn(null);
-    NetMember netMember2 = mock(NetMember.class);
+    GMSMemberData netMember2 = mock(GMSMemberData.class);
     when(netMember2.getInetAddress()).thenReturn(localHost).thenReturn(null);
     InternalDistributedMember member = new InternalDistributedMember(netMember1);
     InternalDistributedMember other = new InternalDistributedMember(netMember2);
@@ -88,9 +89,9 @@ public class InternalDistributedMemberTest {
   public void equalsReturnsFalseIfInetAddressDiffer() throws UnknownHostException {
     InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
     InetAddress host2 = InetAddress.getByAddress(new byte[] {127, 0, 0, 2});
-    NetMember netMember1 = mock(NetMember.class);
+    GMSMemberData netMember1 = mock(GMSMemberData.class);
     when(netMember1.getInetAddress()).thenReturn(host1);
-    NetMember netMember2 = mock(NetMember.class);
+    GMSMemberData netMember2 = mock(GMSMemberData.class);
     when(netMember2.getInetAddress()).thenReturn(host2);
     InternalDistributedMember member = new InternalDistributedMember(netMember1);
     InternalDistributedMember other = new InternalDistributedMember(netMember2);
@@ -103,9 +104,9 @@ public class InternalDistributedMemberTest {
   @Test
   public void equalsReturnsFalseIfGetViewIdDiffer() throws UnknownHostException {
     InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
-    NetMember netMember1 = mock(NetMember.class);
+    GMSMemberData netMember1 = mock(GMSMemberData.class);
     when(netMember1.getInetAddress()).thenReturn(host1);
-    NetMember netMember2 = mock(NetMember.class);
+    GMSMemberData netMember2 = mock(GMSMemberData.class);
     when(netMember2.getInetAddress()).thenReturn(host1);
     when(netMember1.getVmViewId()).thenReturn(1);
     when(netMember2.getVmViewId()).thenReturn(2);
@@ -120,9 +121,9 @@ public class InternalDistributedMemberTest {
   @Test
   public void equalsReturnsFalseIfUniqueTagsDiffer() throws UnknownHostException {
     InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
-    NetMember netMember1 = mock(NetMember.class);
+    GMSMemberData netMember1 = mock(GMSMemberData.class);
     when(netMember1.getInetAddress()).thenReturn(host1);
-    NetMember netMember2 = mock(NetMember.class);
+    GMSMemberData netMember2 = mock(GMSMemberData.class);
     when(netMember2.getInetAddress()).thenReturn(host1);
     InternalDistributedMember member = new InternalDistributedMember(netMember1);
     member.setUniqueTag("tag1");
@@ -137,10 +138,10 @@ public class InternalDistributedMemberTest {
   @Test
   public void equalsReturnsFalseIfNotPartialAndNamesDiffer() throws UnknownHostException {
     InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
-    NetMember netMember1 = mock(NetMember.class);
+    GMSMemberData netMember1 = mock(GMSMemberData.class);
     when(netMember1.getInetAddress()).thenReturn(host1);
     when(netMember1.getName()).thenReturn("name1");
-    NetMember netMember2 = mock(NetMember.class);
+    GMSMemberData netMember2 = mock(GMSMemberData.class);
     when(netMember2.getInetAddress()).thenReturn(host1);
     when(netMember2.getName()).thenReturn("name2");
     InternalDistributedMember member = new InternalDistributedMember(netMember1);
@@ -156,9 +157,9 @@ public class InternalDistributedMemberTest {
   @Test
   public void equalsReturnsFalseIfCompareAdditionalDataDiffer() throws UnknownHostException {
     InetAddress host1 = InetAddress.getByAddress(new byte[] {127, 0, 0, 1});
-    NetMember netMember1 = mock(NetMember.class);
+    GMSMemberData netMember1 = mock(GMSMemberData.class);
     when(netMember1.getInetAddress()).thenReturn(host1);
-    NetMember netMember2 = mock(NetMember.class);
+    GMSMemberData netMember2 = mock(GMSMemberData.class);
     when(netMember2.getInetAddress()).thenReturn(host1);
     when(netMember1.compareAdditionalData(netMember2)).thenReturn(1);
     when(netMember2.compareAdditionalData(netMember1)).thenReturn(-1);

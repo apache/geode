@@ -19,26 +19,25 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
 public class LeaveRequestMessage extends AbstractGMSMessage implements HasMemberID {
-  private GMSMember memberID;
+  private MemberIdentifier memberID;
   private String reason;
 
-  public LeaveRequestMessage(List<GMSMember> coords,
-      GMSMember id, String reason) {
+  public LeaveRequestMessage(List<MemberIdentifier> coords,
+      MemberIdentifier id, String reason) {
     super();
     setRecipients(coords);
     this.memberID = id;
     this.reason = reason;
   }
 
-  public LeaveRequestMessage(GMSMember coord, GMSMember id,
+  public LeaveRequestMessage(MemberIdentifier coord, MemberIdentifier id,
       String reason) {
     super();
     setRecipient(coord);
@@ -56,7 +55,7 @@ public class LeaveRequestMessage extends AbstractGMSMessage implements HasMember
   }
 
   @Override
-  public GMSMember getMemberID() {
+  public MemberIdentifier getMemberID() {
     return memberID;
   }
 
@@ -72,14 +71,14 @@ public class LeaveRequestMessage extends AbstractGMSMessage implements HasMember
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    GMSUtil.writeMemberID(memberID, out, context);
+    context.getSerializer().writeObject(memberID, out);
     StaticSerialization.writeString(reason, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    memberID = GMSUtil.readMemberID(in, context);
+    memberID = context.getDeserializer().readObject(in);
     reason = StaticSerialization.readString(in);
   }
 

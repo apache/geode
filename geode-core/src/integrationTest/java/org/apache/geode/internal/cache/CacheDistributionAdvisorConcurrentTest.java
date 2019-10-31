@@ -32,7 +32,6 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.test.concurrency.ConcurrentTestRunner;
 import org.apache.geode.test.concurrency.ParallelExecutor;
@@ -98,8 +97,7 @@ public class CacheDistributionAdvisorConcurrentTest {
 
   private CacheProfile createCacheProfile() throws UnknownHostException {
     InternalDistributedMember member =
-        new InternalDistributedMember(InetAddress.getLocalHost(), 0, false,
-            false, MemberAttributes.DEFAULT);
+        new InternalDistributedMember(InetAddress.getLocalHost(), 0);
     return new CacheProfile(member, 1);
   }
 }

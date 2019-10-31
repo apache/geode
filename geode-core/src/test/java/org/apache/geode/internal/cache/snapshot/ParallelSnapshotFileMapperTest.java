@@ -48,7 +48,7 @@ public class ParallelSnapshotFileMapperTest {
   public void mapExportPathWithIpv4() throws UnknownHostException {
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     when(member.getInetAddress()).thenReturn(InetAddress.getByName("127.0.0.1"));
-    when(member.getPort()).thenReturn(PORT);
+    when(member.getMembershipPort()).thenReturn(PORT);
     File mappedFile = mapper.mapExportPath(member, new File(BASE_LOCATION + FILE_TYPE));
     File expectedFile = new File(BASE_LOCATION + "-" + 1270011234 + FILE_TYPE);
     assertEquals(expectedFile, mappedFile);
@@ -58,7 +58,7 @@ public class ParallelSnapshotFileMapperTest {
   public void mapExportPathWithIpv6() throws UnknownHostException {
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     when(member.getInetAddress()).thenReturn(InetAddress.getByName("2001:db8::2"));
-    when(member.getPort()).thenReturn(PORT);
+    when(member.getMembershipPort()).thenReturn(PORT);
     File mappedFile = mapper.mapExportPath(member, new File(BASE_LOCATION + FILE_TYPE));
     // db8 == db800000
     File expectedFile = new File(BASE_LOCATION + "-" + "2001db80000021234" + FILE_TYPE);

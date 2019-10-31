@@ -54,14 +54,12 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.QueueManager;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
@@ -361,14 +359,8 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       }
       cb = ServerConnection.allocateCommBuffer(bufSize, mySock);
 
-      // create a "server" memberId we currently don't know much about the server.
-      // Would be nice for it to send us its member id
-      // TODO: change the serverId to use the endpoint's getMemberId() which returns a
-      // DistributedMember (once gfecq branch is merged to trunk).
-      MemberAttributes ma = new MemberAttributes(0, -1, ClusterDistributionManager.NORMAL_DM_TYPE,
-          -1, null, null, null);
       sid =
-          new InternalDistributedMember(mySock.getInetAddress(), mySock.getPort(), false, true, ma);
+          new InternalDistributedMember(mySock.getInetAddress(), mySock.getPort(), false, true);
 
       success = true;
     } catch (ConnectException ignore) {

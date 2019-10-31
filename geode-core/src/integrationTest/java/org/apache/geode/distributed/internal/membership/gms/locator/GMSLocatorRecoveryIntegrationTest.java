@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal.membership.gms.locator;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.internal.membership.gms.GMSMember.NORMAL_DM_TYPE;
 import static org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator.LOCATOR_FILE_STAMP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -50,11 +49,11 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
@@ -164,7 +163,8 @@ public class GMSLocatorRecoveryIntegrationTest {
     nonDefault.setProperty(LOCATORS, localHost.getHostAddress() + '[' + port + ']');
 
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
-    RemoteTransportConfig transport = new RemoteTransportConfig(config, NORMAL_DM_TYPE);
+    RemoteTransportConfig transport =
+        new RemoteTransportConfig(config, MemberIdentifier.NORMAL_DM_TYPE);
 
     MembershipListener mockListener = mock(MembershipListener.class);
     MessageListener mockMessageListener = mock(MessageListener.class);
@@ -193,8 +193,7 @@ public class GMSLocatorRecoveryIntegrationTest {
     gmsLocator.init(null);
 
     assertThat(gmsLocator.getMembers())
-        .contains(
-            ((GMSMemberAdapter) membershipManager.getLocalMember().getNetMember()).getGmsMember());
+        .contains(membershipManager.getLocalMember());
   }
 
   @Test

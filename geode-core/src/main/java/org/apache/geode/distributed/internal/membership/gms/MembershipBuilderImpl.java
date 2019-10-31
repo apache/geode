@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -21,6 +22,7 @@ import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
@@ -38,6 +40,7 @@ public class MembershipBuilderImpl implements MembershipBuilder {
   private ClusterDistributionManager dm;
   private MembershipConfig membershipConfig;
   private DSFIDSerializer serializer;
+  private MemberIdentifierFactory memberFactory = new MemberIdentifierFactoryImpl();
 
   public MembershipBuilderImpl(ClusterDistributionManager dm) {
     this.dm = dm;
@@ -80,12 +83,18 @@ public class MembershipBuilderImpl implements MembershipBuilder {
   }
 
   @Override
+  public MembershipBuilder setMemberIDFactory(MemberIdentifierFactory memberFactory) {
+    this.memberFactory = memberFactory;
+    return this;
+  }
+
+  @Override
   public MembershipManager create() {
     GMSMembershipManager gmsMembershipManager =
         new GMSMembershipManager(membershipListener, messageListener, dm);
     Services services =
         new Services(gmsMembershipManager.getGMSManager(), statistics, authenticator,
-            membershipConfig, serializer);
+            membershipConfig, serializer, memberFactory);
     try {
       services.init();
       services.start();
@@ -101,5 +110,7 @@ public class MembershipBuilderImpl implements MembershipBuilder {
     }
     return gmsMembershipManager;
   }
+
+
 
 }

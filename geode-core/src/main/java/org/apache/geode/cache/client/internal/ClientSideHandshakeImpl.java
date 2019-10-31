@@ -177,7 +177,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       DistributionManager dm = ((InternalDistributedSystem) this.system).getDistributionManager();
       InternalDistributedMember idm = dm.getDistributionManagerId();
       synchronized (idm) {
-        if (idm.getPort() == 0 && dm instanceof LonerDistributionManager) {
+        if (idm.getMembershipPort() == 0 && dm instanceof LonerDistributionManager) {
           int port = sock.getLocalPort();
           ((LonerDistributionManager) dm).updateLonerPort(port);
           this.id.updateID(dm.getDistributionManagerId());

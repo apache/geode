@@ -40,12 +40,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
+import org.apache.geode.distributed.internal.membership.gms.messenger.GMSMemberWrapper;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.Version;
@@ -64,15 +65,15 @@ public class GMSLocator implements Locator {
   private final String locatorString;
   private final List<HostAddress> locators;
   private final LocatorStats locatorStats;
-  private final Set<GMSMember> registrants = new HashSet<>();
-  private final Map<GMSMember.GMSMemberWrapper, byte[]> publicKeys =
+  private final Set<MemberIdentifier> registrants = new HashSet<>();
+  private final Map<GMSMemberWrapper, byte[]> publicKeys =
       new ConcurrentHashMap<>();
   private final Path workingDirectory;
 
   private volatile boolean isCoordinator;
 
   private Services services;
-  private GMSMember localAddress;
+  private MemberIdentifier localAddress;
 
   /**
    * The current membership view, or one recovered from disk. This is a copy-on-write variable.
@@ -219,7 +220,7 @@ public class GMSLocator implements Locator {
 
     if (services == null) {
       if (findRequest.getMyPublicKey() != null) {
-        publicKeys.put(new GMSMember.GMSMemberWrapper(findRequest.getMemberID()),
+        publicKeys.put(new GMSMemberWrapper(findRequest.getMemberID()),
             findRequest.getMyPublicKey());
       }
       logger.debug(
@@ -255,14 +256,14 @@ public class GMSLocator implements Locator {
       }
     }
 
-    GMSMember coordinator = null;
+    MemberIdentifier coordinator = null;
     boolean fromView = false;
     if (responseView != null) {
       // if the ID of the requester matches an entry in the membership view then remove
       // that entry - it's obviously an old member since the ID has been reused
-      GMSMember requestingMemberID = findRequest.getMemberID();
-      for (GMSMember id : responseView.getMembers()) {
-        if (requestingMemberID.compareTo(id, false) == 0) {
+      MemberIdentifier requestingMemberID = findRequest.getMemberID();
+      for (MemberIdentifier id : responseView.getMembers()) {
+        if (requestingMemberID.getMemberData().compareTo(id.getMemberData(), false) == 0) {
           GMSMembershipView newView = new GMSMembershipView(responseView, responseView.getViewId());
           newView.remove(id);
           responseView = newView;
@@ -282,17 +283,18 @@ public class GMSLocator implements Locator {
 
     if (coordinator == null) {
       // find the "oldest" registrant
-      Collection<GMSMember> rejections = findRequest.getRejectedCoordinators();
+      Collection<MemberIdentifier> rejections = findRequest.getRejectedCoordinators();
       if (rejections == null) {
         rejections = Collections.emptyList();
       }
 
       synchronized (registrants) {
         coordinator = services.getJoinLeave().getMemberID();
-        for (GMSMember mbr : registrants) {
-          if (mbr != coordinator && (coordinator == null || mbr.compareTo(coordinator) < 0)) {
+        for (MemberIdentifier mbr : registrants) {
+          if (mbr != coordinator && (coordinator == null || Objects.compare(mbr, coordinator,
+              services.getMemberFactory().getComparator()) < 0)) {
             if (!rejections.contains(mbr) && (mbr.preferredForCoordinator()
-                || !mbr.isNetworkPartitionDetectionEnabled())) {
+                || !mbr.getMemberData().isNetworkPartitionDetectionEnabled())) {
               coordinator = mbr;
             }
           }
@@ -356,8 +358,8 @@ public class GMSLocator implements Locator {
     locatorStats.endLocatorResponse(startTime);
   }
 
-  public byte[] getPublicKey(GMSMember member) {
-    return publicKeys.get(new GMSMember.GMSMemberWrapper(member));
+  public byte[] getPublicKey(MemberIdentifier member) {
+    return publicKeys.get(new GMSMemberWrapper(member));
   }
 
   public void shutDown() {
@@ -366,7 +368,7 @@ public class GMSLocator implements Locator {
   }
 
   @VisibleForTesting
-  public List<GMSMember> getMembers() {
+  public List<MemberIdentifier> getMembers() {
     if (view != null) {
       return new ArrayList<>(view.getMembers());
     }
@@ -443,11 +445,11 @@ public class GMSLocator implements Locator {
 
       // this is not a valid view so it shouldn't have a usable Id
       recoveredView.setViewId(-1);
-      List<GMSMember> members = new ArrayList<>(recoveredView.getMembers());
+      List<MemberIdentifier> members = new ArrayList<>(recoveredView.getMembers());
       // Remove locators from the view. Since we couldn't recover from an existing
       // locator we know that all of the locators in the view are defunct
-      for (GMSMember member : members) {
-        if (member.getVmKind() == GMSMember.LOCATOR_DM_TYPE) {
+      for (MemberIdentifier member : members) {
+        if (member.getVmKind() == MemberIdentifier.LOCATOR_DM_TYPE) {
           recoveredView.remove(member);
         }
       }

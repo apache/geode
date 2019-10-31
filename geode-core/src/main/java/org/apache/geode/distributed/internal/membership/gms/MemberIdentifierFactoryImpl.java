@@ -14,42 +14,28 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import java.util.Comparator;
+
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 
-/** represents a suspicion raised about a member */
-public class SuspectMember {
-  /** the source of suspicion */
-  public MemberIdentifier whoSuspected;
+@VisibleForTesting
+public class MemberIdentifierFactoryImpl implements MemberIdentifierFactory {
+  @Immutable
+  private static final Comparator<MemberIdentifier> idComparator =
+      (o1, o2) -> ((InternalDistributedMember) o1).compareTo((InternalDistributedMember) o2);
 
-  /** suspected member */
-  public MemberIdentifier suspectedMember;
-
-  /** the reason */
-  public String reason;
-
-  /** create a new SuspectMember */
-  public SuspectMember(MemberIdentifier whoSuspected,
-      MemberIdentifier suspectedMember, String reason) {
-    this.whoSuspected = whoSuspected;
-    this.suspectedMember = suspectedMember;
-    this.reason = reason;
+  @Override
+  public MemberIdentifier create(MemberData memberInfo) {
+    return new InternalDistributedMember(memberInfo);
   }
 
   @Override
-  public String toString() {
-    return "{source=" + whoSuspected + "; suspect=" + suspectedMember + "}";
-  }
-
-  @Override
-  public int hashCode() {
-    return this.suspectedMember.hashCode();
-  }
-
-  @Override
-  public boolean equals(Object other) {
-    if (!(other instanceof SuspectMember)) {
-      return false;
-    }
-    return this.suspectedMember.equals(((SuspectMember) other).suspectedMember);
+  public Comparator<MemberIdentifier> getComparator() {
+    return idComparator;
   }
 }

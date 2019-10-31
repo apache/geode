@@ -777,7 +777,7 @@ public class InternalDistributedSystem extends DistributedSystem
       Assert.assertTrue(dm.getSystem() == this);
 
       if (dm != null && dm.getMembershipManager() != null) {
-        id = dm.getMembershipManager().getLocalMember().getPort();
+        id = dm.getMembershipManager().getLocalMember().getMembershipPort();
       }
 
       synchronized (isConnectedMutex) {

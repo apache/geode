@@ -70,12 +70,13 @@ import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager.StartupEvent;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.SuspectMember;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
@@ -132,13 +133,12 @@ public class GMSMembershipManagerJUnitTest {
 
     authenticator = mock(Authenticator.class);
     myMemberId = new InternalDistributedMember("localhost", 8887);
-    GMSMember m = ((GMSMemberAdapter) myMemberId.getNetMember()).getGmsMember();
+    GMSMemberData m = (GMSMemberData) myMemberId.getMemberData();
     UUID uuid = new UUID(12345, 12345);
     m.setUUID(uuid);
 
     messenger = mock(Messenger.class);
-    when(messenger.getMemberID())
-        .thenReturn(((GMSMemberAdapter) myMemberId.getNetMember()).getGmsMember());
+    when(messenger.getMemberID()).thenReturn(myMemberId);
 
     stopper = mock(Stopper.class);
     when(stopper.isCancelInProgress()).thenReturn(false);
@@ -163,7 +163,7 @@ public class GMSMembershipManagerJUnitTest {
     mockMembers = new InternalDistributedMember[5];
     for (int i = 0; i < mockMembers.length; i++) {
       mockMembers[i] = new InternalDistributedMember("localhost", 8888 + i);
-      m = ((GMSMemberAdapter) mockMembers[i].getNetMember()).getGmsMember();
+      m = (GMSMemberData) mockMembers[i].getMemberData();
       uuid = new UUID(r.nextLong(), r.nextLong());
       m.setUUID(uuid);
     }
@@ -190,10 +190,9 @@ public class GMSMembershipManagerJUnitTest {
     m.setRecipient(mockMembers[0]);
     manager.getGMSManager().start();
     manager.getGMSManager().started();
-    GMSMember myGMSMemberId = ((GMSMemberAdapter) myMemberId.getNetMember()).getGmsMember();
-    List<GMSMember> gmsMembers =
-        members.stream().map(x -> ((GMSMemberAdapter) x.getNetMember()).getGmsMember()).collect(
-            Collectors.toList());
+    MemberIdentifier myGMSMemberId = myMemberId;
+    List<MemberIdentifier> gmsMembers =
+        members.stream().map(x -> ((MemberIdentifier) x)).collect(Collectors.toList());
     manager.getGMSManager().installView(new GMSMembershipView(myGMSMemberId, 1, gmsMembers));
     Set<InternalDistributedMember> failures =
         manager.send(m.getRecipients(), m);
@@ -207,12 +206,8 @@ public class GMSMembershipManagerJUnitTest {
 
   private GMSMembershipView createView(InternalDistributedMember creator, int viewId,
       List<InternalDistributedMember> members) {
-    List<GMSMember> gmsMembers = new ArrayList<>(members.size());
-    for (InternalDistributedMember member : members) {
-      gmsMembers.add(((GMSMemberAdapter) member.getNetMember()).getGmsMember());
-    }
-    return new GMSMembershipView(((GMSMemberAdapter) creator.getNetMember()).getGmsMember(), viewId,
-        gmsMembers);
+    List<MemberIdentifier> gmsMembers = new ArrayList<>(members);
+    return new GMSMembershipView(creator, viewId, gmsMembers);
   }
 
   @Test
@@ -271,8 +266,7 @@ public class GMSMembershipManagerJUnitTest {
     // suspect a member
     InternalDistributedMember suspectMember = mockMembers[1];
     manager.handleOrDeferSuspect(
-        new SuspectMember(((GMSMemberAdapter) mockMembers[0].getNetMember()).getGmsMember(),
-            ((GMSMemberAdapter) suspectMember.getNetMember()).getGmsMember(), "testing"));
+        new SuspectMember(mockMembers[0], suspectMember, "testing"));
     // suspect messages aren't queued - they're ignored before joining the system
     assertEquals(2, manager.getStartupEvents().size());
     verify(listener, never()).memberSuspect(suspectMember, mockMembers[0], "testing");
@@ -333,8 +327,7 @@ public class GMSMembershipManagerJUnitTest {
     reset(listener);
     suspectMember = mockMembers[1];
     manager.handleOrDeferSuspect(
-        new SuspectMember(((GMSMemberAdapter) mockMembers[0].getNetMember()).getGmsMember(),
-            ((GMSMemberAdapter) suspectMember.getNetMember()).getGmsMember(), "testing"));
+        new SuspectMember(mockMembers[0], suspectMember, "testing"));
     verify(listener).memberSuspect(suspectMember, mockMembers[0], "testing");
   }
 
@@ -437,13 +430,13 @@ public class GMSMembershipManagerJUnitTest {
     InternalDistributedMember[] destinations = new InternalDistributedMember[viewmembers.size()];
     for (int i = 0; i < destinations.length; i++) {
       InternalDistributedMember id = viewmembers.get(i);
-      destinations[i] = new InternalDistributedMember(id.getHost(), id.getPort());
+      destinations[i] = new InternalDistributedMember(id.getHost(), id.getMembershipPort());
     }
     manager.checkAddressesForUUIDs(destinations);
     // each destination w/o a UUID should have been replaced with the corresponding
     // ID from the membership view
     for (int i = 0; i < destinations.length; i++) {
-      assertTrue(((GMSMemberAdapter) destinations[i].getNetMember()).getGmsMember().hasUUID());
+      assertTrue(((GMSMemberData) destinations[i].getMemberData()).hasUUID());
     }
   }
 
@@ -483,7 +476,7 @@ public class GMSMembershipManagerJUnitTest {
     rp.enableSevereAlertProcessing();
     boolean result = rp.waitForReplies(WAIT_FOR_REPLIES_MILLIS);
     assertFalse(result); // the wait should have timed out
-    verify(healthMonitor, atLeastOnce()).checkIfAvailable(isA(GMSMember.class),
+    verify(healthMonitor, atLeastOnce()).checkIfAvailable(isA(MemberIdentifier.class),
         isA(String.class), isA(Boolean.class));
   }
 

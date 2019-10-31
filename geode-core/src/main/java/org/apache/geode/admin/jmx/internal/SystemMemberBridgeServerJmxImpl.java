@@ -66,7 +66,6 @@ public class SystemMemberBridgeServerJmxImpl extends SystemMemberBridgeServerImp
         .append(this.getBridgeId()).append(",owner=")
         .append(MBeanUtil.makeCompliantMBeanNameProperty(vm.getId().toString()))
         .append(",type=CacheServer").toString();
-
     this.objectName = MBeanUtil.createMBean(this);
   }
 

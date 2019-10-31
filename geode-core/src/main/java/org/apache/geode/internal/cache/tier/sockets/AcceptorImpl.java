@@ -592,7 +592,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
         InternalDistributedSystem ds = internalCache.getInternalDistributedSystem();
         if (ds != null) {
           DistributionManager dm = ds.getDistributionManager();
-          if (dm != null && dm.getDistributionManagerId().getPort() == 0
+          if (dm != null && dm.getDistributionManagerId().getMembershipPort() == 0
               && dm instanceof LonerDistributionManager) {
             // a server with a loner distribution manager - update it's port number
             ((LonerDistributionManager) dm).updateLonerPort(localPort);

@@ -28,7 +28,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PO
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
-import static org.apache.geode.distributed.internal.ClusterDistributionManager.NORMAL_DM_TYPE;
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_ACK_WAIT_THRESHOLD;
 import static org.apache.geode.distributed.internal.OperationExecutors.SERIAL_EXECUTOR;
 import static org.apache.geode.internal.AvailablePort.MULTICAST;
@@ -129,8 +128,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
     // construct a member ID that will represent a departed member
     InternalDistributedMember member =
-        new InternalDistributedMember("localhost", 12345, "", "", NORMAL_DM_TYPE, null,
-            null);
+        new InternalDistributedMember("localhost", 12345);
 
     // schedule a message in order to create a queue for the fake member
     ClusterDistributionManager distributionManager =
@@ -396,8 +394,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
   private void verifyMembershipPortsInRange(final InternalDistributedMember member,
       final int lowerBound, final int upperBound) {
-    assertThat(member.getPort()).isGreaterThanOrEqualTo(lowerBound);
-    assertThat(member.getPort()).isLessThanOrEqualTo(upperBound);
+    assertThat(member.getMembershipPort()).isGreaterThanOrEqualTo(lowerBound);
+    assertThat(member.getMembershipPort()).isLessThanOrEqualTo(upperBound);
     assertThat(member.getDirectChannelPort()).isGreaterThanOrEqualTo(lowerBound);
     assertThat(member.getDirectChannelPort()).isLessThanOrEqualTo(upperBound);
   }

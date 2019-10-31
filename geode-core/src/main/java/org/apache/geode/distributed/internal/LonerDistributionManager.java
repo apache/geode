@@ -46,8 +46,8 @@ import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -1216,7 +1216,7 @@ public class LonerDistributionManager implements DistributionManager {
       }
       result = new InternalDistributedMember(host, lonerPort, name, uniqueString,
           ClusterDistributionManager.LONER_DM_TYPE,
-          MemberAttributes.parseGroups(config.getRoles(), config.getGroups()), dac);
+          MemberDataBuilder.parseGroups(config.getRoles(), config.getGroups()), dac);
 
     } catch (UnknownHostException ex) {
       throw new InternalGemFireError(

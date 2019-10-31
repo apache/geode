@@ -581,7 +581,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
             "Unable to serialize identity",
             ioe);
       }
-      if (((InternalDistributedMember) EventID.systemMemberId).getPort() != 0) {
+      if (((InternalDistributedMember) EventID.systemMemberId).getMembershipPort() != 0) {
         EventID.system = sys;
       }
     }
