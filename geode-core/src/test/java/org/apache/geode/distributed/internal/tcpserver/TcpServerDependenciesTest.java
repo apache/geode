@@ -48,7 +48,8 @@ public class TcpServerDependenciesTest {
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.tcpserver..")
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
-              .or(resideInAPackage("org.apache.geode.logging.internal.."))
+              .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api.."))
+              .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
               .or(resideInAPackage("org.apache.geode.test.."))

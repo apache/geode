@@ -98,7 +98,8 @@ public class MembershipDependenciesJUnitTest {
 
               // OK to depend on these "leaf" dependencies
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
-              .or(resideInAPackage("org.apache.geode.logging.internal.."))
+              .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api.."))
+              .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
 
