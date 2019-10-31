@@ -146,7 +146,7 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
           .requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
       assertThat(response).isNotNull();
 
-    } catch (LocatorCancelException e) {
+    } catch (IllegalStateException e) {
       fail("a Locator start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
     } catch (Exception e) {
       fail("b Locator start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);

@@ -167,7 +167,7 @@ public class TCPClientSSLIntegrationTest {
 
     startServerAndClient(serverCertificate, clientCertificate, true);
 
-    assertThatExceptionOfType(LocatorCancelException.class)
+    assertThatExceptionOfType(IllegalStateException.class)
         .isThrownBy(() -> client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000))
         .withCauseInstanceOf(SSLHandshakeException.class)
         .withStackTraceContaining("No name matching " + localhost.getHostName() + " found");
@@ -188,7 +188,7 @@ public class TCPClientSSLIntegrationTest {
 
     startServerAndClient(serverCertificate, clientCertificate, true);
 
-    assertThatExceptionOfType(LocatorCancelException.class)
+    assertThatExceptionOfType(IllegalStateException.class)
         .isThrownBy(() -> client.requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000))
         .withCauseInstanceOf(SSLHandshakeException.class)
         .withStackTraceContaining("No subject alternative DNS name matching "

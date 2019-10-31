@@ -25,7 +25,6 @@ import com.tngtech.archunit.junit.ArchUnitRunner;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -70,9 +69,6 @@ public class TcpServerDependenciesTest {
               .or(type(SecurableCommunicationChannel.class))
               .or(type(SocketCreatorFactory.class))
               .or(type(SSLConfigurationFactory.class))
-
-              // TODO - cancel excpetion
-              .or(type(CancelException.class))
 
               // TODO - config
               .or(type(DistributionConfigImpl.class))
