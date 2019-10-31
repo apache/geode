@@ -91,7 +91,7 @@ public class TCPServerSSLJUnitTest {
       Properties sslProperties = getSSLConfigurationProperties();
       startTimeDelayedTcpServer(sslProperties);
 
-      createTcpClientConnection();
+      createTcpClientConnection(sslProperties);
 
     } catch (LocatorCancelException e) {
       // we catching the LocatorCancelException. Expected to have the exception thrown
@@ -123,9 +123,10 @@ public class TCPServerSSLJUnitTest {
     return sslProperties;
   }
 
-  private void createTcpClientConnection() {
+  private void createTcpClientConnection(final Properties clientProperties) {
     try {
-      new TcpClient().requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000);
+      new TcpClient(clientProperties).requestToServer(localhost, port, Boolean.valueOf(false),
+          5 * 1000);
     } catch (IOException e) {
       e.printStackTrace();
     } catch (ClassNotFoundException e) {
