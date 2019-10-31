@@ -33,9 +33,6 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.logging.internal.executors.LoggingExecutors;
-import org.apache.geode.logging.internal.executors.LoggingThread;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
 @RunWith(ArchUnitRunner.class)
@@ -51,13 +48,10 @@ public class TcpServerDependenciesTest {
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.tcpserver..")
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
-              .or(type(LogService.class))
-              .or(type(LoggingExecutors.class))
-              .or(type(LoggingThread.class))
+              .or(resideInAPackage("org.apache.geode.logging.internal.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
               .or(resideInAPackage("org.apache.geode.test.."))
-
 
               // TODO - serialization related classes
               .or(type(DataSerializer.class))
