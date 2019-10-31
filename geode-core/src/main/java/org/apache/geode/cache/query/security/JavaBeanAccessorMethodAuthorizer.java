@@ -73,7 +73,7 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
   static final String NULL_CACHE_MESSAGE = "Cache should be provided to configure the authorizer.";
   static final String GEODE_BASE_PACKAGE = "org.apache.geode";
 
-  private static final Pattern pattern = Pattern.compile("^(get|is)($|[^A-Z])+");
+  private static final Pattern pattern = Pattern.compile("^(get|is)($|[A-Z])+.*");
 
   private final RestrictedMethodAuthorizer restrictedMethodAuthorizer;
   private final Set<String> allowedPackages;
@@ -167,7 +167,7 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
    *
    * @return an unmodifiable view of the allowed packages for this authorizer.
    */
-  Set<String> getAllowedPackages() {
+  public Set<String> getAllowedPackages() {
     return allowedPackages;
   }
 }

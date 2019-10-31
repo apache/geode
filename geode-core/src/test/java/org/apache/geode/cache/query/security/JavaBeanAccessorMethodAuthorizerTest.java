@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -41,9 +42,10 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category(SecurityTest.class)
 public class JavaBeanAccessorMethodAuthorizerTest {
   private InternalCache mockCache;
-  private JavaBeanAccessorMethodAuthorizer authorizerWithStringPackageSpecified;
+  private JavaBeanAccessorMethodAuthorizer authorizerWithLangAndIOPackagesSpecified;
   private RestrictedMethodAuthorizer defaultAuthorizer;
-  private final String STRING_PACKAGE = String.class.getPackage().getName();
+  private final String LANG_PACKAGE = String.class.getPackage().getName();
+  private final String IO_PACKAGE = File.class.getPackage().getName();
 
   @Before
   public void setUp() {
@@ -51,9 +53,10 @@ public class JavaBeanAccessorMethodAuthorizerTest {
     defaultAuthorizer = new RestrictedMethodAuthorizer(mockCache);
 
     Set<String> allowedPackages = new HashSet<>();
-    allowedPackages.add(STRING_PACKAGE);
+    allowedPackages.add(LANG_PACKAGE);
+    allowedPackages.add(IO_PACKAGE);
 
-    authorizerWithStringPackageSpecified =
+    authorizerWithLangAndIOPackagesSpecified =
         new JavaBeanAccessorMethodAuthorizer(defaultAuthorizer, allowedPackages);
   }
 
@@ -86,7 +89,6 @@ public class JavaBeanAccessorMethodAuthorizerTest {
 
   @Test
   public void authorizeReturnsFalseForKnownDangerousMethods() throws NoSuchMethodException {
-    TestBean testBean = new TestBean();
     List<Method> dangerousMethods = new ArrayList<>();
     dangerousMethods.add(TestBean.class.getMethod("getClass"));
     dangerousMethods.add(TestBean.class.getMethod("readResolve"));
@@ -96,16 +98,15 @@ public class JavaBeanAccessorMethodAuthorizerTest {
     dangerousMethods.add(TestBean.class.getMethod("writeObject", ObjectOutputStream.class));
 
     dangerousMethods.forEach(
-        method -> assertThat(authorizerWithStringPackageSpecified.authorize(method, testBean))
-            .isFalse());
+        method -> assertThat(
+            authorizerWithLangAndIOPackagesSpecified.authorize(method, new TestBean()))
+                .isFalse());
   }
 
   @Test
   public void authorizeReturnsFalseForDisallowedGeodeClassesWithGeodePackageSpecified()
       throws NoSuchMethodException {
-    TestBean testBean = new TestBean();
-
-    assertThat((testBean.getClass().getPackage().getName()))
+    assertThat((TestBean.class.getPackage().getName()))
         .startsWith(JavaBeanAccessorMethodAuthorizer.GEODE_BASE_PACKAGE);
 
     List<Method> geodeMethods = new ArrayList<>();
@@ -119,68 +120,74 @@ public class JavaBeanAccessorMethodAuthorizerTest {
         new JavaBeanAccessorMethodAuthorizer(defaultAuthorizer, geodePackage);
 
     geodeMethods.forEach(
-        method -> assertThat(geodeMatchingAuthorizer.authorize(method, testBean)).isFalse());
+        method -> assertThat(geodeMatchingAuthorizer.authorize(method, new TestBean())).isFalse());
   }
 
   @Test
   public void authorizeReturnsFalseForMatchingMethodNamesAndNonMatchingPackage()
       throws NoSuchMethodException {
-    List testList = new ArrayList();
 
     Method getMatchingMethod = List.class.getMethod("get", int.class);
     Method isMatchingMethod = List.class.getMethod("isEmpty");
 
-    assertThat(authorizerWithStringPackageSpecified.authorize(isMatchingMethod, testList))
-        .isFalse();
-    assertThat(authorizerWithStringPackageSpecified.authorize(getMatchingMethod, testList))
-        .isFalse();
+    assertThat(
+        authorizerWithLangAndIOPackagesSpecified.authorize(isMatchingMethod, new ArrayList()))
+            .isFalse();
+    assertThat(
+        authorizerWithLangAndIOPackagesSpecified.authorize(getMatchingMethod, new ArrayList()))
+            .isFalse();
   }
 
   @Test
   public void authorizeReturnsFalseForNonMatchingMethodNameAndMatchingPackage()
       throws NoSuchMethodException {
-    String testString = "";
 
-    Method method = String.class.getMethod("notify");
+    Method langMethod = String.class.getMethod("notify");
+    assertThat(authorizerWithLangAndIOPackagesSpecified.authorize(langMethod, "")).isFalse();
 
-    assertThat(authorizerWithStringPackageSpecified.authorize(method, testString)).isFalse();
+    Method ioMethod = File.class.getMethod("notify");
+    assertThat(authorizerWithLangAndIOPackagesSpecified.authorize(ioMethod, new File("")))
+        .isFalse();
   }
 
   @Test
   public void authorizeReturnsTrueForMatchingMethodNamesAndPackage() throws NoSuchMethodException {
-    String testString = "";
+    Method isMatchingLangMethod = String.class.getMethod("isEmpty");
+    Method getMatchingLangMethod = String.class.getMethod("getBytes");
 
-    Method isMatchingMethod = String.class.getMethod("isEmpty");
-    Method getMatchingMethod = String.class.getMethod("getBytes");
+    assertThat(authorizerWithLangAndIOPackagesSpecified.authorize(isMatchingLangMethod, ""))
+        .isTrue();
+    assertThat(authorizerWithLangAndIOPackagesSpecified.authorize(getMatchingLangMethod, ""))
+        .isTrue();
 
-    assertThat(authorizerWithStringPackageSpecified.authorize(isMatchingMethod, testString))
+    Method isMatchingIOMethod = File.class.getMethod("isAbsolute");
+    Method getMatchingIOMethod = File.class.getMethod("getPath");
+
+    assertThat(authorizerWithLangAndIOPackagesSpecified.authorize(isMatchingIOMethod, new File("")))
         .isTrue();
-    assertThat(authorizerWithStringPackageSpecified.authorize(getMatchingMethod, testString))
-        .isTrue();
+    assertThat(
+        authorizerWithLangAndIOPackagesSpecified.authorize(getMatchingIOMethod, new File("")))
+            .isTrue();
   }
 
   @Test
   public void authorizeReturnsFalseForNonMatchingDisallowedMethod() throws NoSuchMethodException {
-    Object object = new Object();
-
     Method method = Object.class.getMethod("notify");
 
-    assertThat(authorizerWithStringPackageSpecified.authorize(method, object)).isFalse();
+    assertThat(authorizerWithLangAndIOPackagesSpecified.authorize(method, new Object())).isFalse();
   }
 
   @Test
   public void authorizeReturnsTrueForNonMatchingAllowedMethod() throws NoSuchMethodException {
-    Object object = new Object();
-
     Method method = Object.class.getMethod("equals", Object.class);
 
-    assertThat(authorizerWithStringPackageSpecified.authorize(method, object)).isTrue();
+    assertThat(authorizerWithLangAndIOPackagesSpecified.authorize(method, new Object())).isTrue();
   }
 
   @Test
   public void allowedPackagesIsUnmodifiable() {
     assertThatThrownBy(
-        () -> authorizerWithStringPackageSpecified.getAllowedPackages().remove(STRING_PACKAGE))
+        () -> authorizerWithLangAndIOPackagesSpecified.getAllowedPackages().remove(LANG_PACKAGE))
             .isInstanceOf(UnsupportedOperationException.class);
   }
 
