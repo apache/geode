@@ -481,7 +481,6 @@ public class LocatorDUnitTest implements Serializable {
     addIgnoredException("Remote host closed connection during handshake");
     addIgnoredException("unable to find valid certification path to requested target");
     addIgnoredException("Received fatal alert: certificate_unknown");
-    addIgnoredException("LocatorCancelException");
     addIgnoredException("Unrecognized SSL message, plaintext connection");
 
     String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";

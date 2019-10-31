@@ -97,7 +97,7 @@ public class TCPServerSSLJUnitTest {
       createTcpClientConnection();
 
     } catch (IllegalStateException e) {
-      // we catching the LocatorCancelException. Expected to have the exception thrown
+      // connection will fail; Expected to have the exception thrown
     }
 
     List<Integer> recordedSocketsForSocketCreator = server.getRecordedSocketTimeouts();
