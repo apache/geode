@@ -28,11 +28,13 @@ import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class MembershipBuilderImpl implements MembershipBuilder {
+  private TcpClient locatorClient;
   private MembershipListener membershipListener;
   private MessageListener messageListener;
   private MembershipStatistics statistics;
@@ -89,12 +91,18 @@ public class MembershipBuilderImpl implements MembershipBuilder {
   }
 
   @Override
+  public MembershipBuilder setLocatorClient(final TcpClient locatorClient) {
+    this.locatorClient = locatorClient;
+    return this;
+  }
+
+  @Override
   public MembershipManager create() {
     GMSMembershipManager gmsMembershipManager =
         new GMSMembershipManager(membershipListener, messageListener, dm);
     Services services =
         new Services(gmsMembershipManager.getGMSManager(), statistics, authenticator,
-            membershipConfig, serializer, memberFactory);
+            membershipConfig, serializer, memberFactory, locatorClient);
     try {
       services.init();
       services.start();

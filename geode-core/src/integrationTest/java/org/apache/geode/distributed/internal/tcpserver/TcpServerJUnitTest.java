@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -50,6 +51,7 @@ import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -85,7 +87,7 @@ public class TcpServerJUnitTest {
     TcpHandler handler = new InfoRequestHandler();
     start(handler);
 
-    TcpClient tcpClient = new TcpClient();
+    TcpClient tcpClient = createTcpClient();
 
     InfoRequest testInfoRequest = new InfoRequest();
     InfoResponse testInfoResponse =
@@ -109,13 +111,20 @@ public class TcpServerJUnitTest {
 
   }
 
+  private TcpClient createTcpClient() {
+    return new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)));
+  }
+
   @Test
   public void testConcurrency() throws Exception {
     CountDownLatch latch = new CountDownLatch(1);
     DelayHandler handler = new DelayHandler(latch);
     start(handler);
 
-    TcpClient tcpClient = new TcpClient();
+    TcpClient tcpClient = createTcpClient();
 
     final AtomicBoolean done = new AtomicBoolean();
     Thread delayedThread = new Thread() {
@@ -164,7 +173,7 @@ public class TcpServerJUnitTest {
     doThrow(SocketException.class).when(mockTcpHandler).processRequest(any(Object.class));
     start(mockTcpHandler);
 
-    TcpClient tcpClient = new TcpClient();
+    TcpClient tcpClient = createTcpClient();
 
     // Due to the mocked handler, an EOFException will be thrown on the client. This is expected,
     // so we just catch it.

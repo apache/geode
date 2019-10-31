@@ -16,22 +16,29 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.locator;
 
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.Properties;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.Version;
@@ -50,6 +57,9 @@ public class GMSLocatorIntegrationTest {
 
   @Before
   public void setUp() {
+
+    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
+
     tcpServer = mock(TcpServer.class);
     view = new GMSMembershipView();
     services = mock(Services.class);
@@ -67,7 +77,10 @@ public class GMSLocatorIntegrationTest {
 
     gmsLocator =
         new GMSLocator(null, null, false, false, new LocatorStats(), "",
-            temporaryFolder.getRoot().toPath());
+            temporaryFolder.getRoot().toPath(), new TcpClient(
+                asTcpSocketCreator(
+                    SocketCreatorFactory
+                        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))));
     gmsLocator.setServices(services);
   }
 

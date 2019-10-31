@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.security.SecurableCommunicationChannels.LOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -47,7 +48,6 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -94,7 +94,11 @@ public class TCPClientSSLIntegrationTest {
 
     startTcpServer(serverProperties);
 
-    client = new TcpClient(clientProperties);
+    client = new TcpClient(
+        asTcpSocketCreator(
+            new org.apache.geode.internal.net.SocketCreator(
+                SSLConfigurationFactory.getSSLConfigForComponent(clientProperties,
+                    SecurableCommunicationChannel.LOCATOR))));
   }
 
   @After
@@ -196,29 +200,30 @@ public class TCPClientSSLIntegrationTest {
   }
 
   private static class FakeTcpServer extends TcpServer {
-    private DistributionConfig distributionConfig;
 
-    public FakeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-        DistributionConfigImpl cfg, RestartableTcpHandler handler, PoolStatHelper poolHelper,
+    FakeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
+        DistributionConfigImpl distributionConfig, RestartableTcpHandler handler,
+        PoolStatHelper poolHelper,
         String threadName) {
-      super(port, bind_address, sslConfig, cfg, handler, threadName,
+      super(port, bind_address, sslConfig, distributionConfig, handler, threadName,
           (socket, input, firstByte) -> false, DistributionStats::getStatTime,
-          TcpServerFactory.createExecutorServiceSupplier(poolHelper));
-      if (cfg == null) {
-        cfg = new DistributionConfigImpl(sslConfig);
-      }
-      this.distributionConfig = cfg;
+          TcpServerFactory.createExecutorServiceSupplier(poolHelper),
+          getSocketCreator(getDistributionConfig(sslConfig, distributionConfig)));
     }
 
-    @Override
-    protected SocketCreator getSocketCreator() {
-      if (this.socketCreator == null) {
-        SSLConfig sslConfig =
-            SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
-                SecurableCommunicationChannel.LOCATOR);
-        this.socketCreator = new SocketCreator(sslConfig);
-      }
-      return socketCreator;
+    private static DistributionConfigImpl getDistributionConfig(
+        final Properties sslConfig,
+        final DistributionConfigImpl distributionConfig) {
+      return distributionConfig == null ? new DistributionConfigImpl(sslConfig)
+          : distributionConfig;
+    }
+
+    private static TcpSocketCreator getSocketCreator(
+        final DistributionConfig distributionConfig) {
+      final SSLConfig sslConfig =
+          SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
+              SecurableCommunicationChannel.LOCATOR);
+      return asTcpSocketCreator(new org.apache.geode.internal.net.SocketCreator(sslConfig));
     }
   }
 }

@@ -246,6 +246,15 @@ public class GMSJoinLeave implements JoinLeave {
    */
   GMSMembershipView quorumLostView;
 
+  /**
+   * for messaging locator
+   */
+  private final TcpClient locatorClient;
+
+  public GMSJoinLeave(final TcpClient locatorClient) {
+    this.locatorClient = locatorClient;
+  }
+
   static class SearchState {
     public int joinedMembersContacted;
     Set<MemberIdentifier> alreadyTried = new HashSet<>();
@@ -1093,17 +1102,6 @@ public class GMSJoinLeave implements JoinLeave {
     }
   }
 
-  private TcpClientWrapper tcpClientWrapper = new TcpClientWrapper();
-
-  /***
-   * testing purpose. Sets the TcpClient that is used by GMSJoinLeave to communicate with Locators.
-   *
-   * @param tcpClientWrapper the wrapper
-   */
-  void setTcpClientWrapper(TcpClientWrapper tcpClientWrapper) {
-    this.tcpClientWrapper = tcpClientWrapper;
-  }
-
   /**
    * This contacts the locators to find out who the current coordinator is. All locators are
    * contacted. If they don't agree then we choose the oldest coordinator and return it.
@@ -1142,7 +1140,7 @@ public class GMSJoinLeave implements JoinLeave {
       for (HostAddress laddr : locators) {
         try {
           InetSocketAddress addr = laddr.getSocketInetAddress();
-          Object o = tcpClientWrapper.sendCoordinatorFindRequest(addr, request, connectTimeout);
+          Object o = locatorClient.requestToServer(addr, request, connectTimeout, true);
           FindCoordinatorResponse response =
               (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse) o : null;
           if (response != null) {
@@ -1244,15 +1242,6 @@ public class GMSJoinLeave implements JoinLeave {
     logger.info("findCoordinator chose {} out of these possible coordinators: {}",
         state.possibleCoordinator, possibleCoordinators);
     return true;
-  }
-
-  protected class TcpClientWrapper {
-    protected Object sendCoordinatorFindRequest(InetSocketAddress addr,
-        FindCoordinatorRequest request, int connectTimeout)
-        throws ClassNotFoundException, IOException {
-      TcpClient client = new TcpClient();
-      return client.requestToServer(addr, request, connectTimeout, true);
-    }
   }
 
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "WA_NOT_IN_LOOP")
