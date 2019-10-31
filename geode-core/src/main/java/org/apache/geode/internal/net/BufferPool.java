@@ -140,8 +140,10 @@ public class BufferPool {
         // it was garbage collected
         updateBufferStats(-defaultSize, ref.getSend(), true);
       } else {
-        bb.rewind();
-        bb.limit(size);
+        bb.clear();
+        if (defaultSize > size) {
+          bb.limit(size);
+        }
         return bb;
       }
       ref = bufferTempQueue.poll();
@@ -169,8 +171,10 @@ public class BufferPool {
           updateBufferStats(-refSize, ref.getSend(), true);
         }
       } else if (bb.capacity() >= size) {
-        bb.rewind();
-        bb.limit(size);
+        bb.clear();
+        if (bb.capacity() > size) {
+          bb.limit(size);
+        }
         return bb;
       } else {
         // wasn't big enough so put it back in the queue
