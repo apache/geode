@@ -108,7 +108,7 @@ YML
     -p ${META_PIPELINE} \
     --config ${SCRIPTDIR}/generated-pipeline.yml \
     --var artifact-bucket=${ARTIFACT_BUCKET} \
-    --var concourse-team=main \
+    --var concourse-team=${CONCOURSE_TEAM} \
     --var concourse-url=${CONCOURSE_URL} \
     --var gcp-project=${GCP_PROJECT} \
     --var geode-build-branch=${GEODE_BRANCH} \
