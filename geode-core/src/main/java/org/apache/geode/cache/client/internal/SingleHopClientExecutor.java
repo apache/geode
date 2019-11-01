@@ -30,7 +30,6 @@ import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.GetAllOp.GetAllOpImpl;
@@ -49,6 +48,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class SingleHopClientExecutor {
 
   private static final Logger logger = LogService.getLogger();
+
+  private static final int MAX_RETRY_INITIAL_VALUE = -1;
 
   @MakeNotStatic
   static final ExecutorService execService =
@@ -89,11 +90,10 @@ public class SingleHopClientExecutor {
 
   static int submitAllHA(List callableTasks, LocalRegion region, boolean isHA,
       ResultCollector rc, Set<String> failedNodes,
-      final int retryAttemptsArg,
       final PoolImpl pool) {
 
-    ClientMetadataService cms = region.getCache().getClientMetadataService();
-    int maxRetryAttempts = 0;
+    ClientMetadataService cms;
+    int maxRetryAttempts = MAX_RETRY_INITIAL_VALUE;
 
     if (callableTasks != null && !callableTasks.isEmpty()) {
       List futures = null;
@@ -120,15 +120,8 @@ public class SingleHopClientExecutor {
             throw new InternalGemFireException(e.getMessage());
           } catch (ExecutionException ee) {
 
-            if (maxRetryAttempts == 0) {
-              maxRetryAttempts = retryAttemptsArg;
-            }
-
-            if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
-              // If the retryAttempt is set to default(-1). Try it on all servers once.
-              // Calculating number of servers when function is re-executed as it involves
-              // messaging locator.
-              maxRetryAttempts = pool.getConnectionSource().getAllServers().size() - 1;
+            if (maxRetryAttempts == MAX_RETRY_INITIAL_VALUE) {
+              maxRetryAttempts = pool.calculateRetryAttempts(ee.getCause());
             }
 
             if (ee.getCause() instanceof InternalFunctionInvocationTargetException) {

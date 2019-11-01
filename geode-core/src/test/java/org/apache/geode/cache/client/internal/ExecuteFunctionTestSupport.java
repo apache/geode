@@ -15,6 +15,7 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.HAStatus.HA;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +30,7 @@ import org.mockito.stubbing.OngoingStubbing;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.client.internal.pooling.ConnectionManagerImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -91,8 +93,6 @@ class ExecuteFunctionTestSupport {
    * This method has to be {@code static} because it is called before
    * {@link ExecuteFunctionTestSupport} is constructed.
    *
-   * @param whenPoolExecute is the {@link OngoingStubbing} for (one of the ) {@code execute()}
-   *        methods on {@link PoolImpl}
    * @param failureMode is the {@link FailureMode} that determines the kind of exception
    *        to {@code throw}
    */
@@ -118,7 +118,8 @@ class ExecuteFunctionTestSupport {
         whenPoolExecute.thenReturn(null);
         break;
       case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-        whenPoolExecute.thenThrow(new ServerConnectivityException("testing"));
+        whenPoolExecute.thenThrow(new ServerConnectivityException(
+            ConnectionManagerImpl.SOCKET_TIME_OUT_MSG));
         break;
       case THROW_SERVER_OPERATION_EXCEPTION:
         whenPoolExecute.thenThrow(new ServerOperationException("testing"));
@@ -138,7 +139,7 @@ class ExecuteFunctionTestSupport {
          * we throw this exception first, then we throw ServerConnectivityException
          */
         whenPoolExecute.thenThrow(new InternalFunctionInvocationTargetException("testing"))
-            .thenThrow(new ServerConnectivityException("testing"));
+            .thenThrow(new ServerConnectivityException(ConnectionManagerImpl.SOCKET_TIME_OUT_MSG));
         break;
       default:
         throw new AssertionError("unknown FailureMode type: " + failureMode);
@@ -149,7 +150,7 @@ class ExecuteFunctionTestSupport {
   ExecuteFunctionTestSupport(
       final HAStatus haStatus,
       final FailureMode failureMode,
-      final BiConsumer<PoolImpl, FailureMode> addPoolMockBehavior) {
+      final BiConsumer<PoolImpl, FailureMode> addPoolMockBehavior, Integer retryAttempts) {
 
     final List<ServerLocation> servers = (List<ServerLocation>) mock(List.class);
     when(servers.size()).thenReturn(ExecuteFunctionTestSupport.NUMBER_OF_SERVERS);
@@ -174,6 +175,9 @@ class ExecuteFunctionTestSupport {
 
     executablePool = mock(PoolImpl.class);
     when(executablePool.getConnectionSource()).thenReturn(connectionSource);
+    when(executablePool.getRetryAttempts()).thenReturn(retryAttempts);
+    when(executablePool.calculateRetryAttempts(any(ServerConnectivityException.class)))
+        .thenCallRealMethod();
 
     addPoolMockBehavior.accept(executablePool, failureMode);
   }
