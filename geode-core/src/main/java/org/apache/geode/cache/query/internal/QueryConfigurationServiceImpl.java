@@ -41,15 +41,6 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   private static final Logger logger = LogService.getLogger();
   static final String UPDATE_ERROR_MESSAGE =
       "Exception while updating MethodInvocationAuthorizer: ";
-  static final String NULL_CLASS_NAME =
-      "Null class name found for MethodInvocationAuthorizer. ";
-  static final String NO_CLASS_FOUND =
-      "No MethodInvocationAuthorizer class found with name ";
-  static final String NO_VALID_CONSTRUCTOR =
-      "No valid public MethodInvocationAuthorizer constructor available. ";
-  static final String INSTANTIATION_ERROR =
-      "Error occurred while instantiating MethodInvocationAuthorizer. ";
-  static final String AUTHORIZER_NOT_UPDATED = "The authorizer was not updated.";
 
   private MethodInvocationAuthorizer authorizer;
 
@@ -115,61 +106,41 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   }
 
   @Override
-  public void updateMethodAuthorizer(Cache cache, QueryMethodAuthorizerCreation creation) {
+  public void updateMethodAuthorizer(Cache cache, QueryMethodAuthorizerCreation creation)
+      throws QueryConfigurationServiceException {
     updateMethodAuthorizer(cache, creation.getClassName(), creation.getParameters());
   }
 
   @Override
-  public void updateMethodAuthorizer(Cache cache, String className, Set<String> parameters) {
+  public void updateMethodAuthorizer(Cache cache, String className, Set<String> parameters)
+      throws QueryConfigurationServiceException {
     if (isSecurityDisabled((InternalCache) cache) || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
       return;
     }
 
-    if (className == null) {
-      logError(UPDATE_ERROR_MESSAGE + NULL_CLASS_NAME + AUTHORIZER_NOT_UPDATED,
-          new NullPointerException());
-      return;
-    }
-
-    if (className.equals(RestrictedMethodAuthorizer.class.getName())) {
-      this.authorizer = new RestrictedMethodAuthorizer(cache);
-    } else if (className.equals(UnrestrictedMethodAuthorizer.class.getName())) {
-      this.authorizer = new UnrestrictedMethodAuthorizer(cache);
-    } else if (className.equals(JavaBeanAccessorMethodAuthorizer.class.getName())) {
-      this.authorizer = new JavaBeanAccessorMethodAuthorizer(cache, parameters);
-    } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
-      this.authorizer = new RegExMethodAuthorizer(cache, parameters);
-    } else {
-      try {
+    try {
+      if (className.equals(RestrictedMethodAuthorizer.class.getName())) {
+        this.authorizer = new RestrictedMethodAuthorizer(cache);
+      } else if (className.equals(UnrestrictedMethodAuthorizer.class.getName())) {
+        this.authorizer = new UnrestrictedMethodAuthorizer(cache);
+      } else if (className.equals(JavaBeanAccessorMethodAuthorizer.class.getName())) {
+        this.authorizer = new JavaBeanAccessorMethodAuthorizer(cache, parameters);
+      } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
+        this.authorizer = new RegExMethodAuthorizer(cache, parameters);
+      } else {
         @SuppressWarnings("unchecked")
         Class<MethodInvocationAuthorizer> userClass =
             (Class<MethodInvocationAuthorizer>) ClassPathLoader.getLatest().forName(className);
         Constructor<MethodInvocationAuthorizer> userConstructor =
             userClass.getDeclaredConstructor(Cache.class, Set.class);
         this.authorizer = userConstructor.newInstance(cache, parameters);
-      } catch (Exception e) {
-        logErrorMessage(className, e);
       }
+    } catch (Exception e) {
+      throw new QueryConfigurationServiceException(UPDATE_ERROR_MESSAGE, e);
     }
   }
 
   private boolean isSecurityDisabled(InternalCache cache) {
     return !cache.getSecurityService().isIntegratedSecurity();
-  }
-
-  private void logErrorMessage(String className, Exception e) {
-    if (e instanceof ClassNotFoundException) {
-      logError(UPDATE_ERROR_MESSAGE + NO_CLASS_FOUND + className + ". " + AUTHORIZER_NOT_UPDATED,
-          e);
-    } else if (e instanceof NoSuchMethodException || e instanceof SecurityException) {
-      logError(UPDATE_ERROR_MESSAGE + NO_VALID_CONSTRUCTOR + AUTHORIZER_NOT_UPDATED, e);
-    } else {
-      logError(UPDATE_ERROR_MESSAGE + INSTANTIATION_ERROR + AUTHORIZER_NOT_UPDATED, e);
-    }
-  }
-
-  // For testing
-  void logError(String message, Exception e) {
-    logger.error(message, e);
   }
 }

@@ -89,6 +89,7 @@ import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.QueryConfigurationService;
+import org.apache.geode.cache.query.internal.QueryConfigurationServiceException;
 import org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.cq.CqService;
@@ -465,7 +466,8 @@ public class CacheCreation implements InternalCache {
    * Fills in the contents of a {@link Cache} based on this creation object's state.
    */
   void create(InternalCache cache)
-      throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
+      throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException,
+      QueryConfigurationServiceException {
     extensionPoint.beforeCreate(cache);
 
     cache.setDeclarativeCacheConfig(cacheConfig);

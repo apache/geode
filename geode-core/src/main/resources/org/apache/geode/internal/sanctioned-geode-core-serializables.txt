@@ -184,6 +184,7 @@ org/apache/geode/cache/query/internal/CompiledSelect$NullIteratorException,false
 org/apache/geode/cache/query/internal/CompiledSortCriterion$1,false,this$0:org/apache/geode/cache/query/internal/CompiledSortCriterion
 org/apache/geode/cache/query/internal/ObjectIntHashMap,true,7718697444988416372,hashingStrategy:org/apache/geode/cache/query/internal/HashingStrategy,loadFactor:float,threshold:int
 org/apache/geode/cache/query/internal/ObjectIntHashMap$IntHashMapStrategy,false,this$0:org/apache/geode/cache/query/internal/ObjectIntHashMap
+org/apache/geode/cache/query/internal/QueryConfigurationServiceException,true,-5122191060240009964
 org/apache/geode/cache/query/internal/QueryExecutionCanceledException,true,-2699578956684551688
 org/apache/geode/cache/query/internal/StructBag$ObjectArrayHashingStrategy,false
 org/apache/geode/cache/query/internal/index/IMQException,true,-5012914292321850775

@@ -12,24 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.query.internal;
 
-import java.util.Set;
+import org.apache.geode.cache.CacheException;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.query.internal.xml.QueryMethodAuthorizerCreation;
-import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
-import org.apache.geode.internal.cache.CacheService;
+public class QueryConfigurationServiceException extends CacheException {
+  private static final long serialVersionUID = -5122191060240009964L;
 
-public interface QueryConfigurationService extends CacheService {
+  QueryConfigurationServiceException() {
+    super();
+  }
 
-  MethodInvocationAuthorizer getMethodAuthorizer();
+  QueryConfigurationServiceException(String s) {
+    super(s);
+  }
 
-  void updateMethodAuthorizer(Cache cache, QueryMethodAuthorizerCreation creation)
-      throws ClassNotFoundException;
+  QueryConfigurationServiceException(String s, Throwable cause) {
+    super(s, cause);
+  }
 
-  void updateMethodAuthorizer(Cache cache, String className, Set<String> parameters)
-      throws ClassNotFoundException, QueryConfigurationServiceException;
-
+  QueryConfigurationServiceException(Throwable cause) {
+    super(cause);
+  }
 }

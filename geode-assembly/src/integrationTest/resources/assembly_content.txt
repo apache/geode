@@ -488,12 +488,6 @@ javadoc/org/apache/geode/cache/query/RegionNotFoundException.html
 javadoc/org/apache/geode/cache/query/SelectResults.html
 javadoc/org/apache/geode/cache/query/Struct.html
 javadoc/org/apache/geode/cache/query/TypeMismatchException.html
-javadoc/org/apache/geode/cache/query/management/configuration/QueryConfigurationService.MethodAuthorizer.Parameter.html
-javadoc/org/apache/geode/cache/query/management/configuration/QueryConfigurationService.MethodAuthorizer.html
-javadoc/org/apache/geode/cache/query/management/configuration/QueryConfigurationService.html
-javadoc/org/apache/geode/cache/query/management/configuration/package-frame.html
-javadoc/org/apache/geode/cache/query/management/configuration/package-summary.html
-javadoc/org/apache/geode/cache/query/management/configuration/package-tree.html
 javadoc/org/apache/geode/cache/query/package-frame.html
 javadoc/org/apache/geode/cache/query/package-summary.html
 javadoc/org/apache/geode/cache/query/package-tree.html

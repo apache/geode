@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
@@ -139,12 +140,9 @@ public class QueryServiceXmlIntegrationTest {
   @Test
   public void queryServiceXmlWithInvalidAuthorizerDoesNotChangeAuthorizer() throws IOException {
     String cacheXmlFilePath = getFilePath(INVALID_AUTHORIZER_XML);
-    serverRule.withProperty(CACHE_XML_FILE, cacheXmlFilePath)
-        .withSecurityManager(SimpleSecurityManager.class).startServer();
-
-    MethodInvocationAuthorizer authorizer = getMethodInvocationAuthorizer();
-
-    assertThat(authorizer).isInstanceOf(RestrictedMethodAuthorizer.class);
+    assertThatThrownBy(() -> serverRule.withProperty(CACHE_XML_FILE, cacheXmlFilePath)
+        .withSecurityManager(SimpleSecurityManager.class).startServer())
+            .isInstanceOf(QueryConfigurationServiceException.class);
   }
 
   private MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
