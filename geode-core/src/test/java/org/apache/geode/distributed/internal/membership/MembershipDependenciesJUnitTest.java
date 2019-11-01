@@ -49,9 +49,6 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.JavaWorkarounds;
-import org.apache.geode.logging.internal.executors.LoggingExecutors;
-import org.apache.geode.logging.internal.executors.LoggingThread;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",
@@ -99,17 +96,10 @@ public class MembershipDependenciesJUnitTest {
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
 
-              // OK to depend on this one because it is a "leaf" dependency
+              // OK to depend on these "leaf" dependencies
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
-
-              /*
-               * TODO: once these three classes (from the geode-logging module) move to their own
-               * package: org.apache.geode.logging.internal (not org.apache.geode.internal.logging)
-               * replace these three clauses with a single .or(resideInPackage...
-               */
-              .or(type(LogService.class))
-              .or(type(LoggingExecutors.class))
-              .or(type(LoggingThread.class))
+              .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api.."))
+              .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
 
