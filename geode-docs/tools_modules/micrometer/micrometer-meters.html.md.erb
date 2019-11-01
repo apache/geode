@@ -79,7 +79,7 @@ There are <%=vars.product_name%> specific meters that have been instrumented to 
 | Meter:              | geode.cache.gets    |
 |---------------------|---------------------|
 | Type:               | Timer               |
-| Description:        | A total time and count for any get operation performed against the cache server for this member (locators will not have this metric) |
+| Description:        | A total time and count for any get operation performed against the cache server for this member. Get operations that circumvent the cache server, such as REST calls, gfsh operations, and peer-to-peer operations, are not counted. Locators will not have this metric. |
 | Tag:                | region: The name of the region associated with the count of entries |
 | Tag:                |  result: hit/miss   |
 
