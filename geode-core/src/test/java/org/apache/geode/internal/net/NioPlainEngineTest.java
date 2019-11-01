@@ -56,7 +56,7 @@ public class NioPlainEngineTest {
 
   @Test
   public void ensureWrappedCapacity() {
-    ByteBuffer wrappedBuffer = bufferPool.acquireReceiveBuffer(100);
+    ByteBuffer wrappedBuffer = bufferPool.acquireDirectReceiveBuffer(100);
     verify(mockStats, times(1)).incReceiverBufferSize(any(Integer.class), any(Boolean.class));
     wrappedBuffer.put(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
     nioEngine.lastReadPosition = 10;

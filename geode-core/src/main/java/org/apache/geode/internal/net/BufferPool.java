@@ -56,15 +56,18 @@ public class BufferPool {
    *
    * @return a byte buffer to be used for sending on this connection.
    */
-  public ByteBuffer acquireSenderBuffer(int size) {
-    return acquireBuffer(size, true);
+  public ByteBuffer acquireDirectSenderBuffer(int size) {
+    return acquireDirectBuffer(size, true);
   }
 
-  public ByteBuffer acquireReceiveBuffer(int size) {
-    return acquireBuffer(size, false);
+  public ByteBuffer acquireDirectReceiveBuffer(int size) {
+    return acquireDirectBuffer(size, false);
   }
 
-  private ByteBuffer acquireBuffer(int size, boolean send) {
+  /**
+   * try to acquire direct buffer, if enabled by configuration
+   */
+  private ByteBuffer acquireDirectBuffer(int size, boolean send) {
     ByteBuffer result;
     if (useDirectBuffers) {
       IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
@@ -148,7 +151,7 @@ public class BufferPool {
     }
     ByteBuffer newBuffer;
     if (existing.isDirect()) {
-      newBuffer = acquireBuffer(type, desiredCapacity);
+      newBuffer = acquireDirectBuffer(type, desiredCapacity);
     } else {
       newBuffer = acquireNonDirectBuffer(type, desiredCapacity);
     }
@@ -169,7 +172,7 @@ public class BufferPool {
     }
     ByteBuffer newBuffer;
     if (existing.isDirect()) {
-      newBuffer = acquireBuffer(type, desiredCapacity);
+      newBuffer = acquireDirectBuffer(type, desiredCapacity);
     } else {
       newBuffer = acquireNonDirectBuffer(type, desiredCapacity);
     }
@@ -180,14 +183,14 @@ public class BufferPool {
     return newBuffer;
   }
 
-  ByteBuffer acquireBuffer(BufferPool.BufferType type, int capacity) {
+  ByteBuffer acquireDirectBuffer(BufferPool.BufferType type, int capacity) {
     switch (type) {
       case UNTRACKED:
         return ByteBuffer.allocate(capacity);
       case TRACKED_SENDER:
-        return acquireSenderBuffer(capacity);
+        return acquireDirectSenderBuffer(capacity);
       case TRACKED_RECEIVER:
-        return acquireReceiveBuffer(capacity);
+        return acquireDirectReceiveBuffer(capacity);
     }
     throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
   }

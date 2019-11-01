@@ -54,7 +54,7 @@ public class NioPlainEngine implements NioFilter {
     ByteBuffer buffer = wrappedBuffer;
 
     if (buffer == null) {
-      buffer = bufferPool.acquireBuffer(bufferType, amount);
+      buffer = bufferPool.acquireDirectBuffer(bufferType, amount);
       buffer.clear();
       lastProcessedPosition = 0;
       lastReadPosition = 0;
@@ -71,7 +71,7 @@ public class NioPlainEngine implements NioFilter {
       ByteBuffer oldBuffer = buffer;
       oldBuffer.limit(lastReadPosition);
       oldBuffer.position(lastProcessedPosition);
-      buffer = bufferPool.acquireBuffer(bufferType, amount);
+      buffer = bufferPool.acquireDirectBuffer(bufferType, amount);
       buffer.clear();
       buffer.put(oldBuffer);
       bufferPool.releaseBuffer(bufferType, oldBuffer);

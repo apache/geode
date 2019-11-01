@@ -129,7 +129,7 @@ public class MsgStreamer extends OutputStream
     this.stats = stats;
     this.msg = msg;
     this.cons = cons;
-    this.buffer = bufferPool.acquireSenderBuffer(sendBufferSize);
+    this.buffer = bufferPool.acquireDirectSenderBuffer(sendBufferSize);
     this.buffer.clear();
     this.buffer.position(Connection.MSG_HEADER_BYTES);
     this.msgId = MsgIdGenerator.NO_MSG_ID;
