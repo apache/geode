@@ -1,0 +1,97 @@
+---
+title:  Micrometer Meters and Tags
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+
+## Micrometer Meters
+
+Micrometer meters are similar to <%=vars.product_name%> statistics in that they have different types. <%=vars.product_name%> uses the three main meter types: counter, gauge, and timer.
+
+- A counter is a numerical value that only goes up.
+- A gauge is a numerical value that can go up or down.
+- A timer is a counter combined with an ever growing summary of the time each thing being counted has taken to finish.
+
+There are other types of meters available in Micrometer, but they are not currently being used in <%vars.product_name%>.
+
+Every meter in Micrometer has the following attributes, but may also have more than these depending on the meter type:
+
+-   `Name`: a lowercase, 'dot' delimited name
+-   `Description`: a short text description of the meter
+-   `Value`: the value of the meter, always a number
+-   `Units`: the unit of the value
+-   `Tags`: key/value string pairs to define facts about the meter
+
+### Meters supplied by Micrometer
+<%=vars.product_name%> has been instrumented with a set of Micrometer provided meters, called binders, which contain one or many individual meters with pre-defined types and tags.
+The following are a subset of the Micrometer binders that have been added to <%=vars.product_name%>:
+
+*JVM specific*
+
+-   JvmGcMetrics
+-   JvmMemoryMetrics
+-   JvmThreadMetrics
+
+*Operating System specific*
+
+-   ProcessorMetrics
+-   UptimeMetrics
+-   FileDescriptorMetrics
+
+### Meters specific to <%=vars.product_name%>
+There are <%=vars.product_name%> specific meters that have been instrumented to allow developers to monitor certain aspects of the <%=vars.product_name%> cluster. The namespace used for these metrics includes the Apache Geode (e.g. geode.*) product name as a means to distinguish this meter from others similar to it in downstream systems. The following meters have been added to <%=vars.product_name%>:
+
+| Meter:              | geode.cache.entries |
+|---------------------|---------------------|
+| Type:               | Gauge               |
+| Description:        | The current count of entries in the cache for this member (locators will not have this metric)|
+| Tag:                |      region: The name of the region associated with the count of entries|
+| Tag:                |      data.policy: The data policy described for these regions, see [RegionShortcuts for Peers and Servers](../../basic_config/data_regions/region_shortcuts.html#region_shortcuts__section_D0975C76572E41F79C1A6EE7CF371251) |
+
+| Meter:              | geode.function.executions |
+|---------------------|---------------------------|
+| Type:               | Timer                     |
+| Description:        | A total time and count for any execution that completed without errors of this function on this member. |
+| Tag:                | Function: The name or class of the function |
+| Tag:                |  Succeeded: true/false |
+
+| Meter:              | geode.gateway.receiver.events |
+|---------------------|-------------------------------|
+| Type:               | Counter                       |
+| Description:        | The total number of events received by this GatewayReceiver |
+
+| Meter:              | geode.cache.gets    |
+|---------------------|---------------------|
+| Type:               | Timer               |
+| Description:        | A total time and count for any get operation performed against the cache server for this member. Get operations that circumvent the cache server, such as REST calls, gfsh operations, and peer-to-peer operations, are not counted. Locators will not have this metric. |
+| Tag:                | region: The name of the region associated with the count of entries |
+| Tag:                |  result: hit/miss   |
+
+
+## Common tags
+<%=vars.product_name%> meters all contain tags, also referred to as labels or dimensions, depending upon which Application Performance Monitoring (APM) tool is being utilized. Micrometer offers a concept of `common` tags that exist on every meter within a meter registry.
+In <%=vars.product_name%>, the following common tags have been provided to add context to each meter:
+
+-   `cluster`: The distributed system id associated with this member
+-   `host`: The hostname the member exists on, could be the same as another if collocated
+-   `member`: the member name provided at startup time
+-   `member.type`: locator, server, locator-server
+
+
+Please submit a pull request to Apache Geode if there are more metrics you would like to see added to <%=vars.product_name%>.
