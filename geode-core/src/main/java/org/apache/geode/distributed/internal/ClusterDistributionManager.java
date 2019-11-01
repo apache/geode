@@ -470,7 +470,9 @@ public class ClusterDistributionManager implements DistributionManager {
           .setLocatorClient(new TcpClient(
               asTcpSocketCreator(
                   SocketCreatorFactory
-                      .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))))
+                      .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+              InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+              InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
           .create();
 
       sb.append(System.currentTimeMillis() - start);

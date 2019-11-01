@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.ProtocolCheckerImpl;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -58,7 +59,9 @@ public class TcpServerFactory {
         DistributionStats::getStatTime, createExecutorServiceSupplier(poolHelper),
         asTcpSocketCreator(
             SocketCreatorFactory
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)));
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
   }
 
   public static Supplier<ExecutorService> createExecutorServiceSupplier(PoolStatHelper poolHelper) {

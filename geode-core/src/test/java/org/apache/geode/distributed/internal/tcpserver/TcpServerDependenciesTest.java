@@ -49,6 +49,5 @@ public class TcpServerDependenciesTest {
               .or(resideInAPackage("org.apache.geode.test.."))
 
               // TODO - serialization related classes
-              .or(type(DataSerializer.class))
               .or(type(DataSerializable.class)));
 }

@@ -70,6 +70,7 @@ import org.apache.geode.distributed.internal.tcpserver.InfoRequest;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -918,7 +919,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         new TcpClient(
             asTcpSocketCreator(
                 SocketCreatorFactory
-                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)))
+                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+            InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
                         .stop(bindAddress, getPort());
       } catch (ConnectException ignore) {
         // must not be running

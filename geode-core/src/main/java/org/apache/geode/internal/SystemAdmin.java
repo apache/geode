@@ -298,7 +298,9 @@ public class SystemAdmin {
         new TcpClient(
             asTcpSocketCreator(
                 SocketCreatorFactory
-                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)))
+                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+            InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
                         .stop(addr, port);
       } catch (java.net.ConnectException ce) {
         System.out.println(

@@ -47,6 +47,7 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -95,7 +96,9 @@ public class TCPServerSSLJUnitTest {
         (socket, input, firstByte) -> false, DistributionStats::getStatTime,
         TcpServerFactory.createExecutorServiceSupplier(Mockito.mock(PoolStatHelper.class)),
         asTcpSocketCreator(
-            socketCreator));
+            socketCreator),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
 
     server.start();
   }
@@ -159,7 +162,9 @@ public class TCPServerSSLJUnitTest {
             SocketCreatorFactory
                 .getSocketCreatorForComponent(
                     new DistributionConfigImpl(getSSLConfigurationProperties()),
-                    SecurableCommunicationChannel.LOCATOR)));
+                    SecurableCommunicationChannel.LOCATOR)),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
   }
 
 }
