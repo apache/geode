@@ -33,7 +33,7 @@ import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 public class QueryConfigurationServiceImpl implements QueryConfigurationService {
