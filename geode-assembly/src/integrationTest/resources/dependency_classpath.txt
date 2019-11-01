@@ -42,7 +42,7 @@ commons-io-2.6.jar
 spring-core-4.3.23.RELEASE.jar
 httpclient-4.5.6.jar
 commons-logging-1.2.jar
-classgraph-4.0.6.jar
+classgraph-4.8.52.jar
 micrometer-core-1.2.0.jar
 fastutil-8.2.2.jar
 javax.resource-api-1.7.1.jar

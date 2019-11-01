@@ -202,7 +202,7 @@
       <dependency>
         <groupId>io.github.classgraph</groupId>
         <artifactId>classgraph</artifactId>
-        <version>4.0.6</version>
+        <version>4.8.52</version>
         <scope>compile</scope>
       </dependency>
       <dependency>
