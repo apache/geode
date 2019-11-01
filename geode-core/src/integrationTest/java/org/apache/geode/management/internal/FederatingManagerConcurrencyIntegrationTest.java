@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 
 import org.junit.After;
 import org.junit.Before;
@@ -42,7 +43,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.junit.categories.JMXTest;
 
 @Category(JMXTest.class)
-public class FederatingManagerIntegrationTest {
+public class FederatingManagerConcurrencyIntegrationTest {
 
   private InternalCache cache;
   private FederatingManager federatingManager;
@@ -102,9 +103,9 @@ public class FederatingManagerIntegrationTest {
     public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
         SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
         StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-        ExecutorService executorService) {
+        Supplier<ExecutorService> executorServiceSupplier) {
       return new FederatingManager(repo, system, service, cache, statisticsFactory,
-          statisticsClock, proxyFactory, mock(MemberMessenger.class), executorService);
+          statisticsClock, proxyFactory, mock(MemberMessenger.class), executorServiceSupplier);
     }
   }
 }
