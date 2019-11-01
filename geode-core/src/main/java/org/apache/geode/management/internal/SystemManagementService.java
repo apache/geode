@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 
 import javax.management.Notification;
 import javax.management.ObjectName;
@@ -570,7 +571,7 @@ public class SystemManagementService extends BaseManagementService {
       federatingManager = federatingManagerFactory.create(repo, system, this, cache,
           statisticsFactory, statisticsClock, new MBeanProxyFactory(jmxAdapter, this),
           new MemberMessenger(jmxAdapter, system),
-          LoggingExecutors.newFixedThreadPool("FederatingManager", true,
+          () -> LoggingExecutors.newFixedThreadPool("FederatingManager", true,
               Runtime.getRuntime().availableProcessors()));
       cache.getJmxManagerAdvisor().broadcastChange();
       return true;
@@ -721,9 +722,9 @@ public class SystemManagementService extends BaseManagementService {
     public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
         SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
         StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-        ExecutorService executorService) {
+        Supplier<ExecutorService> executorServiceSupplier) {
       return new FederatingManager(repo, system, service, cache, statisticsFactory,
-          statisticsClock, proxyFactory, messenger, executorService);
+          statisticsClock, proxyFactory, messenger, executorServiceSupplier);
     }
   }
 

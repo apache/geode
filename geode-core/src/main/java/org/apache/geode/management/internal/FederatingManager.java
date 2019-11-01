@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import javax.management.Notification;
 import javax.management.ObjectName;
@@ -71,25 +72,36 @@ public class FederatingManager extends Manager {
   private final SystemManagementService service;
   private final AtomicReference<Exception> latestException = new AtomicReference<>();
 
+  private final Supplier<ExecutorService> executorServiceSupplier;
+  private final MBeanProxyFactory proxyFactory;
+  private final MemberMessenger messenger;
+
   /**
    * This Executor uses a pool of thread to execute the member addition /removal tasks, This will
    * utilize the processing powers available. Going with unbounded queue because tasks wont be
    * unbounded in practical situation as number of members will be a finite set at any given point
    * of time
    */
-  private final ExecutorService executorService;
-  private final MBeanProxyFactory proxyFactory;
-  private final MemberMessenger messenger;
+  private ExecutorService executorService;
 
+  @VisibleForTesting
   FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
       SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
       StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
       ExecutorService executorService) {
+    this(repo, system, service, cache, statisticsFactory, statisticsClock, proxyFactory, messenger,
+        () -> executorService);
+  }
+
+  FederatingManager(ManagementResourceRepo repo, InternalDistributedSystem system,
+      SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
+      Supplier<ExecutorService> executorServiceSupplier) {
     super(repo, system, cache, statisticsFactory, statisticsClock);
     this.service = service;
     this.proxyFactory = proxyFactory;
     this.messenger = messenger;
-    this.executorService = executorService;
+    this.executorServiceSupplier = executorServiceSupplier;
   }
 
   /**
@@ -102,6 +114,8 @@ public class FederatingManager extends Manager {
       if (logger.isDebugEnabled()) {
         logger.debug("Starting the Federating Manager.... ");
       }
+
+      executorService = executorServiceSupplier.get();
 
       running = true;
       startManagingActivity();
@@ -211,7 +225,7 @@ public class FederatingManager extends Manager {
     }
   }
 
-  private void executeTask(Runnable task) {
+  private synchronized void executeTask(Runnable task) {
     try {
       executorService.execute(task);
     } catch (RejectedExecutionException ignored) {

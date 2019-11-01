@@ -17,6 +17,7 @@
 package org.apache.geode.management.internal;
 
 import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -29,5 +30,5 @@ interface FederatingManagerFactory {
   FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
       SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
       StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-      ExecutorService executorService);
+      Supplier<ExecutorService> executorServiceSupplier);
 }

@@ -33,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 
 import javax.management.ObjectName;
 
@@ -204,9 +205,9 @@ public class MBeanFederationErrorHandlingDistributedTest implements Serializable
     public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
         SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
         StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-        ExecutorService executorService) {
+        Supplier<ExecutorService> executorServiceSupplier) {
       return new FederatingManager(repo, system, service, cache, statisticsFactory,
-          statisticsClock, spy(proxyFactory), messenger, executorService);
+          statisticsClock, spy(proxyFactory), messenger, executorServiceSupplier);
     }
   }
 }
