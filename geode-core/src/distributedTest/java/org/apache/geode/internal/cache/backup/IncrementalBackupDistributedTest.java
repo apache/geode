@@ -40,9 +40,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.RegexFileFilter;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.MembershipListener;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -57,6 +54,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.DiskStoreImpl;
@@ -265,14 +265,15 @@ public class IncrementalBackupDistributedTest implements Serializable {
   public void testMissingMemberInBaseline() {
     // Simulate the missing member by forcing a persistent member to go offline.
     PersistentID missingMember = vm0.invoke(() -> getPersistentID(diskStoreName1));
-    vm1.invoke(() ->installNewBackupMembershipListener());
+    vm1.invoke(() -> installNewBackupMembershipListener());
 
     vm0.invoke(() -> {
       cacheRule.getCache().close();
     });
 
     await()
-        .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember) && backupMembershipListener.hasMemberDeparted()));
+        .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember)
+            && backupMembershipListener.hasMemberDeparted()));
 
     // Perform performBackupBaseline and make sure that list of offline disk stores contains our
     // missing member.
@@ -708,7 +709,8 @@ public class IncrementalBackupDistributedTest implements Serializable {
     private boolean memberDeparted = false;
 
     @Override
-    public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id, boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       memberDeparted = true;
     }
 
@@ -719,7 +721,8 @@ public class IncrementalBackupDistributedTest implements Serializable {
 
   public void installNewBackupMembershipListener() {
     if (backupMembershipListener != null) {
-      cacheRule.getCache().getDistributionManager().removeMembershipListener(backupMembershipListener);
+      cacheRule.getCache().getDistributionManager()
+          .removeMembershipListener(backupMembershipListener);
     }
     backupMembershipListener = new BackupMembershipListener();
     cacheRule.getCache().getDistributionManager().addMembershipListener(backupMembershipListener);
