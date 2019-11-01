@@ -103,6 +103,7 @@ YML
 
   python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml --debug || exit 1
 
+  set -e
   fly -t ${FLY_TARGET} sync
   fly -t ${FLY_TARGET} set-pipeline \
     -p ${META_PIPELINE} \
@@ -121,11 +122,8 @@ YML
     --var sanitized-geode-fork=${SANITIZED_GEODE_FORK} \
     --var semver-prerelease-token="${SEMVER_PRERELEASE_TOKEN}" \
     --var upstream-fork=${UPSTREAM_FORK} \
-    --yaml-var public-pipelines=${PUBLIC} 2>&1 |tee flyOutput.log
-
-  if [[ "$(tail -n1 flyOutput.log)" == "bailing out" ]]; then
-    exit 1
-  fi
+    --yaml-var public-pipelines=${PUBLIC}
+    set +e
 popd 2>&1 > /dev/null
 
 

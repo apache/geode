@@ -52,7 +52,7 @@ resources:
 - name: geode-examples
   type: git
   source:
-    uri: https://github.com/apache/geode-examples.git
+    uri: https://github.com/{{repository.fork}}/geode-examples.git
     branch: {{ repository.branch }}
     depth: 10
 - name: geode-ci
@@ -83,9 +83,10 @@ jobs:
   public: true
   serial: true
   plan:
-  - get: geode-ci
   - aggregate:
+    - get: geode-ci
     - get: alpine-tools-image
+  - aggregate:
     - get: geode-examples
       trigger: true
     - get: 24h

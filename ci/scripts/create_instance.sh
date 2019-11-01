@@ -43,9 +43,13 @@ if [[ -z "${GEODE_BRANCH}" ]]; then
   exit 1
 fi
 
-pushd geode
-GEODE_SHA=$(git rev-parse --verify HEAD)
-popd
+if [[ -d geode ]]; then
+  pushd geode
+  GEODE_SHA=$(git rev-parse --verify HEAD)
+  popd
+else
+  GEODE_SHA="unknown"
+fi
 
 . ${SCRIPTDIR}/../pipelines/shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
