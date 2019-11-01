@@ -114,6 +114,18 @@ public class BufferPool {
     return result;
   }
 
+  public ByteBuffer acquireNonDirectSenderBuffer(int size) {
+    ByteBuffer result = ByteBuffer.allocate(size);
+    stats.incSenderBufferSize(size, false);
+    return result;
+  }
+
+  public ByteBuffer acquireNonDirectReceiveBuffer(int size) {
+    ByteBuffer result = ByteBuffer.allocate(size);
+    stats.incReceiverBufferSize(size, false);
+    return result;
+  }
+
   public void releaseSenderBuffer(ByteBuffer bb) {
     releaseBuffer(bb, true);
   }
@@ -134,7 +146,12 @@ public class BufferPool {
       }
       return existing;
     }
-    ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity);
+    ByteBuffer newBuffer;
+    if (existing.isDirect()) {
+      newBuffer = acquireBuffer(type, desiredCapacity);
+    } else {
+      newBuffer = acquireNonDirectBuffer(type, desiredCapacity);
+    }
     newBuffer.clear();
     newBuffer.put(existing);
     newBuffer.flip();
@@ -150,7 +167,12 @@ public class BufferPool {
     if (existing.capacity() >= desiredCapacity) {
       return existing;
     }
-    ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity);
+    ByteBuffer newBuffer;
+    if (existing.isDirect()) {
+      newBuffer = acquireBuffer(type, desiredCapacity);
+    } else {
+      newBuffer = acquireNonDirectBuffer(type, desiredCapacity);
+    }
     newBuffer.clear();
     existing.flip();
     newBuffer.put(existing);
@@ -166,6 +188,18 @@ public class BufferPool {
         return acquireSenderBuffer(capacity);
       case TRACKED_RECEIVER:
         return acquireReceiveBuffer(capacity);
+    }
+    throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
+  }
+
+  ByteBuffer acquireNonDirectBuffer(BufferPool.BufferType type, int capacity) {
+    switch (type) {
+      case UNTRACKED:
+        return ByteBuffer.allocate(capacity);
+      case TRACKED_SENDER:
+        return acquireNonDirectSenderBuffer(capacity);
+      case TRACKED_RECEIVER:
+        return acquireNonDirectReceiveBuffer(capacity);
     }
     throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
   }
@@ -189,7 +223,7 @@ public class BufferPool {
    * Releases a previously acquired buffer.
    */
   private void releaseBuffer(ByteBuffer bb, boolean send) {
-    if (useDirectBuffers) {
+    if (bb.isDirect()) {
       BBSoftReference bbRef = new BBSoftReference(bb, send);
       bufferQueue.offer(bbRef);
     } else {
