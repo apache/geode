@@ -17,17 +17,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<%=vars.product_name%> Micrometer provides an interface to emit user focused metrics, instrumented in code, out to a variety of different consuming Application Performance Monitoring (APM) tools with ease. <%=vars.product_name%> now has Micrometer instrumentation added to a subset of information available, that can be easily emitted out of a Meter Registry.
+<%=vars.product_name%> uses [Micrometer](https://micrometer.io) to provide an interface for emitting user focused metrics, instrumented in code, to a variety of different consuming Application Performance Monitoring (APM) tools. <%=vars.product_name%> has Micrometer instrumentation added to a subset of information available, which can be easily emitted from a Meter Registry.
 
-By default, it is on and will emit metrics to any meter registry. However, certain meters will only be available with 'time-statistics' turned on.
-
-
+By default, Micrometer is enabeled and can emit metrics to any meter registry. However, time-based meters are available only when the `time-statistics` property is turned on.
 
 -   **[Micrometer configuration and publishing](micrometer-configuration.html)**
 
-    Using Micrometer may require configuration and in order to emit Micrometer metrics out to one of the APM tools supported, or a custom format/tool, a Meter Registry and accompanying publishing service will need to be utilized. 
-
+    Using Micrometer may require configuration, and in order to emit Micrometer metrics to one of the supported APM tools, or to a custom format/tool, a Meter Registry and accompanying publishing service will need to be used.
 
 -   **[Micrometer meters and tags](micrometer-meters.html)**
 
-    <%=vars.product_name%> now contains a set of meters, instrumented statistics, that provide information about each individual member of the cluster. Every member within a <%=vars.product_name%> cluster will emit a set of meters of different types, timer, gauge, and counters that are specific to them. Each meter will have a set of common tags, a name/value pair, that help users identify locationally where a meter is in the cluster. There are also meter specific tags that vary based on the meter itself.
+    <%=vars.product_name%> contains a set of meters, instrumented statistics, that provide information about each individual member of a cluster. Every member within a <%=vars.product_name%> cluster will can emit a set of meters of different types, timer, gauge, and counters that are specific to the member.
+Each meter has a set of common tags, a name/value pair, that helps users identify where a meter is located in the cluster. There are also meter specific tags that vary based on the meter itself.
