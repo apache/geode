@@ -19,6 +19,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -29,10 +31,19 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class TcpServerFactoryTest {
+  @Before
+  public void before() {
+    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
+  }
+
+  @After
+  public void teardown() {
+    SocketCreatorFactory.close();
+  }
+
   @Test
   public void createsATcpServer() {
     TcpServerFactory factory = new TcpServerFactory();
-    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
     TcpServer server = factory.makeTcpServer(80, null, null, null, null, null, null, null);
     assertTrue(server != null);
   }
