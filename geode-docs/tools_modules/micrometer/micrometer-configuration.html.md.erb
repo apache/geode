@@ -20,14 +20,14 @@ limitations under the License.
 -->
 
 
-# Meter configuration
+## Meter configuration
 
 Out of the box <%=vars.product_name%> is instrumented and can emit meters with a properly created Meter Registry. 
 
 However, any meters that are timers based on the system clock time, similar to the time statistics, they will obey the existing `enable-time-statistics` <%=vars.product_name%>.properties setting, see **[Setting up Statistics](../../managing/statistics/setting_up_statistics.html)**.
 
 
-# Publishing metrics using a meter registry
+## Publishing metrics using a meter registry
 
 In order to emit metrics to an Application Performance Monitor (APM) or other such tool that can store or display metrics, a meter registry is required. Micrometer implements many different meter registries as project imports, a list can be found here: https://micrometer.io/docs.
 
