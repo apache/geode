@@ -117,10 +117,10 @@ public class BufferPoolTest {
 
   @Test
   public void checkBufferSizeAfterAllocation() throws Exception {
-    ByteBuffer buffer = bufferPool.acquireReceiveBuffer(100);
+    ByteBuffer buffer = bufferPool.acquireDirectReceiveBuffer(100);
 
     ByteBuffer newBuffer =
-        bufferPool.acquireReceiveBuffer(10000);
+        bufferPool.acquireDirectReceiveBuffer(10000);
     assertThat(buffer.capacity()).isGreaterThanOrEqualTo(4096);
     assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(32768);
 
@@ -133,10 +133,10 @@ public class BufferPoolTest {
 
   @Test
   public void checkBufferSizeAfterAcquire() throws Exception {
-    ByteBuffer buffer = bufferPool.acquireReceiveBuffer(100);
+    ByteBuffer buffer = bufferPool.acquireDirectReceiveBuffer(100);
 
     ByteBuffer newBuffer =
-        bufferPool.acquireReceiveBuffer(10000);
+        bufferPool.acquireDirectReceiveBuffer(10000);
     assertThat(buffer.capacity()).isGreaterThanOrEqualTo(4096);
     assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(32768);
 
@@ -147,10 +147,10 @@ public class BufferPoolTest {
     bufferPool.releaseReceiveBuffer(buffer);
     bufferPool.releaseReceiveBuffer(newBuffer);
 
-    buffer = bufferPool.acquireReceiveBuffer(1000);
+    buffer = bufferPool.acquireDirectReceiveBuffer(1000);
 
     newBuffer =
-        bufferPool.acquireReceiveBuffer(15000);
+        bufferPool.acquireDirectReceiveBuffer(15000);
 
     assertThat(buffer.capacity()).isGreaterThanOrEqualTo(4096);
     assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(32768);
