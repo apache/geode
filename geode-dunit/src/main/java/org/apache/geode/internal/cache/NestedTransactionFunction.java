@@ -19,6 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
@@ -29,7 +30,6 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This function is used by {@link CommitFunction} to commit existing transaction. A
@@ -49,7 +49,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  */
 public class NestedTransactionFunction implements Function, DataSerializable {
-  private static final Logger logger = LogService.getLogger();
+  private static final Logger logger = LogManager.getLogger();
 
   public static final int COMMIT = 1;
   public static final int ROLLBACK = 2;

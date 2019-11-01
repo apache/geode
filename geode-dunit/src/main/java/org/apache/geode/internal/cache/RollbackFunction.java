@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
@@ -34,7 +35,6 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * This function can be used by GemFire clients and peers to rollback an existing transaction. A
@@ -66,7 +66,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * @since GemFire 6.6.1
  */
 public class RollbackFunction implements Function, DataSerializable {
-  private static final Logger logger = LogService.getLogger();
+  private static final Logger logger = LogManager.getLogger();
 
   private static final long serialVersionUID = 1377183180063184795L;
 
