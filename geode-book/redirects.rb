@@ -15,4 +15,4 @@
 
 r301 %r{/releases/latest/javadoc/(.*)}, 'http://geode.apache.org/releases/latest/javadoc/$1'
 rewrite '/', '/docs/guide/111/about_geode.html'
-rewrite '/index.html', '/docs/guide/111/about_geode.html'
+rewrite '/index.html', '/docs/guide/112/about_geode.html'
