@@ -52,6 +52,7 @@ import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.internal.util.JavaWorkarounds;
 
 /**
  * <p>
@@ -106,7 +107,7 @@ public class ConnectionTable {
    * threadOrderedConnMap. The value is an ArrayList since we can have any number of connections
    * with the same key.
    */
-  private ConcurrentMap threadConnectionMap;
+  private volatile ConcurrentMap threadConnectionMap;
 
   /**
    * Used for all non-ordered messages. Only connections used for sending messages, and receiving
@@ -495,8 +496,8 @@ public class ConnectionTable {
 
     // Update the list of connections owned by this thread....
 
-    ConcurrentMap cm = this.threadConnectionMap;
-    if (cm == null) {
+    final ConcurrentMap threadConnectionMap = this.threadConnectionMap;
+    if (threadConnectionMap == null) {
       // This instance is being destroyed; fail the operation
       closeCon(
           "Connection table being destroyed",
@@ -504,13 +505,14 @@ public class ConnectionTable {
       return null;
     }
 
-    ArrayList al = (ArrayList) cm.get(id);
+    ArrayList al = (ArrayList) threadConnectionMap.get(id);
     if (al == null) {
       // First connection for this DistributedMember. Make sure list for this
       // stub is created if it isn't already there.
       al = new ArrayList();
 
-      if (this.threadConnectionMap == null) {
+      final Map local = this.threadConnectionMap;
+      if (local == null) {
         // This instance is being destroyed; fail the operation
         closeCon(
             "Connection table being destroyed",
@@ -519,7 +521,9 @@ public class ConnectionTable {
       }
       // Since it's a concurrent map, we just try to put it and then
       // return whichever we got.
-      Object o = this.threadConnectionMap.putIfAbsent(id, al);
+      ArrayList tempAl = al;
+      Object o = JavaWorkarounds.computeIfAbsent(this.threadConnectionMap, id, k -> tempAl);
+
       if (o != null) {
         al = (ArrayList) o;
       }
@@ -692,6 +696,14 @@ public class ConnectionTable {
       this.unorderedConnectionMap.clear();
     }
     if (this.threadConnectionMap != null) {
+      synchronized (this.threadConnectionMap) {
+        for (Iterator it = this.threadConnectionMap.values().iterator(); it.hasNext();) {
+          closeCon(
+              "Connection table being destroyed",
+              it.next());
+        }
+        this.threadConnectionMap.clear();
+      }
       this.threadConnectionMap = null;
     }
     if (this.threadConnMaps != null) {
