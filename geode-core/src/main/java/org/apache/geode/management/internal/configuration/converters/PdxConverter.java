@@ -28,7 +28,6 @@ public class PdxConverter extends ConfigurationConverter<Pdx, PdxType> {
     pdx.setReadSerialized(xmlObject.isReadSerialized());
     pdx.setDiskStoreName(xmlObject.getDiskStoreName());
     pdx.setIgnoreUnreadFields(xmlObject.isIgnoreUnreadFields());
-    pdx.setPersistent(xmlObject.isPersistent());
     pdx.setPdxSerializer(converter.fromXmlObject(xmlObject.getPdxSerializer()));
     return pdx;
   }
@@ -39,7 +38,7 @@ public class PdxConverter extends ConfigurationConverter<Pdx, PdxType> {
     xmlType.setReadSerialized(configObject.isReadSerialized());
     xmlType.setDiskStoreName(configObject.getDiskStoreName());
     xmlType.setIgnoreUnreadFields(configObject.isIgnoreUnreadFields());
-    xmlType.setPersistent(configObject.isPersistent());
+    xmlType.setPersistent(configObject.getDiskStoreName()!=null);
     xmlType.setPdxSerializer(converter.fromConfigObject(configObject.getPdxSerializer()));
     return xmlType;
   }

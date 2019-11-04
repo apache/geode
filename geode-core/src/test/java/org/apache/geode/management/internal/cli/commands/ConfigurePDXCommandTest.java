@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Before;
@@ -36,6 +37,7 @@ import org.junit.Test;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class ConfigurePDXCommandTest {
@@ -233,5 +235,16 @@ public class ConfigurePDXCommandTest {
 
     verify(clusterConfigurationService, times(1)).updateCacheConfig(any(), any());
     verify(command, times(1)).createReflectionBasedAutoSerializer(false, patterns);
+  }
+
+  @Test
+  public void name() throws Exception {
+    ReflectionBasedAutoSerializer autoSerializer = new ReflectionBasedAutoSerializer(true, ".*");
+    Properties properties = autoSerializer.getConfig();
+
+    autoSerializer = new ReflectionBasedAutoSerializer(false, "foo", "bar", ".xyz");
+    Properties properties2 = autoSerializer.getConfig();
+
+    System.out.println();
   }
 }

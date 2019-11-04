@@ -19,7 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.PdxType;
+import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Pdx;
 
 public class PdxConverterTest {
@@ -29,20 +31,29 @@ public class PdxConverterTest {
   public void fromConfig() {
     Pdx pdx = new Pdx();
     pdx.setReadSerialized(true);
-    pdx.setPersistent(true);
+    pdx.setDiskStoreName("test");
+    pdx.setIgnoreUnreadFields(true);
+    pdx.setPdxSerializer(new ClassName("java.lang.String"));
     PdxType pdxType = converter.fromConfigObject(pdx);
     assertThat(pdxType.isPersistent()).isTrue();
     assertThat(pdxType.isReadSerialized()).isTrue();
+    assertThat(pdxType.getDiskStoreName()).isEqualTo("test");
+    assertThat(pdxType.getPdxSerializer().getClassName()).isEqualTo("java.lang.String");
+    assertThat(pdxType.isIgnoreUnreadFields()).isTrue();
   }
 
   @Test
   public void fromXmlObject() {
     PdxType pdxType = new PdxType();
     pdxType.setDiskStoreName("test");
-    pdxType.setIgnoreUnreadFields(false);
+    pdxType.setIgnoreUnreadFields(true);
+    pdxType.setPersistent(true);
+    pdxType.setReadSerialized(true);
+    pdxType.setPdxSerializer(new DeclarableType("java.lang.String"));
     Pdx pdxConfig = converter.fromXmlObject(pdxType);
     assertThat(pdxConfig.getDiskStoreName()).isEqualTo("test");
-    assertThat(pdxConfig.isIgnoreUnreadFields()).isEqualTo(false);
-    assertThat(pdxConfig.isPersistent()).isNull();
+    assertThat(pdxConfig.isIgnoreUnreadFields()).isEqualTo(true);
+    assertThat(pdxConfig.isReadSerialized()).isEqualTo(true);
+    assertThat(pdxConfig.getPdxSerializer().getClassName()).isEqualTo("java.lang.String");
   }
 }
