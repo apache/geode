@@ -1,171 +1,442 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.test.greplogs;
 
 import static java.lang.System.lineSeparator;
+import static org.apache.geode.test.dunit.VM.getAllVMs;
+import static org.apache.geode.test.dunit.VM.getController;
+import static org.apache.geode.test.dunit.VM.getLocator;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.toArray;
+import static org.apache.geode.test.greplogs.LogConsumerDistributedTest.TargetVM.ANY_VM;
+import static org.apache.geode.test.greplogs.LogConsumerDistributedTest.TargetVM.CONTROLLER;
+import static org.apache.geode.test.greplogs.LogConsumerDistributedTest.TargetVM.LOCATOR;
+import static org.apache.geode.test.junit.runners.TestRunner.runTest;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Pattern;
+import java.io.Serializable;
 
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.runner.Result;
 
-public class LogConsumerTest {
+import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedRule;
+
+@SuppressWarnings("serial")
+public class LogConsumerDistributedTest implements Serializable {
+
+  private static final Logger logger = LogService.getLogger();
+
+  private static final String message = "just a message";
+
+  private static volatile TargetVM targetVM;
+  private static volatile SerializableRunnableIF task;
 
   @Rule
-  public TestName testName = new TestName();
+  public DistributedRule distributedRule = new DistributedRule();
 
-  private LogConsumer logConsumer;
-
-  @Before
-  public void setUp() {
-    boolean allowSkipLogMessages = false;
-    List<Pattern> expectedStrings = Collections.emptyList();
-    String logFileName = getClass().getSimpleName() + "_" + testName.getMethodName();
-    int repeatLimit = 2;
-
-    logConsumer = new LogConsumer(allowSkipLogMessages, expectedStrings, logFileName, repeatLimit);
+  @After
+  public void tearDown() {
+    for (VM vm : toArray(getAllVMs(), getController(), getLocator())) {
+      vm.invoke(() -> {
+        targetVM = null;
+        task = null;
+      });
+    }
   }
 
   @Test
-  public void consumeReturnsNullIfLineIsOk() {
-    StringBuilder value = logConsumer.consume("ok");
+  public void traceLogMessagePasses() {
+    given(CONTROLLER, () -> logger.trace(message));
 
-    assertThat(value).isNull();
+    Result result = runTest(ExecuteTaskSync.class);
+
+    assertThat(result.wasSuccessful()).isTrue();
   }
 
   @Test
-  public void consumeReturnsNullIfLineIsEmpty() {
-    StringBuilder value = logConsumer.consume("");
+  public void debugLogMessagePasses() {
+    given(CONTROLLER, () -> logger.debug(message));
 
-    assertThat(value).isNull();
+    Result result = runTest(ExecuteTaskSync.class);
+
+    assertThat(result.wasSuccessful()).isTrue();
   }
 
   @Test
-  public void consumeThrowsNullPointerExceptionIfLineIsNull() {
-    Throwable thrown = catchThrowable(() -> logConsumer.consume(null));
+  public void infoLogMessagePasses() {
+    given(CONTROLLER, () -> logger.info(message));
 
-    assertThat(thrown)
-        .isInstanceOf(NullPointerException.class);
+    Result result = runTest(ExecuteTaskSync.class);
+
+    assertThat(result.wasSuccessful()).isTrue();
   }
 
   @Test
-  public void closeReturnsNullIfLineIsOk() {
-    logConsumer.consume("ok");
+  public void warnLogMessagePasses() {
+    given(CONTROLLER, () -> logger.warn(message));
 
-    StringBuilder value = logConsumer.close();
+    Result result = runTest(ExecuteTaskSync.class);
 
-    assertThat(value).isNull();
+    assertThat(result.wasSuccessful()).isTrue();
   }
 
   @Test
-  public void closeReturnsNullIfLineIsEmpty() {
-    logConsumer.consume("");
+  public void errorLogMessageFails() {
+    given(CONTROLLER, () -> logger.error(message));
 
-    StringBuilder value = logConsumer.close();
+    Result result = runTest(ExecuteTaskSync.class);
 
-    assertThat(value).isNull();
+    assertThat(result.wasSuccessful()).isFalse();
   }
 
   @Test
-  public void closeReturnsNullIfLineContainsInfoLogStatementWithException() {
-    logConsumer.consume("[info 019/06/13 14:41:05.750 PDT <main> tid=0x1] " +
-        NullPointerException.class.getName());
+  public void fatalLogMessageFails() {
+    given(CONTROLLER, () -> logger.fatal(message));
 
-    StringBuilder value = logConsumer.close();
+    Result result = runTest(ExecuteTaskSync.class);
 
-    assertThat(value).isNull();
+    assertThat(result.wasSuccessful()).isFalse();
   }
 
   @Test
-  public void closeReturnsLineIfLineContainsErrorLogStatement() {
-    String line = "[error 019/06/13 14:41:05.750 PDT <main> tid=0x1] message";
-    logConsumer.consume(line);
+  public void asyncErrorLogMessageFails() {
+    given(CONTROLLER, () -> logger.error(message));
 
-    StringBuilder value = logConsumer.close();
+    Result result = runTest(ExecuteTaskAsync.class);
 
-    assertThat(value).contains(line);
+    assertThat(result.wasSuccessful()).isFalse();
   }
 
   @Test
-  public void closeReturnsNullIfLineContainsWarningLogStatement() {
-    logConsumer.consume("[warning 2019/06/13 14:41:05.750 PDT <main> tid=0x1] message");
+  public void asyncFatalLogMessageFails() {
+    given(CONTROLLER, () -> logger.fatal(message));
 
-    StringBuilder value = logConsumer.close();
+    Result result = runTest(ExecuteTaskAsync.class);
 
-    assertThat(value).isNull();
+    assertThat(result.wasSuccessful()).isFalse();
   }
 
   @Test
-  public void closeReturnsLineIfLineContainsFatalLogStatement() {
-    String line = "[fatal 2019/06/13 14:41:05.750 PDT <main> tid=0x1] message";
-    logConsumer.consume(line);
+  public void errorLogMessageIncludedInFailure() {
+    given(CONTROLLER, () -> logger.error(message));
 
-    StringBuilder value = logConsumer.close();
+    Result result = runTest(ExecuteTaskSync.class);
 
-    assertThat(value).contains(line);
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("error")
+        .hasMessageContaining(message);
   }
 
   @Test
-  public void closeReturnsLineIfLineContainsSevereLogStatement() {
-    String line = "[severe 2019/06/13 14:41:05.750 PDT <main> tid=0x1] message";
-    logConsumer.consume(line);
+  public void fatalLogMessageIncludedInFailure() {
+    given(CONTROLLER, () -> logger.fatal(message));
 
-    StringBuilder value = logConsumer.close();
+    Result result = runTest(ExecuteTaskSync.class);
 
-    assertThat(value).contains(line);
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("fatal")
+        .hasMessageContaining(message);
   }
 
   @Test
-  public void closeReturnsLineIfLineContainsMalformedLog4jStatement() {
-    String line = "[info 2019/06/13 14:41:05.750 PDT <main> tid=0x1] contains {}";
-    logConsumer.consume(line);
+  public void errorLogMessageFailsInVm() {
+    given(ANY_VM, () -> logger.error(message));
 
-    StringBuilder value = logConsumer.close();
+    Result result = runTest(ExecuteTaskSync.class);
 
-    assertThat(value).contains(line);
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("error")
+        .hasMessageContaining(message);
   }
 
   @Test
-  public void closeReturnsNullIfLineContainsHydraMasterLocatorsWildcard() {
-    String line = "hydra.MasterDescription.master.locators={}";
-    logConsumer.consume(line);
+  public void fatalLogMessageFailsInVm() {
+    given(ANY_VM, () -> logger.fatal(message));
 
-    StringBuilder value = logConsumer.close();
+    Result result = runTest(ExecuteTaskSync.class);
 
-    assertThat(value).isNull();
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("fatal")
+        .hasMessageContaining(message);
+  }
+
+  @Test
+  public void asyncErrorLogMessageFailsInVm() {
+    given(ANY_VM, () -> logger.error(message));
+
+    Result result = runTest(ExecuteTaskAsync.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("error")
+        .hasMessageContaining(message);
+  }
+
+  @Test
+  public void asyncFatalLogMessageFailsInVm() {
+    given(ANY_VM, () -> logger.fatal(message));
+
+    Result result = runTest(ExecuteTaskAsync.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("fatal")
+        .hasMessageContaining(message);
+  }
+
+  @Test
+  public void errorLogMessageFailsInController() {
+    given(CONTROLLER, () -> logger.error(message));
+
+    Result result = runTest(ExecuteTaskSync.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("error")
+        .hasMessageContaining(message);
+  }
+
+  @Test
+  public void fatalLogMessageFailsInController() {
+    given(CONTROLLER, () -> logger.fatal(message));
+
+    Result result = runTest(ExecuteTaskSync.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("fatal")
+        .hasMessageContaining(message);
+  }
+
+  @Test
+  public void asyncErrorLogMessageFailsInController() {
+    given(CONTROLLER, () -> logger.error(message));
+
+    Result result = runTest(ExecuteTaskAsync.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("error")
+        .hasMessageContaining(message);
+  }
+
+  @Test
+  public void asyncFatalLogMessageFailsInController() {
+    given(CONTROLLER, () -> logger.fatal(message));
+
+    Result result = runTest(ExecuteTaskAsync.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("fatal")
+        .hasMessageContaining(message);
+  }
+
+  @Test
+  public void errorLogMessageFailsInLocator() {
+    given(LOCATOR, () -> logger.error(message));
+
+    Result result = runTest(ExecuteTaskSync.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("error")
+        .hasMessageContaining(message);
+  }
+
+  @Test
+  public void fatalLogMessageFailsInLocator() {
+    given(LOCATOR, () -> logger.fatal(message));
+
+    Result result = runTest(ExecuteTaskSync.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("fatal")
+        .hasMessageContaining(message);
+  }
+
+  @Test
+  public void asyncErrorLogMessageFailsInLocator() {
+    given(LOCATOR, () -> logger.error(message));
+
+    Result result = runTest(ExecuteTaskAsync.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("error")
+        .hasMessageContaining(message);
+  }
+
+  @Test
+  public void asyncFatalLogMessageFailsInLocator() {
+    given(LOCATOR, () -> logger.fatal(message));
+
+    Result result = runTest(ExecuteTaskAsync.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("fatal")
+        .hasMessageContaining(message);
+  }
+
+  @Test
+  public void errorLogMessage_loggedInBefore_failsInLocator() {
+    given(LOCATOR, () -> logger.error(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION));
+
+    Result result = runTest(ExecuteTaskBefore.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("error")
+        .hasMessageContaining(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION);
+  }
+
+  @Test
+  public void errorLogMessage_loggedInBeforeClass_failsInLocator() {
+    given(LOCATOR, () -> logger.error(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION));
+
+    Result result = runTest(ExecuteTaskBeforeClass.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("error")
+        .hasMessageContaining(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION);
   }
 
   /**
    * I was seeing dunit tests pass despite having this stack trace logged by the locator. This test
-   * verifies that LogConsumer does match this stack trace.
+   * verifies that LogConsumer does match this stack trace with the dunit exclusions in place.
    */
   @Test
-  public void closeReturnsLineIfLineContains_CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION() {
-    logConsumer.consume(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION);
+  public void CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION_failsInLocator() {
+    given(LOCATOR, () -> logger.error(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION));
 
-    StringBuilder value = logConsumer.close();
+    Result result = runTest(ExecuteTaskSync.class);
 
-    assertThat(value).contains(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION);
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("error")
+        .hasMessageContaining(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION);
+  }
+
+  private static void given(TargetVM targetVM, SerializableRunnableIF task) {
+    for (VM vm : toArray(getAllVMs(), getController(), getLocator())) {
+      vm.invoke(() -> {
+        LogConsumerDistributedTest.targetVM = targetVM;
+        LogConsumerDistributedTest.task = task;
+      });
+    }
+  }
+
+  private static Throwable getFailure(Result result) {
+    assertThat(result.getFailures()).hasSize(1);
+    return result.getFailures().get(0).getException();
+  }
+
+  private static VM getTargetVm() {
+    switch (targetVM) {
+      case CONTROLLER:
+        return getController();
+      case ANY_VM:
+        return getVM(0);
+      case LOCATOR:
+        return getLocator();
+      default:
+        throw new IllegalStateException("VM for " + targetVM + " not found");
+    }
+  }
+
+  enum TargetVM {
+    CONTROLLER,
+    LOCATOR,
+    ANY_VM
+  }
+
+  public static class ExecuteTaskSync implements Serializable {
+
+    @Rule
+    public DistributedRule distributedRule = new DistributedRule();
+
+    @Test
+    public void invokeTaskInTargetVm() {
+      getTargetVm().invoke(() -> task.run());
+    }
+  }
+
+  public static class ExecuteTaskAsync implements Serializable {
+
+    private transient AsyncInvocation<Void> asyncInvocation;
+
+    @Rule
+    public DistributedRule distributedRule = new DistributedRule();
+
+    @After
+    public void tearDown() throws Exception {
+      asyncInvocation.await();
+    }
+
+    @Test
+    public void invokeTaskInTargetVm() {
+      asyncInvocation = getTargetVm().invokeAsync(() -> task.run());
+    }
+  }
+
+  public static class ExecuteTaskBefore implements Serializable {
+
+    @Rule
+    public DistributedRule distributedRule = new DistributedRule();
+
+    @Before
+    public void invokeTaskInBefore() {
+      getTargetVm().invokeAsync(() -> task.run());
+    }
+
+    @Test
+    public void doNothing() {
+      // nothing
+    }
+  }
+
+  public static class ExecuteTaskBeforeClass implements Serializable {
+
+    @BeforeClass
+    public static void invokeTaskInBeforeClass() {
+      getTargetVm().invokeAsync(() -> task.run());
+    }
+
+    @Rule
+    public DistributedRule distributedRule = new DistributedRule();
+
+    @Test
+    public void doNothing() {
+      // nothing
+    }
   }
 
   private static final String CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION =
