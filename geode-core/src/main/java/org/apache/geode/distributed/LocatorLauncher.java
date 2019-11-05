@@ -283,7 +283,11 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   /**
    * Returns the status of the locator on the given host & port
+   *
+   * @deprecated in Geode 1.12. Use statusLocator() instance method instead.
+   *             This static method does not use the properties set via the Builder.
    */
+  @Deprecated
   public static LocatorStatusResponse statusLocator(int port, InetAddress bindAddress)
       throws IOException {
     // final int timeout = (60 * 2 * 1000); // 2 minutes
@@ -291,6 +295,23 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     try {
       TcpClient client = new TcpClient(new DistributionConfigImpl(new Properties()));
+      return (LocatorStatusResponse) client.requestToServer(bindAddress, port,
+          new LocatorStatusRequest(), timeout, true);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Returns the status of the locator on the given host & port
+   */
+  public LocatorStatusResponse statusForLocator(int port, InetAddress bindAddress)
+      throws IOException {
+    // final int timeout = (60 * 2 * 1000); // 2 minutes
+    final int timeout = Integer.MAX_VALUE; // 2 minutes
+
+    try {
+      TcpClient client = new TcpClient(new DistributionConfigImpl(getProperties()));
       return (LocatorStatusResponse) client.requestToServer(bindAddress, port,
           new LocatorStatusRequest(), timeout, true);
     } catch (ClassNotFoundException e) {
@@ -825,7 +846,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
     while (System.currentTimeMillis() < endTimeInMilliseconds) {
       try {
-        LocatorStatusResponse response = statusLocator(getPort(), getBindAddress());
+        LocatorStatusResponse response = statusForLocator(getPort(), getBindAddress());
         return new LocatorState(this, Status.ONLINE, response);
       } catch (Exception handled) {
         timedWait(interval, timeUnit);
@@ -950,7 +971,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   private LocatorState statusWithPort() {
     try {
-      LocatorStatusResponse response = statusLocator(getPort(), getBindAddress());
+      LocatorStatusResponse response = statusForLocator(getPort(), getBindAddress());
       return new LocatorState(this, Status.ONLINE, response);
     } catch (Exception handled) {
       return createNoResponseState(handled,
