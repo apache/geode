@@ -38,14 +38,14 @@ public class SocketCreatorJUnitTest {
 
   @Test
   public void testCreateSocketCreatorWithKeystoreUnset() throws Exception {
-    SSLConfig.Builder sslConfigBuilder = new SSLConfig.Builder();
-    sslConfigBuilder.setEnabled(true);
-    sslConfigBuilder.setKeystore(null);
-    sslConfigBuilder.setKeystorePassword("");
-    sslConfigBuilder.setTruststore(getSingleKeyKeystore());
-    sslConfigBuilder.setTruststorePassword("password");
+    SSLConfig testSSLConfig = new SSLConfig();
+    testSSLConfig.setEnabled(true);
+    testSSLConfig.setKeystore(null);
+    testSSLConfig.setKeystorePassword("");
+    testSSLConfig.setTruststore(getSingleKeyKeystore());
+    testSSLConfig.setTruststorePassword("password");
     // GEODE-3393: This would fail with java.io.FileNotFoundException: $USER_HOME/.keystore
-    new SocketCreator(sslConfigBuilder.build());
+    new SocketCreator(testSSLConfig);
 
   }
 

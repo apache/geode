@@ -1688,16 +1688,15 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   }
 
   protected SSLConfig buildSSLConfig() {
-    SSLConfig.Builder sslConfigBuilder = new SSLConfig.Builder();
-
+    SSLConfig conf = new SSLConfig();
     if (getConfig() != null) {
-      sslConfigBuilder.setEnabled(getConfig().isSSLEnabled());
-      sslConfigBuilder.setProtocols(getConfig().getSSLProtocols());
-      sslConfigBuilder.setCiphers(getConfig().getSSLCiphers());
-      sslConfigBuilder.setRequireAuth(getConfig().isSSLAuthenticationRequired());
-      sslConfigBuilder.setProperties(getConfig().getSSLProperties());
+      conf.setEnabled(getConfig().isSSLEnabled());
+      conf.setProtocols(getConfig().getSSLProtocols());
+      conf.setCiphers(getConfig().getSSLCiphers());
+      conf.setRequireAuth(getConfig().isSSLAuthenticationRequired());
+      conf.setProperties(getConfig().getSSLProperties());
     }
-    return sslConfigBuilder.build();
+    return conf;
   }
 
   /**
