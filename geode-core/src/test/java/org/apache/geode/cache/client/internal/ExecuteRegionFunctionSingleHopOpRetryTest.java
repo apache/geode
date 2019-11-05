@@ -137,7 +137,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
   }
 
   private void createMocks(final HAStatus haStatus,
-      final FailureMode failureModeArg) {
+      final FailureMode failureModeArg, Integer retryAttempts) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
         (pool, failureMode) -> ExecuteFunctionTestSupport.thenThrow(when(
@@ -146,7 +146,8 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
                 ArgumentMatchers.any(),
                 ArgumentMatchers.anyBoolean(),
                 ArgumentMatchers.anyBoolean())),
-            failureMode));
+            failureMode),
+        retryAttempts);
 
     serverToFilterMap = new HashMap<>();
     serverToFilterMap.put(new ServerLocation("host1", 10), new HashSet<>());
@@ -158,7 +159,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
       final int retryAttempts, final int expectTries,
       final FailureMode failureMode) {
 
-    createMocks(haStatus, failureMode);
+    createMocks(haStatus, failureMode, retryAttempts);
 
     executeFunctionSingleHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
         testSupport.getExecutablePool(),
@@ -182,7 +183,6 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
             () -> ignoreServerConnectivityException(() -> ExecuteRegionFunctionSingleHopOp.execute(
                 executablePool, testSupport.getRegion(),
                 executor, resultCollector, serverToFilterMap,
-                retryAttempts,
                 testSupport.toBoolean(haStatus),
                 executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     testSupport.getRegion().getFullPath(), FUNCTION_NAME,
@@ -199,7 +199,6 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
         ignoreServerConnectivityException(
             () -> ExecuteRegionFunctionSingleHopOp.execute(executablePool, testSupport.getRegion(),
                 executor, resultCollector, serverToFilterMap,
-                retryAttempts,
                 function.isHA(),
                 executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     testSupport.getRegion().getFullPath(), function,

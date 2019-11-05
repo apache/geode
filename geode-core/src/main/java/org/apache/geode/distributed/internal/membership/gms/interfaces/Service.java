@@ -14,9 +14,9 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
 /**
  * Services in GMS all implement this interface
@@ -74,9 +74,9 @@ public interface Service {
   /**
    * a member is suspected of having crashed
    */
-  void memberSuspected(GMSMember initiator, GMSMember suspect,
+  void memberSuspected(MemberIdentifier initiator, MemberIdentifier suspect,
       String reason);
 
 
-  default void setLocalAddress(GMSMember address) {}
+  default void setLocalAddress(MemberIdentifier address) {}
 }

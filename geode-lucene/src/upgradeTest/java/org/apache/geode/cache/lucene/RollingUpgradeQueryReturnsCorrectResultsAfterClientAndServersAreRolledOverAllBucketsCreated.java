@@ -17,7 +17,6 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
@@ -32,7 +31,6 @@ import org.apache.geode.test.dunit.VM;
 public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRolledOverAllBucketsCreated
     extends LuceneSearchWithRollingUpgradeDUnit {
 
-  @Ignore("Disabled until GEODE-7258 is fixed")
   @Test
   public void test()
       throws Exception {
@@ -85,7 +83,8 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRol
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server1);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server2);
       invokeRunnableInVMs(
-          invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts, false),
+          invokeCreateClientCache(getClientSystemProperties(), hostNames, locatorPorts, false,
+              singleHopEnabled),
           client);
 
       // Create the index on the servers
@@ -107,7 +106,7 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRol
       locator = rollLocatorToCurrent(locator, hostName, locatorPorts[0], getTestMethodName(),
           locatorString);
       server1 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server1, regionType, null,
-          shortcut.name(), regionName, locatorPorts);
+          shortcut.name(), regionName, locatorPorts, reindex);
 
       // Execute a query on the client and verify the results. This also waits until flushed.
       client.invoke(() -> verifyLuceneQueryResults(regionName, numObjects));

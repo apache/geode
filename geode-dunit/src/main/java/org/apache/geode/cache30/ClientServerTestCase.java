@@ -252,7 +252,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
 
   protected static DistributedMember getMemberId() {
     await("Waiting for client to connect " + getSystemStatic().getMemberId())
-        .until(() -> getSystemStatic().getDistributedMember().getPort() > 0);
+        .until(() -> getSystemStatic().getDistributedMember().getMembershipPort() > 0);
     return getSystemStatic().getDistributedMember();
   }
 

@@ -74,11 +74,13 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -144,7 +146,7 @@ public class JGroupsMessengerJUnitTest {
     nonDefault.put(ACK_WAIT_THRESHOLD, "1");
     nonDefault.putAll(addProp);
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
-    tconfig = new RemoteTransportConfig(config, GMSMember.NORMAL_DM_TYPE);
+    tconfig = new RemoteTransportConfig(config, MemberIdentifier.NORMAL_DM_TYPE);
 
     stopper = mock(Stopper.class);
     when(stopper.isCancelInProgress()).thenReturn(false);
@@ -181,6 +183,7 @@ public class JGroupsMessengerJUnitTest {
 
     // if I do this earlier then test this return messenger as null
     when(services.getMessenger()).thenReturn(messenger);
+    when(services.getMemberFactory()).thenReturn(new MemberIdentifierFactoryImpl());
 
     String jgroupsConfig = messenger.jgStackConfig;
     int startIdx = jgroupsConfig.indexOf("<org");
@@ -214,7 +217,7 @@ public class JGroupsMessengerJUnitTest {
     messenger.installView(v);
     messenger.handleJGroupsIOException(new IOException("je m'en fiche"),
         new JGAddress(v.getMembers().get(1)));
-    verify(healthMonitor).checkIfAvailable(isA(GMSMember.class), isA(String.class),
+    verify(healthMonitor).checkIfAvailable(isA(MemberIdentifier.class), isA(String.class),
         isA(Boolean.class));
   }
 
@@ -228,13 +231,13 @@ public class JGroupsMessengerJUnitTest {
     messenger.installView(v);
     messenger.handleJGroupsIOException(new IOException("fichez-moi le camp"),
         new JGAddress(v.getMembers().get(1)));
-    verify(healthMonitor, never()).checkIfAvailable(isA(GMSMember.class),
+    verify(healthMonitor, never()).checkIfAvailable(isA(MemberIdentifier.class),
         isA(String.class), isA(Boolean.class));
   }
 
   private GMSMembershipView createView() {
-    GMSMember sender = messenger.getMemberID();
-    List<GMSMember> mbrs = new ArrayList<>();
+    MemberIdentifier sender = messenger.getMemberID();
+    List<MemberIdentifier> mbrs = new ArrayList<>();
     mbrs.add(sender);
     mbrs.add(createAddress(100));
     mbrs.add(createAddress(101));
@@ -269,11 +272,11 @@ public class JGroupsMessengerJUnitTest {
     initMocks(false);
     BufferDataOutputStream out =
         new BufferDataOutputStream(500, Version.getCurrentVersion());
-    GMSMember mbr = createAddress(8888);
-    mbr.setMemberWeight((byte) 40);
+    MemberIdentifier mbr = createAddress(8888);
+    mbr.getMemberData().setMemberWeight((byte) 40);
     mbr.toData(out, mock(SerializationContext.class));
     DataInputStream in = new DataInputStream(new ByteArrayInputStream(out.toByteArray()));
-    mbr = new GMSMember();
+    mbr = new InternalDistributedMember();
     mbr.fromData(in, mock(DeserializationContext.class));
     assertEquals(40, mbr.getMemberWeight());
   }
@@ -283,7 +286,7 @@ public class JGroupsMessengerJUnitTest {
     for (int i = 0; i < 2; i++) {
       boolean enableMcast = (i == 1);
       initMocks(enableMcast);
-      GMSMember mbr = createAddress(8888);
+      MemberIdentifier mbr = createAddress(8888);
       HeartbeatMessage msg =
           mock(HeartbeatMessage.class);
       when(msg.getRecipients()).thenReturn(Collections.singletonList(mbr));
@@ -326,7 +329,7 @@ public class JGroupsMessengerJUnitTest {
       JChannel realChannel = messenger.myChannel;
       messenger.myChannel = mockChannel;
       try {
-        GMSMember mbr = createAddress(8888);
+        MemberIdentifier mbr = createAddress(8888);
         HeartbeatMessage msg = mock(HeartbeatMessage.class);
         when(msg.getRecipients()).thenReturn(Collections.singletonList(mbr));
         when(msg.getMulticast()).thenReturn(enableMcast);
@@ -367,7 +370,7 @@ public class JGroupsMessengerJUnitTest {
       when(services.getShutdownCause()).thenReturn(shutdownCause);
 
       try {
-        GMSMember mbr = createAddress(8888);
+        MemberIdentifier mbr = createAddress(8888);
         HeartbeatMessage msg = mock(HeartbeatMessage.class);
         when(msg.getRecipients()).thenReturn(Collections.singletonList(mbr));
         when(msg.getMulticast()).thenReturn(enableMcast);
@@ -402,7 +405,7 @@ public class JGroupsMessengerJUnitTest {
       JChannel realChannel = messenger.myChannel;
       messenger.myChannel = mockChannel;
       try {
-        GMSMember mbr = createAddress(8888);
+        MemberIdentifier mbr = createAddress(8888);
         HeartbeatMessage msg =
             mock(HeartbeatMessage.class);
         when(msg.getRecipients()).thenReturn(Collections.singletonList(mbr));
@@ -425,7 +428,7 @@ public class JGroupsMessengerJUnitTest {
     for (int i = 0; i < 2; i++) {
       boolean enableMcast = (i == 1);
       initMocks(enableMcast);
-      GMSMember mbr = createAddress(8888);
+      MemberIdentifier mbr = createAddress(8888);
       HeartbeatMessage msg =
           mock(HeartbeatMessage.class);
       when(msg.getRecipients()).thenReturn(Collections.singletonList(mbr));
@@ -462,12 +465,12 @@ public class JGroupsMessengerJUnitTest {
     MessageHandler mh = mock(MessageHandler.class);
     messenger.addHandler(JoinRequestMessage.class, mh);
 
-    GMSMember addr = messenger.getMemberID();
+    MemberIdentifier addr = messenger.getMemberID();
     GMSMembershipView v = new GMSMembershipView(addr);
     when(joinLeave.getView()).thenReturn(v);
 
 
-    GMSMember sender = createAddress(8888);
+    MemberIdentifier sender = createAddress(8888);
 
     JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, null, -1, 0);
 
@@ -509,13 +512,13 @@ public class JGroupsMessengerJUnitTest {
     MessageHandler mh = mock(MessageHandler.class);
     messenger.addHandler(JoinRequestMessage.class, mh);
 
-    GMSMember sender = messenger.getMemberID();
+    MemberIdentifier sender = messenger.getMemberID();
     GMSMembershipView v = new GMSMembershipView(sender);
     when(joinLeave.getView()).thenReturn(v);
     messenger.installView(v);
 
     // send a big message and expect fragmentation
-    GMSMember recipient = broadcastMessage ? null : messenger.localAddress;
+    MemberIdentifier recipient = broadcastMessage ? null : messenger.localAddress;
     services.getSerializer().registerDSFID(ByteHolder.DSFID, ByteHolder.class);
     JoinRequestMessage msg = new JoinRequestMessage(recipient, sender,
         new ByteHolder(
@@ -553,7 +556,7 @@ public class JGroupsMessengerJUnitTest {
     int seqno = 1;
     for (Message m : messages) {
       if (jgroupsWillUseMulticast) {
-        m.setSrc(messenger.localAddress.getUUID());
+        m.setSrc(messenger.localAddress.getMemberData().getUUID());
       } else {
         m.setSrc(fakeMember);
         UNICAST3.Header oldHeader = (UNICAST3.Header) m.getHeader(unicastHeaderId);
@@ -572,15 +575,15 @@ public class JGroupsMessengerJUnitTest {
   @Test
   public void testSendToMultipleMembers() throws Exception {
     initMocks(false);
-    GMSMember sender = messenger.getMemberID();
-    GMSMember other = createAddress(8888);
+    MemberIdentifier sender = messenger.getMemberID();
+    MemberIdentifier other = createAddress(8888);
 
     GMSMembershipView v = new GMSMembershipView(sender);
     v.add(other);
     when(joinLeave.getView()).thenReturn(v);
     messenger.installView(v);
 
-    List<GMSMember> recipients = v.getMembers();
+    List<MemberIdentifier> recipients = v.getMembers();
     HeartbeatMessage msg = new HeartbeatMessage();
     msg.setRecipients(recipients);
 
@@ -746,7 +749,7 @@ public class JGroupsMessengerJUnitTest {
   @Test
   public void testMessageFiltering() throws Exception {
     initMocks(true);
-    GMSMember mbr = createAddress(8888);
+    MemberIdentifier mbr = createAddress(8888);
     GMSMembershipView view = new GMSMembershipView(mbr);
 
     // the digest should be set in an outgoing join response
@@ -777,7 +780,7 @@ public class JGroupsMessengerJUnitTest {
   public void testPingPong() throws Exception {
     initMocks(false);
     GMSPingPonger pinger = messenger.pingPonger;
-    GMSMember mbr = createAddress(8888);
+    MemberIdentifier mbr = createAddress(8888);
     JGAddress addr = new JGAddress(mbr);
 
     Message pingMessage = pinger.createPingMessage(null, addr);
@@ -817,7 +820,7 @@ public class JGroupsMessengerJUnitTest {
   @Test
   public void testJGroupsIOExceptionHandler() throws Exception {
     initMocks(false);
-    GMSMember mbr = createAddress(8888);
+    MemberIdentifier mbr = createAddress(8888);
     GMSMembershipView v = new GMSMembershipView(mbr);
     v.add(messenger.getMemberID());
     messenger.installView(v);
@@ -850,14 +853,14 @@ public class JGroupsMessengerJUnitTest {
     receiver.receive(msg);
 
     // now create a view and a real distribution-message
-    GMSMember myAddress = messenger.getMemberID();
-    GMSMember other = createAddress(8888);
+    MemberIdentifier myAddress = messenger.getMemberID();
+    MemberIdentifier other = createAddress(8888);
     GMSMembershipView v = new GMSMembershipView(myAddress);
     v.add(other);
     when(joinLeave.getView()).thenReturn(v);
     messenger.installView(v);
 
-    List<GMSMember> recipients = v.getMembers();
+    List<MemberIdentifier> recipients = v.getMembers();
     HeartbeatMessage dmsg = new HeartbeatMessage();
     dmsg.setRecipients(recipients);
 
@@ -876,7 +879,7 @@ public class JGroupsMessengerJUnitTest {
     initMocks(false);
     JChannel channel = messenger.myChannel;
     tconfig.setOldDSMembershipInfo(new MembershipInformation(channel,
-        Collections.singleton(new GMSMember("localhost", 10000)),
+        Collections.singleton(new InternalDistributedMember("localhost", 10000)),
         new ConcurrentLinkedQueue<>()));
     JGroupsMessenger newMessenger = new JGroupsMessenger();
     newMessenger.init(services);
@@ -914,7 +917,7 @@ public class JGroupsMessengerJUnitTest {
   public void testWaitForMessageStateSucceeds() throws Exception {
     initMocks(true/* multicast */);
     JGroupsMessenger.MessageTracker tracker = mock(JGroupsMessenger.MessageTracker.class);
-    GMSMember mbr = createAddress(1234);
+    MemberIdentifier mbr = createAddress(1234);
     messenger.scheduledMcastSeqnos.put(mbr, tracker);
     when(tracker.get()).thenReturn(0l, 2l, 49l, 50l, 80l);
     Map state = new HashMap();
@@ -940,7 +943,7 @@ public class JGroupsMessengerJUnitTest {
       // message 50 will never arrive
       Map state = new HashMap();
       state.put("JGroups.mcastState", Long.valueOf(50));
-      GMSMember mbr = createAddress(1234);
+      MemberIdentifier mbr = createAddress(1234);
       messenger.scheduledMcastSeqnos.put(mbr, new JGroupsMessenger.MessageTracker(30));
       messenger.waitForMessageState(mbr, state);
       fail("expected a GemFireIOException to be thrown");
@@ -949,9 +952,9 @@ public class JGroupsMessengerJUnitTest {
     }
   }
 
-  private GMSMembershipView createView(GMSMember otherMbr) {
-    GMSMember sender = messenger.getMemberID();
-    List<GMSMember> mbrs = new ArrayList<>();
+  private GMSMembershipView createView(MemberIdentifier otherMbr) {
+    MemberIdentifier sender = messenger.getMemberID();
+    List<MemberIdentifier> mbrs = new ArrayList<>();
     mbrs.add(sender);
     mbrs.add(otherMbr);
     GMSMembershipView v = new GMSMembershipView(sender, 1, mbrs);
@@ -960,7 +963,7 @@ public class JGroupsMessengerJUnitTest {
 
   @Test
   public void testEncryptedFindCoordinatorRequest() throws Exception {
-    GMSMember otherMbr = new GMSMember("localhost", 8888);
+    MemberIdentifier otherMbr = new InternalDistributedMember("localhost", 8888);
 
     Properties p = new Properties();
     final String udpDhalgo = "AES:128";
@@ -976,9 +979,9 @@ public class JGroupsMessengerJUnitTest {
     messenger.initClusterKey();
 
     FindCoordinatorRequest gfmsg = new FindCoordinatorRequest(messenger.getMemberID(),
-        new ArrayList<GMSMember>(2), 1,
+        new ArrayList<MemberIdentifier>(2), 1,
         messenger.getPublicKey(messenger.getMemberID()), 1, "");
-    List<GMSMember> recipients = new ArrayList<>();
+    List<MemberIdentifier> recipients = new ArrayList<>();
     recipients.add(otherMbr);
     gfmsg.setRecipients(recipients);
 
@@ -1001,7 +1004,7 @@ public class JGroupsMessengerJUnitTest {
 
   @Test
   public void testEncryptedFindCoordinatorResponse() throws Exception {
-    GMSMember otherMbr = new GMSMember("localhost", 8888);
+    MemberIdentifier otherMbr = new InternalDistributedMember("localhost", 8888);
 
     Properties p = new Properties();
 
@@ -1019,7 +1022,7 @@ public class JGroupsMessengerJUnitTest {
 
     FindCoordinatorResponse gfmsg = new FindCoordinatorResponse(messenger.getMemberID(),
         messenger.getMemberID(), messenger.getClusterSecretKey(), 1);
-    List<GMSMember> recipients = new ArrayList<>();
+    List<MemberIdentifier> recipients = new ArrayList<>();
     recipients.add(otherMbr);
     gfmsg.setRecipients(recipients);
 
@@ -1044,7 +1047,7 @@ public class JGroupsMessengerJUnitTest {
 
   @Test
   public void testEncryptedJoinRequest() throws Exception {
-    GMSMember otherMbr = new GMSMember("localhost", 8888);
+    MemberIdentifier otherMbr = new InternalDistributedMember("localhost", 8888);
 
     Properties p = new Properties();
     p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, AES_128);
@@ -1079,7 +1082,7 @@ public class JGroupsMessengerJUnitTest {
 
   @Test
   public void testEncryptedJoinResponse() throws Exception {
-    GMSMember otherMbr = new GMSMember("localhost", 8888);
+    MemberIdentifier otherMbr = new InternalDistributedMember("localhost", 8888);
 
     Properties p = new Properties();
     p.put(ConfigurationProperties.SECURITY_UDP_DHALGO, AES_128);
@@ -1136,11 +1139,11 @@ public class JGroupsMessengerJUnitTest {
 
   }
 
-  private GMSMember createAddress(int port) {
-    GMSMember gms = new GMSMember("localhost", port);
-    gms.setUUID(UUID.randomUUID());
-    gms.setVmKind(GMSMember.NORMAL_DM_TYPE);
-    gms.setVersionOrdinal(Version.getCurrentVersion().ordinal());
+  private MemberIdentifier createAddress(int port) {
+    MemberIdentifier gms = new InternalDistributedMember("localhost", port);
+    gms.getMemberData().setUUID(UUID.randomUUID());
+    gms.setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
+    gms.getMemberData().setVersionOrdinal(Version.getCurrentVersion().ordinal());
     return gms;
   }
 

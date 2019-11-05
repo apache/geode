@@ -155,7 +155,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MemberAttributes;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.BucketAdvisor.ServerBucketProfile;
@@ -5504,7 +5504,7 @@ public class PartitionedRegion extends LocalRegion
 
     servers = cache.getCacheServers();
 
-    Collections.addAll(localServerGroups, MemberAttributes.parseGroups(null,
+    Collections.addAll(localServerGroups, MemberDataBuilder.parseGroups(null,
         cache.getInternalDistributedSystem().getConfig().getGroups()));
 
     for (Object object : servers) {

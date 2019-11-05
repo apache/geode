@@ -73,7 +73,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
 
   short VIEW_ACK_MESSAGE = -151;
   short INSTALL_VIEW_MESSAGE = -150;
-  short GMSMEMBER = -149;
+  // -149 is unused;
   short NETVIEW = -148;
   short GET_VIEW_REQ = -147;
   short GET_VIEW_RESP = -146;

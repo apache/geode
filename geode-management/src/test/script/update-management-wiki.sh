@@ -55,6 +55,23 @@ fi
 MASTER_PAGE_ID=115511910
 DEVELOP_PAGE_ID=132322415
 [[ "${BRANCH}" == "master" ]] && PAGE_ID=$MASTER_PAGE_ID || PAGE_ID=$DEVELOP_PAGE_ID
+[[ "${BRANCH}" == "master" ]] && GEODE_VERSION=$($GEODE/bin/gfsh version) || GEODE_VERSION=develop
+
+#skip generating steps if swagger output has already been generated
+if ! [ -r static/index.html ] ; then
+
+echo ""
+echo "============================================================"
+echo "Checking that swagger-codegen is installed (ignore warning/error if already installed)"
+echo "============================================================"
+brew install swagger-codegen || true
+brew upgrade swagger-codegen || true
+
+echo ""
+echo "============================================================"
+echo "Checking that premailer is installed (ignore warnings/errors if already installed)"
+echo "============================================================"
+pip install premailer
 
 echo ""
 echo "============================================================"
@@ -75,18 +92,10 @@ fi
 
 echo ""
 echo "============================================================"
-echo "Checking that swagger-codegen is installed"
-echo "============================================================"
-brew install swagger-codegen || true
-brew upgrade swagger-codegen || true
-
-echo ""
-echo "============================================================"
 echo "Starting up a locator to access swagger"
 echo "============================================================"
 set -x
 ps -ef | grep swagger-locator | grep java | awk '{print $2}' | xargs kill -9
-[[ "${BRANCH}" == "master" ]] && GEODE_VERSION=$($GEODE/bin/gfsh version) || GEODE_VERSION=develop
 $GEODE/bin/gfsh "start locator --name=swagger-locator"
 set +x
 
@@ -100,28 +109,110 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Uploading to wiki"
+echo "Stopping locator"
 echo "============================================================"
-# step 1a: strip out body/header/html envelope
-# step 1b: add line breaks in code examples, since otherwise they inexplicably get lost in the upload
-# step 1c: escape quotes and newlines
-# step 1d: future: do any search-and-replaces to make it prettier here, such as to make up for lost css
-VALUE=$(cat static/index.html | awk '
+set -x
+ps -ef | grep swagger-locator | grep java | awk '{print $2}' | xargs kill -9
+rm -Rf swagger-locator
+set +x
+
+fi #done skipping generating steps if was already generated
+
+echo ""
+echo "============================================================"
+echo "Transforming docs"
+echo "============================================================"
+# we need to do a number of transforms to tweak the swagger output + make the content acceptable to confluence
+cat static/index.html |
+# clean up a few things premailer will otherwise choke on
+grep -v doctype | sed -e 's/&mdash;/--/g' |
+# convert css style block to inline css (that is the only way confluence accepts styling)
+python -m premailer --method xml --encoding ascii --pretty |
+# strip off the document envelope (otherwise confluence will not accept it) by keeping only lines between the body tags
+awk '
   /<\/body>/ {inbody=0}
   inbody==1  {print}
-  /<body>/   {inbody=1}
-' | awk '
-  /<pre class="example"><code>/ {incode=1}
+  /<body/   {inbody=1}
+' |
+# render linebreaks as <br>'s in preformatted blocks to avoid losing them later
+awk '
+  /<pre class="example".*><code/ {incode=1}
+  /<\/code>/ {incode=0}
   incode==1  {print $0"<br/>"}
   incode!=1  {print}
-  /<\/code>/ {incode=0}
-' | sed 's/"/\\"/g')
-# step 2: get the current page version and ADD 1
+' |
+# insert cwiki TOC macro instead in place of unhelpful Methods/Access/Jump to Models/TOC
+awk '
+  BEGIN{print "<p><ac:structured-macro ac:name=\"toc\" ac:schema-version=\"1\" ac:macro-id=\"34f164af-2eb4-4135-8dd4-aad2ec630267\"><ac:parameter ac:name=\"maxLevel\">2</ac:parameter><ac:parameter ac:name=\"exclude\">Foo</ac:parameter></ac:structured-macro></p>"}
+  />Access</ {skip=1}
+  /<h1 style="font-size:25px"/{skip=0}
+  skip!=1{print}
+' |
+# remove Models TOC and make Models section an h1
+awk '
+  /Jump to.*Methods/ {skip=1}
+  /<div/{skip=0}
+  /<h2.*Models/{gsub(/h2/,"h1")}
+  skip!=1{print}
+' |
+#captialize http method names
+sed -e 's#<span class="http-method" style="text-transform:uppercase">post</span>#POST#g' |
+sed -e 's#<span class="http-method" style="text-transform:uppercase">get</span>#GET#g' |
+sed -e 's#<span class="http-method" style="text-transform:uppercase">put</span>#PUT#g' |
+sed -e 's#<span class="http-method" style="text-transform:uppercase">patch</span>#PATCH#g' |
+sed -e 's#<span class="http-method" style="text-transform:uppercase">delete</span>#DELETE#g' |
+# remove unhelpful lines about Produces */*
+awk '
+  />Produces</ {getline;getline;getline;getline;getline;getline;next}
+  {print}
+' |
+# combine duplicate model name+desc
+sed -e 's#pre;*">\([^<]*\)</code> - \1#pre">\1</code>#g' |
+# prepend /management to /v1 links
+sed -e "s#/management${URI_VERSION}#${URI_VERSION}#g" -e "s#${URI_VERSION}#/management${URI_VERSION}#g" |
+# remove internal swagger endpoint id */*
+sed -e 's/ .<span class="nickname" style="font-weight:bold">[^<]*<.span>.//' |
+# remove Controller from endpoint categories
+sed -e 's/PingManagementController/Ping/g' |
+sed -e 's/ManagementController/ Management/g' |
+sed -e 's/OperationController/ Operation/g' |
+#don't link primitives
+sed -e 's/<a href="#boolean">\([^<]*\)<.a>/\1/g' |
+sed -e 's/<a href="#integer">\([^<]*\)<.a>/\1/g' |
+sed -e 's/<a href="#long">\([^<]*\)<.a>/\1/g' |
+sed -e 's/<a href="#double">\([^<]*\)<.a>/\1/g' |
+sed -e 's/<a href="#string">\([^<]*\)<.a>/\1/g' |
+sed -e 's/<a href="#object">\([^<]*\)<.a>/\1/g' |
+#don't name the body parm
+sed -e 's#Body Parameter</span> -- gatewayReceiverConfig#Request Body</span>#' |
+# "links" : { } is unhelpful
+sed -e 's#"links" : { }#"links" : { "self" : "uri" }#' |
+# make endpoint banners into <h2>'s for TOC
+awk '
+  /div class="method-path"/{sub(/div/,"h2");print;getline;print;getline;sub(/\/div/,"/h2");print;next}
+  {print}
+' |
+# remove "Up" links otherwise they bleed into TOC
+sed -e 's#<a [^<]*float:right">Up</a>##' |
+# remove fancy angle brackets
+sed -e '/&#171;.*&#187;/s/,/_/g' |
+sed -e 's/&#171;/_/g' -e 's/&#187;//g' |
+#work around ever-increasing indent bug
+sed -e 's/class="method" style="margin-left:20p/class="method" style="margin-left:0p/' |
+cat > static/index-xhtml.html
+# if file is empty due to some error, abort!
+! [ -z "$(cat static/index-xhtml.html)" ]
+
+echo ""
+echo "============================================================"
+echo "Uploading to wiki"
+echo "============================================================"
+# get the current page version and ADD 1
 PAGE_VERSION=$(curl -s -u $APACHE_CREDS https://cwiki.apache.org/confluence/rest/api/content/${PAGE_ID} | jq .version.number)
 NEW_PAGE_VERSION=$(( PAGE_VERSION + 1 ))
-# step 3: insert as value into json update message
+# insert page content as the value of the "value" attribute in json update message
 TITLE="${GEODE_VERSION} Management REST API - ${URI_VERSION#/}"
-cat << EOF > body.json
+cat << EOF > static/body.json
 {
   "id": "${PAGE_ID}",
   "type": "page",
@@ -131,7 +222,7 @@ cat << EOF > body.json
   },
   "body": {
     "storage": {
-      "value": "${VALUE}",
+      "value": "$(cat static/index-xhtml.html | sed 's/"/\\"/g')",
       "representation": "storage"
     }
   },
@@ -142,9 +233,9 @@ cat << EOF > body.json
   }
 }
 EOF
-#step 4: upload to the wiki
+# upload
 set -x
-curl -u $APACHE_CREDS -X PUT -H 'Content-Type: application/json' -d @body.json https://cwiki.apache.org/confluence/rest/api/content/${PAGE_ID}
+curl -u $APACHE_CREDS -X PUT -H 'Content-Type: application/json' -d @static/body.json https://cwiki.apache.org/confluence/rest/api/content/${PAGE_ID}
 set +x
 
 echo ""
@@ -152,10 +243,7 @@ echo "============================================================"
 echo "Cleaning up"
 echo "============================================================"
 set -x
-ps -ef | grep swagger-locator | grep java | awk '{print $2}' | xargs kill -9
-rm -Rf swagger-locator
 rm -Rf static
-rm body.json
 set +x
 
 # open your web browser to the newly-updated page

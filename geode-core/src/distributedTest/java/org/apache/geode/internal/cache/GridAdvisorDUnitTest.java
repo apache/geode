@@ -40,7 +40,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.internal.AvailablePort.Keeper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -499,7 +498,7 @@ public class GridAdvisorDUnitTest extends JUnit4DistributedTestCase {
     File logFile = new File(getUniqueName() + "-locator" + port1 + ".log");
     try {
       Locator.startLocatorAndDS(port1, logFile, null, dsProps, true, true, name);
-    } catch (LocatorCancelException | IOException ex) {
+    } catch (IllegalStateException | IOException ex) {
       Assertions.fail("While starting locator on port " + port1, ex);
     }
   }

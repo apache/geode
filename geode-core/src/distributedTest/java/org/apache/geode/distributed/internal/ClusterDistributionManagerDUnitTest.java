@@ -131,14 +131,14 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
     InternalDistributedMember memberBefore = membership.getLocalMember();
 
     // TODO GMS needs to have a system property allowing the bind-port to be set
-    System.setProperty(GEMFIRE_PREFIX + "jg-bind-port", "" + memberBefore.getPort());
+    System.setProperty(GEMFIRE_PREFIX + "jg-bind-port", "" + memberBefore.getMembershipPort());
     system.disconnect();
     system = getSystem();
     membership = MembershipManagerHelper.getMembership(system);
     system.disconnect();
     InternalDistributedMember memberAfter = membership.getLocalMember();
 
-    assertThat(memberAfter.getPort()).isEqualTo(memberBefore.getPort());
+    assertThat(memberAfter.getMembershipPort()).isEqualTo(memberBefore.getMembershipPort());
   }
 
   /**

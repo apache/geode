@@ -272,9 +272,6 @@ public class TcpClient {
     Short serverVersion;
     Socket sock;
 
-    final String locatorCancelExceptionString =
-        "This could be the result of trying to connect a non-SSL-enabled client to an SSL-enabled locator.";
-
     // Get GemFire version of TcpServer first, before sending any other request.
     synchronized (serverVersions) {
       serverVersion = serverVersions.get(ipAddr);
@@ -290,7 +287,7 @@ public class TcpClient {
       sock = socketCreator.connect(ipAddr.getAddress(), ipAddr.getPort(), timeout, null, false);
       sock.setSoTimeout(timeout);
     } catch (SSLException e) {
-      throw new LocatorCancelException("Unable to form SSL connection", e);
+      throw new IllegalStateException("Unable to form SSL connection", e);
     }
 
     try {
@@ -310,8 +307,9 @@ public class TcpClient {
       try {
         Object readObject = DataSerializer.readObject(in);
         if (!(readObject instanceof VersionResponse)) {
-          throw new LocatorCancelException(
-              "Server version response invalid: " + locatorCancelExceptionString);
+          throw new IllegalThreadStateException(
+              "Server version response invalid: "
+                  + "This could be the result of trying to connect a non-SSL-enabled client to an SSL-enabled locator.");
         }
 
         VersionResponse response = (VersionResponse) readObject;

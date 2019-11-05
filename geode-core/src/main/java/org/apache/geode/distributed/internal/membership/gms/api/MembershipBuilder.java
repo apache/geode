@@ -37,6 +37,10 @@ public interface MembershipBuilder {
 
   MembershipBuilder setSerializer(DSFIDSerializer serializer);
 
+  MembershipBuilder setMemberIDFactory(MemberIdentifierFactory memberFactory);
+
+
+
   MembershipManager create();
 
   static MembershipBuilder newMembershipBuilder(ClusterDistributionManager dm) {

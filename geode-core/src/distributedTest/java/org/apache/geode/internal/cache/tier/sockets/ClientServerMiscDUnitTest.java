@@ -63,7 +63,8 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
       LocalRegion localRegion = (LocalRegion) getCache().getRegion(regionPath);
       VersionTag tag = localRegion.getRegionEntry(server_k1).getVersionStamp().asVersionTag();
       InternalDistributedMember id = localRegion.getMyId();
-      tag.setMemberID(new InternalDistributedMember(id.getInetAddress(), id.getPort() + 1));
+      tag.setMemberID(
+          new InternalDistributedMember(id.getInetAddress(), id.getMembershipPort() + 1));
       tag.setEntryVersion(tag.getEntryVersion() + 1);
       tag.setEntryVersion(5);
       tag.setIsRemoteForTesting();
@@ -86,7 +87,8 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
       LocalRegion localRegion = (LocalRegion) getCache().getRegion(regionPath);
       VersionTag tag = localRegion.getRegionEntry(server_k1).getVersionStamp().asVersionTag();
       InternalDistributedMember id = localRegion.getMyId();
-      tag.setMemberID(new InternalDistributedMember(id.getInetAddress(), id.getPort() + 1));
+      tag.setMemberID(
+          new InternalDistributedMember(id.getInetAddress(), id.getMembershipPort() + 1));
       tag.setEntryVersion(tag.getEntryVersion() + 1);
       tag.setEntryVersion(6);
       tag.setIsRemoteForTesting();

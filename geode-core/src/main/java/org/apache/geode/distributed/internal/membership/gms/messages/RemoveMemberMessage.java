@@ -19,19 +19,18 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
 public class RemoveMemberMessage extends AbstractGMSMessage implements HasMemberID {
-  private GMSMember memberID;
+  private MemberIdentifier memberID;
   private String reason;
 
 
-  public RemoveMemberMessage(GMSMember recipient, GMSMember id,
+  public RemoveMemberMessage(MemberIdentifier recipient, MemberIdentifier id,
       String reason) {
     super();
     setRecipient(recipient);
@@ -39,8 +38,8 @@ public class RemoveMemberMessage extends AbstractGMSMessage implements HasMember
     this.reason = reason;
   }
 
-  public RemoveMemberMessage(List<GMSMember> recipients,
-      GMSMember id, String reason) {
+  public RemoveMemberMessage(List<MemberIdentifier> recipients,
+      MemberIdentifier id, String reason) {
     super();
     setRecipients(recipients);
     this.memberID = id;
@@ -57,7 +56,7 @@ public class RemoveMemberMessage extends AbstractGMSMessage implements HasMember
   }
 
   @Override
-  public GMSMember getMemberID() {
+  public MemberIdentifier getMemberID() {
     return memberID;
   }
 
@@ -78,14 +77,14 @@ public class RemoveMemberMessage extends AbstractGMSMessage implements HasMember
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    GMSUtil.writeMemberID(memberID, out, context);
+    context.getSerializer().writeObject(memberID, out);
     StaticSerialization.writeString(reason, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    memberID = GMSUtil.readMemberID(in, context);
+    memberID = context.getDeserializer().readObject(in);
     reason = StaticSerialization.readString(in);
   }
 

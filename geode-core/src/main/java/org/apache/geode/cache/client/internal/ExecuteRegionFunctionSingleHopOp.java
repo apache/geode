@@ -66,7 +66,6 @@ public class ExecuteRegionFunctionSingleHopOp {
       ServerRegionFunctionExecutor serverRegionExecutor,
       ResultCollector resultCollector,
       Map<ServerLocation, ? extends HashSet> serverToFilterMap,
-      int mRetryAttempts,
       boolean isHA,
       final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction,
       final Supplier<AbstractOp> executeRegionFunctionOpSupplier) {
@@ -87,7 +86,7 @@ public class ExecuteRegionFunctionSingleHopOp {
 
     final int retryAttempts =
         SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
-            resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
+            resultCollector, failedNodes, ((PoolImpl) pool));
 
     if (isDebugEnabled) {
       logger.debug(

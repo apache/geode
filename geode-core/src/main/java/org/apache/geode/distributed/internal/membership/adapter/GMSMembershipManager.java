@@ -72,10 +72,11 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.SuspectMember;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
@@ -417,7 +418,7 @@ public class GMSMembershipManager implements MembershipManager {
     public void messageReceived(DistributionMessage msg) {
       // bug 36851 - notify failure detection that we've had contact from a member
       services.getHealthMonitor()
-          .contactedBy(((GMSMemberAdapter) msg.getSender().getNetMember()).getGmsMember());
+          .contactedBy(msg.getSender());
       handleOrDeferMessage(msg);
     }
 
@@ -481,7 +482,7 @@ public class GMSMembershipManager implements MembershipManager {
         InternalDistributedMember m = newView.getMembers().get(i);
 
         // Once a member has been seen via a view, remove them from the
-        // newborn set. Replace the netmember of the surpriseMember ID
+        // newborn set. Replace the member data of the surpriseMember ID
         // in case it was a partial ID and is being retained by DistributionManager
         // or some other object
         boolean wasSurprise = surpriseMembers.containsKey(m);
@@ -490,7 +491,7 @@ public class GMSMembershipManager implements MembershipManager {
               surpriseMembers.entrySet().iterator(); iterator.hasNext();) {
             Entry<InternalDistributedMember, Long> entry = iterator.next();
             if (entry.getKey().equals(m)) {
-              entry.getKey().setNetMember(m.getNetMember());
+              entry.getKey().setMemberData((GMSMemberData) m.getMemberData());
               iterator.remove();
               break;
             }
@@ -708,14 +709,13 @@ public class GMSMembershipManager implements MembershipManager {
     return result;
   }
 
-  private MembershipView createGeodeView(GMSMember gmsCreator, int viewId,
-      List<GMSMember> gmsMembers,
-      Set<GMSMember> gmsShutdowns, Set<GMSMember> gmsCrashes) {
-    InternalDistributedMember geodeCreator =
-        new InternalDistributedMember(new GMSMemberAdapter(gmsCreator));
+  private MembershipView createGeodeView(MemberIdentifier gmsCreator, int viewId,
+      List<MemberIdentifier> gmsMembers,
+      Set<MemberIdentifier> gmsShutdowns, Set<MemberIdentifier> gmsCrashes) {
+    InternalDistributedMember geodeCreator = (InternalDistributedMember) gmsCreator;
     List<InternalDistributedMember> geodeMembers = new ArrayList<>(gmsMembers.size());
-    for (GMSMember member : gmsMembers) {
-      geodeMembers.add(new InternalDistributedMember(new GMSMemberAdapter(member)));
+    for (MemberIdentifier member : gmsMembers) {
+      geodeMembers.add((InternalDistributedMember) member);
     }
     Set<InternalDistributedMember> geodeShutdownMembers =
         gmsMemberCollectionToInternalDistributedMemberSet(gmsShutdowns);
@@ -726,16 +726,16 @@ public class GMSMembershipManager implements MembershipManager {
   }
 
   private Set<InternalDistributedMember> gmsMemberCollectionToInternalDistributedMemberSet(
-      Collection<GMSMember> gmsMembers) {
+      Collection<MemberIdentifier> gmsMembers) {
     if (gmsMembers.size() == 0) {
       return Collections.emptySet();
     } else if (gmsMembers.size() == 1) {
       return Collections.singleton(
-          new InternalDistributedMember(new GMSMemberAdapter(gmsMembers.iterator().next())));
+          (InternalDistributedMember) gmsMembers.iterator().next());
     } else {
       Set<InternalDistributedMember> idmMembers = new HashSet<>(gmsMembers.size());
-      for (GMSMember member : gmsMembers) {
-        idmMembers.add(new InternalDistributedMember(new GMSMemberAdapter((member))));
+      for (MemberIdentifier member : gmsMembers) {
+        idmMembers.add((InternalDistributedMember) member);
       }
       return idmMembers;
     }
@@ -743,16 +743,16 @@ public class GMSMembershipManager implements MembershipManager {
 
 
   private List<InternalDistributedMember> gmsMemberListToInternalDistributedMemberList(
-      List<GMSMember> gmsMembers) {
+      List<MemberIdentifier> gmsMembers) {
     if (gmsMembers.size() == 0) {
       return Collections.emptyList();
     } else if (gmsMembers.size() == 1) {
       return Collections
-          .singletonList(new InternalDistributedMember(new GMSMemberAdapter(gmsMembers.get(0))));
+          .singletonList((InternalDistributedMember) gmsMembers.get(0));
     } else {
       List<InternalDistributedMember> idmMembers = new ArrayList<>(gmsMembers.size());
-      for (GMSMember member : gmsMembers) {
-        idmMembers.add(new InternalDistributedMember(new GMSMemberAdapter((member))));
+      for (MemberIdentifier member : gmsMembers) {
+        idmMembers.add((InternalDistributedMember) member);
       }
       return idmMembers;
     }
@@ -1072,10 +1072,10 @@ public class GMSMembershipManager implements MembershipManager {
    */
   public void replacePartialIdentifierInMessage(DistributionMessage msg) {
     InternalDistributedMember sender = msg.getSender();
-    GMSMember oldID = ((GMSMemberAdapter) sender.getNetMember()).getGmsMember();
-    GMSMember newID = this.services.getJoinLeave().getMemberID(oldID);
+    MemberIdentifier oldID = sender;
+    MemberIdentifier newID = this.services.getJoinLeave().getMemberID(oldID);
     if (newID != null && newID != oldID) {
-      sender.setNetMember(new GMSMemberAdapter(newID));
+      sender.setMemberData(newID.getMemberData());
       sender.setIsPartial(false);
     } else {
       // the DM's view also has surprise members, so let's check it as well
@@ -1121,8 +1121,8 @@ public class GMSMembershipManager implements MembershipManager {
     }
   }
 
-  private InternalDistributedMember gmsMemberToDMember(GMSMember gmsMember) {
-    return new InternalDistributedMember(new GMSMemberAdapter(gmsMember));
+  private InternalDistributedMember gmsMemberToDMember(MemberIdentifier gmsMember) {
+    return (InternalDistributedMember) gmsMember;
   }
 
   /**
@@ -1409,10 +1409,8 @@ public class GMSMembershipManager implements MembershipManager {
     synchronized (this.shutdownMembers) {
       this.shutdownMembers.put(id, id);
       services.getHealthMonitor()
-          .memberShutdown(
-              ((GMSMemberAdapter) ((InternalDistributedMember) id).getNetMember()).getGmsMember(),
-              reason);
-      services.getJoinLeave().memberShutdown(getGMSMember((InternalDistributedMember) id), reason);
+          .memberShutdown((MemberIdentifier) id, reason);
+      services.getJoinLeave().memberShutdown((MemberIdentifier) id, reason);
     }
   }
 
@@ -1483,7 +1481,7 @@ public class GMSMembershipManager implements MembershipManager {
     logger.warn("Membership: requesting removal of {}. Reason={}",
         new Object[] {mbr, reason});
     try {
-      services.getJoinLeave().remove(getGMSMember((InternalDistributedMember) mbr), reason);
+      services.getJoinLeave().remove((MemberIdentifier) mbr, reason);
     } catch (RuntimeException e) {
       Throwable problem = e;
       if (services.getShutdownCause() != null) {
@@ -1541,7 +1539,7 @@ public class GMSMembershipManager implements MembershipManager {
   public boolean verifyMember(DistributedMember mbr, String reason) {
     return mbr != null && memberExists(mbr)
         && this.services.getHealthMonitor()
-            .checkIfAvailable(getGMSMember((InternalDistributedMember) mbr), reason, false);
+            .checkIfAvailable((MemberIdentifier) mbr, reason, false);
   }
 
   /**
@@ -1624,7 +1622,7 @@ public class GMSMembershipManager implements MembershipManager {
         InternalDistributedMember member = (InternalDistributedMember) it_mem.next();
         Throwable th = (Throwable) it_causes.next();
 
-        if (!view.contains(getGMSMember(member)) || (th instanceof ShunnedMemberException)) {
+        if (!view.contains(member) || (th instanceof ShunnedMemberException)) {
           continue;
         }
         logger.fatal(String.format("Failed to send message <%s> to member <%s> view, %s",
@@ -1643,13 +1641,6 @@ public class GMSMembershipManager implements MembershipManager {
       throw e;
     }
     return null;
-  }
-
-  /**
-   * retrieve the GMS member ID held in a Geode InternalDistributedMember
-   */
-  private GMSMember getGMSMember(InternalDistributedMember member) {
-    return ((GMSMemberAdapter) member.getNetMember()).getGmsMember();
   }
 
   /*
@@ -1751,7 +1742,7 @@ public class GMSMembershipManager implements MembershipManager {
 
     if (useMcast || tcpDisabled || sendViaMessenger) {
       checkAddressesForUUIDs(destinations);
-      Set<GMSMember> failures = services.getMessenger().send(new GMSMessageAdapter(msg));
+      Set<MemberIdentifier> failures = services.getMessenger().send(new GMSMessageAdapter(msg));
       if (failures == null || failures.size() == 0) {
         return Collections.emptySet();
       }
@@ -1771,12 +1762,10 @@ public class GMSMembershipManager implements MembershipManager {
   void checkAddressesForUUIDs(InternalDistributedMember[] addresses) {
     GMSMembershipView view = services.getJoinLeave().getView();
     for (int i = 0; i < addresses.length; i++) {
-      InternalDistributedMember m = addresses[i];
-      if (m != null) {
-        GMSMemberAdapter adapter = (GMSMemberAdapter) m.getNetMember();
-        GMSMember id = adapter.getGmsMember();
-        if (!id.hasUUID()) {
-          adapter.setGmsMember(view.getCanonicalID(id));
+      InternalDistributedMember id = addresses[i];
+      if (id != null) {
+        if (!id.getMemberData().hasUUID()) {
+          id.setMemberData(view.getCanonicalID(id).getMemberData());
         }
       }
     }
@@ -2063,7 +2052,7 @@ public class GMSMembershipManager implements MembershipManager {
     if (dc != null) {
       dc.getChannelStates(member, result);
     }
-    services.getMessenger().getMessageState(getGMSMember((InternalDistributedMember) member),
+    services.getMessenger().getMessageState((MemberIdentifier) member,
         result,
         includeMulticast);
     return result;
@@ -2078,8 +2067,7 @@ public class GMSMembershipManager implements MembershipManager {
     if (dc != null) {
       dc.waitForChannelState(otherMember, state);
     }
-    services.getMessenger().waitForMessageState(
-        getGMSMember((InternalDistributedMember) otherMember), state);
+    services.getMessenger().waitForMessageState((MemberIdentifier) otherMember, state);
 
     if (services.getConfig().isMulticastEnabled()
         && !services.getConfig().getDisableTcp()) {
@@ -2465,7 +2453,7 @@ public class GMSMembershipManager implements MembershipManager {
         directChannel = new DirectChannel(GMSMembershipManager.this, dcReceiver, dm);
         dcPort = directChannel.getPort();
       }
-      services.getMessenger().getMemberID().setDirectPort(dcPort);
+      services.getMessenger().getMemberID().setDirectChannelPort(dcPort);
     }
 
     /* Service interface */
@@ -2564,8 +2552,7 @@ public class GMSMembershipManager implements MembershipManager {
       }
 
       GMSMembershipManager.this.address =
-          new InternalDistributedMember(
-              new GMSMemberAdapter(services.getMessenger().getMemberID()));
+          (InternalDistributedMember) services.getMessenger().getMemberID();
 
       if (directChannel != null) {
         directChannel.setLocalAddr(address);
@@ -2581,8 +2568,8 @@ public class GMSMembershipManager implements MembershipManager {
     }
 
     @Override
-    public void memberSuspected(GMSMember initiator,
-        GMSMember suspect, String reason) {
+    public void memberSuspected(MemberIdentifier initiator,
+        MemberIdentifier suspect, String reason) {
       SuspectMember s = new SuspectMember(initiator, suspect, reason);
       handleOrDeferSuspect(s);
     }
@@ -2634,7 +2621,7 @@ public class GMSMembershipManager implements MembershipManager {
 
     /** this is invoked by JoinLeave when there is a loss of quorum in the membership system */
     @Override
-    public void quorumLost(Collection<GMSMember> failures, GMSMembershipView view) {
+    public void quorumLost(Collection<MemberIdentifier> failures, GMSMembershipView view) {
       // notify of quorum loss if split-brain detection is enabled (meaning we'll shut down) or
       // if the loss is more than one member
 

@@ -180,11 +180,17 @@ public class ClientProxyMembershipID
       throw new IllegalStateException(
           "Attempting to handshake with CacheServer before creating DistributedSystem and Cache.");
     }
-    // if (system != sys)
     {
-      // DS already exists... make sure it's for current DS connection
       systemMemberId = sys.getDistributedMember();
       try {
+        if (systemMemberId != null) {
+          // update the durable id of the member identifier before serializing in case
+          // a pool name has been established
+          DurableClientAttributes attributes = systemMemberId.getDurableClientAttributes();
+          if (attributes != null && attributes.getId().length() > 0) {
+            ((InternalDistributedMember) systemMemberId).setDurableId(attributes.getId());
+          }
+        }
         HeapDataOutputStream hdos = new HeapDataOutputStream(256, Version.CURRENT);
         DataSerializer.writeObject(systemMemberId, hdos);
         client_side_identity = hdos.toByteArray();
@@ -228,7 +234,7 @@ public class ClientProxyMembershipID
   @Override
   public String toString() {
     if (this.identity != null
-        && ((InternalDistributedMember) getDistributedMember()).getPort() == 0) {
+        && ((InternalDistributedMember) getDistributedMember()).getMembershipPort() == 0) {
       return this.toStringNoCache();
     }
     if (this._toString == null) {
@@ -246,7 +252,7 @@ public class ClientProxyMembershipID
     if (identity != null) {
       DurableClientAttributes dca = getDurableAttributes();
       if (dca.getId().length() > 0) {
-        sb.append(",durableAttributes=").append(getDurableAttributes()).append(')').toString();
+        sb.append(",durableAttributes=").append(dca).append(')').toString();
       }
     }
     return sb.toString();
@@ -350,7 +356,7 @@ public class ClientProxyMembershipID
       return "null";
     }
     // don't cache if we haven't connected to the server yet
-    if (((InternalDistributedMember) getDistributedMember()).getPort() == 0) {
+    if (((InternalDistributedMember) getDistributedMember()).getMembershipPort() == 0) {
       return getMemberIdAsString();
     }
     if (memberIdString == null) {
@@ -463,7 +469,7 @@ public class ClientProxyMembershipID
    */
   public void updateDurableTimeout(int newValue) {
     InternalDistributedMember member = (InternalDistributedMember) getDistributedMember();
-    member.getNetMember().setDurableTimeout(newValue);
+    member.setDurableTimeout(newValue);
   }
 
   /**

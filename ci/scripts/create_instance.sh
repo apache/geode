@@ -43,6 +43,13 @@ if [[ -z "${GEODE_BRANCH}" ]]; then
   exit 1
 fi
 
+if [[ -d geode ]]; then
+  pushd geode
+  GEODE_SHA=$(git rev-parse --verify HEAD)
+  popd
+else
+  GEODE_SHA="unknown"
+fi
 
 . ${SCRIPTDIR}/../pipelines/shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
@@ -97,7 +104,8 @@ echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
 
 TTL=$(($(date +%s) + 60 * 60 * 6))
-LABELS="instance_type=heavy-lifter,time-to-live=${TTL},job-name=${SANITIZED_BUILD_JOB_NAME},pipeline-name=${SANITIZED_BUILD_PIPELINE_NAME},build-name=${SANITIZED_BUILD_NAME}"
+LABELS="instance_type=heavy-lifter,time-to-live=${TTL},job-name=${SANITIZED_BUILD_JOB_NAME},pipeline-name=${SANITIZED_BUILD_PIPELINE_NAME},build-name=${SANITIZED_BUILD_NAME},sha=${GEODE_SHA}"
+echo "Applying the following labels to the instance: ${LABELS}"
 
 INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create ${INSTANCE_NAME} \
   --zone=${ZONE} \
@@ -116,6 +124,10 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
 echo "${INSTANCE_INFORMATION}" > instance-data/instance-information
 
 INSTANCE_IP_ADDRESS=$(echo ${INSTANCE_INFORMATION} | jq -r '.[].networkInterfaces[0].networkIP')
+INSTANCE_ID=$(echo ${INSTANCE_INFORMATION} | jq -r '.[].id')
+
+echo "Heavy lifter's Instance ID is: ${INSTANCE_ID}"
+
 echo "${INSTANCE_IP_ADDRESS}" > "instance-data/instance-ip-address"
 
 if [[ -z "${WINDOWS_PREFIX}" ]]; then

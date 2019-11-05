@@ -66,7 +66,6 @@ import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.locator.PeerLocatorRequest;
 import org.apache.geode.distributed.internal.tcpserver.InfoRequest;
-import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.GemFireVersion;
@@ -388,7 +387,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
                 getLocatorStrings(), newLocator.isSharedConfigurationEnabled());
           }
         }
-      } catch (LocatorCancelException e) {
+      } catch (IllegalStateException e) {
         newLocator.stop();
         throw e;
       }

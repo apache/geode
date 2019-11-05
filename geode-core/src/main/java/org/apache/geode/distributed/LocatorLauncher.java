@@ -1792,6 +1792,19 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     }
 
     /**
+     * add the properties in the Gemfire Distributed System Property
+     *
+     * @param properties a property object that holds one or more Gemfire Distributed System
+     *        properties as described in {@link ConfigurationProperties}
+     * @return this Builder instance
+     * @since Geode 1.12
+     */
+    public Builder set(Properties properties) {
+      this.distributedSystemProperties.putAll(properties);
+      return this;
+    }
+
+    /**
      * Validates the configuration settings and properties of this Builder, ensuring that all
      * invariants have been met. Currently, the only invariant constraining the Builder is that the
      * user must specify the member name for the Locator in the GemFire distributed system as a

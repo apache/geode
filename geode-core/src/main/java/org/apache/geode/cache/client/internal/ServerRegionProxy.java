@@ -699,7 +699,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
                     hasResult, emptySet(), true, timeoutMs);
 
             ExecuteRegionFunctionSingleHopOp.execute(pool, region, serverRegionExecutor,
-                resultCollector, serverToBuckets, retryAttempts, function.isHA(),
+                resultCollector, serverToBuckets, function.isHA(),
                 regionFunctionSingleHopOpFunction, executeRegionFunctionOpSupplier);
           }
         } else {
@@ -725,7 +725,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
                     hasResult, emptySet(), isBucketFilter, timeoutMs);
 
             ExecuteRegionFunctionSingleHopOp.execute(pool, region,
-                serverRegionExecutor, resultCollector, serverToFilterMap, retryAttempts,
+                serverRegionExecutor, resultCollector, serverToFilterMap,
                 function.isHA(), regionFunctionSingleHopOpFunction,
                 executeRegionFunctionOpSupplier);
           }
@@ -786,7 +786,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
                     emptySet(), true, isHA, optimizeForWrite, timeoutMs);
 
             ExecuteRegionFunctionSingleHopOp.execute(pool, region,
-                serverRegionExecutor, resultCollector, serverToBuckets, retryAttempts, isHA,
+                serverRegionExecutor, resultCollector, serverToBuckets, isHA,
                 regionFunctionSingleHopOpFunction, executeRegionFunctionOpSupplier);
           }
 
@@ -810,7 +810,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
                     emptySet(), isBucketsAsFilter, isHA, optimizeForWrite, timeoutMs);
 
             ExecuteRegionFunctionSingleHopOp.execute(pool, region,
-                serverRegionExecutor, resultCollector, serverToFilterMap, retryAttempts,
+                serverRegionExecutor, resultCollector, serverToFilterMap,
                 isHA, regionFunctionSingleHopOpFunction, executeRegionFunctionOpSupplier);
           }
         }

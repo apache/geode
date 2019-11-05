@@ -12,24 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.tcpserver;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
-import org.apache.geode.CancelException;
+import java.util.Comparator;
 
-public class LocatorCancelException extends CancelException {
-  public LocatorCancelException(String message) {
-    super(message);
-  }
 
-  public LocatorCancelException(Throwable cause) {
-    super(cause);
-  }
+/**
+ * A MemberIdentifierFactory is provided when building a membership service. It must provide
+ * implementations of the MemberIdentifier interface for use as identifiers in the membership
+ * service. For Geode this implementation is InternalDistributedMember.<br>
+ * See {@link MembershipBuilder} - where you inject your factory into GMS
+ */
+public interface MemberIdentifierFactory {
+  /**
+   * Create a new identifier instance
+   */
+  MemberIdentifier create(MemberData memberInfo);
 
-  public LocatorCancelException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public LocatorCancelException() {
-    super();
-  }
+  /**
+   * Create a Comparator for the implementation of identifiers provided by this factory
+   */
+  Comparator<MemberIdentifier> getComparator();
 }

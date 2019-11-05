@@ -22,9 +22,9 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -35,11 +35,11 @@ import org.apache.geode.internal.serialization.Version;
 public class FindCoordinatorResponse extends AbstractGMSMessage
     implements DataSerializableFixedID {
 
-  private GMSMember coordinator;
-  private GMSMember senderId;
+  private MemberIdentifier coordinator;
+  private MemberIdentifier senderId;
   private boolean fromView;
   private GMSMembershipView view;
-  private Set<GMSMember> registrants;
+  private Set<MemberIdentifier> registrants;
   private boolean networkPartitionDetectionEnabled;
   private boolean usePreferredCoordinators;
   private boolean isShortForm;
@@ -48,9 +48,9 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
 
   private int requestId;
 
-  public FindCoordinatorResponse(GMSMember coordinator,
-      GMSMember senderId, boolean fromView, GMSMembershipView view,
-      HashSet<GMSMember> registrants, boolean networkPartitionDectionEnabled,
+  public FindCoordinatorResponse(MemberIdentifier coordinator,
+      MemberIdentifier senderId, boolean fromView, GMSMembershipView view,
+      HashSet<MemberIdentifier> registrants, boolean networkPartitionDectionEnabled,
       boolean usePreferredCoordinators, byte[] pk) {
     this.coordinator = coordinator;
     this.senderId = senderId;
@@ -63,8 +63,8 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
     this.coordinatorPublicKey = pk;
   }
 
-  public FindCoordinatorResponse(GMSMember coordinator,
-      GMSMember senderId, byte[] pk, int requestId) {
+  public FindCoordinatorResponse(MemberIdentifier coordinator,
+      MemberIdentifier senderId, byte[] pk, int requestId) {
     this.coordinator = coordinator;
     this.senderId = senderId;
     this.isShortForm = true;
@@ -100,7 +100,7 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
     return usePreferredCoordinators;
   }
 
-  public GMSMember getCoordinator() {
+  public MemberIdentifier getCoordinator() {
     return coordinator;
   }
 
@@ -108,7 +108,7 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
    * When the response comes from a locator via TcpClient this will return the locators member ID.
    * If the locator hasn't yet joined this may be null.
    */
-  public GMSMember getSenderId() {
+  public MemberIdentifier getSenderId() {
     return senderId;
   }
 
@@ -120,7 +120,7 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
     return view;
   }
 
-  public Set<GMSMember> getRegistrants() {
+  public Set<MemberIdentifier> getRegistrants() {
     return registrants;
   }
 
@@ -155,8 +155,8 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    GMSUtil.writeMemberID(coordinator, out, context);
-    GMSUtil.writeMemberID(senderId, out, context);
+    context.getSerializer().writeObject(coordinator, out);
+    context.getSerializer().writeObject(senderId, out);
     StaticSerialization.writeByteArray(coordinatorPublicKey, out);
     StaticSerialization.writeString(rejectionMessage, out);
     out.writeBoolean(isShortForm);
@@ -170,8 +170,8 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    coordinator = GMSUtil.readMemberID(in, context);
-    senderId = GMSUtil.readMemberID(in, context);
+    coordinator = context.getDeserializer().readObject(in);
+    senderId = context.getDeserializer().readObject(in);
     coordinatorPublicKey = StaticSerialization.readByteArray(in);
     rejectionMessage = StaticSerialization.readString(in);
     isShortForm = in.readBoolean();

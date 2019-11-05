@@ -22,6 +22,8 @@ import java.util.Map;
 
 import javax.management.remote.JMXConnector;
 
+import org.apache.commons.lang3.JavaVersion;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,7 +45,12 @@ public class JmxCredentialTypeTest {
   public void testWithNonStringCredential() throws Exception {
     Map<String, Object> env = new HashMap<>();
     env.put(JMXConnector.CREDENTIALS, new Integer(0));
-    assertThatThrownBy(() -> connectionRule.connect("localhost", locator.getJmxPort(), env))
-        .hasMessageContaining("filter status: REJECTED");
+    if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
+      assertThatThrownBy(() -> connectionRule.connect("localhost", locator.getJmxPort(), env))
+          .hasMessageContaining("filter status: REJECTED");
+    } else {
+      assertThatThrownBy(() -> connectionRule.connect("localhost", locator.getJmxPort(), env))
+          .isInstanceOf(ClassCastException.class);
+    }
   }
 }

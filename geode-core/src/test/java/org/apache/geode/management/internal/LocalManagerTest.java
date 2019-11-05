@@ -145,7 +145,7 @@ public class LocalManagerTest {
     InternalDistributedMember member = mock(InternalDistributedMember.class);
     when(member.getInetAddress()).thenReturn(mock(InetAddress.class));
     when(member.getVmViewId()).thenReturn(viewId);
-    when(member.getPort()).thenReturn(port);
+    when(member.getMembershipPort()).thenReturn(port);
     return member;
   }
 }

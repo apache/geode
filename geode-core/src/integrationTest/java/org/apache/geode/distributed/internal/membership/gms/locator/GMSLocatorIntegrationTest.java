@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
@@ -63,7 +63,7 @@ public class GMSLocatorIntegrationTest {
     when(services.getJoinLeave()).thenReturn(joinLeave);
     messenger = mock(Messenger.class);
     when(services.getMessenger()).thenReturn(messenger);
-    when(messenger.getMemberID()).thenReturn(new GMSMember("localhost", 8080));
+    when(messenger.getMemberID()).thenReturn(new InternalDistributedMember("localhost", 8080));
 
     gmsLocator =
         new GMSLocator(null, null, false, false, new LocatorStats(), "",

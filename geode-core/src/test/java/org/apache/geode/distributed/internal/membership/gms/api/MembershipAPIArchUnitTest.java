@@ -31,7 +31,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipView;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
 
 @RunWith(ArchUnitRunner.class)
@@ -50,11 +50,12 @@ public class MembershipAPIArchUnitTest {
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
               // this is allowed
               .or(type(MembershipBuilderImpl.class))
+              .or(type(MemberDataBuilderImpl.class))
 
               // TODO to be extracted as Interfaces
               .or(type(InternalDistributedMember.class))
               .or(type(MembershipView.class))
-              .or(type(GMSMember.class))
+              .or(type(MemberIdentifier.class))
               .or(type(DistributedMember.class))
               .or(type(InternalDistributedMember[].class))
               .or(type(DistributionMessage.class))

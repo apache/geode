@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -139,14 +139,14 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
 
       // Start a gossip client to connect to first locator "locator0".
       FindCoordinatorRequest req = new FindCoordinatorRequest(
-          new GMSMember("localhost", 1234));
+          new InternalDistributedMember("localhost", 1234));
       FindCoordinatorResponse response;
 
       response = (FindCoordinatorResponse) new TcpClient()
           .requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
       assertThat(response).isNotNull();
 
-    } catch (LocatorCancelException e) {
+    } catch (IllegalStateException e) {
       fail("a Locator start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);
     } catch (Exception e) {
       fail("b Locator start failed with Gossip Version: " + TcpServer.GOSSIPVERSION + "!", e);

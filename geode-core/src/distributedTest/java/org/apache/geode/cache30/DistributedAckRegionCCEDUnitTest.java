@@ -41,7 +41,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetMember;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -240,11 +240,12 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
         VersionTag<InternalDistributedMember> tag =
             (VersionTag<InternalDistributedMember>) versionStamp.asVersionTag();
         // create a fake member ID that will be < mine and lose a concurrency check
-        NetMember nm = CCRegion.getDistributionManager().getDistributionManagerId().getNetMember();
+        MemberData nm =
+            CCRegion.getDistributionManager().getDistributionManagerId().getMemberData();
         InternalDistributedMember mbr = null;
         try {
           mbr = new InternalDistributedMember(nm.getInetAddress().getCanonicalHostName(),
-              nm.getPort() - 1, "fake_id", "fake_id_ustring",
+              nm.getMembershipPort() - 1, "fake_id", "fake_id_ustring",
               ClusterDistributionManager.NORMAL_DM_TYPE, null, null);
           tag.setMemberID(mbr);
         } catch (UnknownHostException e) {

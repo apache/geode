@@ -14,10 +14,10 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
 public interface HasMemberID {
 
-  GMSMember getMemberID();
+  MemberIdentifier getMemberID();
 
 }

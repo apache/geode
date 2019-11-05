@@ -222,39 +222,40 @@ jobs:
   public: true
   serial: true
   plan:
-  - get: geode-ci
-  - get: alpine-tools-image
   - aggregate:
+    - get: geode-ci
+    - get: alpine-tools-image
     - get: geode
       trigger: true
     - get: geode-build-version
       params:
         pre: ((semver-prerelease-token))
-    - do:
-      - put: concourse-metadata-resource
-      {{ init_retry()|indent(6) }}
-      - task: create_instance
-        image: alpine-tools-image
-        config:
-          platform: linux
-          params:
-            {{ common_instance_params(build_test) | indent(12) }}
-            GEODE_BRANCH: {{repository.branch}}
-            GEODE_FORK: {{repository.fork}}
-            JAVA_BUILD_VERSION: {{ java_build_version.version }}
-          run:
-            path: geode-ci/ci/scripts/create_instance.sh
-          inputs:
-          - name: attempts-log
-            path: old
-          - name: concourse-metadata-resource
-          - name: geode-ci
-          outputs:
-          - name: attempts-log
-            path: new
-          - name: instance-data
-        timeout: 15m
-        attempts: 10
+  - do:
+    - put: concourse-metadata-resource
+    {{ init_retry()|indent(4) }}
+    - task: create_instance
+      image: alpine-tools-image
+      config:
+        platform: linux
+        params:
+          {{ common_instance_params(build_test) | indent(10) }}
+          GEODE_BRANCH: {{repository.branch}}
+          GEODE_FORK: {{repository.fork}}
+          JAVA_BUILD_VERSION: {{ java_build_version.version }}
+        run:
+          path: geode-ci/ci/scripts/create_instance.sh
+        inputs:
+        - name: attempts-log
+          path: old
+        - name: concourse-metadata-resource
+        - name: geode
+        - name: geode-ci
+        outputs:
+        - name: attempts-log
+          path: new
+        - name: instance-data
+      timeout: 15m
+      attempts: 10
   - aggregate:
     - put: geode-build-version
       params:
@@ -479,15 +480,16 @@ jobs:
 - name: PublishArtifacts
   public: true
   plan:
-  - get: geode-ci
-    passed:
-    - Benchmark
-  - get: alpine-tools-image
   - aggregate:
-    - get: geode
+    - get: geode-ci
       passed:
       - Benchmark
+    - get: alpine-tools-image
+    - get: geode
+      passed:
+        - Benchmark
       trigger: true
+  - aggregate:
     - get: geode-build-version
       passed:
       - Benchmark
@@ -508,6 +510,7 @@ jobs:
           inputs:
           - name: concourse-metadata-resource
           - name: geode-ci
+          - name: geode
           - name: attempts-log
             path: old
           outputs:
@@ -592,6 +595,7 @@ jobs:
             inputs:
             - name: concourse-metadata-resource
             - name: geode-ci
+            - name: geode
             - name: attempts-log
               path: old
             outputs:

@@ -51,7 +51,6 @@ import org.apache.geode.cache.client.internal.provider.CustomTrustManagerFactory
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
-import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -148,6 +147,8 @@ public class CustomSSLProviderDistributedTest {
 
   @Test
   public void clientConnectionFailsIfNoHostNameInLocatorKey() throws Exception {
+    IgnoredException.addIgnoredException(IllegalStateException.class);
+
     CertificateMaterial locatorCertificate = new CertificateBuilder()
         .commonName("locator")
         .issuedBy(ca)
@@ -164,11 +165,13 @@ public class CustomSSLProviderDistributedTest {
         .generate();
 
     validateClientSSLConnection(locatorCertificate, serverCertificate, clientCertificate, false,
-        false, false, LocatorCancelException.class);
+        false, false, IllegalStateException.class);
   }
 
   @Test
   public void clientConnectionFailsWhenWrongHostNameInLocatorKey() throws Exception {
+    IgnoredException.addIgnoredException(IllegalStateException.class);
+
     CertificateMaterial locatorCertificate = new CertificateBuilder()
         .commonName("locator")
         .sanDnsName("example.com")
@@ -189,7 +192,7 @@ public class CustomSSLProviderDistributedTest {
     validateClientSSLConnection(locatorCertificate, serverCertificate, clientCertificate, false,
         false,
         false,
-        LocatorCancelException.class);
+        IllegalStateException.class);
   }
 
   @Test
