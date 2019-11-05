@@ -67,6 +67,7 @@ class DependencyConstraints implements Plugin<Project> {
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.12")
+    deps.put("junit-jupiter.version", "5.5.2")
     deps.put("cglib.version", "3.2.9")
     return deps
   }
@@ -145,6 +146,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.httpunit', name: 'httpunit', version: '1.7.3')
         api(group: 'org.iq80.snappy', name: 'snappy', version: '0.4')
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
+        api(group: 'org.junit.vintage', name: 'junit-vintage-engine', version: get('junit-jupiter.version'))
         api(group: 'org.mockito', name: 'mockito-core', version: '2.23.0')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
         api(group: 'org.openjdk.jmh', name: 'jmh-core', version: '1.21')
@@ -215,6 +217,12 @@ class DependencyConstraints implements Plugin<Project> {
       entry('hamcrest-all')
       entry('hamcrest-core')
       entry('hamcrest-library')
+    }
+
+    dependencySet(group: 'org.junit.jupiter', version: get('junit-jupiter.version')) {
+      entry('junit-jupiter-api')
+      entry('junit-jupiter-engine')
+      entry('junit-vintage-engine')
     }
 
     dependencySet(group: 'org.powermock', version: '2.0.0-beta.5') {

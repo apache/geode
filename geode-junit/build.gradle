@@ -39,6 +39,7 @@ dependencies {
   compile('junit:junit') {
     exclude module: 'hamcrest-core'
   }
+  api("org.junit.jupiter:junit-jupiter-api")
   compile('org.apache.commons:commons-lang3')
   compile('org.apache.logging.log4j:log4j-api')
   compile('org.assertj:assertj-core')
@@ -50,16 +51,26 @@ dependencies {
   compile('org.skyscreamer:jsonassert')
 
   testCompile('pl.pragmatists:JUnitParams')
-
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
+
+  integrationTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+  integrationTestRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 }
 
 test {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
+  useJUnitPlatform {
+    includeEngines 'junit-jupiter', 'junit-vintage'
+  }
 }
 
 integrationTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
+  useJUnitPlatform {
+    includeEngines 'junit-jupiter', 'junit-vintage'
+  }
 }
