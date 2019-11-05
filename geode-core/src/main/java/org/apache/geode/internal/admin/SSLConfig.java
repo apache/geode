@@ -32,7 +32,7 @@ import org.apache.geode.management.internal.SSLUtil;
  * The SSL configuration settings for a GemFire distributed system.
  *
  * This class is immutable and the way to construct it is by means of the
- * {@link SSLConfig.Builder} class.
+ * the setters plus the build() method of its inner {@link SSLConfig.Build} class.
  */
 @Immutable
 public class SSLConfig {
@@ -58,7 +58,7 @@ public class SSLConfig {
    * <code>javax.net.ssl.</code>
    */
   @Immutable
-  private final Properties properties;
+  private Properties properties = new Properties();
 
   private SSLConfig(boolean endpointIdentification,
       boolean useDefaultSSLContext,
@@ -187,20 +187,6 @@ public class SSLConfig {
     }
   }
 
-  /**
-   * Builder class to be used to construct SSLConfig instances.
-   * In order to build an {@link SSLConfig} instance an instance of this
-   * class must be created, then the corresponding setter methods invoked
-   * and finally the build() method that returns the {@link SSLConfig} instance
-   *
-   * Example:
-   * SSLConfig sslConfInstance = new SSLConfig.Builder()
-   * .setAlias(alias)
-   * .setKeystore(keystore)
-   * ...
-   * .build();
-   *
-   */
   public static class Builder {
     private boolean endpointIdentification;
     private boolean useDefaultSSLContext = DistributionConfig.DEFAULT_SSL_USE_DEFAULT_CONTEXT;
@@ -331,5 +317,6 @@ public class SSLConfig {
       return truststoreType;
     }
   }
+
 
 }

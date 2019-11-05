@@ -24,6 +24,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
@@ -37,7 +38,9 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 public class SSLConfigIntegrationJUnitTest {
 
   @After
-  public void tearDownTest() {}
+  public void tearDownTest() {
+    SSLConfigurationFactory.close();
+  }
 
   @Test
   public void testIsClusterSSLRequireAuthentication() {

@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
@@ -40,7 +41,9 @@ public class LocatorSSLJUnitTest {
           .getAbsolutePath();
 
   @After
-  public void tearDownTest() {}
+  public void tearDownTest() {
+    SSLConfigurationFactory.close();
+  }
 
   @Test
   public void canStopLocatorWithSSL() throws IOException {
