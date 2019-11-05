@@ -46,6 +46,7 @@ import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UserSpecifiedRegionAttributes;
 
@@ -1550,15 +1551,35 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
     return this.partitionAttributes;
   }
 
-  public void setPartitionAttributes(PartitionAttributes pa) {
-    if (pa != null) {
+  public void setPartitionAttributes(PartitionAttributes partitionAttr) {
+    if (partitionAttr != null) {
       if (!hasDataPolicy()) {
-        this.setDataPolicy(PartitionedRegionHelper.DEFAULT_DATA_POLICY);
+        setDataPolicy(PartitionedRegionHelper.DEFAULT_DATA_POLICY);
         setHasDataPolicy(false);
+      } else if (!PartitionedRegionHelper.ALLOWED_DATA_POLICIES.contains(getDataPolicy())) {
+        throw new IllegalStateException(
+            String.format(
+                "Data policy %s is not allowed for a partitioned region. DataPolicies other than %s are not allowed.",
+                this.getDataPolicy(), PartitionedRegionHelper.ALLOWED_DATA_POLICIES));
       }
 
-      this.partitionAttributes = pa;
+      if (hasPartitionAttributes()
+          && partitionAttributes instanceof PartitionAttributesImpl
+          && partitionAttr instanceof PartitionAttributesImpl) {
+
+        // Make a copy and call merge on it to prevent bug 51616
+        PartitionAttributesImpl copy = ((PartitionAttributesImpl) partitionAttributes).copy();
+        copy.merge((PartitionAttributesImpl) partitionAttr);
+        this.partitionAttributes = copy;
+      } else {
+        this.partitionAttributes = partitionAttr;
+      }
+
       setHasPartitionAttributes(true);
+      ((PartitionAttributesImpl) partitionAttributes).setOffHeap(offHeap);
+    } else {
+      partitionAttributes = null;
+      setHasPartitionAttributes(false);
     }
   }
 
