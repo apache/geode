@@ -36,7 +36,7 @@ resources:
   source:
     username: ((docker-username))
     password: ((docker-password))
-    repository: gcr.io/((gcp-project))/metric-tools
+    repository: gcr.io/((gcp-project))/((pipeline-prefix))metric-tools
     tag: latest
 
 
