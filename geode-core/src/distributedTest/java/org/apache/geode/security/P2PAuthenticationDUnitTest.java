@@ -43,8 +43,8 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.generator.LdapUserCredentialGenerator;
@@ -536,7 +536,7 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
   private static void verifyMembers(final int numExpectedMembers) {
     DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-    Membership mgr = MembershipManagerHelper.getMembership(ds);
+    MembershipManagerAdapter mgr = MembershipManagerHelper.getMembership(ds);
     assertEquals(numExpectedMembers, mgr.getView().size());
   }
 }

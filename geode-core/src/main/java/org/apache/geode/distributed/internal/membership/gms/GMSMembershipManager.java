@@ -13,11 +13,10 @@
  * the License.
  */
 
-package org.apache.geode.distributed.internal.membership.adapter;
+package org.apache.geode.distributed.internal.membership.gms;
 
 import java.io.NotSerializableException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,7 +31,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -47,39 +45,32 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.OperationExecutors;
-import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
-import org.apache.geode.distributed.internal.ShutdownMessage;
-import org.apache.geode.distributed.internal.SizeableRunnable;
 import org.apache.geode.distributed.internal.StartupMessage;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
-import org.apache.geode.distributed.internal.direct.ShunnedMemberException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.SuspectMember;
+import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMessageAdapter;
+import org.apache.geode.distributed.internal.membership.adapter.GMSQuorumCheckerAdapter;
+import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
+import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
@@ -92,12 +83,10 @@ import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectRep
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.MemberShunnedException;
-import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 
-public class GMSMembershipManager implements MembershipManager {
+public class GMSMembershipManager implements Membership {
   private static final Logger logger = Services.getLogger();
   private final ClusterDistributionManager dm;
 
@@ -122,19 +111,10 @@ public class GMSMembershipManager implements MembershipManager {
    */
   private volatile QuorumChecker quorumChecker;
 
-  /**
-   * thread-local used to force use of Messenger for communications, usually to avoid deadlock when
-   * conserve-sockets=true. Use of this should be removed when connection pools are implemented in
-   * the direct-channel
-   */
-  private final ThreadLocal<Boolean> forceUseUDPMessaging =
-      ThreadLocal.withInitial(() -> Boolean.FALSE);
-
-
   private final ManagerImpl gmsManager;
 
-  private long ackSevereAlertThreshold;
-  private long ackWaitThreshold;
+
+  private LifecycleListener lifecycleListener;
 
   /**
    * Trick class to make the startup synch more visible in stack traces
@@ -290,10 +270,6 @@ public class GMSMembershipManager implements MembershipManager {
    */
   private InternalDistributedMember address = null; // new DistributedMember(-1);
 
-  private DirectChannel directChannel;
-
-  private MyDCReceiver dcReceiver;
-
   volatile boolean isJoining;
 
   /** have we joined successfully? */
@@ -391,44 +367,12 @@ public class GMSMembershipManager implements MembershipManager {
    */
   private final HashMap<DistributedMember, CountDownLatch> memberLatch = new HashMap<>();
 
-  /**
-   * Insert our own MessageReceiver between us and the direct channel, in order to correctly filter
-   * membership events.
-   *
-   *
-   */
-  class MyDCReceiver implements MessageListener {
-
-    final MessageListener upCall;
-
-    /**
-     * Don't provide events until the caller has told us we are ready.
-     *
-     * Synchronization provided via GroupMembershipService.class.
-     *
-     * Note that in practice we only need to delay accepting the first client; we don't need to put
-     * this check before every call...
-     *
-     */
-    MyDCReceiver(MessageListener up) {
-      upCall = up;
-    }
-
-    @Override
-    public void messageReceived(DistributionMessage msg) {
-      // bug 36851 - notify failure detection that we've had contact from a member
-      services.getHealthMonitor()
-          .contactedBy(msg.getSender());
-      handleOrDeferMessage(msg);
-    }
-
-  }
 
 
   /**
    * Analyze a given view object, generate events as appropriate
    */
-  protected void processView(long newViewId, MembershipView newView) {
+  public void processView(long newViewId, MembershipView newView) {
     // Sanity check...
     if (logger.isDebugEnabled()) {
       StringBuilder msg = new StringBuilder(200);
@@ -629,7 +573,7 @@ public class GMSMembershipManager implements MembershipManager {
   }
 
   @Override
-  public <V> V doWithViewLocked(Function<MembershipManager, V> function) {
+  public <V> V doWithViewLocked(Function<Membership, V> function) {
     latestViewReadLock.lock();
     try {
       return (V) function.apply(this);
@@ -651,9 +595,6 @@ public class GMSMembershipManager implements MembershipManager {
 
   private Services services;
 
-  private boolean mcastEnabled;
-
-  private boolean tcpDisabled;
 
 
   /**
@@ -761,7 +702,8 @@ public class GMSMembershipManager implements MembershipManager {
 
 
   public GMSMembershipManager(MembershipListener listener, MessageListener messageListener,
-      ClusterDistributionManager dm) {
+      ClusterDistributionManager dm, LifecycleListener lifecycleListener) {
+    this.lifecycleListener = lifecycleListener;
     Assert.assertTrue(listener != null);
     this.listener = listener;
     this.messageListener = messageListener;
@@ -890,14 +832,8 @@ public class GMSMembershipManager implements MembershipManager {
         // Force disconnect, esp. the TCPConduit
         String msg =
             "This distributed system is shutting down.";
-        if (directChannel != null) {
-          try {
-            directChannel.closeEndpoint(member, msg);
-          } catch (DistributedSystemDisconnectedException e) {
-            // ignore - happens during shutdown
-          }
-        }
-        destroyMember(member, msg); // for good luck
+
+        destroyMember(member, msg);
         return true; // allow during shutdown
       }
 
@@ -1259,7 +1195,7 @@ public class GMSMembershipManager implements MembershipManager {
       logger.debug("Membership: waiting until the system is ready for events");
     }
     for (;;) {
-      directChannel.getCancelCriterion().checkCancelInProgress(null);
+      services.getCancelCriterion().checkCancelInProgress(null);
       synchronized (startupLock) {
         // Now check using a memory fence and synchronization.
         if (processingEvents)
@@ -1269,7 +1205,7 @@ public class GMSMembershipManager implements MembershipManager {
           startupLock.wait();
         } catch (InterruptedException e) {
           interrupted = true;
-          directChannel.getCancelCriterion().checkCancelInProgress(e);
+          services.getCancelCriterion().checkCancelInProgress(e);
         } finally {
           if (interrupted) {
             Thread.currentThread().interrupt();
@@ -1301,7 +1237,7 @@ public class GMSMembershipManager implements MembershipManager {
     return result;
   }
 
-  private boolean isJoining() {
+  public boolean isJoining() {
     return this.isJoining;
   }
 
@@ -1337,12 +1273,17 @@ public class GMSMembershipManager implements MembershipManager {
     return address;
   }
 
+  @Override
   public Services getServices() {
     return services;
   }
 
   @Override
-  public void postConnect() {}
+  public void processMessage(final DistributionMessage msg) {
+    // notify failure detection that we've had contact from a member
+    services.getHealthMonitor().contactedBy(msg.getSender());
+    handleOrDeferMessage(msg);
+  }
 
   /**
    * @see SystemFailure#loadEmergencyClasses() /** break any potential circularity in
@@ -1387,12 +1328,6 @@ public class GMSMembershipManager implements MembershipManager {
 
     // MOST important, kill the FD protocols...
     services.emergencyClose();
-
-    // Close the TCPConduit sockets...
-    if (directChannel != null) {
-      directChannel.emergencyClose();
-    }
-
   }
 
 
@@ -1440,9 +1375,7 @@ public class GMSMembershipManager implements MembershipManager {
       services.setShutdownCause(e);
     }
 
-    if (this.directChannel != null) {
-      this.directChannel.disconnect(e);
-    }
+    lifecycleListener.disconnect(e);
 
     // first shut down communication so we don't do any more harm to other
     // members
@@ -1542,111 +1475,24 @@ public class GMSMembershipManager implements MembershipManager {
             .checkIfAvailable((MemberIdentifier) mbr, reason, false);
   }
 
-  /**
-   * Perform the grossness associated with sending a message over a DirectChannel
-   *
-   * @param destinations the list of destinations
-   * @param content the message
-   * @return all recipients who did not receive the message (null if all received it)
-   * @throws NotSerializableException if the message is not serializable
-   */
-  Set<InternalDistributedMember> directChannelSend(
-      InternalDistributedMember[] destinations, DistributionMessage content)
-      throws NotSerializableException {
-    MembershipStatistics theStats = services.getStatistics();
-    boolean allDestinations;
-    InternalDistributedMember[] keys;
-    if (content.forAll()) {
-      allDestinations = true;
-      latestViewReadLock.lock();
-      try {
-        List<InternalDistributedMember> keySet = latestView.getMembers();
-        keys = new InternalDistributedMember[keySet.size()];
-        keys = keySet.toArray(keys);
-      } finally {
-        latestViewReadLock.unlock();
-      }
-    } else {
-      allDestinations = false;
-      keys = destinations;
-    }
-
-    int sentBytes;
+  @Override
+  public InternalDistributedMember[] getAllMembers() {
+    latestViewReadLock.lock();
     try {
-      sentBytes =
-          directChannel.send(this, keys, content, ackWaitThreshold, ackSevereAlertThreshold);
-
-      if (theStats != null) {
-        theStats.incSentBytes(sentBytes);
-      }
-
-      if (sentBytes == 0) {
-        if (services.getCancelCriterion().isCancelInProgress()) {
-          throw new DistributedSystemDisconnectedException();
-        }
-      }
-    } catch (DistributedSystemDisconnectedException ex) {
-      if (services.getShutdownCause() != null) {
-        throw new DistributedSystemDisconnectedException("DistributedSystem is shutting down",
-            services.getShutdownCause());
-      } else {
-        throw ex; // see bug 41416
-      }
-    } catch (ConnectExceptions ex) {
-      // Check if the connect exception is due to system shutting down.
-      if (shutdownInProgress()) {
-        if (services.getShutdownCause() != null) {
-          throw new DistributedSystemDisconnectedException("DistributedSystem is shutting down",
-              services.getShutdownCause());
-        } else {
-          throw new DistributedSystemDisconnectedException();
-        }
-      }
-
-      if (allDestinations)
-        return null;
-
-      // We need to return this list of failures
-      List<InternalDistributedMember> members = ex.getMembers();
-
-      // SANITY CHECK: If we fail to send a message to an existing member
-      // of the view, we have a serious error (bug36202).
-
-      // grab a recent view, excluding shunned members
-      GMSMembershipView view = services.getJoinLeave().getView();
-
-      // Iterate through members and causes in tandem :-(
-      Iterator it_mem = members.iterator();
-      Iterator it_causes = ex.getCauses().iterator();
-      while (it_mem.hasNext()) {
-        InternalDistributedMember member = (InternalDistributedMember) it_mem.next();
-        Throwable th = (Throwable) it_causes.next();
-
-        if (!view.contains(member) || (th instanceof ShunnedMemberException)) {
-          continue;
-        }
-        logger.fatal(String.format("Failed to send message <%s> to member <%s> view, %s",
-            new Object[] {content, member, view}),
-            th);
-        // Assert.assertTrue(false, "messaging contract failure");
-      }
-      return new HashSet<>(members);
-    } // catch ConnectionExceptions
-    catch (ToDataException | CancelException e) {
-      throw e;
-    } catch (NotSerializableException | RuntimeException | Error e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Membership: directChannelSend caught exception: {}", e.getMessage(), e);
-      }
-      throw e;
+      List<InternalDistributedMember> keySet = latestView.getMembers();
+      return keySet.toArray(new InternalDistributedMember[keySet.size()]);
+    } finally {
+      latestViewReadLock.unlock();
     }
-    return null;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.distributed.internal.membership.MembershipManager#isConnected()
+  @Override
+  public boolean hasMember(final InternalDistributedMember member) {
+    return services.getJoinLeave().getView().contains(member);
+  }
+
+  /**
+   * @see Membership#isConnected()
    */
   @Override
   public boolean isConnected() {
@@ -1676,17 +1522,26 @@ public class GMSMembershipManager implements MembershipManager {
     }
   }
 
-  @Override
-  public Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
-      DistributionMessage msg) throws NotSerializableException {
-    Set<InternalDistributedMember> result;
-    boolean allDestinations = msg.forAll();
 
+
+  /**
+   * Check to see if the membership system is being shutdown
+   *
+   * @throws DistributedSystemDisconnectedException if the system is shutting down
+   */
+  public void checkCancelled() {
     if (services.getCancelCriterion().isCancelInProgress()) {
       throw new DistributedSystemDisconnectedException("Distributed System is shutting down",
-          services.getCancelCriterion().generateCancelledException(null));
+          services.getCancelCriterion().generateCancelledException(services.getShutdownCause()));
     }
+  }
 
+  /**
+   * Test hook to wait until we are no longer "Playing dead"
+   *
+   * TODO - remove this!
+   */
+  public void waitIfPlayingDead() {
     if (playingDead) { // wellness test hook
       while (playingDead && !shutdownInProgress) {
         try {
@@ -1696,67 +1551,18 @@ public class GMSMembershipManager implements MembershipManager {
         }
       }
     }
+  }
 
-    if (isJoining()) {
-      // If we get here, we are starting up, so just report a failure.
-      if (allDestinations)
-        return null;
-      else {
-        result = new HashSet<>();
-        Collections.addAll(result, destinations);
-        return result;
-      }
+  @Override
+  public Set<InternalDistributedMember> send(final InternalDistributedMember[] destinations,
+      final DistributionMessage content)
+      throws NotSerializableException {
+    checkAddressesForUUIDs(destinations);
+    Set<MemberIdentifier> failures = services.getMessenger().send(new GMSMessageAdapter(content));
+    if (failures == null || failures.size() == 0) {
+      return Collections.emptySet();
     }
-
-    if (msg instanceof AdminMessageType && this.shutdownInProgress) {
-      // no admin messages while shutting down - this can cause threads to hang
-      return new HashSet<>(Arrays.asList(msg.getRecipients()));
-    }
-
-    // Handle trivial cases
-    if (destinations == null) {
-      if (logger.isTraceEnabled())
-        logger.trace("Membership: Message send: returning early because null set passed in: '{}'",
-            msg);
-      return null; // trivially: all recipients received the message
-    }
-    if (destinations.length == 0) {
-      if (logger.isTraceEnabled())
-        logger.trace(
-            "Membership: Message send: returning early because empty destination list passed in: '{}'",
-            msg);
-      return null; // trivially: all recipients received the message
-    }
-
-    msg.setSender(address);
-
-    msg.setBreadcrumbsInSender();
-    Breadcrumbs.setProblem(null);
-
-    boolean useMcast = false;
-    if (mcastEnabled) {
-      useMcast = (msg.getMulticast() || allDestinations);
-    }
-
-    boolean sendViaMessenger = isForceUDPCommunications() || (msg instanceof ShutdownMessage);
-
-    if (useMcast || tcpDisabled || sendViaMessenger) {
-      checkAddressesForUUIDs(destinations);
-      Set<MemberIdentifier> failures = services.getMessenger().send(new GMSMessageAdapter(msg));
-      if (failures == null || failures.size() == 0) {
-        return Collections.emptySet();
-      }
-      return gmsMemberCollectionToInternalDistributedMemberSet(failures);
-    } else {
-      result = directChannelSend(destinations, msg);
-    }
-
-    // If the message was a broadcast, don't enumerate failures.
-    if (allDestinations)
-      return null;
-    else {
-      return result;
-    }
+    return gmsMemberCollectionToInternalDistributedMemberSet(failures);
   }
 
   void checkAddressesForUUIDs(InternalDistributedMember[] addresses) {
@@ -1769,22 +1575,6 @@ public class GMSMembershipManager implements MembershipManager {
         }
       }
     }
-  }
-
-  // MembershipManager method
-  @Override
-  public void forceUDPMessagingForCurrentThread() {
-    forceUseUDPMessaging.set(Boolean.TRUE);
-  }
-
-  // MembershipManager method
-  @Override
-  public void releaseUDPMessagingForCurrentThread() {
-    forceUseUDPMessaging.set(Boolean.FALSE);
-  }
-
-  private boolean isForceUDPCommunications() {
-    return forceUseUDPMessaging.get();
   }
 
   @Override
@@ -1824,27 +1614,7 @@ public class GMSMembershipManager implements MembershipManager {
       addShunnedMember(member);
     }
 
-    final DirectChannel dc = directChannel;
-    if (dc != null) {
-      // Bug 37944: make sure this is always done in a separate thread,
-      // so that shutdown conditions don't wedge the view lock
-      // fix for bug 34010
-      new LoggingThread("disconnect thread for " + member, () -> {
-        try {
-          Thread.sleep(Integer.getInteger("p2p.disconnectDelay", 3000).intValue());
-        } catch (InterruptedException ie) {
-          Thread.currentThread().interrupt();
-          // Keep going, try to close the endpoint.
-        }
-        if (!dc.isOpen()) {
-          return;
-        }
-        if (logger.isDebugEnabled())
-          logger.debug("Membership: closing connections for departed member {}", member);
-        // close connections, but don't do membership notification since it's already been done
-        dc.closeEndpoint(member, reason, false);
-      }).start();
-    }
+    lifecycleListener.destroyMember(member, reason);
   }
 
   /**
@@ -2019,23 +1789,6 @@ public class GMSMembershipManager implements MembershipManager {
     }
   }
 
-
-  /**
-   * for testing verification purposes, this return the port for the direct channel, or zero if
-   * there is no direct channel
-   */
-  public int getDirectChannelPort() {
-    return directChannel == null ? 0 : directChannel.getPort();
-  }
-
-  /**
-   * for mock testing this allows insertion of a DirectChannel mock
-   */
-  void setDirectChannel(DirectChannel dc) {
-    this.directChannel = dc;
-    this.tcpDisabled = false;
-  }
-
   @Override
   public void setReconnectCompleted(boolean reconnectCompleted) {
     this.reconnectCompleted = reconnectCompleted;
@@ -2046,12 +1799,8 @@ public class GMSMembershipManager implements MembershipManager {
    * non-thread-owned serial channels and high priority channels are not included
    */
   @Override
-  public Map<String, Long> getMessageState(DistributedMember member, boolean includeMulticast) {
-    Map<String, Long> result = new HashMap<>();
-    DirectChannel dc = directChannel;
-    if (dc != null) {
-      dc.getChannelStates(member, result);
-    }
+  public Map<String, Long> getMessageState(DistributedMember member, boolean includeMulticast,
+      Map<String, Long> result) {
     services.getMessenger().getMessageState((MemberIdentifier) member,
         result,
         includeMulticast);
@@ -2061,126 +1810,7 @@ public class GMSMembershipManager implements MembershipManager {
   @Override
   public void waitForMessageState(DistributedMember otherMember, Map<String, Long> state)
       throws InterruptedException {
-    if (Thread.interrupted())
-      throw new InterruptedException();
-    DirectChannel dc = directChannel;
-    if (dc != null) {
-      dc.waitForChannelState(otherMember, state);
-    }
     services.getMessenger().waitForMessageState((MemberIdentifier) otherMember, state);
-
-    if (services.getConfig().isMulticastEnabled()
-        && !services.getConfig().getDisableTcp()) {
-      // GEODE-2865: wait for scheduled multicast messages to be applied to the cache
-      waitForSerialMessageProcessing((InternalDistributedMember) otherMember);
-    }
-  }
-
-  /*
-   * (non-Javadoc) MembershipManager method: wait for the given member to be gone. Throws
-   * TimeoutException if the wait goes too long
-   *
-   * @see
-   * org.apache.geode.distributed.internal.membership.MembershipManager#waitForDeparture(org.apache.
-   * geode.distributed.DistributedMember)
-   */
-  @Override
-  public boolean waitForDeparture(DistributedMember mbr)
-      throws TimeoutException, InterruptedException {
-    long memberTimeout = this.services.getConfig().getMemberTimeout();
-    return waitForDeparture(mbr, memberTimeout * 4);
-  }
-
-  /*
-   * (non-Javadoc) MembershipManager method: wait for the given member to be gone. Throws
-   * TimeoutException if the wait goes too long
-   *
-   * @see
-   * org.apache.geode.distributed.internal.membership.MembershipManager#waitForDeparture(org.apache.
-   * geode.distributed.DistributedMember)
-   */
-  @Override
-  public boolean waitForDeparture(DistributedMember mbr, long timeoutMs)
-      throws TimeoutException, InterruptedException {
-    if (Thread.interrupted())
-      throw new InterruptedException();
-    boolean result = false;
-    DirectChannel dc = directChannel;
-    InternalDistributedMember idm = (InternalDistributedMember) mbr;
-    long pauseTime = (timeoutMs < 4000) ? 100 : timeoutMs / 40;
-    boolean wait;
-    int numWaits = 0;
-    do {
-      wait = false;
-      if (dc != null) {
-        if (dc.hasReceiversFor(idm)) {
-          wait = true;
-        }
-        if (wait && logger.isDebugEnabled()) {
-          logger.info("waiting for receivers for {} to shut down", mbr);
-        }
-      }
-      if (!wait) {
-        latestViewReadLock.lock();
-        try {
-          wait = this.latestView.contains(idm);
-        } finally {
-          latestViewReadLock.unlock();
-        }
-        if (wait && logger.isDebugEnabled()) {
-          logger.debug("waiting for {} to leave the membership view", mbr);
-        }
-      }
-      if (!wait) {
-        if (waitForSerialMessageProcessing(idm)) {
-          result = true;
-        }
-      }
-      if (wait) {
-        numWaits++;
-        if (numWaits > 40) {
-          throw new TimeoutException("waited too long for " + idm + " to be removed");
-        }
-        Thread.sleep(pauseTime);
-      }
-    } while (wait && (dc != null && dc.isOpen())
-        && !services.getCancelCriterion().isCancelInProgress());
-    if (logger.isDebugEnabled()) {
-      logger.debug("operations for {} should all be in the cache at this point", mbr);
-    }
-    return result;
-  }
-
-  /**
-   * wait for serial executor messages from the given member to be processed
-   */
-  private boolean waitForSerialMessageProcessing(InternalDistributedMember idm)
-      throws InterruptedException {
-    // run a message through the member's serial execution queue to ensure that all of its
-    // current messages have been processed
-    boolean result = false;
-    OverflowQueueWithDMStats<Runnable> serialQueue = dm.getExecutors().getSerialQueue(idm);
-    if (serialQueue != null) {
-      final boolean done[] = new boolean[1];
-      final FlushingMessage msg = new FlushingMessage(done);
-      serialQueue.add(new SizeableRunnable(100) {
-        @Override
-        public void run() {
-          msg.invoke();
-        }
-
-        public String toString() {
-          return "Processing fake message";
-        }
-      });
-      synchronized (done) {
-        while (!done[0]) {
-          done.wait(10);
-        }
-        result = true;
-      }
-    }
-    return result;
   }
 
   @Override
@@ -2340,37 +1970,6 @@ public class GMSMembershipManager implements MembershipManager {
     inhibitForceDisconnectLogging = b;
   }
 
-  /** this is a fake message class that is used to flush the serial execution queue */
-  static class FlushingMessage extends DistributionMessage {
-    final boolean[] done;
-
-    FlushingMessage(boolean[] done) {
-      this.done = done;
-    }
-
-    public void invoke() {
-      synchronized (done) {
-        done[0] = true;
-        done.notify();
-      }
-    }
-
-    @Override
-    protected void process(ClusterDistributionManager dm) {
-      // not used
-    }
-
-    @Override
-    public int getDSFID() {
-      return 0;
-    }
-
-    @Override
-    public int getProcessorType() {
-      return OperationExecutors.SERIAL_EXECUTOR;
-    }
-  }
-
   public void disableDisconnectOnQuorumLossForTesting() {
     services.getJoinLeave().disableDisconnectOnQuorumLossForTesting();
   }
@@ -2427,15 +2026,6 @@ public class GMSMembershipManager implements MembershipManager {
       membershipCheckTimeout = config.getSecurityPeerMembershipTimeout();
       wasReconnectingSystem = config.getIsReconnectingDS();
 
-      // cache these settings for use in send()
-      mcastEnabled = config.isMcastEnabled();
-      tcpDisabled = config.isTcpDisabled();
-      ackSevereAlertThreshold = config.getAckSevereAlertThreshold();
-      ackWaitThreshold = config.getAckWaitThreshold();
-
-      if (!tcpDisabled) {
-        dcReceiver = new MyDCReceiver(messageListener);
-      }
 
       surpriseMemberTimeout =
           Math.max(20 * DistributionConfig.DEFAULT_MEMBER_TIMEOUT, 20 * config.getMemberTimeout());
@@ -2448,12 +2038,8 @@ public class GMSMembershipManager implements MembershipManager {
     /* Service interface */
     @Override
     public void start() {
-      int dcPort = 0;
-      if (!tcpDisabled) {
-        directChannel = new DirectChannel(GMSMembershipManager.this, dcReceiver, dm);
-        dcPort = directChannel.getPort();
-      }
-      services.getMessenger().getMemberID().setDirectChannelPort(dcPort);
+      lifecycleListener.start(services.getMessenger().getMemberID());
+
     }
 
     /* Service interface */
@@ -2474,10 +2060,9 @@ public class GMSMembershipManager implements MembershipManager {
     public void stop() {
       // [bruce] Do not null out the channel w/o adding appropriate synchronization
 
-      logger.debug("MembershipManager closing");
+      logger.debug("Membership closing");
 
-      if (directChannel != null) {
-        directChannel.disconnect(null);
+      if (lifecycleListener.disconnect(null)) {
 
         if (address != null) {
           // Make sure that channel information is consistent
@@ -2511,7 +2096,7 @@ public class GMSMembershipManager implements MembershipManager {
       MembershipView currentView = latestView;
       if (currentView.getViewId() < 0 && !isConnected()) {
         latestView = createGeodeView(v);
-        logger.debug("MembershipManager: initial view is {}", latestView);
+        logger.debug("Membership: initial view is {}", latestView);
       } else {
         handleOrDeferViewEvent(createGeodeView(v));
       }
@@ -2545,18 +2130,14 @@ public class GMSMembershipManager implements MembershipManager {
       try {
         join();
       } catch (RuntimeException e) {
-        if (directChannel != null) {
-          directChannel.disconnect(e);
-        }
+        lifecycleListener.disconnect(e);
         throw e;
       }
 
       GMSMembershipManager.this.address =
           (InternalDistributedMember) services.getMessenger().getMemberID();
 
-      if (directChannel != null) {
-        directChannel.setLocalAddr(address);
-      }
+      lifecycleListener.setLocalAddress(address);
 
       GMSMembershipManager.this.hasJoined = true;
 
@@ -2666,7 +2247,7 @@ public class GMSMembershipManager implements MembershipManager {
       DistributionMessage distributionMessage =
           (DistributionMessage) ((GMSMessageAdapter) msg).getGeodeMessage();
       // UDP messages received from surprise members will have partial IDs.
-      // Attempt to replace these with full IDs from the MembershipManager's view.
+      // Attempt to replace these with full IDs from the Membership's view.
       if (distributionMessage.getSender().isPartial()) {
         replacePartialIdentifierInMessage(distributionMessage);
       }

@@ -37,7 +37,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ConnectionWatcher;
@@ -116,9 +116,6 @@ public class MembershipDependenciesJUnitTest {
               // TODO: Serialization needs to become its own module
               .or(type(InternalDataSerializer.class)) // still used by GMSLocator
               .or(type(DistributionMessage.class)) // still used by GMSLocator
-
-              // TODO: Membership needs its own config object
-              .or(type(MembershipManager.class))
 
               // TODO
               .or(assignableTo(CancelCriterion.class))

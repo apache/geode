@@ -41,9 +41,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
@@ -775,7 +775,7 @@ public class ConnectionTable {
     return giveUpOnMember(owner.getDM().getMembershipManager(), id);
   }
 
-  protected boolean giveUpOnMember(MembershipManager mgr, DistributedMember remoteAddr) {
+  protected boolean giveUpOnMember(MembershipManagerAdapter mgr, DistributedMember remoteAddr) {
     return !mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress();
   }
 
@@ -887,7 +887,7 @@ public class ConnectionTable {
       }
       if (notifyDisconnect) {
         // Before the removal of TCPConduit Stub addresses this used
-        // to call MembershipManager.getMemberForStub, which checked
+        // to call Membership.getMemberForStub, which checked
         // for a shutdown in progress and threw this exception:
         if (owner.getDM().shutdownInProgress()) {
           throw new DistributedSystemDisconnectedException("Shutdown in progress",

@@ -43,7 +43,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCreator;
@@ -112,14 +112,14 @@ public class TCPConduit implements Runnable {
   private final SocketCreator socketCreator;
 
 
-  private MembershipManager membershipManager;
+  private Membership membership;
 
   static {
     init();
   }
 
-  public MembershipManager getMembershipManager() {
-    return membershipManager;
+  public Membership getMembershipManager() {
+    return membership;
   }
 
   public static int getBackLog() {
@@ -227,7 +227,7 @@ public class TCPConduit implements Runnable {
    * p2p.idleConnectionTimeout
    * </pre>
    */
-  public TCPConduit(MembershipManager mgr, int port, InetAddress address, boolean isBindAddress,
+  public TCPConduit(Membership mgr, int port, InetAddress address, boolean isBindAddress,
       DirectChannel receiver, Properties props) throws ConnectionException {
     parseProperties(props);
 
@@ -237,7 +237,7 @@ public class TCPConduit implements Runnable {
     this.directChannel = receiver;
     this.stats = null;
     this.config = null;
-    this.membershipManager = mgr;
+    this.membership = mgr;
     if (directChannel != null) {
       this.stats = directChannel.getDMStats();
       this.config = directChannel.getDMConfig();
@@ -769,9 +769,9 @@ public class TCPConduit implements Runnable {
         // problems. Tear down the connection so that it gets
         // rebuilt.
         if (retry || conn != null) { // not first time in loop
-          if (!membershipManager.memberExists(memberAddress)
-              || membershipManager.isShunned(memberAddress)
-              || membershipManager.shutdownInProgress()) {
+          if (!membership.memberExists(memberAddress)
+              || membership.isShunned(memberAddress)
+              || membership.shutdownInProgress()) {
             throw new IOException(
                 "TCP/IP connection lost and member is not in view");
           }
@@ -786,8 +786,8 @@ public class TCPConduit implements Runnable {
           }
 
           // try again after sleep
-          if (!membershipManager.memberExists(memberAddress)
-              || membershipManager.isShunned(memberAddress)) {
+          if (!membership.memberExists(memberAddress)
+              || membership.isShunned(memberAddress)) {
             // OK, the member left. Just register an error.
             throw new IOException(
                 "TCP/IP connection lost and member is not in view");
@@ -872,8 +872,8 @@ public class TCPConduit implements Runnable {
 
         if (problem != null) {
           // Some problems are not recoverable; check and error out early.
-          if (!membershipManager.memberExists(memberAddress)
-              || membershipManager.isShunned(memberAddress)) { // left the view
+          if (!membership.memberExists(memberAddress)
+              || membership.isShunned(memberAddress)) { // left the view
             // Bracket our original warning
             if (memberInTrouble != null) {
               // make this msg info to bracket warning
@@ -884,7 +884,7 @@ public class TCPConduit implements Runnable {
                 memberAddress));
           } // left the view
 
-          if (membershipManager.shutdownInProgress()) { // shutdown in progress
+          if (membership.shutdownInProgress()) { // shutdown in progress
             // Bracket our original warning
             if (memberInTrouble != null) {
               // make this msg info to bracket warning
@@ -1049,6 +1049,6 @@ public class TCPConduit implements Runnable {
    * view, false if membership is not confirmed before timeout.
    */
   public boolean waitForMembershipCheck(InternalDistributedMember remoteId) {
-    return membershipManager.waitForNewMember(remoteId);
+    return membership.waitForNewMember(remoteId);
   }
 }

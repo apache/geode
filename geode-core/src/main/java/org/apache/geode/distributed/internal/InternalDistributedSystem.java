@@ -76,9 +76,8 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -1450,7 +1449,7 @@ public class InternalDistributedSystem extends DistributedSystem
   private static volatile boolean emergencyClassesLoaded = false;
 
   /**
-   * Ensure that the MembershipManager class gets loaded.
+   * Ensure that the Membership class gets loaded.
    *
    * @see SystemFailure#loadEmergencyClasses()
    */
@@ -1469,7 +1468,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public void emergencyClose() {
     if (dm != null) {
-      MembershipManager mm = dm.getMembershipManager();
+      MembershipManagerAdapter mm = dm.getMembershipManager();
       if (mm != null) {
         mm.emergencyClose();
       }
@@ -1680,7 +1679,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
   /**
    * If this DistributedSystem is attempting to reconnect to the distributed system this will return
-   * the quorum checker created by the old MembershipManager for checking to see if a quorum of old
+   * the quorum checker created by the old Membership for checking to see if a quorum of old
    * members can be reached.
    *
    * @return the quorum checking service
@@ -2483,7 +2482,7 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     // get the membership manager for quorum checks
-    MembershipManager mbrMgr = dm.getMembershipManager();
+    MembershipManagerAdapter mbrMgr = dm.getMembershipManager();
     quorumChecker = mbrMgr.getQuorumChecker();
     if (logger.isDebugEnabled()) {
       if (quorumChecker == null) {

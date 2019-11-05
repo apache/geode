@@ -46,7 +46,6 @@ import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.InternalCache;
@@ -1289,7 +1288,7 @@ public class LonerDistributionManager implements DistributionManager {
    * @see org.apache.geode.distributed.internal.DM#getMembershipManager()
    */
   @Override
-  public MembershipManager getMembershipManager() {
+  public MembershipManagerAdapter getMembershipManager() {
     // no membership manager
     return null;
   }

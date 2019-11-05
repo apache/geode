@@ -14,13 +14,9 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
-import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
@@ -30,12 +26,6 @@ public class GMSJoinLeaveTestHelper {
     synchronized (gmsJoinLeave.getViewInstallationLock()) {
       gmsJoinLeave.becomeCoordinator();
     }
-  }
-
-  public static boolean isViewCreator() {
-    GMSJoinLeave gmsJoinLeave = getGmsJoinLeave();
-    assertNotNull("There should be a JoinLeave for every DS", gmsJoinLeave);
-    return gmsJoinLeave.getView().getCreator().equals(gmsJoinLeave.getMemberID());
   }
 
   private static void waitCriterion() {
@@ -56,14 +46,6 @@ public class GMSJoinLeaveTestHelper {
       }
     };
     GeodeAwaitility.await().untilAsserted(waitCriterion);
-  }
-
-  private static GMSJoinLeave getGmsJoinLeave() {
-    InternalDistributedSystem distributedSystem = getInternalDistributedSystem();
-    DistributionManager dm = distributedSystem.getDM();
-    GMSMembershipManager membershipManager = (GMSMembershipManager) dm.getMembershipManager();
-    Services services = membershipManager.getServices();
-    return (GMSJoinLeave) services.getJoinLeave();
   }
 
   public static InternalDistributedSystem getInternalDistributedSystem() {

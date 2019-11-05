@@ -19,10 +19,10 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionException;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
@@ -41,6 +41,7 @@ public class MembershipBuilderImpl implements MembershipBuilder {
   private MembershipConfig membershipConfig;
   private DSFIDSerializer serializer;
   private MemberIdentifierFactory memberFactory = new MemberIdentifierFactoryImpl();
+  private LifecycleListener lifecycleListener;
 
   public MembershipBuilderImpl(ClusterDistributionManager dm) {
     this.dm = dm;
@@ -89,9 +90,16 @@ public class MembershipBuilderImpl implements MembershipBuilder {
   }
 
   @Override
-  public MembershipManager create() {
+  public MembershipBuilder setDirectChannelCallbacks(
+      LifecycleListener lifecycleListener) {
+    this.lifecycleListener = lifecycleListener;
+    return this;
+  }
+
+  @Override
+  public Membership create() {
     GMSMembershipManager gmsMembershipManager =
-        new GMSMembershipManager(membershipListener, messageListener, dm);
+        new GMSMembershipManager(membershipListener, messageListener, dm, lifecycleListener);
     Services services =
         new Services(gmsMembershipManager.getGMSManager(), statistics, authenticator,
             membershipConfig, serializer, memberFactory);

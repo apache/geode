@@ -73,10 +73,10 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.SizeableRunnable;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -245,7 +245,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     InternalDistributedSystem system = getSystem(config);
 
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
-    GMSMembershipManager mgr = (GMSMembershipManager) dm.getMembershipManager();
+    MembershipManagerAdapter mgr = dm.getMembershipManager();
     assertThat(mgr.getDirectChannelPort()).isEqualTo(this.tcpPort);
   }
 

@@ -848,7 +848,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
   /**
    * this method is primarily for tests. The current view should be pulled from JoinLeave or the
-   * MembershipManager (which includes surprise members)
+   * Membership (which includes surprise members)
    */
   public synchronized GMSMembershipView getView() {
     return currentView;

@@ -88,11 +88,11 @@ import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
@@ -796,9 +796,9 @@ public class LocatorDUnitTest implements Serializable {
 
       @Override
       public void run() {
-        Membership mmgr = MembershipManagerHelper.getMembership(system);
+        MembershipManagerAdapter mmgr = MembershipManagerHelper.getMembership(system);
 
-        // check for shutdown cause in MembershipManager. Following call should
+        // check for shutdown cause in Membership. Following call should
         // throw DistributedSystemDisconnectedException which should have cause as
         // ForceDisconnectException.
         try (IgnoredException i = addIgnoredException("Membership: requesting removal of")) {

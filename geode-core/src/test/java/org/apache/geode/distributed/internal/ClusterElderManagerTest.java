@@ -38,11 +38,10 @@ import org.junit.Test;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.test.junit.rules.ConcurrencyRule;
 
 public class ClusterElderManagerTest {
-  private MembershipManager memberManager;
+  private MembershipManagerAdapter memberManager;
   private CancelCriterion systemCancelCriterion;
   private InternalDistributedSystem system;
   private CancelCriterion cancelCriterion;
@@ -61,7 +60,7 @@ public class ClusterElderManagerTest {
     cancelCriterion = mock(CancelCriterion.class);
     system = mock(InternalDistributedSystem.class);
     systemCancelCriterion = mock(CancelCriterion.class);
-    memberManager = mock(MembershipManager.class);
+    memberManager = mock(MembershipManagerAdapter.class);
 
     when(clusterDistributionManager.getCancelCriterion()).thenReturn(cancelCriterion);
     when(clusterDistributionManager.getSystem()).thenReturn(system);

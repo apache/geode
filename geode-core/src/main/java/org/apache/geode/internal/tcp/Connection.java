@@ -68,7 +68,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSFIDFactory;
@@ -893,7 +893,7 @@ public class Connection implements Runnable {
    * creates a new connection to a remote server. We are initiating this connection; the other side
    * must accept us We will almost always send messages; small acks are received.
    */
-  protected static Connection createSender(final MembershipManager mgr, final ConnectionTable t,
+  protected static Connection createSender(final Membership mgr, final ConnectionTable t,
       final boolean preserveOrder, final DistributedMember remoteAddr, final boolean sharedResource,
       final long startTime, final long ackTimeout, final long ackSATimeout)
       throws IOException, DistributedSystemDisconnectedException {
@@ -1082,14 +1082,14 @@ public class Connection implements Runnable {
     return conn;
   }
 
-  private static boolean giveUpOnMember(MembershipManager mgr,
+  private static boolean giveUpOnMember(Membership mgr,
       DistributedMember remoteAddr) {
     return !mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress();
   }
 
   private void setRemoteAddr(DistributedMember m) {
     this.remoteAddr = this.owner.getDM().getCanonicalId(m);
-    MembershipManager mgr = this.conduit.getMembershipManager();
+    Membership mgr = this.conduit.getMembershipManager();
     mgr.addSurpriseMember(m);
   }
 

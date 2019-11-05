@@ -63,7 +63,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectLi
 import org.apache.geode.distributed.internal.membership.NetLocator;
 import org.apache.geode.distributed.internal.membership.NetLocatorFactory;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.locator.PeerLocatorRequest;
 import org.apache.geode.distributed.internal.tcpserver.InfoRequest;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -706,7 +705,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
       if (peerLocator) {
         netLocator.setServices(
-            ((GMSMembershipManager) internalDistributedSystem.getDM().getMembershipManager())
+            internalDistributedSystem.getDM().getMembershipManager()
                 .getServices());
       }
 

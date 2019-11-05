@@ -89,9 +89,9 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ReconnectListener;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.AvailablePort;
@@ -250,7 +250,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     locatorVm.invoke(new SerializableRunnable("disable force-disconnect") {
       @Override
       public void run() {
-        GMSMembershipManager mgr = (GMSMembershipManager) MembershipManagerHelper
+        MembershipManagerAdapter mgr = MembershipManagerHelper
             .getMembership(Locator.getLocator().getDistributedSystem());
         mgr.disableDisconnectOnQuorumLossForTesting();
       }
@@ -419,7 +419,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
               cache = ((InternalLocator) locator).getCache();
               system = cache.getInternalDistributedSystem();
               assertTrue(
-                  ((GMSMembershipManager) getMembership(system))
+                  (getMembership(system))
                       .getServices().getMessenger()
                       .isOldMembershipIdentifier(dm));
               return ds.getReconnectedSystem().getDistributedMember();

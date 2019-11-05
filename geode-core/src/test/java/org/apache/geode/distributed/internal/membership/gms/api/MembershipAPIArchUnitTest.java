@@ -29,7 +29,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
@@ -59,6 +58,5 @@ public class MembershipAPIArchUnitTest {
               .or(type(DistributedMember.class))
               .or(type(InternalDistributedMember[].class))
               .or(type(DistributionMessage.class))
-              .or(type(ClusterDistributionManager.class))
-              .or(type(MembershipManager.class)));
+              .or(type(ClusterDistributionManager.class)));
 }

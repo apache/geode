@@ -34,8 +34,8 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.TransactionInDoubtException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
@@ -83,13 +83,13 @@ public class CommitCommandTest {
     TXStateProxy txProxy = mock(TXStateProxy.class);
     InternalCache cache = mock(InternalCache.class);
     DistributionManager distributionManager = mock(DistributionManager.class);
-    MembershipManager membershipManager = mock(MembershipManager.class);
+    MembershipManagerAdapter membershipManagerAdapter = mock(MembershipManagerAdapter.class);
     ServerSideHandshake handshake = mock(ServerSideHandshake.class);
     boolean wasInProgress = false;
 
     doReturn(cache).when(serverConnection).getCache();
     doReturn(distributionManager).when(cache).getDistributionManager();
-    doReturn(membershipManager).when(distributionManager).getMembershipManager();
+    doReturn(membershipManagerAdapter).when(distributionManager).getMembershipManager();
     doReturn(false).when(distributionManager).isCurrentMember(isA(
         InternalDistributedMember.class));
 
@@ -109,7 +109,7 @@ public class CommitCommandTest {
         clientMessage, serverConnection, txMgr, wasInProgress, txProxy);
 
     verify(txMgr, atLeastOnce()).commit();
-    verify(membershipManager, times(1)).waitForDeparture(isA(DistributedMember.class),
+    verify(membershipManagerAdapter, times(1)).waitForDeparture(isA(DistributedMember.class),
         anyLong());
   }
 }

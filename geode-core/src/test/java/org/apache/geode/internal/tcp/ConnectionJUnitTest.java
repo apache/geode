@@ -34,8 +34,8 @@ import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.net.SocketCreator;
@@ -56,7 +56,7 @@ public class ConnectionJUnitTest {
     // mock the socket
     ConnectionTable table = mock(ConnectionTable.class);
     DistributionManager distMgr = mock(DistributionManager.class);
-    MembershipManager membership = mock(MembershipManager.class);
+    MembershipManagerAdapter membership = mock(MembershipManagerAdapter.class);
     TCPConduit conduit = mock(TCPConduit.class);
     DMStats stats = mock(DMStats.class);
 
