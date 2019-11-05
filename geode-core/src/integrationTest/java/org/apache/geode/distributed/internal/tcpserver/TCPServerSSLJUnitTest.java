@@ -94,7 +94,7 @@ public class TCPServerSSLJUnitTest {
       Properties sslProperties = getSSLConfigurationProperties();
       startTimeDelayedTcpServer(sslProperties);
 
-      createTcpClientConnection(sslProperties);
+      createTcpClientConnection();
 
     } catch (IllegalStateException e) {
       // connection will fail; Expected to have the exception thrown
@@ -126,10 +126,9 @@ public class TCPServerSSLJUnitTest {
     return sslProperties;
   }
 
-  private void createTcpClientConnection(final Properties clientProperties) {
+  private void createTcpClientConnection() {
     try {
-      new TcpClient(clientProperties).requestToServer(localhost, port, Boolean.valueOf(false),
-          5 * 1000);
+      new TcpClient().requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000);
     } catch (IOException e) {
       e.printStackTrace();
     } catch (ClassNotFoundException e) {
