@@ -783,6 +783,16 @@ public class PeerTypeRegistration implements TypeRegistration {
     return reverseMap.enumToId;
   }
 
+  @Override
+  public void clearLocalMaps() {
+    // Do nothing
+  }
+
+  @Override
+  public void flushCache() {
+    // Do nothing
+  }
+
   @VisibleForTesting
   public int getTypeToIdSize() {
     return reverseMap.typeToIdSize();

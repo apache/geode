@@ -65,6 +65,10 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   @Override
   public int defineType(PdxType newType) {
+    Integer existingId = reverseMap.typeToId.get(newType);
+    if (existingId != null) {
+      return existingId;
+    }
     Collection<Pool> pools = getAllPools();
 
     ServerConnectivityException lastException = null;
@@ -73,6 +77,8 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         newTypeId = GetPDXIdForTypeOp.execute((ExecutablePool) pool, newType);
         newType.setTypeId(newTypeId);
+        idToType.put(newTypeId, newType);
+        reverseMap.save(newTypeId, newType);
         copyTypeToOtherPools(newType, newTypeId, pool);
         return newTypeId;
       } catch (ServerConnectivityException e) {
@@ -80,7 +86,7 @@ public class ClientTypeRegistration implements TypeRegistration {
         lastException = e;
       }
     }
-    throw returnCorrectExceptionForFailure(pools, newTypeId, lastException);
+    throw returnCorrectExceptionForFailure(newTypeId, lastException);
   }
 
   /**
@@ -117,6 +123,10 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   @Override
   public PdxType getType(int typeId) {
+    PdxType existingType = idToType.get(typeId);
+    if (existingType != null) {
+      return existingType;
+    }
     Collection<Pool> pools = getAllPools();
 
     ServerConnectivityException lastException = null;
@@ -124,6 +134,8 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         PdxType type = GetPDXTypeByIdOp.execute((ExecutablePool) pool, typeId);
         if (type != null) {
+          idToType.put(typeId, type);
+          reverseMap.save(typeId, type);
           return type;
         }
       } catch (ServerConnectivityException e) {
@@ -133,12 +145,7 @@ public class ClientTypeRegistration implements TypeRegistration {
         lastException = e;
       }
     }
-
-    if (lastException != null) {
-      throw lastException;
-    } else {
-      throw returnCorrectExceptionForFailure(pools, typeId, lastException);
-    }
+    throw returnCorrectExceptionForFailure(typeId, lastException);
   }
 
   private Collection<Pool> getAllPools() {
@@ -166,6 +173,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     throw new UnsupportedOperationException("Clients will not be asked to add remote types");
   }
 
+  @SuppressWarnings("unused")
   public int getLastAllocatedTypeId() {
     throw new UnsupportedOperationException("Clients does not keep track of last allocated id");
   }
@@ -197,11 +205,19 @@ public class ClientTypeRegistration implements TypeRegistration {
   }
 
   private int processEnumInfoForEnumId(EnumInfo enumInfo) {
+    EnumId existingId = reverseMap.enumToId.get(enumInfo);
+    if (existingId != null) {
+      return existingId.intValue();
+    }
+
     Collection<Pool> pools = getAllPools();
     ServerConnectivityException lastException = null;
     for (Pool pool : pools) {
       try {
         int result = GetPDXIdForEnumOp.execute((ExecutablePool) pool, enumInfo);
+        EnumId newId = new EnumId(result);
+        idToEnum.put(newId, enumInfo);
+        reverseMap.save(newId, enumInfo);
         copyEnumToOtherPools(enumInfo, result, pool);
         return result;
       } catch (ServerConnectivityException e) {
@@ -209,7 +225,7 @@ public class ClientTypeRegistration implements TypeRegistration {
         lastException = e;
       }
     }
-    throw returnCorrectExceptionForFailure(pools, -1, lastException);
+    throw returnCorrectExceptionForFailure(-1, lastException);
   }
 
   /**
@@ -249,6 +265,11 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   @Override
   public EnumInfo getEnumById(int enumId) {
+    EnumId id = new EnumId(enumId);
+    EnumInfo existingEnum = idToEnum.get(id);
+    if (existingEnum != null) {
+      return existingEnum;
+    }
     Collection<Pool> pools = getAllPools();
 
     ServerConnectivityException lastException = null;
@@ -256,6 +277,9 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         EnumInfo result = GetPDXEnumByIdOp.execute((ExecutablePool) pool, enumId);
         if (result != null) {
+          idToEnum.put(id, result);
+          reverseMap.save(id, result);
+
           return result;
         }
       } catch (ServerConnectivityException e) {
@@ -266,10 +290,9 @@ public class ClientTypeRegistration implements TypeRegistration {
       }
     }
 
-    throw returnCorrectExceptionForFailure(pools, enumId, lastException);
+    throw returnCorrectExceptionForFailure(enumId, lastException);
   }
 
-  @SuppressWarnings({"unchecked", "serial"})
   @Override
   public Map<Integer, PdxType> types() {
     Collection<Pool> pools = getAllPools();
@@ -285,7 +308,6 @@ public class ClientTypeRegistration implements TypeRegistration {
     return types;
   }
 
-  @SuppressWarnings({"unchecked", "serial"})
   @Override
   public Map<Integer, EnumInfo> enums() {
     Collection<Pool> pools = getAllPools();
@@ -342,9 +364,11 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         sendTypeToPool(importedType, typeId, pool);
       } catch (ServerConnectivityException e) {
-        throw returnCorrectExceptionForFailure(pools, typeId, e);
+        throw returnCorrectExceptionForFailure(typeId, e);
       }
     }
+    idToType.put(typeId, importedType);
+    reverseMap.save(typeId, importedType);
   }
 
   /**
@@ -360,13 +384,16 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         sendEnumIdToPool(importedInfo, enumId, pool);
       } catch (ServerConnectivityException e) {
-        throw returnCorrectExceptionForFailure(pools, enumId, e);
+        throw returnCorrectExceptionForFailure(enumId, e);
       }
     }
+    EnumId id = new EnumId(enumId);
+    idToEnum.put(id, importedInfo);
+    reverseMap.save(id, importedInfo);
   }
 
-  private RuntimeException returnCorrectExceptionForFailure(final Collection<Pool> pools,
-      final int typeId, final ServerConnectivityException lastException) {
+  private RuntimeException returnCorrectExceptionForFailure(final int typeId,
+      final ServerConnectivityException lastException) {
     if (lastException != null) {
       throw lastException;
     } else {
@@ -376,7 +403,7 @@ public class ClientTypeRegistration implements TypeRegistration {
 
   @Override
   public int getLocalSize() {
-    return 0;
+    return idToType.size() + idToEnum.size();
   }
 
   @Override
@@ -387,5 +414,18 @@ public class ClientTypeRegistration implements TypeRegistration {
   @Override
   public Map<EnumInfo, EnumId> getEnumToIdMap() {
     return reverseMap.enumToId;
+  }
+
+  @Override
+  public void clearLocalMaps() {
+    idToType.clear();
+    idToEnum.clear();
+    reverseMap.clear();
+  }
+
+  @Override
+  public void flushCache() {
+    idToEnum.values().forEach(EnumInfo::flushCache);
+    reverseMap.enumToId.keySet().forEach(EnumInfo::flushCache);
   }
 }

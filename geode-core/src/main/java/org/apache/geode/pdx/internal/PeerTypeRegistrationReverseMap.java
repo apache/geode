@@ -75,9 +75,9 @@ class PeerTypeRegistrationReverseMap extends TypeRegistryReverseMap {
   }
 
   // This should only be called prior to reloading the maps from the region
+  @Override
   void clear() {
-    typeToId.clear();
-    enumToId.clear();
+    super.clear();
     pendingTypeToId.clear();
     pendingEnumToId.clear();
   }

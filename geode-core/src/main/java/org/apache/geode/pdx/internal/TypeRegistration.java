@@ -97,4 +97,8 @@ public interface TypeRegistration {
   Map<PdxType, Integer> getTypeToIdMap();
 
   Map<EnumInfo, EnumId> getEnumToIdMap();
+
+  void clearLocalMaps();
+
+  void flushCache();
 }
