@@ -44,6 +44,7 @@ public class SocketCreatorFactory {
     } else {
       this.distributionConfig = distributionConfig;
     }
+    SSLConfigurationFactory.setDistributionConfig(this.distributionConfig);
   }
 
   private DistributionConfig getDistributionConfig() {
@@ -68,8 +69,7 @@ public class SocketCreatorFactory {
   public static SocketCreator getSocketCreatorForComponent(
       SecurableCommunicationChannel sslEnabledComponent) {
     SSLConfig sslConfigForComponent =
-        SSLConfigurationFactory.getSSLConfigForComponent(getInstance().getDistributionConfig(),
-            sslEnabledComponent);
+        SSLConfigurationFactory.getSSLConfigForComponent(sslEnabledComponent);
     return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(sslEnabledComponent,
         sslConfigForComponent);
   }
@@ -149,6 +149,7 @@ public class SocketCreatorFactory {
     if (socketCreatorFactory != null) {
       socketCreatorFactory.clearSocketCreators();
       socketCreatorFactory.distributionConfig = null;
+      SSLConfigurationFactory.close();
     }
   }
 

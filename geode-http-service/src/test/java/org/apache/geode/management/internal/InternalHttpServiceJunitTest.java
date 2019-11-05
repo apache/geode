@@ -29,6 +29,7 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalHttpService;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
 
 /**
  * The InternalHttpServiceJunitTest class is a test suite of test cases testing the contract and
@@ -44,6 +45,8 @@ public class InternalHttpServiceJunitTest {
     props.setProperty(DistributionConfig.HTTP_SERVICE_PORT_NAME, "" + port);
     distributionConfig = new DistributionConfigImpl(props);
 
+    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
+
     InternalDistributedSystem ds = mock(InternalDistributedSystem.class);
     when(ds.getConfig()).thenReturn(distributionConfig);
 
@@ -53,7 +56,9 @@ public class InternalHttpServiceJunitTest {
   }
 
   @After
-  public void teardown() {}
+  public void teardown() {
+    SSLConfigurationFactory.close();
+  }
 
   @Test
   public void testSetPortNoBindAddress() {
