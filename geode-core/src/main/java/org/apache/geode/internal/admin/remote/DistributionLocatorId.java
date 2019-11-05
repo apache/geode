@@ -198,7 +198,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   private SSLConfig validateSSLConfig(SSLConfig sslConfig) {
     if (sslConfig == null)
-      return new SSLConfig.Builder().build(); // uses defaults
+      return new SSLConfig(); // uses defaults
     return sslConfig;
   }
 

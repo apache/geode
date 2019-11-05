@@ -259,19 +259,19 @@ public class CacheConnectionIntegrationTest {
         createTempFileFromResource(CacheConnectionIntegrationTest.class, DEFAULT_STORE)
             .getAbsolutePath();
 
-    SSLConfig.Builder sslConfigBuilder = new SSLConfig.Builder();
-    sslConfigBuilder.setEnabled(true);
-    sslConfigBuilder.setCiphers(SSL_CIPHERS_VALUE);
-    sslConfigBuilder.setProtocols(SSL_PROTOCOLS_VALUE);
-    sslConfigBuilder.setRequireAuth(true);
-    sslConfigBuilder.setKeystoreType("jks");
-    sslConfigBuilder.setKeystore(keyStorePath);
-    sslConfigBuilder.setKeystorePassword("password");
-    sslConfigBuilder.setTruststore(trustStorePath);
-    sslConfigBuilder.setKeystorePassword("password");
-    sslConfigBuilder.setEndpointIdentificationEnabled(false);
+    SSLConfig sslConfig = new SSLConfig();
+    sslConfig.setEnabled(true);
+    sslConfig.setCiphers(SSL_CIPHERS_VALUE);
+    sslConfig.setProtocols(SSL_PROTOCOLS_VALUE);
+    sslConfig.setRequireAuth(true);
+    sslConfig.setKeystoreType("jks");
+    sslConfig.setKeystore(keyStorePath);
+    sslConfig.setKeystorePassword("password");
+    sslConfig.setTruststore(trustStorePath);
+    sslConfig.setKeystorePassword("password");
+    sslConfig.setEndpointIdentificationEnabled(false);
 
-    SocketCreator socketCreator = new SocketCreator(sslConfigBuilder.build());
+    SocketCreator socketCreator = new SocketCreator(sslConfig);
     return socketCreator.connectForClient("localhost", cacheServerPort, 5000);
   }
 }
