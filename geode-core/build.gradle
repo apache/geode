@@ -343,7 +343,8 @@ dependencies {
   testRuntime('commons-validator:commons-validator')
   testRuntime('com.pholser:junit-quickcheck-generators')
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
-
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
   integrationTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -364,7 +365,8 @@ dependencies {
 
   integrationTestRuntime('org.apache.derby:derby')
   integrationTestRuntime('xerces:xercesImpl')
-
+  integrationTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+  integrationTestRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
   distributedTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
@@ -381,6 +383,8 @@ dependencies {
 
   distributedTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
   distributedTestRuntime('org.apache.derby:derby')
+  distributedTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+  distributedTestRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
 
   upgradeTestCompile(project(':geode-dunit')) {
@@ -389,12 +393,16 @@ dependencies {
 
   upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
   upgradeTestRuntime(project(':geode-log4j'))
+  upgradeTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+  upgradeTestRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 
 
   performanceTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
   performanceTestImplementation(project(':geode-log4j'))
+  performanceTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+  performanceTestRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 }
 
 jmh {
@@ -422,9 +430,36 @@ jmhJar {
 
 tasks.eclipse.dependsOn(generateGrammarSource)
 
+test {
+  useJUnitPlatform {
+    includeEngines 'junit-jupiter',  'junit-vintage'
+  }
+}
+
+integrationTest {
+  useJUnitPlatform {
+    includeEngines 'junit-jupiter',  'junit-vintage'
+  }
+}
+
 distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
+  useJUnitPlatform {
+    includeEngines 'junit-jupiter',  'junit-vintage'
+  }
+}
+
+upgradeTest {
+  useJUnitPlatform {
+    includeEngines 'junit-jupiter',  'junit-vintage'
+  }
+}
+
+performanceTest {
+  useJUnitPlatform {
+    includeEngines 'junit-jupiter',  'junit-vintage'
+  }
 }
 
 rootProject.generate.dependsOn(generateGrammarSource)
