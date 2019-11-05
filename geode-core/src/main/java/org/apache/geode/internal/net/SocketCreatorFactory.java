@@ -66,12 +66,18 @@ public class SocketCreatorFactory {
   }
 
   public static SocketCreator getSocketCreatorForComponent(
-      SecurableCommunicationChannel sslEnabledComponent) {
-    SSLConfig sslConfigForComponent =
-        SSLConfigurationFactory.getSSLConfigForComponent(getInstance().getDistributionConfig(),
+      final DistributionConfig distributionConfig,
+      final SecurableCommunicationChannel sslEnabledComponent) {
+    final SSLConfig sslConfigForComponent =
+        SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
             sslEnabledComponent);
     return getInstance().getOrCreateSocketCreatorForSSLEnabledComponent(sslEnabledComponent,
         sslConfigForComponent);
+  }
+
+  public static SocketCreator getSocketCreatorForComponent(
+      SecurableCommunicationChannel sslEnabledComponent) {
+    return getSocketCreatorForComponent(getInstance().getDistributionConfig(), sslEnabledComponent);
   }
 
   private SocketCreator getSSLSocketCreator(final SecurableCommunicationChannel sslComponent,
