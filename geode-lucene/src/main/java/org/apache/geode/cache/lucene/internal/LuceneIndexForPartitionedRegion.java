@@ -173,7 +173,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     partitionAttributesFactory.setColocatedWith(colocatedWithRegionName);
     configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
 
-    // Create AttributesFactory based on input RegionShortcut
+    // Create RegionAttributes based on input RegionShortcut
     RegionAttributes baseAttributes = this.cache.getRegionAttributes(regionShortCut.toString());
     RegionAttributesCreation attributes = new RegionAttributesCreation(baseAttributes, false);
     attributes.setPartitionAttributes(partitionAttributesFactory.create());

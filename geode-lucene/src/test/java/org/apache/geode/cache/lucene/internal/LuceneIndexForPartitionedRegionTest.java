@@ -254,6 +254,7 @@ public class LuceneIndexForPartitionedRegionTest {
   private PartitionAttributes initializeAttributes(final Cache cache) {
     PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
     RegionAttributes attributes = mock(RegionAttributes.class);
+    when(attributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     when(attributes.getCacheListeners()).thenReturn(new CacheListener[0]);
     when(attributes.getRegionTimeToLive()).thenReturn(ExpirationAttributes.DEFAULT);
     when(attributes.getRegionIdleTimeout()).thenReturn(ExpirationAttributes.DEFAULT);
