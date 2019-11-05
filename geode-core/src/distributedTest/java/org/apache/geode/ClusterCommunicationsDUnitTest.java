@@ -167,17 +167,10 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
       createCacheAndRegion(getVM(i), locatorPort);
     }
     performCreateWithLargeValue(getVM(1));
-    performUpdateWithLargeValue(getVM(1));
-  }
-
-  @Test
-  public void createEntryWithSmallMessage() {
-    int locatorPort = createLocator(getVM(0));
-    for (int i = 1; i <= NUM_SERVERS; i++) {
-      createCacheAndRegion(getVM(i), locatorPort);
+    // fault the value into an empty cache - forces use of message chunking
+    for (int i = 1; i <= NUM_SERVERS - 1; i++) {
+      verifyCreatedEntry(getVM(i));
     }
-    performCreateWithSmallValue(getVM(1));
-    performUpdateWithSmallValue(getVM(1));
   }
 
   @Test
@@ -269,37 +262,9 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
 
   private void performCreateWithLargeValue(VM memberVM) {
     memberVM.invoke("perform create", () -> {
-      byte[] value = new byte[1024];
+      byte[] value = new byte[SMALL_BUFFER_SIZE * 20];
       Arrays.fill(value, (byte) 1);
       cache.getRegion(regionName).put("testKey", value);
-    });
-  }
-
-  private void performUpdateWithLargeValue(VM memberVM) {
-    memberVM.invoke("perform update", () -> {
-      byte[] value = new byte[1024];
-      Arrays.fill(value, (byte) 1);
-      for (int i = 0; i < 1000; i++) {
-        cache.getRegion(regionName).put("testKey", value);
-      }
-    });
-  }
-
-  private void performCreateWithSmallValue(VM memberVM) {
-    memberVM.invoke("perform create", () -> {
-      byte[] value = new byte[512];
-      Arrays.fill(value, (byte) 1);
-      cache.getRegion(regionName).put("testKey", value);
-    });
-  }
-
-  private void performUpdateWithSmallValue(VM memberVM) {
-    memberVM.invoke("perform update", () -> {
-      byte[] value = new byte[512];
-      Arrays.fill(value, (byte) 1);
-      for (int i = 0; i < 1000; i++) {
-        cache.getRegion(regionName).put("testKey", value);
-      }
     });
   }
 
@@ -374,11 +339,11 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   }
 
   enum RunConfiguration {
-    // SHARED_CONNECTIONS(true, false, false),
-    // SHARED_CONNECTIONS_WITH_SSL(true, true, false),
-    // UNSHARED_CONNECTIONS(false, false, false),
-    UNSHARED_CONNECTIONS_WITH_SSL(false, true, false);
-    // UDP_CONNECTIONS(true, false, true);
+    SHARED_CONNECTIONS(true, false, false),
+    SHARED_CONNECTIONS_WITH_SSL(true, true, false),
+    UNSHARED_CONNECTIONS(false, false, false),
+    UNSHARED_CONNECTIONS_WITH_SSL(false, true, false),
+    UDP_CONNECTIONS(true, false, true);
 
     boolean useSSL;
     boolean conserveSockets;
