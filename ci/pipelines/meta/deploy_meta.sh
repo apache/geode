@@ -104,12 +104,13 @@ YML
   python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml --debug || exit 1
 
   set -e
+  fly -t ${FLY_TARGET} login -n ${CONCOURSE_TEAM}
   fly -t ${FLY_TARGET} sync
   fly -t ${FLY_TARGET} set-pipeline \
     -p ${META_PIPELINE} \
     --config ${SCRIPTDIR}/generated-pipeline.yml \
     --var artifact-bucket=${ARTIFACT_BUCKET} \
-    --var concourse-team=main \
+    --var concourse-team=${CONCOURSE_TEAM} \
     --var concourse-url=${CONCOURSE_URL} \
     --var gcp-project=${GCP_PROJECT} \
     --var geode-build-branch=${GEODE_BRANCH} \
@@ -124,6 +125,7 @@ YML
     --var upstream-fork=${UPSTREAM_FORK} \
     --yaml-var public-pipelines=${PUBLIC}
     set +e
+    
 popd 2>&1 > /dev/null
 
 
