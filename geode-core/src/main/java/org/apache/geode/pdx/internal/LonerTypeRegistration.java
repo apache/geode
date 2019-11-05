@@ -197,4 +197,16 @@ public class LonerTypeRegistration implements TypeRegistration {
     initializeRegistry();
     return delegate.getEnumToIdMap();
   }
+
+  @Override
+  public void clearLocalMaps() {
+    initializeRegistry();
+    delegate.clearLocalMaps();
+  }
+
+  @Override
+  public void flushCache() {
+    // initializeRegistry();
+    // delegate.flushCache();
+  }
 }

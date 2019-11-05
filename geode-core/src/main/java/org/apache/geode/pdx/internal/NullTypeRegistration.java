@@ -131,4 +131,14 @@ public class NullTypeRegistration implements TypeRegistration {
   public Map<EnumInfo, EnumId> getEnumToIdMap() {
     return Collections.emptyMap();
   }
+
+  @Override
+  public void clearLocalMaps() {
+    // do nothing
+  }
+
+  @Override
+  public void flushCache() {
+    // do nothing
+  }
 }

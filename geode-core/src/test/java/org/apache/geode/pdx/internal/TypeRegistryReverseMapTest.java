@@ -1,3 +1,18 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package org.apache.geode.pdx.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -8,26 +23,20 @@ import org.junit.Test;
 public class TypeRegistryReverseMapTest {
 
   @Test
-  public void saveCorrectlyAddsOnlyToReverseMaps() {
-    PeerTypeRegistrationReverseMap map = new PeerTypeRegistrationReverseMap();
+  public void saveCorrectlyAddsToReverseMaps() {
+    TypeRegistryReverseMap map = new TypeRegistryReverseMap();
     assertThat(map.typeToIdSize()).isEqualTo(0);
     assertThat(map.enumToIdSize()).isEqualTo(0);
-    assertThat(map.pendingTypeToIdSize()).isEqualTo(0);
-    assertThat(map.pendingEnumToIdSize()).isEqualTo(0);
 
     addPdxTypeToMap(map);
 
     assertThat(map.typeToIdSize()).isEqualTo(1);
     assertThat(map.enumToIdSize()).isEqualTo(0);
-    assertThat(map.pendingTypeToIdSize()).isEqualTo(0);
-    assertThat(map.pendingEnumToIdSize()).isEqualTo(0);
 
     addEnumInfoToMap(map);
 
     assertThat(map.typeToIdSize()).isEqualTo(1);
     assertThat(map.enumToIdSize()).isEqualTo(1);
-    assertThat(map.pendingTypeToIdSize()).isEqualTo(0);
-    assertThat(map.pendingEnumToIdSize()).isEqualTo(0);
 
     Object fakeKey = mock(Object.class);
     Object fakeValue = mock(Object.class);
@@ -35,18 +44,16 @@ public class TypeRegistryReverseMapTest {
 
     assertThat(map.typeToIdSize()).isEqualTo(1);
     assertThat(map.enumToIdSize()).isEqualTo(1);
-    assertThat(map.pendingTypeToIdSize()).isEqualTo(0);
-    assertThat(map.pendingEnumToIdSize()).isEqualTo(0);
   }
 
 
-  void addEnumInfoToMap(PeerTypeRegistrationReverseMap map) {
+  void addEnumInfoToMap(TypeRegistryReverseMap map) {
     EnumId enumId = mock(EnumId.class);
     EnumInfo enumInfo = mock(EnumInfo.class);
     map.save(enumId, enumInfo);
   }
 
-  void addPdxTypeToMap(PeerTypeRegistrationReverseMap map) {
+  void addPdxTypeToMap(TypeRegistryReverseMap map) {
     Integer pdxId = map.typeToIdSize();
     PdxType pdxType = mock(PdxType.class);
     map.save(pdxId, pdxType);

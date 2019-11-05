@@ -15,11 +15,9 @@
 package org.apache.geode.pdx.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,89 +29,116 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 @Category({SerializationTest.class})
 public class TypeRegistryTest {
 
-  private static final int TYPE_ID = 37;
-  private static final int ENUM_ID = 42;
-  private InternalCache internalCache = mock(InternalCache.class);
-  private TypeRegistration typeRegistration = mock(TypeRegistration.class);
-  private TypeRegistry typeRegistry = new TypeRegistry(internalCache, typeRegistration);
+  private TypeRegistry typeRegistry;
 
-  private PdxType newType = mock(PdxType.class);
-  private EnumInfo newEnum = mock(EnumInfo.class);
+  private PdxType newType;
 
   @Before
-  public void setUp() {}
-
-  @Test
-  public void defineTypeGivenANewTypeStoresItWithTheCorrectIdAndReturnsIt() {
-    when(typeRegistration.defineType(newType)).thenReturn(TYPE_ID);
-
-    PdxType result = typeRegistry.defineType(newType);
-
-    assertThat(result).isSameAs(newType);
-    verify(newType).setTypeId(TYPE_ID);
-    assertThat(typeRegistry.getIdToType().get(TYPE_ID)).isSameAs(newType);
-    assertThat(typeRegistry.getTypeToId().get(newType)).isSameAs(TYPE_ID);
+  public void setUp() {
+    InternalCache internalCache = mock(InternalCache.class);
+    TypeRegistration typeRegistration = mock(TypeRegistration.class);
+    typeRegistry = new TypeRegistry(internalCache, typeRegistration);
+    newType = mock(PdxType.class);
   }
 
-  @Test
-  public void defineEnumGivenANewEnumStoresItWithTheCorrectIdAndReturnsThatId() {
-    when(typeRegistration.defineEnum(newEnum)).thenReturn(ENUM_ID);
-
-    int result = typeRegistry.defineEnum(newEnum);
-
-    assertThat(result).isEqualTo(ENUM_ID);
-    assertThat(typeRegistry.getIdToEnum().get(ENUM_ID)).isSameAs(newEnum);
-    assertThat(typeRegistry.getEnumInfoToId().get(newEnum)).isEqualTo(ENUM_ID);
-  }
-
-  @Test
-  public void defineTypeGivenANewTypeThatIsInTypeToIdButNotIdToTypeStoresItWithTheCorrectIdAndReturnsIt() {
-    when(typeRegistration.defineType(newType)).thenReturn(TYPE_ID);
-    typeRegistry.getTypeToId().put(newType, TYPE_ID);
-
-    PdxType result = typeRegistry.defineType(newType);
-
-    assertThat(result).isSameAs(newType);
-    verify(newType).setTypeId(TYPE_ID);
-    assertThat(typeRegistry.getIdToType().get(TYPE_ID)).isSameAs(newType);
-    assertThat(typeRegistry.getTypeToId().get(newType)).isSameAs(TYPE_ID);
-  }
-
-  @Test
-  public void defineTypeGivenATypeEqualToAnExistingTypeReturnsTheExistingType() {
-    PdxType existingType = new PdxType("myClass", true);
-    PdxType equalType = new PdxType("myClass", true);
-    typeRegistry.getTypeToId().put(existingType, TYPE_ID);
-    typeRegistry.getIdToType().put(TYPE_ID, existingType);
-
-    PdxType result = typeRegistry.defineType(equalType);
-
-    assertThat(result).isSameAs(existingType);
-  }
-
-  @Test
-  public void defineTypeGivenATypeEqualToAnExistingButNotInTypeToIdTypeReturnsTheExistingType() {
-    PdxType existingType = new PdxType("myClass", true);
-    PdxType equalType = new PdxType("myClass", true);
-    typeRegistry.getTypeToId().put(existingType, null);
-    typeRegistry.getIdToType().put(TYPE_ID, existingType);
-    when(typeRegistration.defineType(equalType)).thenReturn(TYPE_ID);
-
-    PdxType result = typeRegistry.defineType(equalType);
-
-    assertThat(result).isSameAs(existingType);
-  }
-
-  @Test
-  public void defineTypeGivenATypeNotEqualToAnExistingButWithTheSameIdThrows() {
-    PdxType existingType = mock(PdxType.class);
-    typeRegistry.getTypeToId().put(existingType, null);
-    typeRegistry.getIdToType().put(TYPE_ID, existingType);
-    when(typeRegistration.defineType(newType)).thenReturn(TYPE_ID);
-
-    assertThatThrownBy(() -> typeRegistry.defineType(newType))
-        .hasMessageContaining("Old type does not equal new type for the same id.");
-  }
+  // @Test
+  // public void defineTypeGivenANewTypeStoresItWithTheCorrectIdAndReturnsIt() {
+  // when(typeRegistration.defineType(newType)).thenReturn(TYPE_ID);
+  //
+  // assertThat(typeRegistry.defineType(newType)).isSameAs(newType);
+  //
+  // verify(newType).setTypeId(TYPE_ID);
+  // assertThat(typeRegistry.getIdToType().get(TYPE_ID)).isSameAs(newType);
+  // assertThat(typeRegistry.getTypeToId().get(newType)).isSameAs(TYPE_ID);
+  // }
+  //
+  // @Test
+  // public void defineEnumGivenANewEnumStoresItWithTheCorrectIdAndReturnsThatId() {
+  // when(typeRegistration.defineEnum(newEnum)).thenReturn(ENUM_ID);
+  //
+  // assertThat(typeRegistry.defineEnum(newEnum)).isEqualTo(ENUM_ID);
+  // assertThat(typeRegistry.getIdToEnum().get(ENUM_ID)).isSameAs(newEnum);
+  // assertThat(typeRegistry.getEnumInfoToId().get(newEnum)).isEqualTo(ENUM_ID);
+  // }
+  //
+  // @Test
+  // public void
+  // defineTypeGivenANewTypeThatIsInTypeToIdButNotIdToTypeStoresItWithTheCorrectIdAndReturnsIt() {
+  // when(typeRegistration.defineType(newType)).thenReturn(TYPE_ID);
+  // typeRegistry.getTypeToId().put(newType, TYPE_ID);
+  //
+  // assertThat(typeRegistry.defineType(newType)).isSameAs(newType);
+  //
+  // verify(newType).setTypeId(TYPE_ID);
+  // assertThat(typeRegistry.getIdToType().get(TYPE_ID)).isSameAs(newType);
+  // assertThat(typeRegistry.getTypeToId().get(newType)).isSameAs(TYPE_ID);
+  // }
+  //
+  // @Test
+  // public void defineTypeGivenATypeEqualToAnExistingTypeReturnsTheExistingType() {
+  // PdxType existingType = new PdxType("myClass", true);
+  // PdxType equalType = new PdxType("myClass", true);
+  // typeRegistry.getTypeToId().put(existingType, TYPE_ID);
+  // typeRegistry.getIdToType().put(TYPE_ID, existingType);
+  //
+  // assertThat(typeRegistry.defineType(equalType)).isSameAs(existingType);
+  // }
+  //
+  // @Test
+  // public void defineEnumGivenAnEnumEqualToAnExistingEnumReturnsTheExistingEnum() {
+  // EnumInfo existingEnum = new EnumInfo("myClass", "myEnum", 1);
+  // EnumInfo equalEnum = new EnumInfo("myClass", "myEnum", 1);
+  // typeRegistry.getEnumInfoToId().put(existingEnum, ENUM_ID);
+  // typeRegistry.getIdToEnum().put(ENUM_ID, existingEnum);
+  //
+  // assertThat(typeRegistry.defineEnum(equalEnum)).isEqualTo(ENUM_ID);
+  // }
+  //
+  // @Test
+  // public void
+  // defineTypeGivenATypeEqualToAnExistingTypeThatIsNotInTypeToIdReturnsTheExistingType() {
+  // PdxType existingType = new PdxType("myClass", true);
+  // PdxType equalType = new PdxType("myClass", true);
+  // typeRegistry.getTypeToId().put(existingType, null);
+  // typeRegistry.getIdToType().put(TYPE_ID, existingType);
+  // when(typeRegistration.defineType(equalType)).thenReturn(TYPE_ID);
+  //
+  // assertThat(typeRegistry.defineType(equalType)).isSameAs(existingType);
+  // }
+  //
+  // @Test
+  // public void
+  // defineEnumGivenAnEnumEqualToAnExistingEnumThatIsNotInEnumInfoToIdReturnsTheIdOfTheExistingEnum()
+  // {
+  // EnumInfo existingEnum = new EnumInfo("myClass", "myEnum", 1);
+  // EnumInfo equalEnum = new EnumInfo("myClass", "myEnum", 1);
+  // typeRegistry.getIdToEnum().put(ENUM_ID, existingEnum);
+  // when(typeRegistration.defineEnum(equalEnum)).thenReturn(ENUM_ID);
+  //
+  // assertThat(typeRegistry.defineEnum(equalEnum)).isEqualTo(ENUM_ID);
+  // }
+  //
+  // @Test
+  // public void defineTypeGivenATypeNotEqualToAnExistingTypeWithTheSameIdThrows() {
+  // PdxType existingType = mock(PdxType.class);
+  // typeRegistry.getTypeToId().put(existingType, null);
+  // typeRegistry.getIdToType().put(TYPE_ID, existingType);
+  // when(typeRegistration.defineType(newType)).thenReturn(TYPE_ID);
+  //
+  // assertThatThrownBy(() -> typeRegistry.defineType(newType))
+  // .hasMessageContaining("Old type does not equal new type for the same id.");
+  // }
+  //
+  // @Test
+  // public void defineEnumGivenAnEnumNotEqualToAnExistingEnumWithTheSameIdThrows() {
+  // when(typeRegistration.defineEnum(newEnum)).thenReturn(ENUM_ID);
+  // EnumInfo existingEnum = mock(EnumInfo.class);
+  //
+  // typeRegistry.getIdToEnum().put(ENUM_ID, existingEnum);
+  //
+  // assertThatThrownBy(() -> typeRegistry.defineEnum(newEnum))
+  // .hasMessageContaining("Old enum does not equal new enum for the same id.");
+  // }
 
   @Test
   public void defineLocalTypeGivenNullCallsDefineType() {

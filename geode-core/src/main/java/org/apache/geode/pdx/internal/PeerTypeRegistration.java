@@ -790,6 +790,16 @@ public class PeerTypeRegistration implements TypeRegistration {
     return reverseMap.enumToId;
   }
 
+  @Override
+  public void clearLocalMaps() {
+    // Do nothing
+  }
+
+  @Override
+  public void flushCache() {
+    // Do nothing
+  }
+
   @VisibleForTesting
   @SuppressWarnings("deprecation")
   protected AttributesFactory<Object, Object> getAttributesFactory() {
