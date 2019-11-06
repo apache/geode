@@ -140,11 +140,7 @@ public class InternalDistributedMember
   private void defaultToCurrentHost() {
     memberData.setProcessId(OSProcess.getId());
     try {
-      if (SocketCreator.resolve_dns) {
-        memberData.setHostName(SocketCreator.getHostName(SocketCreator.getLocalHost()));
-      } else {
-        memberData.setHostName(SocketCreator.getLocalHost().getHostAddress());
-      }
+      memberData.setHostName(SocketCreator.getHostName(SocketCreator.getLocalHost()));
     } catch (UnknownHostException ee) {
       throw new InternalGemFireError(ee);
     }
@@ -170,7 +166,7 @@ public class InternalDistributedMember
   public InternalDistributedMember(InetAddress i, int membershipPort, boolean splitBrainEnabled,
       boolean canBeCoordinator) {
 
-    String hostName = SocketCreator.resolve_dns ? SocketCreator.getHostName(i) : i.getHostAddress();
+    String hostName = SocketCreator.getHostName(i);
 
     this.memberData = MemberDataBuilder.newBuilder(i, hostName)
         .setMembershipPort(membershipPort)
@@ -189,8 +185,7 @@ public class InternalDistributedMember
     memberData = m;
 
     if (memberData.getHostName() == null || memberData.isPartial()) {
-      String hostName = SocketCreator.resolve_dns ? SocketCreator.getHostName(m.getInetAddress())
-          : m.getInetAddress().getHostAddress();
+      String hostName = SocketCreator.getHostName(m.getInetAddress());
       memberData.setHostName(hostName);
     }
 
@@ -704,7 +699,7 @@ public class InternalDistributedMember
       host = add.getHostAddress();
     else {
       String hostName = memberData.getHostName();
-      host = SocketCreator.resolve_dns ? shortName(hostName) : hostName;
+      host = shortName(hostName);
     }
 
     sb.append(host);
@@ -1019,8 +1014,7 @@ public class InternalDistributedMember
 
     String hostName = DataSerializer.readString(in);
 
-    hostName = SocketCreator.resolve_dns
-        ? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
+    hostName = SocketCreator.getCanonicalHostName(inetAddr, hostName);
 
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
@@ -1074,8 +1068,7 @@ public class InternalDistributedMember
 
     String hostName = DataSerializer.readString(in);
 
-    hostName = SocketCreator.resolve_dns
-        ? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
+    hostName = SocketCreator.getCanonicalHostName(inetAddr, hostName);
 
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
@@ -1134,8 +1127,7 @@ public class InternalDistributedMember
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();
 
-    String hostName =
-        SocketCreator.resolve_dns ? SocketCreator.getHostName(inetAddr) : inetAddr.getHostAddress();
+    String hostName = SocketCreator.getHostName(inetAddr);
 
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;

@@ -198,13 +198,8 @@ public abstract class AbstractConfig implements Config {
 
     if (result instanceof InetAddress) {
       InetAddress addr = (InetAddress) result;
-      String addrName;
-      if (addr.isMulticastAddress() || !SocketCreator.resolve_dns) {
-        // on Windows getHostName on mcast addrs takes ~5 seconds
-        addrName = addr.getHostAddress();
-      } else {
-        addrName = SocketCreator.getHostName(addr);
-      }
+      String addrName = SocketCreator.getHostName(addr);
+
       return addrName;
     }
 

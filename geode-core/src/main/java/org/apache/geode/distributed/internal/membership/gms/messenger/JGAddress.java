@@ -96,11 +96,7 @@ public class JGAddress extends UUID {
     if (ip_addr == null)
       sb.append("<null>");
     else {
-      if (SocketCreator.resolve_dns) {
-        sb.append(SocketCreator.getHostName(ip_addr));
-      } else {
-        sb.append(ip_addr.getHostAddress());
-      }
+      sb.append(SocketCreator.getHostName(ip_addr));
     }
     if (vmViewId >= 0) {
       sb.append("<v").append(vmViewId).append('>');

@@ -573,9 +573,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
     this.inetAddr = StaticSerialization.readInetAddress(in);
     if (this.inetAddr != null) {
-      this.hostName =
-          SocketCreator.resolve_dns ? SocketCreator.getHostName(inetAddr)
-              : inetAddr.getHostAddress();
+      this.hostName = SocketCreator.getHostName(inetAddr);
     }
     this.udpPort = in.readInt();
     this.vmViewId = in.readInt();

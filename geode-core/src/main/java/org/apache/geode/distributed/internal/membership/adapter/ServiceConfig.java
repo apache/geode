@@ -66,11 +66,6 @@ public class ServiceConfig implements MembershipConfig {
     // if network partition detection is enabled, we must connect to the locators
     // more frequently in order to make sure we're not isolated from them
     SocketCreator.resolve_dns = true;
-    if (theConfig.getEnableNetworkPartitionDetection()) {
-      if (!SocketCreator.FORCE_DNS_USE) {
-        SocketCreator.resolve_dns = false;
-      }
-    }
 
     membershipPortRange = theConfig.getMembershipPortRange();
 

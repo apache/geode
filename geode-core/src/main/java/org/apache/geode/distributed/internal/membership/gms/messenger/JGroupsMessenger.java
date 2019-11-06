@@ -554,8 +554,7 @@ public class JGroupsMessenger implements Messenger {
 
     // establish the DistributedSystem's address
     String hostname =
-        SocketCreator.resolve_dns ? SocketCreator.getHostName(jgAddress.getInetAddress())
-            : jgAddress.getInetAddress().getHostAddress();
+        SocketCreator.getHostName(jgAddress.getInetAddress());
     GMSMemberData gmsMember = new GMSMemberData(jgAddress.getInetAddress(),
         hostname, jgAddress.getPort(),
         OSProcess.getId(), (byte) services.getConfig().getVmKind(),
