@@ -242,7 +242,6 @@ public class CacheRule extends AbstractDistributedRule {
     }
   }
 
-
   private static void nullCache() {
     cache = null;
   }
