@@ -212,7 +212,7 @@ public class DistributedRule extends AbstractDistributedRule {
         DistributionMessageObserver.setInstance(null);
         unregisterInstantiatorsInThisVM();
       });
-      DUnitLauncher.closeAndCheckForSuspects();
+      DUnitLauncher.getInstance().closeAndCheckForSuspects();
     }
 
     public static void tearDownInVM() {

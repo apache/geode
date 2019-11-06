@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -363,10 +362,6 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
     WANTestBase.checkRemoteClusterStatus(managing, puneMember);
 
-  }
-
-  private static int getLocatorPort() {
-    return Locator.getLocators().get(0).getPort();
   }
 
 }

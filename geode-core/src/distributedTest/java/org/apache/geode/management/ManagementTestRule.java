@@ -272,7 +272,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
   }
 
   private void setUp(final Object target) {
-    DUnitLauncher.launchIfNeeded();
+    DUnitLauncher.getInstance().launchIfNeeded();
     JUnit4DistributedTestCase.disconnectAllFromDS();
 
     int whichVM = 0;

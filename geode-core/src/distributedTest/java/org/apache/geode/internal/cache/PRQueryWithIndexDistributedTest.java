@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.apache.geode.test.dunit.DUnitEnv.get;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -43,6 +42,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.internal.index.AbstractIndex;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.ChildVM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
@@ -163,7 +163,7 @@ public class PRQueryWithIndexDistributedTest implements Serializable {
     @Override
     public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
       disallowedPid = in.readInt();
-      if (disallowedPid == get().getPid()) {
+      if (disallowedPid == ChildVM.getVmNum()) {
         throw new IOException("Cannot deserialize");
       }
     }

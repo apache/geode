@@ -75,6 +75,8 @@ public class ClusterStartupRule implements SerializableTestRule {
 
   private boolean skipLocalDistributedSystemCleanup;
 
+  private DUnitLauncher dUnitLauncher;
+
   public static InternalCache getCache() {
     if (memberStarter == null) {
       return null;
@@ -148,7 +150,8 @@ public class ClusterStartupRule implements SerializableTestRule {
       // GEODE-6247: JDK 11 has an issue where native code is reporting committed is 2MB > max.
       IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
     }
-    DUnitLauncher.launchIfNeeded(false);
+    dUnitLauncher = DUnitLauncher.getInstance();
+    dUnitLauncher.launchIfNeeded(false);
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i);
     }
@@ -182,7 +185,7 @@ public class ClusterStartupRule implements SerializableTestRule {
     // any background thread can fill the dunit_suspect.log
     // after its been truncated if we do it before closing cache
     IgnoredException.removeAllExpectedExceptions();
-    DUnitLauncher.closeAndCheckForSuspects();
+    dUnitLauncher.closeAndCheckForSuspects();
   }
 
 

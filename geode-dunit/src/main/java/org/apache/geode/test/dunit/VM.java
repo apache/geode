@@ -29,11 +29,12 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.dunit.internal.ChildVM;
 import org.apache.geode.test.dunit.internal.ChildVMLauncher;
 import org.apache.geode.test.dunit.internal.MethodInvokerResult;
 import org.apache.geode.test.dunit.internal.ProcessHolder;
+import org.apache.geode.test.dunit.internal.ProcessManager;
 import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
-import org.apache.geode.test.dunit.internal.StandAloneDUnitEnv;
 import org.apache.geode.test.dunit.internal.VMEventNotifier;
 import org.apache.geode.test.version.VersionManager;
 
@@ -69,11 +70,11 @@ public class VM implements Serializable {
   private final transient ChildVMLauncher childVMLauncher;
 
   /**
-   * Returns the {@code VM} identity. For {@link StandAloneDUnitEnv} the number returned is a
+   * Returns the {@code VM} identity. The number returned is a
    * zero-based sequence representing the order in with the DUnit {@code VM}s were launched.
    */
   public static int getCurrentVMNum() {
-    return DUnitEnv.get().getVMID();
+    return ChildVM.getVmNum();
   }
 
   /**
@@ -561,7 +562,7 @@ public class VM implements Serializable {
   }
 
   public File getWorkingDirectory() {
-    return DUnitEnv.get().getWorkingDirectory(getVersion(), getId());
+    return ProcessManager.getVMDir(getVersion(), getId());
   }
 
   @Override

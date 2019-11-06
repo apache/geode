@@ -28,6 +28,10 @@ public class ChildVM {
 
   private static boolean stopMainLoop = false;
 
+  private static int vmNum = -1;
+
+  private static int locatorPort;
+
   /**
    * tells the main() loop to exit
    */
@@ -37,10 +41,22 @@ public class ChildVM {
 
   private static final Logger logger = LogService.getLogger();
 
+  public static int getVmNum() {
+    return vmNum;
+  }
+
+  public static int getLocatorPort() {
+    return locatorPort;
+  }
+
+  public static String getLocatorString() {
+    return String.format("localhost[%d]", locatorPort);
+  }
+
   public static void main(String[] args) throws Throwable {
     try {
       int namingPort = Integer.getInteger(DUnitLauncher.RMI_PORT_PARAM);
-      int vmNum = Integer.getInteger(DUnitLauncher.VM_NUM_PARAM);
+      vmNum = Integer.getInteger(DUnitLauncher.VM_NUM_PARAM);
       String geodeVersion = System.getProperty(DUnitLauncher.VM_VERSION_PARAM);
       int pid = OSProcess.getId();
       logger.info("VM" + vmNum + " is launching" + (pid > 0 ? " with PID " + pid : ""));
@@ -50,14 +66,16 @@ public class ChildVM {
       }
       MasterRemote holder = (MasterRemote) Naming
           .lookup("//localhost:" + namingPort + "/" + DUnitLauncher.MASTER_PARAM);
-      DUnitLauncher.init(holder);
-      DUnitLauncher.locatorPort = holder.getLocatorPort();
+
+      locatorPort = holder.getLocatorPort();
+
       final RemoteDUnitVM dunitVM = new RemoteDUnitVM();
       final String name = "//localhost:" + namingPort + "/vm" + vmNum;
       Naming.rebind(name, dunitVM);
       JUnit4DistributedTestCase.initializeBlackboard();
       holder.signalVMReady();
       AvailablePortHelper.initializeUniquePortRange(vmNum + 2); // hacky, locator is -2
+
       // This loop is here so this VM will die even if the master is mean killed.
       while (!stopMainLoop) {
         holder.ping();

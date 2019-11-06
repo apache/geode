@@ -27,7 +27,7 @@ public class Master extends UnicastRemoteObject implements MasterRemote {
 
   private final Registry registry;
   private final ProcessManager processManager;
-
+  private int locatorPort;
 
   public Master(Registry registry, ProcessManager processManager) throws RemoteException {
     this.processManager = processManager;
@@ -36,7 +36,11 @@ public class Master extends UnicastRemoteObject implements MasterRemote {
 
   @Override
   public int getLocatorPort() throws RemoteException {
-    return DUnitLauncher.locatorPort;
+    return locatorPort;
+  }
+
+  public void setLocatorPort(int port) {
+    this.locatorPort = port;
   }
 
   @Override

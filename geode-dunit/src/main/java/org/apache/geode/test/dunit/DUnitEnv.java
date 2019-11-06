@@ -34,15 +34,7 @@ public abstract class DUnitEnv {
 
   public static DUnitEnv get() {
     if (instance == null) {
-      try {
-        // for tests that are still being migrated to the open-source
-        // distributed unit test framework we need to look for this
-        // old closed-source dunit environment
-        Class clazz = Class.forName("dunit.hydra.HydraDUnitEnv");
-        instance = (DUnitEnv) clazz.newInstance();
-      } catch (Exception e) {
-        throw new Error("Distributed unit test environment is not initialized");
-      }
+      throw new Error("Distributed unit test environment is not initialized");
     }
     return instance;
   }

@@ -43,7 +43,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.version.VersionManager;
 
-class ProcessManager implements ChildVMLauncher {
+public class ProcessManager implements ChildVMLauncher {
   private int namingPort;
   private Map<Integer, ProcessHolder> processes = new HashMap<>();
   private File log4jConfig;

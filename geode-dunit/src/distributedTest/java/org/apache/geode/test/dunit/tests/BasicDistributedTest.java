@@ -34,6 +34,7 @@ import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.ChildVM;
 
 /**
  * This class tests the basic functionality of the distributed unit test framework.
@@ -129,24 +130,24 @@ public class BasicDistributedTest extends DistributedTestCase {
 
   @Test
   public void testInvokeWithLambda() {
-    assertThat(vm0.invoke(() -> DUnitEnv.get().getVMID()), is(0));
-    assertThat(vm1.invoke(() -> DUnitEnv.get().getVMID()), is(1));
+    assertThat(vm0.invoke(ChildVM::getVmNum), is(0));
+    assertThat(vm1.invoke(ChildVM::getVmNum), is(1));
   }
 
   @Test
   public void testInvokeLambdaAsync() throws Exception {
-    assertThat(vm0.invokeAsync(() -> DUnitEnv.get().getVMID()).getResult(), is(0));
+    assertThat(vm0.invokeAsync(ChildVM::getVmNum).getResult(), is(0));
   }
 
   @Test
   public void testInvokeWithNamedLambda() {
-    assertThat(vm0.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(0));
-    assertThat(vm1.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(1));
+    assertThat(vm0.invoke("getVMID", ChildVM::getVmNum), is(0));
+    assertThat(vm1.invoke("getVMID", ChildVM::getVmNum), is(1));
   }
 
   @Test
   public void testInvokeNamedLambdaAsync() throws Exception {
-    assertThat(vm0.invokeAsync("getVMID", () -> DUnitEnv.get().getVMID()).getResult(), is(0));
+    assertThat(vm0.invokeAsync("getVMID", ChildVM::getVmNum).getResult(), is(0));
   }
 
   @Test

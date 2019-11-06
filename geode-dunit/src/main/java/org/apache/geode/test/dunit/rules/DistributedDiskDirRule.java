@@ -123,7 +123,7 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
 
   @Override
   protected void before(Description description) throws Exception {
-    DUnitLauncher.launchIfNeeded(vmCount);
+    DUnitLauncher.getInstance().launchIfNeeded(vmCount);
     VM.addVMEventListener(vmEventListener);
 
     initializeHelperRules(description);

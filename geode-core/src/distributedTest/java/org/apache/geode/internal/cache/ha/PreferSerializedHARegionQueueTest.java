@@ -31,7 +31,6 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
-import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -65,7 +64,8 @@ public class PreferSerializedHARegionQueueTest extends JUnit4CacheTestCase {
       vm2.invoke(() -> initializeServer(regionName));
 
       // Create register interest client
-      vm5.invoke(() -> createClient(regionName, true, 1, Integer.MAX_VALUE));
+      int locatorPort = getLocatorPort();
+      vm5.invoke(() -> createClient(regionName, true, 1, Integer.MAX_VALUE, locatorPort));
 
       // Wait for both primary and secondary servers to establish proxies
       vm1.invoke(() -> waitForCacheClientProxies(1));
@@ -73,8 +73,8 @@ public class PreferSerializedHARegionQueueTest extends JUnit4CacheTestCase {
 
       // Create client loader and load entries
       int numPuts = 10;
-      vm6.invoke(
-          () -> createClient(regionName, false, 0, PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL));
+      vm6.invoke(() -> createClient(regionName, false, 0,
+          PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL, locatorPort));
       vm6.invoke(() -> {
         Region region = getCache().getRegion(regionName);
         IntStream.range(0, numPuts).forEach(i -> region.put(i, i));
@@ -129,13 +129,13 @@ public class PreferSerializedHARegionQueueTest extends JUnit4CacheTestCase {
   }
 
   public void createClient(String regionName, boolean subscriptionEnabled,
-      int subscriptionRedundancy, int subscriptionAckInterval) {
+      int subscriptionRedundancy, int subscriptionAckInterval, int locatorPort) {
 
     ClientCacheFactory clientCacheFactory =
         new ClientCacheFactory().setPoolSubscriptionAckInterval(subscriptionAckInterval)
             .setPoolSubscriptionEnabled(subscriptionEnabled)
             .setPoolSubscriptionRedundancy(subscriptionRedundancy)
-            .addPoolLocator("localhost", DUnitEnv.get().getLocatorPort());
+            .addPoolLocator("localhost", locatorPort);
 
     ClientCache cache = getClientCache(clientCacheFactory);
 

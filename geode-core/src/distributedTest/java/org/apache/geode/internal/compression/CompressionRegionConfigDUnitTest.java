@@ -32,7 +32,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -40,7 +39,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.DUnitLauncher;
 
 /**
  * Sanity checks on a number of basic cluster configurations with compression turned on.
@@ -241,10 +239,11 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
    * @return the old value.
    */
   private String putUsingClientVM(final VM vm, final String key, final String value) {
+    int locatorPort = getLocatorPort();
     return (String) vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        ClientCache cache = getClientCache(getClientCacheFactory(getLocatorPort()));
+        ClientCache cache = getClientCache(getClientCacheFactory(locatorPort));
         Region<String, String> region = cache.getRegion(REGION_NAME);
         assertNotNull(region);
         return region.put(key, value);
@@ -279,10 +278,11 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
    * @return the value.
    */
   private String getUsingClientVM(final VM vm, final String key) {
+    int locatorPort = getLocatorPort();
     return (String) vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        ClientCache cache = getClientCache(getClientCacheFactory(getLocatorPort()));
+        ClientCache cache = getClientCache(getClientCacheFactory(locatorPort));
         Region<String, String> region = cache.getRegion(REGION_NAME);
         assertNotNull(region);
         return region.get(key);
@@ -323,10 +323,11 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
    * @param vm a client.
    */
   private void cleanupClient(final VM vm) {
+    int locatorPort = getLocatorPort();
     vm.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        getClientCache(getClientCacheFactory(getLocatorPort())).getRegion(REGION_NAME).close();
+        getClientCache(getClientCacheFactory(locatorPort)).getRegion(REGION_NAME).close();
       }
     });
   }
@@ -433,11 +434,12 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
    */
   private boolean createCompressedClientRegionOnVm(final VM vm, final String name,
       final Compressor compressor, final ClientRegionShortcut shortcut) {
+    int locatorPort = getLocatorPort();
     return (Boolean) vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
         try {
-          assertNotNull(createClientRegion(name, compressor, shortcut));
+          assertNotNull(createClientRegion(name, compressor, shortcut, locatorPort));
         } catch (Exception e) {
           LogWriterUtils.getLogWriter().error("Could not create the compressed region", e);
           return Boolean.FALSE;
@@ -457,8 +459,8 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
    * @return the newly created region.
    */
   private Region<String, String> createClientRegion(String name, Compressor compressor,
-      ClientRegionShortcut shortcut) {
-    ClientCacheFactory factory = getClientCacheFactory(getLocatorPort());
+      ClientRegionShortcut shortcut, int locatorPort) {
+    ClientCacheFactory factory = getClientCacheFactory(locatorPort);
     return getClientCache(factory).<String, String>createClientRegionFactory(shortcut)
         .setCloningEnabled(true).setCompressor(compressor).create(name);
   }
@@ -524,19 +526,4 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
         .setPoolSubscriptionEnabled(true);
   }
 
-  /**
-   * Returns the locator port.
-   */
-  private int getLocatorPort() {
-    // Running from eclipse
-    if (DUnitLauncher.isLaunched()) {
-      String locatorString = DUnitLauncher.getLocatorString();
-      int index = locatorString.indexOf("[");
-      return Integer.parseInt(locatorString.substring(index + 1, locatorString.length() - 1));
-    }
-    // Running in hydra
-    else {
-      return DistributedTestUtils.getDUnitLocatorPort();
-    }
-  }
 }

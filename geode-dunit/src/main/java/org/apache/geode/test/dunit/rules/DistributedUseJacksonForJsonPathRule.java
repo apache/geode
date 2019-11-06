@@ -70,7 +70,7 @@ public class DistributedUseJacksonForJsonPathRule extends UseJacksonForJsonPathR
 
   @Override
   public void before() {
-    DUnitLauncher.launchIfNeeded(vmCount);
+    DUnitLauncher.getInstance().launchIfNeeded(vmCount);
     VM.addVMEventListener(vmEventListener);
 
     invoker.invokeInEveryVMAndController(() -> doBefore());

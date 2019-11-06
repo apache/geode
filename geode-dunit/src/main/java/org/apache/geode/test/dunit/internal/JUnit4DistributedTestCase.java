@@ -77,6 +77,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   private final DistributedTestFixture distributedTestFixture;
 
+  private static DUnitLauncher dUnitLauncher;
+
   /**
    * Constructs a new distributed test. All JUnit 4 test classes need to have a no-arg constructor.
    */
@@ -100,7 +102,12 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   @BeforeClass
   public static final void initializeDistributedTestCase() {
-    DUnitLauncher.launchIfNeeded(true);
+    dUnitLauncher = DUnitLauncher.getInstance();
+    dUnitLauncher.launchIfNeeded(true);
+  }
+
+  public static int getLocatorPort() {
+    return dUnitLauncher.getLocatorPort();
   }
 
   public static final void initializeBlackboard() {
@@ -550,7 +557,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
       DistributionMessageObserver.setInstance(null);
       unregisterInstantiatorsInThisVM();
     });
-    DUnitLauncher.closeAndCheckForSuspects();
+    dUnitLauncher.closeAndCheckForSuspects();
   }
 
   private static final void tearDownVM() {

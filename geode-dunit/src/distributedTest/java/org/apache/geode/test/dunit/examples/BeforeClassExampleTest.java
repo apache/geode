@@ -27,7 +27,7 @@ public class BeforeClassExampleTest {
 
   @BeforeClass
   public static void initializeDUnit() throws Exception {
-    DUnitLauncher.launchIfNeeded();
+    DUnitLauncher.getInstance().launchIfNeeded();
   }
 
   @Test

@@ -30,7 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Method;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -56,7 +56,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
-import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.greplogs.ExpectedStrings;
@@ -71,7 +70,7 @@ import org.apache.geode.test.greplogs.LogConsumer;
  * Also, it's a good idea to set your working directory, because the test code a lot of files that
  * it leaves around.
  */
-public class DUnitLauncher {
+public class DUnitLauncher implements Serializable {
 
   /**
    * change this to use a different log level in unit tests
@@ -86,7 +85,7 @@ public class DUnitLauncher {
   public static final boolean MAKE_NEW_WORKING_DIRS =
       Boolean.getBoolean("makeNewWorkingDirsOnBounce");
 
-  static int locatorPort;
+  private int locatorPort;
 
   /**
    * Number of VMs to use during initialization.
@@ -109,6 +108,8 @@ public class DUnitLauncher {
 
   private static final String SUSPECT_FILENAME = "dunit_suspect.log";
   private static File DUNIT_SUSPECT_FILE;
+  public static final boolean DUNIT_SUSPECT_LOGGING =
+      Boolean.parseBoolean(System.getProperty("dunit.suspect-logging", "true"));
 
   public static final String DUNIT_DIR = "dunit";
   public static final String WORKSPACE_DIR_PARAM = "WORKSPACE_DIR";
@@ -121,41 +122,37 @@ public class DUnitLauncher {
   public static final String VM_NUM_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.VM_NUM";
   public static final String VM_VERSION_PARAM = GEMFIRE_PREFIX + "DUnitLauncher.VM_VERSION";
 
-  private static final String LAUNCHED_PROPERTY = GEMFIRE_PREFIX + "DUnitLauncher.LAUNCHED";
-
   private static final VMEventNotifier vmEventNotifier = new VMEventNotifier();
 
   private static Master master;
 
+  private volatile boolean launched;
+
+  private static DUnitLauncher instance = null;
+
   private DUnitLauncher() {}
 
-  private static boolean isHydra() {
-    try {
-      // TODO - this is hacky way to test for a hydra environment - see
-      // if there is registered test configuration object.
-      Class<?> clazz = Class.forName("hydra.TestConfig");
-      Method getInstance = clazz.getMethod("getInstance");
-      getInstance.invoke(null);
-      return true;
-    } catch (Exception e) {
-      return false;
+  public static synchronized DUnitLauncher getInstance() {
+    if (instance == null) {
+      instance = new DUnitLauncher();
     }
+    return instance;
   }
 
   /**
    * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
    */
-  public static void launchIfNeeded() {
+  public void launchIfNeeded() {
     launchIfNeeded(true);
   }
 
-  public static void launchIfNeeded(boolean launchLocator) {
+  public void launchIfNeeded(boolean launchLocator) {
     if (System.getProperties().contains(VM_NUM_PARAM)) {
       // we're a dunit child vm, do nothing.
       return;
     }
 
-    if (!isHydra() && !isLaunched()) {
+    if (!isLaunched()) {
       try {
         launch(launchLocator);
       } catch (Exception e) {
@@ -167,25 +164,26 @@ public class DUnitLauncher {
   }
 
   /**
-   * Launch DUnit. If the unit test was launched through the hydra framework, leave the test alone.
+   * Launch DUnit.
    */
-  public static void launchIfNeeded(int vmCount) {
+  public void launchIfNeeded(int vmCount) {
     NUM_VMS = vmCount;
     launchIfNeeded();
   }
 
-  /**
-   * Test it see if the eclise dunit environment is launched.
-   */
-  public static boolean isLaunched() {
-    return Boolean.getBoolean(LAUNCHED_PROPERTY);
+  public boolean isLaunched() {
+    return launched;
   }
 
-  public static String getLocatorString() {
+  public String getLocatorString() {
     return "localhost[" + locatorPort + "]";
   }
 
-  private static void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
+  public int getLocatorPort() {
+    return locatorPort;
+  }
+
+  private synchronized void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
     DUNIT_SUSPECT_FILE = new File(SUSPECT_FILENAME);
     DUNIT_SUSPECT_FILE.delete();
@@ -220,6 +218,7 @@ public class DUnitLauncher {
       }
 
       locatorPort = startLocator(registry);
+      master.setLocatorPort(locatorPort);
     }
 
     init(master);
@@ -239,11 +238,14 @@ public class DUnitLauncher {
         new DUnitHost(InetAddress.getLocalHost().getCanonicalHostName(), processManager,
             vmEventNotifier);
     host.init(NUM_VMS, launchLocator);
+
+    launched = true;
   }
 
   public static Properties getDistributedSystemProperties() {
     Properties p = new Properties();
-    p.setProperty(LOCATORS, getLocatorString());
+    p.setProperty(LOCATORS,
+        instance != null ? instance.getLocatorString() : ChildVM.getLocatorString());
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     p.setProperty(USE_CLUSTER_CONFIGURATION, "false");
@@ -257,7 +259,7 @@ public class DUnitLauncher {
    * later to scan for suspect strings. The pattern of the messages conforms to the original log
    * format so that hydra will be able to parse them.
    */
-  private static void addSuspectFileAppender(final String workspaceDir) {
+  private void addSuspectFileAppender(final String workspaceDir) {
     final String suspectFilename = new File(workspaceDir, SUSPECT_FILENAME).getAbsolutePath();
 
     final LoggerContext appenderContext =
@@ -279,7 +281,7 @@ public class DUnitLauncher {
     loggerConfig.addAppender(fileAppender, Level.INFO, null);
   }
 
-  private static int startLocator(Registry registry) throws IOException, NotBoundException {
+  private int startLocator(Registry registry) throws IOException, NotBoundException {
     RemoteDUnitVMIF remote = (RemoteDUnitVMIF) registry.lookup("vm" + LOCATOR_VM_NUM);
     final File locatorLogFile =
         LOCATOR_LOG_TO_DISK ? new File("locator-" + locatorPort + ".log") : new File("");
@@ -319,22 +321,21 @@ public class DUnitLauncher {
     return (Integer) result.getResult();
   }
 
-  public static void init(MasterRemote master) {
-    DUnitEnv.set(new StandAloneDUnitEnv(master));
+  public void init(MasterRemote master) {
+    // DUnitEnv.set(new StandAloneDUnitEnv(master));
     // fake out tests that are using a bunch of hydra stuff
     String workspaceDir = System.getProperty(DUnitLauncher.WORKSPACE_DIR_PARAM);
     workspaceDir = workspaceDir == null ? new File(".").getAbsolutePath() : workspaceDir;
 
-    addSuspectFileAppender(workspaceDir);
+    if (DUNIT_SUSPECT_LOGGING) {
+      addSuspectFileAppender(workspaceDir);
+    }
 
     // Free off heap memory when disconnecting from the distributed system
     System.setProperty(GEMFIRE_PREFIX + "free-off-heap-memory", "true");
-
-    // indicate that this CM is controlled by the eclipse dunit.
-    System.setProperty(LAUNCHED_PROPERTY, "true");
   }
 
-  public static void closeAndCheckForSuspects() {
+  public void closeAndCheckForSuspects() {
     if (isLaunched()) {
       final List<Pattern> expectedStrings = ExpectedStrings.create("dunit");
       final LogConsumer logConsumer = new LogConsumer(true, expectedStrings, "log4j", 5);

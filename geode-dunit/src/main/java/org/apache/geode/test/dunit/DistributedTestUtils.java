@@ -29,6 +29,8 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.test.dunit.internal.ChildVM;
+import org.apache.geode.test.dunit.internal.DUnitLauncher;
 
 /**
  * {@code DistributedTestUtils} provides static utility methods that affect the runtime environment
@@ -50,25 +52,6 @@ public class DistributedTestUtils {
 
   protected DistributedTestUtils() {
     // nothing
-  }
-
-  /**
-   * Fetches the GemFireDescription for this test and adds its DistributedSystem properties to the
-   * provided props parameter.
-   *
-   * @param properties the properties to add hydra's test properties to
-   */
-  public static void addHydraProperties(final Properties properties) {
-    Properties dsProperties = DUnitEnv.get().getDistributedSystemProperties();
-    for (Iterator<Map.Entry<Object, Object>> iter = dsProperties.entrySet().iterator(); iter
-        .hasNext();) {
-      Map.Entry<Object, Object> entry = iter.next();
-      String key = (String) entry.getKey();
-      String value = (String) entry.getValue();
-      if (properties.getProperty(key) == null) {
-        properties.setProperty(key, value);
-      }
-    }
   }
 
   /**
@@ -116,7 +99,7 @@ public class DistributedTestUtils {
   }
 
   public static Properties getAllDistributedSystemProperties(final Properties properties) {
-    Properties dsProperties = DUnitEnv.get().getDistributedSystemProperties();
+    Properties dsProperties = DUnitLauncher.getDistributedSystemProperties();
 
     // our tests do not expect auto-reconnect to be on by default
     if (!dsProperties.contains(DISABLE_AUTO_RECONNECT)) {
@@ -146,7 +129,7 @@ public class DistributedTestUtils {
    * Returns the port that the standard dunit locator is listening on.
    */
   public static int getLocatorPort() {
-    return DUnitEnv.get().getLocatorPort();
+    return ChildVM.getLocatorPort();
   }
 
   /**
