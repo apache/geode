@@ -80,7 +80,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.RegionsTest;
 
 @Category({RegionsTest.class})
-public class PersistentColocatedPartitionedRegionDUnitTest
+public class PersistentColocatedPartitionedRegionDistributedTest
     extends PersistentPartitionedRegionTestBase {
 
   private static final String PATTERN_FOR_MISSING_CHILD_LOG =
@@ -94,7 +94,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   // Default region creation delay long enough for the initial cycle of logger warnings
   private static int delayForChildCreation = MAX_WAIT * 2 / 3;
 
-  public PersistentColocatedPartitionedRegionDUnitTest() {
+  public PersistentColocatedPartitionedRegionDistributedTest() {
     super();
   }
 
