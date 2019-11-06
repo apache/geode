@@ -44,8 +44,7 @@ resources:
     branch: develop
     depth: 1
     paths:
-    - ci/pipelines/geode-build/*
-    - ci/scripts/*
+    - ci/*
     uri: https://github.com/apache/geode.git
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
