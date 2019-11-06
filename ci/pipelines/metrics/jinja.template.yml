@@ -69,31 +69,31 @@ resources:
         JOB_COUNT: 50
         CONCOURSE_TEAM: ((concourse-team))
         PUBLIC_PIPELINE: {{pipelineProperties.public}}
-        run:
-          path: bash
-          args:
-          - -ecx
-          - |-
-            apk add jq &> /dev/null
-            pip install yq &> /dev/null
-            apk add curl &> /dev/null
-            curl "${CONCOURSE_URL}/api/v1/cli?arch=amd64&platform=linux" --output fly
-            chmod +x fly
-            TARGET_NAME=concourse
+      run:
+        path: bash
+        args:
+        - -ecx
+        - |-
+          apk add jq &> /dev/null
+          pip install yq &> /dev/null
+          apk add curl &> /dev/null
+          curl "${CONCOURSE_URL}/api/v1/cli?arch=amd64&platform=linux" --output fly
+          chmod +x fly
+          TARGET_NAME=concourse
 
-            set +x
+          set +x
 
-            PYTHON_ARGUMENTS=${CONCOURSE_URL} ${MAIN_PIPELINE_NAME} ${JOB_NAME} ${JOB_COUNT} --team="${CONCOURSE_TEAM}"
+          PYTHON_ARGUMENTS=${CONCOURSE_URL} ${MAIN_PIPELINE_NAME} ${JOB_NAME} ${JOB_COUNT} --team="${CONCOURSE_TEAM}"
 
-            if [ ${PUBLIC_PIPELINE} == "false" ]; then
-              ./fly -t ${TARGET_NAME} login -c "${CONCOURSE_URL}" -n "${CONCOURSE_TEAM}" -u "${CONCOURSE_USERNAME}" -p "${CONCOURSE_PASSWORD}"
-              API_TOKEN=$(yq -r .targets.${TARGET_NAME}.token.value ~/.flyrc)
-              PYTHON_ARGUMENTS="${PYTHON_ARGUMENTS} --cookie-token=\"${API_TOKEN}\""
-            fi
+          if [ ${PUBLIC_PIPELINE} == "false" ]; then
+            ./fly -t ${TARGET_NAME} login -c "${CONCOURSE_URL}" -n "${CONCOURSE_TEAM}" -u "${CONCOURSE_USERNAME}" -p "${CONCOURSE_PASSWORD}"
+            API_TOKEN=$(yq -r .targets.${TARGET_NAME}.token.value ~/.flyrc)
+            PYTHON_ARGUMENTS="${PYTHON_ARGUMENTS} --cookie-token=\"${API_TOKEN}\""
+          fi
 
-            python3 geode-ci/ci/bin/concourse_job_performance.py ${PYTHON_ARGUMENTS}
+          python3 geode-ci/ci/bin/concourse_job_performance.py ${PYTHON_ARGUMENTS}
 
-            set -x
+          set -x
 
 {%- endmacro %}
 
