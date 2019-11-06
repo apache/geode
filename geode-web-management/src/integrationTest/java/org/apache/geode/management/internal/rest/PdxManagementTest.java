@@ -61,7 +61,6 @@ public class PdxManagementTest {
     Pdx pdx = new Pdx();
     pdx.setReadSerialized(true);
     pdx.setIgnoreUnreadFields(true);
-    pdx.setPersistent(true);
     pdx.setDiskStoreName("diskStoreName");
     pdx.setPdxSerializer(new ClassName("className"));
     try {

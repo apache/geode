@@ -15,6 +15,10 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+import static org.apache.geode.cache.DiskStoreFactory.DEFAULT_DISK_STORE_NAME;
+
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.management.configuration.AutoSerializer;
@@ -30,7 +34,13 @@ public class PdxConverter extends ConfigurationConverter<Pdx, PdxType> {
     Pdx pdx = new Pdx();
 
     pdx.setReadSerialized(xmlObject.isReadSerialized());
-    pdx.setDiskStoreName(xmlObject.getDiskStoreName());
+    if (xmlObject.isPersistent()) {
+      String diskStoreName = xmlObject.getDiskStoreName();
+      if (StringUtils.isBlank(diskStoreName)) {
+        diskStoreName = DEFAULT_DISK_STORE_NAME;
+      }
+      pdx.setDiskStoreName(diskStoreName);
+    }
     pdx.setIgnoreUnreadFields(xmlObject.isIgnoreUnreadFields());
     AutoSerializer autoSerializer =
         autoSerializerConverter.fromXmlObject(xmlObject.getPdxSerializer());

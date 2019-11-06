@@ -20,39 +20,50 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
- * The configuration of a ReflectionBasedAutoSerializer
+ * The configuration of a {@link org.apache.geode.pdx.ReflectionBasedAutoSerializer}
  * that is used for easy PDX serialization.
  */
 public class AutoSerializer implements Serializable {
   private static final long serialVersionUID = 1L;
 
-  private Boolean portable;
-  private List<String> patterns;
+  private final Boolean portable;
+  private final List<String> patterns;
 
-  public AutoSerializer(boolean portable, String... patterns) {
-    this.portable = portable;
-    this.patterns = Arrays.asList(patterns);
+  /**
+   * Creates a AutoSerializer that is not portable.
+   */
+  public AutoSerializer(String... patterns) {
+    this(false, patterns);
   }
 
-  public AutoSerializer(Boolean portable, List<String> pattterns) {
+  public AutoSerializer(boolean portable, String... patterns) {
+    this(portable, buildPatternList(patterns));
+  }
+
+  private static List<String> buildPatternList(String[] patterns) {
+    if (patterns != null && patterns.length > 0) {
+      return Arrays.asList(patterns);
+    } else {
+      return null;
+    }
+  }
+
+  @JsonCreator
+  public AutoSerializer(@JsonProperty("portable") Boolean portable,
+      @JsonProperty("patterns") List<String> patterns) {
     this.portable = portable;
-    this.patterns = pattterns;
+    this.patterns = patterns;
   }
 
   public Boolean isPortable() {
     return portable;
   }
 
-  public void setPortable(Boolean portable) {
-    this.portable = portable;
-  }
-
   public List<String> getPatterns() {
     return patterns;
-  }
-
-  public void setPatterns(List<String> patterns) {
-    this.patterns = patterns;
   }
 }

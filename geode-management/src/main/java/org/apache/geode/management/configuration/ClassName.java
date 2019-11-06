@@ -35,10 +35,10 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
  */
 public class ClassName implements Serializable {
   private static final long serialVersionUID = 1L;
+  private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
-  private String className;
-  private Properties initProperties;
-  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private final String className;
+  private final Properties initProperties;
 
   /**
    * Can be used when updating an attribute to configure

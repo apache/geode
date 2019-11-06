@@ -36,29 +36,56 @@ public class PdxTest {
   }
 
   @Test
-  public void autoSerializer() throws Exception {
-    Pdx config = new Pdx();
-    config.setAutoSerializer(true, ".*");
-    String json = mapper.writeValueAsString(config);
-    System.out.println(json);
-    assertThat(json).contains("org.apache.geode.pdx.ReflectionBasedAutoSerializer")
-        .contains("initProperties");
-
-    Pdx pdx = mapper.readValue(json, Pdx.class);
-    ClassName pdxSerializer = pdx.getPdxSerializer();
-    assertThat(pdxSerializer.getClassName())
-        .isEqualTo("org.apache.geode.pdx.ReflectionBasedAutoSerializer");
-    assertThat(pdxSerializer.getInitProperties()).containsEntry("check-portability", "true")
-        .containsEntry("classes", ".*")
-        .hasSize(2);
+  public void defaultAutoSerializerIsNull() {
+    assertThat(new Pdx().getAutoSerializer()).isNull();
   }
 
   @Test
-  public void deserialize() throws Exception {
-    String json =
-        "{\"pdxSerializer\":{\"className\":\"org.apache.geode.pdx.ReflectionBasedAutoSerializer\",\"initProperties\":{\"classes\":\".*\",\"check-portability\":\"true\"}}}";
-    String json2 = "{\"autoSerializer\":{\"pattern\":\".*\",\"portable\":\"true\"}}";
-    Pdx pdx = mapper.readValue(json2, Pdx.class);
-    System.out.println();
+  public void remembersAutoSerializer() {
+    Pdx pdx = new Pdx();
+    AutoSerializer autoSerializer = new AutoSerializer(true, "pat");
+
+    pdx.setAutoSerializer(autoSerializer);
+
+    assertThat(pdx.getAutoSerializer()).isSameAs(autoSerializer);
+  }
+
+  @Test
+  public void serializationOfNonDefaults() throws Exception {
+    Pdx originalPdx = new Pdx();
+    originalPdx.setDiskStoreName("diskStore");
+    originalPdx.setIgnoreUnreadFields(true);
+    originalPdx.setReadSerialized(true);
+    originalPdx.setAutoSerializer(new AutoSerializer(true, "pat1"));
+    originalPdx.setPdxSerializer(new ClassName("name"));
+
+    String json = mapper.writeValueAsString(originalPdx);
+    Pdx deserializedPdx = mapper.readValue(json, Pdx.class);
+
+    assertThat(deserializedPdx.getDiskStoreName()).as("diskStoreName").isEqualTo("diskStore");
+    assertThat(deserializedPdx.isIgnoreUnreadFields()).as("IgnoreUnreadFields").isTrue();
+    assertThat(deserializedPdx.isReadSerialized()).as("ReadSerialized").isTrue();
+    assertThat(deserializedPdx.getAutoSerializer().isPortable()).as("AutoSerializer portable")
+        .isTrue();
+    assertThat(deserializedPdx.getAutoSerializer().getPatterns()).as("AutoSerializer patterns")
+        .containsExactly("pat1");
+    assertThat(deserializedPdx.getPdxSerializer().getClassName()).as("PdxSerializer className")
+        .isEqualTo("name");
+    assertThat(deserializedPdx.getPdxSerializer().getInitProperties())
+        .as("PdxSerializer initProperties").isEmpty();
+  }
+
+  @Test
+  public void serializationOfDefaults() throws Exception {
+    Pdx originalPdx = new Pdx();
+
+    String json = mapper.writeValueAsString(originalPdx);
+    Pdx deserializedPdx = mapper.readValue(json, Pdx.class);
+
+    assertThat(deserializedPdx.getDiskStoreName()).as("diskStoreName").isNull();
+    assertThat(deserializedPdx.isIgnoreUnreadFields()).as("IgnoreUnreadFields").isNull();
+    assertThat(deserializedPdx.isReadSerialized()).as("ReadSerialized").isNull();
+    assertThat(deserializedPdx.getAutoSerializer()).as("AutoSerializer").isNull();
+    assertThat(deserializedPdx.getPdxSerializer()).as("PdxSerializer").isNull();
   }
 }
