@@ -284,7 +284,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   /**
    * Returns the status of the locator on the given host & port
    *
-   * @deprecated in Geode 1.12. Use statusLocator() instance method instead.
+   * @deprecated in Geode 1.12. Use statusForLocator() instance method instead.
    *             This static method does not use the properties set via the Builder.
    */
   @Deprecated
