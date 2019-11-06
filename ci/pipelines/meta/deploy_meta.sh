@@ -101,7 +101,12 @@ repository:
   public: ${REPOSITORY_PUBLIC}
 YML
 
-  python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml --debug || exit 1
+  cat > pipelineProperties.yml <<YML
+pipelineProperties:
+  public: ${PUBLIC}
+YML
+
+  python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml  pipelineProperties.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml --debug || exit 1
 
   set -e
   fly -t ${FLY_TARGET} sync
@@ -109,7 +114,7 @@ YML
     -p ${META_PIPELINE} \
     --config ${SCRIPTDIR}/generated-pipeline.yml \
     --var artifact-bucket=${ARTIFACT_BUCKET} \
-    --var concourse-team=main \
+    --var concourse-team=${CONCOURSE_TEAM} \
     --var concourse-url=${CONCOURSE_URL} \
     --var gcp-project=${GCP_PROJECT} \
     --var geode-build-branch=${GEODE_BRANCH} \
@@ -122,10 +127,10 @@ YML
     --var sanitized-geode-fork=${SANITIZED_GEODE_FORK} \
     --var semver-prerelease-token="${SEMVER_PRERELEASE_TOKEN}" \
     --var upstream-fork=${UPSTREAM_FORK} \
+    --var fly-target=${FLY_TARGET} \
     --yaml-var public-pipelines=${PUBLIC}
     set +e
 popd 2>&1 > /dev/null
-
 
 # bootstrap all precursors of the actual Build job
 

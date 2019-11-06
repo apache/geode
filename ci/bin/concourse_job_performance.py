@@ -299,10 +299,6 @@ def get_builds_to_examine(builds, build_count):
     logging.debug(f"{len(pending)} pending builds in examination range: {list_and_sort_by_name(pending)}")
     logging.debug(f"{len(started)} started builds in examination range: {list_and_sort_by_name(started)}")
 
-    first_build = builds_to_analyze[-1]['name']
-    last_build = builds_to_analyze[0]['name']
-    logging.info(f"{len(started)} completed builds to examine, ranging "
-                 f"{first_build} - {last_build}: {list_and_sort_by_name(builds_to_analyze)}")
     failures_in_analysis_range = list_and_sort_by_name([build for build in builds_to_analyze
                                                         if build['status'] == 'failed'])
     logging.info(f"{len(failures_in_analysis_range)} expected failures in analysis range: {failures_in_analysis_range}")
@@ -372,10 +368,10 @@ if __name__ == '__main__':
                         default=100)
     parser.add_argument('--cookie-token',
                         help='If authentication is required (e.g., team="staging"), '
-                             "provide your skymarshal_auth cookie's token here.  "
+                             "provide your skymarshal_auth0 cookie's token here.  "
                              "Unfortunately, this is currently done by logging in via a web browser, "
                              "inspecting your cookies, and pasting it here.",
-                        type=lambda t: {u'skymarshal_auth':
+                        type=lambda t: {u'skymarshal_auth0':
                                         '"Bearer {}"'.format(t if not t.startswith("Bearer ") else t[7:])})
     parser.add_argument('--threaded',
                         help="Use multiple cores to hasten api requests.",
