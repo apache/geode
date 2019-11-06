@@ -20,12 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class PdxTest {
 
   private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
+
   @Test
   public void getUri() {
     Pdx config = new Pdx();
@@ -46,7 +46,8 @@ public class PdxTest {
 
     Pdx pdx = mapper.readValue(json, Pdx.class);
     ClassName pdxSerializer = pdx.getPdxSerializer();
-    assertThat(pdxSerializer.getClassName()).isEqualTo("org.apache.geode.pdx.ReflectionBasedAutoSerializer");
+    assertThat(pdxSerializer.getClassName())
+        .isEqualTo("org.apache.geode.pdx.ReflectionBasedAutoSerializer");
     assertThat(pdxSerializer.getInitProperties()).containsEntry("check-portability", "true")
         .containsEntry("classes", ".*")
         .hasSize(2);
@@ -54,7 +55,8 @@ public class PdxTest {
 
   @Test
   public void deserialize() throws Exception {
-    String json = "{\"pdxSerializer\":{\"className\":\"org.apache.geode.pdx.ReflectionBasedAutoSerializer\",\"initProperties\":{\"classes\":\".*\",\"check-portability\":\"true\"}}}";
+    String json =
+        "{\"pdxSerializer\":{\"className\":\"org.apache.geode.pdx.ReflectionBasedAutoSerializer\",\"initProperties\":{\"classes\":\".*\",\"check-portability\":\"true\"}}}";
     String json2 = "{\"autoSerializer\":{\"pattern\":\".*\",\"portable\":\"true\"}}";
     Pdx pdx = mapper.readValue(json2, Pdx.class);
     System.out.println();

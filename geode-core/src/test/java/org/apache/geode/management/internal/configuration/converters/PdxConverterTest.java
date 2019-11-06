@@ -17,10 +17,14 @@ package org.apache.geode.management.internal.configuration.converters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Properties;
+
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.cache.configuration.PdxType;
+import org.apache.geode.management.configuration.AutoSerializer;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Pdx;
 
@@ -43,6 +47,25 @@ public class PdxConverterTest {
   }
 
   @Test
+  public void fromConfigWithAutoSerializer() {
+    Pdx pdx = new Pdx();
+    pdx.setReadSerialized(true);
+    pdx.setDiskStoreName("test");
+    pdx.setIgnoreUnreadFields(true);
+    pdx.setPdxSerializer(new ClassName("java.lang.String"));
+    pdx.setAutoSerializer(new AutoSerializer(true, "pat1", "pat2"));
+    PdxType pdxType = converter.fromConfigObject(pdx);
+    assertThat(pdxType.isPersistent()).isTrue();
+    assertThat(pdxType.isReadSerialized()).isTrue();
+    assertThat(pdxType.getDiskStoreName()).isEqualTo("test");
+    assertThat(pdxType.getPdxSerializer().getClassName())
+        .isEqualTo("org.apache.geode.pdx.ReflectionBasedAutoSerializer");
+    assertThat(pdxType.getPdxSerializer().getParameters()).containsExactly(
+        new ParameterType("classes", "pat1,pat2"), new ParameterType("check-portability", "true"));
+    assertThat(pdxType.isIgnoreUnreadFields()).isTrue();
+  }
+
+  @Test
   public void fromXmlObject() {
     PdxType pdxType = new PdxType();
     pdxType.setDiskStoreName("test");
@@ -55,5 +78,27 @@ public class PdxConverterTest {
     assertThat(pdxConfig.isIgnoreUnreadFields()).isEqualTo(true);
     assertThat(pdxConfig.isReadSerialized()).isEqualTo(true);
     assertThat(pdxConfig.getPdxSerializer().getClassName()).isEqualTo("java.lang.String");
+    assertThat(pdxConfig.getAutoSerializer()).isNull();
+  }
+
+  @Test
+  public void fromXmlObjectWithAutoSerializer() {
+    PdxType pdxType = new PdxType();
+    pdxType.setDiskStoreName("test");
+    pdxType.setIgnoreUnreadFields(true);
+    pdxType.setPersistent(true);
+    pdxType.setReadSerialized(true);
+    Properties properties = new Properties();
+    properties.setProperty("classes", "pat1 , pat2");
+    properties.setProperty("check-portability", "true");
+    pdxType.setPdxSerializer(
+        new DeclarableType("org.apache.geode.pdx.ReflectionBasedAutoSerializer", properties));
+    Pdx pdxConfig = converter.fromXmlObject(pdxType);
+    assertThat(pdxConfig.getDiskStoreName()).isEqualTo("test");
+    assertThat(pdxConfig.isIgnoreUnreadFields()).isEqualTo(true);
+    assertThat(pdxConfig.isReadSerialized()).isEqualTo(true);
+    assertThat(pdxConfig.getPdxSerializer()).isNull();
+    assertThat(pdxConfig.getAutoSerializer().isPortable()).isTrue();
+    assertThat(pdxConfig.getAutoSerializer().getPatterns()).containsExactly("pat1", "pat2");
   }
 }

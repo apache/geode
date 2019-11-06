@@ -16,12 +16,8 @@
 package org.apache.geode.management.configuration;
 
 
-import java.util.Properties;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.util.Strings;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.runtime.RuntimeInfo;
@@ -36,6 +32,7 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
 
   private Boolean readSerialized;
   private ClassName pdxSerializer;
+  private AutoSerializer autoSerializer;
   private Boolean ignoreUnreadFields;
   private String diskStoreName;
 
@@ -55,13 +52,19 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
     return links;
   }
 
-  public void setAutoSerializer(boolean portable, String... pattern){
-    Properties properties = new Properties();
-    if(portable) {
-      properties.setProperty("check-portability", "true");
-    }
-    properties.setProperty("classes", StringUtils.join(pattern, ","));
-    pdxSerializer = new ClassName("org.apache.geode.pdx.ReflectionBasedAutoSerializer", properties);
+  public AutoSerializer getAutoSerializer() {
+    return autoSerializer;
+  }
+
+  public void setAutoSerializer(AutoSerializer autoSerializer) {
+    this.autoSerializer = autoSerializer;
+    // Properties properties = new Properties();
+    // if(portable) {
+    // properties.setProperty("check-portability", "true");
+    // }
+    // properties.setProperty("classes", StringUtils.join(pattern, ","));
+    // pdxSerializer = new ClassName("org.apache.geode.pdx.ReflectionBasedAutoSerializer",
+    // properties);
   }
 
   public Boolean isReadSerialized() {

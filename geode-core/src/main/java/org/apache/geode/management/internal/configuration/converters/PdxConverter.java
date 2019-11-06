@@ -15,11 +15,15 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.PdxType;
+import org.apache.geode.management.configuration.AutoSerializer;
+import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Pdx;
 
 public class PdxConverter extends ConfigurationConverter<Pdx, PdxType> {
   private final ClassNameConverter converter = new ClassNameConverter();
+  private final AutoSerializerConverter autoSerializerConverter = new AutoSerializerConverter();
 
   @Override
   protected Pdx fromNonNullXmlObject(PdxType xmlObject) {
@@ -28,7 +32,14 @@ public class PdxConverter extends ConfigurationConverter<Pdx, PdxType> {
     pdx.setReadSerialized(xmlObject.isReadSerialized());
     pdx.setDiskStoreName(xmlObject.getDiskStoreName());
     pdx.setIgnoreUnreadFields(xmlObject.isIgnoreUnreadFields());
-    pdx.setPdxSerializer(converter.fromXmlObject(xmlObject.getPdxSerializer()));
+    AutoSerializer autoSerializer =
+        autoSerializerConverter.fromXmlObject(xmlObject.getPdxSerializer());
+    if (autoSerializer == null) {
+      ClassName className = converter.fromXmlObject(xmlObject.getPdxSerializer());
+      pdx.setPdxSerializer(className);
+    } else {
+      pdx.setAutoSerializer(autoSerializer);
+    }
     return pdx;
   }
 
@@ -38,8 +49,13 @@ public class PdxConverter extends ConfigurationConverter<Pdx, PdxType> {
     xmlType.setReadSerialized(configObject.isReadSerialized());
     xmlType.setDiskStoreName(configObject.getDiskStoreName());
     xmlType.setIgnoreUnreadFields(configObject.isIgnoreUnreadFields());
-    xmlType.setPersistent(configObject.getDiskStoreName()!=null);
-    xmlType.setPdxSerializer(converter.fromConfigObject(configObject.getPdxSerializer()));
+    xmlType.setPersistent(configObject.getDiskStoreName() != null);
+    DeclarableType pdxSerializer =
+        autoSerializerConverter.fromConfigObject(configObject.getAutoSerializer());
+    if (pdxSerializer == null) {
+      pdxSerializer = converter.fromConfigObject(configObject.getPdxSerializer());
+    }
+    xmlType.setPdxSerializer(pdxSerializer);
     return xmlType;
   }
 }
