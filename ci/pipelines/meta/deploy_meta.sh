@@ -106,9 +106,9 @@ pipelineProperties:
   public: ${PUBLIC}
 YML
 
-  python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml  pipelineProperties.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml --debug || exit 1
+  python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml pipelineProperties.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml --debug || exit 1
 
-  set -e
+  fly -t ${FLY_TARGET} login -n ${CONCOURSE_TEAM}
   fly -t ${FLY_TARGET} sync
   fly -t ${FLY_TARGET} set-pipeline \
     -p ${META_PIPELINE} \
@@ -127,9 +127,8 @@ YML
     --var sanitized-geode-fork=${SANITIZED_GEODE_FORK} \
     --var semver-prerelease-token="${SEMVER_PRERELEASE_TOKEN}" \
     --var upstream-fork=${UPSTREAM_FORK} \
-    --var fly-target=${FLY_TARGET} \
     --yaml-var public-pipelines=${PUBLIC}
-    set +e
+
 popd 2>&1 > /dev/null
 
 # bootstrap all precursors of the actual Build job
