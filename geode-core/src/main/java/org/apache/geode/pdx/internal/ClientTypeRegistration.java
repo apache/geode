@@ -75,18 +75,24 @@ public class ClientTypeRegistration implements TypeRegistration {
     int newTypeId = -1;
     for (Pool pool : pools) {
       try {
-        newTypeId = GetPDXIdForTypeOp.execute((ExecutablePool) pool, newType);
+        newTypeId = getPdxIdFromPool(newType, (ExecutablePool) pool);
         newType.setTypeId(newTypeId);
         idToType.put(newTypeId, newType);
         reverseMap.save(newTypeId, newType);
         copyTypeToOtherPools(newType, newTypeId, pool);
         return newTypeId;
       } catch (ServerConnectivityException e) {
+        logger.debug("Received an exception defining pdx type on pool {}, {}", pool,
+            e.getMessage(), e);
         // ignore, try the next pool.
         lastException = e;
       }
     }
     throw returnCorrectExceptionForFailure(newTypeId, lastException);
+  }
+
+  int getPdxIdFromPool(PdxType newType, ExecutablePool pool) {
+    return GetPDXIdForTypeOp.execute(pool, newType);
   }
 
   /**
@@ -132,7 +138,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     ServerConnectivityException lastException = null;
     for (Pool pool : pools) {
       try {
-        PdxType type = GetPDXTypeByIdOp.execute((ExecutablePool) pool, typeId);
+        PdxType type = getPdxTypeFromPool(typeId, (ExecutablePool) pool);
         if (type != null) {
           idToType.put(typeId, type);
           reverseMap.save(typeId, type);
@@ -148,7 +154,11 @@ public class ClientTypeRegistration implements TypeRegistration {
     throw returnCorrectExceptionForFailure(typeId, lastException);
   }
 
-  private Collection<Pool> getAllPools() {
+  PdxType getPdxTypeFromPool(int typeId, ExecutablePool pool) {
+    return GetPDXTypeByIdOp.execute(pool, typeId);
+  }
+
+  Collection<Pool> getAllPools() {
     Collection<Pool> pools = PoolManagerImpl.getPMI().getMap().values();
 
     for (Iterator<Pool> itr = pools.iterator(); itr.hasNext();) {
@@ -214,7 +224,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     ServerConnectivityException lastException = null;
     for (Pool pool : pools) {
       try {
-        int result = GetPDXIdForEnumOp.execute((ExecutablePool) pool, enumInfo);
+        int result = getEnumIdFromPool(enumInfo, (ExecutablePool) pool);
         EnumId newId = new EnumId(result);
         idToEnum.put(newId, enumInfo);
         reverseMap.save(newId, enumInfo);
@@ -226,6 +236,10 @@ public class ClientTypeRegistration implements TypeRegistration {
       }
     }
     throw returnCorrectExceptionForFailure(-1, lastException);
+  }
+
+  int getEnumIdFromPool(EnumInfo enumInfo, ExecutablePool pool) {
+    return GetPDXIdForEnumOp.execute(pool, enumInfo);
   }
 
   /**
@@ -275,7 +289,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     ServerConnectivityException lastException = null;
     for (Pool pool : pools) {
       try {
-        EnumInfo result = GetPDXEnumByIdOp.execute((ExecutablePool) pool, enumId);
+        EnumInfo result = getEnumFromPool(enumId, (ExecutablePool) pool);
         if (result != null) {
           idToEnum.put(id, result);
           reverseMap.save(id, result);
@@ -291,6 +305,10 @@ public class ClientTypeRegistration implements TypeRegistration {
     }
 
     throw returnCorrectExceptionForFailure(enumId, lastException);
+  }
+
+  EnumInfo getEnumFromPool(int enumId, ExecutablePool pool) {
+    return GetPDXEnumByIdOp.execute(pool, enumId);
   }
 
   @Override

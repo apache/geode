@@ -623,7 +623,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   boolean shouldReload() {
-    boolean shouldReload = false;
+    boolean shouldReload;
     TXStateProxy currentState = suspendTX();
     try {
       shouldReload = reverseMap.shouldReloadFromRegion(getIdToType());
