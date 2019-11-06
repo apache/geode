@@ -60,7 +60,7 @@ resources:
       platform: linux
       params:
         CONCOURSE_URL: ((concourse-url))
-{% if pipelineProperties.public == "False" %}
+{%- if pipelineProperties.public %}{%- else %}
         CONCOURSE_USERNAME: ((concourse-username))
         CONCOURSE_PASSWORD: ((concourse-password))
 {% endif %}
@@ -68,7 +68,7 @@ resources:
         JOB_NAME: {{job_name}}
         JOB_COUNT: 50
         CONCOURSE_TEAM: ((concourse-team))
-        PUBLIC_PIPELINE: {{pipelineProperties.public}}
+        PUBLIC_PIPELINE: ((public-pipelines))
       run:
         path: bash
         args:
@@ -83,12 +83,12 @@ resources:
 
           set +x
 
-          PYTHON_ARGUMENTS=${CONCOURSE_URL} ${MAIN_PIPELINE_NAME} ${JOB_NAME} ${JOB_COUNT} --team="${CONCOURSE_TEAM}"
+          PYTHON_ARGUMENTS="${CONCOURSE_URL} ${MAIN_PIPELINE_NAME} ${JOB_NAME} ${JOB_COUNT} --team=${CONCOURSE_TEAM}"
 
-          if [ ${PUBLIC_PIPELINE} == "false" ]; then
+          if [ ${PUBLIC_PIPELINE} == "False" ]; then
             ./fly -t ${TARGET_NAME} login -c "${CONCOURSE_URL}" -n "${CONCOURSE_TEAM}" -u "${CONCOURSE_USERNAME}" -p "${CONCOURSE_PASSWORD}"
             API_TOKEN=$(yq -r .targets.${TARGET_NAME}.token.value ~/.flyrc)
-            PYTHON_ARGUMENTS="${PYTHON_ARGUMENTS} --cookie-token=\"${API_TOKEN}\""
+            PYTHON_ARGUMENTS="${PYTHON_ARGUMENTS} --cookie-token=${API_TOKEN}"
           fi
 
           python3 geode-ci/ci/bin/concourse_job_performance.py ${PYTHON_ARGUMENTS}
