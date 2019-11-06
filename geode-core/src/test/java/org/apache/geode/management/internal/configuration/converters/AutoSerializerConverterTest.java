@@ -26,7 +26,7 @@ import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.management.configuration.AutoSerializer;
 
-public class AutoSerializerTest {
+public class AutoSerializerConverterTest {
   private AutoSerializerConverter converter = new AutoSerializerConverter();
 
   @Test

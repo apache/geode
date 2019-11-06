@@ -58,13 +58,6 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
 
   public void setAutoSerializer(AutoSerializer autoSerializer) {
     this.autoSerializer = autoSerializer;
-    // Properties properties = new Properties();
-    // if(portable) {
-    // properties.setProperty("check-portability", "true");
-    // }
-    // properties.setProperty("classes", StringUtils.join(pattern, ","));
-    // pdxSerializer = new ClassName("org.apache.geode.pdx.ReflectionBasedAutoSerializer",
-    // properties);
   }
 
   public Boolean isReadSerialized() {
