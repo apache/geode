@@ -389,18 +389,18 @@ public class CacheOperationsJUnitTest {
         createTempFileFromResource(CacheOperationsJUnitTest.class, DEFAULT_STORE)
             .getAbsolutePath();
 
-    SSLConfig sslConfig = new SSLConfig();
-    sslConfig.setEnabled(true);
-    sslConfig.setCiphers(SSL_CIPHERS);
-    sslConfig.setProtocols(SSL_PROTOCOLS);
-    sslConfig.setRequireAuth(true);
-    sslConfig.setKeystoreType("jks");
-    sslConfig.setKeystore(keyStorePath);
-    sslConfig.setKeystorePassword("password");
-    sslConfig.setTruststore(trustStorePath);
-    sslConfig.setKeystorePassword("password");
+    SSLConfig.Builder sslConfigBuilder = new SSLConfig.Builder();
+    sslConfigBuilder.setEnabled(true);
+    sslConfigBuilder.setCiphers(SSL_CIPHERS);
+    sslConfigBuilder.setProtocols(SSL_PROTOCOLS);
+    sslConfigBuilder.setRequireAuth(true);
+    sslConfigBuilder.setKeystoreType("jks");
+    sslConfigBuilder.setKeystore(keyStorePath);
+    sslConfigBuilder.setKeystorePassword("password");
+    sslConfigBuilder.setTruststore(trustStorePath);
+    sslConfigBuilder.setKeystorePassword("password");
 
-    SocketCreator socketCreator = new SocketCreator(sslConfig);
+    SocketCreator socketCreator = new SocketCreator(sslConfigBuilder.build());
     return socketCreator.connectForClient("localhost", cacheServerPort, 5000);
   }
 }

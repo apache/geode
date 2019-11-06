@@ -67,16 +67,21 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   public static boolean testFailedConnectionToServer = false;
 
   ConnectionFactoryImpl(ConnectionSource source, EndpointManager endpointManager,
-      InternalDistributedSystem sys, int socketBufferSize, int handshakeTimeout, int readTimeout,
-      ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion, boolean usedByGateway,
-      GatewaySender sender, long pingInterval, boolean multiuserSecureMode, PoolImpl pool) {
+      InternalDistributedSystem sys, int socketBufferSize, int handshakeTimeout,
+      int readTimeout,
+      ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion,
+      boolean usedByGateway,
+      GatewaySender sender, long pingInterval, boolean multiuserSecureMode,
+      PoolImpl pool, final InternalDistributedSystem internalDistributedSystem) {
     this(
         new ConnectionConnector(endpointManager, sys, socketBufferSize, handshakeTimeout,
             readTimeout, usedByGateway, sender,
             (usedByGateway || sender != null) ? SocketCreatorFactory
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY)
+                .getSocketCreatorForComponent(internalDistributedSystem.getConfig(),
+                    SecurableCommunicationChannel.GATEWAY)
                 : SocketCreatorFactory
-                    .getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER),
+                    .getSocketCreatorForComponent(internalDistributedSystem.getConfig(),
+                        SecurableCommunicationChannel.SERVER),
             new ClientSideHandshakeImpl(proxyId, sys, sys.getSecurityService(),
                 multiuserSecureMode)),
         source, pingInterval, pool, cancelCriterion);
