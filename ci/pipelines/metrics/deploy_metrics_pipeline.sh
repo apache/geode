@@ -58,7 +58,7 @@ YML
 
   cat > pipelineProperties.yml <<YML
 pipelineProperties:
-  public: ${PUBLIC}
+  public: ${PUBLIC_PIPELINES}
 YML
   python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml pipelineProperties.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml || exit 1
 
