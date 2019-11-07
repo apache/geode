@@ -61,7 +61,7 @@ public class PdxConverterTest {
     assertThat(pdxType.getDiskStoreName()).isEqualTo("test");
     assertThat(pdxType.getPdxSerializer().getClassName())
         .isEqualTo("org.apache.geode.pdx.ReflectionBasedAutoSerializer");
-    assertThat(pdxType.getPdxSerializer().getParameters()).containsExactly(
+    assertThat(pdxType.getPdxSerializer().getParameters()).containsExactlyInAnyOrder(
         new ParameterType("classes", "pat1,pat2"), new ParameterType("check-portability", "true"));
     assertThat(pdxType.isIgnoreUnreadFields()).isTrue();
   }
