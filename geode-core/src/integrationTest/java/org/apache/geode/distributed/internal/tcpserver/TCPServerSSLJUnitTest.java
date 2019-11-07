@@ -80,7 +80,7 @@ public class TCPServerSSLJUnitTest {
     localhost = InetAddress.getLocalHost();
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
-    server = new DummyTcpServer(port, localhost, sslProperties, null,
+    server = new DummyTcpServer(port, localhost, sslProperties,
         Mockito.mock(RestartableTcpHandler.class), Mockito.mock(PoolStatHelper.class),
         "server thread", recordedSocketTimeouts);
     server.start();
@@ -143,19 +143,13 @@ public class TCPServerSSLJUnitTest {
 
   private static class DummyTcpServer extends TcpServer {
     DummyTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-        DistributionConfigImpl cfg, RestartableTcpHandler handler, PoolStatHelper poolHelper,
-        String threadName, final List<Integer> recordedSocketTimeouts) {
-      super(port, bind_address, sslConfig, cfg, handler, threadName,
+                   RestartableTcpHandler handler,
+                   PoolStatHelper poolHelper,
+                   String threadName, final List<Integer> recordedSocketTimeouts) {
+      super(port, bind_address, handler, threadName,
           (socket, input, firstByte) -> false, DistributionStats::getStatTime,
           TcpServerFactory.createExecutorServiceSupplier(poolHelper),
-          getSocketCreator(getDistributionConfig(sslConfig, cfg), recordedSocketTimeouts));
-    }
-
-    private static DistributionConfigImpl getDistributionConfig(
-        final Properties sslConfig,
-        final DistributionConfigImpl distributionConfig) {
-      return distributionConfig == null ? new DistributionConfigImpl(sslConfig)
-          : distributionConfig;
+          getSocketCreator(new DistributionConfigImpl(sslConfig), recordedSocketTimeouts));
     }
 
     private static TcpSocketCreator getSocketCreator(

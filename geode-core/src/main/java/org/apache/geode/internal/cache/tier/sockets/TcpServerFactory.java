@@ -54,7 +54,7 @@ public class TcpServerFactory {
       DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
       String threadName, InternalLocator internalLocator) {
 
-    return new TcpServer(port, bind_address, sslConfig, cfg, handler,
+    return new TcpServer(port, bind_address, handler,
         threadName, new ProtocolCheckerImpl(internalLocator, clientProtocolServiceLoader),
         DistributionStats::getStatTime, createExecutorServiceSupplier(poolHelper),
         asTcpSocketCreator(

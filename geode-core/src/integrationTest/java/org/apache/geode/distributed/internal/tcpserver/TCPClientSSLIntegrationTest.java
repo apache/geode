@@ -113,7 +113,7 @@ public class TCPClientSSLIntegrationTest {
     RestartableTcpHandler tcpHandler = Mockito.mock(RestartableTcpHandler.class);
     when(tcpHandler.processRequest(any())).thenReturn("Running!");
 
-    server = new FakeTcpServer(port, localhost, sslProperties, null,
+    server = new FakeTcpServer(port, localhost, sslProperties,
         tcpHandler, Mockito.mock(PoolStatHelper.class),
         "server thread");
     server.start();
@@ -202,20 +202,13 @@ public class TCPClientSSLIntegrationTest {
   private static class FakeTcpServer extends TcpServer {
 
     FakeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-        DistributionConfigImpl distributionConfig, RestartableTcpHandler handler,
-        PoolStatHelper poolHelper,
-        String threadName) {
-      super(port, bind_address, sslConfig, distributionConfig, handler, threadName,
+                  RestartableTcpHandler handler,
+                  PoolStatHelper poolHelper,
+                  String threadName) {
+      super(port, bind_address, handler, threadName,
           (socket, input, firstByte) -> false, DistributionStats::getStatTime,
           TcpServerFactory.createExecutorServiceSupplier(poolHelper),
-          getSocketCreator(getDistributionConfig(sslConfig, distributionConfig)));
-    }
-
-    private static DistributionConfigImpl getDistributionConfig(
-        final Properties sslConfig,
-        final DistributionConfigImpl distributionConfig) {
-      return distributionConfig == null ? new DistributionConfigImpl(sslConfig)
-          : distributionConfig;
+          getSocketCreator(new DistributionConfigImpl(sslConfig)));
     }
 
     private static TcpSocketCreator getSocketCreator(
