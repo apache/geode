@@ -16,10 +16,10 @@
 package org.apache.geode.pdx.internal;
 
 import static org.apache.geode.pdx.internal.TypeRegistrationStatistics.ENUM_CREATED;
-import static org.apache.geode.pdx.internal.TypeRegistrationStatistics.ENUM_DEFINED;
+//import static org.apache.geode.pdx.internal.TypeRegistrationStatistics.ENUM_DEFINED;
 import static org.apache.geode.pdx.internal.TypeRegistrationStatistics.SIZE;
 import static org.apache.geode.pdx.internal.TypeRegistrationStatistics.TYPE_CREATED;
-import static org.apache.geode.pdx.internal.TypeRegistrationStatistics.TYPE_DEFINED;
+//import static org.apache.geode.pdx.internal.TypeRegistrationStatistics.TYPE_DEFINED;
 import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -86,22 +86,22 @@ public class TypeRegistrationDistributedTest implements Serializable {
       final InternalCache cache = cacheRule.getOrCreateCache();
       final SuppliableStatistics statistics = getStatistics(cache);
       statistics.updateSuppliedValues();
-      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(0);
-      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(0);
+//      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(0);
+//      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(0);
       assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(SIZE)).isEqualTo(0);
       pdxGenerator.run();
       statistics.updateSuppliedValues();
-      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
-      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
+//      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
+//      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
       assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(1);
       assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(1);
       assertThat(statistics.getLong(SIZE)).isEqualTo(2);
       pdxGenerator.run();
       statistics.updateSuppliedValues();
-      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
-      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
+//      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
+//      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
       assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(1);
       assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(1);
       assertThat(statistics.getLong(SIZE)).isEqualTo(2);
@@ -110,25 +110,25 @@ public class TypeRegistrationDistributedTest implements Serializable {
       final InternalCache cache = cacheRule.getOrCreateCache();
       final SuppliableStatistics statistics = getStatistics(cache);
       statistics.updateSuppliedValues();
-      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(0);
-      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(0);
+//      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(0);
+//      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(0);
       assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(SIZE)).isEqualTo(2);
       pdxGenerator.run();
       statistics.updateSuppliedValues();
-      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
-      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
+//      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
+//      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
       assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(0);
       assertThat(statistics.getLong(SIZE)).isEqualTo(2);
-      pdxGenerator.run();
-      statistics.updateSuppliedValues();
-      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
-      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
-      assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(0);
-      assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(0);
-      assertThat(statistics.getLong(SIZE)).isEqualTo(2);
+//      pdxGenerator.run();
+//      statistics.updateSuppliedValues();
+//      assertThat(statistics.getLong(TYPE_DEFINED)).isEqualTo(1);
+//      assertThat(statistics.getLong(ENUM_DEFINED)).isEqualTo(1);
+//      assertThat(statistics.getLong(TYPE_CREATED)).isEqualTo(0);
+//      assertThat(statistics.getLong(ENUM_CREATED)).isEqualTo(0);
+//      assertThat(statistics.getLong(SIZE)).isEqualTo(2);
     });
   }
 
@@ -145,10 +145,6 @@ public class TypeRegistrationDistributedTest implements Serializable {
     pdxInstanceFactory.create();
   }
 
-  public enum MyEnum {
-    ONE, TWO
-  }
-
   private void createPdxSerializableWithEnum() {
     final DataOutput out = new DataOutputStream(new ByteArrayOutputStream());
     try {
@@ -156,6 +152,10 @@ public class TypeRegistrationDistributedTest implements Serializable {
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  public enum MyEnum {
+    ONE, TWO
   }
 
   public static class MyPdx implements PdxSerializable {

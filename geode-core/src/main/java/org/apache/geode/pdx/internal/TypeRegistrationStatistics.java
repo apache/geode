@@ -21,16 +21,16 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 
 class TypeRegistrationStatistics {
-  static final String TYPE_DEFINED = "typeDefined";
+//  static final String TYPE_DEFINED = "typeDefined";
   static final String TYPE_CREATED = "typeCreated";
-  static final String ENUM_DEFINED = "enumDefined";
+//  static final String ENUM_DEFINED = "enumDefined";
   static final String ENUM_CREATED = "enumCreated";
   static final String SIZE = "size";
 
   private final TypeRegistration typeRegistration;
-  private final int typeDefinedId;
+//  private final int typeDefinedId;
   private final int typeCreatedId;
-  private final int enumDefinedId;
+//  private final int enumDefinedId;
   private final int enumCreatedId;
   private final Statistics statistics;
 
@@ -41,21 +41,21 @@ class TypeRegistrationStatistics {
     final StatisticsType statisticsType =
         statisticsFactory.createType("PdxTypeRegistration", "PDX type registration statistics.",
             new StatisticDescriptor[] {
-                statisticsFactory.createLongCounter(TYPE_DEFINED, "Number of PDX types defined.",
-                    "ops"),
+//                statisticsFactory.createLongCounter(TYPE_DEFINED, "Number of PDX types defined.",
+//                    "ops"),
                 statisticsFactory.createLongCounter(TYPE_CREATED, "Number of PDX types created.",
                     "ops"),
-                statisticsFactory.createLongCounter(ENUM_DEFINED, "Number of PDX enums defined.",
-                    "ops"),
+//                statisticsFactory.createLongCounter(ENUM_DEFINED, "Number of PDX enums defined.",
+//                    "ops"),
                 statisticsFactory.createLongCounter(ENUM_CREATED, "Number of PDX enums created.",
                     "ops"),
                 statisticsFactory.createLongGauge(SIZE, "Size of PDX type and enum registry.",
                     "entries")
             });
 
-    typeDefinedId = statisticsType.nameToId(TYPE_DEFINED);
+//    typeDefinedId = statisticsType.nameToId(TYPE_DEFINED);
     typeCreatedId = statisticsType.nameToId(TYPE_CREATED);
-    enumDefinedId = statisticsType.nameToId(ENUM_DEFINED);
+//    enumDefinedId = statisticsType.nameToId(ENUM_DEFINED);
     enumCreatedId = statisticsType.nameToId(ENUM_CREATED);
 
     statistics = statisticsFactory.createAtomicStatistics(statisticsType,
@@ -66,17 +66,17 @@ class TypeRegistrationStatistics {
     statistics.setLongSupplier(SIZE, typeRegistration::getLocalSize);
   }
 
-  void typeDefined() {
-    statistics.incLong(typeDefinedId, 1);
-  }
+//  void typeDefined() {
+//    statistics.incLong(typeDefinedId, 1);
+//  }
 
   void typeCreated() {
     statistics.incLong(typeCreatedId, 1);
   }
 
-  void enumDefined() {
-    statistics.incLong(enumDefinedId, 1);
-  }
+//  void enumDefined() {
+//    statistics.incLong(enumDefinedId, 1);
+//  }
 
   void enumCreated() {
     statistics.incLong(enumCreatedId, 1);
