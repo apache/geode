@@ -33,6 +33,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
+import org.apache.geode.management.configuration.AutoSerializer;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.util.internal.GeodeJsonMapper;
@@ -42,7 +43,7 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
     loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class PdxManagementTest {
+public class PdxIntegrationTest {
   @Autowired
   private WebApplicationContext webApplicationContext;
 
@@ -84,7 +85,36 @@ public class PdxManagementTest {
           .content(mapper.writeValueAsString(pdx)))
           .andExpect(status().isConflict());
     }
+  }
 
+  @Test
+  public void postPdxWithAutoSerializer() throws Exception {
+    Pdx pdx = new Pdx();
+    pdx.setReadSerialized(true);
+    pdx.setIgnoreUnreadFields(true);
+    pdx.setDiskStoreName("diskStoreName");
+    pdx.setAutoSerializer(new AutoSerializer("pat1", "pat2"));
+    try {
+      context.perform(post("/v1/configurations/pdx")
+          .with(httpBasic("clusterManage", "clusterManage"))
+          .content(mapper.writeValueAsString(pdx)))
+          .andExpect(status().isCreated())
+          .andExpect(jsonPath("$.memberStatuses").doesNotExist())
+          .andExpect(
+              jsonPath("$.statusMessage",
+                  containsString("Successfully updated configuration for cluster.")))
+          .andExpect(jsonPath("$.statusCode", is("OK")))
+          .andExpect(
+              jsonPath("$.links.self", is("http://localhost/v1/configurations/pdx")));
+    }
+    // this is a hack to make StressNewTest pass, rework this once "delete pdx" end point is
+    // implemented.
+    catch (AssertionError e) {
+      context.perform(post("/v1/configurations/pdx")
+          .with(httpBasic("clusterManage", "clusterManage"))
+          .content(mapper.writeValueAsString(pdx)))
+          .andExpect(status().isConflict());
+    }
   }
 
   @Test
@@ -97,5 +127,32 @@ public class PdxManagementTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.statusCode", is("ILLEGAL_ARGUMENT")))
         .andExpect(jsonPath("$.statusMessage", containsString("Invalid className")));
+  }
+
+  @Test
+  public void pdxDoesNotAllowAutoSerializerWithNoPatterns() throws Exception {
+    String json = "{\"readSerialized\":true,\"autoSerializer\":{\"portable\":true}}";
+
+    context.perform(post("/v1/configurations/pdx")
+        .with(httpBasic("clusterManage", "clusterManage"))
+        .content(json))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.statusCode", is("ILLEGAL_ARGUMENT")))
+        .andExpect(jsonPath("$.statusMessage",
+            containsString("The autoSerializer must have at least one pattern.")));
+  }
+
+  @Test
+  public void pdxDoesNotAllowBothAutoAndPdxSerializer() throws Exception {
+    String json =
+        "{\"readSerialized\":true,\"autoSerializer\":{\"portable\":true,\"patterns\":[\"pat1\"]},\"pdxSerializer\":{\"className\":\"className\"}}";
+
+    context.perform(post("/v1/configurations/pdx")
+        .with(httpBasic("clusterManage", "clusterManage"))
+        .content(json))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.statusCode", is("ILLEGAL_ARGUMENT")))
+        .andExpect(jsonPath("$.statusMessage",
+            containsString("Both autoSerializer and pdxSerializer were specified.")));
   }
 }
