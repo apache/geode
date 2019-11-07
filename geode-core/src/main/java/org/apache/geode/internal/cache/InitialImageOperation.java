@@ -47,6 +47,7 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -1616,6 +1617,11 @@ public class InitialImageOperation {
         return true;
       }
       return false;
+    }
+
+    @VisibleForTesting
+    public String getRegionPath() {
+      return regionPath;
     }
 
     @Override

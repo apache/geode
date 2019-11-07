@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.Collections.emptySet;
 import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,7 +24,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -31,21 +31,23 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
@@ -58,291 +60,394 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DSClock;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
-import org.apache.geode.internal.util.VersionedArrayList;
-import org.apache.geode.test.fake.Fakes;
+import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 
 @RunWith(JUnitParamsRunner.class)
+@SuppressWarnings({"deprecation", "unchecked", "unused"})
 public class PartitionedRegionTest {
-  private InternalCache internalCache;
-  private PartitionedRegion partitionedRegion;
-  @SuppressWarnings("deprecation")
+
+  private InternalCache cache;
+  private InternalDistributedSystem system;
+  private DistributionManager distributionManager;
+  private InternalResourceManager resourceManager;
   private AttributesFactory attributesFactory;
 
-  @Before
-  @SuppressWarnings("deprecation")
-  public void setup() {
-    internalCache = Fakes.cache();
+  private PartitionedRegion partitionedRegion;
 
-    InternalResourceManager resourceManager =
-        mock(InternalResourceManager.class, RETURNS_DEEP_STUBS);
-    when(internalCache.getInternalResourceManager()).thenReturn(resourceManager);
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+
+  @Before
+  public void setUp() {
+    system = mock(InternalDistributedSystem.class);
+    distributionManager = mock(DistributionManager.class);
+    InternalDistributedMember distributedMember = mock(InternalDistributedMember.class);
+    InternalResourceManager resourceManager = mock(InternalResourceManager.class);
+
+    cache = mock(InternalCache.class);
     attributesFactory = new AttributesFactory();
     attributesFactory.setPartitionAttributes(
         new PartitionAttributesFactory().setTotalNumBuckets(1).setRedundantCopies(1).create());
-    partitionedRegion = new PartitionedRegion("prTestRegion", attributesFactory.create(), null,
-        internalCache, mock(InternalRegionArguments.class), disabledClock());
-    DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
-    when(internalCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
-    when(mockDistributedSystem.getProperties()).thenReturn(new Properties());
-    when(mockDistributedSystem.createAtomicStatistics(any(), any()))
+
+    when(cache.getDistributedSystem())
+        .thenReturn(system);
+    when(cache.getInternalDistributedSystem())
+        .thenReturn(system);
+    when(cache.getInternalResourceManager())
+        .thenReturn(resourceManager);
+    when(distributionManager.getId())
+        .thenReturn(distributedMember);
+    when(system.createAtomicStatistics(any(), any()))
         .thenReturn(mock(Statistics.class));
+    when(system.getClock())
+        .thenReturn(mock(DSClock.class));
+    when(system.getDistributedMember())
+        .thenReturn(distributedMember);
+    when(system.getDistributionManager())
+        .thenReturn(distributionManager);
+
+    partitionedRegion = new PartitionedRegion("regionName", attributesFactory.create(), null,
+        cache, mock(InternalRegionArguments.class), disabledClock(),
+        ColocationLoggerFactory.create());
   }
 
-  @SuppressWarnings("unused")
-  private Object[] parametersToTestUpdatePRNodeInformation() {
+  private Object[] cacheLoaderAndWriter() {
     CacheLoader mockLoader = mock(CacheLoader.class);
     CacheWriter mockWriter = mock(CacheWriter.class);
     return new Object[] {
-        new Object[] {mockLoader, null, (byte) 0x01},
-        new Object[] {null, mockWriter, (byte) 0x02},
-        new Object[] {mockLoader, mockWriter, (byte) 0x03},
-        new Object[] {null, null, (byte) 0x00}
+        new Object[] {mockLoader, null},
+        new Object[] {null, mockWriter},
+        new Object[] {mockLoader, mockWriter},
+        new Object[] {null, null}
     };
   }
 
   @Test
-  @Parameters(method = "parametersToTestUpdatePRNodeInformation")
-  public void verifyPRConfigUpdatedAfterLoaderUpdate(CacheLoader mockLoader, CacheWriter mockWriter,
-      @SuppressWarnings("unused") byte configByte) {
-    @SuppressWarnings("unchecked")
-    Region<String, PartitionRegionConfig> prRoot = mock(LocalRegion.class);
-    PartitionRegionConfig mockConfig = mock(PartitionRegionConfig.class);
-    PartitionedRegion prSpy = spy(partitionedRegion);
-
-    when(prSpy.getPRRoot()).thenReturn(prRoot);
-    when(prRoot.get(prSpy.getRegionIdentifier())).thenReturn(mockConfig);
-
-    InternalDistributedMember ourMember = prSpy.getDistributionManager().getId();
+  @Parameters(method = "cacheLoaderAndWriter")
+  @TestCaseName("{method}(CacheLoader={0}, CacheWriter={1})")
+  public void verifyPRConfigUpdatedAfterLoaderUpdate(CacheLoader cacheLoader,
+      CacheWriter cacheWriter) {
+    // ARRANGE
+    PartitionRegionConfig partitionRegionConfig = mock(PartitionRegionConfig.class);
+    Region<String, PartitionRegionConfig> partitionedRegionRoot = mock(LocalRegion.class);
+    PartitionedRegion.RegionLock regionLock = mock(PartitionedRegion.RegionLock.class);
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    InternalDistributedMember ourMember = spyPartitionedRegion.getDistributionManager().getId();
     InternalDistributedMember otherMember1 = mock(InternalDistributedMember.class);
     InternalDistributedMember otherMember2 = mock(InternalDistributedMember.class);
-    Node ourNode = mock(Node.class);
-    Node otherNode1 = mock(Node.class);
-    Node otherNode2 = mock(Node.class);
-    when(ourNode.getMemberId()).thenReturn(ourMember);
-    when(otherNode1.getMemberId()).thenReturn(otherMember1);
-    when(otherNode2.getMemberId()).thenReturn(otherMember2);
-    when(ourNode.isCacheLoaderAttached()).thenReturn(mockLoader != null);
-    when(ourNode.isCacheWriterAttached()).thenReturn(mockWriter != null);
+    Node ourNode = mock(Node.class, "ourNode");
+    Node otherNode1 = mock(Node.class, "otherNode1");
+    Node otherNode2 = mock(Node.class, "otherNode2");
 
+    when(otherNode1.getMemberId())
+        .thenReturn(otherMember1);
+    when(otherNode2.getMemberId())
+        .thenReturn(otherMember2);
+    when(ourNode.getMemberId())
+        .thenReturn(ourMember);
+    when(ourNode.isCacheLoaderAttached())
+        .thenReturn(cacheLoader != null);
+    when(ourNode.isCacheWriterAttached())
+        .thenReturn(cacheWriter != null);
+    when(partitionRegionConfig.getNodes())
+        .thenReturn(asSet(otherNode1, ourNode, otherNode2));
+    when(partitionedRegionRoot.get(spyPartitionedRegion.getRegionIdentifier()))
+        .thenReturn(partitionRegionConfig);
+    when(spyPartitionedRegion.getPRRoot())
+        .thenReturn(partitionedRegionRoot);
 
-    VersionedArrayList prNodes = new VersionedArrayList();
-    prNodes.add(otherNode1);
-    prNodes.add(ourNode);
-    prNodes.add(otherNode2);
-    when(mockConfig.getNodes()).thenReturn(prNodes.getListCopy());
-    when(mockConfig.getPartitionAttrs()).thenReturn(mock(PartitionAttributesImpl.class));
+    doReturn(cacheLoader)
+        .when(spyPartitionedRegion).basicGetLoader();
+    doReturn(cacheWriter)
+        .when(spyPartitionedRegion).basicGetWriter();
+    doReturn(regionLock)
+        .when(spyPartitionedRegion).getRegionLock();
 
-    doReturn(mockLoader).when(prSpy).basicGetLoader();
-    doReturn(mockWriter).when(prSpy).basicGetWriter();
-    PartitionedRegion.RegionLock mockLock = mock(PartitionedRegion.RegionLock.class);
-    doReturn(mockLock).when(prSpy).getRegionLock();
+    // ACT
+    spyPartitionedRegion.updatePRNodeInformation();
 
-    prSpy.updatePRNodeInformation();
+    // ASSERT
+    assertThat(partitionRegionConfig.getNodes())
+        .contains(ourNode);
 
     Node verifyOurNode = null;
-    assertThat(mockConfig.getNodes().contains(ourNode)).isTrue();
-    for (Node node : mockConfig.getNodes()) {
+    for (Node node : partitionRegionConfig.getNodes()) {
       if (node.getMemberId().equals(ourMember)) {
         verifyOurNode = node;
       }
     }
+    assertThat(verifyOurNode)
+        .withFailMessage("Failed to find " + ourMember + " in " + partitionRegionConfig.getNodes())
+        .isNotNull();
 
-    verify(prRoot).get(prSpy.getRegionIdentifier());
-    verify(prSpy).updatePRConfig(mockConfig, false);
-    verify(prRoot).put(prSpy.getRegionIdentifier(), mockConfig);
+    verify(partitionedRegionRoot)
+        .get(spyPartitionedRegion.getRegionIdentifier());
+    verify(partitionedRegionRoot)
+        .put(spyPartitionedRegion.getRegionIdentifier(), partitionRegionConfig);
+    verify(spyPartitionedRegion)
+        .updatePRConfig(partitionRegionConfig, false);
 
-    assertThat(verifyOurNode).isNotNull();
-    assertThat(verifyOurNode.isCacheLoaderAttached()).isEqualTo(mockLoader != null);
-    assertThat(verifyOurNode.isCacheWriterAttached()).isEqualTo(mockWriter != null);
+    assertThat(verifyOurNode.isCacheLoaderAttached())
+        .isEqualTo(cacheLoader != null);
+    assertThat(verifyOurNode.isCacheWriterAttached())
+        .isEqualTo(cacheWriter != null);
   }
 
   @Test
   public void getBucketNodeForReadOrWriteReturnsPrimaryNodeForRegisterInterest() {
-    int bucketId = 0;
+    // ARRANGE
+    EntryEventImpl clientEvent = mock(EntryEventImpl.class);
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
-    EntryEventImpl clientEvent = mock(EntryEventImpl.class);
-    when(clientEvent.getOperation()).thenReturn(Operation.GET_FOR_REGISTER_INTEREST);
-    PartitionedRegion spyPR = spy(partitionedRegion);
-    doReturn(primaryMember).when(spyPR).getNodeForBucketWrite(eq(bucketId), isNull());
-    doReturn(secondaryMember).when(spyPR).getNodeForBucketRead(eq(bucketId));
-    InternalDistributedMember memberForRegisterInterestRead =
-        spyPR.getBucketNodeForReadOrWrite(bucketId, clientEvent);
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
-    assertThat(memberForRegisterInterestRead).isSameAs(primaryMember);
-    verify(spyPR, times(1)).getNodeForBucketWrite(anyInt(), any());
+    when(clientEvent.getOperation())
+        .thenReturn(Operation.GET_FOR_REGISTER_INTEREST);
+
+    int bucketId = 0;
+    doReturn(primaryMember)
+        .when(spyPartitionedRegion).getNodeForBucketWrite(eq(bucketId), isNull());
+
+    // ACT
+    InternalDistributedMember memberForRegisterInterestRead =
+        spyPartitionedRegion.getBucketNodeForReadOrWrite(bucketId, clientEvent);
+
+    // ASSERT
+    assertThat(memberForRegisterInterestRead)
+        .isSameAs(primaryMember);
+    verify(spyPartitionedRegion)
+        .getNodeForBucketWrite(anyInt(), any());
   }
 
   @Test
   public void getBucketNodeForReadOrWriteReturnsSecondaryNodeForNonRegisterInterest() {
-    int bucketId = 0;
+    // ARRANGE
+    EntryEventImpl clientEvent = mock(EntryEventImpl.class);
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
-    EntryEventImpl clientEvent = mock(EntryEventImpl.class);
-    when(clientEvent.getOperation()).thenReturn(Operation.GET);
-    PartitionedRegion spyPR = spy(partitionedRegion);
-    doReturn(primaryMember).when(spyPR).getNodeForBucketWrite(eq(bucketId), isNull());
-    doReturn(secondaryMember).when(spyPR).getNodeForBucketRead(eq(bucketId));
-    InternalDistributedMember memberForRegisterInterestRead =
-        spyPR.getBucketNodeForReadOrWrite(bucketId, clientEvent);
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
-    assertThat(memberForRegisterInterestRead).isSameAs(secondaryMember);
-    verify(spyPR, times(1)).getNodeForBucketRead(anyInt());
+    when(clientEvent.getOperation())
+        .thenReturn(Operation.GET);
+
+    int bucketId = 0;
+    doReturn(secondaryMember)
+        .when(spyPartitionedRegion).getNodeForBucketRead(eq(bucketId));
+
+    // ACT
+    InternalDistributedMember memberForRegisterInterestRead =
+        spyPartitionedRegion.getBucketNodeForReadOrWrite(bucketId, clientEvent);
+
+    // ASSERT
+    assertThat(memberForRegisterInterestRead)
+        .isSameAs(secondaryMember);
+    verify(spyPartitionedRegion)
+        .getNodeForBucketRead(anyInt());
   }
 
   @Test
   public void getBucketNodeForReadOrWriteReturnsSecondaryNodeWhenClientEventIsNotPresent() {
-    int bucketId = 0;
+    // ARRANGE
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
-    PartitionedRegion spyPR = spy(partitionedRegion);
-    doReturn(primaryMember).when(spyPR).getNodeForBucketWrite(eq(bucketId), isNull());
-    doReturn(secondaryMember).when(spyPR).getNodeForBucketRead(eq(bucketId));
-    InternalDistributedMember memberForRegisterInterestRead =
-        spyPR.getBucketNodeForReadOrWrite(bucketId, null);
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
-    assertThat(memberForRegisterInterestRead).isSameAs(secondaryMember);
-    verify(spyPR, times(1)).getNodeForBucketRead(anyInt());
+    int bucketId = 0;
+    doReturn(secondaryMember)
+        .when(spyPartitionedRegion).getNodeForBucketRead(eq(bucketId));
+
+    // ACT
+    InternalDistributedMember memberForRegisterInterestRead =
+        spyPartitionedRegion.getBucketNodeForReadOrWrite(bucketId, null);
+
+    // ASSERT
+    assertThat(memberForRegisterInterestRead)
+        .isSameAs(secondaryMember);
+    verify(spyPartitionedRegion)
+        .getNodeForBucketRead(anyInt());
   }
 
   @Test
   public void getBucketNodeForReadOrWriteReturnsSecondaryNodeWhenClientEventOperationIsNotPresent() {
-    int bucketId = 0;
+    // ARRANGE
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
-    EntryEventImpl clientEvent = mock(EntryEventImpl.class);
-    when(clientEvent.getOperation()).thenReturn(null);
-    PartitionedRegion spyPR = spy(partitionedRegion);
-    doReturn(primaryMember).when(spyPR).getNodeForBucketWrite(eq(bucketId), isNull());
-    doReturn(secondaryMember).when(spyPR).getNodeForBucketRead(eq(bucketId));
-    InternalDistributedMember memberForRegisterInterestRead =
-        spyPR.getBucketNodeForReadOrWrite(bucketId, null);
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
-    assertThat(memberForRegisterInterestRead).isSameAs(secondaryMember);
-    verify(spyPR, times(1)).getNodeForBucketRead(anyInt());
+    int bucketId = 0;
+    doReturn(secondaryMember)
+        .when(spyPartitionedRegion).getNodeForBucketRead(eq(bucketId));
+
+    // ACT
+    InternalDistributedMember memberForRegisterInterestRead =
+        spyPartitionedRegion.getBucketNodeForReadOrWrite(bucketId, null);
+
+    // ASSERT
+    assertThat(memberForRegisterInterestRead)
+        .isSameAs(secondaryMember);
+    verify(spyPartitionedRegion)
+        .getNodeForBucketRead(anyInt());
   }
 
   @Test
   public void updateBucketMapsForInterestRegistrationWithSetOfKeysFetchesPrimaryBucketsForRead() {
-    Integer[] bucketIds = new Integer[] {0, 1};
+    // ARRANGE
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
-    PartitionedRegion spyPR = spy(partitionedRegion);
-    doReturn(primaryMember).when(spyPR).getNodeForBucketWrite(anyInt(), isNull());
-    doReturn(secondaryMember).when(spyPR).getNodeForBucketRead(anyInt());
-    HashMap<InternalDistributedMember, HashSet<Integer>> nodeToBuckets = new HashMap<>();
-    Set<Integer> buckets = Arrays.stream(bucketIds).collect(Collectors.toCollection(HashSet::new));
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
-    spyPR.updateNodeToBucketMap(nodeToBuckets, buckets);
-    verify(spyPR, times(2)).getNodeForBucketWrite(anyInt(), isNull());
+    doReturn(primaryMember)
+        .when(spyPartitionedRegion).getNodeForBucketWrite(anyInt(), isNull());
+
+    HashMap<InternalDistributedMember, HashSet<Integer>> nodeToBuckets = new HashMap<>();
+
+    // ACT
+    spyPartitionedRegion.updateNodeToBucketMap(nodeToBuckets, asSet(0, 1));
+
+    // ASSERT
+    verify(spyPartitionedRegion, times(2))
+        .getNodeForBucketWrite(anyInt(), isNull());
   }
 
   @Test
   public void updateBucketMapsForInterestRegistrationWithAllKeysFetchesPrimaryBucketsForRead() {
-    Integer[] bucketIds = new Integer[] {0, 1};
-
+    // ARRANGE
     InternalDistributedMember primaryMember = mock(InternalDistributedMember.class);
     InternalDistributedMember secondaryMember = mock(InternalDistributedMember.class);
-    PartitionedRegion spyPR = spy(partitionedRegion);
-    doReturn(primaryMember).when(spyPR).getNodeForBucketWrite(anyInt(), isNull());
-    doReturn(secondaryMember).when(spyPR).getNodeForBucketRead(anyInt());
-    HashMap<InternalDistributedMember, HashMap<Integer, HashSet>> nodeToBuckets = new HashMap<>();
-    HashSet buckets = Arrays.stream(bucketIds).collect(Collectors.toCollection(HashSet::new));
-    HashMap<Integer, HashSet> bucketKeys = new HashMap<>();
-    bucketKeys.put(0, buckets);
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
 
-    spyPR.updateNodeToBucketMap(nodeToBuckets, bucketKeys);
-    verify(spyPR, times(1)).getNodeForBucketWrite(anyInt(), isNull());
+    doReturn(primaryMember)
+        .when(spyPartitionedRegion).getNodeForBucketWrite(anyInt(), isNull());
+
+    HashMap<InternalDistributedMember, HashMap<Integer, HashSet>> nodeToBuckets = new HashMap<>();
+    HashMap<Integer, HashSet> bucketKeys = (HashMap) asMapOfSet(0, (HashSet) asSet(0, 1));
+
+    // ACT
+    spyPartitionedRegion.updateNodeToBucketMap(nodeToBuckets, bucketKeys);
+
+    // ASSERT
+    verify(spyPartitionedRegion)
+        .getNodeForBucketWrite(anyInt(), isNull());
   }
 
   @Test
   public void filterOutNonParallelGatewaySendersShouldReturnCorrectly() {
+    // ARRANGE
     GatewaySender parallelSender = mock(GatewaySender.class);
-    when(parallelSender.isParallel()).thenReturn(true);
-    when(parallelSender.getId()).thenReturn("parallel");
     GatewaySender anotherParallelSender = mock(GatewaySender.class);
-    when(anotherParallelSender.isParallel()).thenReturn(true);
-    when(anotherParallelSender.getId()).thenReturn("anotherParallel");
     GatewaySender serialSender = mock(GatewaySender.class);
-    when(serialSender.isParallel()).thenReturn(false);
-    when(serialSender.getId()).thenReturn("serial");
-    Set<GatewaySender> mockSenders =
-        Stream.of(parallelSender, anotherParallelSender, serialSender).collect(Collectors.toSet());
 
-    when(internalCache.getAllGatewaySenders()).thenReturn(mockSenders);
+    when(parallelSender.isParallel())
+        .thenReturn(true);
+    when(parallelSender.getId())
+        .thenReturn("parallel");
+    when(anotherParallelSender.isParallel())
+        .thenReturn(true);
+    when(anotherParallelSender.getId())
+        .thenReturn("anotherParallel");
+    when(serialSender.isParallel())
+        .thenReturn(false);
+    when(cache.getAllGatewaySenders())
+        .thenReturn(asSet(parallelSender, anotherParallelSender, serialSender));
+
+    // ACT/ASSERT
+    assertThat(partitionedRegion.filterOutNonParallelGatewaySenders(asSet("serial")))
+        .isEmpty();
+    // ACT/ASSERT
+    assertThat(partitionedRegion.filterOutNonParallelGatewaySenders(asSet("unknownSender")))
+        .isEmpty();
+    // ACT/ASSERT
+    assertThat(partitionedRegion.filterOutNonParallelGatewaySenders(asSet("parallel", "serial")))
+        .containsExactly("parallel");
+    // ACT/ASSERT
     assertThat(partitionedRegion
-        .filterOutNonParallelGatewaySenders(Stream.of("serial").collect(Collectors.toSet())))
-            .isEmpty();
-    assertThat(partitionedRegion
-        .filterOutNonParallelGatewaySenders(Stream.of("unknownSender").collect(Collectors.toSet())))
-            .isEmpty();
-    assertThat(partitionedRegion.filterOutNonParallelGatewaySenders(
-        Stream.of("parallel", "serial").collect(Collectors.toSet()))).isNotEmpty()
-            .containsExactly("parallel");
-    assertThat(partitionedRegion.filterOutNonParallelGatewaySenders(
-        Stream.of("parallel", "serial", "anotherParallel").collect(Collectors.toSet())))
-            .isNotEmpty().containsExactly("parallel", "anotherParallel");
+        .filterOutNonParallelGatewaySenders(asSet("parallel", "serial", "anotherParallel")))
+            .containsExactly("parallel", "anotherParallel");
   }
 
   @Test
   public void filterOutNonParallelAsyncEventQueuesShouldReturnCorrectly() {
+    // ARRANGE
     AsyncEventQueue parallelQueue = mock(AsyncEventQueue.class);
-    when(parallelQueue.isParallel()).thenReturn(true);
-    when(parallelQueue.getId()).thenReturn(getSenderIdFromAsyncEventQueueId("parallel"));
     AsyncEventQueue anotherParallelQueue = mock(AsyncEventQueue.class);
-    when(anotherParallelQueue.isParallel()).thenReturn(true);
+    AsyncEventQueue serialQueue = mock(AsyncEventQueue.class);
+
+    when(parallelQueue.isParallel())
+        .thenReturn(true);
+    when(parallelQueue.getId())
+        .thenReturn(getSenderIdFromAsyncEventQueueId("parallel"));
+    when(anotherParallelQueue.isParallel())
+        .thenReturn(true);
     when(anotherParallelQueue.getId())
         .thenReturn(getSenderIdFromAsyncEventQueueId("anotherParallel"));
-    AsyncEventQueue serialQueue = mock(AsyncEventQueue.class);
-    when(serialQueue.isParallel()).thenReturn(false);
-    when(serialQueue.getId()).thenReturn(getSenderIdFromAsyncEventQueueId("serial"));
-    Set<AsyncEventQueue> mockQueues =
-        Stream.of(parallelQueue, anotherParallelQueue, serialQueue).collect(Collectors.toSet());
+    when(serialQueue.isParallel())
+        .thenReturn(false);
+    when(cache.getAsyncEventQueues())
+        .thenReturn(asSet(parallelQueue, anotherParallelQueue, serialQueue));
 
-    when(internalCache.getAsyncEventQueues()).thenReturn(mockQueues);
+    // ACT/ASSERT
+    assertThat(partitionedRegion.filterOutNonParallelAsyncEventQueues(asSet("serial")))
+        .isEmpty();
+    // ACT/ASSERT
+    assertThat(partitionedRegion.filterOutNonParallelAsyncEventQueues(asSet("unknownSender")))
+        .isEmpty();
+    // ACT/ASSERT
+    assertThat(partitionedRegion.filterOutNonParallelAsyncEventQueues(asSet("parallel", "serial")))
+        .containsExactly("parallel");
+    // ACT/ASSERT
     assertThat(partitionedRegion
-        .filterOutNonParallelAsyncEventQueues(Stream.of("serial").collect(Collectors.toSet())))
-            .isEmpty();
-    assertThat(partitionedRegion.filterOutNonParallelAsyncEventQueues(
-        Stream.of("unknownSender").collect(Collectors.toSet()))).isEmpty();
-    assertThat(partitionedRegion.filterOutNonParallelAsyncEventQueues(
-        Stream.of("parallel", "serial").collect(Collectors.toSet()))).isNotEmpty()
-            .containsExactly("parallel");
-    assertThat(partitionedRegion.filterOutNonParallelAsyncEventQueues(
-        Stream.of("parallel", "serial", "anotherParallel").collect(Collectors.toSet())))
-            .isNotEmpty().containsExactly("parallel", "anotherParallel");
+        .filterOutNonParallelAsyncEventQueues(asSet("parallel", "serial", "anotherParallel")))
+            .containsExactly("parallel", "anotherParallel");
   }
 
   @Test
   public void getLocalSizeDoesNotThrowIfRegionUninitialized() {
-    partitionedRegion = new PartitionedRegion("region", attributesFactory.create(), null,
-        internalCache, mock(InternalRegionArguments.class), disabledClock());
+    // ARRANGE
+    partitionedRegion = new PartitionedRegion("region", attributesFactory.create(), null, cache,
+        mock(InternalRegionArguments.class), disabledClock(), ColocationLoggerFactory.create());
 
-    assertThatCode(partitionedRegion::getLocalSize).doesNotThrowAnyException();
+    // ACT/ASSERT
+    assertThatCode(partitionedRegion::getLocalSize)
+        .doesNotThrowAnyException();
   }
 
   @Test
-  // See GEODE-7106
   public void generatePRIdShouldNotThrowNumberFormatExceptionIfAnErrorOccursWhileReleasingTheLock() {
-    PartitionedRegion prSpy = spy(partitionedRegion);
-    DistributedLockService mockLockService = mock(DistributedLockService.class);
-    doReturn(true).when(mockLockService).lock(any(), anyLong(), anyLong());
-    doThrow(new RuntimeException("Mock Exception")).when(mockLockService).unlock(any());
+    // ARRANGE
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    DistributedLockService lockService = mock(DistributedLockService.class);
 
-    InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
-    when(mockSystem.getDistributionManager()).thenReturn(mock(DistributionManager.class));
-    when(mockSystem.getDistributionManager().getCancelCriterion())
+    when(system.getDistributionManager().getCancelCriterion())
         .thenReturn(mock(CancelCriterion.class));
-    when(mockSystem.getDistributionManager().getOtherDistributionManagerIds())
-        .thenReturn(Collections.emptySet());
+    when(distributionManager.getOtherDistributionManagerIds())
+        .thenReturn(emptySet());
 
-    doReturn(mockLockService).when(prSpy).getPartitionedRegionLockService();
+    when(spyPartitionedRegion.getPartitionedRegionLockService())
+        .thenReturn(lockService);
+    when(lockService.lock(any(), anyLong(), anyLong()))
+        .thenReturn(true);
+    doThrow(new RuntimeException("for test"))
+        .when(lockService).unlock(any());
 
-    assertThatCode(() -> prSpy.generatePRId(mockSystem)).doesNotThrowAnyException();
+    // ACT/ASSERT
+    assertThatCode(() -> spyPartitionedRegion.generatePRId(system))
+        .doesNotThrowAnyException();
+  }
+
+  private static <K> Set<K> asSet(K... values) {
+    Set<K> set = new HashSet<>();
+    Collections.addAll(set, values);
+    return set;
+  }
+
+  private static <K, V> Map<K, Set<V>> asMapOfSet(K key, V... values) {
+    Map<K, Set<V>> map = new HashMap<>();
+    map.put(key, asSet(values));
+    return map;
   }
 }
