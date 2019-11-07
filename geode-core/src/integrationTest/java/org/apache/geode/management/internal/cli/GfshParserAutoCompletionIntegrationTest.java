@@ -38,7 +38,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   public void testCompletionDescribe() {
     String buffer = "describe";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(8);
+    assertThat(candidate.getCandidates()).hasSize(9);
     assertThat(candidate.getFirstCandidate()).isEqualTo("describe client");
   }
 
@@ -46,7 +46,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   public void testCompletionDescribeWithSpace() {
     String buffer = "describe ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(8);
+    assertThat(candidate.getCandidates()).hasSize(9);
     assertThat(candidate.getFirstCandidate()).isEqualTo("describe client");
   }
 

@@ -395,4 +395,9 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
 
     return true;
   }
+
+  @Override
+  public Set<String> getParameters() {
+    return null;
+  }
 }

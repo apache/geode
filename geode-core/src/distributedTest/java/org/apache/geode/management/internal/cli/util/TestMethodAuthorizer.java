@@ -25,10 +25,6 @@ public class TestMethodAuthorizer implements MethodInvocationAuthorizer {
 
   private Set<String> parameters;
 
-  public Set<String> getParameters() {
-    return this.parameters;
-  }
-
   @Override
   public boolean authorize(Method method, Object target) {
     return parameters.contains(method.getName());
@@ -39,5 +35,10 @@ public class TestMethodAuthorizer implements MethodInvocationAuthorizer {
     // To allow an exception to be thrown from a mock
     cache.isClosed();
     this.parameters = parameters;
+  }
+
+  @Override
+  public Set<String> getParameters() {
+    return this.parameters;
   }
 }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.management.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,6 +78,8 @@ import org.apache.geode.cache.configuration.XSDRootElement;
 @XSDRootElement(namespace = "http://geode.apache.org/schema/query-config-service",
     schemaLocation = "http://geode.apache.org/schema/query-config-service/query-config-service-1.0.xsd")
 public class QueryConfigService extends CacheElement {
+
+  private static final long serialVersionUID = -6702354810758904467L;
 
   @XmlElement(name = "method-authorizer",
       namespace = "http://geode.apache.org/schema/query-config-service")
@@ -146,7 +149,9 @@ public class QueryConfigService extends CacheElement {
   @XmlType(name = "", propOrder = {
       "parameter"
   })
-  public static class MethodAuthorizer {
+  public static class MethodAuthorizer implements Serializable {
+
+    private static final long serialVersionUID = 5433617198900520954L;
 
     @XmlElement(namespace = "http://geode.apache.org/schema/query-config-service")
     protected List<QueryConfigService.MethodAuthorizer.Parameter> parameter;
@@ -238,7 +243,9 @@ public class QueryConfigService extends CacheElement {
      */
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "")
-    public static class Parameter {
+    public static class Parameter implements Serializable {
+
+      private static final long serialVersionUID = -7316124128610501641L;
 
       @XmlAttribute(name = "parameter-value", required = true)
       protected String parameterValue;

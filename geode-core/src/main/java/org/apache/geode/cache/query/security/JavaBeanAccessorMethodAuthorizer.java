@@ -167,7 +167,8 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
    *
    * @return an unmodifiable view of the allowed packages for this authorizer.
    */
-  public Set<String> getAllowedPackages() {
+  @Override
+  public Set<String> getParameters() {
     return allowedPackages;
   }
 }
