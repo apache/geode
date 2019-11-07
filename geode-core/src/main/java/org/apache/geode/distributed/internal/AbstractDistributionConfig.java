@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_MAX_QUE
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_QUEUE_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.CLIENT_HELLO_EXTENSION;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
@@ -931,6 +932,10 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(CACHE_XML_FILE, String.format(
         "The file whose contents is used, by default, to initialize a cache if one is created.  Defaults to %s.",
         DEFAULT_CACHE_XML_FILE));
+
+    m.put(CLIENT_HELLO_EXTENSION, String.format(
+        "Determines what extension (if any) will be added to Client-Hello message. Defaults to %s",
+        DEFAULT_CLIENT_HELLO_EXTENSION));
 
     m.put(DISABLE_TCP, String.format(
         "Determines whether TCP/IP communications will be disabled, forcing use of datagrams between members of the distributed system. Defaults to %s",

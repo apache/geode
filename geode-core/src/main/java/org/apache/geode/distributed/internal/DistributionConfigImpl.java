@@ -662,6 +662,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private int threadMonitorTimeLimit = DEFAULT_THREAD_MONITOR_TIME_LIMIT;
 
   /**
+   * "client-hello-extension" with value
+   */
+  private String clientHelloExtension = DEFAULT_CLIENT_HELLO_EXTENSION;
+
+  /**
    * Create a new <code>DistributionConfigImpl</code> from the contents of another
    * <code>DistributionConfig</code>.
    */
@@ -728,6 +733,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     clientConflation = other.getClientConflation();
     durableClientId = other.getDurableClientId();
     durableClientTimeout = other.getDurableClientTimeout();
+
+    clientHelloExtension = other.getClientHelloExtension();
 
     enableNetworkPartitionDetection = other.getEnableNetworkPartitionDetection();
     disableAutoReconnect = other.getDisableAutoReconnect();
@@ -3220,6 +3227,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(mcastFlowControl, that.mcastFlowControl)
         .append(membershipPortRange, that.membershipPortRange)
         .append(clientConflation, that.clientConflation)
+        .append(clientHelloExtension, that.clientHelloExtension)
         .append(durableClientId, that.durableClientId)
         .append(securityClientAuthInit, that.securityClientAuthInit)
         .append(securityClientAuthenticator, that.securityClientAuthenticator)
@@ -3318,7 +3326,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(enableTimeStatistics).append(memberTimeout).append(membershipPortRange)
         .append(maxWaitTimeForReconnect).append(maxNumReconnectTries)
         .append(asyncDistributionTimeout).append(asyncQueueTimeout).append(asyncMaxQueueSize)
-        .append(clientConflation).append(durableClientId).append(durableClientTimeout)
+        .append(clientConflation).append(clientHelloExtension).append(durableClientId)
+        .append(durableClientTimeout)
         .append(securityClientAuthInit).append(securityClientAuthenticator).append(securityManager)
         .append(postProcessor).append(securityClientDHAlgo).append(securityPeerAuthInit)
         .append(securityPeerAuthenticator).append(securityClientAccessor)
@@ -3887,5 +3896,15 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setThreadMonitorTimeLimit(int newValue) {
     threadMonitorTimeLimit = newValue;
+  }
+
+  @Override
+  public String getClientHelloExtension() {
+    return clientHelloExtension;
+  }
+
+  @Override
+  public void setClientHelloExtension(String newValue) {
+    clientHelloExtension = newValue;
   }
 }

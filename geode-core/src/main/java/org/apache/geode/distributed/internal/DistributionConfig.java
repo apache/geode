@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_MAX_QUE
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_QUEUE_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.CLIENT_HELLO_EXTENSION;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
@@ -1265,6 +1266,29 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @Deprecated
   @ConfigAttribute(type = String.class)
   String CLUSTER_SSL_TRUSTSTORE_PASSWORD_NAME = CLUSTER_SSL_TRUSTSTORE_PASSWORD;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#CLIENT_HELLO_EXTENSION} property
+   */
+  @ConfigAttributeGetter(name = CLIENT_HELLO_EXTENSION)
+  String getClientHelloExtension();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#CLIENT_HELLO_EXTENSION} property.
+   */
+  @ConfigAttributeSetter(name = CLIENT_HELLO_EXTENSION)
+  void setClientHelloExtension(String newValue);
+
+  /**
+   * The name of the {@link ConfigurationProperties#CLIENT_HELLO_EXTENSION} property
+   */
+  @ConfigAttribute(type = String.class)
+  String CLIENT_HELLO_EXTENSION_NAME = CLIENT_HELLO_EXTENSION;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#CLIENT_HELLO_EXTENSION} property
+   */
+  String DEFAULT_CLIENT_HELLO_EXTENSION = "";
 
   /**
    * The name of an internal property that specifies a {@link org.apache.geode.LogWriter}

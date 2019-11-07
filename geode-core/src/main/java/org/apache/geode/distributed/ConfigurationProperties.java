@@ -144,6 +144,17 @@ public interface ConfigurationProperties {
    * <U>Default</U>: "cache.xml"
    */
   String CACHE_XML_FILE = "cache-xml-file";
+
+  /**
+   * The static String definition of the <i>"client-hello-extension"</i> property <a
+   * name="client-hello-extension"/a>
+   * </p>
+   * <U>Description</U>: This property specifies if extension will be added to Client-Hello message
+   * </p>
+   * <U>Default</U>: ""
+   */
+  String CLIENT_HELLO_EXTENSION = "client-hello-extension";
+
   /**
    * The static String definition of the <i>"cluster-configuration-dir"</i> property <a
    * name="cluster-configuration-dir"/a>

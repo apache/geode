@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.net;
 
-
 import java.io.Console;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,6 +41,7 @@ import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -62,6 +62,8 @@ import javax.net.ServerSocketFactory;
 import javax.net.SocketFactory;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SNIHostName;
+import javax.net.ssl.SNIServerName;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
@@ -1073,9 +1075,24 @@ public class SocketCreator {
       sslSocket.setUseClientMode(true);
       sslSocket.setEnableSessionCreation(true);
 
-      SSLParameters modifiedParams =
-          checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
-      sslSocket.setSSLParameters(modifiedParams);
+      String sysId = "";
+      InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
+
+      if (system != null) {
+        sysId = system.getConfig().getClientHelloExtension();
+      }
+
+      if (sysId != "") {
+        SSLParameters modifiedParams =
+            checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
+
+        List<SNIServerName> serverNames = new ArrayList<>(1);
+        SNIHostName serverName = new SNIHostName(sysId);
+        serverNames.add(serverName);
+        modifiedParams.setServerNames(serverNames);
+
+        sslSocket.setSSLParameters(modifiedParams);
+      }
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();
 
