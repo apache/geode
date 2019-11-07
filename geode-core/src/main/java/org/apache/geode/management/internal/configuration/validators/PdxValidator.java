@@ -29,10 +29,12 @@ public class PdxValidator implements ConfigurationValidator<Pdx> {
         throw new IllegalArgumentException(
             "Both autoSerializer and pdxSerializer were specified.");
       }
-      List<String> patterns = autoSerializer.getPatterns();
-      if (patterns == null || patterns.isEmpty()) {
-        throw new IllegalArgumentException(
-            "The autoSerializer must have at least one pattern.");
+      if (operation == CacheElementOperation.CREATE) {
+        List<String> patterns = autoSerializer.getPatterns();
+        if (patterns == null || patterns.isEmpty()) {
+          throw new IllegalArgumentException(
+              "The autoSerializer must have at least one pattern.");
+        }
       }
     }
   }

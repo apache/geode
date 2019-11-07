@@ -23,9 +23,13 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.apache.geode.management.api.ClusterManagementService;
+
 /**
  * The configuration of a {@link org.apache.geode.pdx.ReflectionBasedAutoSerializer}
  * that is used for easy PDX serialization.
+ * At least one pattern is required if the AutoSerializer is used for a
+ * {@link ClusterManagementService#create}.
  */
 public class AutoSerializer implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -34,12 +38,25 @@ public class AutoSerializer implements Serializable {
   private final List<String> patterns;
 
   /**
-   * Creates a AutoSerializer that is not portable.
+   * Creates an AutoSerializer that is not portable.
+   *
+   * @param patterns regular expressions that will cause the auto serializer to serialize any
+   *        classes whose fully qualified class name matches one of the patterns.
+   *        If no patterns are given, and the operation is CREATE, then an exception will be thrown.
    */
   public AutoSerializer(String... patterns) {
     this(false, patterns);
   }
 
+  /**
+   * Creates an AutoSerializer.
+   *
+   * @param portable if true then any attempt to serialize a class that is not supported by the
+   *        native client will fail.
+   * @param patterns regular expressions that will cause the auto serializer to serialize any
+   *        classes whose fully qualified class name matches one of the patterns.
+   *        If no patterns are given, and the operation is CREATE, then an exception will be thrown.
+   */
   public AutoSerializer(boolean portable, String... patterns) {
     this(portable, buildPatternList(patterns));
   }
@@ -52,6 +69,15 @@ public class AutoSerializer implements Serializable {
     }
   }
 
+  /**
+   * Creates an AutoSerializer.
+   *
+   * @param portable if true then any attempt to serialize a class that is not supported by the
+   *        native client will fail.
+   * @param patterns regular expressions that will cause the auto serializer to serialize any
+   *        classes whose fully qualified class name matches one of the patterns.
+   *        If no patterns are given, and the operation is CREATE, then an exception will be thrown.
+   */
   @JsonCreator
   public AutoSerializer(@JsonProperty("portable") Boolean portable,
       @JsonProperty("patterns") List<String> patterns) {

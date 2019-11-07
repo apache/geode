@@ -103,4 +103,18 @@ public class PdxValidatorTest {
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("at least one pattern");
   }
+
+  @Test
+  public void validateForNonCreate_acceptsAutoSerializerWithNoPatterns() {
+    PdxValidator validator = new PdxValidator();
+    Pdx pdx = new Pdx();
+
+    List<String> noPatterns = emptyList();
+    pdx.setAutoSerializer(new AutoSerializer(false, noPatterns));
+
+    Stream.of(UPDATE, DELETE)
+        .forEach(operation -> assertThatCode(() -> validator.validate(operation, pdx))
+            .as(operation.name())
+            .doesNotThrowAnyException());
+  }
 }

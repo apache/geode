@@ -23,7 +23,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
- * Configuration Objects for Pdx in the cache
+ * Used to configure PDX serialization for a cache.
  */
 @Experimental
 public class Pdx extends AbstractConfiguration<RuntimeInfo> {
@@ -56,6 +56,9 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
     return autoSerializer;
   }
 
+  /**
+   * If both a pdxSerializer and autoSerializer are configured then an exception will be thrown.
+   */
   public void setAutoSerializer(AutoSerializer autoSerializer) {
     this.autoSerializer = autoSerializer;
   }
@@ -64,6 +67,10 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
     return readSerialized;
   }
 
+  /**
+   * Setting readSerialized to true causes any pdx deserialization to produce
+   * instances of {@link org.apache.geode.pdx.PdxInstance} instead of a domain class instance.
+   */
   public void setReadSerialized(Boolean readSerialized) {
     this.readSerialized = readSerialized;
   }
@@ -72,6 +79,12 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
     return pdxSerializer;
   }
 
+  /**
+   * If both a pdxSerializer and autoSerializer are configured then an exception will be thrown.
+   *
+   * @param pdxSerializer the class name given must implement the
+   *        {@link org.apache.geode.pdx.PdxSerializer} interface
+   */
   public void setPdxSerializer(ClassName pdxSerializer) {
     this.pdxSerializer = pdxSerializer;
   }
@@ -80,6 +93,13 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
     return ignoreUnreadFields;
   }
 
+  /**
+   * Setting ignoreUnreadFields to true can save memory during pdx deserialization but if the
+   * deserialized
+   * object is reserialized then the unread field data will be lost. Unread fields will only exist
+   * if a class
+   * serialized with pdx has multiple versions.
+   */
   public void setIgnoreUnreadFields(Boolean ignoreUnreadFields) {
     this.ignoreUnreadFields = ignoreUnreadFields;
   }
