@@ -35,7 +35,7 @@ public class ExecutionContextTest {
 
     ExecutionContext executionContext = new ExecutionContext(null, mockCache);
     assertThat(executionContext.getMethodInvocationAuthorizer())
-        .isSameAs(DefaultQueryService.NO_OP_AUTHORIZER);
+        .isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
     verify(mockCache, times(0)).getQueryService();
   }
 
@@ -45,7 +45,7 @@ public class ExecutionContextTest {
     InternalQueryService mockQueryService = mock(InternalQueryService.class);
     when(mockCache.getQueryService()).thenReturn(mockQueryService);
 
-    MethodInvocationAuthorizer noOpAuthorizer = ((method, target) -> true);
+    MethodInvocationAuthorizer noOpAuthorizer = QueryConfigurationServiceImpl.getNoOpAuthorizer();
     when(mockQueryService.getMethodInvocationAuthorizer()).thenReturn(noOpAuthorizer);
     ExecutionContext executionContextNoOpAuthorizer = new ExecutionContext(null, mockCache);
     assertThat(executionContextNoOpAuthorizer.getMethodInvocationAuthorizer())

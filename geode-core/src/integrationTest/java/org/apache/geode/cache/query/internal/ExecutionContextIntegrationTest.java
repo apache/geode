@@ -138,8 +138,7 @@ public class ExecutionContextIntegrationTest {
 
     // No security, no-op authorizer.
     assertThat(noOpAuthorizer).isNotNull();
-    assertThat(noOpAuthorizer.getClass().getCanonicalName())
-        .startsWith(QueryConfigurationServiceImpl.class.getName() + "$$Lambda$");
+    assertThat(noOpAuthorizer).isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
 
     server.stopMember();
 

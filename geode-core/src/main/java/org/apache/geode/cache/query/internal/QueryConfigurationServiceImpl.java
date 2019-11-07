@@ -23,6 +23,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.query.internal.xml.QueryMethodAuthorizerCreation;
 import org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer;
@@ -44,6 +45,9 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
 
   private MethodInvocationAuthorizer authorizer;
 
+  @Immutable
+  private static final MethodInvocationAuthorizer NO_OP_AUTHORIZER = new NoOpAuthorizer();
+
   /**
    * Instead of the below property, please use the UnrestrictedMethodAuthorizer
    * implementation of MethodInvocationAuthorizer, which provides the same functionality.
@@ -63,7 +67,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
 
   public static MethodInvocationAuthorizer getNoOpAuthorizer() {
     // A no-op authorizer, allow method invocation
-    return ((Method m, Object t) -> true);
+    return NO_OP_AUTHORIZER;
   }
 
   @Override
@@ -78,7 +82,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
     }
 
     if (isSecurityDisabled((InternalCache) cache) || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
-      this.authorizer = getNoOpAuthorizer();
+      this.authorizer = NO_OP_AUTHORIZER;
     } else {
       this.authorizer = new RestrictedMethodAuthorizer(cache);
     }
@@ -128,9 +132,8 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
       } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
         this.authorizer = new RegExMethodAuthorizer(cache, parameters);
       } else {
+        Class userClass = ClassPathLoader.getLatest().forName(className);
         @SuppressWarnings("unchecked")
-        Class<MethodInvocationAuthorizer> userClass =
-            (Class<MethodInvocationAuthorizer>) ClassPathLoader.getLatest().forName(className);
         Constructor<MethodInvocationAuthorizer> userConstructor =
             userClass.getDeclaredConstructor(Cache.class, Set.class);
         this.authorizer = userConstructor.newInstance(cache, parameters);
@@ -142,5 +145,13 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
 
   private boolean isSecurityDisabled(InternalCache cache) {
     return !cache.getSecurityService().isIntegratedSecurity();
+  }
+
+  private static class NoOpAuthorizer implements MethodInvocationAuthorizer {
+
+    @Override
+    public boolean authorize(Method method, Object target) {
+      return true;
+    }
   }
 }
