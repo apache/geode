@@ -143,9 +143,9 @@ public class TCPServerSSLJUnitTest {
 
   private static class DummyTcpServer extends TcpServer {
     DummyTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-                   RestartableTcpHandler handler,
-                   PoolStatHelper poolHelper,
-                   String threadName, final List<Integer> recordedSocketTimeouts) {
+        RestartableTcpHandler handler,
+        PoolStatHelper poolHelper,
+        String threadName, final List<Integer> recordedSocketTimeouts) {
       super(port, bind_address, handler, threadName,
           (socket, input, firstByte) -> false, DistributionStats::getStatTime,
           TcpServerFactory.createExecutorServiceSupplier(poolHelper),

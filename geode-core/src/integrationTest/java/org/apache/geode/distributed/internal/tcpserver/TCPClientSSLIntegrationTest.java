@@ -202,9 +202,9 @@ public class TCPClientSSLIntegrationTest {
   private static class FakeTcpServer extends TcpServer {
 
     FakeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-                  RestartableTcpHandler handler,
-                  PoolStatHelper poolHelper,
-                  String threadName) {
+        RestartableTcpHandler handler,
+        PoolStatHelper poolHelper,
+        String threadName) {
       super(port, bind_address, handler, threadName,
           (socket, input, firstByte) -> false, DistributionStats::getStatTime,
           TcpServerFactory.createExecutorServiceSupplier(poolHelper),
