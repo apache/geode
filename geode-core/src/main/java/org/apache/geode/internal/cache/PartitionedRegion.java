@@ -221,6 +221,8 @@ import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.partitioned.RemoveIndexesMessage;
 import org.apache.geode.internal.cache.partitioned.SizeMessage;
 import org.apache.geode.internal.cache.partitioned.SizeMessage.SizeResponse;
+import org.apache.geode.internal.cache.partitioned.colocation.ColocationLogger;
+import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -449,6 +451,8 @@ public class PartitionedRegion extends LocalRegion
   }
 
   private final PartitionedRegion colocatedWithRegion;
+
+  private final ColocationLoggerFactory colocationLoggerFactory;
 
   private ColocationLogger missingColocatedRegionLogger;
 
@@ -741,12 +745,17 @@ public class PartitionedRegion extends LocalRegion
    * storage enabled. A PartitionedRegion can be created by a factory method of RegionFactory.java
    * and also by invoking Cache.createRegion(). (Cache.xml etc to be added)
    */
-  public PartitionedRegion(String regionName, RegionAttributes regionAttributes,
-      LocalRegion parentRegion, InternalCache cache, InternalRegionArguments internalRegionArgs,
-      StatisticsClock statisticsClock) {
+  public PartitionedRegion(String regionName,
+      RegionAttributes regionAttributes,
+      LocalRegion parentRegion,
+      InternalCache cache,
+      InternalRegionArguments internalRegionArgs,
+      StatisticsClock statisticsClock,
+      ColocationLoggerFactory colocationLoggerFactory) {
     super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs,
         new PartitionedRegionDataView(), statisticsClock);
 
+    this.colocationLoggerFactory = colocationLoggerFactory;
     this.node = initializeNode();
     this.prStats = new PartitionedRegionStats(cache.getDistributedSystem(), getFullPath(),
         statisticsClock);
@@ -956,7 +965,7 @@ public class PartitionedRegion extends LocalRegion
           diskStore.handleDiskAccessException(dae);
           throw new IllegalStateException(
               String.format(
-                  "For partition region %s, Cannot change colocated-with to %s because there is persistent data with different colocation. Previous configured value is %s.",
+                  "For partition region %s, cannot change colocated-with to \"%s\" because there is persistent data with different colocation. Previous configured value is \"%s\".",
                   prms));
         }
       } else {
@@ -7208,21 +7217,21 @@ public class PartitionedRegion extends LocalRegion
 
   private void stopMissingColocatedRegionLogger() {
     if (missingColocatedRegionLogger != null) {
-      missingColocatedRegionLogger.stopLogger();
+      missingColocatedRegionLogger.stop();
     }
     missingColocatedRegionLogger = null;
   }
 
   public void addMissingColocatedRegionLogger(String childName) {
     if (missingColocatedRegionLogger == null) {
-      missingColocatedRegionLogger = new ColocationLogger(this);
+      missingColocatedRegionLogger = colocationLoggerFactory.startColocationLogger(this);
     }
     missingColocatedRegionLogger.addMissingChildRegion(childName);
   }
 
   public void addMissingColocatedRegionLogger(PartitionedRegion childRegion) {
     if (missingColocatedRegionLogger == null) {
-      missingColocatedRegionLogger = new ColocationLogger(this);
+      missingColocatedRegionLogger = colocationLoggerFactory.startColocationLogger(this);
     }
     missingColocatedRegionLogger.addMissingChildRegions(childRegion);
   }

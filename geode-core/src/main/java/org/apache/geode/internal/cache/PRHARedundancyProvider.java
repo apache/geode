@@ -1878,7 +1878,7 @@ public class PRHARedundancyProvider {
     }
   }
 
-  boolean isPersistentRecoveryComplete() {
+  public boolean isPersistentRecoveryComplete() {
     if (!checkMembersColocation(partitionedRegion, partitionedRegion.getMyId())) {
       return false;
     }

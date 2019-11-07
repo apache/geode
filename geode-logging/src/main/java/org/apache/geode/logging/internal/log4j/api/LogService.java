@@ -25,7 +25,6 @@ import org.apache.geode.logging.internal.log4j.api.message.GemFireParameterizedM
  */
 public class LogService {
 
-
   private LogService() {
     // do not instantiate
   }
@@ -42,5 +41,9 @@ public class LogService {
 
   public static Logger getLogger(String name) {
     return new FastLogger(LogManager.getLogger(name, GemFireParameterizedMessageFactory.INSTANCE));
+  }
+
+  public static Logger getLogger(Class<?> clazz) {
+    return new FastLogger(LogManager.getLogger(clazz, GemFireParameterizedMessageFactory.INSTANCE));
   }
 }
