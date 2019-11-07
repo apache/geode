@@ -43,8 +43,8 @@ public class MockAppender implements AutoCloseable {
     logger.setLevel(Level.WARN);
   }
 
-  public Appender getMock() {
-    return this.mockAppender;
+  public Appender getAppender() {
+    return mockAppender;
   }
 
   public List<LogEvent> getLogs() {

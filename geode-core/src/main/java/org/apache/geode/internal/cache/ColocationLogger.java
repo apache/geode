@@ -44,6 +44,7 @@ public class ColocationLogger implements Runnable {
    * Sleep period (milliseconds) between posting log entries.
    */
   private static final int DEFAULT_LOG_INTERVAL = 30000;
+
   @MutableForTesting
   private static int LOG_INTERVAL = DEFAULT_LOG_INTERVAL;
 
@@ -118,7 +119,7 @@ public class ColocationLogger implements Runnable {
   public void stopLogger() {
     synchronized (loggerLock) {
       missingChildren.clear();
-      loggerLock.notify();
+      loggerLock.notifyAll();
     }
   }
 
