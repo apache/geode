@@ -75,7 +75,7 @@ public class TCPServerSSLJUnitTest {
     SocketCreatorFactory.close();
   }
 
-  private void startTimeDelayedTcpServer(Properties sslProperties,
+  private void startTcpServer(Properties sslProperties,
       final ArrayList<Integer> recordedSocketTimeouts) throws IOException {
     localhost = InetAddress.getLocalHost();
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -95,7 +95,7 @@ public class TCPServerSSLJUnitTest {
     final ArrayList<Integer> recordedSocketTimeouts = new ArrayList<>();
 
     try {
-      startTimeDelayedTcpServer(sslProperties, recordedSocketTimeouts);
+      startTcpServer(sslProperties, recordedSocketTimeouts);
       createTcpClientConnection(sslProperties);
     } catch (IllegalStateException e) {
       // connection will fail; Expected to have the exception thrown

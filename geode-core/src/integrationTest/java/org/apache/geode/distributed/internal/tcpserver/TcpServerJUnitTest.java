@@ -77,7 +77,7 @@ public class TcpServerJUnitTest {
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
     stats = new SimpleStats();
-    server = new TcpServerFactory().makeTcpServer(port, localhost, new Properties(), null, handler,
+    server = new TcpServerFactory().makeTcpServer(port, localhost, handler,
         stats, "server thread", null);
     server.start();
   }

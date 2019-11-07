@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 
 import java.net.InetAddress;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.function.Supplier;
@@ -26,7 +25,6 @@ import java.util.function.Supplier;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
@@ -50,8 +48,9 @@ public class TcpServerFactory {
     clientProtocolServiceLoader = new ClientProtocolServiceLoader();
   }
 
-  public TcpServer makeTcpServer(int port, InetAddress bind_address, Properties sslConfig,
-      DistributionConfigImpl cfg, TcpHandler handler, PoolStatHelper poolHelper,
+  public TcpServer makeTcpServer(int port, InetAddress bind_address,
+      TcpHandler handler,
+      PoolStatHelper poolHelper,
       String threadName, InternalLocator internalLocator) {
 
     return new TcpServer(port, bind_address, handler,

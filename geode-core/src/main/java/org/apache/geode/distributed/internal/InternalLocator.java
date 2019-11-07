@@ -529,8 +529,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
     locatorStats = new LocatorStats();
 
-    server = new TcpServerFactory().makeTcpServer(port, this.bindAddress, null,
-        this.distributionConfig, handler, new DelayedPoolStatHelper(), toString(), this);
+    server = new TcpServerFactory().makeTcpServer(port, this.bindAddress,
+        handler, new DelayedPoolStatHelper(), toString(), this);
   }
 
   public boolean isSharedConfigurationEnabled() {
