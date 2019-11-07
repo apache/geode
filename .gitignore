@@ -33,3 +33,4 @@ geode-pulse/screenshots/
 bin/
 .metadata/
 /ci/pipelines/meta/meta.properties.local
+/dev-tools/docker/docs/build-docs-output.txt

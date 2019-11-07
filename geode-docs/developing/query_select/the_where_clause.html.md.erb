@@ -199,21 +199,24 @@ SELECT * FROM /exampleRegion WHERE foo.toLowerCase LIKE '%bar%'
 
 ## <a id="the_where_clause__section_D2F8D17B52B04895B672E2FCD675A676" class="no-quick-link"></a>Method Invocations
 
-To use a method in a query, use the attribute name that maps to the public method you want to invoke.
+To use a method in a query, use the attribute name that maps to the public method you want to invoke, or directly use the public method name instead.
+It's important to note that, when you use the attribute name instead of the method name, <%=vars.product_name_long %> will search for public methods named as the attribute itself or public methods with the `get` prefix. 
 
 ``` pre
-SELECT DISTINCT * FROM /exampleRegion p WHERE p.positions.size >= 2 - maps to positions.size()
+SELECT r.id FROM /exampleRegion r                                       - maps to object.id() or object.getId()
+SELECT q.getName() FROM /exampleRegion q                                - maps to object.getName()
+SELECT DISTINCT * FROM /exampleRegion p WHERE p.positions.size >= 2     - maps to positions.size()
 ```
 
-Methods declared to return void evaluate to null when invoked through the query processor.
+Methods declared to return void evaluate to `null` when invoked through the query processor.
 
 You cannot invoke a static method. See [Enum Objects](the_where_clause.html#the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5) for more information.
 
 **Methods without parameters**
 
-If the attribute name maps to a public method that takes no parameters, just include the method name in the query string as an attribute. For example, emps.isEmpty is equivalent to emps.isEmpty().
+If the attribute name maps to a public method that takes no parameters, just include the method name in the query string as an attribute. For example, `emps.isEmpty` is equivalent to `emps.isEmpty()`.
 
-In the following example, the query invokes isEmpty on positions, and returns the set of all portfolios with no positions:
+In the following example, the query invokes `isEmpty` on positions, and returns the set of all portfolios with no positions:
 
 ``` pre
 SELECT DISTINCT * FROM /exampleRegion p WHERE p.positions.isEmpty
@@ -223,7 +226,7 @@ SELECT DISTINCT * FROM /exampleRegion p WHERE p.positions.isEmpty
 
 To invoke methods with parameters, include the method name in the query string as an attribute and provide method arguments between parentheses.
 
-This example passes the argument "Bo" to the public method, and returns all names that begin with "Bo".
+This example passes the argument `"Bo"` to the public method, and returns all names that begin with `"Bo"`.
 
 ``` pre
 SELECT DISTINCT * FROM /exampleRegion p WHERE p.name.startsWith('Bo')
@@ -231,33 +234,27 @@ SELECT DISTINCT * FROM /exampleRegion p WHERE p.name.startsWith('Bo')
 
 For overloaded methods, the query processor decides which method to call by matching the runtime argument types with the parameter types required by the method. If only one method's signature matches the parameters provided, it is invoked. The query processor uses runtime types to match method signatures.
 
-If more than one method can be invoked, the query processor chooses the method whose parameter types are the most specific for the given arguments. For example, if an overloaded method includes versions with the same number of arguments, but one takes a Person type as an argument and the other takes an Employee type, derived from Person, Employee is the more specific object type. If the argument passed to the method is compatible with both types, the query processor uses the method with the Employee parameter type.
+If more than one method can be invoked, the query processor chooses the method whose parameter types are the most specific for the given arguments. For example, if an overloaded method includes versions with the same number of arguments, but one takes a `Person` type as an argument and the other takes an `Employee` type, derived from `Person`, `Employee` is the more specific object type. If the argument passed to the method is compatible with both types, the query processor uses the method with the `Employee` parameter type.
 
-The query processor uses the runtime types of the parameters and the receiver to determine the proper method to invoke. Because runtime types are used, an argument with a null value has no typing information, and so can be matched with any object type parameter. When a null argument is used, if the query processor cannot determine the proper method to invoke based on the non-null arguments, it throws an `AmbiguousNameException`.
+The query processor uses the runtime types of the parameters and the receiver to determine the proper metho
 
 **Methods calls with the `SecurityManager` enabled**
 
-When the `SecurityManager` is enabled,
-<%=vars.product_name%> throws a `NotAuthorizedException` when any
-method not on this list of whitelisted methods is invoked:
+When the `SecurityManager` is enabled, by default <%=vars.product_name%> throws a `NotAuthorizedException` when any method that doesn't belong to the following list is invoked:
 
-- On a `Map`, `Collection`, or `Region` object: `keySet`, `entrySet`, `values`, `containsKey` or `get`
-- On a `Region.Entry` object: `getKey` or `getValue`
-- On a `Date` or `Timestamp` object: `after`, `before`, `getNanos`, or `getTime`
-- On a `String` object: any method
-- On any `Number` object: `intValue`, `longValue`, `shortValue`, etc.
-- On any `Boolean` object: `booleanValue`
-- On any object: `equals`, `compareTo`, or `toString`
+- On any object: `equals`,  `toString`, or `compareTo`.
+- On any `Boolean` object: `booleanValue`.
+- On any `Number` object: `byteValue`, `intValue`, `doubleValue`, `floatValue`, `longValue`, or `shortValue`.
+- On any `Date` object: `after`, `before`, or `getTime`.
+- On any `Timestamp` object: `getNanos`.
+- On any `String` object: `chartAt`, `codePointAt`, `codePointBefore`, `codePointCount`, `compareToIgnoreCase`, `concat`, `contains`, `contentEquals`, `endsWith`, `equalsIgnoreCase`, `getBytes`, `hashCode`, `indexOf`, `intern`, `isEmpty`, `lastIndexOf`, `length`, `matches`, `offsetByCodePoints`, `replace`, `replaceAll`, `replaceFirst`, `split`, `startsWith`, `substring`, `toCharArray`, `toLowerCase`, `toUpperCase`, or `trim`.
+- On any `Map.Entry` or `Region.Entry` object: `getKey` or `getValue`.
+- On any `Map`, `Collection` or `Region` object: `get`, `entrySet`, `keySet`, `values`, `getEntries`, `getValues`, or `containsKey`.
 
-To disable the authorization check,
-start all servers with the added system property
-`gemfire.QueryService.allowUntrustedMethodInvocation`.
-For example:
+In order to further customize this authorization check, please see [Method Invocation Authorizers](../../managing/security/method_invocation_authorizers.html#chaning_method_authorizer).
 
-```
-gfsh>start server --name=Server1 \
-     --J=-Dgemfire.QueryService.allowUntrustedMethodInvocation=true
-```
+In the past you could use the system property `gemfire.QueryService.allowUntrustedMethodInvocation` to disable the check altogether, but this approach is deprecated now and will be removed in future releases,
+please configure the [UnrestrictedMethodAuthorizer](../../managing/security/method_invocation_authorizers.html#unrestrictedMethodAuthorizer) instead.
 
 ## <a id="the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5" class="no-quick-link"></a>Enum Objects
 
