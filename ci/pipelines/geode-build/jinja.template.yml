@@ -31,6 +31,7 @@
     passed:
     - Build
   - get: geode-build-version
+    trigger: true
     passed:
     - Build
 {% endmacro %}
@@ -418,6 +419,7 @@ jobs:
       trigger: true
     - get: geode-benchmarks
     - get: geode-build-version
+      trigger: true
       passed:
       {{ all_gating_jobs() | indent(6) }}
     - put: concourse-metadata-resource
@@ -490,6 +492,7 @@ jobs:
       trigger: true
   - aggregate:
     - get: geode-build-version
+      trigger: true
       passed:
       - Benchmark
     - do:
