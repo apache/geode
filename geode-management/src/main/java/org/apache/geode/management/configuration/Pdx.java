@@ -88,6 +88,12 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
     return diskStoreName;
   }
 
+  /**
+   * Setting a non-null diskStoreName causes the Pdx information
+   * to be persisted to the named disk store.
+   * To configure Pdx to use the default disk store, set
+   * the diskStoreName to "DEFAULT".
+   */
   public void setDiskStoreName(String diskStoreName) {
     this.diskStoreName = diskStoreName;
   }
