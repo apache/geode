@@ -57,14 +57,12 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
  * @since GemFire 8.0
  */
 
-@Category({RestAPITest.class})
+@Category(RestAPITest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
-
-  private final String REPLICATE_REGION_NAME = "sampleRRegion";
-
   private final String PR_REGION_NAME = "samplePRRegion";
+  private final String REPLICATE_REGION_NAME = "sampleRRegion";
 
   @Parameterized.Parameter
   public String urlContext;

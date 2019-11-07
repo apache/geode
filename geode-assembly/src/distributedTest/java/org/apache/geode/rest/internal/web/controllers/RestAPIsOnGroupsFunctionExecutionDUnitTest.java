@@ -14,7 +14,7 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
-import static org.junit.Assert.assertFalse;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,11 +31,10 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({RestAPITest.class})
+@Category(RestAPITest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase {
@@ -125,18 +124,19 @@ public class RestAPIsOnGroupsFunctionExecutionDUnitTest extends RestAPITestBase 
     restURLs.clear();
   }
 
-  private class OnGroupsFunction extends RestFunctionTemplate {
+  @SuppressWarnings("unchecked")
+  private static class OnGroupsFunction extends RestFunctionTemplate {
     static final String Id = "OnGroupsFunction";
 
     @Override
     public void execute(FunctionContext context) {
-      LogWriterUtils.getLogWriter().fine("SWAP:1:executing OnGroupsFunction:" + invocationCount);
       InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
       invocationCount++;
       ArrayList<String> l = (ArrayList<String>) context.getArguments();
       if (l != null) {
-        assertFalse(Collections.disjoint(l, ds.getDistributedMember().getGroups()));
+        assertThat(Collections.disjoint(l, ds.getDistributedMember().getGroups())).isFalse();
       }
+
       context.getResultSender().lastResult(Boolean.TRUE);
     }
 

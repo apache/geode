@@ -29,7 +29,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -37,7 +36,7 @@ import org.apache.geode.rest.internal.web.RestFunctionTemplate;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
-@Category({RestAPITest.class})
+@Category(RestAPITest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase {
@@ -59,7 +58,7 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     props.setProperty(HTTP_SERVICE_BIND_ADDRESS, hostName);
     props.setProperty(HTTP_SERVICE_PORT, String.valueOf(servicePort));
 
-    CacheFactory.create(new RestAPIsOnMembersFunctionExecutionDUnitTest().getSystem(props));
+    cacheRule.createCache(props);
     FunctionService.registerFunction(new OnMembersFunction());
     FunctionService.registerFunction(new FullyQualifiedFunction());
 
@@ -142,9 +141,9 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     restURLs.clear();
   }
 
-  private class OnMembersFunction extends RestFunctionTemplate {
-
-    public static final String Id = "OnMembersFunction";
+  @SuppressWarnings("unchecked")
+  private static class OnMembersFunction extends RestFunctionTemplate {
+    static final String Id = "OnMembersFunction";
 
     @Override
     public void execute(FunctionContext context) {
@@ -175,9 +174,9 @@ public class RestAPIsOnMembersFunctionExecutionDUnitTest extends RestAPITestBase
     }
   }
 
-  private class FullyQualifiedFunction extends RestFunctionTemplate {
-
-    public static final String Id =
+  @SuppressWarnings("unchecked")
+  private static class FullyQualifiedFunction extends RestFunctionTemplate {
+    static final String Id =
         "org.apache.geode.rest.internal.web.controllers.FullyQualifiedFunction";
 
     @Override
