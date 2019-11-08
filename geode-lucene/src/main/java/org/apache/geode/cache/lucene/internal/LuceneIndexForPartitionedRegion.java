@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.FixedPartitionResolver;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -45,6 +44,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   protected Region fileAndChunkRegion;
@@ -173,14 +173,13 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     partitionAttributesFactory.setColocatedWith(colocatedWithRegionName);
     configureLuceneRegionAttributesFactory(partitionAttributesFactory, partitionAttributes);
 
-    // Create AttributesFactory based on input RegionShortcut
+    // Create RegionAttributes based on input RegionShortcut
     RegionAttributes baseAttributes = this.cache.getRegionAttributes(regionShortCut.toString());
-    AttributesFactory factory = new AttributesFactory(baseAttributes);
-    factory.setPartitionAttributes(partitionAttributesFactory.create());
+    RegionAttributesCreation attributes = new RegionAttributesCreation(baseAttributes, false);
+    attributes.setPartitionAttributes(partitionAttributesFactory.create());
     if (regionAttributes.getDataPolicy().withPersistence()) {
-      factory.setDiskStoreName(regionAttributes.getDiskStoreName());
+      attributes.setDiskStoreName(regionAttributes.getDiskStoreName());
     }
-    RegionAttributes<K, V> attributes = factory.create();
 
     return createRegion(regionName, attributes);
   }

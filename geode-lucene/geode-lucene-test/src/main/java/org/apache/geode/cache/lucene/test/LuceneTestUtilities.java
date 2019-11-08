@@ -34,13 +34,14 @@ import org.apache.lucene.document.FloatPoint;
 import org.apache.lucene.document.IntPoint;
 import org.apache.lucene.search.Query;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.FixedPartitionResolver;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.lucene.LuceneIndex;
@@ -162,7 +163,7 @@ public class LuceneTestUtilities {
       allPartitions.add("Q2");
     }
 
-    AttributesFactory fact = new AttributesFactory();
+    RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
 
     PartitionAttributesFactory pfact = new PartitionAttributesFactory();
     pfact.setTotalNumBuckets(16);
@@ -174,8 +175,8 @@ public class LuceneTestUtilities {
       }
     }
     pfact.setPartitionResolver(new MyFixedPartitionResolver(allPartitions));
-    fact.setPartitionAttributes(pfact.create());
-    Region r = cache.createRegionFactory(fact.create()).create(regionName);
+    regionFactory.setPartitionAttributes(pfact.create());
+    Region r = regionFactory.create(regionName);
     assertNotNull(r);
     return r;
   }
