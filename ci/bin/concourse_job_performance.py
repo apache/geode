@@ -294,6 +294,16 @@ def get_builds_to_examine(builds, build_count):
 
     builds_to_analyze = completed_builds[:count_of_builds_to_return] if count_of_builds_to_return else completed_builds
 
+    if len(builds_to_analyze) == 0:
+        logging.info("No completed builds to examine")
+    elif len(builds_to_analyze) == 1:
+        logging.info(f"1 completed build to analyze - {builds_to_analyze[0]['name']}")
+    else:
+        first_build = builds_to_analyze[-1]['name']
+        last_build = builds_to_analyze[0]['name']
+        logging.info(f"{len(started)} completed builds to examine, ranging "
+                     f"{first_build} - {last_build}: {list_and_sort_by_name(builds_to_analyze)}")
+
     logging.debug(f"{len(aborted)} aborted builds in examination range: {list_and_sort_by_name(aborted)}")
     logging.debug(f"{len(errored)} errored builds in examination range: {list_and_sort_by_name(errored)}")
     logging.debug(f"{len(pending)} pending builds in examination range: {list_and_sort_by_name(pending)}")
