@@ -26,6 +26,7 @@ import static org.apache.geode.distributed.internal.membership.adapter.SocketCre
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +73,18 @@ public class TCPServerSSLJUnitTest {
 
   @After
   public void teardown() {
+
+    try {
+      try {
+        server.shutDown();
+      } catch (ConnectException ignore) {
+        // must not be running
+      }
+      server.join(60 * 1000);
+    } catch (Exception e) {
+      // do nothing
+    }
+
     SocketCreatorFactory.close();
   }
 
@@ -152,6 +165,10 @@ public class TCPServerSSLJUnitTest {
           getSocketCreator(new DistributionConfigImpl(sslConfig), recordedSocketTimeouts));
     }
 
+    void shutDown() throws IOException {
+      srv_sock.close();
+    }
+
     private static TcpSocketCreator getSocketCreator(
         final DistributionConfig distributionConfig,
         final List<Integer> recordedSocketsTimeouts) {
@@ -160,6 +177,5 @@ public class TCPServerSSLJUnitTest {
               SecurableCommunicationChannel.LOCATOR);
       return asTcpSocketCreator(new DummySocketCreator(sslConfig, recordedSocketsTimeouts));
     }
-
   }
 }

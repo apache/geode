@@ -106,7 +106,7 @@ public class TcpServer {
   private final ProtocolChecker protocolChecker;
 
   private int port;
-  private ServerSocket srv_sock = null;
+  protected ServerSocket srv_sock = null;
   private InetAddress bind_address;
   private volatile boolean shuttingDown = false;
   private final TcpHandler handler;
