@@ -55,8 +55,9 @@ public class SocketCreatorFactory {
   }
 
   private static synchronized SocketCreatorFactory getInstance(boolean closing) {
-    System.out.println(String.format("%s: SocketCreatorFactory.getInstance() [instance,closing] [%s,%s]",
-        Thread.currentThread().getId(), instance,closing));
+    System.out
+        .println(String.format("%s: SocketCreatorFactory.getInstance() [instance,closing] [%s,%s]",
+            Thread.currentThread().getId(), instance, closing));
     if (instance == null && !closing) {
       instance = new SocketCreatorFactory();
     }

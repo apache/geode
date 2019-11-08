@@ -22,21 +22,33 @@ import javax.net.ssl.SSLException;
 
 import org.apache.geode.internal.admin.SSLConfig;
 
-public class DummySocketCreator extends SocketCreator {
+/*
+ * This test class will fail the TLS handshake with an SSLException, by default.
+ */
+public class SocketCreatorFailHandshake extends SocketCreator {
 
-  private List<Integer> socketSoTimeouts;
+  private final List<Integer> socketSoTimeouts;
+  private boolean failTLSHandshake;
+
+  public SocketCreatorFailHandshake(SSLConfig sslConfig, List<Integer> socketTimeouts) {
+    super(sslConfig);
+    this.socketSoTimeouts = socketTimeouts;
+    failTLSHandshake = true;
+  }
 
   /**
-   * Constructs new SocketCreator instance.
+   * @param failTLSHandshake false will cause the next handshake to NOT throw SSLException
    */
-  public DummySocketCreator(SSLConfig sslConfig, List<Integer> sockets) {
-    super(sslConfig);
-    this.socketSoTimeouts = sockets;
+  public void setFailTLSHandshake(final boolean failTLSHandshake) {
+    this.failTLSHandshake = failTLSHandshake;
   }
 
   @Override
   public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
     this.socketSoTimeouts.add(timeout);
-    throw new SSLException("This is a test SSLException");
+    if (failTLSHandshake)
+      throw new SSLException("This is a test SSLException");
+    else
+      super.handshakeIfSocketIsSSL(socket, timeout);
   }
 }
