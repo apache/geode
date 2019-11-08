@@ -54,6 +54,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.DiskStoreImpl;
@@ -80,6 +83,7 @@ public class IncrementalBackupDistributedTest implements Serializable {
 
   private static final int DATA_INCREMENT = 10_000;
   private static final RegexFileFilter OPLOG_FILTER = new RegexFileFilter(".*\\.[kdc]rf$");
+  private static BackupMembershipListener backupMembershipListener = new BackupMembershipListener();
 
   private int dataStart;
   private int dataEnd = dataStart + DATA_INCREMENT;
@@ -261,10 +265,15 @@ public class IncrementalBackupDistributedTest implements Serializable {
   public void testMissingMemberInBaseline() {
     // Simulate the missing member by forcing a persistent member to go offline.
     PersistentID missingMember = vm0.invoke(() -> getPersistentID(diskStoreName1));
-    vm0.invoke(() -> cacheRule.getCache().close());
+    vm1.invoke(() -> installNewBackupMembershipListener());
+
+    vm0.invoke(() -> {
+      cacheRule.getCache().close();
+    });
 
     await()
-        .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember)));
+        .until(() -> vm1.invoke(() -> getMissingPersistentMembers().contains(missingMember)
+            && backupMembershipListener.hasMemberDeparted()));
 
     // Perform performBackupBaseline and make sure that list of offline disk stores contains our
     // missing member.
@@ -694,5 +703,28 @@ public class IncrementalBackupDistributedTest implements Serializable {
     for (File file : files) {
       Files.delete(file.toPath());
     }
+  }
+
+  public static class BackupMembershipListener implements MembershipListener {
+    private boolean memberDeparted = false;
+
+    @Override
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
+      memberDeparted = true;
+    }
+
+    public boolean hasMemberDeparted() {
+      return memberDeparted;
+    }
+  }
+
+  public void installNewBackupMembershipListener() {
+    if (backupMembershipListener != null) {
+      cacheRule.getCache().getDistributionManager()
+          .removeMembershipListener(backupMembershipListener);
+    }
+    backupMembershipListener = new BackupMembershipListener();
+    cacheRule.getCache().getDistributionManager().addMembershipListener(backupMembershipListener);
   }
 }

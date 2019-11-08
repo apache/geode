@@ -23,108 +23,109 @@ import java.security.KeyStore;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.SSLUtil;
 
 /**
  * The SSL configuration settings for a GemFire distributed system.
+ *
+ * This class is immutable and the way to construct it is by means of the
+ * {@link SSLConfig.Builder} class.
  */
+@Immutable
 public class SSLConfig {
 
-  private boolean endpointIdentification;
-  private boolean useDefaultSSLContext = DistributionConfig.DEFAULT_SSL_USE_DEFAULT_CONTEXT;
-  private boolean enabled = DistributionConfig.DEFAULT_SSL_ENABLED;
-  private String protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
-  private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
-  private boolean requireAuth = DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
-  private String keystore = DistributionConfig.DEFAULT_SSL_KEYSTORE;
-  private String keystoreType = KeyStore.getDefaultType();
-  private String keystorePassword = DistributionConfig.DEFAULT_SSL_KEYSTORE_PASSWORD;
-  private String truststore = DistributionConfig.DEFAULT_SSL_TRUSTSTORE;
-  private String truststorePassword = DistributionConfig.DEFAULT_SSL_TRUSTSTORE_PASSWORD;
-  private String truststoreType = KeyStore.getDefaultType();
-  private String alias = null;
-  private SecurableCommunicationChannel securableCommunicationChannel = null;
+  private final boolean endpointIdentification;
+  private final boolean useDefaultSSLContext;
+  private final boolean enabled;
+  private final String protocols;
+  private final String ciphers;
+  private final boolean requireAuth;
+  private final String keystore;
+  private final String keystoreType;
+  private final String keystorePassword;
+  private final String truststore;
+  private final String truststorePassword;
+  private final String truststoreType;
+  private final String alias;
+  @Immutable
+  private final SecurableCommunicationChannel securableCommunicationChannel;
 
   /**
    * SSL implementation-specific key-value pairs. Each key should be prefixed with
    * <code>javax.net.ssl.</code>
    */
-  private Properties properties = new Properties();
+  @Immutable
+  private final Properties properties;
 
-  public SSLConfig() {}
+  private SSLConfig(boolean endpointIdentification,
+      boolean useDefaultSSLContext,
+      boolean enabled,
+      String protocols,
+      String ciphers,
+      boolean requireAuth,
+      String keystore,
+      String keystoreType,
+      String keystorePassword,
+      String truststore,
+      String truststorePassword,
+      String truststoreType,
+      String alias,
+      SecurableCommunicationChannel securableCommunicationChannel,
+      Properties properties) {
+    this.endpointIdentification = endpointIdentification;
+    this.useDefaultSSLContext = useDefaultSSLContext;
+    this.enabled = enabled;
+    this.protocols = protocols;
+    this.ciphers = ciphers;
+    this.requireAuth = requireAuth;
+    this.keystore = keystore;
+    this.keystoreType = keystoreType;
+    this.keystorePassword = keystorePassword;
+    this.truststore = truststore;
+    this.truststorePassword = truststorePassword;
+    this.truststoreType = truststoreType;
+    this.alias = alias;
+    this.securableCommunicationChannel = securableCommunicationChannel;
+    this.properties = properties;
+  }
 
   public String getAlias() {
     return alias;
-  }
-
-  public void setAlias(final String alias) {
-    this.alias = alias;
   }
 
   public boolean doEndpointIdentification() {
     return this.endpointIdentification;
   }
 
-  public void setEndpointIdentificationEnabled(boolean endpointIdentification) {
-    this.endpointIdentification = endpointIdentification;
-  }
-
   public String getKeystore() {
     return keystore;
-  }
-
-  public void setKeystore(final String keystore) {
-    this.keystore = keystore;
   }
 
   public String getKeystorePassword() {
     return keystorePassword;
   }
 
-  public void setKeystorePassword(final String keystorePassword) {
-    this.keystorePassword = keystorePassword;
-  }
-
   public String getKeystoreType() {
     return keystoreType;
-  }
-
-  public void setKeystoreType(final String keystoreType) {
-    this.keystoreType = keystoreType;
   }
 
   public String getTruststore() {
     return truststore;
   }
 
-  public void setTruststore(final String truststore) {
-    this.truststore = truststore;
-  }
-
   public String getTruststorePassword() {
     return truststorePassword;
-  }
-
-  public void setTruststorePassword(final String truststorePassword) {
-    this.truststorePassword = truststorePassword;
   }
 
   public boolean isEnabled() {
     return this.enabled;
   }
 
-  public void setEnabled(boolean enabled) {
-    this.enabled = enabled;
-  }
-
   public boolean useDefaultSSLContext() {
     return this.useDefaultSSLContext;
-  }
-
-  public void setUseDefaultSSLContext(boolean useDefaultSSLContext) {
-    this.useDefaultSSLContext = useDefaultSSLContext;
   }
 
   public String getProtocols() {
@@ -135,10 +136,6 @@ public class SSLConfig {
     return SSLUtil.readArray(this.protocols);
   }
 
-  public void setProtocols(String protocols) {
-    this.protocols = protocols;
-  }
-
   public String getCiphers() {
     return this.ciphers;
   }
@@ -147,46 +144,20 @@ public class SSLConfig {
     return SSLUtil.readArray(this.ciphers);
   }
 
-  public void setCiphers(String ciphers) {
-    this.ciphers = ciphers;
-  }
-
   public boolean isRequireAuth() {
     return this.requireAuth;
-  }
-
-  public void setRequireAuth(boolean requireAuth) {
-    this.requireAuth = requireAuth;
   }
 
   public String getTruststoreType() {
     return truststoreType;
   }
 
-  public void setTruststoreType(final String truststoreType) {
-    this.truststoreType = truststoreType;
-  }
-
   public Properties getProperties() {
     return this.properties;
   }
 
-  public void setProperties(Properties newProps) {
-    this.properties = new Properties();
-    for (Iterator iter = newProps.keySet().iterator(); iter.hasNext();) {
-      String key = (String) iter.next();
-      // String value = newProps.getProperty(key);
-      this.properties.setProperty(key, newProps.getProperty(key));
-    }
-  }
-
   public SecurableCommunicationChannel getSecuredCommunicationChannel() {
     return securableCommunicationChannel;
-  }
-
-  public void setSecurableCommunicationChannel(
-      final SecurableCommunicationChannel securableCommunicationChannel) {
-    this.securableCommunicationChannel = securableCommunicationChannel;
   }
 
   @Override
@@ -213,6 +184,151 @@ public class SSLConfig {
       props.setProperty(CLUSTER_SSL_PROTOCOLS, this.protocols);
       props.setProperty(CLUSTER_SSL_CIPHERS, this.ciphers);
       props.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(this.requireAuth));
+    }
+  }
+
+  /**
+   * Builder class to be used to construct SSLConfig instances.
+   * In order to build an {@link SSLConfig} instance an instance of this
+   * class must be created, then the corresponding setter methods invoked
+   * and finally the build() method that returns the {@link SSLConfig} instance
+   *
+   * Example:
+   * SSLConfig sslConfInstance = new SSLConfig.Builder()
+   * .setAlias(alias)
+   * .setKeystore(keystore)
+   * ...
+   * .build();
+   *
+   */
+  public static class Builder {
+    private boolean endpointIdentification;
+    private boolean useDefaultSSLContext = DistributionConfig.DEFAULT_SSL_USE_DEFAULT_CONTEXT;
+    private boolean enabled = DistributionConfig.DEFAULT_SSL_ENABLED;
+    private String protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
+    private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
+    private boolean requireAuth = DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
+    private String keystore = DistributionConfig.DEFAULT_SSL_KEYSTORE;
+    private String keystoreType = KeyStore.getDefaultType();
+    private String keystorePassword = DistributionConfig.DEFAULT_SSL_KEYSTORE_PASSWORD;
+    private String truststore = DistributionConfig.DEFAULT_SSL_TRUSTSTORE;
+    private String truststorePassword = DistributionConfig.DEFAULT_SSL_TRUSTSTORE_PASSWORD;
+    private String truststoreType = KeyStore.getDefaultType();
+    private String alias = null;
+    private SecurableCommunicationChannel securableCommunicationChannel = null;
+    private Properties properties = new Properties();
+
+    public Builder() {}
+
+    public SSLConfig build() {
+      return new SSLConfig(endpointIdentification, useDefaultSSLContext, enabled,
+          protocols, ciphers, requireAuth, keystore, keystoreType, keystorePassword,
+          truststore, truststorePassword, truststoreType, alias, securableCommunicationChannel,
+          properties);
+    }
+
+    public Builder setAlias(final String alias) {
+      this.alias = alias;
+      return this;
+    }
+
+    public Builder setEndpointIdentificationEnabled(boolean endpointIdentification) {
+      this.endpointIdentification = endpointIdentification;
+      return this;
+    }
+
+    public Builder setKeystore(final String keystore) {
+      this.keystore = keystore;
+      return this;
+    }
+
+    public Builder setKeystorePassword(final String keystorePassword) {
+      this.keystorePassword = keystorePassword;
+      return this;
+    }
+
+    public Builder setKeystoreType(final String keystoreType) {
+      this.keystoreType = keystoreType;
+      return this;
+    }
+
+    public Builder setTruststore(final String truststore) {
+      this.truststore = truststore;
+      return this;
+    }
+
+    public Builder setTruststorePassword(final String truststorePassword) {
+      this.truststorePassword = truststorePassword;
+      return this;
+    }
+
+    public Builder setEnabled(boolean enabled) {
+      this.enabled = enabled;
+      return this;
+    }
+
+    public Builder setUseDefaultSSLContext(boolean useDefaultSSLContext) {
+      this.useDefaultSSLContext = useDefaultSSLContext;
+      return this;
+    }
+
+    public Builder setProtocols(String protocols) {
+      this.protocols = protocols;
+      return this;
+    }
+
+    public Builder setCiphers(String ciphers) {
+      this.ciphers = ciphers;
+      return this;
+    }
+
+    public Builder setRequireAuth(boolean requireAuth) {
+      this.requireAuth = requireAuth;
+      return this;
+    }
+
+    public Builder setTruststoreType(final String truststoreType) {
+      this.truststoreType = truststoreType;
+      return this;
+    }
+
+    public Builder setProperties(Properties newProps) {
+      this.properties = new Properties();
+      for (Iterator iter = newProps.keySet().iterator(); iter.hasNext();) {
+        String key = (String) iter.next();
+        this.properties.setProperty(key, newProps.getProperty(key));
+      }
+      return this;
+    }
+
+    public Builder setSecurableCommunicationChannel(
+        final SecurableCommunicationChannel securableCommunicationChannel) {
+      this.securableCommunicationChannel = securableCommunicationChannel;
+      return this;
+    }
+
+    public String getKeystore() {
+      return keystore;
+    }
+
+    public String getKeystoreType() {
+      return keystoreType;
+    }
+
+    public String getKeystorePassword() {
+      return keystorePassword;
+    }
+
+    public String getTruststore() {
+      return truststore;
+    }
+
+    public String getTruststorePassword() {
+      return truststorePassword;
+    }
+
+    public String getTruststoreType() {
+      return truststoreType;
     }
   }
 

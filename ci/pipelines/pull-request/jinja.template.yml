@@ -32,9 +32,6 @@ resources:
   type: pull-request
   source:
     access_token: ((!github-pr-access-token))
-    ignore_paths:
-    - geode-docs/*
-    - geode-book/*
     repository: {{repository.fork}}/geode
     disable_ci_skip: false
     skip_ssl_verification: false
@@ -44,8 +41,7 @@ resources:
     branch: develop
     depth: 1
     paths:
-    - ci/pipelines/geode-build/*
-    - ci/scripts/*
+    - ci/*
     uri: https://github.com/apache/geode.git
 - name: concourse-metadata-resource
   type: concourse-metadata-resource

@@ -123,7 +123,7 @@ public class BackupService {
     Set allIds =
         cache.getDistributionManager().addAllMembershipListenerAndGetAllIds(membershipListener);
     if (!allIds.contains(sender)) {
-      cleanup();
+      abortBackup();
       throw new IllegalStateException("The member requesting a backup has already departed");
     }
   }
@@ -136,6 +136,7 @@ public class BackupService {
     return LoggingExecutors.newSingleThreadExecutor("BackupServiceThread", true);
   }
 
+
   private void cleanup() {
     cache.getDistributionManager().removeAllMembershipListener(membershipListener);
     currentTask.set(null);
@@ -146,7 +147,7 @@ public class BackupService {
     @Override
     public void memberDeparted(DistributionManager distributionManager,
         InternalDistributedMember id, boolean crashed) {
-      cleanup();
+      abortBackup();
     }
 
     @Override

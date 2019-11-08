@@ -46,7 +46,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 public class GatewaySenderEventRemoteDispatcherIntegrationTest {
@@ -117,7 +117,7 @@ public class GatewaySenderEventRemoteDispatcherIntegrationTest {
     doReturn(new SecurableCommunicationChannel[] {}).when(distributionConfig)
         .getSecurableCommunicationChannels();
 
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
+    SocketCreatorFactory.setDistributionConfig(distributionConfig);
 
     final Properties properties = new Properties();
     properties.put(DURABLE_CLIENT_ID, "1");

@@ -263,7 +263,7 @@ public class SSLSocketIntegrationTest {
             sc.handshakeSSLSocketChannel(socket.getChannel(), sc.createSSLEngine("localhost", 1234),
                 timeoutMillis,
                 false,
-                ByteBuffer.allocate(500),
+                ByteBuffer.allocate(65535),
                 new BufferPool(mock(DMStats.class)));
 
         readMessageFromNIOSSLClient(socket, buffer, engine);

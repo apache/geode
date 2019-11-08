@@ -256,7 +256,8 @@ public class PoolImpl implements InternalPool {
         stats);
     connectionFactory = new ConnectionFactoryImpl(source, endpointManager, distributedSystem,
         socketBufferSize, socketConnectTimeout, readTimeout, proxyId, cancelCriterion,
-        usedByGateway, gatewaySender, pingInterval, multiuserSecureModeEnabled, this);
+        usedByGateway, gatewaySender, pingInterval, multiuserSecureModeEnabled, this,
+        distributedSystem);
     if (subscriptionEnabled) {
       queueManager = new QueueManagerImpl(this, endpointManager, source, connectionFactory,
           subscriptionRedundancyLevel, pingInterval, securityLogWriter, proxyId);

@@ -172,7 +172,8 @@ public class SSLSocketHostNameVerificationIntegrationTest {
     try {
       this.socketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(),
           sslEngine, 0, true,
-          ByteBuffer.allocate(500), new BufferPool(mock(DMStats.class)));
+          ByteBuffer.allocate(sslEngine.getSession().getPacketBufferSize()),
+          new BufferPool(mock(DMStats.class)));
 
       if (doEndPointIdentification && !addCertificateSAN) {
         fail("Failed to validate hostname in certificate SAN");
@@ -198,12 +199,13 @@ public class SSLSocketHostNameVerificationIntegrationTest {
       try {
         socket = serverSocket.accept();
         SocketCreator sc = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
+        final SSLEngine sslEngine = sc.createSSLEngine(this.localHost.getHostName(), 1234);
         engine =
             sc.handshakeSSLSocketChannel(socket.getChannel(),
-                sc.createSSLEngine(this.localHost.getHostName(), 1234),
+                sslEngine,
                 timeoutMillis,
                 false,
-                ByteBuffer.allocate(500),
+                ByteBuffer.allocate(sslEngine.getSession().getPacketBufferSize()),
                 new BufferPool(mock(DMStats.class)));
       } catch (Throwable throwable) {
         serverException = throwable;

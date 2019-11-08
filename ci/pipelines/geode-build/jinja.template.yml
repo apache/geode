@@ -31,6 +31,7 @@
     passed:
     - Build
   - get: geode-build-version
+    trigger: true
     passed:
     - Build
 {% endmacro %}
@@ -164,8 +165,7 @@ resources:
     branch: ((geode-build-branch))
     depth: 1
     paths:
-    - ci/pipelines/geode-build/*
-    - ci/scripts/*
+    - ci/*
     {{ github_access() | indent(4) }}
 - name: geode-benchmarks
   type: git
@@ -419,6 +419,7 @@ jobs:
       trigger: true
     - get: geode-benchmarks
     - get: geode-build-version
+      trigger: true
       passed:
       {{ all_gating_jobs() | indent(6) }}
     - put: concourse-metadata-resource
@@ -491,6 +492,7 @@ jobs:
       trigger: true
   - aggregate:
     - get: geode-build-version
+      trigger: true
       passed:
       - Benchmark
     - do:

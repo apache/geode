@@ -151,9 +151,7 @@ public class SSLConfigJUnitTest {
   }
 
   @After
-  public void tearDownTest() {
-    SSLConfigurationFactory.close();
-  }
+  public void tearDownTest() {}
 
   @Test
   public void testMCastPortWithClusterSSL() throws Exception {

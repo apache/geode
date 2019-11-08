@@ -42,7 +42,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -121,8 +120,6 @@ public class PoolImplTest {
     final DistributionConfig distributionConfig = mock(DistributionConfig.class);
     doReturn(new SecurableCommunicationChannel[] {}).when(distributionConfig)
         .getSecurableCommunicationChannels();
-
-    SSLConfigurationFactory.setDistributionConfig(distributionConfig);
 
     final Properties properties = new Properties();
     properties.put(DURABLE_CLIENT_ID, "1");

@@ -108,10 +108,11 @@ YML
 
   python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml pipelineProperties.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml --debug || exit 1
 
+  set -e
   if [[ ${UPSTREAM_FORK} != "apache" ]]; then
     fly -t ${FLY_TARGET} login -n ${CONCOURSE_TEAM}
   fi
-
+  
   fly -t ${FLY_TARGET} sync
   fly -t ${FLY_TARGET} set-pipeline \
     -p ${META_PIPELINE} \
@@ -131,6 +132,7 @@ YML
     --var semver-prerelease-token="${SEMVER_PRERELEASE_TOKEN}" \
     --var upstream-fork=${UPSTREAM_FORK} \
     --yaml-var public-pipelines=${PUBLIC}
+    set +e
 
 popd 2>&1 > /dev/null
 
