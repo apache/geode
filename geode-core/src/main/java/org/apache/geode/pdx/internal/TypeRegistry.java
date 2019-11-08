@@ -118,12 +118,12 @@ public class TypeRegistry {
     synchronized (this) {
       PdxType pdxType = this.distributedTypeRegistry.getType(typeId);
       if (pdxType != null) {
-        if (logger.isInfoEnabled()) {
-          logger.info("Adding: {}", pdxType.toFormattedString());
-        }
-        if (logger.isDebugEnabled()) {
-          logger.debug("Adding entry into pdx type registry, typeId: {}  {}", typeId, pdxType);
-        }
+        // if (logger.isInfoEnabled()) {
+        // logger.info("Adding: {}", pdxType.toFormattedString());
+        // }
+        // if (logger.isDebugEnabled()) {
+        // logger.debug("Adding entry into pdx type registry, typeId: {} {}", typeId, pdxType);
+        // }
         return pdxType;
       }
     }
