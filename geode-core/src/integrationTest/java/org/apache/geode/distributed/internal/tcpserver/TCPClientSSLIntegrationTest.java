@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.security.GeneralSecurityException;
 import java.util.Properties;
@@ -74,6 +75,22 @@ public class TCPClientSSLIntegrationTest {
         .generate();
   }
 
+  @After
+  public void after() {
+    try {
+      try {
+        server.shutDown();
+      } catch (ConnectException ignore) {
+        // must not be running
+      }
+      server.join(60 * 1000);
+    } catch (Exception e) {
+      // do nothing
+    }
+
+    SocketCreatorFactory.close();
+  }
+
   private void startServerAndClient(CertificateMaterial serverCertificate,
       CertificateMaterial clientCertificate, boolean enableHostNameValidation)
       throws GeneralSecurityException, IOException {
@@ -99,11 +116,6 @@ public class TCPClientSSLIntegrationTest {
             new org.apache.geode.internal.net.SocketCreator(
                 SSLConfigurationFactory.getSSLConfigForComponent(clientProperties,
                     SecurableCommunicationChannel.LOCATOR))));
-  }
-
-  @After
-  public void teardown() {
-    SocketCreatorFactory.close();
   }
 
   private void startTcpServer(Properties sslProperties) throws IOException {
@@ -209,6 +221,10 @@ public class TCPClientSSLIntegrationTest {
           (socket, input, firstByte) -> false, DistributionStats::getStatTime,
           TcpServerFactory.createExecutorServiceSupplier(poolHelper),
           getSocketCreator(new DistributionConfigImpl(sslConfig)));
+    }
+
+    void shutDown() throws IOException {
+      srv_sock.close();
     }
 
     private static TcpSocketCreator getSocketCreator(
