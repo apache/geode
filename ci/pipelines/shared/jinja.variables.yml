@@ -119,7 +119,7 @@ tests:
   RAM: '210'
   name: Upgrade
 - ARTIFACT_SLUG: stressnewtestfiles
-  CALL_STACK_TIMEOUT: '7200'
+  CALL_STACK_TIMEOUT: '20700'
   CPUS: '96'
   DUNIT_PARALLEL_FORKS: '24'
   EXECUTE_TEST_TIMEOUT: 6h
