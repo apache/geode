@@ -57,9 +57,13 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
   }
 
   /**
-   * If both a pdxSerializer and autoSerializer are configured then an exception will be thrown.
+   * @throws IllegalArgumentException if a pdxSerializer has already been set
    */
   public void setAutoSerializer(AutoSerializer autoSerializer) {
+    if (pdxSerializer != null) {
+      throw new IllegalArgumentException(
+          "The autoSerializer can not be set if a pdxSerializer is already set.");
+    }
     this.autoSerializer = autoSerializer;
   }
 
@@ -80,12 +84,15 @@ public class Pdx extends AbstractConfiguration<RuntimeInfo> {
   }
 
   /**
-   * If both a pdxSerializer and autoSerializer are configured then an exception will be thrown.
-   *
    * @param pdxSerializer the class name given must implement the
    *        {@link org.apache.geode.pdx.PdxSerializer} interface
+   * @throws IllegalArgumentException if an autoSerializer has already been set
    */
   public void setPdxSerializer(ClassName pdxSerializer) {
+    if (autoSerializer != null) {
+      throw new IllegalArgumentException(
+          "The pdxSerializer can not be set if an autoSerializer is already set.");
+    }
     this.pdxSerializer = pdxSerializer;
   }
 

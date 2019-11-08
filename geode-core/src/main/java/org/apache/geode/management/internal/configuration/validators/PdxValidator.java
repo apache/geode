@@ -25,16 +25,18 @@ public class PdxValidator implements ConfigurationValidator<Pdx> {
   public void validate(CacheElementOperation operation, Pdx pdx) {
     AutoSerializer autoSerializer = pdx.getAutoSerializer();
     if (autoSerializer != null) {
-      if (pdx.getPdxSerializer() != null) {
-        throw new IllegalArgumentException(
-            "Both autoSerializer and pdxSerializer were specified.");
-      }
-      if (operation == CacheElementOperation.CREATE) {
-        List<String> patterns = autoSerializer.getPatterns();
-        if (patterns == null || patterns.isEmpty()) {
-          throw new IllegalArgumentException(
-              "The autoSerializer must have at least one pattern.");
-        }
+      List<String> patterns = autoSerializer.getPatterns();
+      switch (operation) {
+        case CREATE:
+          if (patterns == null || patterns.isEmpty()) {
+            throw new IllegalArgumentException(
+                "The autoSerializer must have at least one pattern.");
+          }
+        case UPDATE:
+          if (patterns != null && patterns.isEmpty()) {
+            throw new IllegalArgumentException(
+                "The autoSerializer must have at least one pattern.");
+          }
       }
     }
   }

@@ -27,7 +27,6 @@ import java.util.stream.Stream;
 import org.junit.Test;
 
 import org.apache.geode.management.configuration.AutoSerializer;
-import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Pdx;
 
 public class PdxValidatorTest {
@@ -36,54 +35,6 @@ public class PdxValidatorTest {
     PdxValidator validator = new PdxValidator();
 
     Pdx pdx = new Pdx();
-
-    Stream.of(CREATE, UPDATE, DELETE)
-        .forEach(operation -> assertThatCode(() -> validator.validate(operation, pdx))
-            .as(operation.name())
-            .doesNotThrowAnyException());
-  }
-
-  @Test
-  public void validateForAnyOperation_throwsIfAutoSerializerAndPdxSerializer() {
-    PdxValidator validator = new PdxValidator();
-
-    Pdx pdx = new Pdx();
-
-    pdx.setAutoSerializer(new AutoSerializer("pattern1"));
-    pdx.setPdxSerializer(new ClassName("my.class.name"));
-
-    Stream.of(CREATE, UPDATE, DELETE)
-        .forEach(operation -> assertThatThrownBy(() -> validator.validate(operation, pdx))
-            .as(operation.name())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("autoSerializer")
-            .hasMessageContaining("pdxSerializer"));
-
-  }
-
-  @Test
-  public void validateForAnyOperation_acceptsAutoSerializerUfNoPdxSerializer() {
-    PdxValidator validator = new PdxValidator();
-
-    Pdx pdx = new Pdx();
-
-    pdx.setAutoSerializer(new AutoSerializer("pattern1"));
-    pdx.setPdxSerializer(null);
-
-    Stream.of(CREATE, UPDATE, DELETE)
-        .forEach(operation -> assertThatCode(() -> validator.validate(operation, pdx))
-            .as(operation.name())
-            .doesNotThrowAnyException());
-  }
-
-  @Test
-  public void validateForAnyOperation_acceptsPdxSerializerIfNoAutoSerializer() {
-    PdxValidator validator = new PdxValidator();
-
-    Pdx pdx = new Pdx();
-
-    pdx.setAutoSerializer(null);
-    pdx.setPdxSerializer(new ClassName("my.class.name"));
 
     Stream.of(CREATE, UPDATE, DELETE)
         .forEach(operation -> assertThatCode(() -> validator.validate(operation, pdx))
@@ -105,16 +56,62 @@ public class PdxValidatorTest {
   }
 
   @Test
-  public void validateForNonCreate_acceptsAutoSerializerWithNoPatterns() {
+  public void validateForCreate_throwsIfAutoSerializerHasNullPatterns() {
+    PdxValidator validator = new PdxValidator();
+    Pdx pdx = new Pdx();
+
+    pdx.setAutoSerializer(new AutoSerializer(false, null));
+
+    assertThatThrownBy(() -> validator.validate(CREATE, pdx))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("at least one pattern");
+  }
+
+  @Test
+  public void validateForDelete_acceptsAutoSerializerWithNoPatterns() {
     PdxValidator validator = new PdxValidator();
     Pdx pdx = new Pdx();
 
     List<String> noPatterns = emptyList();
     pdx.setAutoSerializer(new AutoSerializer(false, noPatterns));
 
-    Stream.of(UPDATE, DELETE)
-        .forEach(operation -> assertThatCode(() -> validator.validate(operation, pdx))
-            .as(operation.name())
-            .doesNotThrowAnyException());
+    assertThatCode(() -> validator.validate(DELETE, pdx))
+        .doesNotThrowAnyException();
   }
+
+  @Test
+  public void validateForDelete_acceptsAutoSerializerWithNullPatterns() {
+    PdxValidator validator = new PdxValidator();
+    Pdx pdx = new Pdx();
+
+    pdx.setAutoSerializer(new AutoSerializer(false, null));
+
+    assertThatCode(() -> validator.validate(DELETE, pdx))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  public void validateForUpdate_acceptsAutoSerializerWithNullPatterns() {
+    PdxValidator validator = new PdxValidator();
+    Pdx pdx = new Pdx();
+
+    pdx.setAutoSerializer(new AutoSerializer(false, null));
+
+    assertThatCode(() -> validator.validate(UPDATE, pdx))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  public void validateForUpdate_throwsIfAutoSerializerHasNoPatterns() {
+    PdxValidator validator = new PdxValidator();
+    Pdx pdx = new Pdx();
+
+    List<String> noPatterns = emptyList();
+    pdx.setAutoSerializer(new AutoSerializer(false, noPatterns));
+
+    assertThatThrownBy(() -> validator.validate(UPDATE, pdx))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("at least one pattern");
+  }
+
 }

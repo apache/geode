@@ -152,7 +152,7 @@ public class PdxIntegrationTest {
         .content(json))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.statusCode", is("ILLEGAL_ARGUMENT")))
-        .andExpect(jsonPath("$.statusMessage",
-            containsString("Both autoSerializer and pdxSerializer were specified.")));
+        .andExpect(jsonPath("$.statusMessage", containsString("can not be set")))
+        .andExpect(jsonPath("$.statusMessage", containsString("is already set")));
   }
 }
