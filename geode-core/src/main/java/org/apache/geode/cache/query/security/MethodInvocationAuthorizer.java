@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.security;
 
 import java.lang.reflect.Method;
+import java.util.Set;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -58,4 +59,6 @@ public interface MethodInvocationAuthorizer {
    *         {@code false} otherwise.
    */
   boolean authorize(Method method, Object target);
+
+  void initialize(Cache cache, Set<String> parameters);
 }

@@ -395,4 +395,7 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
 
     return true;
   }
+
+  @Override
+  public void initialize(Cache cache, Set<String> parameters) {}
 }

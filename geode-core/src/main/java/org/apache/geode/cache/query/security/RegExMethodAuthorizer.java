@@ -166,4 +166,7 @@ public final class RegExMethodAuthorizer implements MethodInvocationAuthorizer {
     // Delegate to the default authorizer.
     return restrictedMethodAuthorizer.authorize(method, target);
   }
+
+  @Override
+  public void initialize(Cache cache, Set<String> parameters) {}
 }

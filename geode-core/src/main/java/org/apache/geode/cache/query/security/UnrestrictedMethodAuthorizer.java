@@ -17,6 +17,7 @@ package org.apache.geode.cache.query.security;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
@@ -117,4 +118,7 @@ public final class UnrestrictedMethodAuthorizer implements MethodInvocationAutho
     // Delegate to the default authorizer.
     return restrictedMethodAuthorizer.isAllowedGeodeMethod(method, target);
   }
+
+  @Override
+  public void initialize(Cache cache, Set<String> parameters) {}
 }

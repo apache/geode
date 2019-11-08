@@ -17,8 +17,8 @@ package org.apache.geode.cache.query.internal;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -42,6 +42,8 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   private static final Logger logger = LogService.getLogger();
   static final String UPDATE_ERROR_MESSAGE =
       "Exception while updating MethodInvocationAuthorizer: ";
+  public static final String INTERFACE_NOT_IMPLEMENTED_MESSAGE =
+      "Provided method authorizer %S does not implement interface %S";
 
   private MethodInvocationAuthorizer authorizer;
 
@@ -133,10 +135,16 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
         this.authorizer = new RegExMethodAuthorizer(cache, parameters);
       } else {
         Class userClass = ClassPathLoader.getLatest().forName(className);
-        @SuppressWarnings("unchecked")
-        Constructor<MethodInvocationAuthorizer> userConstructor =
-            userClass.getDeclaredConstructor(Cache.class, Set.class);
-        this.authorizer = userConstructor.newInstance(cache, parameters);
+        if (!Arrays.asList(userClass.getInterfaces()).contains(MethodInvocationAuthorizer.class)) {
+          throw new QueryConfigurationServiceException(
+              String.format(INTERFACE_NOT_IMPLEMENTED_MESSAGE, userClass.getName(),
+                  MethodInvocationAuthorizer.class.getName()));
+        }
+        MethodInvocationAuthorizer tmpAuthorizer =
+            (MethodInvocationAuthorizer) userClass.newInstance();
+        tmpAuthorizer.initialize(cache, parameters);
+        this.authorizer = tmpAuthorizer;
+
       }
     } catch (Exception e) {
       throw new QueryConfigurationServiceException(UPDATE_ERROR_MESSAGE, e);
@@ -153,5 +161,8 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
     public boolean authorize(Method method, Object target) {
       return true;
     }
+
+    @Override
+    public void initialize(Cache cache, Set<String> parameters) {}
   }
 }

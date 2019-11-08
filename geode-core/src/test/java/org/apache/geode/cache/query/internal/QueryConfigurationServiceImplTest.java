@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.INTERFACE_NOT_IMPLEMENTED_MESSAGE;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -165,7 +166,8 @@ public class QueryConfigurationServiceImplTest {
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     assertThatThrownBy(
-        () -> configService.updateMethodAuthorizer(mockCache, null, new HashSet<>()));
+        () -> configService.updateMethodAuthorizer(mockCache, null, new HashSet<>()))
+            .isInstanceOf(QueryConfigurationServiceException.class);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
   }
 
@@ -177,18 +179,27 @@ public class QueryConfigurationServiceImplTest {
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     String className = "FakeClassName";
     assertThatThrownBy(
-        () -> configService.updateMethodAuthorizer(mockCache, className, new HashSet<>()));
+        () -> configService.updateMethodAuthorizer(mockCache, className, new HashSet<>()))
+            .isInstanceOf(QueryConfigurationServiceException.class);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
   }
 
   @Test
-  public void updateMethodAuthorizerDoesNotChangeMethodAuthorizerWhenSecurityIsEnabledAndSpecifiedClassHasNoValidConstructor() {
+  public void updateMethodAuthorizerDoesNotChangeMethodAuthorizerWhenSecurityIsEnabledAndSpecifiedClassDoesNotImplementMethodInvocationAuthorizer() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
 
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
-    assertThatThrownBy(() -> configService.updateMethodAuthorizer(mockCache,
-        this.getClass().getName(), new HashSet<>()));
+    String className = this.getClass().getName();
+    try {
+      configService.updateMethodAuthorizer(mockCache,
+          className, new HashSet<>());
+    } catch (Exception expectedException) {
+      assertThat(expectedException.getCause())
+          .isInstanceOf(QueryConfigurationServiceException.class)
+          .hasMessage(String.format(INTERFACE_NOT_IMPLEMENTED_MESSAGE, className,
+              MethodInvocationAuthorizer.class.getName()));
+    }
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
   }
 

@@ -160,6 +160,9 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
     return restrictedMethodAuthorizer.authorize(method, target);
   }
 
+  @Override
+  public void initialize(Cache cache, Set<String> parameters) {}
+
   /**
    * Returns an unmodifiable view of the allowed packages for this authorizer.
    * This method can be used to get "read-only" access to the set containing the packages
