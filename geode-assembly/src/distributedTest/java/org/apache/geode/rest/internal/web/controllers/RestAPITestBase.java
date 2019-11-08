@@ -18,15 +18,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -43,82 +42,55 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.rest.internal.web.RestFunctionTemplate;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.RestAPITest;
 
-/**
- * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
- *             instead.
- */
-@Category({RestAPITest.class})
-class RestAPITestBase extends JUnit4DistributedTestCase {
+@Category(RestAPITest.class)
+public class RestAPITestBase implements Serializable {
 
-  protected Cache cache = null;
-  protected List<String> restURLs = new ArrayList<>();
-  protected VM vm0 = null;
-  protected VM vm1 = null;
-  protected VM vm2 = null;
-  protected VM vm3 = null;
+  @ClassRule
+  public static DistributedRule distributedTestRule = new DistributedRule();
 
-  @Override
-  public final void postSetUp() throws Exception {
-    disconnectAllFromDS();
+  @Rule
+  public CacheRule cacheRule = new CacheRule();
+
+  List<String> restURLs = new ArrayList<>();
+  VM vm0 = null;
+  VM vm1 = null;
+  VM vm2 = null;
+  VM vm3 = null;
+
+  @Before
+  public void setUp() {
     AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
     if (agentUtil.findWarLocation("geode-web-api") == null) {
       fail("unable to locate geode-web-api WAR file");
     }
-    final Host host = Host.getHost(0);
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
+
+    vm0 = VM.getVM(0);
+    vm1 = VM.getVM(1);
+    vm2 = VM.getVM(2);
+    vm3 = VM.getVM(3);
+
     // gradle sets a property telling us where the build is located
     final String buildDir = System.getProperty("geode.build.dir", System.getProperty("user.dir"));
     Invoke.invokeInEveryVM(() -> System.setProperty("geode.build.dir", buildDir));
-    postSetUpRestAPITestBase();
-  }
-
-  private void postSetUpRestAPITestBase() throws Exception {}
-
-  /**
-   * close the clients and the servers
-   */
-  @Override
-  public final void preTearDown() throws Exception {
-    vm0.invoke(() -> closeCache());
-    vm1.invoke(() -> closeCache());
-    vm2.invoke(() -> closeCache());
-    vm3.invoke(() -> closeCache());
-  }
-
-  /**
-   * close the cache
-   */
-  private void closeCache() {
-    if (cache != null && !cache.isClosed()) {
-      cache.close();
-      cache.getDistributedSystem().disconnect();
-    }
   }
 
   String createCacheWithGroups(final String hostName, final String groups, final String context) {
-    RestAPITestBase test = new RestAPITestBase();
-
     final int servicePort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     Properties props = new Properties();
@@ -131,8 +103,7 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     props.setProperty(HTTP_SERVICE_BIND_ADDRESS, hostName);
     props.setProperty(HTTP_SERVICE_PORT, String.valueOf(servicePort));
 
-    InternalDistributedSystem ds = test.getSystem(props);
-    cache = CacheFactory.create(ds);
+    cacheRule.createCache(props);
 
     return "http://" + hostName + ":" + servicePort + context + "/v1";
   }
@@ -159,6 +130,7 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     } catch (Exception e) {
       fail("unexpected exception", e);
     }
+
     return value;
   }
 
@@ -190,10 +162,10 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
 
   void assertHttpResponse(CloseableHttpResponse response, int httpCode,
       int expectedServerResponses) {
-    assertEquals(httpCode, response.getStatusLine().getStatusCode());
+    assertThat(response.getStatusLine().getStatusCode()).isEqualTo(httpCode);
 
     // verify response has body flag, expected is true.
-    assertNotNull(response.getEntity());
+    assertThat(response.getEntity()).isNotNull();
     try {
       String httpResponseString = processHttpResponse(response);
       response.close();
@@ -203,7 +175,7 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
       JsonNode json = mapper.readTree(httpResponseString);
 
       if (json.isArray()) {
-        assertEquals(expectedServerResponses, json.size());
+        assertThat(json.size()).isEqualTo(expectedServerResponses);
       } else {
         assertThat(expectedServerResponses)
             .as("Did not receive an expected JSON array. Instead, received a %s type.",
@@ -229,6 +201,7 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     } catch (IOException e) {
       fail("exception", e);
     }
+
     return "";
   }
 
@@ -237,10 +210,10 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     for (final VM vm : vms) {
       count += vm.invoke("getInvocationCount", () -> getInvocationCount(functionID));
     }
-    assertEquals(expectedInvocationCount, count);
+    assertThat(count).isEqualTo(expectedInvocationCount);
   }
 
-  protected void resetInvocationCount(String functionID) {
+  void resetInvocationCount(String functionID) {
     RestFunctionTemplate f = (RestFunctionTemplate) FunctionService.getFunction(functionID);
     f.invocationCount = 0;
   }
