@@ -60,5 +60,5 @@ public interface MethodInvocationAuthorizer {
    */
   boolean authorize(Method method, Object target);
 
-  void initialize(Cache cache, Set<String> parameters);
+  default void initialize(Cache cache, Set<String> parameters) {}
 }

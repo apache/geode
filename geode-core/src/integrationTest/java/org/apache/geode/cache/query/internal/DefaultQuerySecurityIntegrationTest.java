@@ -24,7 +24,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -266,9 +265,6 @@ public class DefaultQuerySecurityIntegrationTest {
 
       return true;
     }
-
-    @Override
-    public void initialize(Cache cache, Set<String> parameters) {}
   }
 
   @SuppressWarnings("unused")
