@@ -53,7 +53,6 @@ public class PdxConverterTest {
     pdx.setReadSerialized(true);
     pdx.setDiskStoreName("test");
     pdx.setIgnoreUnreadFields(true);
-    pdx.setPdxSerializer(new ClassName("java.lang.String"));
     pdx.setAutoSerializer(new AutoSerializer(true, "pat1", "pat2"));
     PdxType pdxType = converter.fromConfigObject(pdx);
     assertThat(pdxType.isPersistent()).isTrue();
