@@ -22,20 +22,21 @@ import java.net.Socket;
 
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * Adapt a SocketCreator from geode-core to function as a TcpSocketAdapter
  * in geode-tcp-server
  */
 public class SocketCreatorAdapter implements TcpSocketCreator {
-  final org.apache.geode.internal.net.SocketCreator socketCreator;
+  final SocketCreator socketCreator;
 
-  private SocketCreatorAdapter(final org.apache.geode.internal.net.SocketCreator socketCreator) {
+  private SocketCreatorAdapter(final SocketCreator socketCreator) {
     this.socketCreator = socketCreator;
   }
 
   public static TcpSocketCreator asTcpSocketCreator(
-      final org.apache.geode.internal.net.SocketCreator socketCreator) {
+      final SocketCreator socketCreator) {
     return new SocketCreatorAdapter(socketCreator);
   }
 

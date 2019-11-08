@@ -292,7 +292,13 @@ public class TcpServer {
       DataInputStream input = null;
       try {
         socket.setSoTimeout(READ_TIMEOUT);
+
+        logger.info(String.format("%s processRequest() for %s",
+            this,socket));
+
         socketCreator.handshakeIfSocketIsSSL(socket, READ_TIMEOUT);
+
+        logger.info(String.format("TLS handshake succeeded"));
 
         try {
           input = new DataInputStream(socket.getInputStream());
