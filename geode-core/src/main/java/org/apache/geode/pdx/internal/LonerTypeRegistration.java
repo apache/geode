@@ -206,7 +206,7 @@ public class LonerTypeRegistration implements TypeRegistration {
 
   @Override
   public void flushCache() {
-    // initializeRegistry();
-    // delegate.flushCache();
+    initializeRegistry();
+    delegate.flushCache();
   }
 }

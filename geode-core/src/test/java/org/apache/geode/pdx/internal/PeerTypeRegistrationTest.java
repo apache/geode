@@ -110,16 +110,16 @@ public class PeerTypeRegistrationTest {
     assertThat(peerTypeRegistration.getLocalSize()).isEqualTo(1);
   }
 
-  @Test
-  public void typeRegistryCacheIsFlushedWhenNotNull() {
-    TypeRegistry typeRegistry = mock(TypeRegistry.class);
-    when(internalCache.getPdxRegistry()).thenReturn(typeRegistry);
-
-    PeerTypeRegistration peerTypeRegistration = new PeerTypeRegistration(internalCache);
-    peerTypeRegistration.initialize();
-
-    verify(typeRegistry).flushCache();
-  }
+  // @Test
+  // public void typeRegistryCacheIsFlushedWhenNotNull() {
+  // TypeRegistry typeRegistry = mock(TypeRegistry.class);
+  // when(internalCache.getPdxRegistry()).thenReturn(typeRegistry);
+  //
+  // PeerTypeRegistration peerTypeRegistration = new PeerTypeRegistration(internalCache);
+  // peerTypeRegistration.initialize();
+  //
+  // verify(typeRegistry).flushCache();
+  // }
 
   @Test
   public void pdxPersistenceIsSetWithUserDefinedDiskStore() throws NoSuchFieldException {
