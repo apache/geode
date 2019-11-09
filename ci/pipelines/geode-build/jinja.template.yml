@@ -406,6 +406,7 @@ jobs:
 
 - name: Benchmark
   public: true
+  max_in_flight: 3
   plan:
   - get: geode-ci
     passed:
