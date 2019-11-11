@@ -294,7 +294,7 @@ public class TcpServer {
         socket.setSoTimeout(READ_TIMEOUT);
 
         logger.info(String.format("%s processRequest() for %s",
-            this,socket));
+            this, socket));
 
         socketCreator.handshakeIfSocketIsSSL(socket, READ_TIMEOUT);
 
