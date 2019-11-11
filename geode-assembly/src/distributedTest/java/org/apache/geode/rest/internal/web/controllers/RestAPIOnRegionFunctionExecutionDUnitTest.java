@@ -112,7 +112,7 @@ public class RestAPIOnRegionFunctionExecutionDUnitTest extends RestAPITestBase {
     }
     // Assert there is data in each bucket
     for (int bid = 0; bid < pr.getTotalNumberOfBuckets(); bid++) {
-      assertThat(pr.getBucketKeys(bid).size() > 0).isTrue();
+      assertThat(pr.getBucketKeys(bid).size()).isGreaterThan(0);
     }
   }
 
