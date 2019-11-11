@@ -255,7 +255,7 @@ public class CountIntegrationTest extends AggregateFunctionQueryBaseIntegrationT
             .filter(p -> p.getID() > 0 && p.isActive()).count());
   }
 
-  public void parametrizedSetUp(boolean usePdx) {
+  public void parameterizedSetUp(boolean usePdx) {
     if (!usePdx) {
       prepareStructures();
     } else {
@@ -271,7 +271,7 @@ public class CountIntegrationTest extends AggregateFunctionQueryBaseIntegrationT
   @TestCaseName("[{index}] {method}(RegionType:{0},PDX:{1})")
   public void countShouldWorkCorrectlyOnDifferentRegionTypes(RegionShortcut regionShortcut,
       boolean usePdx) throws Exception {
-    parametrizedSetUp(usePdx);
+    parameterizedSetUp(usePdx);
     createAndPopulateRegion(firstRegionName, regionShortcut, regionOneLocalCopy);
     QueryService queryService = server.getCache().getQueryService();
 
@@ -294,7 +294,7 @@ public class CountIntegrationTest extends AggregateFunctionQueryBaseIntegrationT
   @TestCaseName("[{index}] {method}(RegionType:{0},PDX:{1})")
   public void countShouldWorkCorrectlyOnDifferentRegionTypesWithIndexes(
       RegionShortcut regionShortcut, boolean usePdx) throws Exception {
-    parametrizedSetUp(usePdx);
+    parameterizedSetUp(usePdx);
     createRegion(firstRegionName, regionShortcut);
     QueryService queryService = server.getCache().getQueryService();
     queryService.createIndex("sampleIndex-1", "p.ID", "/" + firstRegionName + " p");
@@ -320,7 +320,7 @@ public class CountIntegrationTest extends AggregateFunctionQueryBaseIntegrationT
   @Parameters({"LOCAL, true", "LOCAL, false", "REPLICATE, true", "REPLICATE, false"})
   public void countWithEquiJoinShouldWorkCorrectlyOnDifferentRegionTypes(
       RegionShortcut regionShortcut, boolean usePdx) throws Exception {
-    parametrizedSetUp(usePdx);
+    parameterizedSetUp(usePdx);
     createAndPopulateRegion(firstRegionName, regionShortcut, regionOneLocalCopy);
     createAndPopulateRegion(secondRegionName, regionShortcut, regionTwoLocalCopy);
     QueryService queryService = server.getCache().getQueryService();
@@ -341,7 +341,7 @@ public class CountIntegrationTest extends AggregateFunctionQueryBaseIntegrationT
   @Parameters({"LOCAL, true", "LOCAL, false", "REPLICATE, true", "REPLICATE, false"})
   public void countWithEquiJoinShouldWorkCorrectlyOnDifferentRegionTypesWithIndexes(
       RegionShortcut regionShortcut, boolean usePdx) throws Exception {
-    parametrizedSetUp(usePdx);
+    parameterizedSetUp(usePdx);
     createRegion(firstRegionName, regionShortcut);
     createRegion(secondRegionName, regionShortcut);
     QueryService queryService = server.getCache().getQueryService();
