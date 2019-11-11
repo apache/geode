@@ -168,8 +168,8 @@ public abstract class Host implements Serializable {
    * Adds a VM to this {@code Host} with the given process id and client record.
    */
   protected void addVM(int vmid, RemoteDUnitVMIF client, ProcessHolder processHolder,
-      ChildVMLauncher childVMLauncher) {
-    VM vm = new VM(this, vmid, client, processHolder, childVMLauncher);
+      ChildVMLauncher childVMLauncher, String classpath) {
+    VM vm = new VM(this, vmid, client, processHolder, childVMLauncher, classpath);
     vms.add(vm);
     vmEventNotifier.notifyAfterCreateVM(vm);
   }
@@ -183,8 +183,8 @@ public abstract class Host implements Serializable {
   }
 
   protected void addLocator(int vmid, RemoteDUnitVMIF client, ProcessHolder processHolder,
-      ChildVMLauncher childVMLauncher) {
-    setLocator(new VM(this, vmid, client, processHolder, childVMLauncher));
+      ChildVMLauncher childVMLauncher, String classpath) {
+    setLocator(new VM(this, vmid, client, processHolder, childVMLauncher, classpath));
   }
 
   @Override

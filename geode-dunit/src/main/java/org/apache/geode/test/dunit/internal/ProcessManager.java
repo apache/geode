@@ -59,12 +59,13 @@ public class ProcessManager implements ChildVMLauncher {
     this.registry = registry;
   }
 
-  public synchronized void launchVM(int vmNum) throws IOException {
-    launchVM(VersionManager.CURRENT_VERSION, vmNum, false);
+  public synchronized void launchVM(int vmNum, String classpath) throws IOException {
+    launchVM(VersionManager.CURRENT_VERSION, vmNum, false, classpath);
   }
 
   @Override
-  public synchronized ProcessHolder launchVM(String version, int vmNum, boolean bouncedVM)
+  public synchronized ProcessHolder launchVM(String version, int vmNum, boolean bouncedVM,
+      String classpath)
       throws IOException {
     if (bouncedVM) {
       processes.remove(vmNum);
@@ -88,7 +89,7 @@ public class ProcessManager implements ChildVMLauncher {
       workingDir.mkdirs();
     }
 
-    String[] cmd = buildJavaCommand(vmNum, namingPort, version);
+    String[] cmd = buildJavaCommand(vmNum, namingPort, version, classpath);
     System.out.println("Executing " + Arrays.toString(cmd));
 
     if (log4jConfig != null) {
@@ -151,7 +152,7 @@ public class ProcessManager implements ChildVMLauncher {
       }
       holder.waitFor();
       System.out.println("Old process for vm_" + vmNum + " has exited");
-      launchVM(version, vmNum, true);
+      launchVM(version, vmNum, true, null);
     } catch (InterruptedException | IOException e) {
       throw new RuntimeException("Unable to restart VM " + vmNum, e);
     }
@@ -242,10 +243,17 @@ public class ProcessManager implements ChildVMLauncher {
     return classpath;
   }
 
-  private String[] buildJavaCommand(int vmNum, int namingPort, String version) {
+  private String[] buildJavaCommand(int vmNum, int namingPort, String version, String classpath) {
     String cmd = System.getProperty("java.home") + File.separator
         + "bin" + File.separator + "java";
-    String dunitClasspath = System.getProperty("java.class.path");
+
+    String dunitClasspath;
+    if (classpath != null) {
+      dunitClasspath = classpath;
+    } else {
+      dunitClasspath = System.getProperty("java.class.path");
+    }
+
     String separator = File.separator;
     String classPath;
     if (VersionManager.isCurrentVersion(version)) {

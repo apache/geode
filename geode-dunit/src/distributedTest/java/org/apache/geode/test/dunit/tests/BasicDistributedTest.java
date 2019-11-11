@@ -29,7 +29,6 @@ import java.util.Properties;
 import org.junit.Test;
 
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.RMIException;

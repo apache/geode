@@ -19,7 +19,6 @@ import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -30,7 +29,6 @@ import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHel
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.test.dunit.internal.ChildVM;
-import org.apache.geode.test.dunit.internal.DUnitLauncher;
 
 /**
  * {@code DistributedTestUtils} provides static utility methods that affect the runtime environment
@@ -99,7 +97,7 @@ public class DistributedTestUtils {
   }
 
   public static Properties getAllDistributedSystemProperties(final Properties properties) {
-    Properties dsProperties = DUnitLauncher.getDistributedSystemProperties();
+    Properties dsProperties = DUnitEnv.getDistributedSystemProperties();
 
     // our tests do not expect auto-reconnect to be on by default
     if (!dsProperties.contains(DISABLE_AUTO_RECONNECT)) {

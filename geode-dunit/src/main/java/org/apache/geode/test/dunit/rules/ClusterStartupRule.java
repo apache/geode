@@ -107,6 +107,8 @@ public class ClusterStartupRule implements SerializableTestRule {
 
   private boolean logFile = false;
 
+  private String classpath = null;
+
   public ClusterStartupRule() {
     this(NUM_VMS);
   }
@@ -145,13 +147,19 @@ public class ClusterStartupRule implements SerializableTestRule {
     };
   }
 
+  public ClusterStartupRule withClasspath(List<String> elements) {
+    classpath = elements.stream().collect(Collectors.joining(File.pathSeparator));
+
+    return this;
+  }
+
   private void before(Description description) throws Throwable {
     if (isJavaVersionAtLeast(JavaVersion.JAVA_11)) {
       // GEODE-6247: JDK 11 has an issue where native code is reporting committed is 2MB > max.
       IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
     }
     dUnitLauncher = DUnitLauncher.getInstance();
-    dUnitLauncher.launchIfNeeded(false);
+    dUnitLauncher.launchIfNeeded(false, classpath);
     for (int i = 0; i < vmCount; i++) {
       Host.getHost(0).getVM(i);
     }

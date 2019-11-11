@@ -69,6 +69,8 @@ public class VM implements Serializable {
 
   private final transient ChildVMLauncher childVMLauncher;
 
+  private String classpath;
+
   /**
    * Returns the {@code VM} identity. The number returned is a
    * zero-based sequence representing the order in with the DUnit {@code VM}s were launched.
@@ -199,18 +201,22 @@ public class VM implements Serializable {
    * Creates a new {@code VM} that runs on a given host with a given process id.
    */
   public VM(final Host host, final int id, final RemoteDUnitVMIF client,
-      final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher) {
-    this(host, VersionManager.CURRENT_VERSION, id, client, processHolder, childVMLauncher);
+      final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher,
+      final String classpath) {
+    this(host, VersionManager.CURRENT_VERSION, id, client, processHolder, childVMLauncher,
+        classpath);
   }
 
   public VM(final Host host, final String version, final int id, final RemoteDUnitVMIF client,
-      final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher) {
+      final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher,
+      final String classpath) {
     this.host = host;
     this.id = id;
     this.version = version;
     this.client = client;
     this.processHolder = processHolder;
     this.childVMLauncher = childVMLauncher;
+    this.classpath = classpath;
     available = true;
   }
 
@@ -494,7 +500,7 @@ public class VM implements Serializable {
    * @throws RMIException if an exception occurs while bouncing this {@code VM}
    */
   public void bounce() {
-    bounce(version, false);
+    bounce(version, false, classpath);
   }
 
   /**
@@ -511,14 +517,14 @@ public class VM implements Serializable {
    * @throws RMIException if an exception occurs while bouncing this {@code VM}
    */
   public void bounceForcibly() {
-    bounce(version, true);
+    bounce(version, true, classpath);
   }
 
   public void bounce(final String targetVersion) {
-    bounce(targetVersion, false);
+    bounce(targetVersion, false, classpath);
   }
 
-  private synchronized void bounce(final String targetVersion, boolean force) {
+  private synchronized void bounce(final String targetVersion, boolean force, String classpath) {
     checkAvailability(getClass().getName(), "bounceVM");
 
     logger.info("Bouncing {} old pid is {}", id, getPid());
@@ -541,7 +547,7 @@ public class VM implements Serializable {
         executeMethodOnObject(runnable, "run", new Object[0]);
       }
       processHolder.waitFor();
-      processHolder = childVMLauncher.launchVM(targetVersion, id, true);
+      processHolder = childVMLauncher.launchVM(targetVersion, id, true, classpath);
       version = targetVersion;
       client = childVMLauncher.getStub(id);
       available = true;

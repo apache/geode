@@ -41,8 +41,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.internal.index.AbstractIndex;
+import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.ChildVM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
@@ -163,7 +163,7 @@ public class PRQueryWithIndexDistributedTest implements Serializable {
     @Override
     public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
       disallowedPid = in.readInt();
-      if (disallowedPid == ChildVM.getVmNum()) {
+      if (disallowedPid == DUnitEnv.getVMID()) {
         throw new IOException("Cannot deserialize");
       }
     }

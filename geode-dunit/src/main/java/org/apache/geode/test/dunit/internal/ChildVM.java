@@ -22,6 +22,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.version.VersionManager;
 
 public class ChildVM {
@@ -68,6 +69,8 @@ public class ChildVM {
           .lookup("//localhost:" + namingPort + "/" + DUnitLauncher.MASTER_PARAM);
 
       locatorPort = holder.getLocatorPort();
+
+      DUnitEnv.init("localhost", locatorPort, pid, vmNum, null);
 
       final RemoteDUnitVM dunitVM = new RemoteDUnitVM();
       final String name = "//localhost:" + namingPort + "/vm" + vmNum;

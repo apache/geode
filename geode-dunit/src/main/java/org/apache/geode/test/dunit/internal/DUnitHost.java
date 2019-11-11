@@ -32,22 +32,22 @@ class DUnitHost extends Host {
   DUnitHost(String hostName, ProcessManager processManager, VMEventNotifier vmEventNotifier)
       throws RemoteException {
     super(hostName, vmEventNotifier);
-    this.debuggingVM = new VM(this, -1, new RemoteDUnitVM(), null, null);
+    this.debuggingVM = new VM(this, -1, new RemoteDUnitVM(), null, null, null);
     this.processManager = processManager;
     this.vmEventNotifier = vmEventNotifier;
   }
 
-  public void init(int numVMs, boolean launchLocator)
+  public void init(int numVMs, boolean launchLocator, String classpath)
       throws RemoteException, NotBoundException, InterruptedException {
     for (int i = 0; i < numVMs; i++) {
       RemoteDUnitVMIF remote = processManager.getStub(i);
       ProcessHolder processHolder = processManager.getProcessHolder(i);
-      addVM(i, remote, processHolder, processManager);
+      addVM(i, remote, processHolder, processManager, classpath);
     }
 
     if (launchLocator) {
       addLocator(DUnitLauncher.LOCATOR_VM_NUM, processManager.getStub(DUnitLauncher.LOCATOR_VM_NUM),
-          processManager.getProcessHolder(DUnitLauncher.LOCATOR_VM_NUM), processManager);
+          processManager.getProcessHolder(DUnitLauncher.LOCATOR_VM_NUM), processManager, classpath);
     }
 
     addHost(this);
@@ -95,18 +95,20 @@ class DUnitHost extends Host {
       try {
         // first fill in any gaps, to keep the superclass, Host, happy
         for (int i = oldVMCount; i < n; i++) {
-          processManager.launchVM(i);
+          processManager.launchVM(i, null);
         }
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
 
         for (int i = oldVMCount; i < n; i++) {
-          addVM(i, processManager.getStub(i), processManager.getProcessHolder(i), processManager);
+          addVM(i, processManager.getStub(i), processManager.getProcessHolder(i), processManager,
+              null);
         }
 
         // now create the one we really want
-        processManager.launchVM(version, n, false);
+        processManager.launchVM(version, n, false, null);
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
-        addVM(n, processManager.getStub(n), processManager.getProcessHolder(n), processManager);
+        addVM(n, processManager.getStub(n), processManager.getProcessHolder(n), processManager,
+            null);
 
       } catch (IOException | InterruptedException | NotBoundException e) {
         throw new RuntimeException("Could not dynamically launch vm + " + n, e);

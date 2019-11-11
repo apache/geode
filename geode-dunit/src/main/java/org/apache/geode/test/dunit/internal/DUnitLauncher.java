@@ -55,7 +55,9 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.OSProcess;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
+import org.apache.geode.test.dunit.DUnitEnv;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.greplogs.ExpectedStrings;
@@ -108,8 +110,6 @@ public class DUnitLauncher implements Serializable {
 
   private static final String SUSPECT_FILENAME = "dunit_suspect.log";
   private static File DUNIT_SUSPECT_FILE;
-  public static final boolean DUNIT_SUSPECT_LOGGING =
-      Boolean.parseBoolean(System.getProperty("dunit.suspect-logging", "true"));
 
   public static final String DUNIT_DIR = "dunit";
   public static final String WORKSPACE_DIR_PARAM = "WORKSPACE_DIR";
@@ -147,6 +147,10 @@ public class DUnitLauncher implements Serializable {
   }
 
   public void launchIfNeeded(boolean launchLocator) {
+    launchIfNeeded(launchLocator, null);
+  }
+
+  public void launchIfNeeded(boolean launchLocator, String classpath) {
     if (System.getProperties().contains(VM_NUM_PARAM)) {
       // we're a dunit child vm, do nothing.
       return;
@@ -154,7 +158,7 @@ public class DUnitLauncher implements Serializable {
 
     if (!isLaunched()) {
       try {
-        launch(launchLocator);
+        launch(launchLocator, classpath);
       } catch (Exception e) {
         throw new RuntimeException("Unable to launch dunit VMs", e);
       }
@@ -183,7 +187,8 @@ public class DUnitLauncher implements Serializable {
     return locatorPort;
   }
 
-  private synchronized void launch(boolean launchLocator) throws AlreadyBoundException, IOException,
+  private synchronized void launch(boolean launchLocator, String classpath)
+      throws AlreadyBoundException, IOException,
       InterruptedException, NotBoundException {
     DUNIT_SUSPECT_FILE = new File(SUSPECT_FILENAME);
     DUNIT_SUSPECT_FILE.delete();
@@ -210,7 +215,7 @@ public class DUnitLauncher implements Serializable {
 
     if (launchLocator) {
       // Create a VM for the locator
-      processManager.launchVM(LOCATOR_VM_NUM);
+      processManager.launchVM(LOCATOR_VM_NUM, classpath);
 
       // wait for the VM to start up
       if (!processManager.waitForVMs(STARTUP_TIMEOUT)) {
@@ -225,7 +230,7 @@ public class DUnitLauncher implements Serializable {
 
     // Launch an initial set of VMs
     for (int i = 0; i < NUM_VMS; i++) {
-      processManager.launchVM(i);
+      processManager.launchVM(i, classpath);
     }
 
     // wait for the VMS to start up
@@ -237,7 +242,7 @@ public class DUnitLauncher implements Serializable {
     DUnitHost host =
         new DUnitHost(InetAddress.getLocalHost().getCanonicalHostName(), processManager,
             vmEventNotifier);
-    host.init(NUM_VMS, launchLocator);
+    host.init(NUM_VMS, launchLocator, classpath);
 
     launched = true;
   }
@@ -322,14 +327,13 @@ public class DUnitLauncher implements Serializable {
   }
 
   public void init(MasterRemote master) {
-    // DUnitEnv.set(new StandAloneDUnitEnv(master));
+    DUnitEnv.init("localhost", locatorPort, OSProcess.getId(), -1, null);
+
     // fake out tests that are using a bunch of hydra stuff
     String workspaceDir = System.getProperty(DUnitLauncher.WORKSPACE_DIR_PARAM);
     workspaceDir = workspaceDir == null ? new File(".").getAbsolutePath() : workspaceDir;
 
-    if (DUNIT_SUSPECT_LOGGING) {
-      addSuspectFileAppender(workspaceDir);
-    }
+    addSuspectFileAppender(workspaceDir);
 
     // Free off heap memory when disconnecting from the distributed system
     System.setProperty(GEMFIRE_PREFIX + "free-off-heap-memory", "true");

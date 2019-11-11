@@ -68,7 +68,7 @@ public class LogWriterUtils {
    * @return the dunit log-level setting
    */
   public static String getDUnitLogLevel() {
-    Properties dsProperties = DUnitEnv.get().getDistributedSystemProperties();
+    Properties dsProperties = DUnitEnv.getDistributedSystemProperties();
     String result = dsProperties.getProperty(LOG_LEVEL);
     if (result == null) {
       result = LogWriterLogger.levelToString(DistributionConfig.DEFAULT_LOG_LEVEL);

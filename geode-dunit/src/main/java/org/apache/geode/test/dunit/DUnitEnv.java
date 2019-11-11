@@ -14,11 +14,15 @@
  */
 package org.apache.geode.test.dunit;
 
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS;
+
 import java.io.File;
-import java.rmi.RemoteException;
 import java.util.Properties;
 
-import org.apache.geode.test.dunit.internal.BounceResult;
 
 /**
  * This class provides an abstraction over the environment that is used to run dunit. This will
@@ -28,38 +32,64 @@ import org.apache.geode.test.dunit.internal.BounceResult;
  * Any dunit tests that rely on hydra configuration should go through here, so that we can separate
  * them out from depending on hydra and run them on a different VM launching system.
  */
-public abstract class DUnitEnv {
+public class DUnitEnv {
 
   private static DUnitEnv instance = null;
 
-  public static DUnitEnv get() {
+  private final String locatorHost;
+  private final int locatorPort;
+  private final int pid;
+  private final int vmId;
+  private final File workingDir;
+
+  private DUnitEnv(String locatorHost, int locatorPort, int pid, int vmId, File workingDir) {
+    this.locatorHost = locatorHost;
+    this.locatorPort = locatorPort;
+    this.pid = pid;
+    this.vmId = vmId;
+    this.workingDir = workingDir;
+  }
+
+  public static void init(String locatorHost, int locatorPort, int pid, int vmId, File workingDir) {
+    instance = new DUnitEnv(locatorHost, locatorPort, pid, vmId, workingDir);
+  }
+
+  private static DUnitEnv get() {
     if (instance == null) {
       throw new Error("Distributed unit test environment is not initialized");
     }
     return instance;
   }
 
-  public static void set(DUnitEnv dunitEnv) {
-    instance = dunitEnv;
+  public static String getLocatorString() {
+    return String.format("%s[%d]", get().locatorHost, get().locatorPort);
   }
 
-  public abstract String getLocatorString();
+  public static int getLocatorPort() {
+    return get().locatorPort;
+  }
 
-  public abstract String getLocatorAddress();
+  public static Properties getDistributedSystemProperties() {
+    Properties p = new Properties();
+    p.setProperty(LOCATORS, getLocatorString());
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(VALIDATE_SERIALIZABLE_OBJECTS, "true");
+    // p.setProperty(LOG_LEVEL, logLevel);
+    return p;
+  }
 
-  public abstract int getLocatorPort();
+  public static int getPid() {
+    return get().pid;
+  }
 
-  public abstract Properties getDistributedSystemProperties();
+  public static int getVMID() {
+    return get().vmId;
+  }
 
-  public abstract int getPid();
-
-  public abstract int getVMID();
-
-  public abstract BounceResult bounce(String version, int pid, boolean force)
-      throws RemoteException;
-
-  public abstract File getWorkingDirectory(int pid);
-
-  public abstract File getWorkingDirectory(String version, int pid);
+  public static File getWorkingDirectory(int pid) {
+    return get().workingDir;
+  }
 
 }
