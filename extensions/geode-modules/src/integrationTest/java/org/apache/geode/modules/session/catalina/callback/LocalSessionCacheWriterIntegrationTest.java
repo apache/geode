@@ -61,7 +61,7 @@ public class LocalSessionCacheWriterIntegrationTest {
     ExceptionThrower.throwExceptionOnDestroy.set(false);
   }
 
-  public void parametrizedSetUp(RegionShortcut regionShortcut) {
+  public void parameterizedSetUp(RegionShortcut regionShortcut) {
     backingHttpSessionRegion = server.getCache()
         .<String, HttpSession>createRegionFactory(regionShortcut)
         .setCacheWriter(new ExceptionThrower())
@@ -77,7 +77,7 @@ public class LocalSessionCacheWriterIntegrationTest {
   @Parameters({"REPLICATE", "PARTITION"})
   public void createAndUpdateShouldBeAppliedToLocalRegionWhenTheySucceededOnTheBackingRegion(
       RegionShortcut regionShortcut) {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
 
     // First time - Create
     localHttpSessionRegion.put(SESSION_ID, mockSession);
@@ -98,7 +98,7 @@ public class LocalSessionCacheWriterIntegrationTest {
   @Parameters({"REPLICATE", "PARTITION"})
   public void createAndUpdateShouldNotBeAppliedToLocalRegionWhenTheyFailedOnTheBackingRegion(
       RegionShortcut regionShortcut) {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
 
     // First time - Create
     ExceptionThrower.throwExceptionOnCreate.set(true);
@@ -125,7 +125,7 @@ public class LocalSessionCacheWriterIntegrationTest {
   @Parameters({"REPLICATE", "PARTITION"})
   public void destroyShouldBeAppliedToLocalRegionWhenItSucceededOnTheBackingRegion(
       RegionShortcut regionShortcut) {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     localHttpSessionRegion.put(SESSION_ID, mockSession);
     assertThat(backingHttpSessionRegion.size()).isEqualTo(1);
     assertThat(localHttpSessionRegion.size()).isEqualTo(1);
@@ -139,7 +139,7 @@ public class LocalSessionCacheWriterIntegrationTest {
   @Parameters({"REPLICATE", "PARTITION"})
   public void destroyShouldBeAppliedToLocalRegionEvenWhenItFailedOnTheBackingRegionWithEntryNotFoundException(
       RegionShortcut regionShortcut) {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     localHttpSessionRegion.put(SESSION_ID, mockSession);
     backingHttpSessionRegion.destroy(SESSION_ID);
     assertThat(localHttpSessionRegion.size()).isEqualTo(1);
@@ -153,7 +153,7 @@ public class LocalSessionCacheWriterIntegrationTest {
   @Parameters({"REPLICATE", "PARTITION"})
   public void destroyShouldNotBeAppliedToLocalRegionWhenItFailedOnTheBackingRegion(
       RegionShortcut regionShortcut) {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     localHttpSessionRegion.put(SESSION_ID, mockSession);
     assertThat(backingHttpSessionRegion.size()).isEqualTo(1);
     assertThat(localHttpSessionRegion.size()).isEqualTo(1);

@@ -51,7 +51,7 @@ public class DeltaSessionAttributeEventBatchIntegrationTest
   @Test
   @Parameters({"REPLICATE", "PARTITION"})
   public void applyBatchShouldNotDoAnythingIfSessionIdDoesNotExist(RegionShortcut regionShortcut) {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     DeltaSessionAttributeEventBatch deltaSessionAttributeEventBatch =
         new DeltaSessionAttributeEventBatch(REGION_NAME, "fakeSessionId",
             Collections.singletonList(new DeltaSessionDestroyAttributeEvent(FIRST_ATTRIBUTE_KEY)));
@@ -67,7 +67,7 @@ public class DeltaSessionAttributeEventBatchIntegrationTest
   @Test
   @Parameters({"REPLICATE", "PARTITION"})
   public void applyBatchShouldApplyRemoteEventsOnLocalSession(RegionShortcut regionShortcut) {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     List<DeltaSessionAttributeEvent> queue = new ArrayList<>();
     queue.add(new DeltaSessionDestroyAttributeEvent(SECOND_ATTRIBUTE_KEY));
     queue.add(new DeltaSessionUpdateAttributeEvent(FIRST_ATTRIBUTE_KEY, SECOND_ATTRIBUTE_VALUE));

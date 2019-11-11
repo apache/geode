@@ -45,7 +45,7 @@ public class DeltaSessionDestroyAttributeEventIntegrationTest
   @Parameters({"REPLICATE", "PARTITION"})
   public void applyShouldDestroyTheSessionAttributeFromTheLocalCacheEntry(
       RegionShortcut regionShortcut) {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     DeltaSessionDestroyAttributeEvent destroyEvent =
         new DeltaSessionDestroyAttributeEvent(FIRST_ATTRIBUTE_KEY);
 

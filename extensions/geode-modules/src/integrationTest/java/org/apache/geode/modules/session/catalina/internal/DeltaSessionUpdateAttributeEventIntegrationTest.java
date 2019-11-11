@@ -46,7 +46,7 @@ public class DeltaSessionUpdateAttributeEventIntegrationTest
   @Parameters({"REPLICATE", "PARTITION"})
   public void applyShouldUpdateTheSessionAttributeWithinTheLocalCacheEntry(
       RegionShortcut regionShortcut) {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     DeltaSessionUpdateAttributeEvent updateAttributeEvent =
         new DeltaSessionUpdateAttributeEvent(FIRST_ATTRIBUTE_KEY, SECOND_ATTRIBUTE_VALUE);
 

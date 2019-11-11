@@ -49,7 +49,7 @@ public class LocalSessionCacheLoaderIntegrationTest {
     mockSession = new TestDeltaSession(SESSION_ID, "mockSession");
   }
 
-  public void parametrizedSetUp(RegionShortcut regionShortcut) {
+  public void parameterizedSetUp(RegionShortcut regionShortcut) {
     Region<String, HttpSession> backingHttpSessionRegion = server.getCache()
         .<String, HttpSession>createRegionFactory(regionShortcut)
         .create(REGION_NAME);
@@ -64,7 +64,7 @@ public class LocalSessionCacheLoaderIntegrationTest {
   @Test
   @Parameters({"REPLICATE", "PARTITION"})
   public void getShouldReturnEntryFromTheBackingRegion(RegionShortcut regionShortcut) {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
 
     HttpSession session = localHttpSessionRegion.get(SESSION_ID);
     assertThat(session).isEqualTo(mockSession);

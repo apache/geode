@@ -58,8 +58,8 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
     jvmRouteBinderValve.setNext(testValve);
   }
 
-  protected void parametrizedSetUp(RegionShortcut regionShortcut) {
-    super.parametrizedSetUp(regionShortcut);
+  protected void parameterizedSetUp(RegionShortcut regionShortcut) {
+    super.parameterizedSetUp(regionShortcut);
     when(request.getContext()).thenReturn(mock(Context.class));
   }
 
@@ -67,7 +67,7 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldCallNextChainedValveAndDoNothingWhenSessionManagerDoesNotBelongToGeode(
       RegionShortcut regionShortcut) throws IOException, ServletException {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     when(request.getContext().getManager()).thenReturn(mock(Manager.class));
 
     jvmRouteBinderValve.invoke(request, response);
@@ -79,7 +79,7 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldCallNextChainedValveAndDoNothingWhenSessionManagerBelongsToGeodeButJvmRouteIsNull(
       RegionShortcut regionShortcut) throws IOException, ServletException {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     doReturn(null).when(deltaSessionManager).getJvmRoute();
     when(request.getContext().getManager()).thenReturn(deltaSessionManager);
 
@@ -93,7 +93,7 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldNotFailoverWhenRequestedSessionIdIsNull(RegionShortcut regionShortcut)
       throws IOException, ServletException {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     when(deltaSessionManager.getJvmRoute()).thenReturn("");
     when(request.getRequestedSessionId()).thenReturn(null);
     when(request.getContext().getManager()).thenReturn(deltaSessionManager);
@@ -108,7 +108,7 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldNotFailoverWhenJvmRouteWithinTheRequestedSessionIdIsNull(
       RegionShortcut regionShortcut) throws IOException, ServletException {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     when(deltaSessionManager.getJvmRoute()).thenReturn("");
     when(request.getContext().getManager()).thenReturn(deltaSessionManager);
     when(request.getRequestedSessionId()).thenReturn(UUID.randomUUID().toString());
@@ -123,7 +123,7 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldNotFailoverWhenJvmRouteWithinTheRequestedSessionIsSameAsLocalJvmRoute(
       RegionShortcut regionShortcut) throws IOException, ServletException {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     when(deltaSessionManager.getJvmRoute()).thenReturn(TEST_JVM_ROUTE);
     when(request.getRequestedSessionId()).thenReturn(TEST_SESSION_ID);
     when(request.getContext().getManager()).thenReturn(deltaSessionManager);
@@ -138,7 +138,7 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldNotFailoverWhenJvmRoutesDifferAndManagerCanNotFindOriginalSession(
       RegionShortcut regionShortcut) throws IOException, ServletException {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     when(deltaSessionManager.getJvmRoute()).thenReturn("jvmRoute");
     doCallRealMethod().when(deltaSessionManager).findSession(anyString());
     when(request.getContext().getManager()).thenReturn(deltaSessionManager);
@@ -154,7 +154,7 @@ public class JvmRouteBinderValveIntegrationTest extends AbstractSessionValveInte
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldCorrectlyHandleSessionFailover(RegionShortcut regionShortcut)
       throws IOException, ServletException {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     when(deltaSessionManager.getJvmRoute()).thenReturn("jvmRoute");
     when(deltaSessionManager.getContextName()).thenReturn(TEST_CONTEXT);
     when(deltaSessionManager.getContainer()).thenReturn(mock(Context.class));

@@ -71,7 +71,7 @@ public abstract class AbstractDeltaSessionIntegrationTest {
     when(deltaSessionManager.getSessionCache().getOperatingRegion()).thenReturn(httpSessionRegion);
   }
 
-  void parametrizedSetUp(RegionShortcut regionShortcut) {
+  void parameterizedSetUp(RegionShortcut regionShortcut) {
     httpSessionRegion = server.getCache()
         .<String, HttpSession>createRegionFactory(regionShortcut)
         .create(REGION_NAME);

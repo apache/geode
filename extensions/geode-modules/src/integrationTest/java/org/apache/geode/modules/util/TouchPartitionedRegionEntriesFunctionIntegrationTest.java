@@ -14,6 +14,7 @@
  */
 package org.apache.geode.modules.util;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -81,12 +82,12 @@ public class TouchPartitionedRegionEntriesFunctionIntegrationTest {
   }
 
   @Test
-  public void executeShouldUpdateEntryLastAccessedTimeForKeysPresentInTheFilter()
-      throws InterruptedException {
+  public void executeShouldUpdateEntryLastAccessedTimeForKeysPresentInTheFilter() {
     Set<String> keysToTouch = new HashSet<>(Arrays.asList("key_1", "key_5", "key_3"));
 
-    // Sleep 10 seconds.
-    Thread.sleep(10000);
+    // Wait until time passes.
+    long currentTime = System.nanoTime();
+    await().untilAsserted(() -> assertThat(System.nanoTime()).isGreaterThan(currentTime));
 
     // Execute function on specific keys.
     @SuppressWarnings("unchecked")
@@ -104,7 +105,7 @@ public class TouchPartitionedRegionEntriesFunctionIntegrationTest {
       if (!keysToTouch.contains(key)) {
         assertThat(laTime - savedLastAccessedTime).isEqualTo(0);
       } else {
-        assertThat(laTime - savedLastAccessedTime).isGreaterThan(10000);
+        assertThat(laTime - savedLastAccessedTime).isNotEqualTo(0);
       }
     });
   }

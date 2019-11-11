@@ -60,7 +60,7 @@ public class AbstractSessionValveIntegrationTest {
     when(deltaSessionManager.getSessionCache()).thenReturn(mockSessionCache);
   }
 
-  protected void parametrizedSetUp(RegionShortcut regionShortcut) {
+  protected void parameterizedSetUp(RegionShortcut regionShortcut) {
     httpSessionRegion = server.getCache()
         .<String, HttpSession>createRegionFactory(regionShortcut)
         .create(REGION_NAME);

@@ -59,8 +59,8 @@ public class CommitSessionValveIntegrationTest extends AbstractSessionValveInteg
     commitSessionValve.setNext(testValve);
   }
 
-  protected void parametrizedSetUp(RegionShortcut regionShortcut) {
-    super.parametrizedSetUp(regionShortcut);
+  protected void parameterizedSetUp(RegionShortcut regionShortcut) {
+    super.parameterizedSetUp(regionShortcut);
 
     deltaSessionFacade = new DeltaSessionFacade(deltaSession);
     when(request.getContext()).thenReturn(mock(Context.class));
@@ -74,7 +74,7 @@ public class CommitSessionValveIntegrationTest extends AbstractSessionValveInteg
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldCallNextChainedValveAndDoNothingWhenSessionManagerDoesNotBelongToGeode(
       RegionShortcut regionShortcut) throws IOException, ServletException {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     when(request.getContext().getManager()).thenReturn(mock(Manager.class));
 
     commitSessionValve.invoke(request, response);
@@ -86,7 +86,7 @@ public class CommitSessionValveIntegrationTest extends AbstractSessionValveInteg
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldCallNextChainedValveAndDoNothingWhenSessionManagerBelongsToGeodeButSessionDoesNotExist(
       RegionShortcut regionShortcut) throws IOException, ServletException {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     doReturn(null).when(request).getSession(false);
     when(request.getContext().getManager()).thenReturn(deltaSessionManager);
 
@@ -100,7 +100,7 @@ public class CommitSessionValveIntegrationTest extends AbstractSessionValveInteg
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldCallNextChainedValveAndDoNothingWhenSessionManagerBelongsToGeodeAndSessionExistsButIsNotValid(
       RegionShortcut regionShortcut) throws IOException, ServletException {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     doReturn(false).when(deltaSession).isValid();
     doReturn(deltaSessionFacade).when(request).getSession(false);
     when(request.getContext().getManager()).thenReturn(deltaSessionManager);
@@ -115,7 +115,7 @@ public class CommitSessionValveIntegrationTest extends AbstractSessionValveInteg
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldCallNextChainedValveAndCommitTheExistingValidSessionWhenSessionManagerBelongsToGeode(
       RegionShortcut regionShortcut) throws IOException, ServletException {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     deltaSessionManager.addSessionToTouch(TEST_SESSION_ID);
     doReturn(deltaSessionFacade).when(request).getSession(false);
     when(request.getContext().getManager()).thenReturn(deltaSessionManager);
@@ -130,7 +130,7 @@ public class CommitSessionValveIntegrationTest extends AbstractSessionValveInteg
   @Parameters({"REPLICATE", "PARTITION"})
   public void invokeShouldCommitTheExistingValidSessionWhenSessionManagerBelongsToGeodeEvenWhenTheNextChainedValveThrowsAnException(
       RegionShortcut regionShortcut) {
-    parametrizedSetUp(regionShortcut);
+    parameterizedSetUp(regionShortcut);
     TestValve exceptionValve = new TestValve(true);
     commitSessionValve.setNext(exceptionValve);
     deltaSessionManager.addSessionToTouch(TEST_SESSION_ID);
