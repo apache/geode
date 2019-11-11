@@ -1683,6 +1683,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   private void setNewValueInRegion(final InternalRegion owner, final RegionEntry reentry,
       Object oldValueForDelta) throws RegionClearedException {
 
+    logger.info("JASON setNewValueInRegion:" + reentry + ":" + oldValueForDelta);
     boolean wasTombstone = reentry.isTombstone();
 
     // put in newValue
@@ -1724,6 +1725,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       v = CachedDeserializableFactory.create(v, vSize, getRegion().getCache());
       basicSetNewValue(v, true);
     }
+    logger.info("JASON successfully passed p1");
 
     Object preparedV = reentry.prepareValueForCache(getRegion(), v, this, false);
     if (preparedV != v) {
@@ -1736,6 +1738,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
         }
       }
     }
+    logger.info("JASON successfully passed p2");
+
     boolean isTombstone = (v == Token.TOMBSTONE);
     boolean success = false;
     boolean calledSetValue = false;
@@ -1788,6 +1792,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (!isTombstone && wasTombstone) {
       owner.unscheduleTombstone(reentry);
     }
+    logger.info("JASON returnning for :" + reentry + ":" + oldValueForDelta);
   }
 
   /**
