@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.test.dunit.internal.ChildVM;
 import org.apache.geode.test.dunit.internal.ChildVMLauncher;
 import org.apache.geode.test.dunit.internal.MethodInvokerResult;
 import org.apache.geode.test.dunit.internal.ProcessHolder;
@@ -76,7 +75,7 @@ public class VM implements Serializable {
    * zero-based sequence representing the order in with the DUnit {@code VM}s were launched.
    */
   public static int getCurrentVMNum() {
-    return ChildVM.getVmNum();
+    return DUnitEnv.getVMID();
   }
 
   /**

@@ -52,7 +52,8 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM puneLocator = Host.getLocator();
 
-    int dsIdPort = puneLocator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int locatorPort = getLocatorPort();
+    int dsIdPort = puneLocator.invoke(() -> locatorPort);
 
     Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 
@@ -113,7 +114,8 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM puneSender = getManagedNodeList().get(2);
     VM puneLocator = Host.getLocator();
 
-    int dsIdPort = puneLocator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int locatorPort = getLocatorPort();
+    int dsIdPort = puneLocator.invoke(() -> locatorPort);
 
     Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 
@@ -169,7 +171,8 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM puneLocator = Host.getLocator();
 
-    int dsIdPort = puneLocator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int locatorPort = getLocatorPort();
+    int dsIdPort = puneLocator.invoke(() -> locatorPort);
 
     Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 
@@ -215,7 +218,8 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM puneLocator = Host.getLocator();
 
-    int dsIdPort = puneLocator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int locatorPort = getLocatorPort();
+    int dsIdPort = puneLocator.invoke(() -> locatorPort);
 
     Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 
@@ -253,7 +257,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managerVm = getManagingNode();
     VM locatorVm = Host.getLocator();
 
-    int locatorPort = locatorVm.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int locatorPort = getLocatorPort();
 
     memberVM.invoke(() -> WANTestBase.createCache(locatorPort));
     managerVm.invoke(() -> WANTestBase.createManagementCache(locatorPort));
@@ -288,10 +292,10 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM sender = getManagedNodeList().get(0);
 
-    int dsIdPort = locator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int locatorPort = getLocatorPort();
 
-    sender.invoke(() -> WANTestBase.createCache(dsIdPort));
-    managing.invoke(() -> WANTestBase.createManagementCache(dsIdPort));
+    sender.invoke(() -> WANTestBase.createCache(locatorPort));
+    managing.invoke(() -> WANTestBase.createManagementCache(locatorPort));
     startManagingNode(managing);
 
     sender
@@ -321,7 +325,8 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM puneLocator = Host.getLocator();
 
-    int dsIdPort = puneLocator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int locatorPort = getLocatorPort();
+    int dsIdPort = puneLocator.invoke(() -> locatorPort);
 
     Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 

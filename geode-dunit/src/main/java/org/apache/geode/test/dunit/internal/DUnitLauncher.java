@@ -250,7 +250,7 @@ public class DUnitLauncher implements Serializable {
   public static Properties getDistributedSystemProperties() {
     Properties p = new Properties();
     p.setProperty(LOCATORS,
-        instance != null ? instance.getLocatorString() : ChildVM.getLocatorString());
+        instance != null ? instance.getLocatorString() : DUnitEnv.getLocatorString());
     p.setProperty(MCAST_PORT, "0");
     p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     p.setProperty(USE_CLUSTER_CONFIGURATION, "false");

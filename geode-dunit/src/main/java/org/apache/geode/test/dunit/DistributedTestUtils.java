@@ -28,7 +28,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
-import org.apache.geode.test.dunit.internal.ChildVM;
 
 /**
  * {@code DistributedTestUtils} provides static utility methods that affect the runtime environment
@@ -127,7 +126,7 @@ public class DistributedTestUtils {
    * Returns the port that the standard dunit locator is listening on.
    */
   public static int getLocatorPort() {
-    return ChildVM.getLocatorPort();
+    return DUnitEnv.getLocatorPort();
   }
 
   /**

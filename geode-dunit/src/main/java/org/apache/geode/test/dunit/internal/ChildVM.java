@@ -31,8 +31,6 @@ public class ChildVM {
 
   private static int vmNum = -1;
 
-  private static int locatorPort;
-
   /**
    * tells the main() loop to exit
    */
@@ -41,18 +39,6 @@ public class ChildVM {
   }
 
   private static final Logger logger = LogService.getLogger();
-
-  public static int getVmNum() {
-    return vmNum;
-  }
-
-  public static int getLocatorPort() {
-    return locatorPort;
-  }
-
-  public static String getLocatorString() {
-    return String.format("localhost[%d]", locatorPort);
-  }
 
   public static void main(String[] args) throws Throwable {
     try {
@@ -68,7 +54,7 @@ public class ChildVM {
       MasterRemote holder = (MasterRemote) Naming
           .lookup("//localhost:" + namingPort + "/" + DUnitLauncher.MASTER_PARAM);
 
-      locatorPort = holder.getLocatorPort();
+      int locatorPort = holder.getLocatorPort();
 
       DUnitEnv.init("localhost", locatorPort, pid, vmNum, null);
 
