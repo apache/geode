@@ -25,6 +25,10 @@ import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 public class DeltaSessionDestroyAttributeEvent implements DeltaSessionAttributeEvent {
   private String attributeName;
 
+  String getAttributeName() {
+    return attributeName;
+  }
+
   @SuppressWarnings("unused")
   public DeltaSessionDestroyAttributeEvent() {}
 
