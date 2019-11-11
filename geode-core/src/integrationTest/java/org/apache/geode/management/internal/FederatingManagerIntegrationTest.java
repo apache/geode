@@ -14,97 +14,79 @@
  */
 package org.apache.geode.management.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
-import static org.apache.geode.management.internal.SystemManagementService.FEDERATING_MANAGER_FACTORY_PROPERTY;
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
-import java.net.UnknownHostException;
-import java.util.concurrent.ExecutorService;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.concurrent.Executors;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.statistics.StatisticsClock;
-import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.junit.categories.JMXTest;
 
 @Category(JMXTest.class)
 public class FederatingManagerIntegrationTest {
-
-  private InternalCache cache;
-  private FederatingManager federatingManager;
-
   @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+
+  @Mock
+  public InternalCache cache;
+  @Mock
+  public InternalCacheForClientAccess cacheForClientAccess;
+  @Mock
+  public MBeanProxyFactory proxyFactory;
+  @Mock
+  public MemberMessenger messenger;
+  @Mock
+  public ManagementResourceRepo repo;
+  @Mock
+  public SystemManagementService service;
+  @Mock
+  public StatisticsFactory statisticsFactory;
+  @Mock
+  public StatisticsClock statisticsClock;
+  @Mock
+  public InternalDistributedSystem system;
+  @Mock
+  public DistributionManager distributionManager;
 
   @Before
-  public void setUp() {
-    System.setProperty(FEDERATING_MANAGER_FACTORY_PROPERTY,
-        FederatingManagerFactoryWithMockMessenger.class.getName());
-
-    cache = (InternalCache) new CacheFactory()
-        .set(LOCATORS, "")
-        .create();
-
-    SystemManagementService managementService =
-        (SystemManagementService) ManagementService.getExistingManagementService(cache);
-    managementService.createManager();
-    federatingManager = managementService.getFederatingManager();
-    federatingManager.startManager();
-  }
-
-  @After
-  public void tearDown() {
-    cache.close();
+  public void setUp() throws IOException, ClassNotFoundException {
+    when(cache.getCacheForProcessingClientRequests())
+        .thenReturn(cacheForClientAccess);
+    when(system.getDistributionManager())
+        .thenReturn(distributionManager);
   }
 
   @Test
-  public void testFederatingManagerConcurrency() throws UnknownHostException {
-    InternalDistributedMember member = member();
+  public void restartDoesNotThrowIfOtherMembersExist() {
+    when(distributionManager.getOtherDistributionManagerIds())
+        .thenReturn(Collections.singleton(mock(InternalDistributedMember.class)));
 
-    for (int i = 1; i <= 100; i++) {
-      federatingManager.addMember(member);
-    }
+    FederatingManager federatingManager =
+        new FederatingManager(repo, system, service, cache, statisticsFactory,
+            statisticsClock, proxyFactory, messenger, Executors::newSingleThreadExecutor);
 
-    await().until(() -> !cache.getAllRegions().isEmpty());
+    federatingManager.startManager();
+    federatingManager.stopManager();
 
-    assertThat(federatingManager.getAndResetLatestException()).isNull();
-  }
-
-  private InternalDistributedMember member() throws UnknownHostException {
-    InternalDistributedMember member = mock(InternalDistributedMember.class);
-    when(member.getInetAddress()).thenReturn(getLocalHost());
-    when(member.getId()).thenReturn("member-1");
-    return member;
-  }
-
-  private static class FederatingManagerFactoryWithMockMessenger
-      implements FederatingManagerFactory {
-
-    public FederatingManagerFactoryWithMockMessenger() {
-      // must be public for instantiation by reflection
-    }
-
-    @Override
-    public FederatingManager create(ManagementResourceRepo repo, InternalDistributedSystem system,
-        SystemManagementService service, InternalCache cache, StatisticsFactory statisticsFactory,
-        StatisticsClock statisticsClock, MBeanProxyFactory proxyFactory, MemberMessenger messenger,
-        ExecutorService executorService) {
-      return new FederatingManager(repo, system, service, cache, statisticsFactory,
-          statisticsClock, proxyFactory, mock(MemberMessenger.class), executorService);
-    }
+    assertThatCode(federatingManager::startManager)
+        .doesNotThrowAnyException();
   }
 }
