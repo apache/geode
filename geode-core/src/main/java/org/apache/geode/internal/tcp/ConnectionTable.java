@@ -50,9 +50,9 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCloser;
+import org.apache.geode.internal.util.JavaWorkarounds;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.internal.util.JavaWorkarounds;
 
 /**
  * <p>
