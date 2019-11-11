@@ -260,10 +260,17 @@ public class DUnitLauncher {
   private static void addSuspectFileAppender(final String workspaceDir) {
     final String suspectFilename = new File(workspaceDir, SUSPECT_FILENAME).getAbsolutePath();
 
+
+    Object mainLogger = LogManager.getLogger(LoggingProvider.MAIN_LOGGER_NAME);
+    if (!(mainLogger instanceof org.apache.logging.log4j.core.Logger)) {
+      System.err.format(
+          "Unable to configure suspect file appender - cannot retrieve LoggerContext from type: %s\n",
+          mainLogger.getClass().getName());
+      return;
+    }
+
     final LoggerContext appenderContext =
-        ((org.apache.logging.log4j.core.Logger) LogManager
-            .getLogger(LoggingProvider.MAIN_LOGGER_NAME))
-                .getContext();
+        ((org.apache.logging.log4j.core.Logger) mainLogger).getContext();
 
     final PatternLayout layout = PatternLayout.createLayout(
         "[%level{lowerCase=true} %date{yyyy/MM/dd HH:mm:ss.SSS z} <%thread> tid=%tid] %message%n%throwable%n",

@@ -28,8 +28,11 @@ import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 
 @SuppressWarnings("serial")
 public class DeltaSessionAttributeEventBatch extends AbstractGatewayDeltaEvent {
-
   private List<DeltaSessionAttributeEvent> eventQueue;
+
+  List<DeltaSessionAttributeEvent> getEventQueue() {
+    return eventQueue;
+  }
 
   @SuppressWarnings("unused")
   public DeltaSessionAttributeEventBatch() {}

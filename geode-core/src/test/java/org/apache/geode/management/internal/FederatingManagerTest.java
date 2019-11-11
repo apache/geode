@@ -25,6 +25,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.net.InetAddress;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -413,6 +414,19 @@ public class FederatingManagerTest {
 
     assertThat(thrown)
         .isNull();
+  }
+
+  @Test
+  public void startManagerGetsNewExecutorServiceFromSupplier() {
+    @SuppressWarnings("unchecked")
+    Supplier<ExecutorService> executorServiceSupplier = mock(Supplier.class);
+    when(executorServiceSupplier.get()).thenReturn(mock(ExecutorService.class));
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock, proxyFactory, messenger, executorServiceSupplier);
+
+    federatingManager.startManager();
+
+    verify(executorServiceSupplier).get();
   }
 
   private InternalDistributedMember member() {

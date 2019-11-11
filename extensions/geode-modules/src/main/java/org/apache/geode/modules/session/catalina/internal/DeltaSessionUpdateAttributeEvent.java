@@ -26,6 +26,14 @@ public class DeltaSessionUpdateAttributeEvent implements DeltaSessionAttributeEv
   private String attributeName;
   private Object attributeValue;
 
+  String getAttributeName() {
+    return attributeName;
+  }
+
+  Object getAttributeValue() {
+    return attributeValue;
+  }
+
   @SuppressWarnings("unused")
   public DeltaSessionUpdateAttributeEvent() {}
 

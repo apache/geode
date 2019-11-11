@@ -249,7 +249,7 @@ public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
             .map(p -> p.shortID).orElse((short) -1));
   }
 
-  public void parametrizedSetUp(boolean usePdx) {
+  public void parameterizedSetUp(boolean usePdx) {
     if (!usePdx) {
       prepareStructures();
     } else {
@@ -265,7 +265,7 @@ public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
   @TestCaseName("[{index}] {method}(RegionType:{0},PDX:{1})")
   public void maxShouldWorkCorrectlyOnDifferentRegionTypes(RegionShortcut regionShortcut,
       boolean usePdx) throws Exception {
-    parametrizedSetUp(usePdx);
+    parameterizedSetUp(usePdx);
     createAndPopulateRegion(firstRegionName, regionShortcut, regionOneLocalCopy);
     QueryService queryService = server.getCache().getQueryService();
 
@@ -288,7 +288,7 @@ public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
   @TestCaseName("[{index}] {method}(RegionType:{0},PDX:{1})")
   public void maxShouldWorkCorrectlyOnDifferentRegionTypesWithIndexes(RegionShortcut regionShortcut,
       boolean usePdx) throws Exception {
-    parametrizedSetUp(usePdx);
+    parameterizedSetUp(usePdx);
     createRegion(firstRegionName, regionShortcut);
     QueryService queryService = server.getCache().getQueryService();
     queryService.createIndex("sampleIndex-1", "p.ID", "/" + firstRegionName + " p");
@@ -314,7 +314,7 @@ public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
   @Parameters({"LOCAL, true", "LOCAL, false", "REPLICATE, true", "REPLICATE, false"})
   public void maxWithEquiJoinShouldWorkCorrectlyOnDifferentRegionTypes(
       RegionShortcut regionShortcut, boolean usePdx) throws Exception {
-    parametrizedSetUp(usePdx);
+    parameterizedSetUp(usePdx);
     createAndPopulateRegion(firstRegionName, regionShortcut, regionOneLocalCopy);
     createAndPopulateRegion(secondRegionName, regionShortcut, regionTwoLocalCopy);
     QueryService queryService = server.getCache().getQueryService();
@@ -335,7 +335,7 @@ public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTes
   @Parameters({"LOCAL, true", "LOCAL, false", "REPLICATE, true", "REPLICATE, false"})
   public void maxWithEquiJoinShouldWorkCorrectlyOnDifferentRegionTypesWithIndexes(
       RegionShortcut regionShortcut, boolean usePdx) throws Exception {
-    parametrizedSetUp(usePdx);
+    parameterizedSetUp(usePdx);
     createRegion(firstRegionName, regionShortcut);
     createRegion(secondRegionName, regionShortcut);
     QueryService queryService = server.getCache().getQueryService();
