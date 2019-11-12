@@ -26,6 +26,7 @@ import static org.apache.geode.distributed.internal.membership.adapter.SocketCre
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
@@ -118,7 +119,18 @@ public class TCPServerSSLJUnitTest {
     // () -> getTcpClient().requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000))
     // .isInstanceOf(SocketException.class);
 
-    getTcpClient().requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000);
+    try {
+
+      getTcpClient().requestToServer(localhost, port, Boolean.valueOf(false), 5 * 1000);
+      throw new AssertionError("expected to get an exception but didn't");
+
+    } catch (final Throwable t) {
+      if (t instanceof IllegalStateException || t instanceof EOFException) {
+        // ok!
+      } else {
+        throw t;
+      }
+    }
 
     assertThat(recordedSocketTimeouts.size()).isEqualTo(1);
 
