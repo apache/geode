@@ -324,7 +324,7 @@ def get_builds_to_examine(builds, build_count):
     logging.debug(f"{len(errored)} errored builds in examination range: {list_and_sort_by_name(errored)}")
     logging.debug(f"{len(pending)} pending builds in examination range: {list_and_sort_by_name(pending)}")
     logging.debug(f"{len(started)} started builds in examination range: {list_and_sort_by_name(started)}")
-    returnable = (len(aborted) + len(errored))
+    returnable = (len(failed) + len(errored) + len(succeeded) + len(pending) + len(aborted))
     if returnable == 0:
         raise IOError(f"There are 0 completed jobs ")
 
