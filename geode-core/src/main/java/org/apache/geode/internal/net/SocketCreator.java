@@ -1075,24 +1075,23 @@ public class SocketCreator {
       sslSocket.setUseClientMode(true);
       sslSocket.setEnableSessionCreation(true);
 
+      SSLParameters modifiedParams =
+          checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
+
       String sysId = "";
       InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
-
       if (system != null) {
         sysId = system.getConfig().getClientHelloExtension();
       }
 
       if (sysId != "") {
-        SSLParameters modifiedParams =
-            checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
-
         List<SNIServerName> serverNames = new ArrayList<>(1);
         SNIHostName serverName = new SNIHostName(sysId);
         serverNames.add(serverName);
         modifiedParams.setServerNames(serverNames);
-
-        sslSocket.setSSLParameters(modifiedParams);
       }
+
+      sslSocket.setSSLParameters(modifiedParams);
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();
 
