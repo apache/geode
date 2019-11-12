@@ -161,7 +161,7 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Updating Dockerfile"
+echo "Updating Geode Dockerfile"
 echo "============================================================"
 set -x
 cd ${GEODE}/docker
@@ -181,7 +181,27 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Building docker image"
+echo "Updating Native Dockerfile"
+echo "============================================================"
+set -x
+cd ${GEODE_NATIVE}/docker
+set +x
+sed -e "/wget.*closer.*apache-geode-/s#http.*filename=geode#https://www.apache.org/dist/geode#" \
+    -e "/wget.*closer.*apache-rat-/s#http.*filename=creadur#https://archive.apache.org/dist/creadur#" \
+    -e "s/^ENV GEODE_VERSION.*/ENV GEODE_VERSION ${VERSION}/" \
+    -i.bak Dockerfile
+rm Dockerfile.bak
+set -x
+git add Dockerfile
+git diff --staged
+git commit -m "apache-geode ${VERSION}"
+git push
+set +x
+
+
+echo ""
+echo "============================================================"
+echo "Building Geode docker image"
 echo "============================================================"
 set -x
 cd ${GEODE}/docker
@@ -193,13 +213,36 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Publishing docker image"
+echo "Building Native docker image"
+echo "============================================================"
+set -x
+cd ${GEODE_NATIVE}/docker
+docker build .
+docker build -t apachegeode/geode-native-build:${VERSION} .
+docker build -t apachegeode/geode-native-build:latest .
+set +x
+
+
+echo ""
+echo "============================================================"
+echo "Publishing Geode docker image"
 echo "============================================================"
 set -x
 cd ${GEODE}/docker
 docker login
 docker push apachegeode/geode:${VERSION}
 docker push apachegeode/geode:latest
+set +x
+
+
+echo ""
+echo "============================================================"
+echo "Publishing Native docker image"
+echo "============================================================"
+set -x
+cd ${GEODE_NATIVE}/docker
+docker push apachegeode/geode-native-build:${VERSION}
+docker push apachegeode/geode-native-build:latest
 set +x
 
 
