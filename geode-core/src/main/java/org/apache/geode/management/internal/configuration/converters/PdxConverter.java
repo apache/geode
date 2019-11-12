@@ -15,21 +15,41 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+import static org.apache.geode.cache.DiskStoreFactory.DEFAULT_DISK_STORE_NAME;
+
+import org.apache.commons.lang3.StringUtils;
+
+import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.PdxType;
+import org.apache.geode.management.configuration.AutoSerializer;
+import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Pdx;
 
 public class PdxConverter extends ConfigurationConverter<Pdx, PdxType> {
   private final ClassNameConverter converter = new ClassNameConverter();
+  private final AutoSerializerConverter autoSerializerConverter = new AutoSerializerConverter();
 
   @Override
   protected Pdx fromNonNullXmlObject(PdxType xmlObject) {
     Pdx pdx = new Pdx();
 
     pdx.setReadSerialized(xmlObject.isReadSerialized());
-    pdx.setDiskStoreName(xmlObject.getDiskStoreName());
+    if (xmlObject.isPersistent()) {
+      String diskStoreName = xmlObject.getDiskStoreName();
+      if (StringUtils.isBlank(diskStoreName)) {
+        diskStoreName = DEFAULT_DISK_STORE_NAME;
+      }
+      pdx.setDiskStoreName(diskStoreName);
+    }
     pdx.setIgnoreUnreadFields(xmlObject.isIgnoreUnreadFields());
-    pdx.setPersistent(xmlObject.isPersistent());
-    pdx.setPdxSerializer(converter.fromXmlObject(xmlObject.getPdxSerializer()));
+    AutoSerializer autoSerializer =
+        autoSerializerConverter.fromXmlObject(xmlObject.getPdxSerializer());
+    if (autoSerializer == null) {
+      ClassName className = converter.fromXmlObject(xmlObject.getPdxSerializer());
+      pdx.setPdxSerializer(className);
+    } else {
+      pdx.setAutoSerializer(autoSerializer);
+    }
     return pdx;
   }
 
@@ -39,8 +59,13 @@ public class PdxConverter extends ConfigurationConverter<Pdx, PdxType> {
     xmlType.setReadSerialized(configObject.isReadSerialized());
     xmlType.setDiskStoreName(configObject.getDiskStoreName());
     xmlType.setIgnoreUnreadFields(configObject.isIgnoreUnreadFields());
-    xmlType.setPersistent(configObject.isPersistent());
-    xmlType.setPdxSerializer(converter.fromConfigObject(configObject.getPdxSerializer()));
+    xmlType.setPersistent(configObject.getDiskStoreName() != null);
+    DeclarableType pdxSerializer =
+        autoSerializerConverter.fromConfigObject(configObject.getAutoSerializer());
+    if (pdxSerializer == null) {
+      pdxSerializer = converter.fromConfigObject(configObject.getPdxSerializer());
+    }
+    xmlType.setPdxSerializer(pdxSerializer);
     return xmlType;
   }
 }
