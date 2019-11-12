@@ -1576,7 +1576,6 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
       }
 
       setHasPartitionAttributes(true);
-      ((PartitionAttributesImpl) partitionAttributes).setOffHeap(offHeap);
     } else {
       partitionAttributes = null;
       setHasPartitionAttributes(false);
