@@ -30,6 +30,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -125,7 +126,9 @@ public class TCPServerSSLJUnitTest {
       throw new AssertionError("expected to get an exception but didn't");
 
     } catch (final Throwable t) {
-      if (t instanceof IllegalStateException || t instanceof EOFException) {
+      if (t instanceof SocketException || // this is the exception we see in IntelliJ
+          // these are the exceptions we see in CI (Linux)
+          t instanceof IllegalStateException || t instanceof EOFException) {
         // ok!
       } else {
         throw t;
