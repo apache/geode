@@ -698,9 +698,14 @@ public class ConnectionTable {
     if (this.threadConnectionMap != null) {
       synchronized (this.threadConnectionMap) {
         for (Iterator it = this.threadConnectionMap.values().iterator(); it.hasNext();) {
-          closeCon(
-              "Connection table being destroyed",
-              it.next());
+          ArrayList al = (ArrayList) it.next();
+          if (al != null) {
+            synchronized (al) {
+              for (Object o : al) {
+                closeCon("Connection table being destroyed", o);
+              }
+            }
+          }
         }
         this.threadConnectionMap.clear();
       }
