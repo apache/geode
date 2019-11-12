@@ -37,6 +37,11 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
 
+    if (!logger.isDebugEnabled()) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     // We can not log request payload before making the actual request because then the InputStream
     // would be consumed and cannot be read again by the actual processing/server.
     ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request);
