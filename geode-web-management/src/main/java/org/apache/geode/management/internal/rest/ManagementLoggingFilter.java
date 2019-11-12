@@ -31,20 +31,11 @@ import org.apache.geode.management.internal.rest.controllers.ManagementControlle
 
 public class ManagementLoggingFilter extends OncePerRequestFilter {
 
-  // Because someone is going to want to disable this.
-  private static final Boolean ENABLE_REQUEST_LOGGING =
-      Boolean.parseBoolean(System.getProperty("geode.management.request.logging", "true"));
-
   private static int MAX_PAYLOAD_LENGTH = 10000;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-
-    if (!ENABLE_REQUEST_LOGGING) {
-      filterChain.doFilter(request, response);
-      return;
-    }
 
     // We can not log request payload before making the actual request because then the InputStream
     // would be consumed and cannot be read again by the actual processing/server.
@@ -74,7 +65,7 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
     }
     String payload = getContentAsString(wrappedRequest.getContentAsByteArray(),
         wrappedRequest.getCharacterEncoding());
-    logger.info(String.format(requestPattern, request.getMethod(), requestUrl,
+    logger.debug(String.format(requestPattern, request.getMethod(), requestUrl,
         request.getRemoteUser(), payload));
   }
 
@@ -84,7 +75,7 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
     String responsePattern = "Management Response: Status=%s; response=%s";
     String payload = getContentAsString(wrappedResponse.getContentAsByteArray(),
         wrappedResponse.getCharacterEncoding());
-    logger.info(String.format(responsePattern, response.getStatus(),
+    logger.debug(String.format(responsePattern, response.getStatus(),
         ManagementControllerAdvice.removeClassFromJsonText(payload)));
   }
 
