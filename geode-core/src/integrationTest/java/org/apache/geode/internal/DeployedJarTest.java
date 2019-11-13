@@ -15,12 +15,13 @@
 package org.apache.geode.internal;
 
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,40 +29,33 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.JarBuilder;
 
-public class DeployedJarJUnitTest {
-  private static final String JAR_NAME = "test.jar";
+public class DeployedJarTest {
+  private static final String FILE_NAME = "test.jar";
+
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private JarBuilder jarBuilder;
   private File jarFile;
-  private byte[] expectedJarBytes;
 
   @Before
-  public void setup() throws Exception {
-    jarBuilder = new JarBuilder();
-    jarFile = new File(temporaryFolder.getRoot(), JAR_NAME);
+  public void setup() {
+    jarFile = new File(temporaryFolder.getRoot(), FILE_NAME);
+  }
+
+  @Test
+  public void doesNotThrowIfFileIsValidJar() throws IOException {
+    JarBuilder jarBuilder = new JarBuilder();
     jarBuilder.buildJarFromClassNames(jarFile, "ExpectedClass");
-    expectedJarBytes = FileUtils.readFileToByteArray(jarFile);
+
+    assertThatCode(() -> new DeployedJar(jarFile, ""))
+        .doesNotThrowAnyException();
   }
 
   @Test
-  public void validJarContentDoesNotThrow() throws Exception {
-    new DeployedJar(jarFile, JAR_NAME);
-  }
+  public void throwsIfFileIsNotValidJarFile() throws Exception {
+    Files.write(jarFile.toPath(), "INVALID_JAR_CONTENT".getBytes());
 
-  @Test
-  public void invalidContentThrowsException() throws Exception {
-    givenInvalidJarBytes();
-
-    assertThatThrownBy(() -> new DeployedJar(jarFile, JAR_NAME))
+    assertThatThrownBy(() -> new DeployedJar(jarFile, ""))
         .isInstanceOf(IllegalArgumentException.class);
-  }
-
-  private byte[] givenInvalidJarBytes() throws IOException {
-    byte[] invalidJarBytes = "INVALID JAR CONTENT".getBytes();
-    FileUtils.writeByteArrayToFile(jarFile, invalidJarBytes);
-
-    return invalidJarBytes;
   }
 }

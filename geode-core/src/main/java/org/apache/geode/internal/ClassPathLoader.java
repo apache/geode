@@ -78,7 +78,7 @@ public class ClassPathLoader {
   @MakeNotStatic
   private static volatile ClassPathLoader latest;
 
-  private final HashMap<String, DeployJarChildFirstClassLoader> latestJarNamesToClassLoader =
+  private final HashMap<String, DeployJarChildFirstClassLoader> artifactIdsToClassLoader =
       new HashMap<>();
 
   private volatile DeployJarChildFirstClassLoader leafLoader;
@@ -138,12 +138,12 @@ public class ClassPathLoader {
   }
 
   synchronized void chainClassloader(DeployedJar jar) {
-    leafLoader = new DeployJarChildFirstClassLoader(latestJarNamesToClassLoader,
-        new URL[] {jar.getFileURL()}, jar.getJarName(), getLeafLoader());
+    leafLoader = new DeployJarChildFirstClassLoader(artifactIdsToClassLoader,
+        new URL[] {jar.getFileURL()}, jar.getArtifactId(), getLeafLoader());
   }
 
-  synchronized void unloadClassloaderForJar(String jarName) {
-    latestJarNamesToClassLoader.put(jarName, null);
+  synchronized void unloadClassloaderForArtifact(String artifactId) {
+    artifactIdsToClassLoader.put(artifactId, null);
   }
 
   public URL getResource(final String name) {

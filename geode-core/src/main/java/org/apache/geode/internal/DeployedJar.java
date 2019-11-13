@@ -61,7 +61,7 @@ public class DeployedJar {
   private static final MessageDigest messageDigest = getMessageDigest();
   private static final Pattern PATTERN_SLASH = Pattern.compile("/");
 
-  private final String jarName;
+  private final String artifactId;
   private final File file;
   private final byte[] md5hash;
   private final Collection<Function> registeredFunctions = new ArrayList<>();
@@ -86,12 +86,12 @@ public class DeployedJar {
   /**
    * Writes the given jarBytes to versionedJarFile
    */
-  public DeployedJar(File versionedJarFile, final String jarName) {
-    Assert.assertTrue(jarName != null, "jarName cannot be null");
+  public DeployedJar(File versionedJarFile, final String artifactId) {
+    Assert.assertTrue(artifactId != null, "artifactId cannot be null");
     Assert.assertTrue(versionedJarFile != null, "versionedJarFile cannot be null");
 
     this.file = versionedJarFile;
-    this.jarName = jarName;
+    this.artifactId = artifactId;
 
     if (!hasValidJarContent(versionedJarFile)) {
       throw new IllegalArgumentException(
@@ -366,10 +366,13 @@ public class DeployedJar {
   }
 
   /**
-   * @return the unversioned name of this jar file, e.g. myJar.jar
+   * Get this jar's artifact ID, which is the part of the jar file name that precedes the version
+   * information.
+   *
+   * @return the artifact ID for this jar
    */
-  public String getJarName() {
-    return this.jarName;
+  public String getArtifactId() {
+    return this.artifactId;
   }
 
   public String getFileName() {
@@ -402,7 +405,7 @@ public class DeployedJar {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + (this.jarName == null ? 0 : this.jarName.hashCode());
+    result = prime * result + (this.artifactId == null ? 0 : this.artifactId.hashCode());
     return result;
   }
 
@@ -418,11 +421,11 @@ public class DeployedJar {
       return false;
     }
     DeployedJar other = (DeployedJar) obj;
-    if (this.jarName == null) {
-      if (other.jarName != null) {
+    if (this.artifactId == null) {
+      if (other.artifactId != null) {
         return false;
       }
-    } else if (!this.jarName.equals(other.jarName)) {
+    } else if (!this.artifactId.equals(other.artifactId)) {
       return false;
     }
     return true;
@@ -432,7 +435,7 @@ public class DeployedJar {
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append('@').append(System.identityHashCode(this)).append('{');
-    sb.append("jarName=").append(this.jarName);
+    sb.append("artifactId=").append(this.artifactId);
     sb.append(",file=").append(this.file.getAbsolutePath());
     sb.append(",md5hash=").append(toHex(this.md5hash));
     sb.append(",version=").append(this.getVersion());

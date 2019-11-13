@@ -135,7 +135,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     this(null, null, jaxbService, null, null);
   }
 
-  private InternalConfigurationPersistenceService(InternalCache cache,
+  @VisibleForTesting
+  InternalConfigurationPersistenceService(InternalCache cache,
       DistributedLockService sharedConfigLockingService, JAXBService jaxbService,
       Path configDirPath, Path configDiskDirPath) {
     this.cache = cache;

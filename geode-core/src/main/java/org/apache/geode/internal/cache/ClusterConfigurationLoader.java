@@ -91,7 +91,9 @@ public class ClusterConfigurationLoader {
 
     logger.info("deploying jars received from cluster configuration");
     List<String> jarFileNames =
-        response.getJarNames().values().stream().flatMap(Set::stream).collect(Collectors.toList());
+        response.getJarNames().values().stream()
+            .flatMap(Set::stream)
+            .collect(Collectors.toList());
 
     if (jarFileNames != null && !jarFileNames.isEmpty()) {
       logger.info("Got response with jars: {}", jarFileNames.stream().collect(joining(",")));
@@ -99,7 +101,7 @@ public class ClusterConfigurationLoader {
       jarDeployer.suspendAll();
       try {
         List<String> extraJarsOnServer =
-            jarDeployer.findDeployedJars().stream().map(DeployedJar::getJarName)
+            jarDeployer.findDeployedJars().stream().map(DeployedJar::getArtifactId)
                 .filter(jarName -> !jarFileNames.contains(jarName)).collect(toList());
 
         for (String extraJar : extraJarsOnServer) {
@@ -107,7 +109,7 @@ public class ClusterConfigurationLoader {
           jarDeployer.deleteAllVersionsOfJar(extraJar);
         }
 
-        Map<String, File> stagedJarFiles =
+        Set<File> stagedJarFiles =
             getJarsFromLocator(response.getMember(), response.getJarNames());
 
         List<DeployedJar> deployedJars = jarDeployer.deploy(stagedJarFiles);
@@ -120,7 +122,9 @@ public class ClusterConfigurationLoader {
     }
   }
 
-  private Map<String, File> getJarsFromLocator(DistributedMember locator,
+  // download the jars from the locator for the specific groups this server is on (the server
+  // might be on multiple groups.
+  private Set<File> getJarsFromLocator(DistributedMember locator,
       Map<String, Set<String>> jarNames) throws IOException {
     Map<String, File> results = new HashMap<>();
 
@@ -130,10 +134,21 @@ public class ClusterConfigurationLoader {
       }
     }
 
-    return results;
+    return new HashSet<>(results.values());
   }
 
-  public static File downloadJar(DistributedMember locator, String groupName, String jarName)
+  // the returned File will use use jarName as the fileName
+  public File downloadJar(DistributedMember locator, String groupName, String jarName)
+      throws IOException {
+    Path tempDir = FileUploader.createSecuredTempDirectory("deploy-");
+    Path tempJar = Paths.get(tempDir.toString(), jarName);
+
+    downloadTo(locator, groupName, jarName, tempJar);
+
+    return tempJar.toFile();
+  }
+
+  void downloadTo(DistributedMember locator, String groupName, String jarName, Path jarPath)
       throws IOException {
     ResultCollector<RemoteInputStream, List<RemoteInputStream>> rc =
         (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) CliUtil.executeFunction(
@@ -145,17 +160,13 @@ public class ClusterConfigurationLoader {
       throw new IllegalStateException(((Throwable) result.get(0)).getMessage());
     }
 
-    Path tempDir = FileUploader.createSecuredTempDirectory("deploy-");
-    Path tempJar = Paths.get(tempDir.toString(), jarName);
-    FileOutputStream fos = new FileOutputStream(tempJar.toString());
+    FileOutputStream fos = new FileOutputStream(jarPath.toString());
 
     InputStream jarStream = RemoteInputStreamClient.wrap(result.get(0));
     IOUtils.copyLarge(jarStream, fos);
 
     fos.close();
     jarStream.close();
-
-    return tempJar.toFile();
   }
 
   /***

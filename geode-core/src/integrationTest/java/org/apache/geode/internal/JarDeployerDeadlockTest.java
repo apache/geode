@@ -67,15 +67,15 @@ public class JarDeployerDeadlockTest {
   public void testMultiThreadingDoesNotCauseDeadlock() throws Exception {
     // Add two JARs to the classpath
     byte[] jarBytes = this.classBuilder.createJarFromName("JarClassLoaderJUnitA");
-    File jarFile = temporaryFolder.newFile();
+    File jarFile = temporaryFolder.newFile("JarClassLoaderJUnitA.jar");
     IOUtils.copy(new ByteArrayInputStream(jarBytes), new FileOutputStream(jarFile));
-    ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitA.jar", jarFile);
+    ClassPathLoader.getLatest().getJarDeployer().deploy(jarFile);
 
     jarBytes = this.classBuilder.createJarFromClassContent("com/jcljunit/JarClassLoaderJUnitB",
         "package com.jcljunit; public class JarClassLoaderJUnitB {}");
-    File jarFile2 = temporaryFolder.newFile();
+    File jarFile2 = temporaryFolder.newFile("JarClassLoaderJUnitB.jar");
     IOUtils.copy(new ByteArrayInputStream(jarBytes), new FileOutputStream(jarFile2));
-    ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitB.jar", jarFile2);
+    ClassPathLoader.getLatest().getJarDeployer().deploy(jarFile2);
 
     String[] classNames = new String[] {"JarClassLoaderJUnitA", "com.jcljunit.JarClassLoaderJUnitB",
         "NON-EXISTENT CLASS"};

@@ -139,11 +139,13 @@ public class DeployCommand extends GfshCommand {
       }
     }
 
-    InternalConfigurationPersistenceService sc = getConfigurationPersistenceService();
-    if (sc == null) {
-      result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
-    } else {
-      sc.addJarsToThisLocator(jarFullPaths, groups);
+    if (result.getStatus() == Result.Status.OK) {
+      InternalConfigurationPersistenceService sc = getConfigurationPersistenceService();
+      if (sc == null) {
+        result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
+      } else {
+        sc.addJarsToThisLocator(jarFullPaths, groups);
+      }
     }
     return result;
   }

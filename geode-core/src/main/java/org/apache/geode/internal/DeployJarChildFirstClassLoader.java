@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -36,22 +36,17 @@ import java.util.stream.Collectors;
  */
 public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
 
-  private String jarName;
-  public final HashMap<String, DeployJarChildFirstClassLoader> latestJarNamesToClassLoader;
+  private String artifactId;
+  public final Map<String, DeployJarChildFirstClassLoader> artifactIdsToClassLoader;
 
   public DeployJarChildFirstClassLoader(
-      HashMap<String, DeployJarChildFirstClassLoader> latestJarNamesToClassLoader, URL[] urls,
-      String jarName, ClassLoader parent) {
+      Map<String, DeployJarChildFirstClassLoader> artifactIdsToClassLoader, URL[] urls,
+      String artifactId, ClassLoader parent) {
     super(urls, parent);
-    this.latestJarNamesToClassLoader = latestJarNamesToClassLoader;
-    this.jarName = jarName;
-    updateLatestJarNamesToClassLoaderMap();
+    this.artifactIdsToClassLoader = artifactIdsToClassLoader;
+    this.artifactId = artifactId;
+    this.artifactIdsToClassLoader.put(this.artifactId, this);
   }
-
-  private void updateLatestJarNamesToClassLoaderMap() {
-    latestJarNamesToClassLoader.put(jarName, this);
-  }
-
 
   @Override
   public Class loadClass(String name) throws ClassNotFoundException {
@@ -71,7 +66,7 @@ public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
       c = super.loadClass(name, resolve);
     }
     if (c == null) {
-      for (DeployJarChildFirstClassLoader sibling : latestJarNamesToClassLoader.values().stream()
+      for (DeployJarChildFirstClassLoader sibling : artifactIdsToClassLoader.values().stream()
           .filter(s -> s != null).collect(Collectors.toList())) {
         try {
           c = sibling.findClass(name);
@@ -111,10 +106,10 @@ public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
   }
 
   boolean thisIsOld() {
-    return latestJarNamesToClassLoader.get(jarName) != this;
+    return artifactIdsToClassLoader.get(artifactId) != this;
   }
 
-  public String getJarName() {
-    return jarName;
+  public String getArtifactId() {
+    return artifactId;
   }
 }

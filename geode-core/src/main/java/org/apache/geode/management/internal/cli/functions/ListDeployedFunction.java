@@ -56,7 +56,7 @@ public class ListDeployedFunction implements InternalFunction {
       final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
       final Map<String, String> jars = new HashMap<>();
       for (DeployedJar jarClassLoader : jarClassLoaders) {
-        jars.put(jarClassLoader.getJarName(), jarClassLoader.getFileCanonicalPath());
+        jars.put(jarClassLoader.getArtifactId(), jarClassLoader.getFileCanonicalPath());
       }
 
       CliFunctionResult result = new CliFunctionResult(memberId, jars, null);
