@@ -187,6 +187,7 @@ public class GMSLocatorRecoveryIntegrationTest {
             .setSerializer(InternalDataSerializer.getDSFIDSerializer())
             .setLifecycleListener(mock(LifecycleListener.class))
             .create();
+    membership.start();
 
     GMSLocator gmsLocator = new GMSLocator(localHost,
         membership.getLocalMember().getHost() + "[" + port + "]", true, true,

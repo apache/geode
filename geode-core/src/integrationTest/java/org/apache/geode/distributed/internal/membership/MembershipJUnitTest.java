@@ -274,6 +274,7 @@ public class MembershipJUnitTest {
             .setSerializer(serializer)
             .setLifecycleListener(mock(LifecycleListener.class))
             .create();
+    m1.start();
     m1.startEventProcessing();
     return Pair.of(m1, messageListener);
   }

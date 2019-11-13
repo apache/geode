@@ -338,4 +338,6 @@ public interface Membership {
    * Should we remove this in favor of member exists?
    */
   boolean hasMember(InternalDistributedMember member);
+
+  void start();
 }

@@ -66,7 +66,7 @@ public class MembershipManagerAdapter {
   private final long ackSevereAlertThreshold;
   private final long ackWaitThreshold;
   private final RemoteTransportConfig transportConfig;
-  private final Membership membershipManager;
+  private final Membership membership;
   private DirectChannel directChannel;
 
   /**
@@ -97,7 +97,7 @@ public class MembershipManagerAdapter {
     }
 
     memberTimeout = system.getConfig().getMemberTimeout();
-    membershipManager = MembershipBuilder.newMembershipBuilder(
+    membership = MembershipBuilder.newMembershipBuilder(
         clusterDistributionManager)
         .setAuthenticator(
             new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
@@ -112,10 +112,14 @@ public class MembershipManagerAdapter {
         .create();
   }
 
+  public void start() {
+    membership.start();
+  }
+
   @VisibleForTesting
   MembershipManagerAdapter(final ClusterDistributionManager clusterDistributionManager,
       final RemoteTransportConfig transport, final InternalDistributedSystem system,
-      Membership membershipManager) {
+      Membership membership) {
     this.clusterDistributionManager = clusterDistributionManager;
     this.transportConfig = transport;
     this.tcpDisabled = transportConfig.isTcpDisabled();
@@ -127,7 +131,7 @@ public class MembershipManagerAdapter {
       dcReceiver = new MyDCReceiver();
     }
     memberTimeout = system.getConfig().getMemberTimeout();
-    this.membershipManager = membershipManager;
+    this.membership = membership;
   }
 
   static MembershipManagerAdapter createMembershipManagerAdapter(
@@ -136,17 +140,20 @@ public class MembershipManagerAdapter {
       org.apache.geode.distributed.internal.membership.gms.api.MembershipListener listener,
       MessageListener messageListener) {
 
-    return new MembershipManagerAdapter(clusterDistributionManager, transport, system, listener,
-        messageListener);
+    MembershipManagerAdapter membershipManagerAdapter =
+        new MembershipManagerAdapter(clusterDistributionManager, transport, system, listener,
+            messageListener);
+    membershipManagerAdapter.start();
+    return membershipManagerAdapter;
   }
 
 
   public MembershipView getView() {
-    return membershipManager.getView();
+    return membership.getView();
   }
 
   public InternalDistributedMember getLocalMember() {
-    return membershipManager.getLocalMember();
+    return membership.getLocalMember();
   }
 
   public Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
@@ -154,11 +161,11 @@ public class MembershipManagerAdapter {
     Set<InternalDistributedMember> result;
     boolean allDestinations = msg.forAll();
 
-    membershipManager.checkCancelled();
+    membership.checkCancelled();
 
-    membershipManager.waitIfPlayingDead();
+    membership.waitIfPlayingDead();
 
-    if (membershipManager.isJoining()) {
+    if (membership.isJoining()) {
       // If we get here, we are starting up, so just report a failure.
       if (allDestinations)
         return null;
@@ -202,7 +209,7 @@ public class MembershipManagerAdapter {
     boolean sendViaMessenger = isForceUDPCommunications() || (msg instanceof ShutdownMessage);
 
     if (useMcast || tcpDisabled || sendViaMessenger) {
-      result = membershipManager.send(destinations, msg);
+      result = membership.send(destinations, msg);
     } else {
       result = directChannelSend(destinations, msg);
     }
@@ -232,7 +239,7 @@ public class MembershipManagerAdapter {
     InternalDistributedMember[] keys;
     if (content.forAll()) {
       allDestinations = true;
-      keys = membershipManager.getAllMembers();
+      keys = membership.getAllMembers();
     } else {
       allDestinations = false;
       keys = destinations;
@@ -241,7 +248,7 @@ public class MembershipManagerAdapter {
     int sentBytes;
     try {
       sentBytes =
-          directChannel.send(membershipManager, keys, content, ackWaitThreshold,
+          directChannel.send(membership, keys, content, ackWaitThreshold,
               ackSevereAlertThreshold);
 
       if (theStats != null) {
@@ -249,12 +256,12 @@ public class MembershipManagerAdapter {
       }
 
       if (sentBytes == 0) {
-        membershipManager.checkCancelled();
+        membership.checkCancelled();
       }
     } catch (ConnectExceptions ex) {
       // Check if the connect exception is due to system shutting down.
-      if (membershipManager.shutdownInProgress()) {
-        membershipManager.checkCancelled();
+      if (membership.shutdownInProgress()) {
+        membership.checkCancelled();
         throw new DistributedSystemDisconnectedException();
       }
 
@@ -275,14 +282,14 @@ public class MembershipManagerAdapter {
         InternalDistributedMember member = (InternalDistributedMember) it_mem.next();
         Throwable th = (Throwable) it_causes.next();
 
-        if (!membershipManager.hasMember(member) || (th instanceof ShunnedMemberException)) {
+        if (!membership.hasMember(member) || (th instanceof ShunnedMemberException)) {
           continue;
         }
         logger
             .fatal(String.format("Failed to send message <%s> to member <%s> view, %s",
                 // TODO - This used to be services.getJoinLeave().getView(), which is a different
                 // view object. Is it ok to log membershipManager.getView here?
-                new Object[] {content, member, membershipManager.getView()}),
+                new Object[] {content, member, membership.getView()}),
                 th);
         // Assert.assertTrue(false, "messaging contract failure");
       }
@@ -308,7 +315,7 @@ public class MembershipManagerAdapter {
     if (dc != null) {
       dc.getChannelStates(member, result);
     }
-    return membershipManager.getMessageState(member, includeMulticast, result);
+    return membership.getMessageState(member, includeMulticast, result);
   }
 
   public void waitForMessageState(DistributedMember member,
@@ -319,7 +326,7 @@ public class MembershipManagerAdapter {
     if (dc != null) {
       dc.waitForChannelState(member, state);
     }
-    membershipManager.waitForMessageState(member, state);
+    membership.waitForMessageState(member, state);
 
 
     if (mcastEnabled && !tcpDisabled) {
@@ -330,90 +337,90 @@ public class MembershipManagerAdapter {
 
   public boolean requestMemberRemoval(DistributedMember member,
       String reason) {
-    return membershipManager.requestMemberRemoval(member, reason);
+    return membership.requestMemberRemoval(member, reason);
   }
 
   public boolean verifyMember(DistributedMember mbr,
       String reason) {
-    return membershipManager.verifyMember(mbr, reason);
+    return membership.verifyMember(mbr, reason);
   }
 
   public boolean isShunned(DistributedMember m) {
-    return membershipManager.isShunned(m);
+    return membership.isShunned(m);
   }
 
   public <V> V doWithViewLocked(
       Function<Membership, V> function) {
-    return membershipManager.doWithViewLocked(function);
+    return membership.doWithViewLocked(function);
   }
 
   public boolean memberExists(DistributedMember m) {
-    return membershipManager.memberExists(m);
+    return membership.memberExists(m);
   }
 
   public boolean isConnected() {
-    return membershipManager.isConnected();
+    return membership.isConnected();
   }
 
   public void beSick() {
-    membershipManager.beSick();
+    membership.beSick();
   }
 
   public void playDead() {
-    membershipManager.playDead();
+    membership.playDead();
   }
 
   public void beHealthy() {
-    membershipManager.beHealthy();
+    membership.beHealthy();
   }
 
   public boolean isBeingSick() {
-    return membershipManager.isBeingSick();
+    return membership.isBeingSick();
   }
 
   public void disconnect(boolean beforeJoined) {
-    membershipManager.disconnect(beforeJoined);
+    membership.disconnect(beforeJoined);
   }
 
   public void shutdown() {
-    membershipManager.shutdown();
+    membership.shutdown();
   }
 
   public void uncleanShutdown(String reason, Exception e) {
-    membershipManager.uncleanShutdown(reason, e);
+    membership.uncleanShutdown(reason, e);
   }
 
   public void shutdownMessageReceived(DistributedMember id,
       String reason) {
-    membershipManager.shutdownMessageReceived(id, reason);
+    membership.shutdownMessageReceived(id, reason);
   }
 
   public void waitForEventProcessing() throws InterruptedException {
-    membershipManager.waitForEventProcessing();
+    membership.waitForEventProcessing();
   }
 
   public void startEventProcessing() {
-    membershipManager.startEventProcessing();
+    membership.startEventProcessing();
   }
 
   public void setShutdown() {
-    membershipManager.setShutdown();
+    membership.setShutdown();
   }
 
   public void setReconnectCompleted(boolean reconnectCompleted) {
-    membershipManager.setReconnectCompleted(reconnectCompleted);
+    membership.setReconnectCompleted(reconnectCompleted);
   }
 
   public boolean shutdownInProgress() {
-    return membershipManager.shutdownInProgress();
+    return membership.shutdownInProgress();
   }
 
   public boolean waitForNewMember(DistributedMember remoteId) {
-    return membershipManager.waitForNewMember(remoteId);
+    return membership.waitForNewMember(remoteId);
   }
 
   public void emergencyClose() {
-    membershipManager.emergencyClose();
+    membership.emergencyClose();
     if (directChannel != null) {
       directChannel.emergencyClose();
     }
@@ -421,105 +428,105 @@ public class MembershipManagerAdapter {
 
   public void addSurpriseMemberForTesting(DistributedMember mbr,
       long birthTime) {
-    membershipManager.addSurpriseMemberForTesting(mbr, birthTime);
+    membership.addSurpriseMemberForTesting(mbr, birthTime);
   }
 
   public void suspectMembers(Set<DistributedMember> members,
       String reason) {
-    membershipManager.suspectMembers(members, reason);
+    membership.suspectMembers(members, reason);
   }
 
   public void suspectMember(DistributedMember member,
       String reason) {
-    membershipManager.suspectMember(member, reason);
+    membership.suspectMember(member, reason);
   }
 
   public Throwable getShutdownCause() {
-    return membershipManager.getShutdownCause();
+    return membership.getShutdownCause();
   }
 
   public void registerTestHook(
       MembershipTestHook mth) {
-    membershipManager.registerTestHook(mth);
+    membership.registerTestHook(mth);
   }
 
   public void unregisterTestHook(
       MembershipTestHook mth) {
-    membershipManager.unregisterTestHook(mth);
+    membership.unregisterTestHook(mth);
   }
 
   public void warnShun(DistributedMember mbr) {
-    membershipManager.warnShun(mbr);
+    membership.warnShun(mbr);
   }
 
   public boolean addSurpriseMember(DistributedMember mbr) {
-    return membershipManager.addSurpriseMember(mbr);
+    return membership.addSurpriseMember(mbr);
   }
 
   public void startupMessageFailed(DistributedMember mbr,
       String failureMessage) {
-    membershipManager.startupMessageFailed(mbr, failureMessage);
+    membership.startupMessageFailed(mbr, failureMessage);
   }
 
   public boolean testMulticast() {
-    return membershipManager.testMulticast();
+    return membership.testMulticast();
   }
 
   public boolean isSurpriseMember(DistributedMember m) {
-    return membershipManager.isSurpriseMember(m);
+    return membership.isSurpriseMember(m);
   }
 
   public QuorumChecker getQuorumChecker() {
-    return membershipManager.getQuorumChecker();
+    return membership.getQuorumChecker();
   }
 
   public void releaseQuorumChecker(
       QuorumChecker checker,
       InternalDistributedSystem distributedSystem) {
-    membershipManager.releaseQuorumChecker(checker, distributedSystem);
+    membership.releaseQuorumChecker(checker, distributedSystem);
   }
 
   public DistributedMember getCoordinator() {
-    return membershipManager.getCoordinator();
+    return membership.getCoordinator();
   }
 
   public Set<InternalDistributedMember> getMembersNotShuttingDown() {
-    return membershipManager.getMembersNotShuttingDown();
+    return membership.getMembersNotShuttingDown();
   }
 
   public Services getServices() {
-    return membershipManager.getServices();
+    return membership.getServices();
   }
 
   // TODO - this method is only used by tests
   @VisibleForTesting
   public void forceDisconnect(String reason) {
-    ((GMSMembershipManager) membershipManager).getGMSManager().forceDisconnect(reason);
+    ((GMSMembershipManager) membership).getGMSManager().forceDisconnect(reason);
   }
 
   // TODO - this method is only used by tests
   @VisibleForTesting
   public void replacePartialIdentifierInMessage(DistributionMessage message) {
-    ((GMSMembershipManager) membershipManager).replacePartialIdentifierInMessage(message);
+    ((GMSMembershipManager) membership).replacePartialIdentifierInMessage(message);
 
   }
 
   // TODO - this method is only used by tests
   @VisibleForTesting
   public boolean isCleanupTimerStarted() {
-    return ((GMSMembershipManager) membershipManager).isCleanupTimerStarted();
+    return ((GMSMembershipManager) membership).isCleanupTimerStarted();
   }
 
   // TODO - this method is only used by tests
   @VisibleForTesting
   public long getSurpriseMemberTimeout() {
-    return ((GMSMembershipManager) membershipManager).getSurpriseMemberTimeout();
+    return ((GMSMembershipManager) membership).getSurpriseMemberTimeout();
   }
 
   // TODO - this method is only used by tests
   @VisibleForTesting
   public void installView(GMSMembershipView newView) {
-    ((GMSMembershipManager) membershipManager).getGMSManager().installView(newView);
+    ((GMSMembershipManager) membership).getGMSManager().installView(newView);
   }
 
   // TODO - this method is only used by tests
@@ -539,14 +546,14 @@ public class MembershipManagerAdapter {
   }
 
   public void disableDisconnectOnQuorumLossForTesting() {
-    ((GMSMembershipManager) membershipManager).disableDisconnectOnQuorumLossForTesting();
+    ((GMSMembershipManager) membership).disableDisconnectOnQuorumLossForTesting();
   }
 
   private void startDirectChannel(final MemberIdentifier memberID) {
     int dcPort = 0;
 
     if (!tcpDisabled) {
-      directChannel = new DirectChannel(membershipManager, dcReceiver, clusterDistributionManager);
+      directChannel = new DirectChannel(membership, dcReceiver, clusterDistributionManager);
       dcPort = directChannel.getPort();
     }
     memberID.setDirectChannelPort(dcPort);
@@ -739,7 +746,7 @@ public class MembershipManagerAdapter {
 
     @Override
     public void messageReceived(DistributionMessage msg) {
-      membershipManager.processMessage(msg);
+      membership.processMessage(msg);
 
     }
 

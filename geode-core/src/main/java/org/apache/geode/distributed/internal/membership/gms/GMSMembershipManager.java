@@ -83,8 +83,10 @@ import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectRep
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.tcp.MemberShunnedException;
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.security.GemFireSecurityException;
 
 public class GMSMembershipManager implements Membership {
   private static final Logger logger = Services.getLogger();
@@ -2003,6 +2005,22 @@ public class GMSMembershipManager implements Membership {
       uncleanShutdown("Failed to start distribution", null);
     } else {
       shutdown();
+    }
+  }
+
+  @Override
+  public void start() {
+    try {
+      services.start();
+    } catch (ConnectionException e) {
+      throw new DistributionException(
+          "Unable to create membership manager",
+          e);
+    } catch (GemFireConfigException | SystemConnectException | GemFireSecurityException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      Services.getLogger().error("Unexpected problem starting up membership services", e);
+      throw new SystemConnectException("Problem starting up membership services", e);
     }
   }
 

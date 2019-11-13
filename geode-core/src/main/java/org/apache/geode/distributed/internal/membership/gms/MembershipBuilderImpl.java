@@ -105,7 +105,6 @@ public class MembershipBuilderImpl implements MembershipBuilder {
             membershipConfig, serializer, memberFactory);
     try {
       services.init();
-      services.start();
     } catch (ConnectionException e) {
       throw new DistributionException(
           "Unable to create membership manager",
@@ -118,7 +117,5 @@ public class MembershipBuilderImpl implements MembershipBuilder {
     }
     return gmsMembershipManager;
   }
-
-
 
 }
