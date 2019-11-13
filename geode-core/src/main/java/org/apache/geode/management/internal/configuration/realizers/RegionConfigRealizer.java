@@ -20,8 +20,6 @@ package org.apache.geode.management.internal.configuration.realizers;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
@@ -306,12 +304,6 @@ public class RegionConfigRealizer
     RuntimeRegionInfo info = new RuntimeRegionInfo();
     info.setEntryCount(region.size());
     return info;
-  }
-
-
-  @Override
-  public RealizationResult update(Region config, InternalCache cache) {
-    throw new NotImplementedException("Not implemented");
   }
 
   @Override

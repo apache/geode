@@ -29,7 +29,9 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  */
 @Experimental
 public interface ConfigurationRealizer<T extends AbstractConfiguration<R>, R extends RuntimeInfo> {
-  RealizationResult create(T config, InternalCache cache);
+  default RealizationResult create(T config, InternalCache cache) {
+    throw new IllegalStateException("Not supported");
+  }
 
   default boolean exists(T config, InternalCache cache) {
     return get(config, cache) != null;
@@ -37,7 +39,15 @@ public interface ConfigurationRealizer<T extends AbstractConfiguration<R>, R ext
 
   R get(T config, InternalCache cache);
 
-  RealizationResult update(T config, InternalCache cache);
+  default RealizationResult update(T config, InternalCache cache) {
+    throw new IllegalStateException("Not supported");
+  }
 
-  RealizationResult delete(T config, InternalCache cache);
+  default RealizationResult delete(T config, InternalCache cache) {
+    throw new IllegalStateException("Not supported");
+  }
+
+  default boolean isReadyOnly() {
+    return false;
+  }
 }

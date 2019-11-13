@@ -19,8 +19,6 @@ import static org.apache.geode.management.internal.configuration.domain.Declarab
 
 import java.util.List;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
@@ -123,15 +121,5 @@ public class GatewayReceiverRealizer
     info.setSenderCount(bridge.getClientConnectionCount());
     info.setConnectedSenders(bridge.getConnectedGatewaySenders());
     return info;
-  }
-
-  @Override
-  public RealizationResult update(GatewayReceiver config, InternalCache cache) {
-    throw new NotImplementedException("Not implemented");
-  }
-
-  @Override
-  public RealizationResult delete(GatewayReceiver config, InternalCache cache) {
-    throw new NotImplementedException("Not implemented");
   }
 }

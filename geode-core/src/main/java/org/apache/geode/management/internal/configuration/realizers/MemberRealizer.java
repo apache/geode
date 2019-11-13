@@ -27,7 +27,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
 import org.apache.geode.management.runtime.MemberInformation;
@@ -35,11 +34,6 @@ import org.apache.geode.management.runtime.MemberInformation;
 public class MemberRealizer
     implements ConfigurationRealizer<Member, MemberInformation> {
   private static final Logger logger = LogService.getLogger();
-
-  @Override
-  public RealizationResult create(Member config, InternalCache cache) {
-    throw new IllegalStateException("Not supported");
-  }
 
   @Override
   public MemberInformation get(Member config, InternalCache cache) {
@@ -58,16 +52,6 @@ public class MemberRealizer
       logger.error("unable to get the member information. ", e);
       return null;
     }
-  }
-
-  @Override
-  public RealizationResult update(Member config, InternalCache cache) {
-    throw new IllegalStateException("Not supported");
-  }
-
-  @Override
-  public RealizationResult delete(Member config, InternalCache cache) {
-    throw new IllegalStateException("Not supported");
   }
 
   @VisibleForTesting

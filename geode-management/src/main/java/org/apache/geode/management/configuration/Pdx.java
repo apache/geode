@@ -20,13 +20,13 @@ package org.apache.geode.management.configuration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.runtime.RuntimeInfo;
+import org.apache.geode.management.runtime.PdxInfo;
 
 /**
  * Used to configure PDX serialization for a cache.
  */
 @Experimental
-public class Pdx extends AbstractConfiguration<RuntimeInfo> {
+public class Pdx extends AbstractConfiguration<PdxInfo> {
   public static final String PDX_ID = "PDX";
   public static final String PDX_ENDPOINT = "/configurations/pdx";
 

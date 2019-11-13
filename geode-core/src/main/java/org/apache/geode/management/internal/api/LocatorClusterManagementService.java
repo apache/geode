@@ -326,7 +326,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
       ConfigurationResult<T, R> response = new ConfigurationResult<>(element);
 
       responses.add(response);
-      // do not gather runtime if this type of CacheElement is RespondWith<RuntimeInfo>
       if (!hasRuntimeInfo) {
         continue;
       }
