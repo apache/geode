@@ -23,9 +23,11 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Random;
@@ -42,6 +44,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 
@@ -175,4 +178,32 @@ public class MembershipManagerAdapterTest {
     }).isInstanceOf(DistributedSystemDisconnectedException.class);
   }
 
+  @Test
+  public void testSendAdminMessageFailsDuringShutdown() throws Exception {
+    AlertListenerMessage m = AlertListenerMessage.create(mockMembers[0], 1,
+        Instant.now(), "thread", "", 1L, "", "");
+    when(membership.shutdownInProgress()).thenReturn(true);
+    Set<InternalDistributedMember> failures =
+        membershipManagerAdapter.send(new InternalDistributedMember[] {mockMembers[0]}, m);
+    verify(membership, never()).send(any(), any());
+    assertEquals(1, failures.size());
+    assertEquals(mockMembers[0], failures.iterator().next());
+  }
+
+  @Test
+  public void testSendToNullListIsRejected() throws Exception {
+    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
+    m.setRecipient(mockMembers[0]);
+    membershipManagerAdapter.send(null, m);
+    verify(membership, never()).send(any(), any());
+  }
+
+  @Test
+  public void testSendToEmptyListIsRejected() throws Exception {
+    InternalDistributedMember[] emptyList = new InternalDistributedMember[0];
+    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
+    m.setRecipient(mockMembers[0]);
+    membershipManagerAdapter.send(emptyList, m);
+    verify(membership, never()).send(any(), any());
+  }
 }

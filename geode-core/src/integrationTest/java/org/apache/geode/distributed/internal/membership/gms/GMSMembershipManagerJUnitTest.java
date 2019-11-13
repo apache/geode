@@ -32,7 +32,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -66,11 +65,9 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
-import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -194,36 +191,6 @@ public class GMSMembershipManagerJUnitTest {
       List<InternalDistributedMember> members) {
     List<MemberIdentifier> gmsMembers = new ArrayList<>(members);
     return new GMSMembershipView(creator, viewId, gmsMembers);
-  }
-
-  @Test
-  public void testSendAdminMessageFailsDuringShutdown() throws Exception {
-    AlertListenerMessage m = AlertListenerMessage.create(mockMembers[0], 1,
-        Instant.now(), "thread", "", 1L, "", "");
-    manager.getGMSManager().start();
-    manager.getGMSManager().started();
-    manager.getGMSManager().installView(createView(myMemberId, 1, members));
-    manager.setShutdown();
-    Set<InternalDistributedMember> failures =
-        manager.send(new InternalDistributedMember[] {mockMembers[0]}, m);
-    verify(messenger, never()).send(isA(GMSMessage.class));
-    assertEquals(1, failures.size());
-    assertEquals(mockMembers[0], failures.iterator().next());
-  }
-
-  @Test
-  public void testSendToEmptyListIsRejected() throws Exception {
-    InternalDistributedMember[] emptyList = new InternalDistributedMember[0];
-    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
-    m.setRecipient(mockMembers[0]);
-    manager.getGMSManager().start();
-    manager.getGMSManager().started();
-    manager.getGMSManager().installView(createView(myMemberId, 1, members));
-    Set<InternalDistributedMember> failures = manager.send(null, m);
-    verify(messenger, never()).send(isA(GMSMessage.class));
-    reset(messenger);
-    failures = manager.send(emptyList, m);
-    verify(messenger, never()).send(isA(GMSMessage.class));
   }
 
   @Test
