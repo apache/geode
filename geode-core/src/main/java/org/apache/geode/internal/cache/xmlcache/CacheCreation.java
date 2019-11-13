@@ -88,8 +88,13 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
+import org.apache.geode.cache.query.internal.QueryConfigurationService;
+import org.apache.geode.cache.query.internal.QueryConfigurationServiceException;
+import org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.cache.query.internal.xml.QueryConfigurationServiceCreation;
+import org.apache.geode.cache.query.internal.xml.QueryMethodAuthorizerCreation;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.snapshot.CacheSnapshotService;
@@ -307,6 +312,8 @@ public class CacheCreation implements InternalCache {
 
   private final InternalQueryService queryService = createInternalQueryService();
 
+  private QueryConfigurationServiceCreation queryConfigurationServiceCreation;
+
   /**
    * Creates a new {@code CacheCreation} with no root regions
    */
@@ -459,7 +466,8 @@ public class CacheCreation implements InternalCache {
    * Fills in the contents of a {@link Cache} based on this creation object's state.
    */
   void create(InternalCache cache)
-      throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
+      throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException,
+      QueryConfigurationServiceException {
     extensionPoint.beforeCreate(cache);
 
     cache.setDeclarativeCacheConfig(cacheConfig);
@@ -599,6 +607,18 @@ public class CacheCreation implements InternalCache {
       GatewayReceiver receiver = factory.create();
       if (receiver.isManualStart()) {
         logger.info("{} is not being started since it is configured for manual start", receiver);
+      }
+    }
+
+    if (queryConfigurationServiceCreation != null) {
+      QueryConfigurationServiceImpl queryConfigService =
+          (QueryConfigurationServiceImpl) cache.getService(QueryConfigurationService.class);
+      if (queryConfigService != null) {
+        QueryMethodAuthorizerCreation authorizerCreation =
+            queryConfigurationServiceCreation.getMethodAuthorizerCreation();
+        if (authorizerCreation != null) {
+          queryConfigService.updateMethodAuthorizer(cache, authorizerCreation);
+        }
       }
     }
 
@@ -1057,6 +1077,15 @@ public class CacheCreation implements InternalCache {
   @Override
   public InternalQueryService getQueryService() {
     return queryService;
+  }
+
+  public QueryConfigurationServiceCreation getQueryConfigurationServiceCreation() {
+    return queryConfigurationServiceCreation;
+  }
+
+  public void setQueryConfigurationServiceCreation(
+      QueryConfigurationServiceCreation queryConfigurationServiceCreation) {
+    this.queryConfigurationServiceCreation = queryConfigurationServiceCreation;
   }
 
   @Override

@@ -138,8 +138,7 @@ public class ExecutionContextIntegrationTest {
 
     // No security, no-op authorizer.
     assertThat(noOpAuthorizer).isNotNull();
-    assertThat(noOpAuthorizer.getClass().getCanonicalName())
-        .startsWith("org.apache.geode.cache.query.internal.DefaultQueryService$$Lambda$");
+    assertThat(noOpAuthorizer).isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
 
     server.stopMember();
 

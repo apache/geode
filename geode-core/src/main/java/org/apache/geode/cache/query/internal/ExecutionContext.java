@@ -130,7 +130,7 @@ public class ExecutionContext {
 
     // Authorization & authentication logic happens on server side only.
     if (cache.isClient()) {
-      this.methodInvocationAuthorizer = DefaultQueryService.NO_OP_AUTHORIZER;
+      this.methodInvocationAuthorizer = QueryConfigurationServiceImpl.getNoOpAuthorizer();
     } else {
       this.methodInvocationAuthorizer = cache.getQueryService().getMethodInvocationAuthorizer();
     }
