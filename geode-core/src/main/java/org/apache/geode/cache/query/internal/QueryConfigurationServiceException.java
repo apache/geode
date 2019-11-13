@@ -19,19 +19,11 @@ import org.apache.geode.cache.CacheException;
 public class QueryConfigurationServiceException extends CacheException {
   private static final long serialVersionUID = -5122191060240009964L;
 
-  QueryConfigurationServiceException() {
-    super();
-  }
-
   QueryConfigurationServiceException(String s) {
     super(s);
   }
 
   QueryConfigurationServiceException(String s, Throwable cause) {
     super(s, cause);
-  }
-
-  QueryConfigurationServiceException(Throwable cause) {
-    super(cause);
   }
 }
