@@ -52,6 +52,7 @@ import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
@@ -184,6 +185,7 @@ public class GMSLocatorRecoveryIntegrationTest {
             .setMembershipListener(mockListener)
             .setConfig(new ServiceConfig(transport, config))
             .setSerializer(InternalDataSerializer.getDSFIDSerializer())
+            .setLifecycleListener(mock(LifecycleListener.class))
             .create();
 
     GMSLocator gmsLocator = new GMSLocator(localHost,

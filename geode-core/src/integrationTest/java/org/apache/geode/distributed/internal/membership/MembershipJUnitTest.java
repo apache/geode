@@ -58,6 +58,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
@@ -271,6 +272,7 @@ public class MembershipJUnitTest {
             .setMembershipListener(listener)
             .setConfig(new ServiceConfig(transport, config))
             .setSerializer(serializer)
+            .setLifecycleListener(mock(LifecycleListener.class))
             .create();
     m1.startEventProcessing();
     return Pair.of(m1, messageListener);

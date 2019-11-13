@@ -38,7 +38,7 @@ public interface MembershipBuilder {
 
   MembershipBuilder setMemberIDFactory(MemberIdentifierFactory memberFactory);
 
-  MembershipBuilder setDirectChannelCallbacks(LifecycleListener lifecycleListener);
+  MembershipBuilder setLifecycleListener(LifecycleListener lifecycleListener);
 
 
 

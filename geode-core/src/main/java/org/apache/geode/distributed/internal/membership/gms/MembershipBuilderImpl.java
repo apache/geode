@@ -90,7 +90,7 @@ public class MembershipBuilderImpl implements MembershipBuilder {
   }
 
   @Override
-  public MembershipBuilder setDirectChannelCallbacks(
+  public MembershipBuilder setLifecycleListener(
       LifecycleListener lifecycleListener) {
     this.lifecycleListener = lifecycleListener;
     return this;

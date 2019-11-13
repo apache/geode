@@ -107,7 +107,7 @@ public class MembershipManagerAdapter {
         .setMembershipListener(listener)
         .setConfig(new ServiceConfig(transport, system.getConfig()))
         .setSerializer(InternalDataSerializer.getDSFIDSerializer())
-        .setDirectChannelCallbacks(new LifecycleListenerImpl(this))
+        .setLifecycleListener(new LifecycleListenerImpl(this))
         .setMemberIDFactory(new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
         .create();
   }
