@@ -25,12 +25,12 @@ public class PdxRealizer implements ConfigurationRealizer<Pdx, PdxInfo> {
   public PdxInfo get(Pdx config, InternalCache cache) {
     PdxInfo info = new PdxInfo();
     info.setReadSerialized(cache.getPdxReadSerialized());
-    info.setDiskStore(cache.getPdxDiskStore());
+    info.setDiskStoreName(cache.getPdxDiskStore());
     info.setIgnoreUnreadFields(cache.getPdxIgnoreUnreadFields());
     info.setPersistent(cache.getPdxPersistent());
     PdxSerializer pdxSerializer = cache.getPdxSerializer();
     if (pdxSerializer != null) {
-      info.setSerializerClassName(pdxSerializer.getClass().getName());
+      info.setPdxSerializer(pdxSerializer.getClass().getName());
     }
     return info;
   }

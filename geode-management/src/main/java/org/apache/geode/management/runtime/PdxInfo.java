@@ -20,10 +20,10 @@ import org.apache.geode.annotations.Experimental;
 @Experimental
 public class PdxInfo extends RuntimeInfo {
   private boolean readSerialized;
-  private String diskStore;
+  private String diskStoreName;
   private boolean ignoreUnreadFields;
   private boolean persistent;
-  private String serializerClassName;
+  private String pdxSerializer;
 
   public boolean isReadSerialized() {
     return readSerialized;
@@ -33,12 +33,12 @@ public class PdxInfo extends RuntimeInfo {
     this.readSerialized = readSerialized;
   }
 
-  public String getDiskStore() {
-    return diskStore;
+  public String getDiskStoreName() {
+    return diskStoreName;
   }
 
-  public void setDiskStore(String diskStore) {
-    this.diskStore = diskStore;
+  public void setDiskStoreName(String diskStoreName) {
+    this.diskStoreName = diskStoreName;
   }
 
   public boolean isIgnoreUnreadFields() {
@@ -57,11 +57,11 @@ public class PdxInfo extends RuntimeInfo {
     this.persistent = persistent;
   }
 
-  public String getSerializerClassName() {
-    return serializerClassName;
+  public String getPdxSerializer() {
+    return pdxSerializer;
   }
 
-  public void setSerializerClassName(String serializerClassName) {
-    this.serializerClassName = serializerClassName;
+  public void setPdxSerializer(String pdxSerializer) {
+    this.pdxSerializer = pdxSerializer;
   }
 }
