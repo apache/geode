@@ -2390,6 +2390,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    public Builder set(final Properties properties) {
+      distributedSystemProperties.putAll(properties);
+      return this;
+    }
+
     /**
      * Sets whether the PDX type meta-data should be persisted to disk.
      *

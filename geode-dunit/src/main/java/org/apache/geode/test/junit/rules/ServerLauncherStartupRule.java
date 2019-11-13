@@ -22,44 +22,45 @@ import java.util.function.UnaryOperator;
 
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
-public class LocatorLauncherStartupRule extends SerializableExternalResource {
-  private LocatorLauncher launcher;
+public class ServerLauncherStartupRule extends SerializableExternalResource {
+  private ServerLauncher launcher;
   private final TemporaryFolder temp = new TemporaryFolder();
   private final Properties properties = new Properties();
   private boolean autoStart;
-  private UnaryOperator<LocatorLauncher.Builder> builderOperator;
+  private UnaryOperator<ServerLauncher.Builder> builderOperator;
 
-  public LocatorLauncherStartupRule withAutoStart() {
+  public ServerLauncherStartupRule withAutoStart() {
     autoStart = true;
     return this;
   }
 
-  public LocatorLauncherStartupRule withProperties(Properties properties) {
+  public ServerLauncherStartupRule withProperties(Properties properties) {
     this.properties.putAll(properties);
     return this;
   }
 
-  public LocatorLauncherStartupRule withProperty(String key, String value) {
+  public ServerLauncherStartupRule withProperty(String key, String value) {
     this.properties.put(key, value);
     return this;
   }
 
-  public LocatorLauncherStartupRule withBuilder(
-      UnaryOperator<LocatorLauncher.Builder> builderOperator) {
+  public ServerLauncherStartupRule withBuilder(
+      UnaryOperator<ServerLauncher.Builder> builderOperator) {
     this.builderOperator = builderOperator;
     return this;
   }
 
   @Override
   public void before() {
-    LocatorLauncher.Builder builder = new LocatorLauncher.Builder()
-        .setPort(0)
+    ServerLauncher.Builder builder = new ServerLauncher.Builder()
+        .setServerPort(0)
         .set(properties)
-        .setMemberName("locator-0")
+        .setMemberName("server-0")
         .set(ConfigurationProperties.LOG_LEVEL, "config");
     if (builderOperator != null) {
       builder = builderOperator.apply(builder);
@@ -87,5 +88,9 @@ public class LocatorLauncherStartupRule extends SerializableExternalResource {
       launcher.stop();
     }
     temp.delete();
+  }
+
+  public Cache getCache() {
+    return launcher.getCache();
   }
 }
