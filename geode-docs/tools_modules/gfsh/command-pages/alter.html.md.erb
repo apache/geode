@@ -31,6 +31,10 @@ Modify an existing <%=vars.product_name%> resource.
 
     Modifies or removes a region from an offline disk-store.
 
+-   **[alter query-service](#topic_alter_query_service)**
+
+    Alter configuration details of the query configuration service.
+
 -   **[alter region](#topic_E74ED23CB60342538B2175C326E7D758)**
 
     Alters the configuration of a region.
@@ -181,7 +185,7 @@ alter disk-store --name=DiskStore1 --region=region1 --disk-dirs=/Disks/DiskStore
 
 ## <a id="topic_alter_query_service" class="no-quick-link"></a>alter query-service
 
-Alter configuration details of the query-service.
+Alter configuration details of the query configuration service.
 
 **Availability:** Online. You must be connected in <span class="keyword parmname">gfsh</span> to a JMX Manager member to use this command.
 
@@ -197,9 +201,9 @@ alter query-service [--method-authorizer=value]
 
 | Name | Description |
 |------|-------------|
-| &#8209;&#8209;method-authorizer   | Fully qualified class name of the MethodInvocationAuthorizer to be used for query authorization |
-| &#8209;&#8209;authorizer-parameters | A comma-separated list of parameters to be used by the specified MethodInvocationAuthorizer. This requires that a method-authorizer option has been specified |
-| &#8209;&#8209;authorizer-parameter | A single parameter to be used by the specified MethodInvocationAuthorizer. This requires that a method-authorizer option has been specified. This option is recommended for use with MethodInvocationAuthorizers that perform additional parsing of the parameter string which makes using a comma-separated list non-viable _e.g. A regex containing a comma as part of its pattern_ |
+| &#8209;&#8209;method-authorizer   | Fully qualified class name of the `MethodInvocationAuthorizer` to be used for query authorization. |
+| &#8209;&#8209;authorizer-parameters | A comma-separated list of parameters to be used by the specified `MethodInvocationAuthorizer`. This requires that a method-authorizer option has been specified. |
+| &#8209;&#8209;authorizer-parameter | A single parameter to be used by the specified `MethodInvocationAuthorizer`. This requires that a method-authorizer option has been specified. This option is recommended for use with implementations of `MethodInvocationAuthorizer` that perform additional parsing of the parameter string, which makes using a comma-separated list non-viable. For example, a regex containing a comma as part of its pattern. |
 
 
 **Example Commands:**
