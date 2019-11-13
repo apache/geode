@@ -16,23 +16,27 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.configuration.Pdx;
-import org.apache.geode.management.runtime.PdxInfo;
-import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.AbstractConfiguration;
+import org.apache.geode.management.runtime.RuntimeInfo;
 
-public class PdxRealizer extends ReadOnlyConfigurationRealizer<Pdx, PdxInfo> {
-  @Override
-  public PdxInfo get(Pdx config, InternalCache cache) {
-    PdxInfo info = new PdxInfo();
-    info.setReadSerialized(cache.getPdxReadSerialized());
-    if (cache.getPdxPersistent()) {
-      info.setDiskStoreName(cache.getPdxDiskStore());
-    }
-    info.setIgnoreUnreadFields(cache.getPdxIgnoreUnreadFields());
-    PdxSerializer pdxSerializer = cache.getPdxSerializer();
-    if (pdxSerializer != null) {
-      info.setPdxSerializer(pdxSerializer.getClass().getName());
-    }
-    return info;
+public abstract class ReadOnlyConfigurationRealizer<T extends AbstractConfiguration<R>, R extends RuntimeInfo>
+    implements ConfigurationRealizer<T, R> {
+  public final RealizationResult create(T config, InternalCache cache) {
+    throw new IllegalStateException("should not be invoked");
+  }
+
+  public final RealizationResult update(T config, InternalCache cache) {
+    throw new IllegalStateException("should not be invoked");
+  }
+
+  public final RealizationResult delete(T config, InternalCache cache) {
+    throw new IllegalStateException("should not be invoked");
+  }
+
+  public abstract R get(T config, InternalCache cache);
+
+  public final boolean isReadyOnly() {
+    return true;
   }
 }

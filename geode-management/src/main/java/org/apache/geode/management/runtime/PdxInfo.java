@@ -22,7 +22,6 @@ public class PdxInfo extends RuntimeInfo {
   private boolean readSerialized;
   private String diskStoreName;
   private boolean ignoreUnreadFields;
-  private boolean persistent;
   private String pdxSerializer;
 
   public boolean isReadSerialized() {
@@ -47,14 +46,6 @@ public class PdxInfo extends RuntimeInfo {
 
   public void setIgnoreUnreadFields(boolean ignoreUnreadFields) {
     this.ignoreUnreadFields = ignoreUnreadFields;
-  }
-
-  public boolean isPersistent() {
-    return persistent;
-  }
-
-  public void setPersistent(boolean persistent) {
-    this.persistent = persistent;
   }
 
   public String getPdxSerializer() {

@@ -45,6 +45,18 @@ public class PdxRealizerTest {
   }
 
   @Test
+  public void persistent() throws Exception {
+    when(cache.getPdxPersistent()).thenReturn(false);
+    when(cache.getPdxDiskStore()).thenReturn("test");
+    PdxInfo pdxInfo = pdxRealizer.get(null, cache);
+    assertThat(pdxInfo.getDiskStoreName()).isNull();
+
+    when(cache.getPdxPersistent()).thenReturn(true);
+    pdxInfo = pdxRealizer.get(null, cache);
+    assertThat(pdxInfo.getDiskStoreName()).isEqualTo("test");
+  }
+
+  @Test
   public void readOnly() {
     assertThat(pdxRealizer.isReadyOnly()).isTrue();
     assertThatThrownBy(() -> pdxRealizer.create(null, cache))
