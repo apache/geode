@@ -2390,6 +2390,14 @@ public class ServerLauncher extends AbstractLauncher<String> {
       return this;
     }
 
+    /**
+     * add the properties in the Gemfire Distributed System Property
+     *
+     * @param properties a property object that holds one or more Gemfire Distributed System
+     *        properties as described in {@link ConfigurationProperties}
+     * @return this Builder instance
+     * @since Geode 1.12
+     */
     public Builder set(final Properties properties) {
       distributedSystemProperties.putAll(properties);
       return this;
