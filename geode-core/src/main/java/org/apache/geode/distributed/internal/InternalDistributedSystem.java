@@ -77,7 +77,6 @@ import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -1458,7 +1457,7 @@ public class InternalDistributedSystem extends DistributedSystem
       return;
     }
     emergencyClassesLoaded = true;
-    GMSMembershipManager.loadEmergencyClasses();
+    MembershipManagerAdapter.loadEmergencyClasses();
   }
 
   /**

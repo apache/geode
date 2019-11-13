@@ -57,7 +57,6 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.StartupMessage;
-import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
@@ -72,10 +71,8 @@ import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
-import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
@@ -1288,32 +1285,11 @@ public class GMSMembershipManager implements Membership {
   }
 
   /**
-   * @see SystemFailure#loadEmergencyClasses() /** break any potential circularity in
-   *      {@link #loadEmergencyClasses()}
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded = false;
-
-  /**
    * inhibits logging of ForcedDisconnectException to keep dunit logs clean while testing this
    * feature
    */
   @MakeNotStatic
   private static volatile boolean inhibitForceDisconnectLogging;
-
-  /**
-   * Ensure that the critical classes from components get loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    if (emergencyClassesLoaded)
-      return;
-    emergencyClassesLoaded = true;
-    DirectChannel.loadEmergencyClasses();
-    GMSJoinLeave.loadEmergencyClasses();
-    GMSHealthMonitor.loadEmergencyClasses();
-  }
 
   /**
    * Close the receiver, avoiding all potential deadlocks and eschewing any attempts at being

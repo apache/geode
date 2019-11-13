@@ -29,8 +29,10 @@ import java.util.function.Function;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
@@ -51,6 +53,8 @@ import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilde
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
+import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
+import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.tcp.ConnectExceptions;
@@ -59,6 +63,12 @@ import org.apache.geode.logging.internal.executors.LoggingThread;
 
 public class MembershipManagerAdapter {
   private static final Logger logger = Services.getLogger();
+  /**
+   * @see SystemFailure#loadEmergencyClasses() /** break any potential circularity in
+   *      {@link #loadEmergencyClasses()}
+   */
+  @MakeNotStatic
+  private static volatile boolean emergencyClassesLoaded = false;
 
   private final ClusterDistributionManager clusterDistributionManager;
   private final boolean tcpDisabled;
@@ -110,6 +120,20 @@ public class MembershipManagerAdapter {
         .setLifecycleListener(new LifecycleListenerImpl(this))
         .setMemberIDFactory(new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
         .create();
+  }
+
+  /**
+   * Ensure that the critical classes from components get loaded.
+   *
+   * @see SystemFailure#loadEmergencyClasses()
+   */
+  public static void loadEmergencyClasses() {
+    if (emergencyClassesLoaded)
+      return;
+    emergencyClassesLoaded = true;
+    DirectChannel.loadEmergencyClasses();
+    GMSJoinLeave.loadEmergencyClasses();
+    GMSHealthMonitor.loadEmergencyClasses();
   }
 
   public void start() {
