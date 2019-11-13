@@ -954,6 +954,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     @Released
     final Object curOldValue = this.oldValue;
     if (v == curOldValue) {
+      logger.info("JASON basicSetOldValue is returning early and not releasing for :" + v);
       return;
     }
     if (this.offHeapOk && mayHaveOffHeapReferences()) {
@@ -1925,6 +1926,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     try {
       RegionEntry re = getRegion().getRegionEntry(getKey());
       if (re == null) {
+        logger.info("JASON we didn't release due to null");
         return;
       }
       ReferenceCountHelper.skipRefCountTracking();
@@ -1939,8 +1941,12 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
         if (mayHaveOffHeapReferences()) {
           OffHeapHelper.releaseWithNoTracking(v);
         }
+        else {
+          logger.info("JASON WHOOOOOOOOOOO we didn't release?!");
+        }
       }
     } catch (EntryNotFoundException ignore) {
+      logger.info("JASON WHOOOOOOOOOOO");
     }
   }
 
