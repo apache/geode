@@ -239,7 +239,8 @@ public class ClassPathLoader {
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append(", excludeTCCL=").append(excludeTCCL);
+    sb.append("excludeTCCL=").append(excludeTCCL);
+    sb.append(", jarDeployer=").append(jarDeployer);
     sb.append(", classLoaders=[");
     sb.append(getClassLoaders().stream().map(ClassLoader::toString).collect(joining(", ")));
     sb.append("]}");

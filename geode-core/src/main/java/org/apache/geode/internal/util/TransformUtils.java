@@ -24,7 +24,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
 /**
- * Contains common data tranformation utility methods and transformers.
+ * Contains common data transformation utility methods and transformers.
  */
 public class TransformUtils {
 
@@ -95,16 +95,11 @@ public class TransformUtils {
       };
 
   /**
-   * This is a simple file to file name transformer.
+   * Returns a file to file name transformer.
    */
-  @Immutable
-  public static final Transformer<File, String> fileNameTransformer =
-      new Transformer<File, String>() {
-        @Override
-        public String transform(File file) {
-          return file.getName();
-        }
-      };
+  public static Transformer<File, String> getFileNameTransformer() {
+    return File::getName;
+  }
 
   /**
    * Transforms a collection of one data type into another.

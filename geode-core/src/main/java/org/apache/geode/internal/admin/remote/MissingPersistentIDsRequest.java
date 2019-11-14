@@ -27,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -71,7 +70,7 @@ public class MissingPersistentIDsRequest extends CliLegacyMessage {
     Set<PersistentID> existing = replyProcessor.existing;
 
     MissingPersistentIDsResponse localResponse =
-        (MissingPersistentIDsResponse) request.createResponse((ClusterDistributionManager) dm);
+        (MissingPersistentIDsResponse) request.createResponse(dm);
     results.addAll(localResponse.getMissingIds());
     existing.addAll(localResponse.getLocalIds());
 
