@@ -19,6 +19,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import javax.servlet.http.HttpSession;
@@ -35,6 +38,7 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.modules.session.catalina.AbstractSessionCache;
+import org.apache.geode.modules.session.catalina.DeltaSession;
 import org.apache.geode.modules.session.catalina.SessionCache;
 import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
 
@@ -80,10 +84,11 @@ public class DeltaSessionStatisticsIntegrationTest extends AbstractDeltaSessionI
         .create(REGION_NAME);
     mockDeltaSessionManager();
     when(deltaSessionManager.getStatistics()).thenReturn(statistics);
-    httpSessionRegion.put(TEST_SESSION_ID,
-        new TestDeltaSession(deltaSessionManager, TEST_SESSION_ID));
+    DeltaSession spyDeltasSession = spy(new TestDeltaSession(deltaSessionManager, TEST_SESSION_ID));
+    httpSessionRegion.put(TEST_SESSION_ID, spyDeltasSession);
 
-    await().untilAsserted(() -> assertThat(httpSessionRegion.isEmpty()).isTrue());
+    await().untilAsserted(() -> verify(spyDeltasSession, times(1)).processExpired());
+    assertThat(httpSessionRegion.isEmpty()).isTrue();
     assertThat(statistics.getSessionsExpired()).isEqualTo(1);
   }
 
