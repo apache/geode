@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.COMMAND_NAME;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.METHOD_AUTHORIZER_NAME;
-import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SECURITY_NOT_ENABLED_MESSAGE;
+import static org.apache.geode.management.internal.cli.functions.AlterQueryServiceFunction.SECURITY_NOT_ENABLED_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;

@@ -14,16 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.AUTHORIZER_PARAMETERS;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.COMMAND_NAME;
-import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.DEPRECATED_PROPERTY_ERROR;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.METHOD_AUTHORIZER_NAME;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.NO_ARGUMENTS_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.NO_MEMBERS_FOUND_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.PARAMETERS_WITHOUT_AUTHORIZER_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.PARTIAL_FAILURE_MESSAGE;
-import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SECURITY_NOT_ENABLED_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SINGLE_AUTHORIZER_PARAMETER;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SINGLE_PARAM_AND_PARAMETERS_SPECIFIED_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,7 +67,6 @@ public class AlterQueryServiceCommandTest {
     command = spy(new AlterQueryServiceCommand());
     mockMemberSet = mock(HashSet.class);
     mockQueryConfigService = mock(QueryConfigService.class);
-    doReturn(true).when(command).isSecurityEnabled();
   }
 
   @Test
@@ -96,33 +92,6 @@ public class AlterQueryServiceCommandTest {
             + AUTHORIZER_PARAMETERS + "=param1,param2" + " --" + SINGLE_AUTHORIZER_PARAMETER
             + "=param3")
         .statusIsError().containsOutput(SINGLE_PARAM_AND_PARAMETERS_SPECIFIED_MESSAGE);
-  }
-
-  @Test
-  public void commandReturnsErrorWhenAuthorizerIsSpecifiedAndAllowUntrustedMethodInvocationIsTrue() {
-    doReturn(mockMemberSet).when(command).findMembers(null, null);
-    when(mockMemberSet.size()).thenReturn(1);
-    try {
-      System.setProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation", "true");
-      gfsh.executeAndAssertThat(command,
-          COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "="
-              + UnrestrictedMethodAuthorizer.class.getName())
-          .statusIsError().containsOutput(DEPRECATED_PROPERTY_ERROR);
-    } finally {
-      System.clearProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
-    }
-  }
-
-  @Test
-  public void commandReturnsErrorWhenAuthorizerSpecifiedAndSecurityNotEnabled() {
-    doReturn(mockMemberSet).when(command).findMembers(null, null);
-    when(mockMemberSet.size()).thenReturn(1);
-    doReturn(false).when(command).isSecurityEnabled();
-
-    gfsh.executeAndAssertThat(command,
-        COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "="
-            + UnrestrictedMethodAuthorizer.class.getName())
-        .statusIsError().containsOutput(SECURITY_NOT_ENABLED_MESSAGE);
   }
 
   @Test
@@ -158,6 +127,7 @@ public class AlterQueryServiceCommandTest {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
   public void commandReturnsCorrectResultModelWhenCliResultListIsPartialFailure() {
     doReturn(mockMemberSet).when(command).findMembers(null, null);
     when(mockMemberSet.size()).thenReturn(2);

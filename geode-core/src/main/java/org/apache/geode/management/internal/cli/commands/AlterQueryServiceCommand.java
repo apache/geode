@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,13 +27,11 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.query.management.configuration.QueryConfigService;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
@@ -48,21 +45,19 @@ import org.apache.geode.security.ResourcePermission;
 public class AlterQueryServiceCommand extends SingleGfshCommand {
 
   static final String COMMAND_NAME = "alter query-service";
-  static final String COMMAND_HELP =
+  private static final String COMMAND_HELP =
       "Alter configuration parameters for the query service";
   static final String METHOD_AUTHORIZER_NAME = "method-authorizer";
-  static final String METHOD_AUTHORIZER_NAME_HELP =
+  private static final String METHOD_AUTHORIZER_NAME_HELP =
       "The name of the class to be used for OQL method authorization";
   static final String AUTHORIZER_PARAMETERS = "authorizer-parameters";
-  static final String AUTHORIZER_PARAMETERS_HELP =
+  private static final String AUTHORIZER_PARAMETERS_HELP =
       "A comma separated list of all parameter values for the specified method authorizer. Requires '--"
           + METHOD_AUTHORIZER_NAME + "' option to be used";
   static final String SINGLE_AUTHORIZER_PARAMETER = "authorizer-parameter";
-  static final String SINGLE_AUTHORIZER_PARAMETER_HELP =
+  private static final String SINGLE_AUTHORIZER_PARAMETER_HELP =
       "A single parameter to be used by the specified method authorizer. Requires '--"
           + METHOD_AUTHORIZER_NAME + "' option to be used";
-  static final String DEPRECATED_PROPERTY_ERROR = "Deprecated System Property: \"" + GEMFIRE_PREFIX
-      + "QueryService.allowUntrustedMethodInvocation\" is set to TRUE. In order to use a MethodInvocationAuthorizer, this property must be FALSE or undefined.";
   static final String PARAMETERS_WITHOUT_AUTHORIZER_MESSAGE =
       "The '--" + AUTHORIZER_PARAMETERS + "' and '--" + SINGLE_AUTHORIZER_PARAMETER
           + "' options require '--"
@@ -73,8 +68,6 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
   static final String NO_ARGUMENTS_MESSAGE =
       "No arguments were provided. No changes have been applied.";
   static final String NO_MEMBERS_FOUND_MESSAGE = "No members found.";
-  static final String SECURITY_NOT_ENABLED_MESSAGE =
-      "Integrated security is not enabled for this distributed system. Updating the method authorizer requires integrated security to be enabled.";
   public static final String PARTIAL_FAILURE_MESSAGE =
       "In the event of a partial failure of this command, re-running the command or restarting failing members should restore consistency.";
 
@@ -95,13 +88,6 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
     QueryConfigService queryConfigService = getQueryConfigService();
     Set<String> parametersSet = null;
     if (methodAuthorizerName != null) {
-      if (!isSecurityEnabled()) {
-        return ResultModel.createError(SECURITY_NOT_ENABLED_MESSAGE);
-      }
-      if (Boolean.parseBoolean(
-          System.getProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation"))) {
-        return ResultModel.createError(DEPRECATED_PROPERTY_ERROR);
-      }
       if (authorizerParameters != null) {
         parametersSet = new HashSet<>(Arrays.asList(authorizerParameters));
       } else if (singleAuthorizerParameter != null) {
@@ -111,30 +97,25 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
     }
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
-    if (targetMembers.size() > 0) {
+    if (targetMembers.size() == 0) {
+      result = ResultModel.createInfo(NO_MEMBERS_FOUND_MESSAGE);
+    } else {
       Object[] args = new Object[] {methodAuthorizerName, parametersSet};
       List<CliFunctionResult> functionResults =
           executeAndGetFunctionResult(new AlterQueryServiceFunction(), args,
               targetMembers);
       String footer = null;
-      for (CliFunctionResult cliResult : functionResults) {
-        if (!cliResult.isSuccessful()) {
-          footer = PARTIAL_FAILURE_MESSAGE;
-          break;
-        }
+
+      if (functionResults.stream().anyMatch(functionResult -> functionResult.isSuccessful())
+          && functionResults.stream().anyMatch(functionResult -> !functionResult.isSuccessful())) {
+        footer = PARTIAL_FAILURE_MESSAGE;
       }
+
       result =
           ResultModel.createMemberStatusResult(functionResults, null, footer, false, true);
-    } else {
-      result = ResultModel.createInfo(NO_MEMBERS_FOUND_MESSAGE);
     }
     result.setConfigObject(queryConfigService);
     return result;
-  }
-
-  boolean isSecurityEnabled() {
-    return ((InternalCache) CacheFactory.getAnyInstance()).getSecurityService()
-        .isIntegratedSecurity();
   }
 
   void populateMethodAuthorizer(String methodAuthorizerName, Set<String> parameterSet,
@@ -144,14 +125,14 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
     methodAuthorizer.setClassName(methodAuthorizerName);
 
     if (parameterSet != null && parameterSet.size() != 0) {
-      List<QueryConfigService.MethodAuthorizer.Parameter> parameters = new ArrayList<>();
-      for (String param : parameterSet) {
+      List<QueryConfigService.MethodAuthorizer.Parameter> parameterList = new ArrayList<>();
+      for (String value : parameterSet) {
         QueryConfigService.MethodAuthorizer.Parameter parameter =
             new QueryConfigService.MethodAuthorizer.Parameter();
-        parameter.setParameterValue(param);
-        parameters.add(parameter);
+        parameter.setParameterValue(value);
+        parameterList.add(parameter);
       }
-      methodAuthorizer.setParameters(parameters);
+      methodAuthorizer.setParameters(parameterList);
     }
     queryConfigService.setMethodAuthorizer(methodAuthorizer);
   }

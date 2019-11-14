@@ -15,11 +15,15 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.management.internal.cli.functions.AlterQueryServiceFunction.AUTHORIZER_PARAMETERS_MESSAGE;
 import static org.apache.geode.management.internal.cli.functions.AlterQueryServiceFunction.AUTHORIZER_UPDATED_MESSAGE;
+import static org.apache.geode.management.internal.cli.functions.AlterQueryServiceFunction.DEPRECATED_PROPERTY_ERROR;
+import static org.apache.geode.management.internal.cli.functions.AlterQueryServiceFunction.SECURITY_NOT_ENABLED_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -58,6 +62,7 @@ public class AlterQueryServiceFunctionTest {
     when(mockContext.getArguments()).thenReturn(arguments);
     when(mockContext.getCache()).thenReturn(mockCache);
     when(mockCache.getService(any())).thenReturn(mockQueryConfigService);
+    doReturn(true).when(function).isSecurityEnabled();
   }
 
   @Test
@@ -96,6 +101,31 @@ public class AlterQueryServiceFunctionTest {
 
     assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
     verify(mockQueryConfigService, times(0)).updateMethodAuthorizer(any(), any(), any());
+  }
+
+  @Test
+  public void executeFunctionReturnsErrorWhenSecurityIsNotEnabled() {
+    doReturn(false).when(function).isSecurityEnabled();
+
+    CliFunctionResult result = function.executeFunction(mockContext);
+
+    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
+    assertThat(result.getStatusMessage()).isEqualTo(SECURITY_NOT_ENABLED_MESSAGE);
+    verify(mockQueryConfigService, times(0)).updateMethodAuthorizer(any(), any(), any());
+  }
+
+  @Test
+  public void executeFunctionReturnsErrorWhenDeprecatedSystemPropertyIsSet() {
+    try {
+      System.setProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation", "true");
+      CliFunctionResult result = function.executeFunction(mockContext);
+
+      assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.ERROR.toString());
+      assertThat(result.getStatusMessage()).isEqualTo(DEPRECATED_PROPERTY_ERROR);
+      verify(mockQueryConfigService, times(0)).updateMethodAuthorizer(any(), any(), any());
+    } finally {
+      System.clearProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
+    }
   }
 
   @Test

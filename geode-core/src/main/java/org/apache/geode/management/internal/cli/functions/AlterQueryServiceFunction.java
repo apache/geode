@@ -15,10 +15,13 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliFunction;
@@ -27,6 +30,11 @@ public class AlterQueryServiceFunction extends CliFunction<Object[]> {
   static final String AUTHORIZER_UPDATED_MESSAGE =
       "Updated MethodInvocationAuthorizer. New authorizer is: ";
   static final String AUTHORIZER_PARAMETERS_MESSAGE = " with parameters: ";
+  public static final String SECURITY_NOT_ENABLED_MESSAGE =
+      "Integrated security is not enabled for this distributed system. Updating the method authorizer requires integrated security to be enabled.";
+  public static final String DEPRECATED_PROPERTY_ERROR =
+      "Deprecated System Property: \"" + GEMFIRE_PREFIX
+          + "QueryService.allowUntrustedMethodInvocation\" is set to TRUE. In order to use a MethodInvocationAuthorizer, this property must be FALSE or undefined.";
   private static final long serialVersionUID = 7155576168386556341L;
 
   @Override
@@ -43,6 +51,15 @@ public class AlterQueryServiceFunction extends CliFunction<Object[]> {
     }
 
     if (authorizerName != null) {
+      if (!isSecurityEnabled()) {
+        return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+            SECURITY_NOT_ENABLED_MESSAGE);
+      }
+      if (Boolean.parseBoolean(
+          System.getProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation"))) {
+        return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+            DEPRECATED_PROPERTY_ERROR);
+      }
       try {
         Cache cache = context.getCache();
         ((InternalCache) cache)
@@ -57,5 +74,10 @@ public class AlterQueryServiceFunction extends CliFunction<Object[]> {
         ? AUTHORIZER_PARAMETERS_MESSAGE + String.join(", ", parameterSet) : "");
     return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
         message);
+  }
+
+  boolean isSecurityEnabled() {
+    return ((InternalCache) CacheFactory.getAnyInstance()).getSecurityService()
+        .isIntegratedSecurity();
   }
 }
