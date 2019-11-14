@@ -209,7 +209,7 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
   }
 
   @Test
-  public void alterQueryServiceCommandDoesNotUpdateClusterConfigWhenFunctionExecutionFails() {
+  public void alterQueryServiceCommandDoesNotUpdateClusterConfigWhenFunctionExecutionFailsOnAllMembers() {
     String authorizerName = "badAuthorizerName";
 
     gfsh.executeAndAssertThat(COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "=" + authorizerName

@@ -22,6 +22,7 @@ import static org.apache.geode.management.internal.cli.commands.AlterQueryServic
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.NO_ARGUMENTS_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.NO_MEMBERS_FOUND_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.PARAMETERS_WITHOUT_AUTHORIZER_MESSAGE;
+import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.PARTIAL_FAILURE_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SECURITY_NOT_ENABLED_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SINGLE_AUTHORIZER_PARAMETER;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SINGLE_PARAM_AND_PARAMETERS_SPECIFIED_MESSAGE;
@@ -146,7 +147,7 @@ public class AlterQueryServiceCommandTest {
 
     List<CliFunctionResult> resultList = new ArrayList<>();
     String memberName = "memberName";
-    resultList.add(new CliFunctionResult(memberName, CliFunctionResult.StatusState.OK));
+    resultList.add(new CliFunctionResult(memberName, CliFunctionResult.StatusState.OK, ""));
     doReturn(resultList).when(command).executeAndGetFunctionResult(any(
         AlterQueryServiceFunction.class), any(Object[].class), eq(mockMemberSet));
 
@@ -154,6 +155,28 @@ public class AlterQueryServiceCommandTest {
         COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "="
             + UnrestrictedMethodAuthorizer.class.getName())
         .statusIsSuccess().containsOutput(memberName);
+  }
+
+  @Test
+  public void commandReturnsCorrectResultModelWhenCliResultListIsPartialFailure() {
+    doReturn(mockMemberSet).when(command).findMembers(null, null);
+    when(mockMemberSet.size()).thenReturn(2);
+
+    doReturn(mockQueryConfigService).when(command).getQueryConfigService();
+    doNothing().when(command).populateMethodAuthorizer(any(String.class), any(Set.class), any(
+        QueryConfigService.class));
+
+    List<CliFunctionResult> resultList = new ArrayList<>();
+    String memberName = "memberName";
+    resultList.add(new CliFunctionResult(memberName + 1, CliFunctionResult.StatusState.OK, ""));
+    resultList.add(new CliFunctionResult(memberName + 2, CliFunctionResult.StatusState.ERROR, ""));
+    doReturn(resultList).when(command).executeAndGetFunctionResult(any(
+        AlterQueryServiceFunction.class), any(Object[].class), eq(mockMemberSet));
+
+    gfsh.executeAndAssertThat(command,
+        COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "="
+            + UnrestrictedMethodAuthorizer.class.getName())
+        .statusIsSuccess().containsOutput(PARTIAL_FAILURE_MESSAGE);
   }
 
   @Test

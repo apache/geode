@@ -75,6 +75,8 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
   static final String NO_MEMBERS_FOUND_MESSAGE = "No members found.";
   static final String SECURITY_NOT_ENABLED_MESSAGE =
       "Integrated security is not enabled for this distributed system. Updating the method authorizer requires integrated security to be enabled.";
+  public static final String PARTIAL_FAILURE_MESSAGE =
+      "In the event of a partial failure of this command, re-running the command or restarting failing members should restore consistency.";
 
   @CliCommand(value = COMMAND_NAME, help = COMMAND_HELP)
   @CliMetaData(
@@ -114,8 +116,15 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
       List<CliFunctionResult> functionResults =
           executeAndGetFunctionResult(new AlterQueryServiceFunction(), args,
               targetMembers);
+      String footer = null;
+      for (CliFunctionResult cliResult : functionResults) {
+        if (!cliResult.isSuccessful()) {
+          footer = PARTIAL_FAILURE_MESSAGE;
+          break;
+        }
+      }
       result =
-          ResultModel.createMemberStatusResult(functionResults, null, null, false, false);
+          ResultModel.createMemberStatusResult(functionResults, null, footer, false, true);
     } else {
       result = ResultModel.createInfo(NO_MEMBERS_FOUND_MESSAGE);
     }
