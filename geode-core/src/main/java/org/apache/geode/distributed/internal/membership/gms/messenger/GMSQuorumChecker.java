@@ -102,12 +102,6 @@ public class GMSQuorumChecker implements QuorumChecker {
     return quorumAchieved;
   }
 
-
-  public void suspend() {
-    // NO-OP for this implementation
-  }
-
-
   public void close() {
     if (channel != null && !channel.isClosed()) {
       channel.close();

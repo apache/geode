@@ -36,7 +36,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
@@ -174,7 +173,6 @@ public class MembershipDependenciesJUnitTest {
               .or(type(GMSLocatorAdapter.class))
               .or(type(LogMarker.class))
               .or(type(SystemFailure.class))
-              .or(type(InternalDistributedSystem.class))
               .or(type(MembershipView.class))
               .or(type(LocalViewMessage.class))
 

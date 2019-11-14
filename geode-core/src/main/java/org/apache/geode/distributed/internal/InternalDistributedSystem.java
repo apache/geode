@@ -751,9 +751,6 @@ public class InternalDistributedSystem extends DistributedSystem
 
       if (!isLoner) {
         try {
-          if (quorumChecker != null) {
-            quorumChecker.suspend();
-          }
           dm = ClusterDistributionManager.create(this);
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
@@ -2725,8 +2722,8 @@ public class InternalDistributedSystem extends DistributedSystem
       if (newds != null) {
         newds.getDM().getDistribution().setReconnectCompleted(true);
       }
-      if (quorumChecker != null) {
-        mbrMgr.releaseQuorumChecker(quorumChecker, reconnectDS);
+      if (quorumChecker != null && (reconnectDS == null || !reconnectDS.isConnected())) {
+        quorumChecker.close();
       }
     }
 

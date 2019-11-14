@@ -54,7 +54,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.StartupMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -1487,17 +1486,6 @@ public class GMSMembership implements Membership {
     quorumChecker = services.getMessenger().getQuorumChecker();
     return quorumChecker;
   }
-
-  @Override
-  public void releaseQuorumChecker(QuorumChecker checker,
-      InternalDistributedSystem system) {
-    checker.suspend();
-    if (system == null || !system.isConnected()) {
-      checker.close();
-    }
-  }
-
-
 
   /**
    * Check to see if the membership system is being shutdown

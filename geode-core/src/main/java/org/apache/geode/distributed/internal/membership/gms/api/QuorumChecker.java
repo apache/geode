@@ -31,11 +31,6 @@ public interface QuorumChecker {
   boolean checkForQuorum(long timeoutMS) throws InterruptedException;
 
   /**
-   * suspends the quorum checker for an attempt to connect to the distributed system
-   */
-  void suspend();
-
-  /**
    * resumes the quorum checker after having invoked suspend();
    */
   void resume();

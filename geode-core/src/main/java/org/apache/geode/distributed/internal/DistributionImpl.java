@@ -539,14 +539,6 @@ public class DistributionImpl implements Distribution {
     return membership.getQuorumChecker();
   }
 
-  @Override
-  public void releaseQuorumChecker(
-      QuorumChecker checker,
-      InternalDistributedSystem distributedSystem) {
-    membership.releaseQuorumChecker(checker, distributedSystem);
-  }
-
-  @Override
   public DistributedMember getCoordinator() {
     return membership.getCoordinator();
   }
