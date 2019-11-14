@@ -41,9 +41,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMessageAdapter;
-import org.apache.geode.distributed.internal.membership.adapter.GMSQuorumCheckerAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
-import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.Assert;
@@ -174,12 +172,9 @@ public class MembershipDependenciesJUnitTest {
               .or(type(InternalLocator.class))
               .or(type(GMSMessageAdapter.class))
               .or(type(GMSLocatorAdapter.class))
-              .or(type(QuorumChecker.class))
               .or(type(LogMarker.class))
               .or(type(SystemFailure.class))
               .or(type(MembershipTestHook.class))
-              .or(type(GMSQuorumChecker.class))
-              .or(type(GMSQuorumCheckerAdapter.class))
               .or(type(InternalDistributedSystem.class))
               .or(type(MembershipView.class))
               .or(type(LocalViewMessage.class))

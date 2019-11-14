@@ -13,9 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.distributed.internal.membership;
-
-import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
 /**
  * A QuorumChecker is created after a forced-disconnect in order to probe the network to see if

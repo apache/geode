@@ -1,3 +1,5 @@
+package org.apache.geode.distributed.internal.membership.gms.api;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -12,43 +14,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.messenger;
-
-import java.util.Queue;
-import java.util.Set;
-
-import org.jgroups.JChannel;
-import org.jgroups.Message;
-
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-
 /**
  * Class MembershipInformation is used to pass membership data from a GMS that was
  * kicked out of the cluster to a new one during auto-reconnect operations.
  */
-public class MembershipInformation {
-  private final JChannel channel;
-  private final Set<MemberIdentifier> membershipIdentifiers;
-  private final Queue<Message> queuedMessages;
 
-  protected MembershipInformation(JChannel channel,
-      Set<MemberIdentifier> oldMembershipIdentifiers,
-      Queue<Message> queuedMessages) {
-
-    this.channel = channel;
-    this.membershipIdentifiers = oldMembershipIdentifiers;
-    this.queuedMessages = queuedMessages;
-  }
-
-  public JChannel getChannel() {
-    return channel;
-  }
-
-  public Set<MemberIdentifier> getMembershipIdentifiers() {
-    return membershipIdentifiers;
-  }
-
-  public Queue<Message> getQueuedMessages() {
-    return this.queuedMessages;
-  }
+public interface MembershipInformation {
 }

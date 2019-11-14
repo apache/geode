@@ -330,7 +330,7 @@ public class JGroupsMessenger implements Messenger {
       Object oldDSMembershipInfo = services.getConfig().getOldDSMembershipInfo();
       if (oldDSMembershipInfo != null) {
         logger.debug("Reusing JGroups channel from previous system", properties);
-        MembershipInformation oldInfo = (MembershipInformation) oldDSMembershipInfo;
+        MembershipInformationImpl oldInfo = (MembershipInformationImpl) oldDSMembershipInfo;
         myChannel = oldInfo.getChannel();
         usedMemberIdentifiers = oldInfo.getMembershipIdentifiers();
         queuedMessagesFromReconnect = oldInfo.getQueuedMessages();

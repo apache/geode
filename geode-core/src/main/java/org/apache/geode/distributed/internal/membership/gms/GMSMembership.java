@@ -60,10 +60,8 @@ import org.apache.geode.distributed.internal.StartupMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMessageAdapter;
-import org.apache.geode.distributed.internal.membership.adapter.GMSQuorumCheckerAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -71,9 +69,9 @@ import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
+import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectReply;
@@ -1486,8 +1484,7 @@ public class GMSMembership implements Membership {
       return quorumChecker;
     }
 
-    GMSQuorumChecker impl = services.getMessenger().getQuorumChecker();
-    quorumChecker = new GMSQuorumCheckerAdapter(impl);
+    quorumChecker = services.getMessenger().getQuorumChecker();
     return quorumChecker;
   }
 
