@@ -65,6 +65,7 @@ public class TCPClientSSLIntegrationTest {
 
   @Before
   public void setup() {
+    SocketCreatorFactory.close(); // de-initialize fully
     SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
 
     ca = new CertificateBuilder()
