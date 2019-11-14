@@ -40,4 +40,8 @@ public interface ConfigurationRealizer<T extends AbstractConfiguration<R>, R ext
   RealizationResult update(T config, InternalCache cache);
 
   RealizationResult delete(T config, InternalCache cache);
+
+  default boolean isReadyOnly() {
+    return false;
+  }
 }

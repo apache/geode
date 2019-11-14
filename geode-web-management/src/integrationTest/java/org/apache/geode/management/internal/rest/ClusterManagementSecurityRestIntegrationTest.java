@@ -101,6 +101,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
 
     testContexts.add(new TestContext(post("/v1/configurations/pdx"), "CLUSTER:MANAGE")
         .setContent(mapper.writeValueAsString(new PdxType())));
+    testContexts.add(new TestContext(get("/v1/configurations/pdx"), "CLUSTER:READ"));
 
     testContexts.add(new TestContext(post("/v1/operations/rebalances"), "DATA:MANAGE")
         .setContent(mapper.writeValueAsString(new RebalanceOperation())));

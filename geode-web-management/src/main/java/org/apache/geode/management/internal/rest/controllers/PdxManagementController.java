@@ -24,13 +24,16 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.Pdx;
+import org.apache.geode.management.runtime.PdxInfo;
 
 @RestController("pdxManagement")
 @RequestMapping(URI_VERSION)
@@ -47,5 +50,12 @@ public class PdxManagementController extends AbstractManagementController {
       @RequestBody Pdx pdxType) {
     ClusterManagementResult result = clusterManagementService.create(pdxType);
     return new ResponseEntity<>(result, HttpStatus.CREATED);
+  }
+
+  @ApiOperation(value = "get pdx")
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
+  @GetMapping(PDX_ENDPOINT)
+  public ClusterManagementGetResult<Pdx, PdxInfo> getPDX() {
+    return clusterManagementService.get(new Pdx());
   }
 }

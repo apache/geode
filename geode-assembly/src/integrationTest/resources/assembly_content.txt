@@ -769,6 +769,7 @@ javadoc/org/apache/geode/management/runtime/CacheServerInfo.html
 javadoc/org/apache/geode/management/runtime/GatewayReceiverInfo.html
 javadoc/org/apache/geode/management/runtime/MemberInformation.html
 javadoc/org/apache/geode/management/runtime/OperationResult.html
+javadoc/org/apache/geode/management/runtime/PdxInfo.html
 javadoc/org/apache/geode/management/runtime/RebalanceRegionResult.html
 javadoc/org/apache/geode/management/runtime/RebalanceResult.html
 javadoc/org/apache/geode/management/runtime/RuntimeInfo.html
