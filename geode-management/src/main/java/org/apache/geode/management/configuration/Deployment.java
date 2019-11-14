@@ -13,20 +13,32 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.configuration.mutators;
+package org.apache.geode.management.configuration;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.List;
+import org.apache.geode.management.runtime.DeploymentInfo;
 
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.configuration.AbstractConfiguration;
+public class Deployment extends GroupableConfiguration<DeploymentInfo> {
+  public static final String DEPLOYMENT_ENDPOINT = "/deployments";
+  private String jarFileName;
 
-public interface ConfigurationManager<T extends AbstractConfiguration> {
-  boolean add(InternalConfigurationPersistenceService service, T config, String groupName);
+  @Override
+  @JsonIgnore
+  public String getId() {
+    return getJarFileName();
+  }
 
-  boolean delete(InternalConfigurationPersistenceService service, T config, String groupName);
+  public String getJarFileName() {
+    return jarFileName;
+  }
 
-  boolean update(InternalConfigurationPersistenceService service, T config, String groupName);
+  public void setJarFileName(String jarFileName) {
+    this.jarFileName = jarFileName;
+  }
 
-  List<T> list(InternalConfigurationPersistenceService service, T filterConfig, String groupName);
+  @Override
+  public Links getLinks() {
+    return new Links(getId(), DEPLOYMENT_ENDPOINT);
+  }
 }

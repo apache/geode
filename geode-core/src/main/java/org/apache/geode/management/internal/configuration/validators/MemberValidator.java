@@ -30,7 +30,7 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.configuration.AbstractConfiguration;
-import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
+import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
 /**
@@ -45,7 +45,7 @@ public class MemberValidator {
     this.persistenceService = persistenceService;
   }
 
-  public void validateCreate(AbstractConfiguration config, ConfigurationManager manager) {
+  public void validateCreate(AbstractConfiguration config, CacheConfigurationManager manager) {
 
     Map<String, AbstractConfiguration> existingElementsAndTheirGroups =
         findCacheElement(config.getId(), manager);
@@ -80,7 +80,7 @@ public class MemberValidator {
     }
   }
 
-  public String[] findGroupsWithThisElement(String id, ConfigurationManager manager) {
+  public String[] findGroupsWithThisElement(String id, CacheConfigurationManager manager) {
     return findCacheElement(id, manager).keySet().toArray(new String[0]);
   }
 
@@ -88,7 +88,7 @@ public class MemberValidator {
    * this returns a map of CacheElement with this id, with the group as the key of the map
    */
   public Map<String, AbstractConfiguration> findCacheElement(String id,
-      ConfigurationManager manager) {
+      CacheConfigurationManager manager) {
     Map<String, AbstractConfiguration> results = new HashMap<>();
     for (String group : persistenceService.getGroups()) {
       CacheConfig cacheConfig = persistenceService.getCacheConfig(group);

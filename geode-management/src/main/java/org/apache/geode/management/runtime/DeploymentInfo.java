@@ -13,20 +13,17 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.configuration.mutators;
+package org.apache.geode.management.runtime;
 
 
-import java.util.List;
+public class DeploymentInfo extends RuntimeInfo {
+  private String jarLocation;
 
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.configuration.AbstractConfiguration;
+  public String getJarLocation() {
+    return jarLocation;
+  }
 
-public interface ConfigurationManager<T extends AbstractConfiguration> {
-  boolean add(InternalConfigurationPersistenceService service, T config, String groupName);
-
-  boolean delete(InternalConfigurationPersistenceService service, T config, String groupName);
-
-  boolean update(InternalConfigurationPersistenceService service, T config, String groupName);
-
-  List<T> list(InternalConfigurationPersistenceService service, T filterConfig, String groupName);
+  public void setJarLocation(String jarLocation) {
+    this.jarLocation = jarLocation;
+  }
 }

@@ -64,6 +64,7 @@ import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
+import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
@@ -89,7 +90,7 @@ public class LocatorClusterManagementServiceTest {
   private OperationManager executorManager;
   private ConfigurationValidator<Region> regionValidator;
   private CommonConfigurationValidator cacheElementValidator;
-  private ConfigurationManager<Region> regionManager;
+  private CacheConfigurationManager<Region> regionManager;
   private MemberValidator memberValidator;
 
   @Before

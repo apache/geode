@@ -25,7 +25,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.internal.configuration.converters.IndexConverter;
 
-public class IndexConfigManager implements ConfigurationManager<Index> {
+public class IndexConfigManager extends CacheConfigurationManager<Index> {
   private final IndexConverter converter = new IndexConverter();
 
   @Override
