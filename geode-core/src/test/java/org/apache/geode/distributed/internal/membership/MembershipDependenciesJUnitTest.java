@@ -174,7 +174,6 @@ public class MembershipDependenciesJUnitTest {
               .or(type(GMSLocatorAdapter.class))
               .or(type(LogMarker.class))
               .or(type(SystemFailure.class))
-              .or(type(MembershipTestHook.class))
               .or(type(InternalDistributedSystem.class))
               .or(type(MembershipView.class))
               .or(type(LocalViewMessage.class))

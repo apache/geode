@@ -30,7 +30,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
@@ -69,7 +68,6 @@ public class MembershipAPIArchUnitTest {
               .or(type(ClusterDistributionManager.class))
 
               // TODO: GMSMembershipManager move brought these...
-              .or(type(MembershipTestHook.class))
               .or(type(InternalDistributedSystem.class))
               .or(type(Services.class)));
 }
