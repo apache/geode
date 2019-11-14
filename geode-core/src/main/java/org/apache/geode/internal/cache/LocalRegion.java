@@ -6919,8 +6919,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     boolean isEntryEvent = event instanceof EntryEventImpl;
     if (isEntryEvent) {
       if (((EntryEventImpl) event).inhibitAllNotifications()) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Notification inhibited for key {}", event);
+        if (logger.isInfoEnabled()) {
+          logger.info("JASON Notification inhibited for key {}", event);
         }
         return;
       }
@@ -6928,7 +6928,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     if (shouldDispatchListenerEvent()) {
       if (logger.isInfoEnabled()) {
-        logger.info("dispatchListenerEvent event={}", event);
+        logger.info("JASON dispatchListenerEvent event={}", event);
       }
 
       final long start = getCachePerfStats().startCacheListenerCall();

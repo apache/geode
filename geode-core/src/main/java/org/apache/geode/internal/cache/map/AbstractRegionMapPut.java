@@ -195,7 +195,12 @@ public abstract class AbstractRegionMapPut {
         oqlIndexManager.countDownIndexUpdaters();
       }
     } else {
-      r.run();
+      try {
+        r.run();
+      }
+      catch (Exception e ) {
+        logger.info("JASON exception thrown in doWithIndexInUpdateMode");
+      }
     }
   }
 
