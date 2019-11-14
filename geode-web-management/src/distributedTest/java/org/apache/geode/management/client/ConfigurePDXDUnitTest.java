@@ -93,6 +93,10 @@ public class ConfigurePDXDUnitTest {
 
   @Test
   public void configureWithNoServer() throws Exception {
+    // verify the get
+    assertThatThrownBy(() -> client.get(new Pdx())).isInstanceOf(ClusterManagementException.class)
+        .hasMessageContaining("ENTITY_NOT_FOUND");
+
     pdxType.setReadSerialized(true);
     ClusterManagementRealizationResult result = client.create(pdxType);
     assertThat(result.isSuccessful()).isTrue();
@@ -114,6 +118,8 @@ public class ConfigurePDXDUnitTest {
 
   @Test
   public void configureWithARunningServer() {
+    assertThatThrownBy(() -> client.get(new Pdx())).isInstanceOf(ClusterManagementException.class)
+        .hasMessageContaining("ENTITY_NOT_FOUND");
     MemberVM server = cluster.startServerVM(1, webContext.getLocator().getPort());
     pdxType.setReadSerialized(true);
     ClusterManagementRealizationResult result = client.create(pdxType);
