@@ -282,6 +282,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
         if (getEntryMap().remove(key, regionEntry)) {
           ((OffHeapRegionEntry) regionEntry).release();
         }
+        //JASON look here
       }
     }
     return oldRe;

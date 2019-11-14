@@ -6927,8 +6927,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     if (shouldDispatchListenerEvent()) {
-      if (logger.isTraceEnabled()) {
-        logger.trace("dispatchListenerEvent event={}", event);
+      if (logger.isInfoEnabled()) {
+        logger.info("dispatchListenerEvent event={}", event);
       }
 
       final long start = getCachePerfStats().startCacheListenerCall();
@@ -6950,10 +6950,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         }
 
         if (cache.getEventThreadPool() == null) {
+          logger.info("JASON doing inline type of event dispatcher" + event);
           dispatchEvent(this, event, op);
+          logger.info("JASON dispatched" + event);
         } else {
           final EventDispatcher eventDispatcher = new EventDispatcher(event, op);
           try {
+            logger.info("JASON doing this type of event dispatcher for event:" + event);
             cache.getEventThreadPool().execute(eventDispatcher);
           } catch (RejectedExecutionException ignore) {
             eventDispatcher.release();
