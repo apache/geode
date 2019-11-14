@@ -14,7 +14,6 @@
  */
 package org.apache.geode.test.greplogs;
 
-import static java.lang.System.lineSeparator;
 import static org.apache.geode.test.dunit.VM.getAllVMs;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getLocator;
@@ -47,7 +46,9 @@ public class LogConsumerDistributedTest implements Serializable {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final String message = "just a message";
+  private static final String LOG_MESSAGE = "just a message";
+  private static final String EXCEPTION_MESSAGE =
+      "java.lang.ClassNotFoundException: does.not.Exist";
 
   private static volatile TargetVM targetVM;
   private static volatile SerializableRunnableIF task;
@@ -66,8 +67,8 @@ public class LogConsumerDistributedTest implements Serializable {
   }
 
   @Test
-  public void traceLogMessagePasses() {
-    given(CONTROLLER, () -> logger.trace(message));
+  public void traceLevel_logMessage_passes() {
+    given(CONTROLLER, () -> logger.trace(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
@@ -75,8 +76,8 @@ public class LogConsumerDistributedTest implements Serializable {
   }
 
   @Test
-  public void debugLogMessagePasses() {
-    given(CONTROLLER, () -> logger.debug(message));
+  public void debugLevel_logMessage_passes() {
+    given(CONTROLLER, () -> logger.debug(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
@@ -84,8 +85,8 @@ public class LogConsumerDistributedTest implements Serializable {
   }
 
   @Test
-  public void infoLogMessagePasses() {
-    given(CONTROLLER, () -> logger.info(message));
+  public void infoLevel_logMessage_passes() {
+    given(CONTROLLER, () -> logger.info(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
@@ -93,8 +94,8 @@ public class LogConsumerDistributedTest implements Serializable {
   }
 
   @Test
-  public void warnLogMessagePasses() {
-    given(CONTROLLER, () -> logger.warn(message));
+  public void warnLevel_logMessage_passes() {
+    given(CONTROLLER, () -> logger.warn(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
@@ -102,8 +103,8 @@ public class LogConsumerDistributedTest implements Serializable {
   }
 
   @Test
-  public void errorLogMessageFails() {
-    given(CONTROLLER, () -> logger.error(message));
+  public void errorLevel_logMessage_fails() {
+    given(CONTROLLER, () -> logger.error(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
@@ -111,8 +112,8 @@ public class LogConsumerDistributedTest implements Serializable {
   }
 
   @Test
-  public void fatalLogMessageFails() {
-    given(CONTROLLER, () -> logger.fatal(message));
+  public void fatalLevel_logMessage_fails() {
+    given(CONTROLLER, () -> logger.fatal(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
@@ -120,8 +121,8 @@ public class LogConsumerDistributedTest implements Serializable {
   }
 
   @Test
-  public void asyncErrorLogMessageFails() {
-    given(CONTROLLER, () -> logger.error(message));
+  public void errorLevel_logMessage_loggedAsync_fails() {
+    given(CONTROLLER, () -> logger.error(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskAsync.class);
 
@@ -129,8 +130,8 @@ public class LogConsumerDistributedTest implements Serializable {
   }
 
   @Test
-  public void asyncFatalLogMessageFails() {
-    given(CONTROLLER, () -> logger.fatal(message));
+  public void fatalLevel_logMessage_loggedAsync_fails() {
+    given(CONTROLLER, () -> logger.fatal(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskAsync.class);
 
@@ -138,211 +139,207 @@ public class LogConsumerDistributedTest implements Serializable {
   }
 
   @Test
-  public void errorLogMessageIncludedInFailure() {
-    given(CONTROLLER, () -> logger.error(message));
+  public void errorLevel_logMessage_includedInFailure() {
+    given(CONTROLLER, () -> logger.error(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("error")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void fatalLogMessageIncludedInFailure() {
-    given(CONTROLLER, () -> logger.fatal(message));
+  public void fatalLevel_logMessage_includedInFailure() {
+    given(CONTROLLER, () -> logger.fatal(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("fatal")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void errorLogMessageFailsInVm() {
-    given(ANY_VM, () -> logger.error(message));
+  public void errorLevel_logMessage_failsInVm() {
+    given(ANY_VM, () -> logger.error(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("error")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void fatalLogMessageFailsInVm() {
-    given(ANY_VM, () -> logger.fatal(message));
+  public void fatalLevel_logMessage_failsInVm() {
+    given(ANY_VM, () -> logger.fatal(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("fatal")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void asyncErrorLogMessageFailsInVm() {
-    given(ANY_VM, () -> logger.error(message));
+  public void errorLevel_logMessage_loggedAsync_failsInVm() {
+    given(ANY_VM, () -> logger.error(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskAsync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("error")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void asyncFatalLogMessageFailsInVm() {
-    given(ANY_VM, () -> logger.fatal(message));
+  public void fatalLevel_logMessage_loggedAsync_failsInVm() {
+    given(ANY_VM, () -> logger.fatal(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskAsync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("fatal")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void errorLogMessageFailsInController() {
-    given(CONTROLLER, () -> logger.error(message));
+  public void errorLevel_logMessage_failsInController() {
+    given(CONTROLLER, () -> logger.error(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("error")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void fatalLogMessageFailsInController() {
-    given(CONTROLLER, () -> logger.fatal(message));
+  public void fatalLevel_logMessage_failsInController() {
+    given(CONTROLLER, () -> logger.fatal(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("fatal")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void asyncErrorLogMessageFailsInController() {
-    given(CONTROLLER, () -> logger.error(message));
+  public void errorLevel_logMessage_loggedAsync_failsInController() {
+    given(CONTROLLER, () -> logger.error(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskAsync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("error")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void asyncFatalLogMessageFailsInController() {
-    given(CONTROLLER, () -> logger.fatal(message));
+  public void fatalLevel_logMessage_loggedAsync_failsInController() {
+    given(CONTROLLER, () -> logger.fatal(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskAsync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("fatal")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void errorLogMessageFailsInLocator() {
-    given(LOCATOR, () -> logger.error(message));
+  public void errorLevel_logMessage_failsInLocator() {
+    given(LOCATOR, () -> logger.error(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("error")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void fatalLogMessageFailsInLocator() {
-    given(LOCATOR, () -> logger.fatal(message));
+  public void fatalLevel_logMessage_failsInLocator() {
+    given(LOCATOR, () -> logger.fatal(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskSync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("fatal")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void asyncErrorLogMessageFailsInLocator() {
-    given(LOCATOR, () -> logger.error(message));
+  public void errorLevel_logMessage_loggedAsync_failsInLocator() {
+    given(LOCATOR, () -> logger.error(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskAsync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("error")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void asyncFatalLogMessageFailsInLocator() {
-    given(LOCATOR, () -> logger.fatal(message));
+  public void fatalLevel_logMessage_loggedAsync_failsInLocator() {
+    given(LOCATOR, () -> logger.fatal(LOG_MESSAGE));
 
     Result result = runTest(ExecuteTaskAsync.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("fatal")
-        .hasMessageContaining(message);
+        .hasMessageContaining(LOG_MESSAGE);
   }
 
   @Test
-  public void errorLogMessage_loggedInBefore_failsInLocator() {
-    given(LOCATOR, () -> logger.error(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION));
+  public void errorLevel_exceptionMessage_failsInLocator() {
+    given(LOCATOR, () -> logger.error(EXCEPTION_MESSAGE));
+
+    Result result = runTest(ExecuteTaskSync.class);
+
+    assertThat(getFailure(result))
+        .isInstanceOf(AssertionError.class)
+        .hasMessageContaining("error")
+        .hasMessageContaining(EXCEPTION_MESSAGE);
+  }
+
+  @Test
+  public void errorLevel_exceptionMessage_loggedInBefore_failsInLocator() {
+    given(LOCATOR, () -> logger.error(EXCEPTION_MESSAGE));
 
     Result result = runTest(ExecuteTaskBefore.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("error")
-        .hasMessageContaining(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION);
+        .hasMessageContaining(EXCEPTION_MESSAGE);
   }
 
   @Test
-  public void errorLogMessage_loggedInBeforeClass_failsInLocator() {
-    given(LOCATOR, () -> logger.error(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION));
+  public void errorLevel_exceptionMessage_loggedInBeforeClass_failsInLocator() {
+    given(LOCATOR, () -> logger.error(EXCEPTION_MESSAGE));
 
     Result result = runTest(ExecuteTaskBeforeClass.class);
 
     assertThat(getFailure(result))
         .isInstanceOf(AssertionError.class)
         .hasMessageContaining("error")
-        .hasMessageContaining(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION);
-  }
-
-  /**
-   * I was seeing dunit tests pass despite having this stack trace logged by the locator. This test
-   * verifies that LogConsumer does match this stack trace with the dunit exclusions in place.
-   */
-  @Test
-  public void CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION_failsInLocator() {
-    given(LOCATOR, () -> logger.error(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION));
-
-    Result result = runTest(ExecuteTaskSync.class);
-
-    assertThat(getFailure(result))
-        .isInstanceOf(AssertionError.class)
-        .hasMessageContaining("error")
-        .hasMessageContaining(CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION);
+        .hasMessageContaining(EXCEPTION_MESSAGE);
   }
 
   private static void given(TargetVM targetVM, SerializableRunnableIF task) {
@@ -438,195 +435,4 @@ public class LogConsumerDistributedTest implements Serializable {
       // nothing
     }
   }
-
-  private static final String CONTEXT_INITIALIZATION_FAILED_CLASSNOTFOUNDEXCEPTION =
-      "[error 2019/11/04 13:09:31.730 PST <RMI TCP Connection(1)-127.0.0.1> tid=0x13] Context initialization failed"
-          + lineSeparator()
-          + "org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'managementControllerAdvice' defined in file [/Users/klund/dev/gemfire/geode/geode-cq/dunit/locator/GemFire_klund/services/http/0.0.0.0_7070_management_424997f1/webapp/WEB-INF/classes/org/apache/geode/management/internal/rest/controllers/ManagementControllerAdvice.class]: Instantiation of bean failed; nested exception is java.lang.NoClassDefFoundError: org/apache/geode/logging/internal/log4j/api/LogService"
-          + lineSeparator()
-          + "        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1159)"
-          + lineSeparator()
-          + "        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1103)"
-          + lineSeparator()
-          + "        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:511)"
-          + lineSeparator()
-          + "        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:481)"
-          + lineSeparator()
-          + "        at org.springframework.beans.factory.support.AbstractBeanFactory$1.getObject(AbstractBeanFactory.java:312)"
-          + lineSeparator()
-          + "        at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:230)"
-          + lineSeparator()
-          + "        at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:308)"
-          + lineSeparator()
-          + "        at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:197)"
-          + lineSeparator()
-          + "        at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:764)"
-          + lineSeparator()
-          + "        at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:867)"
-          + lineSeparator()
-          + "        at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:542)"
-          + lineSeparator()
-          + "        at org.springframework.web.servlet.FrameworkServlet.configureAndRefreshWebApplicationContext(FrameworkServlet.java:668)"
-          + lineSeparator()
-          + "        at org.springframework.web.servlet.FrameworkServlet.createWebApplicationContext(FrameworkServlet.java:634)"
-          + lineSeparator()
-          + "        at org.springframework.web.servlet.FrameworkServlet.createWebApplicationContext(FrameworkServlet.java:682)"
-          + lineSeparator()
-          + "        at org.springframework.web.servlet.FrameworkServlet.initWebApplicationContext(FrameworkServlet.java:553)"
-          + lineSeparator()
-          + "        at org.springframework.web.servlet.FrameworkServlet.initServletBean(FrameworkServlet.java:494)"
-          + lineSeparator()
-          + "        at org.springframework.web.servlet.HttpServletBean.init(HttpServletBean.java:171)"
-          + lineSeparator()
-          + "        at javax.servlet.GenericServlet.init(GenericServlet.java:244)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.servlet.ServletHolder.initServlet(ServletHolder.java:599)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.servlet.ServletHolder.initialize(ServletHolder.java:425)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.servlet.ServletHandler.lambda$initialize$0(ServletHandler.java:751)"
-          + lineSeparator()
-          + "        at java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:352)"
-          + lineSeparator()
-          + "        at java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:482)"
-          + lineSeparator()
-          + "        at java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:471)"
-          + lineSeparator()
-          + "        at java.util.stream.StreamSpliterators$WrappingSpliterator.forEachRemaining(StreamSpliterators.java:312)"
-          + lineSeparator()
-          + "        at java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:743)"
-          + lineSeparator()
-          + "        at java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:742)"
-          + lineSeparator()
-          + "        at java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:580)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.servlet.ServletHandler.initialize(ServletHandler.java:744)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.servlet.ServletContextHandler.startContext(ServletContextHandler.java:361)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.webapp.WebAppContext.startWebapp(WebAppContext.java:1443)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.webapp.WebAppContext.startContext(WebAppContext.java:1407)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.server.handler.ContextHandler.doStart(ContextHandler.java:821)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.servlet.ServletContextHandler.doStart(ServletContextHandler.java:276)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.webapp.WebAppContext.doStart(WebAppContext.java:524)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:72)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.util.component.ContainerLifeCycle.start(ContainerLifeCycle.java:169)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.util.component.ContainerLifeCycle.doStart(ContainerLifeCycle.java:117)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.server.handler.AbstractHandler.doStart(AbstractHandler.java:106)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:72)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.util.component.ContainerLifeCycle.start(ContainerLifeCycle.java:169)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.server.Server.start(Server.java:407)" + lineSeparator()
-          + "        at org.eclipse.jetty.util.component.ContainerLifeCycle.doStart(ContainerLifeCycle.java:110)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.server.handler.AbstractHandler.doStart(AbstractHandler.java:106)"
-          + lineSeparator()
-          + "        at org.eclipse.jetty.server.Server.doStart(Server.java:371)" + lineSeparator()
-          + "        at org.eclipse.jetty.util.component.AbstractLifeCycle.start(AbstractLifeCycle.java:72)"
-          + lineSeparator()
-          + "        at org.apache.geode.internal.cache.InternalHttpService.addWebApplication(InternalHttpService.java:201)"
-          + lineSeparator()
-          + "        at org.apache.geode.distributed.internal.InternalLocator.lambda$startClusterManagementService$1(InternalLocator.java:776)"
-          + lineSeparator()
-          + "        at java.util.Optional.ifPresent(Optional.java:159)" + lineSeparator()
-          + "        at org.apache.geode.distributed.internal.InternalLocator.startClusterManagementService(InternalLocator.java:772)"
-          + lineSeparator()
-          + "        at org.apache.geode.distributed.internal.InternalLocator.startCache(InternalLocator.java:735)"
-          + lineSeparator()
-          + "        at org.apache.geode.distributed.internal.InternalLocator.startDistributedSystem(InternalLocator.java:714)"
-          + lineSeparator()
-          + "        at org.apache.geode.distributed.internal.InternalLocator.startLocator(InternalLocator.java:378)"
-          + lineSeparator()
-          + "        at org.apache.geode.distributed.internal.InternalLocator.startLocator(InternalLocator.java:328)"
-          + lineSeparator()
-          + "        at org.apache.geode.distributed.Locator.startLocator(Locator.java:252)"
-          + lineSeparator()
-          + "        at org.apache.geode.distributed.Locator.startLocatorAndDS(Locator.java:139)"
-          + lineSeparator()
-          + "        at org.apache.geode.test.dunit.internal.DUnitLauncher$1.call(DUnitLauncher.java:304)"
-          + lineSeparator()
-          + "        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)"
-          + lineSeparator()
-          + "        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)"
-          + lineSeparator()
-          + "        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)"
-          + lineSeparator()
-          + "        at java.lang.reflect.Method.invoke(Method.java:498)" + lineSeparator()
-          + "        at org.apache.geode.test.dunit.internal.MethodInvoker.executeObject(MethodInvoker.java:123)"
-          + lineSeparator()
-          + "        at org.apache.geode.test.dunit.internal.MethodInvoker.executeObject(MethodInvoker.java:92)"
-          + lineSeparator()
-          + "        at org.apache.geode.test.dunit.internal.RemoteDUnitVM.executeMethodOnObject(RemoteDUnitVM.java:45)"
-          + lineSeparator()
-          + "        at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)"
-          + lineSeparator()
-          + "        at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)"
-          + lineSeparator()
-          + "        at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)"
-          + lineSeparator()
-          + "        at java.lang.reflect.Method.invoke(Method.java:498)" + lineSeparator()
-          + "        at sun.rmi.server.UnicastServerRef.dispatch(UnicastServerRef.java:357)"
-          + lineSeparator()
-          + "        at sun.rmi.transport.Transport$1.run(Transport.java:200)" + lineSeparator()
-          + "        at sun.rmi.transport.Transport$1.run(Transport.java:197)" + lineSeparator()
-          + "        at java.security.AccessController.doPrivileged(Native Method)"
-          + lineSeparator()
-          + "        at sun.rmi.transport.Transport.serviceCall(Transport.java:196)"
-          + lineSeparator()
-          + "        at sun.rmi.transport.tcp.TCPTransport.handleMessages(TCPTransport.java:573)"
-          + lineSeparator()
-          + "        at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run0(TCPTransport.java:834)"
-          + lineSeparator()
-          + "        at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.lambda$run$0(TCPTransport.java:688)"
-          + lineSeparator()
-          + "        at java.security.AccessController.doPrivileged(Native Method)"
-          + lineSeparator()
-          + "        at sun.rmi.transport.tcp.TCPTransport$ConnectionHandler.run(TCPTransport.java:687)"
-          + lineSeparator()
-          + "        at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)"
-          + lineSeparator()
-          + "        at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)"
-          + lineSeparator()
-          + "        at java.lang.Thread.run(Thread.java:748)" + lineSeparator()
-          + "Caused by: java.lang.NoClassDefFoundError: org/apache/geode/logging/internal/log4j/api/LogService"
-          + lineSeparator()
-          + "        at org.apache.geode.management.internal.rest.controllers.ManagementControllerAdvice.<clinit>(ManagementControllerAdvice.java:54)"
-          + lineSeparator()
-          + "        at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)"
-          + lineSeparator()
-          + "        at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)"
-          + lineSeparator()
-          + "        at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)"
-          + lineSeparator()
-          + "        at java.lang.reflect.Constructor.newInstance(Constructor.java:423)"
-          + lineSeparator()
-          + "        at org.springframework.beans.BeanUtils.instantiateClass(BeanUtils.java:142)"
-          + lineSeparator()
-          + "        at org.springframework.beans.factory.support.SimpleInstantiationStrategy.instantiate(SimpleInstantiationStrategy.java:89)"
-          + lineSeparator()
-          + "        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.instantiateBean(AbstractAutowireCapableBeanFactory.java:1151)"
-          + lineSeparator()
-          + "        ... 80 more" + lineSeparator()
-          + "Caused by: java.lang.ClassNotFoundException: org.apache.geode.logging.internal.log4j.api.LogService"
-          + lineSeparator()
-          + "        at java.net.URLClassLoader.findClass(URLClassLoader.java:382)"
-          + lineSeparator()
-          + "        at java.lang.ClassLoader.loadClass(ClassLoader.java:424)" + lineSeparator()
-          + "        at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:349)"
-          + lineSeparator()
-          + "        at java.lang.ClassLoader.loadClass(ClassLoader.java:357)" + lineSeparator()
-          + "        at org.eclipse.jetty.webapp.WebAppClassLoader.loadClass(WebAppClassLoader.java:543)"
-          + lineSeparator()
-          + "        at java.lang.ClassLoader.loadClass(ClassLoader.java:357)" + lineSeparator()
-          + "        ... 88 more" + lineSeparator();
 }
