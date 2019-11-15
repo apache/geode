@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.tcpserver;
 
 import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -92,7 +93,7 @@ public class TcpServerJUnitTest {
     InfoRequest testInfoRequest = new InfoRequest();
     InfoResponse testInfoResponse =
         (InfoResponse) tcpClient.requestToServer(localhost, port, testInfoRequest, 60 * 1000);
-    assertTrue(testInfoResponse.getInfo()[0].contains("geode-core"));
+    assertThat(testInfoResponse.getInfo()[0]).contains("geode-core");
 
     String[] requrestedInfo = tcpClient.getInfo(localhost, port);
     assertNotNull(requrestedInfo);
