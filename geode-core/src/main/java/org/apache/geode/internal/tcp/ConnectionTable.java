@@ -43,7 +43,7 @@ import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
@@ -886,9 +886,6 @@ public class ConnectionTable {
         closeCon(reason, con);
       }
       if (notifyDisconnect) {
-        // Before the removal of TCPConduit Stub addresses this used
-        // to call Membership.getMemberForStub, which checked
-        // for a shutdown in progress and threw this exception:
         if (owner.getDM().shutdownInProgress()) {
           throw new DistributedSystemDisconnectedException("Shutdown in progress",
               owner.getDM().getDistribution().getShutdownCause());
@@ -1229,7 +1226,7 @@ public class ConnectionTable {
           } else if (!suspected) {
             logger.warn("Unable to form a TCP/IP connection to %s in over %s seconds",
                 this.id, (ackTimeout) / 1000);
-            ((GMSMembershipManager) mgr).suspectMember((InternalDistributedMember) targetMember,
+            ((GMSMembership) mgr).suspectMember((InternalDistributedMember) targetMember,
                 "Unable to form a TCP/IP connection in a reasonable amount of time");
             suspected = true;
           }

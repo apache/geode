@@ -1448,7 +1448,7 @@ public class InternalDistributedSystem extends DistributedSystem
   private static volatile boolean emergencyClassesLoaded = false;
 
   /**
-   * Ensure that the Membership class gets loaded.
+   * Ensure that the Distribution class gets loaded.
    *
    * @see SystemFailure#loadEmergencyClasses()
    */
@@ -1678,7 +1678,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
   /**
    * If this DistributedSystem is attempting to reconnect to the distributed system this will return
-   * the quorum checker created by the old Membership for checking to see if a quorum of old
+   * the quorum checker created by the old {@link Distribution} for checking to see if a quorum of
+   * old
    * members can be reached.
    *
    * @return the quorum checking service

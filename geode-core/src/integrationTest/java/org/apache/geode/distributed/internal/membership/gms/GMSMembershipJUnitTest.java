@@ -57,7 +57,7 @@ import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMessageAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager.StartupEvent;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership.StartupEvent;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
@@ -72,7 +72,7 @@ import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
-public class GMSMembershipManagerJUnitTest {
+public class GMSMembershipJUnitTest {
 
 
 
@@ -88,7 +88,7 @@ public class GMSMembershipManagerJUnitTest {
   private JoinLeave joinLeave;
   private Stopper stopper;
   private MembershipListener listener;
-  private GMSMembershipManager manager;
+  private GMSMembership manager;
   private List<InternalDistributedMember> members;
   private DirectChannel dc;
   private MessageListener messageListener;
@@ -154,7 +154,7 @@ public class GMSMembershipManagerJUnitTest {
     listener = mock(MembershipListener.class);
     messageListener = mock(MessageListener.class);
     directChannelCallback = mock(LifecycleListener.class);
-    manager = new GMSMembershipManager(listener, messageListener, null, directChannelCallback);
+    manager = new GMSMembership(listener, messageListener, null, directChannelCallback);
     manager.getGMSManager().init(services);
     when(services.getManager()).thenReturn(manager.getGMSManager());
   }

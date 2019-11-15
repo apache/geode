@@ -85,7 +85,7 @@ import org.apache.geode.internal.tcp.MemberShunnedException;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.security.GemFireSecurityException;
 
-public class GMSMembershipManager implements Membership {
+public class GMSMembership implements Membership {
   private static final Logger logger = Services.getLogger();
   private final ClusterDistributionManager dm;
 
@@ -118,7 +118,7 @@ public class GMSMembershipManager implements Membership {
   /**
    * Trick class to make the startup synch more visible in stack traces
    *
-   * @see GMSMembershipManager#startupLock
+   * @see GMSMembership#startupLock
    */
   static class EventProcessingLock {
     public EventProcessingLock() {}
@@ -700,7 +700,7 @@ public class GMSMembershipManager implements Membership {
 
 
 
-  public GMSMembershipManager(MembershipListener listener, MessageListener messageListener,
+  public GMSMembership(MembershipListener listener, MessageListener messageListener,
       ClusterDistributionManager dm, LifecycleListener lifecycleListener) {
     this.lifecycleListener = lifecycleListener;
     Assert.assertTrue(listener != null);
@@ -1048,7 +1048,7 @@ public class GMSMembershipManager implements Membership {
       // view processing can take a while, so we use a separate thread
       // to avoid blocking a reader thread
       long newId = viewArg.getViewId();
-      LocalViewMessage v = new LocalViewMessage(address, newId, viewArg, GMSMembershipManager.this);
+      LocalViewMessage v = new LocalViewMessage(address, newId, viewArg, GMSMembership.this);
 
       messageListener.messageReceived(v);
     } finally {
@@ -2011,7 +2011,7 @@ public class GMSMembershipManager implements Membership {
     @Override
     /* Service interface */
     public void init(Services services) {
-      GMSMembershipManager.this.services = services;
+      GMSMembership.this.services = services;
 
       Assert.assertTrue(services != null);
 
@@ -2128,12 +2128,12 @@ public class GMSMembershipManager implements Membership {
         throw e;
       }
 
-      GMSMembershipManager.this.address =
+      GMSMembership.this.address =
           (InternalDistributedMember) services.getMessenger().getMemberID();
 
       lifecycleListener.setLocalAddress(address);
 
-      GMSMembershipManager.this.hasJoined = true;
+      GMSMembership.this.hasJoined = true;
 
       // in order to debug startup issues we need to announce the membership
       // ID as soon as we know it
@@ -2152,7 +2152,7 @@ public class GMSMembershipManager implements Membership {
 
     @Override
     public void forceDisconnect(final String reason) {
-      if (GMSMembershipManager.this.shutdownInProgress || isJoining()) {
+      if (GMSMembership.this.shutdownInProgress || isJoining()) {
         return; // probably a race condition
       }
 

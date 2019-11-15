@@ -55,7 +55,7 @@ import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
@@ -172,8 +172,8 @@ public class MembershipJUnitTest {
       // manager queues new views for processing through the DM listener,
       // which is a mock object in this test
       System.out.println("waiting for views to stabilize");
-      JoinLeave jl1 = ((GMSMembershipManager) m1).getServices().getJoinLeave();
-      JoinLeave jl2 = ((GMSMembershipManager) m2).getServices().getJoinLeave();
+      JoinLeave jl1 = ((GMSMembership) m1).getServices().getJoinLeave();
+      JoinLeave jl2 = ((GMSMembership) m2).getServices().getJoinLeave();
       long giveUp = System.currentTimeMillis() + 15000;
       for (;;) {
         try {
@@ -339,8 +339,8 @@ public class MembershipJUnitTest {
       // manager queues new views for processing through the DM listener,
       // which is a mock object in this test
       System.out.println("waiting for views to stabilize");
-      JoinLeave jl1 = ((GMSMembershipManager) m1).getServices().getJoinLeave();
-      JoinLeave jl2 = ((GMSMembershipManager) m2).getServices().getJoinLeave();
+      JoinLeave jl1 = ((GMSMembership) m1).getServices().getJoinLeave();
+      JoinLeave jl2 = ((GMSMembership) m2).getServices().getJoinLeave();
       long giveUp = System.currentTimeMillis() + 15000;
       for (;;) {
         try {

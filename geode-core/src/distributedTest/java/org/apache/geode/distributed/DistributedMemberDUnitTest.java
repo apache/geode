@@ -305,7 +305,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     message.setSender(partialID);
 
     Distribution manager =
-        MembershipManagerHelper.getMembership(basicGetSystem());
+        MembershipManagerHelper.getDistribution(basicGetSystem());
     manager.replacePartialIdentifierInMessage(message);
 
     assertFalse(message.getSender().isPartial());

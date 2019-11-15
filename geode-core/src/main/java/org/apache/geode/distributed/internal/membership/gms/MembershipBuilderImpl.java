@@ -98,10 +98,10 @@ public class MembershipBuilderImpl implements MembershipBuilder {
 
   @Override
   public Membership create() {
-    GMSMembershipManager gmsMembershipManager =
-        new GMSMembershipManager(membershipListener, messageListener, dm, lifecycleListener);
+    GMSMembership gmsMembership =
+        new GMSMembership(membershipListener, messageListener, dm, lifecycleListener);
     Services services =
-        new Services(gmsMembershipManager.getGMSManager(), statistics, authenticator,
+        new Services(gmsMembership.getGMSManager(), statistics, authenticator,
             membershipConfig, serializer, memberFactory);
     try {
       services.init();
@@ -115,7 +115,7 @@ public class MembershipBuilderImpl implements MembershipBuilder {
       Services.getLogger().error("Unexpected problem starting up membership services", e);
       throw new SystemConnectException("Problem starting up membership services", e);
     }
-    return gmsMembershipManager;
+    return gmsMembership;
   }
 
 }

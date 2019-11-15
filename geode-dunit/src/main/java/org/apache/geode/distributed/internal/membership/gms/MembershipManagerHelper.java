@@ -36,7 +36,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
 public class MembershipManagerHelper {
 
   /** returns the JGroupMembershipManager for the given distributed system */
-  public static Distribution getMembership(DistributedSystem sys) {
+  public static Distribution getDistribution(DistributedSystem sys) {
     InternalDistributedSystem isys = (InternalDistributedSystem) sys;
     ClusterDistributionManager dm = (ClusterDistributionManager) isys.getDM();
     return dm.getDistribution();
@@ -51,7 +51,7 @@ public class MembershipManagerHelper {
    *
    */
   public static void beSickMember(DistributedSystem sys) {
-    getMembership(sys).beSick();
+    getDistribution(sys).beSick();
   }
 
   /**
@@ -59,7 +59,7 @@ public class MembershipManagerHelper {
    */
   public static void playDead(DistributedSystem sys) {
     try {
-      getMembership(sys).playDead();
+      getDistribution(sys).playDead();
     } catch (CancelException e) {
       // really dead is as good as playing dead
     }
@@ -67,22 +67,22 @@ public class MembershipManagerHelper {
 
   /** returns the current coordinator address */
   public static DistributedMember getCoordinator(DistributedSystem sys) {
-    return getMembership(sys).getView().getCoordinator();
+    return getDistribution(sys).getView().getCoordinator();
   }
 
   /** returns the current lead member address */
   public static DistributedMember getLeadMember(DistributedSystem sys) {
-    return getMembership(sys).getView().getLeadMember();
+    return getDistribution(sys).getView().getLeadMember();
   }
 
   /** register a test hook with the manager */
   public static void addTestHook(DistributedSystem sys, MembershipTestHook hook) {
-    getMembership(sys).registerTestHook(hook);
+    getDistribution(sys).registerTestHook(hook);
   }
 
   /** remove a registered test hook */
   public static void removeTestHook(DistributedSystem sys, MembershipTestHook hook) {
-    getMembership(sys).unregisterTestHook(hook);
+    getDistribution(sys).unregisterTestHook(hook);
   }
 
   /**
@@ -90,7 +90,7 @@ public class MembershipManagerHelper {
    */
   public static void addSurpriseMember(DistributedSystem sys, DistributedMember mbr,
       long birthTime) {
-    getMembership(sys).addSurpriseMemberForTesting(mbr, birthTime);
+    getDistribution(sys).addSurpriseMemberForTesting(mbr, birthTime);
   }
 
   /**
@@ -98,7 +98,7 @@ public class MembershipManagerHelper {
    * expected-exception annotations before and after the messages to make them invisible to greplogs
    */
   public static void inhibitForcedDisconnectLogging(boolean b) {
-    GMSMembershipManager.inhibitForcedDisconnectLogging(b);
+    GMSMembership.inhibitForcedDisconnectLogging(b);
   }
 
   /**
@@ -110,7 +110,7 @@ public class MembershipManagerHelper {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return !getMembership(sys).getView().contains(member);
+        return !getDistribution(sys).getView().contains(member);
       }
 
       @Override
@@ -125,7 +125,7 @@ public class MembershipManagerHelper {
   // this method is only used for testing. Should be extract to a test helper instead
   public static void crashDistributedSystem(final DistributedSystem msys) {
     msys.getLogWriter().info("crashing distributed system: " + msys);
-    Distribution mgr = ((Distribution) getMembership(msys));
+    Distribution mgr = ((Distribution) getDistribution(msys));
     MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
     MembershipManagerHelper.beSickMember(msys);
     MembershipManagerHelper.playDead(msys);

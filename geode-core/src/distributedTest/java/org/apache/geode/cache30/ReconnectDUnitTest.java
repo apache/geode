@@ -36,7 +36,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.Locator.getLocator;
-import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getMembership;
+import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getDistribution;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -251,7 +251,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         Distribution mgr = MembershipManagerHelper
-            .getMembership(Locator.getLocator().getDistributedSystem());
+            .getDistribution(Locator.getLocator().getDistributedSystem());
         mgr.disableDisconnectOnQuorumLossForTesting();
       }
     });
@@ -419,7 +419,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
               cache = ((InternalLocator) locator).getCache();
               system = cache.getInternalDistributedSystem();
               assertTrue(
-                  (getMembership(system))
+                  (getDistribution(system))
                       .getServices().getMessenger()
                       .isOldMembershipIdentifier(dm));
               return ds.getReconnectedSystem().getDistributedMember();
@@ -527,7 +527,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             }
             assertTrue("expected system to be reconnected", ds.getReconnectedSystem() != null);
             int oldViewId =
-                getMembership(ds).getLocalMember().getVmViewId();
+                getDistribution(ds).getLocalMember().getVmViewId();
             int newViewId =
                 ((InternalDistributedMember) ds.getReconnectedSystem().getDistributedMember())
                     .getVmViewId();

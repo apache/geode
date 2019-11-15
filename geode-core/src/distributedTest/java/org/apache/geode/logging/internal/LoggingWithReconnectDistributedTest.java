@@ -21,7 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTE
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
-import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getMembership;
+import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getDistribution;
 import static org.apache.geode.internal.logging.Banner.BannerHeader.displayValues;
 import static org.apache.geode.logging.internal.Configuration.STARTUP_CONFIGURATION;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -136,7 +136,7 @@ public class LoggingWithReconnectDistributedTest implements Serializable {
     });
 
     server2VM.invoke(() -> {
-      Distribution membershipManager = getMembership(system);
+      Distribution membershipManager = getDistribution(system);
       membershipManager
           .forceDisconnect("Forcing disconnect in " + testName.getMethodName());
 

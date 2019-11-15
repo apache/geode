@@ -24,7 +24,8 @@ public interface LifecycleListener {
   boolean disconnect(Exception exception);
 
   /**
-   * TODO - it seems like this could really just happen during {@link #start(MemberIdentifier)}
+   * TODO - (GEODE-7464) it seems like this could really just happen during
+   * {@link #start(MemberIdentifier)}
    * The member ID passed to this method is exactly the same id as the one passed to start. However,
    * this method has side affects in DirectChannel which may or may not need to happen at the point
    * in time this method is called?

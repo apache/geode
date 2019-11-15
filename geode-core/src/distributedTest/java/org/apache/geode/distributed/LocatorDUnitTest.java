@@ -310,11 +310,11 @@ public class LocatorDUnitTest implements Serializable {
 
     system = getConnectedDistributedSystem(properties);
     System.out.println("done connecting distributed system.  Membership view is "
-        + MembershipManagerHelper.getMembership(system).getView());
+        + MembershipManagerHelper.getDistribution(system).getView());
 
     assertThat(MembershipManagerHelper.getCoordinator(system))
         .describedAs("should be the coordinator").isEqualTo(system.getDistributedMember());
-    MembershipView view = MembershipManagerHelper.getMembership(system).getView();
+    MembershipView view = MembershipManagerHelper.getDistribution(system).getView();
     logger.info("view after becoming coordinator is " + view);
     assertThat(system.getDistributedMember())
         .describedAs("should not be the first member in the view (" + view + ")")
@@ -549,7 +549,7 @@ public class LocatorDUnitTest implements Serializable {
 
     // after disconnecting the first vm, the second one should become the leader
     vm1.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-    MembershipManagerHelper.getMembership(system).waitForDeparture(mem1);
+    MembershipManagerHelper.getDistribution(system).waitForDeparture(mem1);
     waitForMemberToBecomeLeadMemberOfDistributedSystem(mem2, system);
 
     properties.setProperty("name", "vm1");
@@ -557,15 +557,15 @@ public class LocatorDUnitTest implements Serializable {
     waitForMemberToBecomeLeadMemberOfDistributedSystem(mem2, system);
 
     vm2.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-    MembershipManagerHelper.getMembership(system).waitForDeparture(mem2);
+    MembershipManagerHelper.getDistribution(system).waitForDeparture(mem2);
     waitForMemberToBecomeLeadMemberOfDistributedSystem(mem3, system);
 
     vm1.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-    MembershipManagerHelper.getMembership(system).waitForDeparture(mem1);
+    MembershipManagerHelper.getDistribution(system).waitForDeparture(mem1);
     waitForMemberToBecomeLeadMemberOfDistributedSystem(mem3, system);
 
     vm3.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-    MembershipManagerHelper.getMembership(system).waitForDeparture(mem3);
+    MembershipManagerHelper.getDistribution(system).waitForDeparture(mem3);
     waitForMemberToBecomeLeadMemberOfDistributedSystem(null, system);
   }
 
@@ -761,7 +761,7 @@ public class LocatorDUnitTest implements Serializable {
         addIgnoredException(ForcedDisconnectException.class);
 
         hook = new TestHook();
-        MembershipManagerHelper.getMembership(system).registerTestHook(hook);
+        MembershipManagerHelper.getDistribution(system).registerTestHook(hook);
         try {
           MembershipManagerHelper.crashDistributedSystem(system);
         } finally {
@@ -796,9 +796,9 @@ public class LocatorDUnitTest implements Serializable {
 
       @Override
       public void run() {
-        Distribution mmgr = MembershipManagerHelper.getMembership(system);
+        Distribution mmgr = MembershipManagerHelper.getDistribution(system);
 
-        // check for shutdown cause in Membership. Following call should
+        // check for shutdown cause in Distribution. Following call should
         // throw DistributedSystemDisconnectedException which should have cause as
         // ForceDisconnectException.
         try (IgnoredException i = addIgnoredException("Membership: requesting removal of")) {

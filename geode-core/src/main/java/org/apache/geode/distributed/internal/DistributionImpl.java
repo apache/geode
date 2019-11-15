@@ -43,7 +43,7 @@ import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
@@ -550,14 +550,14 @@ public class DistributionImpl implements Distribution {
   @Override
   @VisibleForTesting
   public void forceDisconnect(String reason) {
-    ((GMSMembershipManager) membership).getGMSManager().forceDisconnect(reason);
+    ((GMSMembership) membership).getGMSManager().forceDisconnect(reason);
   }
 
   // TODO - this method is only used by tests
   @Override
   @VisibleForTesting
   public void replacePartialIdentifierInMessage(DistributionMessage message) {
-    ((GMSMembershipManager) membership).replacePartialIdentifierInMessage(message);
+    ((GMSMembership) membership).replacePartialIdentifierInMessage(message);
 
   }
 
@@ -565,21 +565,21 @@ public class DistributionImpl implements Distribution {
   @Override
   @VisibleForTesting
   public boolean isCleanupTimerStarted() {
-    return ((GMSMembershipManager) membership).isCleanupTimerStarted();
+    return ((GMSMembership) membership).isCleanupTimerStarted();
   }
 
   // TODO - this method is only used by tests
   @Override
   @VisibleForTesting
   public long getSurpriseMemberTimeout() {
-    return ((GMSMembershipManager) membership).getSurpriseMemberTimeout();
+    return ((GMSMembership) membership).getSurpriseMemberTimeout();
   }
 
   // TODO - this method is only used by tests
   @Override
   @VisibleForTesting
   public void installView(GMSMembershipView newView) {
-    ((GMSMembershipManager) membership).getGMSManager().installView(newView);
+    ((GMSMembership) membership).getGMSManager().installView(newView);
   }
 
   // TODO - this method is only used by tests
@@ -600,7 +600,7 @@ public class DistributionImpl implements Distribution {
 
   @Override
   public void disableDisconnectOnQuorumLossForTesting() {
-    ((GMSMembershipManager) membership).disableDisconnectOnQuorumLossForTesting();
+    ((GMSMembership) membership).disableDisconnectOnQuorumLossForTesting();
   }
 
   private void startDirectChannel(final MemberIdentifier memberID) {
