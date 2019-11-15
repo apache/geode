@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import static org.apache.geode.internal.util.TransformUtils.getFileNameTransformer;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -53,7 +55,7 @@ class FileSystemIncrementalBackupLocation implements IncrementalBackupLocation {
     baselineOplogFiles.addAll(getPreviouslyBackedUpOpLogs(checkedBaselineDir));
 
     // Map of baseline oplog file name to oplog file
-    return TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
+    return TransformUtils.transformAndMap(baselineOplogFiles, getFileNameTransformer());
   }
 
   Collection<File> getBackedUpOplogs(File checkedBaselineDir, DiskStore diskStore) {
