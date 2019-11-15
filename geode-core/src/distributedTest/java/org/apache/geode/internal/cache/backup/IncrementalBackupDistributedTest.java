@@ -195,7 +195,8 @@ public class IncrementalBackupDistributedTest implements Serializable {
 
     // Perform performBackupIncremental and make sure we have no offline disk stores.
     vm1.invoke(() -> {
-      BackupStatus incrementalStatus = performBackup(getIncrementalDir().getAbsolutePath(), getBaselineBackupPath());
+      BackupStatus incrementalStatus =
+          performBackup(getIncrementalDir().getAbsolutePath(), getBaselineBackupPath());
       validateBackupStatus(incrementalStatus);
       assertThat(incrementalStatus.getOfflineDiskStores()).isNotNull().isEmpty();
     });
