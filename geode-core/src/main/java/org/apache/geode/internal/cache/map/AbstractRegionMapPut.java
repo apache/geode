@@ -200,6 +200,7 @@ public abstract class AbstractRegionMapPut {
       }
       catch (Exception e ) {
         logger.info("JASON exception thrown in doWithIndexInUpdateMode");
+        throw e;
       }
     }
   }
