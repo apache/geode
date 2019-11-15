@@ -275,6 +275,7 @@ public class NioSslEngine implements NioFilter {
           // buffer overflow expand and try again - double the available decryption space
           int newCapacity =
               (peerAppData.capacity() - peerAppData.position()) * 2 + peerAppData.position();
+          newCapacity = Math.max(newCapacity, peerAppData.capacity() / 2 * 3);
           peerAppData =
               bufferPool.expandWriteBufferIfNeeded(TRACKED_RECEIVER, peerAppData, newCapacity);
           peerAppData.limit(peerAppData.capacity());
