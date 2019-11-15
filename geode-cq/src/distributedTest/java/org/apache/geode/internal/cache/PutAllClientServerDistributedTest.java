@@ -122,10 +122,10 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
   private static final Counter DUMMY_COUNTER = new Counter("dummy");
 
-  private static volatile AtomicReference<TickerData> oldValueReference;
-  private static volatile CountDownLatch createdCqLatch;
-  private static volatile CountDownLatch validatedCqLatch;
-  private static volatile CountDownLatch operationLatch;
+  private static volatile AtomicReference<TickerData> valueReference;
+  private static volatile CountDownLatch latch;
+  private static volatile CountDownLatch beforeLatch;
+  private static volatile CountDownLatch afterLatch;
   private static volatile Counter serverCounter;
 
   private String regionName;
@@ -171,19 +171,19 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
   public void tearDown() {
     for (VM vm : toArray(client1, client2, server1, server2)) {
       vm.invoke(() -> {
-        if (createdCqLatch != null) {
-          createdCqLatch.countDown();
-          createdCqLatch = null;
-        }
-        if (validatedCqLatch != null) {
-          validatedCqLatch.countDown();
-          validatedCqLatch = null;
-        }
-        if (operationLatch != null) {
-          operationLatch.countDown();
-          operationLatch = null;
-        }
         disconnectFromDS();
+        if (valueReference != null) {
+          valueReference.set(null);
+        }
+        if (latch != null) {
+          latch.countDown();
+        }
+        if (beforeLatch != null) {
+          beforeLatch.countDown();
+        }
+        if (afterLatch != null) {
+          afterLatch.countDown();
+        }
       });
     }
   }
@@ -223,8 +223,8 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     });
 
     client1.invoke(() -> {
-      createdCqLatch = new CountDownLatch(1);
-      validatedCqLatch = new CountDownLatch(1);
+      beforeLatch = new CountDownLatch(1);
+      afterLatch = new CountDownLatch(1);
     });
 
     AsyncInvocation<Void> createCqInClient1 = client1.invokeAsync(() -> {
@@ -248,8 +248,8 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
         region.put("key-" + i, tickerData);
       }
 
-      createdCqLatch.countDown();
-      validatedCqLatch.await(TIMEOUT_MILLIS, MILLISECONDS);
+      beforeLatch.countDown();
+      afterLatch.await(TIMEOUT_MILLIS, MILLISECONDS);
 
       cqQuery.close();
     });
@@ -266,7 +266,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
     // verify CQ is ready
     client1.invoke(() -> {
-      createdCqLatch.await(TIMEOUT_MILLIS, MILLISECONDS);
+      beforeLatch.await(TIMEOUT_MILLIS, MILLISECONDS);
 
       Region<String, TickerData> region = getCache().getRegion("localsave");
       await().untilAsserted(() -> {
@@ -318,7 +318,7 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
         });
       }
 
-      validatedCqLatch.countDown();
+      afterLatch.countDown();
     });
 
     createCqInClient1.await();
@@ -360,31 +360,31 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
         false, true, true, true));
 
     client2.invoke(() -> {
-      oldValueReference = new AtomicReference<>();
-      operationLatch = new CountDownLatch(1);
+      valueReference = new AtomicReference<>();
+      latch = new CountDownLatch(1);
 
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
           .addCacheListener(new OldValueCacheListener<>(new CacheListenerAction<>(Operation.UPDATE,
               event -> {
                 assertThat(event.getOldValue()).isNotNull();
-                oldValueReference.set(event.getOldValue());
-                operationLatch.countDown();
+                valueReference.set(event.getOldValue());
+                latch.countDown();
               })));
       region.registerInterest("ALL_KEYS");
     });
 
     client1.invoke(() -> {
-      oldValueReference = new AtomicReference<>();
-      operationLatch = new CountDownLatch(1);
+      valueReference = new AtomicReference<>();
+      latch = new CountDownLatch(1);
 
       Region<String, TickerData> region = getCache().getRegion(regionName);
       region.getAttributesMutator()
           .addCacheListener(new OldValueCacheListener<>(new CacheListenerAction<>(Operation.UPDATE,
               event -> {
                 assertThat(event.getOldValue()).isNotNull();
-                oldValueReference.set(event.getOldValue());
-                operationLatch.countDown();
+                valueReference.set(event.getOldValue());
+                latch.countDown();
               })));
 
       // create keys
@@ -398,13 +398,13 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
     // the local PUTALL_UPDATE event should contain old value
     client1.invoke(() -> {
-      operationLatch.await(TIMEOUT_MILLIS, MILLISECONDS);
-      assertThat(oldValueReference.get()).isInstanceOf(TickerData.class);
+      latch.await(TIMEOUT_MILLIS, MILLISECONDS);
+      assertThat(valueReference.get()).isInstanceOf(TickerData.class);
     });
 
     client2.invoke(() -> {
-      operationLatch.await(TIMEOUT_MILLIS, MILLISECONDS);
-      assertThat(oldValueReference.get()).isInstanceOf(TickerData.class);
+      latch.await(TIMEOUT_MILLIS, MILLISECONDS);
+      assertThat(valueReference.get()).isInstanceOf(TickerData.class);
     });
   }
 
@@ -1109,6 +1109,37 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
     });
   }
 
+  /**
+   * Bug: Data inconsistency between client/server with HA (Object is missing in client cache)
+   *
+   * <p>
+   * This is a known issue for persist region with HA.
+   * <ul>
+   * <li>client1 sends putAll key1,key2 to server1
+   * <li>server1 applied the key1 locally, but the putAll failed due to CacheClosedException? (HA
+   * test).
+   * <li>Then client1 will not have key1. But when server1 is restarted, it recovered key1 from
+   * persistence.
+   * <li>Then data mismatch btw client and server.
+   * </ul>
+   *
+   * <p>
+   * There's a known issue which can be improved by changing the test:
+   * <ul>
+   * <li>edge_14640 sends a putAll to servers. But the server is shutdown due to HA test. However at
+   * that time, the putAll might have put the key into local cache.
+   * <li>When the server is restarted, the servers will have the key, other clients will also have
+   * the key (due to register interest), but the calling client (i.e. edge_14640) will not have the
+   * key, unless it's restarted.
+   * </ul>
+   *
+   * <pre>
+   * In above scenario, even changing redundantCopies to 1 will not help. This is the known issue. To improve the test, we should let all the clients restart before doing verification.
+   * How to verify the result falls into above scenario?
+   * 1) errors.txt, the edge_14640 has inconsistent cache compared with server's snapshot.
+   * 2) grep Object_82470 *.log and found the mismatched key is originated from 14640.
+   * </pre>
+   */
   @Test
   @Parameters({"true", "false"})
   @TestCaseName("{method}(singleHop={0})")
@@ -1189,11 +1220,14 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
     // verify entries from client2
     client2.invoke(() -> {
-      Region<String, TickerData> region = getCache().getRegion(regionName);
-      for (int i = 0; i < ONE_HUNDRED; i++) {
-        Entry<String, TickerData> regionEntry = region.getEntry(title + i);
-        assertThat(regionEntry).isNull();
-      }
+      // TODO:KIRK: do we need await here?
+      await().untilAsserted(() -> {
+        Region<String, TickerData> region = getCache().getRegion(regionName);
+        for (int i = 0; i < ONE_HUNDRED; i++) {
+          Entry<String, TickerData> regionEntry = region.getEntry(title + i);
+          assertThat(regionEntry).isNull();
+        }
+      });
     });
   }
 
