@@ -95,13 +95,26 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
   // This test verifies that the cluster starts with the default method authorizer configured, then
   // changes the currently configured authorizer to each of the out-of-the-box authorizers.
   @Test
-  public void alterQueryServiceCommandUpdatesMethodAuthorizer() {
+  public void alterQueryServiceCommandUpdatesMethodAuthorizerClass() {
     verifyCurrentAuthorizerClass(DEFAULT_AUTHORIZER_CLASS);
 
     executeAndAssertGfshCommandIsSuccessful(UnrestrictedMethodAuthorizer.class, "");
 
     executeAndAssertGfshCommandIsSuccessful(JavaBeanAccessorMethodAuthorizer.class,
         JAVA_BEAN_AUTHORIZER_PARAMS);
+
+    executeAndAssertGfshCommandIsSuccessful(RegExMethodAuthorizer.class,
+        REGEX_AUTHORIZER_PARAMETERS);
+
+    executeAndAssertGfshCommandIsSuccessful(RestrictedMethodAuthorizer.class, "");
+  }
+
+  @Test
+  public void alterQueryServiceCommandUpdatesMethodAuthorizerParameters() {
+    gfsh.executeAndAssertThat(COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "="
+        + JavaBeanAccessorMethodAuthorizer.class.getName() + " --" + AUTHORIZER_PARAMETERS + "="
+        + JAVA_BEAN_AUTHORIZER_PARAMS).statusIsSuccess().hasTableSection()
+        .hasRowSize(serversToStart);
 
     servers.forEach(server -> server.invoke(() -> {
       JavaBeanAccessorMethodAuthorizer methodAuthorizer = (JavaBeanAccessorMethodAuthorizer) Objects
@@ -113,8 +126,10 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
       assertThat(methodAuthorizer.getAllowedPackages()).isEqualTo(expectedParameters);
     }));
 
-    executeAndAssertGfshCommandIsSuccessful(RegExMethodAuthorizer.class,
-        REGEX_AUTHORIZER_PARAMETERS);
+    gfsh.executeAndAssertThat(
+        COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "=" + RegExMethodAuthorizer.class.getName()
+            + " --" + AUTHORIZER_PARAMETERS + "=" + REGEX_AUTHORIZER_PARAMETERS)
+        .statusIsSuccess().hasTableSection().hasRowSize(serversToStart);
 
     servers.forEach(server -> server.invoke(() -> {
       RegExMethodAuthorizer methodAuthorizer = (RegExMethodAuthorizer) Objects
@@ -125,8 +140,6 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
           new HashSet<>(Arrays.asList(REGEX_AUTHORIZER_PARAMETERS.split(SPLITTING_REGEX)));
       assertThat(methodAuthorizer.getAllowedPatterns()).isEqualTo(expectedParameters);
     }));
-
-    executeAndAssertGfshCommandIsSuccessful(RestrictedMethodAuthorizer.class, "");
   }
 
   @Test
