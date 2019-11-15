@@ -21,12 +21,12 @@ limitations under the License.
 
 ## <a id="overview"></a>Disclaimer
 
-The security implementation of every installation is unique, these examples are provided for illustrative purposes only and must not be used in a production environment.
+The security implementation of every installation is unique. These examples are provided for illustrative purposes only and must not be used in a production environment.
 
 The examples demonstrate the basics for implementing both user authorization (`SecurityManager.authorize`) and method invocation authorization (`MethodInvocationAuthorizer.authorize`) during query executions.
 The remainder of the examples may be found within the <%=vars.product_name_long%> source code under the `geode-core/src/main/java/org/apache/geode/examples/security` directory.
 
-## <a id="overview"></a>User Authorization Example
+## <a id="user_authorization_example"></a>User Authorization Example
 
 This example assumes that a set of users, a set of roles that a user might take on within the system, and a mapping of users to their roles are described in a JSON format file.
 The roles define a set of authorized resource permissions granted for users in those roles.
@@ -56,7 +56,7 @@ public boolean authorize(final Object principal, final ResourcePermission contex
 }
 ```
 
-## <a id="overview"></a>Method Invocation Authorization Example
+## <a id="method_authorization_example"></a>Method Invocation Authorization Example
 
 This example assumes that the entire domain model is deployed to the cluster and that the user is allowed to modify these classes.
 The `authorize` callback denies access to methods that have been permanently forbidden by the [RestrictedMethodAuthorizer](method_invocation_authorizers.html#restrictedMethodAuthorizer) and returns `false` right away.

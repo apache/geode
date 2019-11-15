@@ -200,7 +200,7 @@ SELECT * FROM /exampleRegion WHERE foo.toLowerCase LIKE '%bar%'
 ## <a id="the_where_clause__section_D2F8D17B52B04895B672E2FCD675A676" class="no-quick-link"></a>Method Invocations
 
 To use a method in a query, use the attribute name that maps to the public method you want to invoke, or directly use the public method name instead.
-It's important to note that, when you use the attribute name instead of the method name, <%=vars.product_name_long %> will search for public methods named as the attribute itself or public methods with the `get` prefix. 
+It's important to note that when you use the attribute name instead of the method name, <%=vars.product_name_long %> will search for public methods named as the attribute itself or public methods with the `get` prefix. 
 
 ``` pre
 SELECT r.id FROM /exampleRegion r                                       - maps to object.id() or object.getId()
@@ -236,7 +236,8 @@ For overloaded methods, the query processor decides which method to call by matc
 
 If more than one method can be invoked, the query processor chooses the method whose parameter types are the most specific for the given arguments. For example, if an overloaded method includes versions with the same number of arguments, but one takes a `Person` type as an argument and the other takes an `Employee` type, derived from `Person`, `Employee` is the more specific object type. If the argument passed to the method is compatible with both types, the query processor uses the method with the `Employee` parameter type.
 
-The query processor uses the runtime types of the parameters and the receiver to determine the proper metho
+The query processor uses the runtime types of the parameters and the receiver to determine the proper method to invoke. Because runtime types are used, an argument with a `null` value has no typing information, and so can be matched with any object type parameter.
+When a `null` argument is used, if the query processor cannot determine the proper method to invoke based on the non-null arguments, it throws an `AmbiguousNameException`.
 
 **Methods calls with the `SecurityManager` enabled**
 
@@ -251,7 +252,7 @@ When the `SecurityManager` is enabled, by default <%=vars.product_name%> throws 
 - On any `Map.Entry` or `Region.Entry` object: `getKey` or `getValue`.
 - On any `Map`, `Collection` or `Region` object: `get`, `entrySet`, `keySet`, `values`, `getEntries`, `getValues`, or `containsKey`.
 
-In order to further customize this authorization check, please see [Method Invocation Authorizers](../../managing/security/method_invocation_authorizers.html#chaning_method_authorizer).
+In order to further customize this authorization check, please see [Method Invocation Authorizers](../../managing/security/method_invocation_authorizers.html#changing_method_authorizer).
 
 In the past you could use the system property `gemfire.QueryService.allowUntrustedMethodInvocation` to disable the check altogether, but this approach is deprecated now and will be removed in future releases,
 please configure the [UnrestrictedMethodAuthorizer](../../managing/security/method_invocation_authorizers.html#unrestrictedMethodAuthorizer) instead.
