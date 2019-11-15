@@ -28,7 +28,6 @@ import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
@@ -42,10 +41,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -122,7 +117,7 @@ public class TcpServer {
   private final String threadName;
   private volatile Thread serverThread;
 
-  protected SocketCreator socketCreator;
+  protected TcpSocketCreator socketCreator;
 
   private final LongSupplier nanoTimeSupplier;
 
@@ -139,11 +134,12 @@ public class TcpServer {
     return map;
   }
 
-  public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
-      DistributionConfigImpl cfg, TcpHandler handler,
+  public TcpServer(int port, InetAddress bind_address,
+      TcpHandler handler,
       String threadName, ProtocolChecker protocolChecker,
       final LongSupplier nanoTimeSupplier,
-      final Supplier<ExecutorService> executorServiceSupplier) {
+      final Supplier<ExecutorService> executorServiceSupplier,
+      final TcpSocketCreator socketCreator) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
@@ -152,21 +148,7 @@ public class TcpServer {
     this.executor = executorServiceSupplier.get();
     this.threadName = threadName;
     this.nanoTimeSupplier = nanoTimeSupplier;
-
-    if (cfg == null) {
-      if (sslConfig == null) {
-        sslConfig = new Properties();
-      }
-      cfg = new DistributionConfigImpl(sslConfig);
-    }
-  }
-
-  protected SocketCreator getSocketCreator() {
-    if (this.socketCreator == null) {
-      this.socketCreator =
-          SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
-    }
-    return socketCreator;
+    this.socketCreator = socketCreator;
   }
 
   public void restarting() throws IOException {
@@ -195,10 +177,10 @@ public class TcpServer {
   private void initializeServerSocket() throws IOException {
     if (srv_sock == null || srv_sock.isClosed()) {
       if (bind_address == null) {
-        srv_sock = getSocketCreator().createServerSocket(port, BACKLOG);
+        srv_sock = socketCreator.createServerSocket(port, BACKLOG);
         bind_address = srv_sock.getInetAddress();
       } else {
-        srv_sock = getSocketCreator().createServerSocket(port, BACKLOG, bind_address);
+        srv_sock = socketCreator.createServerSocket(port, BACKLOG, bind_address);
       }
       // GEODE-4176 - set the port from a wild-card bind so that handlers know the correct value
 
@@ -310,7 +292,7 @@ public class TcpServer {
       DataInputStream input = null;
       try {
         socket.setSoTimeout(READ_TIMEOUT);
-        getSocketCreator().handshakeIfSocketIsSSL(socket, READ_TIMEOUT);
+        socketCreator.handshakeIfSocketIsSSL(socket, READ_TIMEOUT);
 
         try {
           input = new DataInputStream(socket.getInputStream());

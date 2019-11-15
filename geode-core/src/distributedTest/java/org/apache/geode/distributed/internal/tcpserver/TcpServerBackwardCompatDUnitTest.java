@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.tcpserver;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -34,6 +35,8 @@ import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordina
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
@@ -142,8 +145,11 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
           new InternalDistributedMember("localhost", 1234));
       FindCoordinatorResponse response;
 
-      response = (FindCoordinatorResponse) new TcpClient()
-          .requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
+      response = (FindCoordinatorResponse) new TcpClient(
+          asTcpSocketCreator(
+              SocketCreatorFactory
+                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)))
+                      .requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
       assertThat(response).isNotNull();
 
     } catch (IllegalStateException e) {

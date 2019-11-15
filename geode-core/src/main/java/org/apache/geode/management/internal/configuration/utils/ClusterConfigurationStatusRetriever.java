@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.configuration.utils;
 
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Properties;
@@ -22,6 +24,9 @@ import java.util.Set;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
@@ -36,7 +41,9 @@ public class ClusterConfigurationStatusRetriever {
     try {
       final InetAddress networkAddress = InetAddress.getByName(locatorHostName);
 
-      TcpClient client = new TcpClient(configProps);
+      TcpClient client = new TcpClient(asTcpSocketCreator(
+          new SocketCreator(SSLConfigurationFactory.getSSLConfigForComponent(configProps,
+              SecurableCommunicationChannel.LOCATOR))));
       SharedConfigurationStatusResponse statusResponse =
           (SharedConfigurationStatusResponse) client.requestToServer(networkAddress, locatorPort,
               new SharedConfigurationStatusRequest(), 10000, true);

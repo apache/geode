@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.api;
 
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Properties;
@@ -38,6 +40,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -117,7 +120,9 @@ public class GeodeClusterManagementServiceBuilder implements
           "the client needs to have a client pool connected with a locator.");
     }
     DistributionConfig config = ((GemFireCacheImpl) clientCache).getSystem().getConfig();
-    TcpClient client = new TcpClient(config);
+    TcpClient client =
+        new TcpClient(asTcpSocketCreator(SocketCreatorFactory.setDistributionConfig(config)
+            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)));
     ClusterManagementServiceInfo cmsInfo = null;
     for (InetSocketAddress locator : locators) {
       try {

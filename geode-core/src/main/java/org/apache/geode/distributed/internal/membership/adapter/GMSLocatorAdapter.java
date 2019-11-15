@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.adapter;
 
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
@@ -28,7 +30,10 @@ import org.apache.geode.distributed.internal.membership.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
 
@@ -47,10 +52,14 @@ public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
       boolean usePreferredCoordinators,
       boolean networkPartitionDetectionEnabled, LocatorStats locatorStats,
       String securityUDPDHAlgo, Path workingDirectory) {
+    final TcpClient locatorClient = new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)));
     gmsLocator =
         new GMSLocator(bindAddress, locatorString, usePreferredCoordinators,
             networkPartitionDetectionEnabled,
-            locatorStats, securityUDPDHAlgo, workingDirectory);
+            locatorStats, securityUDPDHAlgo, workingDirectory, locatorClient);
   }
 
   @Override

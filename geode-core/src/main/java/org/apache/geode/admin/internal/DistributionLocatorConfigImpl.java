@@ -15,6 +15,7 @@
 package org.apache.geode.admin.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.toInetAddress;
 import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
 
@@ -25,6 +26,8 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 /**
  * Provides an implementation of <code>DistributionLocatorConfig</code>.
@@ -70,7 +73,10 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
     String[] info = new String[] {"unknown", "unknown"};
 
     try {
-      TcpClient client = new TcpClient();
+      TcpClient client = new TcpClient(
+          asTcpSocketCreator(
+              SocketCreatorFactory
+                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)));
       if (bindAddress != null) {
         info = client.getInfo(bindAddress, port);
       } else {

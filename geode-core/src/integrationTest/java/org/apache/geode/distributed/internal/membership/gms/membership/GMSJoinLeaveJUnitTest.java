@@ -22,7 +22,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -72,7 +74,6 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.SearchState;
-import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.TcpClientWrapper;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewCreator;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.ViewReplyProcessor;
 import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
@@ -82,6 +83,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.LeaveReques
 import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -103,6 +105,7 @@ public class GMSJoinLeaveJUnitTest {
   private TestLocator testLocator;
   private MemberIdentifier removeMember = null;
   private MemberIdentifier leaveMember = null;
+  private TcpClient locatorClient;
 
   public void initMocks() {
     initMocks(false);
@@ -164,11 +167,12 @@ public class GMSJoinLeaveJUnitTest {
         MemberDataBuilder.newBuilderForLocalHost("localhost")
             .setMembershipPort(8700).build());
     ((InternalDistributedMember) mockOldMember).setVersionObjectForTest(Version.GFE_56);
+    locatorClient = mock(TcpClient.class);
 
     if (useTestGMSJoinLeave) {
-      gmsJoinLeave = new GMSJoinLeaveTest();
+      gmsJoinLeave = new GMSJoinLeaveTest(locatorClient);
     } else {
-      gmsJoinLeave = new GMSJoinLeave();
+      gmsJoinLeave = new GMSJoinLeave(locatorClient);
     }
     gmsJoinLeave.init(services);
     gmsJoinLeave.start();
@@ -207,11 +211,8 @@ public class GMSJoinLeaveJUnitTest {
     initMocks(false);
     when(mockConfig.getLocatorWaitTime()).thenReturn(15000);
 
-    TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
-    gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
-
-    when(tcpClientWrapper.sendCoordinatorFindRequest(isA(InetSocketAddress.class),
-        isA(FindCoordinatorRequest.class), isA(Integer.class)))
+    when(locatorClient.requestToServer(isA(InetSocketAddress.class),
+        isA(FindCoordinatorRequest.class), anyInt(), anyBoolean()))
             .thenThrow(new IOException("Connection refused"));
 
     // interrupt this thread so that findCoordinator() won't keep looping
@@ -221,8 +222,8 @@ public class GMSJoinLeaveJUnitTest {
         .isInstanceOf(SystemConnectException.class)
         .hasMessageContaining("Interrupted while trying to contact locators");
     assertThat(Thread.currentThread().interrupted()).isTrue();
-    verify(tcpClientWrapper, times(1)).sendCoordinatorFindRequest(any(InetSocketAddress.class),
-        any(FindCoordinatorRequest.class), any(Integer.class));
+    verify(locatorClient, times(1)).requestToServer(isA(InetSocketAddress.class),
+        isA(FindCoordinatorRequest.class), anyInt(), anyBoolean());
   }
 
   @Test
@@ -1429,13 +1430,10 @@ public class GMSJoinLeaveJUnitTest {
     registrants.add(mockMembers[0]);
     FindCoordinatorResponse fcr = new FindCoordinatorResponse(mockMembers[0], mockMembers[0], false,
         null, registrants, false, true, null);
-    GMSMembershipView view = createView();
 
-    TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
-    gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
-
-    when(tcpClientWrapper.sendCoordinatorFindRequest(isA(InetSocketAddress.class),
-        isA(FindCoordinatorRequest.class), isA(Integer.class))).thenReturn(fcr);
+    when(locatorClient.requestToServer(isA(InetSocketAddress.class),
+        isA(FindCoordinatorRequest.class), anyInt(), anyBoolean()))
+            .thenReturn(fcr);
 
     boolean foundCoordinator = gmsJoinLeave.findCoordinator();
     assertTrue(gmsJoinLeave.searchState.toString(), foundCoordinator);
@@ -1454,14 +1452,10 @@ public class GMSJoinLeaveJUnitTest {
       JoinResponseMessage jrm = new JoinResponseMessage(mockMembers[0], view, 0);
       gmsJoinLeave.setJoinResponseMessage(jrm);
 
-      TcpClientWrapper tcpClientWrapper = mock(TcpClientWrapper.class);
-      gmsJoinLeave.setTcpClientWrapper(tcpClientWrapper);
-      FindCoordinatorRequest fcreq =
-          new FindCoordinatorRequest(gmsJoinLeaveMemberId, new HashSet<>(), -1, null, 0, "");
-      int connectTimeout = (int) services.getConfig().getMemberTimeout() * 2;
-      // passing wrong port here, so ot will fail
-      when(tcpClientWrapper.sendCoordinatorFindRequest(new InetSocketAddress("localhost", 12346),
-          fcreq, connectTimeout)).thenReturn(fcr);
+      when(locatorClient.requestToServer(eq(new InetSocketAddress("localhost", 12346)),
+          isA(FindCoordinatorRequest.class), anyInt(), anyBoolean()))
+              .thenReturn(fcr);
+
       assertFalse("Should not be able to join ", gmsJoinLeave.join());
     } finally {
 
@@ -1484,8 +1478,8 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   class GMSJoinLeaveTest extends GMSJoinLeave {
-    GMSJoinLeaveTest() {
-      super();
+    public GMSJoinLeaveTest(final TcpClient locatorClient) {
+      super(locatorClient);
     }
 
     @Override

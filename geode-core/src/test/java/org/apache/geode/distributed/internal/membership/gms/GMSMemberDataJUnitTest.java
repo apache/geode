@@ -34,8 +34,8 @@ import org.jgroups.util.UUID;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
@@ -209,7 +209,7 @@ public class GMSMemberDataJUnitTest {
     assertEquals(member.getVmKind(), newMember.getVmKind());
 
     // vmKind should not be transmitted to a member with version GFE_90 or earlier
-    dataOutput = new HeapDataOutputStream(Version.GFE_90);
+    dataOutput = new BufferDataOutputStream(Version.GFE_90);
     member.writeEssentialData(dataOutput, serializationContext);
     bais = new ByteArrayInputStream(baos.toByteArray());
     DataInputStream stream = new DataInputStream(bais);

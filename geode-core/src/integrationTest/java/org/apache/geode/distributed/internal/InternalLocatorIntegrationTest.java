@@ -37,6 +37,7 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.LoggingSession;
 
 public class InternalLocatorIntegrationTest {
@@ -85,6 +86,8 @@ public class InternalLocatorIntegrationTest {
   @Test
   public void constructs() {
     when(distributionConfig.getLogFile()).thenReturn(logFile);
+    when(distributionConfig.getSecurableCommunicationChannels()).thenReturn(
+        new SecurableCommunicationChannel[0]);
 
     assertThatCode(() -> {
       internalLocator =
