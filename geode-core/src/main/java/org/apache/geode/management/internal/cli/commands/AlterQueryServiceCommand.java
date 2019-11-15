@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -52,24 +51,16 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
       "The name of the class to be used for OQL method authorization";
   static final String AUTHORIZER_PARAMETERS = "authorizer-parameters";
   private static final String AUTHORIZER_PARAMETERS_HELP =
-      "A comma separated list of all parameter values for the specified method authorizer. Requires '--"
+      "A semicolon separated list of all parameter values for the specified method authorizer. Requires '--"
           + METHOD_AUTHORIZER_NAME + "' option to be used";
-  static final String SINGLE_AUTHORIZER_PARAMETER = "authorizer-parameter";
-  private static final String SINGLE_AUTHORIZER_PARAMETER_HELP =
-      "A single parameter to be used by the specified method authorizer. Requires '--"
-          + METHOD_AUTHORIZER_NAME + "' option to be used";
-  static final String PARAMETERS_WITHOUT_AUTHORIZER_MESSAGE =
-      "The '--" + AUTHORIZER_PARAMETERS + "' and '--" + SINGLE_AUTHORIZER_PARAMETER
-          + "' options require '--"
-          + METHOD_AUTHORIZER_NAME + "' to be specified";
-  static final String SINGLE_PARAM_AND_PARAMETERS_SPECIFIED_MESSAGE =
-      "Only one of '--" + AUTHORIZER_PARAMETERS + "' and '--" + SINGLE_AUTHORIZER_PARAMETER
-          + "' options can be specified.";
+  static final String PARAMETERS_WITHOUT_AUTHORIZER_MESSAGE = "The '--" + AUTHORIZER_PARAMETERS
+      + "' option requires '--" + METHOD_AUTHORIZER_NAME + "' to be specified";
   static final String NO_ARGUMENTS_MESSAGE =
       "No arguments were provided. No changes have been applied.";
   static final String NO_MEMBERS_FOUND_MESSAGE = "No members found.";
   public static final String PARTIAL_FAILURE_MESSAGE =
       "In the event of a partial failure of this command, re-running the command or restarting failing members should restore consistency.";
+  static final String SPLITTING_REGEX = ";";
 
   @CliCommand(value = COMMAND_NAME, help = COMMAND_HELP)
   @CliMetaData(
@@ -80,9 +71,8 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
       @CliOption(key = METHOD_AUTHORIZER_NAME,
           help = METHOD_AUTHORIZER_NAME_HELP) String methodAuthorizerName,
       @CliOption(key = AUTHORIZER_PARAMETERS,
-          help = AUTHORIZER_PARAMETERS_HELP) String[] authorizerParameters,
-      @CliOption(key = SINGLE_AUTHORIZER_PARAMETER,
-          help = SINGLE_AUTHORIZER_PARAMETER_HELP) String singleAuthorizerParameter) {
+          help = AUTHORIZER_PARAMETERS_HELP,
+          optionContext = "splittingRegex=" + SPLITTING_REGEX) String[] authorizerParameters) {
     ResultModel result;
 
     QueryConfigService queryConfigService = getQueryConfigService();
@@ -90,8 +80,6 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
     if (methodAuthorizerName != null) {
       if (authorizerParameters != null) {
         parametersSet = new HashSet<>(Arrays.asList(authorizerParameters));
-      } else if (singleAuthorizerParameter != null) {
-        parametersSet = new HashSet<>(Collections.singleton(singleAuthorizerParameter));
       }
       populateMethodAuthorizer(methodAuthorizerName, parametersSet, queryConfigService);
     }
@@ -174,14 +162,9 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
 
       Object authorizerName = parseResult.getParamValue(METHOD_AUTHORIZER_NAME);
       Object authorizerParams = parseResult.getParamValue(AUTHORIZER_PARAMETERS);
-      Object singleAuthorizerParam = parseResult.getParamValue(SINGLE_AUTHORIZER_PARAMETER);
 
-      if ((singleAuthorizerParam != null || authorizerParams != null) && authorizerName == null) {
+      if (authorizerParams != null && authorizerName == null) {
         return ResultModel.createError(PARAMETERS_WITHOUT_AUTHORIZER_MESSAGE);
-      }
-
-      if (singleAuthorizerParam != null && authorizerParams != null) {
-        return ResultModel.createError(SINGLE_PARAM_AND_PARAMETERS_SPECIFIED_MESSAGE);
       }
 
       return new ResultModel();

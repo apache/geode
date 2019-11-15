@@ -19,7 +19,7 @@ import static org.apache.geode.management.internal.cli.commands.AlterQueryServic
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.COMMAND_NAME;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.METHOD_AUTHORIZER_NAME;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.NO_MEMBERS_FOUND_MESSAGE;
-import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SINGLE_AUTHORIZER_PARAMETER;
+import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SPLITTING_REGEX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -61,11 +61,12 @@ import org.apache.geode.test.junit.rules.VMProvider;
 public class AlterQueryServiceCommandWithSecurityDUnitTest {
   private static final Class<RestrictedMethodAuthorizer> DEFAULT_AUTHORIZER_CLASS =
       RestrictedMethodAuthorizer.class;
-  private static final String JAVA_BEAN_AUTHORIZER_PARAMS = "java.lang,java.util";
+  private static final String JAVA_BEAN_AUTHORIZER_PARAMS = "java.lang;java.util";
   // A regex containing a comma to confirm that the '--authorizer-parameter' option is parsed
   // correctly
-  private static final String REGEX_AUTHORIZER_PARAMETER = "^java.util.List..{4,8}$";
-  private static final String USER_AUTHORIZER_PARAMETERS = "param1,param2,param3";
+  private static final String REGEX_AUTHORIZER_PARAMETERS =
+      "^java.util.List..{4,8}$;^java.util.Set..{4,8}$";
+  private static final String USER_AUTHORIZER_PARAMETERS = "param1;param2;param3";
   private static final String TEST_AUTHORIZER_TXT = "TestMethodAuthorizer.txt";
   private final int serversToStart = 2;
 
@@ -108,20 +109,21 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
           .getMethodAuthorizer();
 
       Set<String> expectedParameters =
-          new HashSet<>(Arrays.asList(JAVA_BEAN_AUTHORIZER_PARAMS.split(",")));
+          new HashSet<>(Arrays.asList(JAVA_BEAN_AUTHORIZER_PARAMS.split(SPLITTING_REGEX)));
       assertThat(methodAuthorizer.getAllowedPackages()).isEqualTo(expectedParameters);
     }));
 
     executeAndAssertGfshCommandIsSuccessful(RegExMethodAuthorizer.class,
-        REGEX_AUTHORIZER_PARAMETER);
+        REGEX_AUTHORIZER_PARAMETERS);
 
     servers.forEach(server -> server.invoke(() -> {
       RegExMethodAuthorizer methodAuthorizer = (RegExMethodAuthorizer) Objects
           .requireNonNull(ClusterStartupRule.getCache()).getService(QueryConfigurationService.class)
           .getMethodAuthorizer();
 
-      assertThat(methodAuthorizer.getAllowedPatterns().size()).isEqualTo(1);
-      assertThat(methodAuthorizer.getAllowedPatterns()).containsOnly(REGEX_AUTHORIZER_PARAMETER);
+      Set<String> expectedParameters =
+          new HashSet<>(Arrays.asList(REGEX_AUTHORIZER_PARAMETERS.split(SPLITTING_REGEX)));
+      assertThat(methodAuthorizer.getAllowedPatterns()).isEqualTo(expectedParameters);
     }));
 
     executeAndAssertGfshCommandIsSuccessful(RestrictedMethodAuthorizer.class, "");
@@ -151,7 +153,7 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
           .getMethodAuthorizer();
 
       Set<String> expectedParameters =
-          new HashSet<>(Arrays.asList(USER_AUTHORIZER_PARAMETERS.split(",")));
+          new HashSet<>(Arrays.asList(USER_AUTHORIZER_PARAMETERS.split(SPLITTING_REGEX)));
       assertThat(methodAuthorizer.getParameters()).isEqualTo(expectedParameters);
     }));
   }
@@ -193,13 +195,9 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
 
   private void executeAndAssertGfshCommandIsSuccessful(Class authorizerClass,
       String authorizerParameters) {
-    String parameterOption = AUTHORIZER_PARAMETERS;
-    if (authorizerClass.getName().equals(RegExMethodAuthorizer.class.getName())) {
-      parameterOption = SINGLE_AUTHORIZER_PARAMETER;
-    }
     gfsh.executeAndAssertThat(
         COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "=" + authorizerClass.getName()
-            + " --" + parameterOption + "=" + authorizerParameters)
+            + " --" + AUTHORIZER_PARAMETERS + "=" + authorizerParameters)
         .statusIsSuccess()
         .hasTableSection().hasRowSize(serversToStart);
 
@@ -217,7 +215,7 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
       assertThat(methodAuthorizer.getClass()).isEqualTo(JavaBeanAccessorMethodAuthorizer.class);
 
       Set<String> expectedParameters =
-          new HashSet<>(Arrays.asList(JAVA_BEAN_AUTHORIZER_PARAMS.split(",")));
+          new HashSet<>(Arrays.asList(JAVA_BEAN_AUTHORIZER_PARAMS.split(SPLITTING_REGEX)));
       assertThat(methodAuthorizer.getAllowedPackages()).isEqualTo(expectedParameters);
     });
   }

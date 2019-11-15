@@ -21,8 +21,7 @@ import static org.apache.geode.management.internal.cli.commands.AlterQueryServic
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.NO_MEMBERS_FOUND_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.PARAMETERS_WITHOUT_AUTHORIZER_MESSAGE;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.PARTIAL_FAILURE_MESSAGE;
-import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SINGLE_AUTHORIZER_PARAMETER;
-import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SINGLE_PARAM_AND_PARAMETERS_SPECIFIED_MESSAGE;
+import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SPLITTING_REGEX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -30,9 +29,11 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,6 +46,7 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.query.management.configuration.QueryConfigService;
+import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
@@ -78,20 +80,8 @@ public class AlterQueryServiceCommandTest {
   @Test
   public void commandReturnsErrorWhenAuthorizerParametersAreSpecifiedAndAuthorizerNameIsUnspecified() {
     gfsh.executeAndAssertThat(command,
-        COMMAND_NAME + " --" + AUTHORIZER_PARAMETERS + "=param1,param2")
+        COMMAND_NAME + " --" + AUTHORIZER_PARAMETERS + "=param1;param2")
         .statusIsError().containsOutput(PARAMETERS_WITHOUT_AUTHORIZER_MESSAGE);
-    gfsh.executeAndAssertThat(command,
-        COMMAND_NAME + " --" + SINGLE_AUTHORIZER_PARAMETER + "=param1")
-        .statusIsError().containsOutput(PARAMETERS_WITHOUT_AUTHORIZER_MESSAGE);
-  }
-
-  @Test
-  public void commandReturnsErrorWhenAuthorizerParametersAndSingleParameterAreSpecifiedWithMethodAuthorizer() {
-    gfsh.executeAndAssertThat(command,
-        COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "=authorizerName" + " --"
-            + AUTHORIZER_PARAMETERS + "=param1,param2" + " --" + SINGLE_AUTHORIZER_PARAMETER
-            + "=param3")
-        .statusIsError().containsOutput(SINGLE_PARAM_AND_PARAMETERS_SPECIFIED_MESSAGE);
   }
 
   @Test
@@ -120,10 +110,15 @@ public class AlterQueryServiceCommandTest {
     doReturn(resultList).when(command).executeAndGetFunctionResult(any(
         AlterQueryServiceFunction.class), any(Object[].class), eq(mockMemberSet));
 
-    gfsh.executeAndAssertThat(command,
-        COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "="
-            + UnrestrictedMethodAuthorizer.class.getName())
+    String parameterString = "^java.util.List..{4,8}$;^java.util.Set..{4,8}$";
+    Set<String> expectedParameterSet =
+        new HashSet<>(Arrays.asList(parameterString.split(SPLITTING_REGEX)));
+    String authorizerName = RegExMethodAuthorizer.class.getName();
+    gfsh.executeAndAssertThat(command, COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "="
+        + authorizerName + " --" + AUTHORIZER_PARAMETERS + "=" + parameterString)
         .statusIsSuccess().containsOutput(memberName);
+    verify(command).populateMethodAuthorizer(eq(authorizerName), eq(expectedParameterSet),
+        eq(mockQueryConfigService));
   }
 
   @Test
