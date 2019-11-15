@@ -254,7 +254,10 @@ public class NioSslEngineTest {
   @Test
   public void unwrapWithBufferOverflow() throws Exception {
     // make the application data too big to fit into the engine's encryption buffer
-    ByteBuffer wrappedData = ByteBuffer.allocate(nioSslEngine.peerAppData.capacity() + 100);
+    int originalPeerAppDataCapacity = nioSslEngine.peerAppData.capacity();
+    int originalPeerAppDataPosition = originalPeerAppDataCapacity / 2;
+    nioSslEngine.peerAppData.position(originalPeerAppDataPosition);
+    ByteBuffer wrappedData = ByteBuffer.allocate(originalPeerAppDataCapacity + 100);
     byte[] netBytes = new byte[wrappedData.capacity()];
     Arrays.fill(netBytes, (byte) 0x1F);
     wrappedData.put(netBytes);
@@ -265,15 +268,21 @@ public class NioSslEngineTest {
     spyNioSslEngine.engine = testEngine;
 
     testEngine.addReturnResult(
-        new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, netBytes.length, netBytes.length),
+        new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, 0, 0), // results in 30,000 byte buffer
+        new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, 0, 0), // 50,000 bytes
+        new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, 0, 0), // 90,000 bytes
         new SSLEngineResult(OK, FINISHED, netBytes.length, netBytes.length));
 
+    int expectedCapacity = 2 * originalPeerAppDataCapacity - originalPeerAppDataPosition;
+    expectedCapacity =
+        2 * (expectedCapacity - originalPeerAppDataPosition) + originalPeerAppDataPosition;
+    expectedCapacity =
+        2 * (expectedCapacity - originalPeerAppDataPosition) + originalPeerAppDataPosition;
     ByteBuffer unwrappedBuffer = spyNioSslEngine.unwrap(wrappedData);
     unwrappedBuffer.flip();
-
-    verify(spyNioSslEngine, times(2)).expandPeerAppData(any(ByteBuffer.class));
-    assertThat(unwrappedBuffer).isEqualTo(ByteBuffer.wrap(netBytes));
+    assertThat(unwrappedBuffer.capacity()).isEqualTo(expectedCapacity);
   }
+
 
   @Test
   public void unwrapWithBufferUnderflow() throws Exception {
@@ -434,7 +443,8 @@ public class NioSslEngineTest {
     SocketChannel mockChannel = mock(SocketChannel.class);
 
     // force buffer expansion by making a small decoded buffer appear near to being full
-    ByteBuffer unwrappedBuffer = ByteBuffer.allocate(100);
+    int initialUnwrappedBufferSize = 100;
+    ByteBuffer unwrappedBuffer = ByteBuffer.allocate(initialUnwrappedBufferSize);
     unwrappedBuffer.position(7).limit(preexistingBytes + 7); // 7 bytes of message header - ignored
     nioSslEngine.peerAppData = unwrappedBuffer;
 
@@ -450,9 +460,9 @@ public class NioSslEngineTest {
 
     TestSSLEngine testSSLEngine = new TestSSLEngine();
     testSSLEngine.addReturnResult(
+        new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, 0, 0), // expand 100 bytes to 93*2+7
         new SSLEngineResult(OK, NEED_UNWRAP, 0, 0), // 10 + 60 bytes = 70
         new SSLEngineResult(OK, NEED_UNWRAP, 0, 0), // 70 + 60 bytes = 130
-        new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, 0, 0), // need 190 bytes capacity
         new SSLEngineResult(OK, NEED_UNWRAP, 0, 0)); // 130 + 60 bytes = 190
     nioSslEngine.engine = testSSLEngine;
 
@@ -460,6 +470,10 @@ public class NioSslEngineTest {
     verify(mockChannel, times(3)).read(isA(ByteBuffer.class));
     assertThat(data.position()).isEqualTo(0);
     assertThat(data.limit()).isEqualTo(individualRead * 3 + preexistingBytes);
+    // The initial available space in the unwrapped buffer should have doubled
+    int initialFreeSpace = initialUnwrappedBufferSize - preexistingBytes;
+    assertThat(nioSslEngine.peerAppData.capacity())
+        .isEqualTo(2 * initialFreeSpace + preexistingBytes);
   }
 
 
