@@ -123,7 +123,7 @@ public class StateFlushOperation {
       gr.setRecipient(target);
       ReplyProcessor21 processor = new ReplyProcessor21(dm, target);
       gr.processorId = processor.getProcessorId();
-      gr.channelState = dm.getMembershipManager().getMessageState(target, false);
+      gr.channelState = dm.getDistribution().getMessageState(target, false);
       if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP_VERBOSE)
           && ((gr.channelState != null) && (gr.channelState.size() > 0))) {
         logger.trace(LogMarker.STATE_FLUSH_OP_VERBOSE, "channel states: {}",
@@ -410,7 +410,7 @@ public class StateFlushOperation {
                   r.getMulticastEnabled() && r.getSystem().getConfig().getMcastPort() != 0;
               if (initialized) {
                 Map channelStates =
-                    dm.getMembershipManager().getMessageState(relayRecipient, useMulticast);
+                    dm.getDistribution().getMessageState(relayRecipient, useMulticast);
                 if (gr.channelState != null) {
                   gr.channelState.putAll(channelStates);
                 } else {
@@ -577,7 +577,7 @@ public class StateFlushOperation {
                 dm.getCancelCriterion().checkCancelInProgress(null);
                 boolean interrupted = Thread.interrupted();
                 try {
-                  dm.getMembershipManager().waitForMessageState(getSender(), channelState);
+                  dm.getDistribution().waitForMessageState(getSender(), channelState);
                   break;
                 } catch (InterruptedException ignore) {
                   interrupted = true;

@@ -68,10 +68,10 @@ public class ProductUseLog implements MembershipListener {
     this.system = system;
     DistributionManager dmgr = system.getDistributionManager();
     dmgr.addMembershipListener(this);
-    MembershipManagerAdapter mmgr = dmgr.getMembershipManager();
+    Distribution mmgr = dmgr.getDistribution();
     if (mmgr != null) {
       log("Log opened with new distributed system connection.  "
-          + system.getDM().getMembershipManager().getView());
+          + system.getDM().getDistribution().getView());
     } else { // membership manager not initialized?
       log("Log opened with new distributed system connection.  Membership view not yet available in this VM.");
     }
@@ -131,7 +131,7 @@ public class ProductUseLog implements MembershipListener {
 
   @Override
   public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
-    log("A new member joined: " + id + ".  " + system.getDM().getMembershipManager().getView());
+    log("A new member joined: " + id + ".  " + system.getDM().getDistribution().getView());
   }
 
   @Override

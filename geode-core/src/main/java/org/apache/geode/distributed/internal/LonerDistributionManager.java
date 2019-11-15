@@ -1288,7 +1288,7 @@ public class LonerDistributionManager implements DistributionManager {
    * @see org.apache.geode.distributed.internal.DM#getMembershipManager()
    */
   @Override
-  public MembershipManagerAdapter getMembershipManager() {
+  public Distribution getDistribution() {
     // no membership manager
     return null;
   }

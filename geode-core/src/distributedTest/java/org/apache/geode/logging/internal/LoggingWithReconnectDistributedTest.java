@@ -46,8 +46,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -136,7 +136,7 @@ public class LoggingWithReconnectDistributedTest implements Serializable {
     });
 
     server2VM.invoke(() -> {
-      MembershipManagerAdapter membershipManager = getMembership(system);
+      Distribution membershipManager = getMembership(system);
       membershipManager
           .forceDisconnect("Forcing disconnect in " + testName.getMethodName());
 

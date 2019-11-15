@@ -1707,7 +1707,7 @@ public class InitialImageOperation {
             // wait for the lost member to be gone from this VM's membership and all ops applied to
             // the cache
             try {
-              dm.getMembershipManager().waitForDeparture(this.lostMemberID);
+              dm.getDistribution().waitForDeparture(this.lostMemberID);
               RegionVersionHolder rvh =
                   rgn.getVersionVector().getHolderForMember(this.lostMemberVersionID);
               if (rvh != null) {

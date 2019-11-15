@@ -285,7 +285,7 @@ public interface DistributionManager extends ReplySender {
    *
    * @return the membership manager
    */
-  MembershipManagerAdapter getMembershipManager();
+  Distribution getDistribution();
 
   /**
    * Set the root cause for DM failure

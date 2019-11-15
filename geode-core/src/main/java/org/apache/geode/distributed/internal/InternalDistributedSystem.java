@@ -774,8 +774,8 @@ public class InternalDistributedSystem extends DistributedSystem
       Assert.assertTrue(dm != null);
       Assert.assertTrue(dm.getSystem() == this);
 
-      if (dm != null && dm.getMembershipManager() != null) {
-        id = dm.getMembershipManager().getLocalMember().getMembershipPort();
+      if (dm != null && dm.getDistribution() != null) {
+        id = dm.getDistribution().getLocalMember().getMembershipPort();
       }
 
       synchronized (isConnectedMutex) {
@@ -1457,7 +1457,7 @@ public class InternalDistributedSystem extends DistributedSystem
       return;
     }
     emergencyClassesLoaded = true;
-    MembershipManagerAdapter.loadEmergencyClasses();
+    DistributionImpl.loadEmergencyClasses();
   }
 
   /**
@@ -1467,7 +1467,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public void emergencyClose() {
     if (dm != null) {
-      MembershipManagerAdapter mm = dm.getMembershipManager();
+      Distribution mm = dm.getDistribution();
       if (mm != null) {
         mm.emergencyClose();
       }
@@ -2481,7 +2481,7 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     // get the membership manager for quorum checks
-    MembershipManagerAdapter mbrMgr = dm.getMembershipManager();
+    Distribution mbrMgr = dm.getDistribution();
     quorumChecker = mbrMgr.getQuorumChecker();
     if (logger.isDebugEnabled()) {
       if (quorumChecker == null) {
@@ -2719,10 +2719,10 @@ public class InternalDistributedSystem extends DistributedSystem
       } else {
         System.setProperty(InternalLocator.INHIBIT_DM_BANNER, inhibitBanner);
       }
-      dm.getMembershipManager().setReconnectCompleted(true);
+      dm.getDistribution().setReconnectCompleted(true);
       InternalDistributedSystem newds = reconnectDS;
       if (newds != null) {
-        newds.getDM().getMembershipManager().setReconnectCompleted(true);
+        newds.getDM().getDistribution().setReconnectCompleted(true);
       }
       if (quorumChecker != null) {
         mbrMgr.releaseQuorumChecker(quorumChecker, reconnectDS);

@@ -77,7 +77,7 @@ public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
   public void restarting(DistributedSystem ds, GemFireCache cache,
       InternalConfigurationPersistenceService sharedConfig) {
     gmsLocator.setServices(
-        ((InternalDistributedSystem) ds).getDM().getMembershipManager().getServices());
+        ((InternalDistributedSystem) ds).getDM().getDistribution().getServices());
   }
 
   @Override

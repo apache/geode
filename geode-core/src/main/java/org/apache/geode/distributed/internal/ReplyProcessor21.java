@@ -1118,7 +1118,7 @@ public class ReplyProcessor21 implements MembershipListener {
           cause);
     } else if (suspectThem) {
       if (suspectMembers != null && suspectMembers.size() > 0) {
-        getDistributionManager().getMembershipManager().suspectMembers(
+        getDistributionManager().getDistribution().suspectMembers(
             (Set<DistributedMember>) (Set<?>) suspectMembers,
             "Failed to respond within ack-wait-threshold");
       }

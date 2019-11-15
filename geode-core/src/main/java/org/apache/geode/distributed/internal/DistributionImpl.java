@@ -61,7 +61,7 @@ import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 
-public class MembershipManagerAdapter {
+public class DistributionImpl implements Distribution {
   private static final Logger logger = Services.getLogger();
   /**
    * @see SystemFailure#loadEmergencyClasses() /** break any potential circularity in
@@ -91,7 +91,7 @@ public class MembershipManagerAdapter {
   private final long memberTimeout;
 
 
-  public MembershipManagerAdapter(final ClusterDistributionManager clusterDistributionManager,
+  public DistributionImpl(final ClusterDistributionManager clusterDistributionManager,
       final RemoteTransportConfig transport, final InternalDistributedSystem system,
       final MembershipListener listener,
       final MessageListener messageListener) {
@@ -136,12 +136,13 @@ public class MembershipManagerAdapter {
     GMSHealthMonitor.loadEmergencyClasses();
   }
 
+  @Override
   public void start() {
     membership.start();
   }
 
   @VisibleForTesting
-  MembershipManagerAdapter(final ClusterDistributionManager clusterDistributionManager,
+  DistributionImpl(final ClusterDistributionManager clusterDistributionManager,
       final RemoteTransportConfig transport, final InternalDistributedSystem system,
       Membership membership) {
     this.clusterDistributionManager = clusterDistributionManager;
@@ -158,28 +159,31 @@ public class MembershipManagerAdapter {
     this.membership = membership;
   }
 
-  static MembershipManagerAdapter createMembershipManagerAdapter(
+  static DistributionImpl createMembershipManagerAdapter(
       ClusterDistributionManager clusterDistributionManager, RemoteTransportConfig transport,
       InternalDistributedSystem system,
       org.apache.geode.distributed.internal.membership.gms.api.MembershipListener listener,
       MessageListener messageListener) {
 
-    MembershipManagerAdapter membershipManagerAdapter =
-        new MembershipManagerAdapter(clusterDistributionManager, transport, system, listener,
+    DistributionImpl distribution =
+        new DistributionImpl(clusterDistributionManager, transport, system, listener,
             messageListener);
-    membershipManagerAdapter.start();
-    return membershipManagerAdapter;
+    distribution.start();
+    return distribution;
   }
 
 
+  @Override
   public MembershipView getView() {
     return membership.getView();
   }
 
+  @Override
   public InternalDistributedMember getLocalMember() {
     return membership.getLocalMember();
   }
 
+  @Override
   public Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
       DistributionMessage msg) throws NotSerializableException {
     Set<InternalDistributedMember> result;
@@ -254,6 +258,7 @@ public class MembershipManagerAdapter {
    * @return all recipients who did not receive the message (null if all received it)
    * @throws NotSerializableException if the message is not serializable
    */
+  @Override
   public Set<InternalDistributedMember> directChannelSend(
       InternalDistributedMember[] destinations,
       DistributionMessage content)
@@ -332,6 +337,7 @@ public class MembershipManagerAdapter {
   }
 
 
+  @Override
   public Map<String, Long> getMessageState(
       DistributedMember member, boolean includeMulticast) {
     final HashMap<String, Long> result = new HashMap<>();
@@ -342,6 +348,7 @@ public class MembershipManagerAdapter {
     return membership.getMessageState(member, includeMulticast, result);
   }
 
+  @Override
   public void waitForMessageState(DistributedMember member,
       Map<String, Long> state) throws InterruptedException {
     if (Thread.interrupted())
@@ -359,90 +366,96 @@ public class MembershipManagerAdapter {
     }
   }
 
+  @Override
   public boolean requestMemberRemoval(DistributedMember member,
       String reason) {
     return membership.requestMemberRemoval(member, reason);
   }
 
+  @Override
   public boolean verifyMember(DistributedMember mbr,
       String reason) {
     return membership.verifyMember(mbr, reason);
   }
 
+  @Override
   public boolean isShunned(DistributedMember m) {
     return membership.isShunned(m);
   }
 
+  @Override
   public <V> V doWithViewLocked(
       Function<Membership, V> function) {
     return membership.doWithViewLocked(function);
   }
 
+  @Override
   public boolean memberExists(DistributedMember m) {
     return membership.memberExists(m);
   }
 
+  @Override
   public boolean isConnected() {
     return membership.isConnected();
   }
 
+  @Override
   public void beSick() {
     membership.beSick();
   }
 
+  @Override
   public void playDead() {
     membership.playDead();
   }
 
-  public void beHealthy() {
-    membership.beHealthy();
-  }
-
+  @Override
   public boolean isBeingSick() {
     return membership.isBeingSick();
   }
 
+  @Override
   public void disconnect(boolean beforeJoined) {
     membership.disconnect(beforeJoined);
   }
 
+  @Override
   public void shutdown() {
     membership.shutdown();
   }
 
-  public void uncleanShutdown(String reason, Exception e) {
-    membership.uncleanShutdown(reason, e);
-  }
-
+  @Override
   public void shutdownMessageReceived(DistributedMember id,
       String reason) {
     membership.shutdownMessageReceived(id, reason);
   }
 
+  @Override
   public void waitForEventProcessing() throws InterruptedException {
     membership.waitForEventProcessing();
   }
 
+  @Override
   public void startEventProcessing() {
     membership.startEventProcessing();
   }
 
+  @Override
   public void setShutdown() {
     membership.setShutdown();
   }
 
+  @Override
   public void setReconnectCompleted(boolean reconnectCompleted) {
     membership.setReconnectCompleted(reconnectCompleted);
   }
 
+  @Override
   public boolean shutdownInProgress() {
     return membership.shutdownInProgress();
   }
 
-  public boolean waitForNewMember(DistributedMember remoteId) {
-    return membership.waitForNewMember(remoteId);
-  }
-
+  @Override
   public void emergencyClose() {
     membership.emergencyClose();
     if (directChannel != null) {
@@ -450,85 +463,98 @@ public class MembershipManagerAdapter {
     }
   }
 
+  @Override
   public void addSurpriseMemberForTesting(DistributedMember mbr,
       long birthTime) {
     membership.addSurpriseMemberForTesting(mbr, birthTime);
   }
 
+  @Override
   public void suspectMembers(Set<DistributedMember> members,
       String reason) {
     membership.suspectMembers(members, reason);
   }
 
+  @Override
   public void suspectMember(DistributedMember member,
       String reason) {
     membership.suspectMember(member, reason);
   }
 
+  @Override
   public Throwable getShutdownCause() {
     return membership.getShutdownCause();
   }
 
+  @Override
   public void registerTestHook(
       MembershipTestHook mth) {
     membership.registerTestHook(mth);
   }
 
+  @Override
   public void unregisterTestHook(
       MembershipTestHook mth) {
     membership.unregisterTestHook(mth);
   }
 
-  public void warnShun(DistributedMember mbr) {
-    membership.warnShun(mbr);
-  }
-
+  @Override
   public boolean addSurpriseMember(DistributedMember mbr) {
     return membership.addSurpriseMember(mbr);
   }
 
+  @Override
   public void startupMessageFailed(DistributedMember mbr,
       String failureMessage) {
     membership.startupMessageFailed(mbr, failureMessage);
   }
 
+  @Override
   public boolean testMulticast() {
     return membership.testMulticast();
   }
 
+  @Override
   public boolean isSurpriseMember(DistributedMember m) {
     return membership.isSurpriseMember(m);
   }
 
+  @Override
   public QuorumChecker getQuorumChecker() {
     return membership.getQuorumChecker();
   }
 
+  @Override
   public void releaseQuorumChecker(
       QuorumChecker checker,
       InternalDistributedSystem distributedSystem) {
     membership.releaseQuorumChecker(checker, distributedSystem);
   }
 
+  @Override
   public DistributedMember getCoordinator() {
     return membership.getCoordinator();
   }
 
+  @Override
   public Set<InternalDistributedMember> getMembersNotShuttingDown() {
     return membership.getMembersNotShuttingDown();
   }
 
+  @Override
   public Services getServices() {
     return membership.getServices();
   }
 
   // TODO - this method is only used by tests
+  @Override
   @VisibleForTesting
   public void forceDisconnect(String reason) {
     ((GMSMembershipManager) membership).getGMSManager().forceDisconnect(reason);
   }
 
   // TODO - this method is only used by tests
+  @Override
   @VisibleForTesting
   public void replacePartialIdentifierInMessage(DistributionMessage message) {
     ((GMSMembershipManager) membership).replacePartialIdentifierInMessage(message);
@@ -536,24 +562,28 @@ public class MembershipManagerAdapter {
   }
 
   // TODO - this method is only used by tests
+  @Override
   @VisibleForTesting
   public boolean isCleanupTimerStarted() {
     return ((GMSMembershipManager) membership).isCleanupTimerStarted();
   }
 
   // TODO - this method is only used by tests
+  @Override
   @VisibleForTesting
   public long getSurpriseMemberTimeout() {
     return ((GMSMembershipManager) membership).getSurpriseMemberTimeout();
   }
 
   // TODO - this method is only used by tests
+  @Override
   @VisibleForTesting
   public void installView(GMSMembershipView newView) {
     ((GMSMembershipManager) membership).getGMSManager().installView(newView);
   }
 
   // TODO - this method is only used by tests
+  @Override
   @VisibleForTesting
   public int getDirectChannelPort() {
     return directChannel == null ? 0 : directChannel.getPort();
@@ -566,9 +596,9 @@ public class MembershipManagerAdapter {
   @VisibleForTesting
   void setDirectChannel(DirectChannel dc) {
     this.directChannel = dc;
-    // this.tcpDisabled = false;
   }
 
+  @Override
   public void disableDisconnectOnQuorumLossForTesting() {
     ((GMSMembershipManager) membership).disableDisconnectOnQuorumLossForTesting();
   }
@@ -626,7 +656,7 @@ public class MembershipManagerAdapter {
    * connections will be created or used for messaging until this setting is released with
    * releaseUDPMessagingForCurrentThread.
    */
-  void forceUDPMessagingForCurrentThread() {
+  public void forceUDPMessagingForCurrentThread() {
     forceUseUDPMessaging.set(Boolean.TRUE);
   }
 
@@ -634,7 +664,7 @@ public class MembershipManagerAdapter {
    * Releases use of UDP for all communications in the current thread, as established by
    * forceUDPMessagingForCurrentThread.
    */
-  void releaseUDPMessagingForCurrentThread() {
+  public void releaseUDPMessagingForCurrentThread() {
     forceUseUDPMessaging.set(Boolean.FALSE);
   }
 
@@ -651,6 +681,7 @@ public class MembershipManagerAdapter {
    * @throws InterruptedException if interrupted by another thread
    * @throws TimeoutException if we wait too long for the member to go away
    */
+  @Override
   public boolean waitForDeparture(DistributedMember mbr)
       throws TimeoutException, InterruptedException {
     return waitForDeparture(mbr, memberTimeout * 4);
@@ -666,6 +697,7 @@ public class MembershipManagerAdapter {
    * @throws InterruptedException if interrupted by another thread
    * @throws TimeoutException if we wait too long for the member to go away
    */
+  @Override
   public boolean waitForDeparture(DistributedMember mbr, long timeoutMs)
       throws TimeoutException, InterruptedException {
     if (Thread.interrupted())
@@ -808,30 +840,30 @@ public class MembershipManagerAdapter {
   }
 
   public static class LifecycleListenerImpl implements LifecycleListener {
-    private MembershipManagerAdapter membershipManagerAdapter;
+    private DistributionImpl distribution;
 
-    public LifecycleListenerImpl(final MembershipManagerAdapter membershipManagerAdapter) {
-      this.membershipManagerAdapter = membershipManagerAdapter;
+    public LifecycleListenerImpl(final DistributionImpl distribution) {
+      this.distribution = distribution;
     }
 
     @Override
     public void start(final MemberIdentifier memberID) {
-      membershipManagerAdapter.startDirectChannel(memberID);
+      distribution.startDirectChannel(memberID);
     }
 
     @Override
     public boolean disconnect(Exception exception) {
-      return membershipManagerAdapter.disconnectDirectChannel(exception);
+      return distribution.disconnectDirectChannel(exception);
     }
 
     @Override
     public void setLocalAddress(final InternalDistributedMember address) {
-      membershipManagerAdapter.setDirectChannelLocalAddress(address);
+      distribution.setDirectChannelLocalAddress(address);
     }
 
     @Override
     public void destroyMember(InternalDistributedMember member, String reason) {
-      membershipManagerAdapter.destroyMember(member, reason);
+      distribution.destroyMember(member, reason);
     }
 
   }

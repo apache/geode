@@ -24,7 +24,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.client.internal.CacheServerLoadMessage;
 import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.server.ServerLoadProbe;
-import org.apache.geode.distributed.internal.MembershipManagerAdapter;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.CacheServerAdvisor;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
@@ -205,8 +205,8 @@ public class LoadMonitor implements ConnectionListener {
               CacheServerLoadMessage message =
                   new CacheServerLoadMessage(load, location, myClientIds);
               message.setRecipients(locators);
-              MembershipManagerAdapter mgr =
-                  advisor.getDistributionManager().getMembershipManager();
+              Distribution mgr =
+                  advisor.getDistributionManager().getDistribution();
               if (mgr == null || !mgr.isBeingSick()) { // test hook
                 advisor.getDistributionManager().putOutgoing(message);
               }

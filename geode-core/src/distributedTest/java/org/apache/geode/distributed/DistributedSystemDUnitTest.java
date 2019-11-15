@@ -70,10 +70,10 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
-import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.SizeableRunnable;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -150,7 +150,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
         });
 
     Assert.assertTrue("expected the serial queue to be flushed",
-        distributionManager.getMembershipManager().waitForDeparture(member));
+        distributionManager.getDistribution().waitForDeparture(member));
     Assert.assertTrue(message.processed);
   }
 
@@ -245,7 +245,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
     InternalDistributedSystem system = getSystem(config);
 
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
-    MembershipManagerAdapter mgr = dm.getMembershipManager();
+    Distribution mgr = dm.getDistribution();
     assertThat(mgr.getDirectChannelPort()).isEqualTo(this.tcpPort);
   }
 

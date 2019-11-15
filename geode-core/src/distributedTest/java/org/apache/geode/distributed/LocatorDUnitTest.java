@@ -82,13 +82,13 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.MembershipListener;
-import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
@@ -796,7 +796,7 @@ public class LocatorDUnitTest implements Serializable {
 
       @Override
       public void run() {
-        MembershipManagerAdapter mmgr = MembershipManagerHelper.getMembership(system);
+        Distribution mmgr = MembershipManagerHelper.getMembership(system);
 
         // check for shutdown cause in Membership. Following call should
         // throw DistributedSystemDisconnectedException which should have cause as
@@ -1136,7 +1136,7 @@ public class LocatorDUnitTest implements Serializable {
   }
 
   private MembershipView getView() {
-    return system.getDistributionManager().getMembershipManager().getView();
+    return system.getDistributionManager().getDistribution().getView();
   }
 
   private InternalDistributedSystem getSystem(Properties properties) {
@@ -1181,7 +1181,7 @@ public class LocatorDUnitTest implements Serializable {
     vm2.invoke(LocatorDUnitTest::stopLocator);
 
     await()
-        .until(() -> system.getDM().getMembershipManager().getView().size() <= 3);
+        .until(() -> system.getDM().getDistribution().getView().size() <= 3);
 
     String newLocators = hostName + "[" + port2 + "]," + hostName + "[" + port3 + "]";
     dsProps.setProperty(LOCATORS, newLocators);
@@ -1189,10 +1189,10 @@ public class LocatorDUnitTest implements Serializable {
     InternalDistributedMember currentCoordinator = getCoordinator();
     DistributedMember vm3ID = vm3.invoke(() -> system.getDM().getDistributionManagerId());
     assertEquals(
-        "View is " + system.getDM().getMembershipManager().getView() + " and vm3's ID is "
+        "View is " + system.getDM().getDistribution().getView() + " and vm3's ID is "
             + vm3ID,
         vm3ID, vm3.invoke(
-            () -> system.getDistributionManager().getMembershipManager().getView().getCreator()));
+            () -> system.getDistributionManager().getDistribution().getView().getCreator()));
 
     startLocator(vm1, dsProps, port2);
     startLocator(vm2, dsProps, port3);

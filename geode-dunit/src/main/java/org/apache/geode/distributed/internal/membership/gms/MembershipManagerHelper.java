@@ -22,8 +22,8 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
@@ -36,10 +36,10 @@ import org.apache.geode.test.dunit.WaitCriterion;
 public class MembershipManagerHelper {
 
   /** returns the JGroupMembershipManager for the given distributed system */
-  public static MembershipManagerAdapter getMembership(DistributedSystem sys) {
+  public static Distribution getMembership(DistributedSystem sys) {
     InternalDistributedSystem isys = (InternalDistributedSystem) sys;
     ClusterDistributionManager dm = (ClusterDistributionManager) isys.getDM();
-    return dm.getMembershipManager();
+    return dm.getDistribution();
   }
 
   /**
@@ -125,7 +125,7 @@ public class MembershipManagerHelper {
   // this method is only used for testing. Should be extract to a test helper instead
   public static void crashDistributedSystem(final DistributedSystem msys) {
     msys.getLogWriter().info("crashing distributed system: " + msys);
-    MembershipManagerAdapter mgr = ((MembershipManagerAdapter) getMembership(msys));
+    Distribution mgr = ((Distribution) getMembership(msys));
     MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
     MembershipManagerHelper.beSickMember(msys);
     MembershipManagerHelper.playDead(msys);

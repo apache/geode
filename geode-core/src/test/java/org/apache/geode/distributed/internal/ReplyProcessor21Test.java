@@ -50,10 +50,7 @@ public class ReplyProcessor21Test {
     when(distributionConfig.getAckSevereAlertThreshold()).thenReturn(10);
     when(system.getConfig()).thenReturn(distributionConfig);
 
-    MembershipManagerAdapter membershipManagerAdapter = mock(MembershipManagerAdapter.class);// new
-                                                                                             // MembershipManagerAdapter(clusterDistributionManager,
-                                                                                             // remoteTransportConfig,internalDistributedSystem,
-                                                                                             // membership);
+    Distribution distribution = mock(Distribution.class);
     when(dm.getStats()).thenReturn(stats);
     when(dm.getSystem()).thenReturn(system);
 
@@ -61,7 +58,7 @@ public class ReplyProcessor21Test {
     List<InternalDistributedMember> members = Arrays.asList(member);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(dm.getCancelCriterion()).thenReturn(cancelCriterion);
-    when(dm.getMembershipManager()).thenReturn(membershipManagerAdapter);
+    when(dm.getDistribution()).thenReturn(distribution);
     when(dm.getViewMembers()).thenReturn(members);
     when(dm.getDistributionManagerIds()).thenReturn(new HashSet<>(members));
     when(dm.addMembershipListenerAndGetDistributionManagerIds(any(
@@ -75,7 +72,7 @@ public class ReplyProcessor21Test {
     rp.enableSevereAlertProcessing();
     boolean result = rp.waitForReplies(WAIT_FOR_REPLIES_MILLIS);
     assertFalse(result); // the wait should have timed out
-    verify(membershipManagerAdapter, atLeastOnce()).suspectMembers(any(), anyString());
+    verify(distribution, atLeastOnce()).suspectMembers(any(), anyString());
   }
 
 

@@ -86,10 +86,10 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ReconnectListener;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.MembershipManagerAdapter;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
@@ -250,7 +250,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     locatorVm.invoke(new SerializableRunnable("disable force-disconnect") {
       @Override
       public void run() {
-        MembershipManagerAdapter mgr = MembershipManagerHelper
+        Distribution mgr = MembershipManagerHelper
             .getMembership(Locator.getLocator().getDistributedSystem());
         mgr.disableDisconnectOnQuorumLossForTesting();
       }

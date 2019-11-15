@@ -48,12 +48,12 @@ import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 
-public class MembershipManagerAdapterTest {
+public class DistributionTest {
 
 
   private DirectChannel dc;
   private InternalDistributedMember[] mockMembers;
-  private MembershipManagerAdapter membershipManagerAdapter;
+  private DistributionImpl distribution;
   private ClusterDistributionManager clusterDistributionManager;
   private RemoteTransportConfig remoteTransportConfig;
   private InternalDistributedSystem internalDistributedSystem;
@@ -75,7 +75,7 @@ public class MembershipManagerAdapterTest {
     when(internalDistributedSystem.getConfig()).thenReturn(distributionConfig);
 
     membership = mock(Membership.class);
-    membershipManagerAdapter = new MembershipManagerAdapter(clusterDistributionManager,
+    distribution = new DistributionImpl(clusterDistributionManager,
         remoteTransportConfig, internalDistributedSystem, membership);
 
 
@@ -90,7 +90,7 @@ public class MembershipManagerAdapterTest {
 
     dc = mock(DirectChannel.class);
 
-    membershipManagerAdapter.setDirectChannel(dc);
+    distribution.setDirectChannel(dc);
     when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()),
         any(DistributionMessage.class), anyInt(), anyInt())).thenReturn(100);
 
@@ -102,7 +102,7 @@ public class MembershipManagerAdapterTest {
     InternalDistributedMember[] recipients =
         new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
     m.setRecipients(Arrays.asList(recipients));
-    Set<InternalDistributedMember> failures = membershipManagerAdapter
+    Set<InternalDistributedMember> failures = distribution
         .directChannelSend(recipients, m);
     assertTrue(failures == null);
     verify(dc).send(any(), any(),
@@ -115,13 +115,13 @@ public class MembershipManagerAdapterTest {
     InternalDistributedMember[] recipients =
         new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
     m.setRecipients(Arrays.asList(recipients));
-    Set<InternalDistributedMember> failures = membershipManagerAdapter
+    Set<InternalDistributedMember> failures = distribution
         .directChannelSend(recipients, m);
     ConnectExceptions exception = new ConnectExceptions();
     exception.addFailure(recipients[0], new Exception("testing"));
     when(dc.send(any(), any(mockMembers.getClass()),
         any(DistributionMessage.class), anyLong(), anyLong())).thenThrow(exception);
-    failures = membershipManagerAdapter.directChannelSend(recipients, m);
+    failures = distribution.directChannelSend(recipients, m);
     assertTrue(failures != null);
     assertEquals(1, failures.size());
     assertEquals(recipients[0], failures.iterator().next());
@@ -133,14 +133,14 @@ public class MembershipManagerAdapterTest {
     InternalDistributedMember[] recipients =
         new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
     m.setRecipients(Arrays.asList(recipients));
-    Set<InternalDistributedMember> failures = membershipManagerAdapter
+    Set<InternalDistributedMember> failures = distribution
         .directChannelSend(recipients, m);
     when(dc.send(any(), any(mockMembers.getClass()),
         any(DistributionMessage.class), anyInt(), anyInt())).thenReturn(0);
     doThrow(DistributedSystemDisconnectedException.class).when(membership).checkCancelled();
 
     try {
-      membershipManagerAdapter.directChannelSend(recipients, m);
+      distribution.directChannelSend(recipients, m);
       fail("expected directChannelSend to throw an exception");
     } catch (DistributedSystemDisconnectedException expected) {
     }
@@ -152,7 +152,7 @@ public class MembershipManagerAdapterTest {
     when(membership.getAllMembers()).thenReturn(mockMembers);
     m.setRecipient(DistributionMessage.ALL_RECIPIENTS);
     assertTrue(m.forAll());
-    Set<InternalDistributedMember> failures = membershipManagerAdapter
+    Set<InternalDistributedMember> failures = distribution
         .directChannelSend(null, m);
     assertTrue(failures == null);
     verify(dc).send(any(), isA(mockMembers.getClass()),
@@ -166,15 +166,15 @@ public class MembershipManagerAdapterTest {
     InternalDistributedMember[] recipients =
         new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
     m.setRecipients(Arrays.asList(recipients));
-    Set<InternalDistributedMember> failures = membershipManagerAdapter
+    Set<InternalDistributedMember> failures = distribution
         .directChannelSend(recipients, m);
-    membershipManagerAdapter.setShutdown();
+    distribution.setShutdown();
     ConnectExceptions exception = new ConnectExceptions();
     exception.addFailure(recipients[0], new Exception("testing"));
     when(dc.send(any(), any(mockMembers.getClass()),
         any(DistributionMessage.class), anyLong(), anyLong())).thenThrow(exception);
     Assertions.assertThatThrownBy(() -> {
-      membershipManagerAdapter.directChannelSend(recipients, m);
+      distribution.directChannelSend(recipients, m);
     }).isInstanceOf(DistributedSystemDisconnectedException.class);
   }
 
@@ -184,7 +184,7 @@ public class MembershipManagerAdapterTest {
         Instant.now(), "thread", "", 1L, "", "");
     when(membership.shutdownInProgress()).thenReturn(true);
     Set<InternalDistributedMember> failures =
-        membershipManagerAdapter.send(new InternalDistributedMember[] {mockMembers[0]}, m);
+        distribution.send(new InternalDistributedMember[] {mockMembers[0]}, m);
     verify(membership, never()).send(any(), any());
     assertEquals(1, failures.size());
     assertEquals(mockMembers[0], failures.iterator().next());
@@ -194,7 +194,7 @@ public class MembershipManagerAdapterTest {
   public void testSendToNullListIsRejected() throws Exception {
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     m.setRecipient(mockMembers[0]);
-    membershipManagerAdapter.send(null, m);
+    distribution.send(null, m);
     verify(membership, never()).send(any(), any());
   }
 
@@ -203,7 +203,7 @@ public class MembershipManagerAdapterTest {
     InternalDistributedMember[] emptyList = new InternalDistributedMember[0];
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     m.setRecipient(mockMembers[0]);
-    membershipManagerAdapter.send(emptyList, m);
+    distribution.send(emptyList, m);
     verify(membership, never()).send(any(), any());
   }
 }

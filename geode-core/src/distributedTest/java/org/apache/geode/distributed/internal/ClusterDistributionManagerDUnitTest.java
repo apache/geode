@@ -125,7 +125,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   @Test
   public void testConnectAfterBeingShunned() {
     InternalDistributedSystem system = getSystem();
-    MembershipManagerAdapter membership = MembershipManagerHelper.getMembership(system);
+    Distribution membership = MembershipManagerHelper.getMembership(system);
     InternalDistributedMember memberBefore = membership.getLocalMember();
 
     // TODO GMS needs to have a system property allowing the bind-port to be set
@@ -149,7 +149,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   public void testSurpriseMemberHandling() throws Exception {
     System.setProperty(GEMFIRE_PREFIX + "surprise-member-timeout", "3000");
     InternalDistributedSystem system = getSystem();
-    MembershipManagerAdapter membershipManager =
+    Distribution membershipManager =
         MembershipManagerHelper.getMembership(system);
     assertThat(membershipManager.isCleanupTimerStarted()).isTrue();
 
@@ -321,7 +321,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   public void testWaitForViewInstallation() {
     InternalDistributedSystem system = getSystem(new Properties());
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDM();
-    MembershipManagerAdapter membershipManager = dm.getMembershipManager();
+    Distribution membershipManager = dm.getDistribution();
     GMSMembershipView view = membershipManager.getServices().getJoinLeave().getView();
 
     AtomicBoolean waitForViewInstallationDone = new AtomicBoolean();

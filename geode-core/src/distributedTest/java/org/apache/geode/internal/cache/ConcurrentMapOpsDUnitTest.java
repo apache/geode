@@ -51,7 +51,7 @@ import org.apache.geode.cache.client.internal.DestroyOp;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.MembershipManagerAdapter;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -1227,7 +1227,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
           r.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
             private void killSender(EntryEvent event) {
               if (event.isOriginRemote()) {
-                MembershipManagerAdapter mgr =
+                Distribution mgr =
                     MembershipManagerHelper.getMembership(getSystem());
                 mgr.requestMemberRemoval(server2ID, "removing for test");
                 try {
@@ -1269,7 +1269,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
           r.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
             private void killSender(EntryEvent event) {
               if (event.isOriginRemote()) {
-                MembershipManagerAdapter mgr =
+                Distribution mgr =
                     MembershipManagerHelper.getMembership(getSystem());
                 mgr.requestMemberRemoval(server1ID, "removing for test");
                 try {

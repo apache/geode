@@ -705,7 +705,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
       if (peerLocator) {
         netLocator.setServices(
-            internalDistributedSystem.getDM().getMembershipManager()
+            internalDistributedSystem.getDM().getDistribution()
                 .getServices());
       }
 

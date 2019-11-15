@@ -2588,8 +2588,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     boolean flushOnClose =
         !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close"); // test hook
     if (!cache.forcedDisconnect() && flushOnClose
-        && getDistributionManager().getMembershipManager() != null
-        && getDistributionManager().getMembershipManager().isConnected()) {
+        && getDistributionManager().getDistribution() != null
+        && getDistributionManager().getDistribution().isConnected()) {
       getDistributionAdvisor().forceNewMembershipVersion();
       try {
         getDistributionAdvisor().waitForCurrentOperations();
@@ -3155,7 +3155,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
                 DLockRemoteToken remoteToken = ((DLockService) getLockService()).queryLock(key);
                 lockHolder = remoteToken.getLessee();
                 if (lockHolder != null) {
-                  dm.getMembershipManager().suspectMember((InternalDistributedMember) lockHolder,
+                  dm.getDistribution().suspectMember((InternalDistributedMember) lockHolder,
                       "Has not released a global region entry lock in over "
                           + ackWaitThreshold / 1000 + " seconds");
                 }
