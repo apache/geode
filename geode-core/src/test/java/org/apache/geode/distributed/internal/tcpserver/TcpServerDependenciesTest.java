@@ -27,8 +27,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 
 
 @RunWith(ArchUnitRunner.class)
@@ -52,11 +50,5 @@ public class TcpServerDependenciesTest {
 
               // TODO - serialization related classes
               .or(type(DataSerializer.class))
-              .or(type(DataSerializable.class))
-
-              // TODO - config
-              .or(type(DistributionConfigImpl.class))
-              .or(type(DistributionConfig.class)));
-
-
+              .or(type(DataSerializable.class)));
 }
