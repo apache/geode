@@ -67,14 +67,16 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
   }
 
   protected void configure(HttpSecurity http) throws Exception {
+
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         .authorizeRequests()
-        .antMatchers("/ping", "/docs/**", "/swagger-ui.html", Links.URI_VERSION + "/api-docs/**",
-            "/webjars/springfox-swagger-ui/**", "/swagger-resources/**")
-        .permitAll()
-        .anyRequest().authenticated().and().csrf().disable();
+        .antMatchers("/ping", "/docs/**", "/swagger-ui.html",
+            Links.URI_VERSION + "/api-docs/**", "/webjars/springfox-swagger-ui/**",
+            "/swagger-resources/**")
+        .permitAll().and().csrf().disable();
 
     if (this.authProvider.getSecurityService().isIntegratedSecurity()) {
+      http.authorizeRequests().anyRequest().authenticated();
       // if auth token is enabled, add a filter to parse the request header. The filter still
       // saves the token in the form of UsernamePasswordAuthenticationToken
       if (authProvider.isAuthTokenEnabled()) {
@@ -86,8 +88,6 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.addFilterBefore(tokenEndpointFilter, BasicAuthenticationFilter.class);
       }
       http.httpBasic().authenticationEntryPoint(new AuthenticationFailedHandler());
-    } else {
-      http.authorizeRequests().anyRequest().permitAll();
     }
   }
 
