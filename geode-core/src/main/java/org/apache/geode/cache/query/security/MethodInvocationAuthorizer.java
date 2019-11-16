@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.security;
 
 import java.lang.reflect.Method;
+import java.util.Set;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -22,7 +23,8 @@ import org.apache.geode.cache.Region;
 /**
  * The root interface that should be implemented by method invocation authorizer instances.
  * The authorizer is responsible for determining whether a {@link java.lang.reflect.Method} is
- * allowed to be executed on a specific {@link java.lang.Object} instance.
+ * allowed to be executed on a specific {@link java.lang.Object} instance. Implementations of this
+ * interface should provide a no-arg constructor.
  * <p/>
  *
  * There are mainly four security risks when allowing users to execute arbitrary methods in OQL,
@@ -40,6 +42,21 @@ import org.apache.geode.cache.Region;
  * several method invocations using the same instance at the same time.
  */
 public interface MethodInvocationAuthorizer {
+
+  /**
+   * Initializes the MethodInvocationAuthorizer using a {@link Cache} and a {@link Set} of
+   * {@link String} parameters.
+   * <p/>
+   *
+   * This method exists to allow user-specified method authorizers to be configured and used at
+   * runtime. If this method is not overridden in a user-specified authorizer then that authorizer
+   * will not be configurable.
+   *
+   * @param cache the {@link Cache} to which the MethodInvocationAuthorizer will belong
+   * @param parameters a {@link Set} of {@link java.lang.String} that will be used to configure the
+   *        MethodInvocationAuthorizer
+   */
+  default void initialize(Cache cache, Set<String> parameters) {}
 
   /**
    * Executes the authorization logic to determine whether the {@code method} is allowed to be

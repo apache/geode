@@ -4174,7 +4174,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public InternalQueryService getQueryService() {
     if (!isClient()) {
-      return new DefaultQueryService(this);
+      return (InternalQueryService) getLocalQueryService();
     }
     Pool defaultPool = getDefaultPool();
     if (defaultPool == null) {

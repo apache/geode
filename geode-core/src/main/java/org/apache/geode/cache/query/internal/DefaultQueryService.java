@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.LowMemoryException;
@@ -69,7 +68,6 @@ import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
-import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -84,43 +82,18 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 public class DefaultQueryService implements InternalQueryService {
   private static final Logger logger = LogService.getLogger();
-  @Immutable
-  static final MethodInvocationAuthorizer NO_OP_AUTHORIZER = (method, target) -> true;
 
   /**
    * System property to allow query on region with heterogeneous objects. By default its set to
    * false.
    */
   public static final boolean QUERY_HETEROGENEOUS_OBJECTS = Boolean
-      .valueOf(System.getProperty(
-          GEMFIRE_PREFIX + "QueryService.QueryHeterogeneousObjects", "true"))
-      .booleanValue();
+      .parseBoolean(System.getProperty(
+          GEMFIRE_PREFIX + "QueryService.QueryHeterogeneousObjects", "true"));
 
   public static final boolean COPY_ON_READ_AT_ENTRY_LEVEL = Boolean
-      .valueOf(System.getProperty(
-          GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"))
-      .booleanValue();
-
-  /**
-   * Instead of the below property, please use the UnrestrictedMethodAuthorizer
-   * implementation of MethodInvocationAuthorizer, which provides the same functionality.
-   */
-  @Deprecated
-  public static final boolean ALLOW_UNTRUSTED_METHOD_INVOCATION;
-
-  public static final String DEPRECATION_WARNING = "The property " + GEMFIRE_PREFIX +
-      "QueryService.allowUntrustedMethodInvocation is deprecated. " +
-      "Please use the UnrestrictedMethodAuthorizer implementation of MethodInvocationAuthorizer " +
-      "instead";
-
-  static {
-    String deprecatedValue =
-        System.getProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation");
-    if (deprecatedValue != null) {
-      logger.warn(DEPRECATION_WARNING);
-    }
-    ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.valueOf(deprecatedValue);
-  }
+      .parseBoolean(System.getProperty(
+          GEMFIRE_PREFIX + "QueryService.CopyOnReadAtEntryLevel", "false"));
 
   /** Test purpose only */
   @MutableForTesting
@@ -133,20 +106,16 @@ public class DefaultQueryService implements InternalQueryService {
   private InternalPool pool;
 
   private Map<Region, HashSet<IndexCreationData>> indexDefinitions =
-      Collections.synchronizedMap(new HashMap<Region, HashSet<IndexCreationData>>());
+      Collections.synchronizedMap(new HashMap<>());
 
 
   public DefaultQueryService(InternalCache cache) {
     if (cache == null)
-      throw new IllegalArgumentException(
-          "cache must not be null");
+      throw new IllegalArgumentException("cache must not be null");
     this.cache = cache;
-    if (!cache.getSecurityService().isIntegratedSecurity() || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
-      // A no-op authorizer, allow method invocation
-      this.methodInvocationAuthorizer = NO_OP_AUTHORIZER;
-    } else {
-      this.methodInvocationAuthorizer = new RestrictedMethodAuthorizer(cache);
-    }
+    QueryConfigurationService queryConfigurationService =
+        cache.getService(QueryConfigurationService.class);
+    this.methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
   }
 
   /**

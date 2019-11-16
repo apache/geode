@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 
 /**
@@ -40,6 +41,7 @@ public interface MembershipBuilder {
 
   MembershipBuilder setLifecycleListener(LifecycleListener lifecycleListener);
 
+  MembershipBuilder setLocatorClient(final TcpClient tcpClient);
 
 
   Membership create();

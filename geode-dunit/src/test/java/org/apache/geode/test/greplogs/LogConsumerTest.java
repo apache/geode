@@ -30,10 +30,13 @@ import org.junit.rules.TestName;
 
 public class LogConsumerTest {
 
-  @Rule
-  public TestName testName = new TestName();
+  private static final String EXCEPTION_MESSAGE =
+      "java.lang.ClassNotFoundException: does.not.Exist";
 
   private LogConsumer logConsumer;
+
+  @Rule
+  public TestName testName = new TestName();
 
   @Before
   public void setUp() {
@@ -46,21 +49,21 @@ public class LogConsumerTest {
   }
 
   @Test
-  public void consumeReturnsNullIfLineIsOk() {
+  public void consume_returnsNull_ifLineIsOk() {
     StringBuilder value = logConsumer.consume("ok");
 
     assertThat(value).isNull();
   }
 
   @Test
-  public void consumeReturnsNullIfLineIsEmpty() {
+  public void consume_returnsNull_ifLineIsEmpty() {
     StringBuilder value = logConsumer.consume("");
 
     assertThat(value).isNull();
   }
 
   @Test
-  public void consumeThrowsNullPointerExceptionIfLineIsNull() {
+  public void consume_throwsNullPointerException_ifLineIsNull() {
     Throwable thrown = catchThrowable(() -> logConsumer.consume(null));
 
     assertThat(thrown)
@@ -68,7 +71,7 @@ public class LogConsumerTest {
   }
 
   @Test
-  public void closeReturnsNullIfLineIsOk() {
+  public void close_returnsNull_ifLineIsOk() {
     logConsumer.consume("ok");
 
     StringBuilder value = logConsumer.close();
@@ -77,7 +80,7 @@ public class LogConsumerTest {
   }
 
   @Test
-  public void closeReturnsNullIfLineIsEmpty() {
+  public void close_returnsNull_ifLineIsEmpty() {
     logConsumer.consume("");
 
     StringBuilder value = logConsumer.close();
@@ -86,7 +89,7 @@ public class LogConsumerTest {
   }
 
   @Test
-  public void closeReturnsNullIfLineContainsInfoLogStatementWithException() {
+  public void close_returnsNull_ifLineContains_infoLevelMessage_withException() {
     logConsumer.consume("[info 019/06/13 14:41:05.750 PDT <main> tid=0x1] " +
         NullPointerException.class.getName());
 
@@ -96,7 +99,7 @@ public class LogConsumerTest {
   }
 
   @Test
-  public void closeReturnsLineIfLineContainsErrorLogStatement() {
+  public void close_returnsLine_ifLineContains_errorLevelMessage() {
     String line = "[error 019/06/13 14:41:05.750 PDT <main> tid=0x1] message";
     logConsumer.consume(line);
 
@@ -106,7 +109,7 @@ public class LogConsumerTest {
   }
 
   @Test
-  public void closeReturnsNullIfLineContainsWarningLogStatement() {
+  public void close_returnsNull_ifLineContains_warningLevelMessage() {
     logConsumer.consume("[warning 2019/06/13 14:41:05.750 PDT <main> tid=0x1] message");
 
     StringBuilder value = logConsumer.close();
@@ -115,7 +118,7 @@ public class LogConsumerTest {
   }
 
   @Test
-  public void closeReturnsLineIfLineContainsFatalLogStatement() {
+  public void close_returnsLine_ifLineContains_fatalLevelMessage() {
     String line = "[fatal 2019/06/13 14:41:05.750 PDT <main> tid=0x1] message";
     logConsumer.consume(line);
 
@@ -125,7 +128,7 @@ public class LogConsumerTest {
   }
 
   @Test
-  public void closeReturnsLineIfLineContainsSevereLogStatement() {
+  public void close_returnsLine_ifLineContains_severeLevelMessage() {
     String line = "[severe 2019/06/13 14:41:05.750 PDT <main> tid=0x1] message";
     logConsumer.consume(line);
 
@@ -135,7 +138,7 @@ public class LogConsumerTest {
   }
 
   @Test
-  public void closeReturnsLineIfLineContainsMalformedLog4jStatement() {
+  public void close_returnsLine_ifLineContains_malformedLog4jStatement() {
     String line = "[info 2019/06/13 14:41:05.750 PDT <main> tid=0x1] contains {}";
     logConsumer.consume(line);
 
@@ -145,12 +148,21 @@ public class LogConsumerTest {
   }
 
   @Test
-  public void closeReturnsNullIfLineContainsHydraMasterLocatorsWildcard() {
+  public void close_returnsNull_ifLineContains_hydraMasterLocatorsWildcard() {
     String line = "hydra.MasterDescription.master.locators={}";
     logConsumer.consume(line);
 
     StringBuilder value = logConsumer.close();
 
     assertThat(value).isNull();
+  }
+
+  @Test
+  public void close_returnsLine_ifLineContainsException() {
+    logConsumer.consume(EXCEPTION_MESSAGE);
+
+    StringBuilder value = logConsumer.close();
+
+    assertThat(value).contains(EXCEPTION_MESSAGE);
   }
 }

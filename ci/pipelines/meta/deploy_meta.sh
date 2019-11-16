@@ -101,10 +101,18 @@ repository:
   public: ${REPOSITORY_PUBLIC}
 YML
 
-  python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml --debug || exit 1
+  cat > pipelineProperties.yml <<YML
+pipelineProperties:
+  public: ${PUBLIC}
+YML
+
+  python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml pipelineProperties.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml --debug || exit 1
 
   set -e
-  fly -t ${FLY_TARGET} login -n ${CONCOURSE_TEAM}
+  if [[ ${UPSTREAM_FORK} != "apache" ]]; then
+    fly -t ${FLY_TARGET} login -n ${CONCOURSE_TEAM}
+  fi
+  
   fly -t ${FLY_TARGET} sync
   fly -t ${FLY_TARGET} set-pipeline \
     -p ${META_PIPELINE} \
@@ -125,9 +133,8 @@ YML
     --var upstream-fork=${UPSTREAM_FORK} \
     --yaml-var public-pipelines=${PUBLIC}
     set +e
-    
-popd 2>&1 > /dev/null
 
+popd 2>&1 > /dev/null
 
 # bootstrap all precursors of the actual Build job
 

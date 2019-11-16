@@ -47,31 +47,11 @@ else
 fi
 
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
-if [[ ${BRANCH} != "develop" ]] && [[ ${BRANCH} != "master" ]] ; then
-    echo "Please git checkout develop or git checkout master before running this script"
+if [[ ${BRANCH} != "develop" ]] && [[ ${BRANCH} != "master" ]] && [[ ${BRANCH%/*} != "release" ]] ; then
+    echo "Please git checkout develop, master, or a release branch before running this script"
     exit 1
 fi
 
-MASTER_PAGE_ID=115511910
-DEVELOP_PAGE_ID=132322415
-[[ "${BRANCH}" == "master" ]] && PAGE_ID=$MASTER_PAGE_ID || PAGE_ID=$DEVELOP_PAGE_ID
-[[ "${BRANCH}" == "master" ]] && GEODE_VERSION=$($GEODE/bin/gfsh version) || GEODE_VERSION=develop
-
-#skip generating steps if swagger output has already been generated
-if ! [ -r static/index.html ] ; then
-
-echo ""
-echo "============================================================"
-echo "Checking that swagger-codegen is installed (ignore warning/error if already installed)"
-echo "============================================================"
-brew install swagger-codegen || true
-brew upgrade swagger-codegen || true
-
-echo ""
-echo "============================================================"
-echo "Checking that premailer is installed (ignore warnings/errors if already installed)"
-echo "============================================================"
-pip install premailer
 
 echo ""
 echo "============================================================"
@@ -89,6 +69,34 @@ else
     echo "gfsh not found"
     exit 1
 fi
+
+
+GEODE_VERSION=$($GEODE/bin/gfsh version)
+[[ "${GEODE_VERSION%.*}" == "1.10" ]] && PAGE_ID=115511910
+[[ "${GEODE_VERSION%.*}" == "1.11" ]] && PAGE_ID=135861023
+[[ "${BRANCH}" == "develop" ]] && GEODE_VERSION=develop && PAGE_ID=132322415
+
+if [[ -z "${PAGE_ID}" ]] ; then
+    echo "Please create a new wiki page for $GEODE_VERSION and add its page ID to $0 near line 77"
+    exit 1
+fi
+
+
+#skip generating steps if swagger output has already been generated
+if ! [ -r static/index.html ] ; then
+
+echo ""
+echo "============================================================"
+echo "Checking that swagger-codegen is installed (ignore warning/error if already installed)"
+echo "============================================================"
+brew install swagger-codegen || true
+brew upgrade swagger-codegen || true
+
+echo ""
+echo "============================================================"
+echo "Checking that premailer is installed (ignore warnings/errors if already installed)"
+echo "============================================================"
+pip install premailer
 
 echo ""
 echo "============================================================"
@@ -199,6 +207,8 @@ sed -e '/&#171;.*&#187;/s/,/_/g' |
 sed -e 's/&#171;/_/g' -e 's/&#187;//g' |
 #work around ever-increasing indent bug
 sed -e 's/class="method" style="margin-left:20p/class="method" style="margin-left:0p/' |
+# add more information at the top
+awk '/More information:/{sub(/More information:/,"Swagger: http://locator:7070/management/docs (requires access to a running locator)<br/>Codegen: <code><small>brew install swagger-codegen; swagger-codegen generate -i http://locator:7070/management'${URI_VERSION}'/api-docs</small></code><br/>More information:")}{print}' |
 cat > static/index-xhtml.html
 # if file is empty due to some error, abort!
 ! [ -z "$(cat static/index-xhtml.html)" ]

@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -77,6 +79,8 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -137,7 +141,7 @@ public class AutoConnectionSourceImplJUnitTest {
     try {
       if (server != null && server.isAlive()) {
         try {
-          new TcpClient().stop(InetAddress.getLocalHost(), port);
+          issueStopRequest(port);
         } catch (ConnectException ignore) {
           // must not be running
         }
@@ -152,6 +156,15 @@ public class AutoConnectionSourceImplJUnitTest {
     } catch (Exception e) {
       // do nothing
     }
+  }
+
+  private void issueStopRequest(final int port)
+      throws ConnectException, UnknownHostException {
+    new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)))
+                    .stop(InetAddress.getLocalHost(), port);
   }
 
   /**
@@ -318,7 +331,7 @@ public class AutoConnectionSourceImplJUnitTest {
     startFakeLocator();
     int secondPort = AvailablePortHelper.getRandomAvailableTCPPort();
     TcpServer server2 =
-        new TcpServerFactory().makeTcpServer(secondPort, InetAddress.getLocalHost(), null, null,
+        new TcpServerFactory().makeTcpServer(secondPort, InetAddress.getLocalHost(),
             handler, new FakeHelper(), "tcp server", null);
     server2.start();
 
@@ -328,7 +341,7 @@ public class AutoConnectionSourceImplJUnitTest {
       handler.nextLocatorListResponse = new LocatorListResponse(locators, false);
       Thread.sleep(500);
       try {
-        new TcpClient().stop(InetAddress.getLocalHost(), port);
+        issueStopRequest(port);
       } catch (ConnectException ignore) {
         // must not be running
       }
@@ -339,7 +352,7 @@ public class AutoConnectionSourceImplJUnitTest {
       assertEquals(server1, source.findServer(null));
     } finally {
       try {
-        new TcpClient().stop(InetAddress.getLocalHost(), secondPort);
+        issueStopRequest(secondPort);
       } catch (ConnectException ignore) {
         // must not be running
       }
@@ -362,7 +375,7 @@ public class AutoConnectionSourceImplJUnitTest {
       await().until(() -> source.getOnlineLocators().size() == 1);
     } finally {
       try {
-        new TcpClient().stop(InetAddress.getLocalHost(), port);
+        issueStopRequest(port);
       } catch (ConnectException ignore) {
         // must not be running
       }
@@ -396,7 +409,7 @@ public class AutoConnectionSourceImplJUnitTest {
   }
 
   private void startFakeLocator() throws IOException, InterruptedException {
-    server = new TcpServerFactory().makeTcpServer(port, InetAddress.getLocalHost(), null, null,
+    server = new TcpServerFactory().makeTcpServer(port, InetAddress.getLocalHost(),
         handler, new FakeHelper(), "Tcp Server", null);
     server.start();
     Thread.sleep(500);

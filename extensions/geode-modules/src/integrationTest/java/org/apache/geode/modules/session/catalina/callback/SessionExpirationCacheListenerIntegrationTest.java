@@ -69,8 +69,8 @@ public class SessionExpirationCacheListenerIntegrationTest {
         .create(REGION_NAME);
     httpSessionRegion.put(deltaSession.getId(), deltaSession);
 
-    await().untilAsserted(() -> assertThat(httpSessionRegion.isEmpty()).isTrue());
-    assertThat(deltaSession.processExpiredCalls.get()).isEqualTo(1);
+    await().untilAsserted(() -> assertThat(deltaSession.processExpiredCalls.get()).isEqualTo(1));
+    assertThat(httpSessionRegion.isEmpty()).isTrue();
   }
 
   @Test
@@ -91,8 +91,8 @@ public class SessionExpirationCacheListenerIntegrationTest {
     httpSessionRegion.put(deltaSession.getId(), deltaSession);
 
     deltaSession.expire(true);
-    await().untilAsserted(() -> assertThat(httpSessionRegion.isEmpty()).isTrue());
-    assertThat(deltaSession.processExpiredCalls.get()).isEqualTo(1);
+    await().untilAsserted(() -> assertThat(deltaSession.processExpiredCalls.get()).isEqualTo(1));
+    assertThat(httpSessionRegion.isEmpty()).isTrue();
   }
 
   static class TestCustomExpiry implements CustomExpiry<String, HttpSession> {

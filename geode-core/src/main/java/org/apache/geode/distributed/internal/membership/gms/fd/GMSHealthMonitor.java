@@ -67,7 +67,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMe
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
-import org.apache.geode.internal.ConnectionWatcher;
+import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.Version;

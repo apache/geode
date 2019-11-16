@@ -56,7 +56,12 @@ repository:
   public: ${REPOSITORY_PUBLIC}
 YML
 
-  python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml || exit 1
+  cat > pipelineProperties.yml <<YML
+pipelineProperties:
+  public: ${PUBLIC_PIPELINES}
+YML
+
+  python3 ../render.py jinja.template.yml --variable-file ../shared/jinja.variables.yml repository.yml pipelineProperties.yml --environment ../shared/ --output ${SCRIPTDIR}/generated-pipeline.yml || exit 1
 
 popd 2>&1 > /dev/null
 cp ${SCRIPTDIR}/generated-pipeline.yml ${OUTPUT_DIRECTORY}/generated-pipeline.yml
@@ -72,6 +77,8 @@ pipeline-prefix: "${PIPELINE_PREFIX}"
 public-pipelines: ${PUBLIC_PIPELINES}
 gcp-project: ${GCP_PROJECT}
 concourse-url: ${CONCOURSE_URL}
+concourse-team: ${CONCOURSE_TEAM}
+fly-target: ${CONCOURSE_HOST}
 YML
 
 

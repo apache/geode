@@ -42,7 +42,11 @@ public class PdxManager implements ConfigurationManager<Pdx> {
 
   @Override
   public List<Pdx> list(Pdx filterConfig, CacheConfig existing) {
-    return Collections.singletonList(pdxConverter.fromXmlObject(existing.getPdx()));
+    Pdx configuration = pdxConverter.fromXmlObject(existing.getPdx());
+    if (configuration == null) {
+      return Collections.emptyList();
+    }
+    return Collections.singletonList(configuration);
   }
 
   @Override

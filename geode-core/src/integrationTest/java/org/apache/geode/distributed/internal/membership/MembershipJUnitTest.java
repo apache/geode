@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -68,10 +69,13 @@ import org.apache.geode.distributed.internal.membership.gms.api.MembershipListen
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
@@ -273,6 +277,10 @@ public class MembershipJUnitTest {
             .setConfig(new ServiceConfig(transport, config))
             .setSerializer(serializer)
             .setLifecycleListener(mock(LifecycleListener.class))
+            .setLocatorClient(new TcpClient(
+                asTcpSocketCreator(
+                    SocketCreatorFactory
+                        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))))
             .create();
     m1.start();
     m1.startEventProcessing();
@@ -461,7 +469,10 @@ public class MembershipJUnitTest {
     Services services = mock(Services.class);
     when(services.getConfig()).thenReturn(membershipConfig);
 
-    GMSJoinLeave joinLeave = new GMSJoinLeave();
+    GMSJoinLeave joinLeave = new GMSJoinLeave(new TcpClient(
+        asTcpSocketCreator(
+            SocketCreatorFactory.setDistributionConfig(config)
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))));
     try {
       joinLeave.init(services);
       throw new Error(

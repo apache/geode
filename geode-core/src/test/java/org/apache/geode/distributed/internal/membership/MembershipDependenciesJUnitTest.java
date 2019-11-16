@@ -45,10 +45,10 @@ import org.apache.geode.distributed.internal.membership.adapter.GMSMessageAdapte
 import org.apache.geode.distributed.internal.membership.adapter.GMSQuorumCheckerAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
+import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.ConnectionWatcher;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.SystemTimer;

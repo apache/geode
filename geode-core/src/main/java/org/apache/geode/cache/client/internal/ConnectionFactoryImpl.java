@@ -28,6 +28,7 @@ import org.apache.geode.cache.GatewayConfigurationException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.ServerDenyList.FailureTracker;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
@@ -72,15 +73,15 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion,
       boolean usedByGateway,
       GatewaySender sender, long pingInterval, boolean multiuserSecureMode,
-      PoolImpl pool, final InternalDistributedSystem internalDistributedSystem) {
+      PoolImpl pool, final DistributionConfig distributionConfig) {
     this(
         new ConnectionConnector(endpointManager, sys, socketBufferSize, handshakeTimeout,
             readTimeout, usedByGateway, sender,
             (usedByGateway || sender != null) ? SocketCreatorFactory
-                .getSocketCreatorForComponent(internalDistributedSystem.getConfig(),
+                .getSocketCreatorForComponent(distributionConfig,
                     SecurableCommunicationChannel.GATEWAY)
                 : SocketCreatorFactory
-                    .getSocketCreatorForComponent(internalDistributedSystem.getConfig(),
+                    .getSocketCreatorForComponent(distributionConfig,
                         SecurableCommunicationChannel.SERVER),
             new ClientSideHandshakeImpl(proxyId, sys, sys.getSecurityService(),
                 multiuserSecureMode)),

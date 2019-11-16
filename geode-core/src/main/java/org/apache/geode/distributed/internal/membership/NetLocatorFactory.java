@@ -21,10 +21,6 @@ import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 
 public class NetLocatorFactory {
-  /**
-   * currently this is a test method but it ought to be used by InternalLocator to create the peer
-   * location TcpHandler
-   */
   public static NetLocator newLocatorHandler(InetAddress bindAddress, String locatorString,
       boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
       LocatorStats stats, String securityUDPDHAlgo, Path workingDirectory) {

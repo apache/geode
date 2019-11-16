@@ -18,6 +18,7 @@ package org.apache.geode.test.junit.rules;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Properties;
+import java.util.function.UnaryOperator;
 
 import org.junit.rules.TemporaryFolder;
 
@@ -30,6 +31,7 @@ public class LocatorLauncherStartupRule extends SerializableExternalResource {
   private final TemporaryFolder temp = new TemporaryFolder();
   private final Properties properties = new Properties();
   private boolean autoStart;
+  private UnaryOperator<LocatorLauncher.Builder> builderOperator;
 
   public LocatorLauncherStartupRule withAutoStart() {
     autoStart = true;
@@ -46,6 +48,12 @@ public class LocatorLauncherStartupRule extends SerializableExternalResource {
     return this;
   }
 
+  public LocatorLauncherStartupRule withBuilder(
+      UnaryOperator<LocatorLauncher.Builder> builderOperator) {
+    this.builderOperator = builderOperator;
+    return this;
+  }
+
   @Override
   public void before() {
     LocatorLauncher.Builder builder = new LocatorLauncher.Builder()
@@ -53,6 +61,9 @@ public class LocatorLauncherStartupRule extends SerializableExternalResource {
         .set(properties)
         .setMemberName("locator-0")
         .set(ConfigurationProperties.LOG_LEVEL, "config");
+    if (builderOperator != null) {
+      builder = builderOperator.apply(builder);
+    }
     try {
       temp.create();
     } catch (IOException e) {

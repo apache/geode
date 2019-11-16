@@ -107,8 +107,6 @@ public class DurableClientTestCase extends DurableClientTestBase {
 
         // Verify that it is durable and its properties are correct
         assertThat(proxy.isDurable()).isTrue();
-        System.out.println("BRUCE: durableClientId is " + durableClientId);
-        System.out.println("BRUCE: proxy durable id is " + proxy.getDurableId());
         assertThat(durableClientId).isNotEqualTo(proxy.getDurableId());
 
         /*

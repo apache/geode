@@ -79,6 +79,7 @@ import org.apache.geode.management.internal.configuration.validators.CommonConfi
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.GatewayReceiverConfigValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
+import org.apache.geode.management.internal.configuration.validators.PdxValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.operation.OperationHistoryManager;
@@ -111,6 +112,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // initialize the list of validators
     validators.put(Region.class, new RegionConfigValidator(cache));
     validators.put(GatewayReceiver.class, new GatewayReceiverConfigValidator());
+    validators.put(Pdx.class, new PdxValidator());
   }
 
   @VisibleForTesting
@@ -324,7 +326,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
       ConfigurationResult<T, R> response = new ConfigurationResult<>(element);
 
       responses.add(response);
-      // do not gather runtime if this type of CacheElement is RespondWith<RuntimeInfo>
       if (!hasRuntimeInfo) {
         continue;
       }

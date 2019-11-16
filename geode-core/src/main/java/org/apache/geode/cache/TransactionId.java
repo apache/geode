@@ -17,7 +17,7 @@ package org.apache.geode.cache;
 
 import java.io.Externalizable;
 
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.DistributedMember;
 
 /**
  * The TransactionId interface is a "marker" interface that represents a unique GemFire transaction.
@@ -29,5 +29,5 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  * @see CacheTransactionManager#getTransactionId
  */
 public interface TransactionId extends Externalizable {
-  InternalDistributedMember getMemberId();
+  DistributedMember getMemberId();
 }

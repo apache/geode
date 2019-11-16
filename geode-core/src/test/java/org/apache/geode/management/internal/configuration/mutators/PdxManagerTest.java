@@ -13,23 +13,28 @@
  * the License.
  */
 
-package org.apache.geode.cache.configuration;
+package org.apache.geode.management.internal.configuration.mutators;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.management.configuration.Pdx;
+import org.apache.geode.cache.configuration.CacheConfig;
 
-public class PdxTypeTest {
+public class PdxManagerTest {
+  private PdxManager manager;
+  private CacheConfig config;
 
-  @Test
-  public void getUri() {
-    Pdx config = new Pdx();
-    assertThat(config.getLinks().getList())
-        .isEqualTo("/configurations/pdx");
-    assertThat(config.getLinks().getSelf())
-        .isEqualTo("/configurations/pdx");
+  @Before
+  public void before() throws Exception {
+    manager = new PdxManager();
+    config = mock(CacheConfig.class);
   }
 
+  @Test
+  public void emptyListWhenPdxNotExist() throws Exception {
+    assertThat(manager.list(null, config)).isEmpty();
+  }
 }

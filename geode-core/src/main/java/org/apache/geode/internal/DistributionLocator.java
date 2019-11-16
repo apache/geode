@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
@@ -28,6 +30,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -67,7 +71,11 @@ public class DistributionLocator {
 
   public static void stop(InetAddress addr, int port) {
     try {
-      new TcpClient().stop(addr, port);
+      new TcpClient(
+          asTcpSocketCreator(
+              SocketCreatorFactory
+                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))).stop(addr,
+                      port);
     } catch (ConnectException ignore) {
       // must not be running
     }

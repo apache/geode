@@ -12,25 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
 
-import java.net.Socket;
+@XmlSchema(namespace = "http://geode.apache.org/schema/query-config-service",
+    xmlns = {@XmlNs(prefix = "query-config-service",
+        namespaceURI = "http://geode.apache.org/schema/query-config-service")},
+    elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
 
-/**
- * ConnectionWatcher is used to observe tcp/ip connection formation in SockCreator implementations.
- *
- *
- */
-public interface ConnectionWatcher {
-  /**
-   * this is invoked with the connecting socket just prior to issuing a connect() call. It can be
-   * used to start another thread or task to monitor the connection attempt.
-   */
-  void beforeConnect(Socket socket);
+package org.apache.geode.cache.query.management.configuration;
 
-  /**
-   * this is invoked after the connection attempt has finished. It can be used to cancel the task
-   * started by beforeConnect
-   */
-  void afterConnect(Socket socket);
-}
+import javax.xml.bind.annotation.XmlNs;
+import javax.xml.bind.annotation.XmlSchema;

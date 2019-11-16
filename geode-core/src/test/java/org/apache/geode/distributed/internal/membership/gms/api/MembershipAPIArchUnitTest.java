@@ -36,6 +36,7 @@ import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms.api")
@@ -51,6 +52,10 @@ public class MembershipAPIArchUnitTest {
               .or(not(resideInAPackage("org.apache.geode..")))
               // Serialization is a dependency of membership
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
+
+              // TODO: replace this with a rule allowing dependencies on geode-tcp-server module
+              .or(type(TcpClient.class))
+
               // this is allowed
               .or(type(MembershipBuilderImpl.class))
               .or(type(MemberDataBuilderImpl.class))

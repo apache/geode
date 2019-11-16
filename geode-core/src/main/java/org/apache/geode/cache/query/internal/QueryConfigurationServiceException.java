@@ -12,31 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.net;
+package org.apache.geode.cache.query.internal;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.util.List;
+import org.apache.geode.cache.CacheException;
 
-import javax.net.ssl.SSLException;
+public class QueryConfigurationServiceException extends CacheException {
+  private static final long serialVersionUID = -5122191060240009964L;
 
-import org.apache.geode.internal.admin.SSLConfig;
-
-public class DummySocketCreator extends SocketCreator {
-
-  private List<Integer> socketSoTimeouts;
-
-  /**
-   * Constructs new SocketCreator instance.
-   */
-  public DummySocketCreator(SSLConfig sslConfig, List<Integer> sockets) {
-    super(sslConfig);
-    this.socketSoTimeouts = sockets;
+  QueryConfigurationServiceException(String s) {
+    super(s);
   }
 
-  @Override
-  public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
-    this.socketSoTimeouts.add(timeout);
-    throw new SSLException("This is a test SSLException");
+  QueryConfigurationServiceException(String s, Throwable cause) {
+    super(s, cause);
   }
 }

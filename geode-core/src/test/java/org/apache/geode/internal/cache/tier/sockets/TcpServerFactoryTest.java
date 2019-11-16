@@ -17,18 +17,34 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class TcpServerFactoryTest {
+  @Before
+  public void before() {
+    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
+  }
+
+  @After
+  public void teardown() {
+    SocketCreatorFactory.close();
+  }
+
   @Test
   public void createsATcpServer() {
     TcpServerFactory factory = new TcpServerFactory();
-    TcpServer server = factory.makeTcpServer(80, null, null, null, null, null, null, null);
+    TcpServer server = factory.makeTcpServer(80, null, null, null, null, null);
     assertTrue(server != null);
   }
 }

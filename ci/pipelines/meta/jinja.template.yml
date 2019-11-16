@@ -276,45 +276,44 @@ jobs:
   serial: true
   public: ((!public-pipelines))
   plan:
-  - get: geode-metrics-pipeline
-    trigger: true
-  - get: meta-mini-image
-    trigger: true
-    passed: [build-meta-mini-docker-image]
-  - task: create-metrics-pipeline-yml
-    image: meta-mini-image
-    config:
-      platform: linux
-      inputs:
-      - name: geode-metrics-pipeline
-      outputs:
-      - name: results
+    - get: geode-metrics-pipeline
+      trigger: true
+    - get: meta-mini-image
+      trigger: true
+      passed: [build-meta-mini-docker-image]
+    - task: create-metrics-pipeline-yml
+      image: meta-mini-image
+      config:
+        platform: linux
+        inputs:
+          - name: geode-metrics-pipeline
+        outputs:
+          - name: results
+        params:
+          OUTPUT_DIRECTORY: results
+          GEODE_BRANCH: ((geode-build-branch))
+          GEODE_FORK: ((geode-fork))
+          GEODE_REPO_NAME: ((geode-repo-name))
+          REPOSITORY_PUBLIC: {{ repository.public }}
+          ARTIFACT_BUCKET: ((artifact-bucket))
+          UPSTREAM_FORK: {{ repository.upstream_fork }}
+          PIPELINE_PREFIX: ((pipeline-prefix))
+          SANITIZED_GEODE_BRANCH: ((sanitized-geode-build-branch))
+          SANITIZED_GEODE_FORK: ((sanitized-geode-fork))
+          GCP_PROJECT: ((gcp-project))
+          PUBLIC_PIPELINES: ((public-pipelines))
+          CONCOURSE_URL: ((concourse-url))
+          CONCOURSE_TEAM: ((concourse-team))
+        run:
+          path: geode-metrics-pipeline/ci/pipelines/metrics/deploy_metrics_pipeline.sh
+    - put: concourse
       params:
-        OUTPUT_DIRECTORY: results
-        GEODE_BRANCH: ((geode-build-branch))
-        GEODE_FORK: ((geode-fork))
-        GEODE_REPO_NAME: ((geode-repo-name))
-        REPOSITORY_PUBLIC: {{ repository.public }}
-        ARTIFACT_BUCKET: ((artifact-bucket))
-        UPSTREAM_FORK: {{ repository.upstream_fork }}
-        PIPELINE_PREFIX: ((pipeline-prefix))
-        SANITIZED_GEODE_BRANCH: ((sanitized-geode-build-branch))
-        SANITIZED_GEODE_FORK: ((sanitized-geode-fork))
-        GCP_PROJECT: ((gcp-project))
-        PUBLIC_PIPELINES: ((public-pipelines))
-        CONCOURSE_URL: ((concourse-url))
-      run:
-        path: geode-metrics-pipeline/ci/pipelines/metrics/deploy_metrics_pipeline.sh
-  - put: concourse
-    params:
-      pipelines:
-      - name: ((!pipeline-prefix))metrics
-        team: ((!concourse-team))
-        config_file: results/generated-pipeline.yml
-        vars_files:
-        - results/pipeline-vars.yml
-
-
+        pipelines:
+          - name: ((!pipeline-prefix))metrics
+            team: ((!concourse-team))
+            config_file: results/generated-pipeline.yml
+            vars_files:
+              - results/pipeline-vars.yml
 
 - name: set-reaper-pipeline
   serial: true

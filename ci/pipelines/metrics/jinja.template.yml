@@ -58,14 +58,41 @@ resources:
       outputs:
       - name: workspace
       platform: linux
+      params:
+        CONCOURSE_URL: ((concourse-url))
+{%- if repository.upstream_fork!="apache" %}
+        CONCOURSE_USERNAME: ((concourse-username))
+        CONCOURSE_PASSWORD: ((concourse-password))
+{%- endif %}
+        MAIN_PIPELINE_NAME: ((pipeline-prefix))main
+        JOB_NAME: {{job_name}}
+        JOB_COUNT: 50
+        CONCOURSE_TEAM: ((concourse-team))
+        PUBLIC_PIPELINE: ((public-pipelines))
+        UPSTREAM_FORK: upstream-fork
       run:
-        path: /usr/bin/python3
+        path: bash
         args:
-        - geode-ci/ci/bin/concourse_job_performance.py
-        - ((concourse-url))
-        - ((pipeline-prefix))main
-        - {{job_name}}
-        - 50
+        - -ecx
+        - |-
+          apk add jq &> /dev/null
+          pip install yq &> /dev/null
+          apk add curl &> /dev/null
+          curl "${CONCOURSE_URL}/api/v1/cli?arch=amd64&platform=linux" --output fly
+          chmod +x fly
+          TARGET_NAME=concourse
+
+          PYTHON_ARGUMENTS="${CONCOURSE_URL} ${MAIN_PIPELINE_NAME} ${JOB_NAME} ${JOB_COUNT} --team=${CONCOURSE_TEAM}"
+
+          if [ ${UPSTREAM_FORK} != "apache" ]; then
+            set +x
+            ./fly -t ${TARGET_NAME} login -c "${CONCOURSE_URL}" -n "${CONCOURSE_TEAM}" -u "${CONCOURSE_USERNAME}" -p "${CONCOURSE_PASSWORD}"
+            API_TOKEN=$(yq -r .targets.${TARGET_NAME}.token.value ~/.flyrc)
+            PYTHON_ARGUMENTS="${PYTHON_ARGUMENTS} --cookie-token=${API_TOKEN}"
+            set -x
+          fi
+
+          python3 geode-ci/ci/bin/concourse_job_performance.py ${PYTHON_ARGUMENTS}
 
 {%- endmacro %}
 

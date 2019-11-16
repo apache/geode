@@ -28,19 +28,19 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 public class ClusterManagementRestLoggingTest {
   @ClassRule
   public static LocatorStarterRule locator = new LocatorStarterRule().withHttpService()
-      .withSystemProperty("geode.management.request.logging", "false").withAutoStart();
+      .withAutoStart();
 
   private static ClusterManagementService cms;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     cms = ClusterManagementServiceBuilder.buildWithHostAddress()
         .setHostAddress("localhost", locator.getHttpPort())
         .build();
   }
 
   @Test
-  public void ping() throws Exception {
+  public void ping() {
     assertThat(cms.isConnected()).isTrue();
   }
 

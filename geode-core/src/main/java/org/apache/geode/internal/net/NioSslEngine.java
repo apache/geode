@@ -267,14 +267,17 @@ public class NioSslEngine implements NioFilter {
     // transmit large payloads and we may have read a partial chunk
     // during the previous unwrap
 
-    // it's better to be pro-active about avoiding buffer overflows
-    expandPeerAppData(wrappedBuffer);
     peerAppData.limit(peerAppData.capacity());
     while (wrappedBuffer.hasRemaining()) {
       SSLEngineResult unwrapResult = engine.unwrap(wrappedBuffer, peerAppData);
       switch (unwrapResult.getStatus()) {
         case BUFFER_OVERFLOW:
-          expandPeerAppData(wrappedBuffer);
+          // buffer overflow expand and try again - double the available decryption space
+          int newCapacity =
+              (peerAppData.capacity() - peerAppData.position()) * 2 + peerAppData.position();
+          peerAppData =
+              bufferPool.expandWriteBufferIfNeeded(TRACKED_RECEIVER, peerAppData, newCapacity);
+          peerAppData.limit(peerAppData.capacity());
           break;
         case BUFFER_UNDERFLOW:
           // partial data - need to read more. When this happens the SSLEngine will not have
@@ -289,14 +292,6 @@ public class NioSslEngine implements NioFilter {
     }
     wrappedBuffer.clear();
     return peerAppData;
-  }
-
-  void expandPeerAppData(ByteBuffer wrappedBuffer) {
-    if (peerAppData.capacity() - peerAppData.position() < 2 * wrappedBuffer.remaining()) {
-      peerAppData =
-          bufferPool.expandWriteBufferIfNeeded(TRACKED_RECEIVER, peerAppData,
-              expandedCapacity(wrappedBuffer, peerAppData));
-    }
   }
 
   @Override
@@ -321,9 +316,6 @@ public class NioSslEngine implements NioFilter {
         peerAppData.compact();
         peerAppData.flip();
       }
-    } else {
-      peerAppData =
-          bufferPool.expandReadBufferIfNeeded(TRACKED_RECEIVER, peerAppData, bytes);
     }
 
     while (peerAppData.remaining() < bytes) {
