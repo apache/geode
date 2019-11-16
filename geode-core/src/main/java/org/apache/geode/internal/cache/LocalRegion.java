@@ -5924,7 +5924,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       notifyGatewaySender(eventType, event);
     }
     if (callDispatchListenerEvent) {
+      logger.info("JASON calling LocalRegion.dispatchListenerEvent");
       dispatchListenerEvent(eventType, event);
+      logger.info("JASON completed calling LocalRegion.dispatchListenerEvent");
+
     }
   }
 

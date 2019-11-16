@@ -268,7 +268,7 @@ public class RegionMapPut extends AbstractRegionMapPut {
       throw ccme;
     }
     catch (Exception e) {
-      logger.info("JASON exception during createOrUpdateEntry", e);
+      logger.info("JASON exception during createOrUpdateEntryss", e);
       throw e;
     }
   }
