@@ -40,7 +40,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
@@ -139,12 +138,12 @@ public class TcpServer {
   }
 
   public TcpServer(int port, InetAddress bind_address, TcpHandler handler,
-                   String threadName, ProtocolChecker protocolChecker,
-                   final LongSupplier nanoTimeSupplier,
-                   final Supplier<ExecutorService> executorServiceSupplier,
-                   final TcpSocketCreator socketCreator,
-                   final ObjectSerializer objectSerializer,
-                   final ObjectDeserializer objectDeserializer) {
+      String threadName, ProtocolChecker protocolChecker,
+      final LongSupplier nanoTimeSupplier,
+      final Supplier<ExecutorService> executorServiceSupplier,
+      final TcpSocketCreator socketCreator,
+      final ObjectSerializer objectSerializer,
+      final ObjectDeserializer objectDeserializer) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;

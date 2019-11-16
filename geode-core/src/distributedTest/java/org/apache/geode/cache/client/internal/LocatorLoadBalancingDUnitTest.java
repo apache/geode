@@ -184,10 +184,10 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
                 .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-                    .requestToServer(InetAddress.getByName(hostName),
-                        locatorPort,
-                        request,
-                        10000, replyExpected);
+            .requestToServer(InetAddress.getByName(hostName),
+                locatorPort,
+                request,
+                10000, replyExpected);
   }
 
   /**

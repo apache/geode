@@ -922,7 +922,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
                     .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
             InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-                        .stop(bindAddress, getPort());
+                .stop(bindAddress, getPort());
       } catch (ConnectException ignore) {
         // must not be running
       }

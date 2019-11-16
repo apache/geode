@@ -100,8 +100,8 @@ public class GMSLocatorRecoveryIntegrationTest {
             asTcpSocketCreator(
                 SocketCreatorFactory
                     .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
-        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()));
+            InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()));
     gmsLocator.setViewFile(stateFile);
   }
 

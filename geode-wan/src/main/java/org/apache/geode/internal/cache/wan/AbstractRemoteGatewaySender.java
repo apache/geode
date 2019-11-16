@@ -87,8 +87,8 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
                         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
                 InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
                 InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-                            .requestToServer(locatorID.getHost(), request,
-                                WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT, true);
+                    .requestToServer(locatorID.getHost(), request,
+                        WanLocatorDiscoverer.WAN_LOCATOR_CONNECTION_TIMEOUT, true);
 
         if (response != null) {
           if (response.getLocators() == null) {

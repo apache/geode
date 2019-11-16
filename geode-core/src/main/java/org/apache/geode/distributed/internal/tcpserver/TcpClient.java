@@ -65,11 +65,9 @@ public class TcpClient {
    * Constructs a new TcpClient
    *
    * @param socketCreator the SocketCreator to use in communicating with the Locator
-   * @param objectSerializer
-   * @param objectDeserializer
    */
   public TcpClient(TcpSocketCreator socketCreator, final ObjectSerializer objectSerializer,
-                   final ObjectDeserializer objectDeserializer) {
+      final ObjectDeserializer objectDeserializer) {
     this.socketCreator = socketCreator;
     this.objectSerializer = objectSerializer;
     this.objectDeserializer = objectDeserializer;

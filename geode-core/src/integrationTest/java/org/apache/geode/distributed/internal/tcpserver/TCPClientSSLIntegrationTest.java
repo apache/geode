@@ -45,7 +45,6 @@ import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;

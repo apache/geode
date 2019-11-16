@@ -26,7 +26,6 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
 
 
 @RunWith(ArchUnitRunner.class)

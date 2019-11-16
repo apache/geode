@@ -167,7 +167,7 @@ public class AutoConnectionSourceImplJUnitTest {
                 .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-                    .stop(InetAddress.getLocalHost(), port);
+            .stop(InetAddress.getLocalHost(), port);
   }
 
   /**

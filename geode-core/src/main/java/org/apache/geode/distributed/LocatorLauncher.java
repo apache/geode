@@ -66,8 +66,6 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.lang.ObjectUtils;

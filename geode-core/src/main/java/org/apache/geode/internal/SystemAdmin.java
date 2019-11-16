@@ -301,7 +301,7 @@ public class SystemAdmin {
                     .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
             InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-                        .stop(addr, port);
+                .stop(addr, port);
       } catch (java.net.ConnectException ce) {
         System.out.println(
             "Unable to connect to Locator process. Possible causes are that an incorrect bind address/port combination was specified to the stop-locator command or the process is unresponsive.");

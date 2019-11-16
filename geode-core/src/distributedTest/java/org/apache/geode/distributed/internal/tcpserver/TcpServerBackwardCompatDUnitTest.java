@@ -152,7 +152,7 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
                   .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-                      .requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
+              .requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
       assertThat(response).isNotNull();
 
     } catch (IllegalStateException e) {
