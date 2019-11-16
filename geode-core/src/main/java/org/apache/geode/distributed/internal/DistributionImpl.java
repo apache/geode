@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 
@@ -384,8 +384,7 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public <V> V doWithViewLocked(
-      Function<Membership, V> function) {
+  public <V> V doWithViewLocked(Supplier<V> function) {
     return membership.doWithViewLocked(function);
   }
 

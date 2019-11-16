@@ -18,7 +18,7 @@ import java.io.NotSerializableException;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
@@ -28,7 +28,6 @@ import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 
 public interface Distribution {
   void start();
@@ -59,8 +58,7 @@ public interface Distribution {
 
   boolean isShunned(DistributedMember m);
 
-  <V> V doWithViewLocked(
-      Function<Membership, V> function);
+  <V> V doWithViewLocked(Supplier<V> function);
 
   boolean memberExists(DistributedMember m);
 

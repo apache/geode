@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 import java.io.NotSerializableException;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
@@ -107,7 +107,7 @@ public interface Membership {
   /**
    * execute code with the membership view locked so that it doesn't change
    */
-  <V> V doWithViewLocked(Function<Membership, V> function);
+  <V> V doWithViewLocked(Supplier<V> function);
 
   /**
    * Sanity checking, esp. for elder processing. Does the existing member (still) exist in our view?

@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -572,10 +572,10 @@ public class GMSMembership implements Membership {
   }
 
   @Override
-  public <V> V doWithViewLocked(Function<Membership, V> function) {
+  public <V> V doWithViewLocked(Supplier<V> function) {
     latestViewReadLock.lock();
     try {
-      return (V) function.apply(this);
+      return function.get();
     } finally {
       latestViewReadLock.unlock();
     }

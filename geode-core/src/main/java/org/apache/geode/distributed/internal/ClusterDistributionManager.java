@@ -1027,9 +1027,9 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public Set<InternalDistributedMember> addMembershipListenerAndGetDistributionManagerIds(
       MembershipListener l) {
-    return distribution.doWithViewLocked((manager) -> {
+    return distribution.doWithViewLocked(() -> {
       addMembershipListener(l);
-      return manager.getMembersNotShuttingDown();
+      return distribution.getMembersNotShuttingDown();
     });
   }
 
@@ -1539,12 +1539,12 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public Set<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(
       MembershipListener l) {
-    return distribution.doWithViewLocked((manager) -> {
+    return distribution.doWithViewLocked(() -> {
       // Don't let the members come and go while we are adding this
       // listener. This ensures that the listener (probably a
       // ReplyProcessor) gets a consistent view of the members.
       addAllMembershipListener(l);
-      return manager.getMembersNotShuttingDown();
+      return distribution.getMembersNotShuttingDown();
     });
   }
 
