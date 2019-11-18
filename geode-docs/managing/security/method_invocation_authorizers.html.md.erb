@@ -21,10 +21,12 @@ limitations under the License.
 
 ## <a id="overview"></a>Overview
 
+When the `SecurityManager` is enabled, by default <%=vars.product_name%> throws a `NotAuthorizedException` when a `method` within a query is invoked and does not belong to the list of default allowed methods, given in [RestrictedMethodAuthorizer](method_invocation_authorizers.html#restrictedMethodAuthorizer).
+
 The `MethodInvocationAuthorizer` is used to determine whether a specific method invocation on a given object should be allowed or denied during the execution of a particular OQL query.
 
 Allowing users to execute arbitrary methods on any object present within the <%=vars.product_name%> member's classpath could impact the integrity of the data and the system on which <%=vars.product_name%> is running.
-In order to avoid this problem, it's always recommended to enable a `SecurityManager` at the cluster level, give users only the permissions they require, and configure a `MethodInvocationAuthorizer` that meets your needs.
+In order to avoid this problem, it is always recommended to enable a `SecurityManager` at the cluster level, give users only the permissions they require, and configure a `MethodInvocationAuthorizer` that meets your needs.
 
 The main threats to which a <%=vars.product_name%> cluster might be exposed without a `MethodInvocationAuthorizer` are highlighted below. 
 
@@ -65,7 +67,7 @@ Allows the user to mutate the state of specific `entries`.
 ## <a id="out_of_the_box_authorizers"></a><%=vars.product_name%> Authorizers
 
 <%=vars.product_name%> provides four authorizers out of the box, each one designed and implemented for a specific use case in mind.
-It's recommended to always use one of these authorizers, and only implement your own if your use case needs are not already met by one of them.
+It is recommended to always use one of these authorizers, and only implement your own if your use case needs are not already met by one of them.
 
 All of the implementations provided by <%=vars.product_name%> are designed to prevent security problems and have been thoroughly tested.
 Extra care should be taken, however, when configuring the internals of some of the authorizers as an incorrect configuration might introduce security holes into the system. 
@@ -91,7 +93,7 @@ The implementation forbids the invocation of all methods during a query executio
 | `java.util.Map.Entry`, `org.apache.geode.cache.Region.Entry`              | `getKey`, `getValue` |
 | `java.util.Collection`, `java.util.Map`, `org.apache.geode.cache.Region`  | `get`, `entrySet`, `keySet`, `values`, `getEntries`, `getValues`, `containsKey` |  
 
-The authorizer also provides utilities that can be used by custom implementations to determine whether a method is permanently forbidden or, if the method belongs to <%=vars.product_name%>, whether it's considered safe to be used within a query execution.
+The authorizer also provides utilities that can be used by custom implementations to determine whether a method is permanently forbidden or, if the method belongs to <%=vars.product_name%>, whether it is considered safe to be used within a query execution.
  
 The methods `getClass`, `readObject`, `readResolve`, `readObjectNoData`, `writeObject` and `writeReplace` are permanently forbidden.
 
@@ -152,7 +154,7 @@ the objects stored within the region and on instances used as bind parameters of
 
 **Note:**
 This authorizer must be used with extreme care, it is the most powerful in terms of flexibility and versatility (full control through regular expressions regarding what to allow and what to forbid); 
-but it's also the most dangerous as one small mistake in the configured regular expressions can unexpectedly allow a wide variety of non safe methods to be executed.
+but it is also the most dangerous as one small mistake in the configured regular expressions can unexpectedly allow a wide variety of non safe methods to be executed.
 
 **Note:**
 Usage of this authorizer implementation is only recommended for scenarios in which the user knows exactly what code is deployed to the cluster, allowing a correct configuration of the regular expressions used.
@@ -162,7 +164,7 @@ It might also be used on clusters on which all entries stored are immutable.
 
 ### How Authorization Works
 
-It's important to note that the query engine does not have any information about the actual type of the objects while pre-processing or parsing the query itself, neither can it obtain these details before actually executing the query.
+It is important to note that the query engine does not have any information about the actual type of the objects while pre-processing or parsing the query itself, neither can it obtain these details before actually executing the query.
 The actual check to determine whether a method is allowed or not must be executed while the objects are being traversed by the query engine in runtime.
 
 The query engine, however, remembers whether a specific method has been already authorized or not for the current query execution context, meaning that **the authorization will be executed only once in the lifetime of a particular query 
@@ -181,7 +183,7 @@ Complete these items to implement a custom method authorizer.
 
 You can set the `MethodInvocationAuthorizer` to be used by the query engine through the `gfsh` command-line utility.
 In addition, you can modify the configured `MethodInvocationAuthorizer` while members are already running by using the [alter query-service](../../tools_modules/gfsh/command-pages/alter.html#topic_alter_query_service) command.
-It's always advisable to make these changes during periods of low activity, though.
+It is always advisable to make these changes during periods of low activity, though.
 
 The following constraints apply when the `MethodInvocationAuthorizer` used by the cluster is changed in runtime:
 
