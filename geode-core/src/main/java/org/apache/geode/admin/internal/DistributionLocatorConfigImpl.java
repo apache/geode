@@ -26,6 +26,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
@@ -76,7 +77,9 @@ public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
       TcpClient client = new TcpClient(
           asTcpSocketCreator(
               SocketCreatorFactory
-                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)));
+                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+          InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+          InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
       if (bindAddress != null) {
         info = client.getInfo(bindAddress, port);
       } else {

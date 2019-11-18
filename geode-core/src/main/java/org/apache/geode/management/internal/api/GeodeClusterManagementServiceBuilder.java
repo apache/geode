@@ -37,6 +37,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -122,7 +123,9 @@ public class GeodeClusterManagementServiceBuilder implements
     DistributionConfig config = ((GemFireCacheImpl) clientCache).getSystem().getConfig();
     TcpClient client =
         new TcpClient(asTcpSocketCreator(SocketCreatorFactory.setDistributionConfig(config)
-            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)));
+            .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+            InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     ClusterManagementServiceInfo cmsInfo = null;
     for (InetSocketAddress locator : locators) {
       try {

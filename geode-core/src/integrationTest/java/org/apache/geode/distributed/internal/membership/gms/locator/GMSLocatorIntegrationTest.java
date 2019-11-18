@@ -38,6 +38,7 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
@@ -81,7 +82,9 @@ public class GMSLocatorIntegrationTest {
             temporaryFolder.getRoot().toPath(), new TcpClient(
                 asTcpSocketCreator(
                     SocketCreatorFactory
-                        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))));
+                        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+                InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+                InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()));
     gmsLocator.setServices(services);
   }
 

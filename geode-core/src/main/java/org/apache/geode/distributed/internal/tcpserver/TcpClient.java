@@ -31,8 +31,9 @@ import javax.net.ssl.SSLException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.internal.serialization.ObjectDeserializer;
+import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -57,14 +58,19 @@ public class TcpClient {
       new HashMap<>();
 
   private final TcpSocketCreator socketCreator;
+  private final ObjectSerializer objectSerializer;
+  private final ObjectDeserializer objectDeserializer;
 
   /**
    * Constructs a new TcpClient
    *
    * @param socketCreator the SocketCreator to use in communicating with the Locator
    */
-  public TcpClient(TcpSocketCreator socketCreator) {
+  public TcpClient(TcpSocketCreator socketCreator, final ObjectSerializer objectSerializer,
+      final ObjectDeserializer objectDeserializer) {
     this.socketCreator = socketCreator;
+    this.objectSerializer = objectSerializer;
+    this.objectDeserializer = objectDeserializer;
   }
 
   /**
@@ -191,14 +197,15 @@ public class TcpClient {
       if (gossipVersion > TcpServer.getOldGossipVersion()) {
         out.writeShort(serverVersion);
       }
-      DataSerializer.writeObject(request, out);
+
+      objectSerializer.writeObject(request, out);
       out.flush();
 
       if (replyExpected) {
         DataInputStream in = new DataInputStream(sock.getInputStream());
         in = new VersionedDataInputStream(in, Version.fromOrdinal(serverVersion));
         try {
-          Object response = DataSerializer.readObject(in);
+          Object response = objectDeserializer.readObject(in);
           logger.debug("received response: {}", response);
           return response;
         } catch (EOFException ex) {
@@ -272,14 +279,14 @@ public class TcpClient {
       out.writeInt(gossipVersion);
 
       VersionRequest verRequest = new VersionRequest();
-      DataSerializer.writeObject(verRequest, out);
+      objectSerializer.writeObject(verRequest, out);
       out.flush();
 
       InputStream inputStream = sock.getInputStream();
       DataInputStream in = new DataInputStream(inputStream);
       in = new VersionedDataInputStream(in, Version.GFE_57);
       try {
-        Object readObject = DataSerializer.readObject(in);
+        Object readObject = objectDeserializer.readObject(in);
         if (!(readObject instanceof VersionResponse)) {
           throw new IllegalThreadStateException(
               "Server version response invalid: "

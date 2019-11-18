@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -148,8 +149,10 @@ public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase 
       response = (FindCoordinatorResponse) new TcpClient(
           asTcpSocketCreator(
               SocketCreatorFactory
-                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)))
-                      .requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
+                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+          InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+          InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
+              .requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
       assertThat(response).isNotNull();
 
     } catch (IllegalStateException e) {

@@ -26,7 +26,6 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
 
 
 @RunWith(ArchUnitRunner.class)
@@ -49,6 +48,5 @@ public class TcpServerDependenciesTest {
               .or(resideInAPackage("org.apache.geode.test.."))
 
               // TODO - serialization related classes
-              .or(type(DataSerializer.class))
               .or(type(DataSerializable.class)));
 }
