@@ -60,7 +60,7 @@ public class PdxValidatorTest {
     PdxValidator validator = new PdxValidator();
     Pdx pdx = new Pdx();
 
-    pdx.setAutoSerializer(new AutoSerializer(false, (String) null));
+    pdx.setAutoSerializer(new AutoSerializer(false, (List<String>) null));
 
     assertThatThrownBy(() -> validator.validate(CREATE, pdx))
         .isInstanceOf(IllegalArgumentException.class)
@@ -84,7 +84,7 @@ public class PdxValidatorTest {
     PdxValidator validator = new PdxValidator();
     Pdx pdx = new Pdx();
 
-    pdx.setAutoSerializer(new AutoSerializer(false, (String) null));
+    pdx.setAutoSerializer(new AutoSerializer(false, (List<String>) null));
 
     assertThatCode(() -> validator.validate(DELETE, pdx))
         .doesNotThrowAnyException();
@@ -95,7 +95,7 @@ public class PdxValidatorTest {
     PdxValidator validator = new PdxValidator();
     Pdx pdx = new Pdx();
 
-    pdx.setAutoSerializer(new AutoSerializer(false, (String) null));
+    pdx.setAutoSerializer(new AutoSerializer(false, (List<String>) null));
 
     assertThatCode(() -> validator.validate(UPDATE, pdx))
         .doesNotThrowAnyException();
