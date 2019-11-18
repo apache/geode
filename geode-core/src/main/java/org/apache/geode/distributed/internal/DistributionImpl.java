@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+
 import java.io.NotSerializableException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,8 +57,11 @@ import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatis
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -119,6 +124,10 @@ public class DistributionImpl implements Distribution {
         .setSerializer(InternalDataSerializer.getDSFIDSerializer())
         .setLifecycleListener(new LifecycleListenerImpl(this))
         .setMemberIDFactory(new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
+        .setLocatorClient(new TcpClient(
+            asTcpSocketCreator(
+                SocketCreatorFactory
+                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))))
         .create();
   }
 
