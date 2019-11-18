@@ -187,6 +187,6 @@ The following constraints apply when the `MethodInvocationAuthorizer` used by th
 
 - Queries started after the `MethodInvocationAuthorizer` is changed will use the newly configured authorizer.
 - Queries in flight are not affected. Before the query starts, it picks up the already configured `MethodInvocationAuthorizer` and will use it until the execution finishes.
-- Indexes configured with an expression using methods forbidden by the newly configured `MethodInvocationAuthorizer` will be marked as invalid the next time the index is used.
+- Indexes configured with an expression using methods forbidden by the newly configured `MethodInvocationAuthorizer` will be marked as invalid the next time a mapping is added or removed from the index.
 - Continuous queries already running will pick up the newly configured `MethodInvocationAuthorizer` the next time the CQ is processed upon the arrival of a cache event.
 If the CQ has methods forbidden by the newly configured `MethodInvocationAuthorizer`, any subsequent execution will result in an error during the CQ processing, and the `onError` method will be invoked for the associated `CqListener`.
