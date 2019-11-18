@@ -23,21 +23,22 @@ import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
-import org.apache.geode.test.junit.rules.MemberStarterRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-public class ManagementRestSecurityConfigurationDUnitTest {
+public class DeveloperRestSecurityConfigurationDUnitTest {
 
-  private MemberVM locator;
+  private MemberVM server;
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
   @Test
   public void testWithSecurityManager() {
-    this.locator = cluster.startLocatorVM(0,
-        x -> x.withHttpService().withSecurityManager(SimpleSecurityManager.class));
+    this.server = cluster.startServerVM(0,
+        x -> x.withRestService()
+            .withSecurityManager(SimpleSecurityManager.class));
     GeodeDevRestClient client =
-        new GeodeDevRestClient("/management", "localhost", locator.getHttpPort(), false);
+        new GeodeDevRestClient("/geode", "localhost", server.getHttpPort(), false);
 
     // Unsecured no credentials
     assertResponse(client.doGet("/swagger-ui.html", null, null)).hasStatusCode(200);
@@ -50,18 +51,18 @@ public class ManagementRestSecurityConfigurationDUnitTest {
     assertResponse(client.doGet("/v1/ping", "cluster", "cluster")).hasStatusCode(200);
 
     // secured with credentials
-    assertResponse(client.doGet("/v1/regions", "cluster", "cluster")).hasStatusCode(200);
+    assertResponse(client.doGet("/v1", "data", "data")).hasStatusCode(200);
 
     // secured no/incorrect credentials
-    assertResponse(client.doGet("/v1/regions", null, null)).hasStatusCode(401);
-    assertResponse(client.doGet("/v1/regions", "data", "invalid")).hasStatusCode(401);
+    assertResponse(client.doGet("/v1", null, null)).hasStatusCode(401);
+    assertResponse(client.doGet("/v1", "data", "invalid")).hasStatusCode(401);
   }
 
   @Test
   public void testWithoutSecurityManager() {
-    this.locator = cluster.startLocatorVM(1, MemberStarterRule::withHttpService);
+    this.server = cluster.startServerVM(1, ServerStarterRule::withRestService);
     GeodeDevRestClient client =
-        new GeodeDevRestClient("/management", "localhost", locator.getHttpPort(), false);
+        new GeodeDevRestClient("/geode", "localhost", server.getHttpPort(), false);
 
     // Unsecured no credentials
     assertResponse(client.doGet("/swagger-ui.html", null, null)).hasStatusCode(200);
@@ -74,10 +75,10 @@ public class ManagementRestSecurityConfigurationDUnitTest {
     assertResponse(client.doGet("/v1/ping", "cluster", "cluster")).hasStatusCode(200);
 
     // secured with credentials
-    assertResponse(client.doGet("/v1/regions", "cluster", "cluster")).hasStatusCode(200);
+    assertResponse(client.doGet("/v1", "cluster", "cluster")).hasStatusCode(200);
 
     // secured no/incorrect credentials
-    assertResponse(client.doGet("/v1/regions", null, null)).hasStatusCode(200);
-    assertResponse(client.doGet("/v1/regions", "data", "invalid")).hasStatusCode(200);
+    assertResponse(client.doGet("/v1", null, null)).hasStatusCode(200);
+    assertResponse(client.doGet("/v1", "data", "invalid")).hasStatusCode(200);
   }
 }
