@@ -74,8 +74,10 @@ public class DistributionLocator {
       new TcpClient(
           asTcpSocketCreator(
               SocketCreatorFactory
-                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))).stop(addr,
-                      port);
+                  .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+          InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+          InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()).stop(addr,
+              port);
     } catch (ConnectException ignore) {
       // must not be running
     }

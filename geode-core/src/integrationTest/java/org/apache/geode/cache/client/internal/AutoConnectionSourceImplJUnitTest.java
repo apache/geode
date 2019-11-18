@@ -76,6 +76,7 @@ import org.apache.geode.distributed.internal.membership.gms.membership.HostAddre
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
@@ -163,8 +164,10 @@ public class AutoConnectionSourceImplJUnitTest {
     new TcpClient(
         asTcpSocketCreator(
             SocketCreatorFactory
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)))
-                    .stop(InetAddress.getLocalHost(), port);
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
+            .stop(InetAddress.getLocalHost(), port);
   }
 
   /**

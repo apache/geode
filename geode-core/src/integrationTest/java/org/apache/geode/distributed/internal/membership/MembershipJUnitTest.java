@@ -280,7 +280,9 @@ public class MembershipJUnitTest {
             .setLocatorClient(new TcpClient(
                 asTcpSocketCreator(
                     SocketCreatorFactory
-                        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))))
+                        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+                InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+                InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
             .create();
     m1.start();
     m1.startEventProcessing();
@@ -472,7 +474,9 @@ public class MembershipJUnitTest {
     GMSJoinLeave joinLeave = new GMSJoinLeave(new TcpClient(
         asTcpSocketCreator(
             SocketCreatorFactory.setDistributionConfig(config)
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))));
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()));
     try {
       joinLeave.init(services);
       throw new Error(

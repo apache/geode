@@ -47,6 +47,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -180,11 +181,13 @@ public class LocatorLoadBalancingDUnitTest extends LocatorTestBase {
     return new TcpClient(
         asTcpSocketCreator(
             SocketCreatorFactory
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)))
-                    .requestToServer(InetAddress.getByName(hostName),
-                        locatorPort,
-                        request,
-                        10000, replyExpected);
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
+            .requestToServer(InetAddress.getByName(hostName),
+                locatorPort,
+                request,
+                10000, replyExpected);
   }
 
   /**

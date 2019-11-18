@@ -38,9 +38,10 @@ import javax.net.ssl.SSLException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.serialization.ObjectDeserializer;
+import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -104,6 +105,8 @@ public class TcpServer {
   private static final int BACKLOG =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG);
   private final ProtocolChecker protocolChecker;
+  private final ObjectDeserializer objectDeserializer;
+  private final ObjectSerializer objectSerializer;
 
   private int port;
   private ServerSocket srv_sock = null;
@@ -134,12 +137,13 @@ public class TcpServer {
     return map;
   }
 
-  public TcpServer(int port, InetAddress bind_address,
-      TcpHandler handler,
+  public TcpServer(int port, InetAddress bind_address, TcpHandler handler,
       String threadName, ProtocolChecker protocolChecker,
       final LongSupplier nanoTimeSupplier,
       final Supplier<ExecutorService> executorServiceSupplier,
-      final TcpSocketCreator socketCreator) {
+      final TcpSocketCreator socketCreator,
+      final ObjectSerializer objectSerializer,
+      final ObjectDeserializer objectDeserializer) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
@@ -149,6 +153,8 @@ public class TcpServer {
     this.threadName = threadName;
     this.nanoTimeSupplier = nanoTimeSupplier;
     this.socketCreator = socketCreator;
+    this.objectSerializer = objectSerializer;
+    this.objectDeserializer = objectDeserializer;
   }
 
   public void restarting() throws IOException {
@@ -395,7 +401,7 @@ public class TcpServer {
             + Version.fromOrdinal(versionOrdinal));
       }
       input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal));
-      request = DataSerializer.readObject(input);
+      request = objectDeserializer.readObject(input);
       if (logger.isDebugEnabled()) {
         logger.debug("Locator received request " + request + " from " + socket.getInetAddress());
       }
@@ -420,7 +426,7 @@ public class TcpServer {
           output =
               new VersionedDataOutputStream(output, Version.fromOrdinal(versionOrdinal));
         }
-        DataSerializer.writeObject(response, output);
+        objectSerializer.writeObject(response, output);
         output.flush();
       }
 

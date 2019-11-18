@@ -20,8 +20,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import javax.servlet.http.HttpSession;
@@ -69,8 +67,8 @@ public class DeltaSessionStatisticsIntegrationTest extends AbstractDeltaSessionI
     when(deltaSessionManager.getSessionCache()).thenReturn(mockSessionCache);
 
     deltaSessionManager.add(new TestDeltaSession(deltaSessionManager, TEST_SESSION_ID));
-    await().untilAsserted(() -> assertThat(httpSessionRegion.isEmpty()).isFalse());
-    assertThat(statistics.getSessionsCreated()).isEqualTo(1);
+    await().untilAsserted(() -> assertThat(statistics.getSessionsCreated()).isEqualTo(1));
+    assertThat(httpSessionRegion.isEmpty()).isFalse();
   }
 
   @Test
@@ -87,9 +85,8 @@ public class DeltaSessionStatisticsIntegrationTest extends AbstractDeltaSessionI
     DeltaSession spyDeltasSession = spy(new TestDeltaSession(deltaSessionManager, TEST_SESSION_ID));
     httpSessionRegion.put(TEST_SESSION_ID, spyDeltasSession);
 
-    await().untilAsserted(() -> verify(spyDeltasSession, times(1)).processExpired());
+    await().untilAsserted(() -> assertThat(statistics.getSessionsExpired()).isEqualTo(1));
     assertThat(httpSessionRegion.isEmpty()).isTrue();
-    assertThat(statistics.getSessionsExpired()).isEqualTo(1);
   }
 
   @Test
@@ -105,8 +102,8 @@ public class DeltaSessionStatisticsIntegrationTest extends AbstractDeltaSessionI
     httpSessionRegion.put(deltaSession.getId(), deltaSession);
 
     deltaSession.invalidate();
-    await().untilAsserted(() -> assertThat(httpSessionRegion.isEmpty()).isTrue());
-    assertThat(statistics.getSessionsInvalidated()).isEqualTo(1);
+    await().untilAsserted(() -> assertThat(statistics.getSessionsInvalidated()).isEqualTo(1));
+    assertThat(httpSessionRegion.isEmpty()).isTrue();
   }
 
   static class TestCustomExpiry implements CustomExpiry<String, HttpSession> {

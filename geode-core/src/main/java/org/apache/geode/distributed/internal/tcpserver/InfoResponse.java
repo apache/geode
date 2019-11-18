@@ -20,7 +20,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * A response from the TCP server with information about the server
@@ -44,11 +44,11 @@ public class InfoResponse implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    info = DataSerializer.readStringArray(in);
+    info = StaticSerialization.readStringArray(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeStringArray(info, out);
+    StaticSerialization.writeStringArray(info, out);
   }
 }

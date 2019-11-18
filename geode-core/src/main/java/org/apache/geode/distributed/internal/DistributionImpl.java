@@ -127,7 +127,9 @@ public class DistributionImpl implements Distribution {
         .setLocatorClient(new TcpClient(
             asTcpSocketCreator(
                 SocketCreatorFactory
-                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR))))
+                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+            InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
         .create();
   }
 

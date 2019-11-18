@@ -44,6 +44,7 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -103,7 +104,9 @@ public class TCPClientSSLIntegrationTest {
         asTcpSocketCreator(
             new SocketCreator(
                 SSLConfigurationFactory.getSSLConfigForComponent(clientProperties,
-                    SecurableCommunicationChannel.LOCATOR))));
+                    SecurableCommunicationChannel.LOCATOR))),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
   }
 
   private void startTcpServer(Properties sslProperties) throws IOException {
@@ -125,7 +128,9 @@ public class TCPClientSSLIntegrationTest {
             new SocketCreator(
                 SSLConfigurationFactory.getSSLConfigForComponent(
                     new DistributionConfigImpl(sslProperties),
-                    SecurableCommunicationChannel.LOCATOR))));
+                    SecurableCommunicationChannel.LOCATOR))),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
 
     server.start();
   }
