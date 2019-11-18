@@ -477,6 +477,53 @@ public class NioSslEngineTest {
   }
 
 
+  /**
+   * This tests the case where a message header has been read and part of a message has been
+   * read, but the decoded buffer is too small to hold all of the message. In this case
+   * the buffer is completely full and should only take one overflow response to resolve
+   * the problem.
+   */
+  @Test
+  public void readAtLeastUsingSmallAppBufferAtWriteLimit() throws Exception {
+    final int amountToRead = 150;
+    final int individualRead = 150;
+
+    int initialUnwrappedBufferSize = 100;
+    final int preexistingBytes = initialUnwrappedBufferSize - 7;
+    ByteBuffer wrappedBuffer = ByteBuffer.allocate(1000);
+    SocketChannel mockChannel = mock(SocketChannel.class);
+
+    // force buffer expansion by making a small decoded buffer appear near to being full
+    ByteBuffer unwrappedBuffer = ByteBuffer.allocate(initialUnwrappedBufferSize);
+    unwrappedBuffer.position(7).limit(preexistingBytes + 7); // 7 bytes of message header - ignored
+    nioSslEngine.peerAppData = unwrappedBuffer;
+
+    // simulate some socket reads
+    when(mockChannel.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
+      @Override
+      public Integer answer(InvocationOnMock invocation) throws Throwable {
+        ByteBuffer buffer = invocation.getArgument(0);
+        buffer.position(buffer.position() + individualRead);
+        return individualRead;
+      }
+    });
+
+    TestSSLEngine testSSLEngine = new TestSSLEngine();
+    testSSLEngine.addReturnResult(
+        new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, 0, 0),
+        new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, 0, 0),
+        new SSLEngineResult(BUFFER_OVERFLOW, NEED_UNWRAP, 0, 0),
+        new SSLEngineResult(OK, NEED_UNWRAP, 0, 0));
+    nioSslEngine.engine = testSSLEngine;
+
+    ByteBuffer data = nioSslEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
+    verify(mockChannel, times(1)).read(isA(ByteBuffer.class));
+    assertThat(data.position()).isEqualTo(0);
+    assertThat(data.limit())
+        .isEqualTo(individualRead * testSSLEngine.getNumberOfUnwraps() + preexistingBytes);
+  }
+
+
   // TestSSLEngine holds a stack of SSLEngineResults and always copies the
   // input buffer to the output buffer byte-for-byte in wrap() and unwrap() operations.
   // We use it in some tests where we need the byte-copying behavior because it's
@@ -485,12 +532,18 @@ public class NioSslEngineTest {
 
     private List<SSLEngineResult> returnResults = new ArrayList<>();
 
+    private int numberOfUnwrapsPerformed;
+
     private SSLEngineResult nextResult() {
       SSLEngineResult result = returnResults.remove(0);
       if (returnResults.isEmpty()) {
         returnResults.add(result);
       }
       return result;
+    }
+
+    public int getNumberOfUnwraps() {
+      return numberOfUnwrapsPerformed;
     }
 
     @Override
@@ -507,6 +560,7 @@ public class NioSslEngineTest {
       if (sslEngineResult.getStatus() != BUFFER_UNDERFLOW
           && sslEngineResult.getStatus() != BUFFER_OVERFLOW) {
         destinations[0].put(source);
+        numberOfUnwrapsPerformed++;
       }
       return sslEngineResult;
     }
