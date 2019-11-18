@@ -170,7 +170,7 @@ public class DistributionImpl implements Distribution {
     this.membership = membership;
   }
 
-  static DistributionImpl createMembershipManagerAdapter(
+  static DistributionImpl createDistribution(
       ClusterDistributionManager clusterDistributionManager, RemoteTransportConfig transport,
       InternalDistributedSystem system,
       org.apache.geode.distributed.internal.membership.gms.api.MembershipListener listener,

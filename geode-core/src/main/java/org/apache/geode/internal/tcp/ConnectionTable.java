@@ -296,7 +296,7 @@ public class ConnectionTable {
     // handle new pending connection
     Connection con = null;
     try {
-      con = Connection.createSender(owner.getMembershipManager(), this, preserveOrder, id,
+      con = Connection.createSender(owner.getMembership(), this, preserveOrder, id,
           sharedResource, startTime, ackThreshold, ackSAThreshold);
       this.owner.getStats().incSenders(sharedResource, preserveOrder);
     } finally {
@@ -420,7 +420,7 @@ public class ConnectionTable {
           throw new IOException("Cannot form connection to alert listener " + id);
         }
 
-        result = ((PendingConnection) mEntry).waitForConnect(this.owner.getMembershipManager(),
+        result = ((PendingConnection) mEntry).waitForConnect(this.owner.getMembership(),
             startTime, ackTimeout, ackSATimeout);
         if (logger.isDebugEnabled()) {
           if (result != null) {
@@ -486,7 +486,7 @@ public class ConnectionTable {
       return result;
 
     // OK, we have to create a new connection.
-    result = Connection.createSender(owner.getMembershipManager(), this, true /* preserveOrder */,
+    result = Connection.createSender(owner.getMembership(), this, true /* preserveOrder */,
         id, false /* shared */, startTime, ackTimeout, ackSATimeout);
     if (logger.isDebugEnabled()) {
       logger.debug("ConnectionTable: created an ordered connection: {}", result);

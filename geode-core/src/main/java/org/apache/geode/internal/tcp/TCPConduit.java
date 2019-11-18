@@ -118,7 +118,7 @@ public class TCPConduit implements Runnable {
     init();
   }
 
-  public Membership getMembershipManager() {
+  public Membership getMembership() {
     return membership;
   }
 

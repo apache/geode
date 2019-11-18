@@ -736,7 +736,7 @@ public class Connection implements Runnable {
             if (success) {
               if (this.isReceiver) {
                 needToClose =
-                    !owner.getConduit().getMembershipManager().addSurpriseMember(this.remoteAddr);
+                    !owner.getConduit().getMembership().addSurpriseMember(this.remoteAddr);
                 if (needToClose) {
                   reason = "this member is shunned";
                 }
@@ -1089,7 +1089,7 @@ public class Connection implements Runnable {
 
   private void setRemoteAddr(DistributedMember m) {
     this.remoteAddr = this.owner.getDM().getCanonicalId(m);
-    Membership mgr = this.conduit.getMembershipManager();
+    Membership mgr = this.conduit.getMembership();
     mgr.addSurpriseMember(m);
   }
 

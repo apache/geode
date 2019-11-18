@@ -449,7 +449,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
       DMListener listener = new DMListener(this);
       distribution = DistributionImpl
-          .createMembershipManagerAdapter(this, transport, system, listener,
+          .createDistribution(this, transport, system, listener,
               this::handleIncomingDMsg);
 
       sb.append(System.currentTimeMillis() - start);
