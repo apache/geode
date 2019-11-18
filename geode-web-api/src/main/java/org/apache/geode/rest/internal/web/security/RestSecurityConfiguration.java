@@ -53,7 +53,7 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         .authorizeRequests()
-        .antMatchers("/v1/ping", "/docs/**", "/swagger-ui.html",
+        .antMatchers("/docs/**", "/swagger-ui.html",
             Links.URI_VERSION + "/api-docs/**", "/webjars/springfox-swagger-ui/**",
             "/swagger-resources/**")
         .permitAll().and().csrf().disable();

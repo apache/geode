@@ -43,19 +43,20 @@ public class DeveloperRestSecurityConfigurationDUnitTest {
     // Unsecured no credentials
     assertResponse(client.doGet("/swagger-ui.html", null, null)).hasStatusCode(200);
     assertResponse(client.doGet("/v1/api-docs", null, null)).hasStatusCode(200);
-    assertResponse(client.doGet("/v1/ping", null, null)).hasStatusCode(200);
 
     // unsecured with credentials
     assertResponse(client.doGet("/swagger-ui.html", "cluster", "cluster")).hasStatusCode(200);
     assertResponse(client.doGet("/v1/api-docs", "cluster", "cluster")).hasStatusCode(200);
-    assertResponse(client.doGet("/v1/ping", "cluster", "cluster")).hasStatusCode(200);
 
     // secured with credentials
     assertResponse(client.doGet("/v1", "data", "data")).hasStatusCode(200);
+    assertResponse(client.doGet("/v1/ping", "cluster", "cluster")).hasStatusCode(200);
 
     // secured no/incorrect credentials
     assertResponse(client.doGet("/v1", null, null)).hasStatusCode(401);
     assertResponse(client.doGet("/v1", "data", "invalid")).hasStatusCode(401);
+    assertResponse(client.doGet("/v1/ping", null, null)).hasStatusCode(401);
+    assertResponse(client.doGet("/v1/ping", "cluster", "invalid")).hasStatusCode(401);
   }
 
   @Test
@@ -67,18 +68,19 @@ public class DeveloperRestSecurityConfigurationDUnitTest {
     // Unsecured no credentials
     assertResponse(client.doGet("/swagger-ui.html", null, null)).hasStatusCode(200);
     assertResponse(client.doGet("/v1/api-docs", null, null)).hasStatusCode(200);
-    assertResponse(client.doGet("/v1/ping", null, null)).hasStatusCode(200);
 
     // unsecured with credentials
     assertResponse(client.doGet("/swagger-ui.html", "cluster", "cluster")).hasStatusCode(200);
     assertResponse(client.doGet("/v1/api-docs", "cluster", "cluster")).hasStatusCode(200);
-    assertResponse(client.doGet("/v1/ping", "cluster", "cluster")).hasStatusCode(200);
 
     // secured with credentials
-    assertResponse(client.doGet("/v1", "cluster", "cluster")).hasStatusCode(200);
+    assertResponse(client.doGet("/v1", "data", "data")).hasStatusCode(200);
+    assertResponse(client.doGet("/v1/ping", "cluster", "cluster")).hasStatusCode(200);
 
     // secured no/incorrect credentials
     assertResponse(client.doGet("/v1", null, null)).hasStatusCode(200);
     assertResponse(client.doGet("/v1", "data", "invalid")).hasStatusCode(200);
+    assertResponse(client.doGet("/v1/ping", null, null)).hasStatusCode(200);
+    assertResponse(client.doGet("/v1/ping", "cluster", "invalid")).hasStatusCode(200);
   }
 }
