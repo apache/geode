@@ -375,8 +375,15 @@ public class DeployedJar {
     return this.artifactId;
   }
 
-  public String getFileName() {
-    return this.file.getName();
+  /**
+   * @return the filename as user deployed, i.e remove the sequence number
+   */
+  public String getDeployedFileName() {
+    String fileName = this.file.getName();
+    if (JarDeployer.isSemanticVersion(fileName)) {
+      return fileName;
+    }
+    return artifactId + ".jar";
   }
 
   public String getFileCanonicalPath() throws IOException {

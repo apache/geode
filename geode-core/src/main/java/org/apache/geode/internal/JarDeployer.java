@@ -154,19 +154,19 @@ public class JarDeployer implements Serializable {
   }
 
 
-  protected File getNextVersionedJarFile(String artifactId) {
-    File[] oldVersions = findSortedOldVersionsOfJar(artifactId);
+  protected File getNextVersionedJarFile(String unversionedJarName) {
+    File[] oldVersions = findSortedOldVersionsOfJar(unversionedJarName);
 
     String nextVersionedJarName;
     if (oldVersions == null || oldVersions.length == 0) {
-      nextVersionedJarName = removeJarExtension(artifactId) + ".v1.jar";
+      nextVersionedJarName = removeJarExtension(unversionedJarName) + ".v1.jar";
     } else {
       String latestVersionedJarName = oldVersions[0].getName();
       int nextVersion = extractVersionFromFilename(latestVersionedJarName) + 1;
-      nextVersionedJarName = removeJarExtension(artifactId) + ".v" + nextVersion + ".jar";
+      nextVersionedJarName = removeJarExtension(unversionedJarName) + ".v" + nextVersion + ".jar";
     }
 
-    logger.debug("Next versioned jar name for {} is {}", artifactId, nextVersionedJarName);
+    logger.debug("Next versioned jar name for {} is {}", unversionedJarName, nextVersionedJarName);
 
     return new File(deployDirectory, nextVersionedJarName);
   }
@@ -184,6 +184,14 @@ public class JarDeployer implements Serializable {
     } else {
       return 0;
     }
+  }
+
+  public static boolean isSequenceVersion(String filename) {
+    return SEQUENCED_VERSION_SCHEME.matcher(filename).find();
+  }
+
+  public static boolean isSemanticVersion(String filename) {
+    return SEMANTIC_VERSION_SCHEME.matcher(filename).find();
   }
 
   protected Set<String> findArtifactIdsOnDisk() throws IOException {
@@ -366,7 +374,7 @@ public class JarDeployer implements Serializable {
    */
   public void deleteOtherVersionsOfJar(DeployedJar deployedJar) {
     logger.info("Deleting all versions of " + deployedJar.getArtifactId() + " other than "
-        + deployedJar.getFileName());
+        + deployedJar.getDeployedFileName());
     final File[] jarFiles = findSortedOldVersionsOfJar(deployedJar.getArtifactId());
 
     Stream.of(jarFiles).filter(jarFile -> !jarFile.equals(deployedJar.getFile()))
@@ -486,8 +494,9 @@ public class JarDeployer implements Serializable {
    *
    * @param jarName - the unversioned jar name, e.g. myJar.jar
    */
+  @VisibleForTesting
   public DeployedJar getDeployedJar(String jarName) {
-    return this.deployedJars.get(jarName);
+    return this.deployedJars.get(getArtifactId(jarName));
   }
 
   @VisibleForTesting
@@ -517,11 +526,12 @@ public class JarDeployer implements Serializable {
   /**
    * Undeploy the jar file identified by the given artifact ID.
    *
-   * @param artifactId The artifact ID of the JAR file to undeploy
+   * @param jarName The jarFile to undeploy
    * @return The path to the location on disk where the JAR file had been deployed
    * @throws IOException If there's a problem deleting the file
    */
-  public String undeploy(final String artifactId) throws IOException {
+  public String undeploy(final String jarName) throws IOException {
+    String artifactId = getArtifactId(jarName);
     lock.lock();
 
     try {
@@ -541,13 +551,19 @@ public class JarDeployer implements Serializable {
     }
   }
 
-  public void deleteAllVersionsOfJar(String artifactId) {
+  /**
+   *
+   * @param jarName a user deployed jar name (abc.jar or abc-1.0.jar)
+   */
+  public void deleteAllVersionsOfJar(String jarName) {
     lock.lock();
+    String artifactId = getArtifactId(jarName);
     try {
-      File[] jarFiles = findSortedOldVersionsOfJar(artifactId);
-      for (File jarFile : jarFiles) {
-        logger.info("Deleting: {}", jarFile.getAbsolutePath());
-        FileUtils.deleteQuietly(jarFile);
+      for (File file : this.deployDirectory.listFiles()) {
+        if (file.getName().startsWith(artifactId)) {
+          logger.info("Deleting: {}", file.getAbsolutePath());
+          FileUtils.deleteQuietly(file);
+        }
       }
     } finally {
       lock.unlock();

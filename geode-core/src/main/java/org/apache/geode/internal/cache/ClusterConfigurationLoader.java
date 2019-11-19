@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -100,17 +99,14 @@ public class ClusterConfigurationLoader {
       JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
       jarDeployer.suspendAll();
       try {
-        List<String> extraJarsOnServer =
-            jarDeployer.findDeployedJars().stream().map(DeployedJar::getArtifactId)
-                .filter(jarName -> !jarFileNames.contains(jarName)).collect(toList());
-
-        for (String extraJar : extraJarsOnServer) {
-          logger.info("Removing jar not present in cluster configuration: {}", extraJar);
-          jarDeployer.deleteAllVersionsOfJar(extraJar);
-        }
-
         Set<File> stagedJarFiles =
             getJarsFromLocator(response.getMember(), response.getJarNames());
+
+        for (File stagedJarFile : stagedJarFiles) {
+          logger.info("Removing old versions of {} in cluster configuration.",
+              stagedJarFile.getName());
+          jarDeployer.deleteAllVersionsOfJar(stagedJarFile.getName());
+        }
 
         List<DeployedJar> deployedJars = jarDeployer.deploy(stagedJarFiles);
 

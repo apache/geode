@@ -22,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,6 +50,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.rules.RestoreTCCLRule;
 
 /**
@@ -474,7 +474,7 @@ public class ClassPathLoaderIntegrationTest {
     // class is available.
     jarBytes = this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
         "public class JarClassLoaderJUnitTestClass { public Integer getValue10() { return new Integer(10); } }");
-    File jarFile2 = temporaryFolder.newFile("JarClassLoaderJUnitUpdate.jar");
+    File jarFile2 = new File(temporaryFolder.getRoot(), "JarClassLoaderJUnitUpdate.jar");
     writeJarBytesToFile(jarFile2, jarBytes);
     ClassPathLoader.getLatest().getJarDeployer().deploy(jarFile2);
 
@@ -567,13 +567,12 @@ public class ClassPathLoaderIntegrationTest {
 
   private File createJarWithClass(String fileName, String className) throws IOException {
     String stringBuilder = "package integration.parent;" + "public class " + className + " {}";
-
-    byte[] jarBytes = new ClassBuilder()
-        .createJarFromClassContent("integration/parent/" + className, stringBuilder);
-
-    File jarFile = temporaryFolder.newFile(fileName);
-    IOUtils.copy(new ByteArrayInputStream(jarBytes), new FileOutputStream(jarFile));
-
+    File jarFile = new File(temporaryFolder.getRoot(), fileName);
+    if (jarFile.exists()) {
+      jarFile.delete();
+    }
+    JarBuilder jarBuilder = new JarBuilder();
+    jarBuilder.buildJar(jarFile, stringBuilder);
     return jarFile;
   }
 

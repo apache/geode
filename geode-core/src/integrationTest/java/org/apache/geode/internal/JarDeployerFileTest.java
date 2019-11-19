@@ -420,6 +420,21 @@ public class JarDeployerFileTest {
     assertThat(jarBVersion3).exists();
   }
 
+  @Test
+  public void testDeleteAllVersionsOfVersionedJar() {
+    File jarAVersion1 = deployedFileNamed("myJarA-1.0.jar");
+    File jarAVersion2 = deployedFileNamed("myJarA.2.0.jar");
+    File jarAVersion3 = deployedFileNamed("myJarA.1.0-snapshot.jar");
+    File jarB = deployedFileNamed("myJarB.1.0.jar");
+
+    jarDeployer.deleteAllVersionsOfJar("myJarA-2.0.jar");
+
+    assertThat(jarAVersion1).doesNotExist();
+    assertThat(jarAVersion2).doesNotExist();
+    assertThat(jarAVersion3).doesNotExist();
+    assertThat(jarB).exists();
+  }
+
 
   @Test
   public void testDeleteOtherVersionsOfJar() throws Exception {

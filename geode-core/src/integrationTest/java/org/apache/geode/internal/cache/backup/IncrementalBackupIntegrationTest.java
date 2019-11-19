@@ -329,7 +329,7 @@ public class IncrementalBackupIntegrationTest {
     String jarName = getClass().getSimpleName();
     byte[] classBytes = new ClassBuilder().createJarFromName(jarName);
 
-    File jarFile = temporaryFolder.newFile(jarName+".jar");
+    File jarFile = temporaryFolder.newFile(jarName + ".jar");
     IOUtils.copyLarge(new ByteArrayInputStream(classBytes), new FileOutputStream(jarFile));
 
     // Deploy a "dummy" jar to the VM.
