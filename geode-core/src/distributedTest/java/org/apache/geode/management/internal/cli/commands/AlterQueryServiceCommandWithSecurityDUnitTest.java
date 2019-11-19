@@ -172,14 +172,6 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
   }
 
   @Test
-  public void alterQueryServiceCommandUpdatesClusterConfigWhenFunctionSucceeds() {
-    executeAndAssertGfshCommandIsSuccessful(JavaBeanAccessorMethodAuthorizer.class,
-        JAVA_BEAN_AUTHORIZER_PARAMS);
-
-    startServerAndVerifyJavaBeanAccessorMethodAuthorizer();
-  }
-
-  @Test
   public void alterQueryServiceCommandUpdatesClusterConfigWhenNoMembersAreFound() {
     servers.forEach(VMProvider::stop);
 
