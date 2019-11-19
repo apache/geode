@@ -15,6 +15,7 @@
 package org.apache.geode.internal;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -22,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -30,32 +30,42 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.test.compiler.JarBuilder;
 
 public class DeployedJarTest {
-  private static final String FILE_NAME = "test.jar";
-
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private File jarFile;
 
-  @Before
-  public void setup() {
-    jarFile = new File(temporaryFolder.getRoot(), FILE_NAME);
-  }
-
   @Test
   public void doesNotThrowIfFileIsValidJar() throws IOException {
-    JarBuilder jarBuilder = new JarBuilder();
-    jarBuilder.buildJarFromClassNames(jarFile, "ExpectedClass");
-
-    assertThatCode(() -> new DeployedJar(jarFile, ""))
+    createJarFile("test.v1.jar");
+    assertThatCode(() -> new DeployedJar(jarFile))
         .doesNotThrowAnyException();
   }
 
   @Test
   public void throwsIfFileIsNotValidJarFile() throws Exception {
+    createJarFile("test.v1.jar");
     Files.write(jarFile.toPath(), "INVALID_JAR_CONTENT".getBytes());
 
-    assertThatThrownBy(() -> new DeployedJar(jarFile, ""))
+    assertThatThrownBy(() -> new DeployedJar(jarFile))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void getDeployedFileName() throws Exception {
+    createJarFile("test.v1.jar");
+    assertThat(new DeployedJar(jarFile).getDeployedFileName()).isEqualTo("test.jar");
+
+    createJarFile("test-1.0.jar");
+    assertThat(new DeployedJar(jarFile).getDeployedFileName()).isEqualTo("test-1.0.jar");
+
+    createJarFile("test-1.1.jar");
+    assertThat(new DeployedJar(jarFile).getDeployedFileName()).isEqualTo("test-1.1.jar");
+  }
+
+  void createJarFile(String jarName) throws IOException {
+    jarFile = new File(temporaryFolder.getRoot(), jarName);
+    JarBuilder jarBuilder = new JarBuilder();
+    jarBuilder.buildJarFromClassNames(jarFile, "ExpectedClass");
   }
 }

@@ -118,7 +118,7 @@ public class JarDeployer implements Serializable {
 
       Files.copy(stagedJar.toPath(), deployedFile);
 
-      return new DeployedJar(deployedFile.toFile(), artifactId);
+      return new DeployedJar(deployedFile.toFile());
     } finally {
       lock.unlock();
     }
@@ -208,14 +208,14 @@ public class JarDeployer implements Serializable {
    * get the artifact id from the existing files on the server. This will skip files that
    * do not have sequence id or semantic version appended to them.
    *
-   * @param fileName: the file names that exists on the server, could be file with
+   * @param versionedJarFileName: the file names that exists on the server, could be file with
    *        sequence numbers abc.v1.jar, or file with semantic version abc-1.0.0.jar
    * @return the artifact id, which could be optional for other forms of jar names
    *         that might exists on server like abc.jar
    */
-  static Optional<String> toArtifactId(String fileName) {
+  static Optional<String> toArtifactId(String versionedJarFileName) {
     return Stream.of(SEQUENCED_VERSION_SCHEME, SEMANTIC_VERSION_SCHEME)
-        .map(pattern -> pattern.matcher(fileName))
+        .map(pattern -> pattern.matcher(versionedJarFileName))
         .filter(Matcher::matches)
         .map(matcher -> matcher.group("artifact"))
         .findFirst();
@@ -224,16 +224,16 @@ public class JarDeployer implements Serializable {
   /**
    * get the artifact id from the files deployed by the user
    *
-   * @param fileName: the filename that's deployed by the user. could be in the form of
+   * @param deployedJarFileName: the filename that's deployed by the user. could be in the form of
    *        abc.jar or abc-1.0.0.jar, both should return abc
    * @return the artifact id of the string
    */
-  public static String getArtifactId(String fileName) {
-    Matcher semanticVersionMatcher = SEMANTIC_VERSION_SCHEME.matcher(fileName);
+  public static String getArtifactId(String deployedJarFileName) {
+    Matcher semanticVersionMatcher = SEMANTIC_VERSION_SCHEME.matcher(deployedJarFileName);
     if (semanticVersionMatcher.matches()) {
       return semanticVersionMatcher.group("artifact");
     } else {
-      return FilenameUtils.getBaseName(fileName);
+      return FilenameUtils.getBaseName(deployedJarFileName);
     }
   }
 
@@ -345,15 +345,15 @@ public class JarDeployer implements Serializable {
       verifyWritableDeployDirectory();
       renameJarsWithOldNamingConvention();
 
-      final Set<String> jarNames = findArtifactIdsOnDisk();
-      if (jarNames.isEmpty()) {
+      final Set<String> artifactIdsOnDisk = findArtifactIdsOnDisk();
+      if (artifactIdsOnDisk.isEmpty()) {
         return;
       }
 
       List<DeployedJar> latestVersionOfEachJar = new ArrayList<>();
 
-      for (String jarName : jarNames) {
-        DeployedJar deployedJar = findLatestValidDeployedJarFromDisk(jarName);
+      for (String artifactId : artifactIdsOnDisk) {
+        DeployedJar deployedJar = findLatestValidDeployedJarFromDisk(artifactId);
 
         if (deployedJar != null) {
           latestVersionOfEachJar.add(deployedJar);
@@ -384,9 +384,9 @@ public class JarDeployer implements Serializable {
         });
   }
 
-  public DeployedJar findLatestValidDeployedJarFromDisk(String unversionedJarName)
+  public DeployedJar findLatestValidDeployedJarFromDisk(String artifactId)
       throws IOException {
-    final File[] jarFiles = findSortedOldVersionsOfJar(unversionedJarName);
+    final File[] jarFiles = findSortedOldVersionsOfJar(artifactId);
 
     Optional<File> latestValidDeployedJarOptional = Arrays.stream(jarFiles).filter(Objects::nonNull)
         .filter(jarFile -> DeployedJar.hasValidJarContent(jarFile)).findFirst();
@@ -398,7 +398,7 @@ public class JarDeployer implements Serializable {
 
     File latestValidDeployedJar = latestValidDeployedJarOptional.get();
 
-    return new DeployedJar(latestValidDeployedJar, unversionedJarName);
+    return new DeployedJar(latestValidDeployedJar);
   }
 
   public URL[] getDeployedJarURLs() {

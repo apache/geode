@@ -86,9 +86,8 @@ public class DeployedJar {
   /**
    * Writes the given jarBytes to versionedJarFile
    */
-  public DeployedJar(File versionedJarFile, final String artifactId) {
-    Assert.assertTrue(artifactId != null, "artifactId cannot be null");
-    Assert.assertTrue(versionedJarFile != null, "versionedJarFile cannot be null");
+  public DeployedJar(File versionedJarFile) {
+    String artifactId = JarDeployer.toArtifactId(versionedJarFile.getName()).get();
 
     this.file = versionedJarFile;
     this.artifactId = artifactId;

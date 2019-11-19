@@ -262,6 +262,7 @@ public class JarDeployerFileTest {
     assertThat(JarDeployer.getArtifactId("ab.c.1.jar")).isEqualTo("ab.c");
     assertThat(JarDeployer.getArtifactId("abc.v1.jar")).isEqualTo("abc.v1");
     assertThat(JarDeployer.getArtifactId("abc-1.0.snapshot.jar")).isEqualTo("abc");
+    assertThat(JarDeployer.getArtifactId("abc-1.0.v1.jar")).isEqualTo("abc");
   }
 
   @Test
@@ -351,6 +352,24 @@ public class JarDeployerFileTest {
     int version = JarDeployer.extractVersionFromFilename(fileName);
 
     assertThat(version).isEqualTo(1);
+  }
+
+  @Test
+  public void isSequenceVersion() throws Exception {
+    assertThat(JarDeployer.isSequenceVersion("abc.v1.jar")).isTrue();
+    assertThat(JarDeployer.isSequenceVersion("abc.v2.jar")).isTrue();
+    assertThat(JarDeployer.isSequenceVersion("abc.jar")).isFalse();
+    assertThat(JarDeployer.isSequenceVersion("abc-1.0.jar")).isFalse();
+    assertThat(JarDeployer.isSequenceVersion("abc-1.0.v1.jar")).isTrue();
+  }
+
+  @Test
+  public void isSemanticVersion() throws Exception {
+    assertThat(JarDeployer.isSemanticVersion("abc.v1.jar")).isFalse();
+    assertThat(JarDeployer.isSemanticVersion("abc.v2.jar")).isFalse();
+    assertThat(JarDeployer.isSemanticVersion("abc.jar")).isFalse();
+    assertThat(JarDeployer.isSemanticVersion("abc-1.0.jar")).isTrue();
+    assertThat(JarDeployer.isSemanticVersion("abc-1.0.v1.jar")).isTrue();
   }
 
   @Test
@@ -450,7 +469,7 @@ public class JarDeployerFileTest {
     File jarBVersion3 = new File(deploymentFolder, "myJarB.v3.jar");
     classBuilder.writeJarFromName("ClassB", jarBVersion3);
 
-    DeployedJar deployedJarBVersion3 = new DeployedJar(jarBVersion3, "myJarB.jar");
+    DeployedJar deployedJarBVersion3 = new DeployedJar(jarBVersion3);
     jarDeployer.deleteOtherVersionsOfJar(deployedJarBVersion3);
 
     assertThat(jarAVersion1).exists();
@@ -458,7 +477,7 @@ public class JarDeployerFileTest {
     assertThat(jarBVersion2).doesNotExist();
     assertThat(jarBVersion3).exists();
 
-    DeployedJar deployedJarAVersion1 = new DeployedJar(jarAVersion1, "myJarA.jar");
+    DeployedJar deployedJarAVersion1 = new DeployedJar(jarAVersion1);
     jarDeployer.deleteOtherVersionsOfJar(deployedJarAVersion1);
 
     assertThat(jarAVersion1).exists();
