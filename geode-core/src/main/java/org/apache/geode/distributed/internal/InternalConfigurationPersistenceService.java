@@ -546,8 +546,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     ConfigurationResponse configResponse = null;
 
     boolean isLocked = lockSharedConfiguration();
-    try {
-      if (isLocked) {
+    if (isLocked) {
+      try {
         configResponse = new ConfigurationResponse();
         groups.add(ConfigurationPersistenceService.CLUSTER_CONFIG);
         logger.info("Building up configuration response with following configurations: {}", groups);
@@ -559,11 +559,11 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
             configResponse.addJar(group, configuration.getJarNames());
           }
         }
-
         return configResponse;
+
+      } finally {
+        unlockSharedConfiguration();
       }
-    } finally {
-      unlockSharedConfiguration();
     }
     return configResponse;
   }
