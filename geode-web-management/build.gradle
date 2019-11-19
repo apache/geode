@@ -88,6 +88,7 @@ dependencies {
     exclude module: 'objenesis'
     exclude module: 'slf4j-api'
     exclude module: 'spring-core'
+    exclude module: 'spring-plugin-core'
   }
   compile('org.springframework:spring-aspects') {
     exclude module: 'aopalliance'

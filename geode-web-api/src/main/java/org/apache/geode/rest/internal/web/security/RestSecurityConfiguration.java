@@ -26,6 +26,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
+import org.apache.geode.management.configuration.Links;
+
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -48,16 +50,16 @@ public class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
+
     http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
         .authorizeRequests()
-        .antMatchers("/ping", "/docs/**", "/swagger-ui.html", "/v1/api-docs/**",
-            "/webjars/springfox-swagger-ui/**", "/swagger-resources/**")
-        .permitAll().anyRequest().authenticated().and().csrf().disable();
+        .antMatchers("/docs/**", "/swagger-ui.html",
+            Links.URI_VERSION + "/api-docs/**", "/webjars/springfox-swagger-ui/**",
+            "/swagger-resources/**")
+        .permitAll().and().csrf().disable();
 
     if (this.authProvider.getSecurityService().isIntegratedSecurity()) {
-      http.httpBasic();
-    } else {
-      http.authorizeRequests().anyRequest().permitAll();
+      http.authorizeRequests().anyRequest().authenticated().and().httpBasic();
     }
   }
 }
