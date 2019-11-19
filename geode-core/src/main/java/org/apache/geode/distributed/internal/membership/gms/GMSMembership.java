@@ -71,10 +71,8 @@ import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectReply;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectionException;
@@ -700,7 +698,6 @@ public class GMSMembership implements Membership {
   public GMSMembership(MembershipListener listener, MessageListener messageListener,
       ClusterDistributionManager dm, LifecycleListener lifecycleListener) {
     this.lifecycleListener = lifecycleListener;
-    Assert.assertTrue(listener != null);
     this.listener = listener;
     this.messageListener = messageListener;
     this.gmsManager = new ManagerImpl();
@@ -986,9 +983,8 @@ public class GMSMembership implements Membership {
     if (shunned) { // bug #41538 - shun notification must be outside synchronization to avoid
       // hanging
       warnShun(m);
-      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_VIEWS_VERBOSE)) {
-        logger.trace(LogMarker.DISTRIBUTION_VIEWS_VERBOSE,
-            "Membership: Ignoring message from shunned member <{}>:{}", m, msg);
+      if (logger.isTraceEnabled()) {
+        logger.trace("Membership: Ignoring message from shunned member <{}>:{}", m, msg);
       }
       throw new MemberShunnedException(m);
     }
@@ -1997,8 +1993,6 @@ public class GMSMembership implements Membership {
     /* Service interface */
     public void init(Services services) {
       GMSMembership.this.services = services;
-
-      Assert.assertTrue(services != null);
 
       MembershipConfig config = services.getConfig();
 

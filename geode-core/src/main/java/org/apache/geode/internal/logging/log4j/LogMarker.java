@@ -128,9 +128,6 @@ public interface LogMarker {
       MarkerManager.getMarker("DISTRIBUTION_BRIDGE_SERVER_VERBOSE").addParents(DISTRIBUTION_MARKER,
           BRIDGE_SERVER_VERBOSE);
   @Immutable
-  Marker DISTRIBUTION_VIEWS_VERBOSE = MarkerManager.getMarker("DISTRIBUTION_VIEWS_VERBOSE")
-      .addParents(DISTRIBUTION_MARKER, GEODE_VERBOSE);
-  @Immutable
   Marker DISTRIBUTION_ADVISOR_VERBOSE = MarkerManager.getMarker("DISTRIBUTION_ADVISOR_VERBOSE")
       .addParents(DISTRIBUTION_MARKER, GEODE_VERBOSE);
 
