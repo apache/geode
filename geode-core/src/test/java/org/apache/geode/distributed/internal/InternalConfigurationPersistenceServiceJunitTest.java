@@ -123,7 +123,7 @@ public class InternalConfigurationPersistenceServiceJunitTest {
     paths = Stream.of(jar3).map(Path::toString).collect(Collectors.toList());
     service.addJarsToThisLocator(paths, null);
     assertThat(workingDir.resolve("cluster").toFile().list())
-        .containsExactlyInAnyOrder("abc-1.0.jar", "abc-1.1.jar", "def-1.0.jar");
+        .containsExactlyInAnyOrder("abc-1.1.jar", "def-1.0.jar");
     argumentCaptor = ArgumentCaptor.forClass(Configuration.class);
     verify(configRegion, times(2)).put(eq("cluster"), argumentCaptor.capture(), eq("member"));
     configuration = argumentCaptor.getValue();
