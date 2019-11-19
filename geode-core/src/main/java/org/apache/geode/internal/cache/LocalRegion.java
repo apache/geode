@@ -5791,6 +5791,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           } catch (InterruptedException ignore) {
             Thread.currentThread().interrupt();
             stopper.checkCancelInProgress(null);
+            logger.info("JASON dooooooooooooooooood a leak?!?!!?!?" + event);
           }
         }
       }
