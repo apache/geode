@@ -103,7 +103,7 @@ echo "${ZONE}" > "instance-data/zone"
 echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 RAM_MEGABYTES=$( expr ${RAM} \* 1024 )
 
-TTL=$(($(date +%s) + 60 * 60 * 6))
+TTL=$(($(date +%s) + 60 * 60 * 12))
 LABELS="instance_type=heavy-lifter,time-to-live=${TTL},job-name=${SANITIZED_BUILD_JOB_NAME},pipeline-name=${SANITIZED_BUILD_PIPELINE_NAME},build-name=${SANITIZED_BUILD_NAME},sha=${GEODE_SHA}"
 echo "Applying the following labels to the instance: ${LABELS}"
 
