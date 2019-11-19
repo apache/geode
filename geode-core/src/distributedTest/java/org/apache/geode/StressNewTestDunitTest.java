@@ -33,7 +33,8 @@ public class StressNewTestDunitTest {
 
   @Before
   public void setUp() {
-    MemberVM locator = cluster.startLocatorVM(0, l -> l.withSecurityManager(SimpleSecurityManager.class));
+    MemberVM locator =
+        cluster.startLocatorVM(0, l -> l.withSecurityManager(SimpleSecurityManager.class));
     int locatorPort = locator.getPort();
     List<MemberVM> servers = new ArrayList<>();
     IntStream.range(0, 2).forEach(
@@ -42,39 +43,43 @@ public class StressNewTestDunitTest {
   }
 
   @Test
-  public void test1() {
+  public void test1() throws InterruptedException {
+    Thread.sleep(5000);
 
   }
 
   @Test
-  public void test2() {
+  public void test2() throws InterruptedException {
+    Thread.sleep(5000);
 
   }
 
   @Test
-  public void test3() {
+  public void test3() throws InterruptedException {
+    Thread.sleep(5000);
 
   }
 
   @Test
-  public void test4() {
+  public void test4() throws InterruptedException {
+    Thread.sleep(5000);
 
   }
 
   @Test
-  public void test5() {
+  public void test5() throws InterruptedException {
+    Thread.sleep(5000);
 
   }
 
   @Test
-  public void test6() {
+  public void test6() throws InterruptedException {
+    Thread.sleep(5000);
 
   }
 
   @Test
-  public void test7() {
-//    int locatorPort = cluster.getMember(0).getPort();
-//    MemberVM newServer = cluster.startServerVM(3, s -> s.withConnectionToLocator(locatorPort)
-//        .withCredential("clusterManage", "clusterManage"));
+  public void test7() throws InterruptedException {
+    Thread.sleep(5000);
   }
 }
