@@ -116,7 +116,7 @@ public class ParallelSerialAsyncEventListenerStopStartDistributedTest implements
     return regionFactory;
   }
 
-  @Test // reproduces a customer use case
+  @Test
   public void testStopStartPersistentParallelAndSerialAsyncEventQueues() {
     // Create cache
     vm0.invoke(() -> createCache());
