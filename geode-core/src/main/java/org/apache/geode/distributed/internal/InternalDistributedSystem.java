@@ -76,9 +76,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -776,8 +774,8 @@ public class InternalDistributedSystem extends DistributedSystem
       Assert.assertTrue(dm != null);
       Assert.assertTrue(dm.getSystem() == this);
 
-      if (dm != null && dm.getMembershipManager() != null) {
-        id = dm.getMembershipManager().getLocalMember().getMembershipPort();
+      if (dm != null && dm.getDistribution() != null) {
+        id = dm.getDistribution().getLocalMember().getMembershipPort();
       }
 
       synchronized (isConnectedMutex) {
@@ -1450,7 +1448,7 @@ public class InternalDistributedSystem extends DistributedSystem
   private static volatile boolean emergencyClassesLoaded = false;
 
   /**
-   * Ensure that the MembershipManager class gets loaded.
+   * Ensure that the Distribution class gets loaded.
    *
    * @see SystemFailure#loadEmergencyClasses()
    */
@@ -1459,7 +1457,7 @@ public class InternalDistributedSystem extends DistributedSystem
       return;
     }
     emergencyClassesLoaded = true;
-    GMSMembershipManager.loadEmergencyClasses();
+    DistributionImpl.loadEmergencyClasses();
   }
 
   /**
@@ -1469,7 +1467,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public void emergencyClose() {
     if (dm != null) {
-      MembershipManager mm = dm.getMembershipManager();
+      Distribution mm = dm.getDistribution();
       if (mm != null) {
         mm.emergencyClose();
       }
@@ -1680,7 +1678,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
   /**
    * If this DistributedSystem is attempting to reconnect to the distributed system this will return
-   * the quorum checker created by the old MembershipManager for checking to see if a quorum of old
+   * the quorum checker created by the old {@link Distribution} for checking to see if a quorum of
+   * old
    * members can be reached.
    *
    * @return the quorum checking service
@@ -2483,7 +2482,7 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     // get the membership manager for quorum checks
-    MembershipManager mbrMgr = dm.getMembershipManager();
+    Distribution mbrMgr = dm.getDistribution();
     quorumChecker = mbrMgr.getQuorumChecker();
     if (logger.isDebugEnabled()) {
       if (quorumChecker == null) {
@@ -2721,10 +2720,10 @@ public class InternalDistributedSystem extends DistributedSystem
       } else {
         System.setProperty(InternalLocator.INHIBIT_DM_BANNER, inhibitBanner);
       }
-      dm.getMembershipManager().setReconnectCompleted(true);
+      dm.getDistribution().setReconnectCompleted(true);
       InternalDistributedSystem newds = reconnectDS;
       if (newds != null) {
-        newds.getDM().getMembershipManager().setReconnectCompleted(true);
+        newds.getDM().getDistribution().setReconnectCompleted(true);
       }
       if (quorumChecker != null) {
         mbrMgr.releaseQuorumChecker(quorumChecker, reconnectDS);

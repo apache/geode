@@ -63,7 +63,7 @@ public class ClusterElderManager {
     return theMembers.stream()
         .filter(member -> member.getVmKind() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE)
         .filter(
-            member -> !clusterDistributionManager.getMembershipManager().isSurpriseMember(member))
+            member -> !clusterDistributionManager.getDistribution().isSurpriseMember(member))
         .collect(Collectors.toList());
   }
 

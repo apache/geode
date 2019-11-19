@@ -22,8 +22,8 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
@@ -75,7 +75,7 @@ public class ListMembersCommand extends GfshCommand {
       return null;
     }
 
-    MembershipManager mmgr = ids.getDistributionManager().getMembershipManager();
+    Distribution mmgr = ids.getDistributionManager().getDistribution();
     if (mmgr == null) {
       return null;
     }

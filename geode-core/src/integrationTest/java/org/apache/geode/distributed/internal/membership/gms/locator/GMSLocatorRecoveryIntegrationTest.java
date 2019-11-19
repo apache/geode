@@ -49,12 +49,13 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
@@ -80,7 +81,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
   private File stateFile;
   private GMSLocator gmsLocator;
-  private MembershipManager membershipManager;
+  private Membership membership;
   private Locator locator;
   private DSFIDSerializer serializer;
 
@@ -107,8 +108,8 @@ public class GMSLocatorRecoveryIntegrationTest {
 
   @After
   public void tearDown() throws Exception {
-    if (membershipManager != null) {
-      membershipManager.disconnect(false);
+    if (membership != null) {
+      membership.disconnect(false);
     }
     if (locator != null) {
       locator.stop();
@@ -164,7 +165,7 @@ public class GMSLocatorRecoveryIntegrationTest {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
     InetAddress localHost = SocketCreator.getLocalHost();
 
-    // this locator will hook itself up with the first MembershipManager to be created
+    // this locator will hook itself up with the first Membership to be created
     locator = InternalLocator.startLocator(port, null, null, null, localHost, false,
         new Properties(), null, temporaryFolder.getRoot().toPath());
 
@@ -193,7 +194,7 @@ public class GMSLocatorRecoveryIntegrationTest {
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
 
     // start the membership manager
-    membershipManager =
+    membership =
         MembershipBuilder.newMembershipBuilder(null)
             .setAuthenticator(new GMSAuthenticator(mockSystem.getSecurityProperties(),
                 mockSystem.getSecurityService(),
@@ -203,17 +204,19 @@ public class GMSLocatorRecoveryIntegrationTest {
             .setMembershipListener(mockListener)
             .setConfig(new ServiceConfig(transport, config))
             .setSerializer(InternalDataSerializer.getDSFIDSerializer())
+            .setLifecycleListener(mock(LifecycleListener.class))
             .setLocatorClient(locatorClient)
             .create();
+    membership.start();
 
     GMSLocator gmsLocator = new GMSLocator(localHost,
-        membershipManager.getLocalMember().getHost() + "[" + port + "]", true, true,
+        membership.getLocalMember().getHost() + "[" + port + "]", true, true,
         new LocatorStats(), "", temporaryFolder.getRoot().toPath(), locatorClient);
     gmsLocator.setViewFile(new File(temporaryFolder.getRoot(), "locator2.dat"));
     gmsLocator.init(null);
 
     assertThat(gmsLocator.getMembers())
-        .contains(membershipManager.getLocalMember());
+        .contains(membership.getLocalMember());
   }
 
   @Test

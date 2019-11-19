@@ -19,10 +19,10 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionException;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
@@ -43,6 +43,7 @@ public class MembershipBuilderImpl implements MembershipBuilder {
   private MembershipConfig membershipConfig;
   private DSFIDSerializer serializer;
   private MemberIdentifierFactory memberFactory = new MemberIdentifierFactoryImpl();
+  private LifecycleListener lifecycleListener;
 
   public MembershipBuilderImpl(ClusterDistributionManager dm) {
     this.dm = dm;
@@ -97,15 +98,21 @@ public class MembershipBuilderImpl implements MembershipBuilder {
   }
 
   @Override
-  public MembershipManager create() {
-    GMSMembershipManager gmsMembershipManager =
-        new GMSMembershipManager(membershipListener, messageListener, dm);
+  public MembershipBuilder setLifecycleListener(
+      LifecycleListener lifecycleListener) {
+    this.lifecycleListener = lifecycleListener;
+    return this;
+  }
+
+  @Override
+  public Membership create() {
+    GMSMembership gmsMembership =
+        new GMSMembership(membershipListener, messageListener, dm, lifecycleListener);
     Services services =
-        new Services(gmsMembershipManager.getGMSManager(), statistics, authenticator,
+        new Services(gmsMembership.getGMSManager(), statistics, authenticator,
             membershipConfig, serializer, memberFactory, locatorClient);
     try {
       services.init();
-      services.start();
     } catch (ConnectionException e) {
       throw new DistributionException(
           "Unable to create membership manager",
@@ -116,9 +123,7 @@ public class MembershipBuilderImpl implements MembershipBuilder {
       Services.getLogger().error("Unexpected problem starting up membership services", e);
       throw new SystemConnectException("Problem starting up membership services", e);
     }
-    return gmsMembershipManager;
+    return gmsMembership;
   }
-
-
 
 }

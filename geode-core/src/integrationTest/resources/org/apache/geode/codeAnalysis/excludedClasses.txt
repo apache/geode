@@ -12,7 +12,7 @@ org/apache/geode/distributed/internal/DistributionConfigImpl
 org/apache/geode/distributed/internal/OverflowQueueWithDMStats
 org/apache/geode/distributed/internal/ThrottlingMemLinkedQueueWithDMStats
 org/apache/geode/distributed/internal/membership/gms/messenger/JGAddress
-org/apache/geode/distributed/internal/membership/adapter/GMSMembershipManager$BoundedLinkedHashMap
+org/apache/geode/distributed/internal/membership/gms/GMSMembership$BoundedLinkedHashMap
 org/apache/geode/internal/AbstractConfig$SortedProperties
 org/apache/geode/internal/AvailablePort$Keeper
 org/apache/geode/internal/ExitCode

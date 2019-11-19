@@ -30,20 +30,30 @@ import org.junit.runner.RunWith;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.SystemFailure;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMessageAdapter;
+import org.apache.geode.distributed.internal.membership.adapter.GMSQuorumCheckerAdapter;
+import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
+import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -115,9 +125,6 @@ public class MembershipDependenciesJUnitTest {
               .or(type(InternalDataSerializer.class)) // still used by GMSLocator
               .or(type(DistributionMessage.class)) // still used by GMSLocator
 
-              // TODO: Membership needs its own config object
-              .or(type(MembershipManager.class))
-
               // TODO
               .or(assignableTo(CancelCriterion.class))
 
@@ -158,8 +165,24 @@ public class MembershipDependenciesJUnitTest {
               .or(type(DistributedMember.class))
               .or(type(MembershipView.class))
 
-              .or(type(GMSMembershipManager.class))
               .or(type(ClusterDistributionManager.class))
+
+              // TODO: GMSMembershipMannager move brought these within...
+              .or(type(SystemTimer.class))
+              .or(type(SystemTimer.SystemTimerTask.class))
+              .or(type(Assert.class))
+              .or(type(InternalLocator.class))
+              .or(type(GMSMessageAdapter.class))
+              .or(type(GMSLocatorAdapter.class))
+              .or(type(QuorumChecker.class))
+              .or(type(LogMarker.class))
+              .or(type(SystemFailure.class))
+              .or(type(MembershipTestHook.class))
+              .or(type(GMSQuorumChecker.class))
+              .or(type(GMSQuorumCheckerAdapter.class))
+              .or(type(InternalDistributedSystem.class))
+              .or(type(MembershipView.class))
+              .or(type(LocalViewMessage.class))
 
   );
 }

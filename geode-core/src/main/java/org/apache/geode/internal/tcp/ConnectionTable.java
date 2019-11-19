@@ -39,11 +39,11 @@ import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
@@ -296,7 +296,7 @@ public class ConnectionTable {
     // handle new pending connection
     Connection con = null;
     try {
-      con = Connection.createSender(owner.getMembershipManager(), this, preserveOrder, id,
+      con = Connection.createSender(owner.getMembership(), this, preserveOrder, id,
           sharedResource, startTime, ackThreshold, ackSAThreshold);
       this.owner.getStats().incSenders(sharedResource, preserveOrder);
     } finally {
@@ -420,7 +420,7 @@ public class ConnectionTable {
           throw new IOException("Cannot form connection to alert listener " + id);
         }
 
-        result = ((PendingConnection) mEntry).waitForConnect(this.owner.getMembershipManager(),
+        result = ((PendingConnection) mEntry).waitForConnect(this.owner.getMembership(),
             startTime, ackTimeout, ackSATimeout);
         if (logger.isDebugEnabled()) {
           if (result != null) {
@@ -486,7 +486,7 @@ public class ConnectionTable {
       return result;
 
     // OK, we have to create a new connection.
-    result = Connection.createSender(owner.getMembershipManager(), this, true /* preserveOrder */,
+    result = Connection.createSender(owner.getMembership(), this, true /* preserveOrder */,
         id, false /* shared */, startTime, ackTimeout, ackSATimeout);
     if (logger.isDebugEnabled()) {
       logger.debug("ConnectionTable: created an ordered connection: {}", result);
@@ -772,10 +772,10 @@ public class ConnectionTable {
    * Return true if our owner already knows that this endpoint is departing
    */
   protected boolean isEndpointShuttingDown(DistributedMember id) {
-    return giveUpOnMember(owner.getDM().getMembershipManager(), id);
+    return giveUpOnMember(owner.getDM().getDistribution(), id);
   }
 
-  protected boolean giveUpOnMember(MembershipManager mgr, DistributedMember remoteAddr) {
+  protected boolean giveUpOnMember(Distribution mgr, DistributedMember remoteAddr) {
     return !mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress();
   }
 
@@ -886,12 +886,9 @@ public class ConnectionTable {
         closeCon(reason, con);
       }
       if (notifyDisconnect) {
-        // Before the removal of TCPConduit Stub addresses this used
-        // to call MembershipManager.getMemberForStub, which checked
-        // for a shutdown in progress and threw this exception:
         if (owner.getDM().shutdownInProgress()) {
           throw new DistributedSystemDisconnectedException("Shutdown in progress",
-              owner.getDM().getMembershipManager().getShutdownCause());
+              owner.getDM().getDistribution().getShutdownCause());
         }
       }
 
@@ -1229,7 +1226,7 @@ public class ConnectionTable {
           } else if (!suspected) {
             logger.warn("Unable to form a TCP/IP connection to %s in over %s seconds",
                 this.id, (ackTimeout) / 1000);
-            ((GMSMembershipManager) mgr).suspectMember((InternalDistributedMember) targetMember,
+            ((GMSMembership) mgr).suspectMember((InternalDistributedMember) targetMember,
                 "Unable to form a TCP/IP connection in a reasonable amount of time");
             suspected = true;
           }

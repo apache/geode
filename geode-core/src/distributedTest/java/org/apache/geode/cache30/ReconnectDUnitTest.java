@@ -36,7 +36,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.Locator.getLocator;
-import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getMembership;
+import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getDistribution;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -86,12 +86,12 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ReconnectListener;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.AvailablePort;
@@ -250,8 +250,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     locatorVm.invoke(new SerializableRunnable("disable force-disconnect") {
       @Override
       public void run() {
-        GMSMembershipManager mgr = (GMSMembershipManager) MembershipManagerHelper
-            .getMembership(Locator.getLocator().getDistributedSystem());
+        Distribution mgr = MembershipManagerHelper
+            .getDistribution(Locator.getLocator().getDistributedSystem());
         mgr.disableDisconnectOnQuorumLossForTesting();
       }
     });
@@ -419,7 +419,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
               cache = ((InternalLocator) locator).getCache();
               system = cache.getInternalDistributedSystem();
               assertTrue(
-                  ((GMSMembershipManager) getMembership(system))
+                  (getDistribution(system))
                       .getServices().getMessenger()
                       .isOldMembershipIdentifier(dm));
               return ds.getReconnectedSystem().getDistributedMember();
@@ -527,7 +527,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             }
             assertTrue("expected system to be reconnected", ds.getReconnectedSystem() != null);
             int oldViewId =
-                getMembership(ds).getLocalMember().getVmViewId();
+                getDistribution(ds).getLocalMember().getVmViewId();
             int newViewId =
                 ((InternalDistributedMember) ds.getReconnectedSystem().getDistributedMember())
                     .getVmViewId();

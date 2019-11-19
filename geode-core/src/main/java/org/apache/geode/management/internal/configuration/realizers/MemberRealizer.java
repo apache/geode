@@ -22,9 +22,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.RealizationResult;
@@ -73,8 +73,8 @@ public class MemberRealizer
   @VisibleForTesting
   String getCoordinatorId(InternalCache cache) {
     return Optional.ofNullable(cache.getDistributionManager())
-        .map(DistributionManager::getMembershipManager)
-        .map(MembershipManager::getCoordinator)
+        .map(DistributionManager::getDistribution)
+        .map(Distribution::getCoordinator)
         .map(DistributedMember::getId)
         .orElse(null);
   }
