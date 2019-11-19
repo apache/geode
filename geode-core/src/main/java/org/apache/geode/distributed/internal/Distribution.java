@@ -66,6 +66,8 @@ public interface Distribution {
 
   void beSick();
 
+  void beHealthy();
+
   void playDead();
 
   boolean isBeingSick();
