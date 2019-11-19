@@ -415,6 +415,11 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
+  public void beHealthy() {
+    membership.beHealthy();
+  }
+
+  @Override
   public void playDead() {
     membership.playDead();
   }
