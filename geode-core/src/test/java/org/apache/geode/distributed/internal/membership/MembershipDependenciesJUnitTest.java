@@ -36,9 +36,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMessageAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
@@ -159,18 +157,15 @@ public class MembershipDependenciesJUnitTest {
               .or(type(InternalDistributedMember[].class))
               .or(type(DistributedMember.class))
               .or(type(MembershipView.class))
+              .or(type(LocalViewMessage.class))
+              .or(type(GMSMessageAdapter.class))
 
               .or(type(ClusterDistributionManager.class))
 
               // TODO: GMSMembershipManager move brought these within...
               .or(type(SystemTimer.class))
               .or(type(SystemTimer.SystemTimerTask.class))
-              .or(type(InternalLocator.class))
-              .or(type(GMSMessageAdapter.class))
-              .or(type(GMSLocatorAdapter.class))
               .or(type(SystemFailure.class))
-              .or(type(MembershipView.class))
-              .or(type(LocalViewMessage.class))
 
   );
 }

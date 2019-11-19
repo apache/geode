@@ -49,16 +49,13 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.StartupMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
-import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMessageAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
@@ -2019,13 +2016,7 @@ public class GMSMembership implements Membership {
     @Override
     public void started() {
       startCleanupTimer();
-      // see if a locator was started and put it in GMS Services
-      InternalLocator l = (InternalLocator) org.apache.geode.distributed.Locator.getLocator();
-      if (l != null && l.getLocatorHandler() != null) {
-        if (l.getLocatorHandler().setServices(services)) {
-          services.setLocator(((GMSLocatorAdapter) l.getLocatorHandler()).getGMSLocator());
-        }
-      }
+      lifecycleListener.started();
     }
 
     /* Service interface */
@@ -2159,14 +2150,7 @@ public class GMSMembership implements Membership {
       listener.saveConfig();
 
       Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
-        // stop server locators immediately since they may not have correct
-        // information. This has caused client failures in bridge/wan
-        // network-down testing
-        InternalLocator loc = (InternalLocator) Locator.getLocator();
-        if (loc != null) {
-          loc.stop(true, !services.getConfig().getDisableAutoReconnect(),
-              false);
-        }
+        lifecycleListener.forcedDisconnect();
         uncleanShutdown(reason, shutdownCause);
       });
       reconnectThread.start();
@@ -2268,4 +2252,5 @@ public class GMSMembership implements Membership {
     }
 
   }
+
 }

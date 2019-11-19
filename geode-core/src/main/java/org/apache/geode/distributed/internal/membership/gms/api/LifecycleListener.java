@@ -33,4 +33,8 @@ public interface LifecycleListener {
   void setLocalAddress(InternalDistributedMember address);
 
   void destroyMember(InternalDistributedMember member, String reason);
+
+  void started();
+
+  void forcedDisconnect();
 }

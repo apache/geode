@@ -37,10 +37,12 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.direct.ShunnedMemberException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
+import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
@@ -94,6 +96,7 @@ public class DistributionImpl implements Distribution {
 
   private MyDCReceiver dcReceiver;
   private final long memberTimeout;
+  private boolean disableAutoReconnect;
 
 
   public DistributionImpl(final ClusterDistributionManager clusterDistributionManager,
@@ -107,6 +110,7 @@ public class DistributionImpl implements Distribution {
     mcastEnabled = transportConfig.isMcastEnabled();
     ackSevereAlertThreshold = system.getConfig().getAckSevereAlertThreshold();
     ackWaitThreshold = system.getConfig().getAckWaitThreshold();
+    disableAutoReconnect = system.getConfig().getDisableAutoReconnect();
     if (!tcpDisabled) {
       dcReceiver = new MyDCReceiver();
     }
@@ -873,5 +877,27 @@ public class DistributionImpl implements Distribution {
       distribution.destroyMember(member, reason);
     }
 
+    @Override
+    public void started() {
+      // see if a locator was started and put it in GMS Services
+      InternalLocator l = (InternalLocator) Locator.getLocator();
+      if (l != null && l.getLocatorHandler() != null) {
+        if (l.getLocatorHandler().setServices(distribution.getServices())) {
+          distribution.getServices()
+              .setLocator(((GMSLocatorAdapter) l.getLocatorHandler()).getGMSLocator());
+        }
+      }
+    }
+
+    @Override
+    public void forcedDisconnect() {
+      // stop server locators immediately since they may not have correct
+      // information. This has caused client failures in bridge/wan
+      // network-down testing
+      InternalLocator loc = (InternalLocator) Locator.getLocator();
+      if (loc != null) {
+        loc.stop(true, !distribution.disableAutoReconnect, false);
+      }
+    }
   }
 }
