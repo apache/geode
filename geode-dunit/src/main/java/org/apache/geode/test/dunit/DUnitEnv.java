@@ -59,9 +59,7 @@ public abstract class DUnitEnv {
 
   public abstract Properties getDistributedSystemProperties();
 
-  public abstract int getPid();
-
-  public abstract int getVMID();
+  public abstract int getId();
 
   public abstract BounceResult bounce(String version, int pid, boolean force)
       throws RemoteException;

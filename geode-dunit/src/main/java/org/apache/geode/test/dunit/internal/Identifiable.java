@@ -12,28 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit;
+package org.apache.geode.test.dunit.internal;
 
-public class NamedCallable<T> implements SerializableCallableIF<T> {
+import java.io.Serializable;
 
-  private static final long serialVersionUID = -4417299628656632541L;
+public interface Identifiable extends Serializable {
 
-  String name;
-  SerializableCallableIF<T> delegate;
-
-  public NamedCallable(String name, SerializableCallableIF<T> delegate) {
-    this.name = name;
-    this.delegate = delegate;
+  default long getId() {
+    return 0;
   }
-
-  @Override
-  public T call() throws Exception {
-    return delegate.call();
-  }
-
-  @Override
-  public String toString() {
-    return ("callable(" + name + ")");
-  }
-
 }

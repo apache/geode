@@ -14,81 +14,93 @@
  */
 package org.apache.geode.test.dunit;
 
+import static java.lang.Integer.toHexString;
+
 import java.io.Serializable;
 
 /**
  * This interface provides both {@link Serializable} and {@link Runnable}. It is often used in
  * conjunction with {@link VM#invoke(SerializableRunnableIF)}.
  *
- * <PRE>
+ * <pre>
  * public void testRegionPutGet() {
- *   final Host host = Host.getHost(0);
- *   VM vm0 = host.getVM(0);
- *   VM vm1 = host.getVM(1);
- *   final String name = this.getUniqueName();
- *   final Object value = new Integer(42);
+ *   VM vm0 = VM.getVM(0);
+ *   VM vm1 = VM.getVM(1);
  *
- *   vm0.invoke(new SerializableRunnable("Put value") {
+ *   String regionName = getUniqueName();
+ *   Object value = new Integer(42);
+ *
+ *   vm0.invoke("Put value", new SerializableRunnable() {
  *       public void run() {
  *         ...// get the region //...
  *         region.put(name, value);
  *       }
  *      });
- *   vm1.invoke(new SerializableRunnable("Get value") {
+ *   vm1.invoke("Get value", new SerializableRunnable() {
  *       public void run() {
  *         ...// get the region //...
  *         assertIndexDetailsEquals(value, region.get(name));
  *       }
  *     });
  *  }
- * </PRE>
+ * </pre>
  */
 public abstract class SerializableRunnable implements SerializableRunnableIF {
 
-  private static final long serialVersionUID = 7584289978241650456L;
+  private static final String DEFAULT_NAME = "";
+  private static final long DEFAULT_ID = 0L;
 
-  private String name;
-  protected Object[] args;
+  private final String name;
+  private final long id;
 
   public SerializableRunnable() {
-    this.name = null;
+    this(DEFAULT_NAME, DEFAULT_ID);
   }
 
   /**
    * This constructor lets you do the following:
    *
-   * <PRE>
+   * <pre>
    * vm.invoke(new SerializableRunnable("Do some work") {
    *   public void run() {
    *     // ...
    *   }
    * });
-   * </PRE>
+   * </pre>
+   *
+   * @deprecated Please pass name as the first argument to {@link VM} invoke or asyncInvoke.
    */
+  @Deprecated
   public SerializableRunnable(String name) {
+    this(name, DEFAULT_ID);
+  }
+
+  public SerializableRunnable(long id) {
+    this(DEFAULT_NAME, id);
+  }
+
+  private SerializableRunnable(String name, long id) {
     this.name = name;
+    this.id = id;
   }
 
-  public SerializableRunnable(String name, Object[] args) {
-    this.name = name;
-    this.args = args;
-  }
-
-  public void setName(String newName) {
-    this.name = newName;
-  }
-
+  /**
+   * @deprecated Please pass name as the first argument to {@link VM} invoke or asyncInvoke.
+   */
+  @Deprecated
   public String getName() {
-    return this.name;
+    return name;
   }
 
+  public long getId() {
+    return id;
+  }
+
+  @Override
   public String toString() {
-    if (this.name != null) {
-      return "\"" + this.name + "\"";
-
-    } else {
-      return super.toString();
-    }
+    return new StringBuilder()
+        .append(getClass().getSimpleName()).append("@").append(toHexString(hashCode()))
+        .append('(').append(id).append(", \"").append(name).append("\")")
+        .toString();
   }
-
 }

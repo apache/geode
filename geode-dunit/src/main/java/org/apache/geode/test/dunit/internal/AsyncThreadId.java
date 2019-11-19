@@ -12,21 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit;
+package org.apache.geode.test.dunit.internal;
 
-import java.util.concurrent.Callable;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.geode.test.dunit.internal.Identifiable;
-import org.apache.geode.test.dunit.internal.Invocable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 
-/**
- * Interface for {@link SerializableCallable} to enable use with lambdas.
- */
-@FunctionalInterface
-public interface SerializableCallableIF<T> extends Callable<T>, Identifiable, Invocable {
+public class AsyncThreadId {
 
-  @Override
-  default String getMethodName() {
-    return "call";
+  private static final AtomicLong ASYNC_ID_COUNTER = new AtomicLong();
+
+  @MakeNotStatic
+  private static final Map<Long, Long> ASYNC_THREAD_ID_MAP = new ConcurrentHashMap<>();
+
+  public static long nextId() {
+    return ASYNC_ID_COUNTER.incrementAndGet();
+  }
+
+  public static void put(long asyncId, long threadId) {
+    ASYNC_THREAD_ID_MAP.put(asyncId, threadId);
+  }
+
+  public static void remove(long asyncId) {
+    ASYNC_THREAD_ID_MAP.remove(asyncId);
+  }
+
+  public static long get(long asyncId) {
+    return ASYNC_THREAD_ID_MAP.get(asyncId);
   }
 }
