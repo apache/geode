@@ -165,7 +165,6 @@ public class MembershipDependenciesJUnitTest {
               // TODO: GMSMembershipManager move brought these within...
               .or(type(SystemTimer.class))
               .or(type(SystemTimer.SystemTimerTask.class))
-              .or(type(SystemFailure.class))
 
   );
 }

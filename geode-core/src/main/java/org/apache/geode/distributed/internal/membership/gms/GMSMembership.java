@@ -469,19 +469,12 @@ public class GMSMembership implements Membership {
         try {
           listener.newMemberConnected(m);
         } catch (VirtualMachineError err) {
-          SystemFailure.initiateFailure(err);
           // If this ever returns, rethrow the error. We're poisoned
           // now, so don't let this thread continue.
           throw err;
         } catch (DistributedSystemDisconnectedException e) {
           // don't log shutdown exceptions
         } catch (Throwable t) {
-          // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above). However, there is
-          // _still_ a possibility that you are dealing with a cascading
-          // error condition, so you also need to check to see if the JVM
-          // is still usable:
-          SystemFailure.checkFailure();
           logger.info(String.format("Membership: Fault while processing view addition of %s",
               m),
               t);
@@ -504,17 +497,10 @@ public class GMSMembership implements Membership {
               newView.getCrashedMembers().contains(m) || suspectedMembers.containsKey(m),
               "departed membership view");
         } catch (VirtualMachineError err) {
-          SystemFailure.initiateFailure(err);
           // If this ever returns, rethrow the error. We're poisoned
           // now, so don't let this thread continue.
           throw err;
         } catch (Throwable t) {
-          // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above). However, there is
-          // _still_ a possibility that you are dealing with a cascading
-          // error condition, so you also need to check to see if the JVM
-          // is still usable:
-          SystemFailure.checkFailure();
           logger.info(String.format("Membership: Fault while processing view removal of %s",
               m),
               t);
@@ -1151,21 +1137,13 @@ public class GMSMembership implements Membership {
         try {
           processStartupEvent(ev);
         } catch (VirtualMachineError err) {
-          SystemFailure.initiateFailure(err);
           // If this ever returns, rethrow the error. We're poisoned
           // now, so don't let this thread continue.
           throw err;
         } catch (Throwable t) {
-          // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above). However, there is
-          // _still_ a possibility that you are dealing with a cascading
-          // error condition, so you also need to check to see if the JVM
-          // is still usable:
-          SystemFailure.checkFailure();
           logger.warn("Membership: Error handling startup event",
               t);
         }
-
       } // for
       if (logger.isDebugEnabled())
         logger.debug("Membership: finished processing startup events.");
