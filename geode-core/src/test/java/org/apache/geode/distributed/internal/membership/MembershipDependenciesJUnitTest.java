@@ -30,7 +30,6 @@ import org.junit.runner.RunWith;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
@@ -44,7 +43,6 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.net.SocketCreator;
@@ -161,10 +159,6 @@ public class MembershipDependenciesJUnitTest {
               .or(type(GMSMessageAdapter.class))
 
               .or(type(ClusterDistributionManager.class))
-
-              // TODO: GMSMembershipManager move brought these within...
-              .or(type(SystemTimer.class))
-              .or(type(SystemTimer.SystemTimerTask.class))
 
   );
 }

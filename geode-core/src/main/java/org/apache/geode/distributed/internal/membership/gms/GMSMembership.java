@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -68,12 +69,12 @@ import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectReply;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.tcp.MemberShunnedException;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -568,7 +569,7 @@ public class GMSMembership implements Membership {
    *
    * Concurrency: protected by {@link #latestViewLock} ReentrantReadWriteLock
    */
-  private SystemTimer cleanupTimer;
+  private ScheduledExecutorService cleanupTimer;
 
   private Services services;
 
@@ -852,14 +853,11 @@ public class GMSMembership implements Membership {
       return;
     }
     DistributedSystem ds = dm.getSystem();
-    this.cleanupTimer = new SystemTimer(ds, true);
-    SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {
-      @Override
-      public void run2() {
-        cleanUpSurpriseMembers();
-      }
-    };
-    this.cleanupTimer.scheduleAtFixedRate(st, surpriseMemberTimeout, surpriseMemberTimeout / 3);
+    this.cleanupTimer =
+        LoggingExecutors.newScheduledThreadPool("GMSMembership.cleanupTimer", 1, false);
+
+    this.cleanupTimer.scheduleAtFixedRate(this::cleanUpSurpriseMembers, surpriseMemberTimeout,
+        surpriseMemberTimeout / 3, TimeUnit.MILLISECONDS);
   }
 
   // invoked from the cleanupTimer task
@@ -2020,7 +2018,7 @@ public class GMSMembership implements Membership {
       }
 
       if (cleanupTimer != null) {
-        cleanupTimer.cancel();
+        cleanupTimer.shutdown();
       }
 
       if (logger.isDebugEnabled()) {
