@@ -309,16 +309,14 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           jarNames.add(jarFileName);
           Path filePath = groupDir.resolve(jarFileName);
           FileUtils.copyFile(stagedJar, filePath.toFile());
-          // remove old version for semantic versioned jars
-          if (JarDeployer.isSemanticVersion(jarFileName)) {
-            String artifactId = JarDeployer.getArtifactId(jarFileName);
-            for (File file : groupDir.toFile().listFiles()) {
-              if (file.getName().equals(jarFileName)) {
-                continue;
-              }
-              if (JarDeployer.getArtifactId(file.getName()).equals(artifactId)) {
-                FileUtils.deleteQuietly(file);
-              }
+          // remove old version for the same artifact id
+          String artifactId = JarDeployer.getArtifactId(jarFileName);
+          for (File file : groupDir.toFile().listFiles()) {
+            if (file.getName().equals(jarFileName)) {
+              continue;
+            }
+            if (JarDeployer.getArtifactId(file.getName()).equals(artifactId)) {
+              FileUtils.deleteQuietly(file);
             }
           }
         }

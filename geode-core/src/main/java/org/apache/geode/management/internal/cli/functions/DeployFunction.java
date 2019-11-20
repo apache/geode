@@ -77,6 +77,8 @@ public class DeployFunction implements InternalFunction {
           ClassPathLoader.getLatest().getJarDeployer().deploy(stagedFiles);
       for (int i = 0; i < jarFilenames.size(); i++) {
         deployedList.add(jarFilenames.get(i));
+        // if deploy(jar) returns null, i.e. the staged file bytes matched the latest
+        // deployed version
         if (jarClassLoaders.get(i) != null) {
           deployedList.add(jarClassLoaders.get(i).getFileCanonicalPath());
         } else {

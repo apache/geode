@@ -87,7 +87,7 @@ public class DeployedJar {
    * Writes the given jarBytes to versionedJarFile
    */
   public DeployedJar(File versionedJarFile) {
-    String artifactId = JarDeployer.toArtifactId(versionedJarFile.getName()).get();
+    String artifactId = JarDeployer.toArtifactId(versionedJarFile.getName());
 
     this.file = versionedJarFile;
     this.artifactId = artifactId;

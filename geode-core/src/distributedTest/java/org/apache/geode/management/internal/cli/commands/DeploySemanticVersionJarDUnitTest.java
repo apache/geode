@@ -43,24 +43,24 @@ public class DeploySemanticVersionJarDUnitTest {
   public ClusterStartupRule cluster = new ClusterStartupRule();
   private MemberVM locator0, locator1, server2;
   private static File stagedDir;
-  private static File semanticJarVersion1, semanticJarVersion2, semanticJarVersion3,
-      semanticJarVersion1b, semanticJarVersion1c;
+  private static File semanticJarVersion0, semanticJarVersion1, semanticJarVersion2,
+      semanticJarVersion0b, semanticJarVersion0c;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
     stagedDir = stagingTempDir.getRoot();
     JarBuilder jarBuilder = new JarBuilder();
-    semanticJarVersion1 = new File(stagedDir, "def-1.0.jar");
-    jarBuilder.buildJar(semanticJarVersion1, createClassContent("version1", "Def"));
-    semanticJarVersion2 = new File(stagedDir, "def-1.1.jar");
-    jarBuilder.buildJar(semanticJarVersion2, createClassContent("version2", "Def"));
-    semanticJarVersion3 = new File(stagedDir, "def-1.2.jar");
-    jarBuilder.buildJar(semanticJarVersion3, createClassContent("version3", "Def"));
+    semanticJarVersion0 = new File(stagedDir, "def-1.0.jar");
+    jarBuilder.buildJar(semanticJarVersion0, createClassContent("version1", "Def"));
+    semanticJarVersion1 = new File(stagedDir, "def-1.1.jar");
+    jarBuilder.buildJar(semanticJarVersion1, createClassContent("version2", "Def"));
+    semanticJarVersion2 = new File(stagedDir, "def-1.2.jar");
+    jarBuilder.buildJar(semanticJarVersion2, createClassContent("version3", "Def"));
 
-    semanticJarVersion1b = new File(stagingTempDir.newFolder("v1b"), "def-1.0.jar");
-    jarBuilder.buildJar(semanticJarVersion1b, createClassContent("version1b", "Def"));
-    semanticJarVersion1c = new File(stagingTempDir.newFolder("v1c"), "def.jar");
-    jarBuilder.buildJar(semanticJarVersion1c, createClassContent("version1c", "Def"));
+    semanticJarVersion0b = new File(stagingTempDir.newFolder("v1b"), "def-1.0.jar");
+    jarBuilder.buildJar(semanticJarVersion0b, createClassContent("version1b", "Def"));
+    semanticJarVersion0c = new File(stagingTempDir.newFolder("v1c"), "def.jar");
+    jarBuilder.buildJar(semanticJarVersion0c, createClassContent("version1c", "Def"));
   }
 
   @Rule
@@ -86,7 +86,7 @@ public class DeploySemanticVersionJarDUnitTest {
 
   @Test
   public void deploy() {
-    gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion1.getAbsolutePath())
+    gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion0.getAbsolutePath())
         .statusIsSuccess();
     MemberVM.invokeInEveryMember(() -> {
       assertThat(Paths.get(".").resolve("cluster_config").resolve("cluster").toFile().list())
@@ -95,10 +95,10 @@ public class DeploySemanticVersionJarDUnitTest {
       assertThat(deployedJars).containsExactly("def-1.0.jar");
     }, locator0, locator1);
 
-    assertThat(server2.getWorkingDir().list()).containsExactly(semanticJarVersion1.getName());
+    assertThat(server2.getWorkingDir().list()).containsExactly("def-1.0.v1.jar");
     server2.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version1"));
 
-    gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion2.getAbsolutePath())
+    gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion1.getAbsolutePath())
         .statusIsSuccess();
     MemberVM.invokeInEveryMember(() -> {
       assertThat(Paths.get(".").resolve("cluster_config").resolve("cluster").toFile().list())
@@ -108,16 +108,17 @@ public class DeploySemanticVersionJarDUnitTest {
     }, locator0, locator1);
 
     assertThat(server2.getWorkingDir().list())
-        .containsExactlyInAnyOrder(semanticJarVersion1.getName(), semanticJarVersion2.getName());
+        .containsExactlyInAnyOrder("def-1.0.v1.jar", "def-1.1.v2.jar");
     server2.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version2"));
 
     MemberVM server3 = cluster.startServerVM(3, locator0.getPort(), locator1.getPort());
     assertThat(server3.getWorkingDir().list())
-        .containsExactlyInAnyOrder(semanticJarVersion2.getName());
+        .containsExactlyInAnyOrder("def-1.1.v1.jar");
     server3.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version2"));
 
+    // stop server3 and then deploy def-1.2.jar
     server3.stop(false);
-    gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion3.getAbsolutePath())
+    gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion2.getAbsolutePath())
         .statusIsSuccess();
     MemberVM.invokeInEveryMember(() -> {
       assertThat(Paths.get(".").resolve("cluster_config").resolve("cluster").toFile().list())
@@ -126,14 +127,50 @@ public class DeploySemanticVersionJarDUnitTest {
       assertThat(deployedJars).containsExactly("def-1.2.jar");
     }, locator0, locator1);
     assertThat(server2.getWorkingDir().list()).containsExactlyInAnyOrder(
-        semanticJarVersion1.getName(), semanticJarVersion2.getName(),
-        semanticJarVersion3.getName());
+        "def-1.0.v1.jar", "def-1.1.v2.jar", "def-1.2.v3.jar");
     server2.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version3"));
 
-    // restart server3
+    // restart server3 and make sure it will get the def.1.2
     server3 = cluster.startServerVM(3, locator0.getPort(), locator1.getPort());
-    assertThat(server3.getWorkingDir().list()).containsExactly(semanticJarVersion3.getName());
+    assertThat(server3.getWorkingDir().list()).containsExactly("def-1.2.v1.jar");
     server3.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version3"));
+
+    // redeploy def-1.2 would not result in error but report already deployed
+    gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion2.getAbsolutePath())
+        .statusIsSuccess().containsOutput("Already deployed");
+    MemberVM.invokeInEveryMember(() -> {
+      assertThat(Paths.get(".").resolve("cluster_config").resolve("cluster").toFile().list())
+          .containsExactly("def-1.2.jar");
+      Set<String> deployedJars = getDeployedJarsFromClusterConfig();
+      assertThat(deployedJars).containsExactly("def-1.2.jar");
+    }, locator0, locator1);
+  }
+
+  @Test
+  public void deploySameJarNameWithDifferentContent() throws Exception {
+    gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion0.getAbsolutePath())
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion0b.getAbsolutePath())
+        .statusIsSuccess()
+        .containsOutput("def-1.0.v2.jar");
+  }
+
+  @Test
+  public void deployWithPlainWillClean() throws Exception {
+    gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion0.getAbsolutePath())
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion0c.getAbsolutePath())
+        .statusIsSuccess();
+    MemberVM.invokeInEveryMember(() -> {
+      assertThat(Paths.get(".").resolve("cluster_config").resolve("cluster").toFile().list())
+          .containsExactly("def.jar");
+      Set<String> deployedJars = getDeployedJarsFromClusterConfig();
+      assertThat(deployedJars).containsExactly("def.jar");
+    }, locator0, locator1);
+    assertThat(server2.getWorkingDir().list())
+        .containsExactlyInAnyOrder("def-1.0.v1.jar", "def.v2.jar");
+    server2.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version1c"));
+
   }
 
   static Set<String> getDeployedJarsFromClusterConfig() {

@@ -16,7 +16,6 @@
 package org.apache.geode.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
@@ -103,9 +102,9 @@ public class JarDeployerIntegrationTest {
 
     // deploy abc-1.0.jar
     DeployedJar deployed = jarDeployer.deploy(plainJarVersion1b);
-    assertThat(deployed.getFile()).hasName("abc-1.0.jar");
+    assertThat(deployed.getFile()).hasName("abc-1.0.v2.jar");
     assertThat(deployed.getArtifactId()).isEqualTo("abc");
-    assertThat(deployedDir.list()).containsExactlyInAnyOrder("abc.v1.jar", "abc-1.0.jar");
+    assertThat(deployedDir.list()).containsExactlyInAnyOrder("abc.v1.jar", "abc-1.0.v2.jar");
     assertThat(jarDeployer.getDeployedJars()).containsOnlyKeys("abc");
     assertThat(jarDeployer.getDeployedJars().get("abc")).isEqualTo(deployed);
     assertThat(getVersion("jddunit.function.Abc")).isEqualTo("version1b");
@@ -115,18 +114,18 @@ public class JarDeployerIntegrationTest {
   public void deployDEF() throws Exception {
     // deploy first version of def.jar
     DeployedJar deployed = jarDeployer.deploy(semanticJarVersion1);
-    assertThat(deployed.getFile()).hasName("def-1.0.jar");
+    assertThat(deployed.getFile()).hasName("def-1.0.v1.jar");
     assertThat(deployed.getArtifactId()).isEqualTo("def");
-    assertThat(deployedDir.list()).containsExactly("def-1.0.jar");
+    assertThat(deployedDir.list()).containsExactly("def-1.0.v1.jar");
     assertThat(jarDeployer.getDeployedJars()).containsOnlyKeys("def");
     assertThat(jarDeployer.getDeployedJars().get("def")).isEqualTo(deployed);
     assertThat(getVersion("jddunit.function.Def")).isEqualTo("version1");
 
     // deploy second version of def.jar
     deployed = jarDeployer.deploy(semanticJarVersion2);
-    assertThat(deployed.getFile()).hasName("def-1.1.jar");
+    assertThat(deployed.getFile()).hasName("def-1.1.v2.jar");
     assertThat(deployed.getArtifactId()).isEqualTo("def");
-    assertThat(deployedDir.list()).containsExactlyInAnyOrder("def-1.0.jar", "def-1.1.jar");
+    assertThat(deployedDir.list()).containsExactlyInAnyOrder("def-1.0.v1.jar", "def-1.1.v2.jar");
     assertThat(jarDeployer.getDeployedJars()).containsOnlyKeys("def");
     assertThat(jarDeployer.getDeployedJars().get("def")).isEqualTo(deployed);
     assertThat(getVersion("jddunit.function.Def")).isEqualTo("version2");
@@ -137,16 +136,19 @@ public class JarDeployerIntegrationTest {
     // deploy first version of def-1.0.jar
     jarDeployer.deploy(semanticJarVersion1);
 
-    // deploy second version of def-1.0.jar
-    assertThatThrownBy(() -> jarDeployer.deploy(semanticJarVersion1b))
-        .isInstanceOf(IOException.class)
-        .hasMessageContaining("def-1.0.jar already exists. Undeploy it first");
+    // deploy second version of def-1.0.jar with a different content
+    DeployedJar deployed = jarDeployer.deploy(semanticJarVersion1b);
+    assertThat(deployed.getFile()).hasName("def-1.0.v2.jar");
+    assertThat(deployed.getArtifactId()).isEqualTo("def");
+    assertThat(deployedDir.list()).containsExactlyInAnyOrder("def-1.0.v1.jar", "def-1.0.v2.jar");
+    assertThat(getVersion("jddunit.function.Def")).isEqualTo("version1b");
 
     // deploy def.jar
-    DeployedJar deployed = jarDeployer.deploy(semanticJarVersion1c);
-    assertThat(deployed.getFile()).hasName("def.v1.jar");
+    deployed = jarDeployer.deploy(semanticJarVersion1c);
+    assertThat(deployed.getFile()).hasName("def.v3.jar");
     assertThat(deployed.getArtifactId()).isEqualTo("def");
-    assertThat(deployedDir.list()).containsExactlyInAnyOrder("def-1.0.jar", "def.v1.jar");
+    assertThat(deployedDir.list()).containsExactlyInAnyOrder("def-1.0.v1.jar", "def-1.0.v2.jar",
+        "def.v3.jar");
     assertThat(jarDeployer.getDeployedJars()).containsOnlyKeys("def");
     assertThat(jarDeployer.getDeployedJars().get("def")).isEqualTo(deployed);
     assertThat(getVersion("jddunit.function.Def")).isEqualTo("version1c");

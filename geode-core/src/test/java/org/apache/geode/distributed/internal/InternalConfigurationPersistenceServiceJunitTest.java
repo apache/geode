@@ -129,4 +129,28 @@ public class InternalConfigurationPersistenceServiceJunitTest {
     configuration = argumentCaptor.getValue();
     assertThat(configuration.getJarNames()).containsExactlyInAnyOrder("abc-1.1.jar", "def-1.0.jar");
   }
+
+  @Test
+  public void addSemanticAndPlanJarToThisLocator() throws Exception {
+    // deploy abc-1.0.jar and def-1.0.jar
+    Path jar1 = Files.createFile(stagingDir.resolve("abc-1.0.jar"));
+    Path jar2 = Files.createFile(stagingDir.resolve("def-1.0.jar"));
+    List<String> paths = Stream.of(jar1, jar2).map(Path::toString).collect(Collectors.toList());
+    service.addJarsToThisLocator(paths, null);
+    ArgumentCaptor<Configuration> argumentCaptor = ArgumentCaptor.forClass(Configuration.class);
+    verify(configRegion).put(eq("cluster"), argumentCaptor.capture(), eq("member"));
+    Configuration configuration = argumentCaptor.getValue();
+    // this makes sure the configuration of the first deploy is retained
+    when(configRegion.get("cluster")).thenReturn(configuration);
+
+    // deploy abc.jar
+    Path jar3 = Files.createFile(stagingDir.resolve("abc.jar"));
+    paths = Stream.of(jar3).map(Path::toString).collect(Collectors.toList());
+    service.addJarsToThisLocator(paths, null);
+    assertThat(workingDir.resolve("cluster").toFile().list())
+        .containsExactlyInAnyOrder("abc.jar", "def-1.0.jar");
+    verify(configRegion, times(2)).put(eq("cluster"), argumentCaptor.capture(), eq("member"));
+    configuration = argumentCaptor.getValue();
+    assertThat(configuration.getJarNames()).containsExactlyInAnyOrder("abc.jar", "def-1.0.jar");
+  }
 }

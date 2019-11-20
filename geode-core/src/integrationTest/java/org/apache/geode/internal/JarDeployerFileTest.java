@@ -26,10 +26,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -93,15 +95,6 @@ public class JarDeployerFileTest {
         .exists()
         .hasBinaryContent(readAllBytes(version2JarFile.toPath()));
 
-    List<String> sortedOldVersionsOfJars =
-        Stream.of(jarDeployer.findSortedOldVersionsOfJar(originalJarFileName))
-            .map(File::getName)
-            .collect(toList());
-
-    assertThat(sortedOldVersionsOfJars)
-        .as("Sorted names of deployed versions of jar file %s", originalJarFileName)
-        .containsExactly(expectedVersion2DeployedJarFileName, expectedVersion1DeployedJarFileName);
-
     List<String> deployedFileNames = Files.list(deploymentFolder.toPath())
         .map(Path::getFileName)
         .map(Path::toString)
@@ -125,7 +118,7 @@ public class JarDeployerFileTest {
     assertThat(version1DeployedJar.getFile())
         .as("DeployedJar.getFile() for jar file %s", version1JarName)
         .exists()
-        .hasName(version1JarName)
+        .hasName("jar-with-semantic-version-1.0.0.v1.jar")
         .hasBinaryContent(readAllBytes(version1JarFile.toPath()));
 
     String version2JarName = artifactId + "-2.0.0.jar";
@@ -137,7 +130,7 @@ public class JarDeployerFileTest {
     assertThat(version2DeployedJar.getFile())
         .as("DeployedJar.getFile() for jar file %s", version2JarName)
         .exists()
-        .hasName(version2JarName)
+        .hasName("jar-with-semantic-version-2.0.0.v2.jar")
         .hasBinaryContent(readAllBytes(version2JarFile.toPath()));
 
     List<String> deployedFileNames = Files.list(deploymentFolder.toPath())
@@ -146,113 +139,118 @@ public class JarDeployerFileTest {
         .collect(toList());
     assertThat(deployedFileNames)
         .as("Deployed file names")
-        .containsExactlyInAnyOrder(version1JarName, version2JarName);
+        .containsExactlyInAnyOrder("jar-with-semantic-version-1.0.0.v1.jar",
+            "jar-with-semantic-version-2.0.0.v2.jar");
   }
 
   @Test
   public void toArtifactId() {
     // Semantic versions
-    String fileName = "abc.1.jar";
+    String fileName = "abc.1.v1.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
-    fileName = "abc.1.1.jar";
+        .isEqualTo("abc");
+    fileName = "abc.1.1.v1.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
-    fileName = "abc.1.1.1.jar";
+        .isEqualTo("abc");
+    fileName = "abc.1.1.1.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
-    fileName = "abc.1.1.1.1.1.1.1.1.1.1.1.jar";
+        .isEqualTo("abc");
+    fileName = "abc.1.1.1.1.1.1.1.1.1.1.1.v1.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
-    fileName = "abc.1.SNAPSHOT.jar";
+        .isEqualTo("abc");
+    fileName = "abc.1.SNAPSHOT.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
-    fileName = "abc.1.1.SNAPSHOT.jar";
+        .isEqualTo("abc");
+    fileName = "abc.1.1.SNAPSHOT.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
-    fileName = "abc.1.1.1.SNAPSHOT.jar";
+        .isEqualTo("abc");
+    fileName = "abc.1.1.1.SNAPSHOT.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
+        .isEqualTo("abc");
 
-    fileName = "abc1.1.1.1.jar";
+    fileName = "abc1.1.1.1.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc1");
+        .isEqualTo("abc1");
 
-    fileName = "abc-1.jar";
+    fileName = "abc-1.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
-    fileName = "abc-1.1.jar";
+        .isEqualTo("abc");
+    fileName = "abc-1.1.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
-    fileName = "abc-1.1.1.jar";
+        .isEqualTo("abc");
+    fileName = "abc-1.1.1.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
-    fileName = "abc-1.SNAPSHOT.jar";
+        .isEqualTo("abc");
+    fileName = "abc-1.SNAPSHOT.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
-    fileName = "abc-1.1.SNAPSHOT.jar";
+        .isEqualTo("abc");
+    fileName = "abc-1.1.SNAPSHOT.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
-    fileName = "abc-1.1.1.SNAPSHOT.jar";
+        .isEqualTo("abc");
+    fileName = "abc-1.1.1.SNAPSHOT.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
+        .isEqualTo("abc");
 
-    fileName = "ab.c-1.1.1.jar";
+    fileName = "ab.c-1.1.1.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("ab.c");
+        .isEqualTo("ab.c");
 
-    fileName = "ab-c-1.1.1.jar";
+    fileName = "ab-c-1.1.1.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("ab-c");
+        .isEqualTo("ab-c");
 
-    fileName = "abc-1.0.RELEASE.2019.jar";
+    fileName = "abc-1.0.RELEASE.2019.v2.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
+        .isEqualTo("abc");
 
     // Sequenced version scheme
     fileName = "abc.v92.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc");
+        .isEqualTo("abc");
     fileName = "ab.c.v92.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("ab.c");
+        .isEqualTo("ab.c");
     fileName = "abc.v1.v1.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("abc.v1");
+        .isEqualTo("abc.v1");
     fileName = "ab-c.v92.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .hasValue("ab-c");
+        .isEqualTo("ab-c");
 
     // Names where we do not recognize a version
+    fileName = "abc-1.0.jar";
+    assertThat(JarDeployer.toArtifactId(fileName))
+        .as("For filename %s", fileName)
+        .isNull();
     fileName = "abc.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .isEmpty();
+        .isNull();
     fileName = "abc.v92c.jar";
     assertThat(JarDeployer.toArtifactId(fileName))
         .as("For filename %s", fileName)
-        .isEmpty();
+        .isNull();
   }
 
   @Test
@@ -266,16 +264,6 @@ public class JarDeployerFileTest {
   }
 
   @Test
-  public void findSortedOldVersionsOfJar_excludesFilesWithSemanticVersion() {
-    String fileName = "jar-with-semantic-version.1.0.0.jar";
-
-    givenDeployedFileNamed(fileName);
-
-    assertThat(jarDeployer.findSortedOldVersionsOfJar(fileName))
-        .isEmpty();
-  }
-
-  @Test
   public void findArtifactIdsOnDisk_recognizesArtifactsByDeploymentSequenceIdentifier()
       throws IOException {
     String artifactId = "jar-with-sequence-identifier";
@@ -286,30 +274,29 @@ public class JarDeployerFileTest {
 
     givenDeployedFileNamed(fileNameWithSequenceIdentifier);
 
-    assertThat(jarDeployer.findArtifactIdsOnDisk())
-        .containsExactly(artifactId);
+    assertThat(jarDeployer.findArtifactsAndMaxVersion()).hasSize(1)
+        .containsEntry(artifactId, 3);
   }
 
   @Test
   public void findArtifactsOnDisk_recognizesArtifactsBySemanticVersion() throws IOException {
     String artifactId = "jar-with-semantic-version";
-    String semanticVersion = "-2.3.4";
+    String semanticVersion = "-2.3.4.v1";
     String extension = ".jar";
 
     String fileNameWithSequenceIdentifier = artifactId + semanticVersion + extension;
 
     givenDeployedFileNamed(fileNameWithSequenceIdentifier);
 
-    assertThat(jarDeployer.findArtifactIdsOnDisk())
-        .containsExactly(artifactId);
+    assertThat(jarDeployer.findArtifactsAndMaxVersion()).hasSize(1)
+        .containsEntry(artifactId, 1);
   }
 
   @Test
   public void findArtifactsOnDisk_excludesUnversionedFiles() throws IOException {
     givenDeployedFileNamed("jar-with-no-version.jar");
 
-    assertThat(jarDeployer.findArtifactIdsOnDisk())
-        .isEmpty();
+    assertThat(jarDeployer.findArtifactsAndMaxVersion()).isEmpty();
   }
 
   @Test
@@ -330,9 +317,6 @@ public class JarDeployerFileTest {
 
   @Test
   public void testVersionNumberCreation() throws Exception {
-    File versionedName = jarDeployer.getNextVersionedJarFile("myJar.jar");
-    assertThat(versionedName.getName()).isEqualTo("myJar.v1.jar");
-
     byte[] jarBytes = classBuilder.createJarFromName("ClassA");
     File jarFile = stagedFileWithContent("myJar.jar", jarBytes);
     File deployedJarFile = jarDeployer.deployWithoutRegistering(jarFile).getFile();
@@ -346,11 +330,40 @@ public class JarDeployerFileTest {
   }
 
   @Test
+  public void getNextVersionJarFileWithEmptyDir() throws Exception {
+    File versionedName = jarDeployer.getNextVersionedJarFile("myJar.jar");
+    assertThat(versionedName.getName()).isEqualTo("myJar.v1.jar");
+
+    versionedName = jarDeployer.getNextVersionedJarFile("myJar.v1.jar");
+    assertThat(versionedName.getName()).isEqualTo("myJar.v1.v1.jar");
+
+    versionedName = jarDeployer.getNextVersionedJarFile("myJar-1.0.jar");
+    assertThat(versionedName.getName()).isEqualTo("myJar-1.0.v1.jar");
+  }
+
+  @Test
+  public void getNextVersionJarFileWithExistingFiles() throws Exception {
+    Files.createFile(deploymentFolder.toPath().resolve("abc.jar"));
+    Files.createFile(deploymentFolder.toPath().resolve("abc.v1.jar"));
+    Files.createFile(deploymentFolder.toPath().resolve("myJar.v1.jar"));
+    Files.createFile(deploymentFolder.toPath().resolve("myJar-1.0.v2.jar"));
+    assertThat(jarDeployer.getMaxVersion("myJar")).isEqualTo(2);
+    assertThat(jarDeployer.getMaxVersion("abc")).isEqualTo(1);
+    assertThat(jarDeployer.getNextVersionedJarFile("myJar-2.0.jar").getName())
+        .isEqualTo("myJar-2.0.v3.jar");
+
+    Arrays.stream(deploymentFolder.listFiles()).forEach(FileUtils::deleteQuietly);
+    Files.createFile(deploymentFolder.toPath().resolve("abc.jar"));
+    Files.createFile(deploymentFolder.toPath().resolve("abc.v2.jar"));
+    Files.createFile(deploymentFolder.toPath().resolve("myJar-1.0.v1.jar"));
+    assertThat(jarDeployer.getNextVersionedJarFile("myJar.jar").getName())
+        .isEqualTo("myJar.v2.jar");
+  }
+
+  @Test
   public void testVersionNumberMatcher() {
     String fileName = stagingFolder.toPath().resolve("MyJar.v1.jar").toAbsolutePath().toString();
-
     int version = JarDeployer.extractVersionFromFilename(fileName);
-
     assertThat(version).isEqualTo(1);
   }
 
@@ -452,38 +465,6 @@ public class JarDeployerFileTest {
     assertThat(jarAVersion2).doesNotExist();
     assertThat(jarAVersion3).doesNotExist();
     assertThat(jarB).exists();
-  }
-
-
-  @Test
-  public void testDeleteOtherVersionsOfJar() throws Exception {
-    File jarAVersion1 = new File(deploymentFolder, "myJarA.v1.jar");
-    classBuilder.writeJarFromName("ClassA", jarAVersion1);
-
-    File jarAVersion2 = new File(deploymentFolder, "myJarA.v2.jar");
-    classBuilder.writeJarFromName("ClassA", jarAVersion2);
-
-    File jarBVersion2 = new File(deploymentFolder, "myJarB.v2.jar");
-    classBuilder.writeJarFromName("ClassB", jarBVersion2);
-
-    File jarBVersion3 = new File(deploymentFolder, "myJarB.v3.jar");
-    classBuilder.writeJarFromName("ClassB", jarBVersion3);
-
-    DeployedJar deployedJarBVersion3 = new DeployedJar(jarBVersion3);
-    jarDeployer.deleteOtherVersionsOfJar(deployedJarBVersion3);
-
-    assertThat(jarAVersion1).exists();
-    assertThat(jarAVersion2).exists();
-    assertThat(jarBVersion2).doesNotExist();
-    assertThat(jarBVersion3).exists();
-
-    DeployedJar deployedJarAVersion1 = new DeployedJar(jarAVersion1);
-    jarDeployer.deleteOtherVersionsOfJar(deployedJarAVersion1);
-
-    assertThat(jarAVersion1).exists();
-    assertThat(jarAVersion2).doesNotExist();
-    assertThat(jarBVersion2).doesNotExist();
-    assertThat(jarBVersion3).exists();
   }
 
   private File deployedFileNamed(String fileName) {
