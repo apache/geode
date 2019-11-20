@@ -206,24 +206,37 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     InetSocketAddress[] initialLocators =
         new InetSocketAddress[] {new InetSocketAddress(hostName, locator0Port)};
 
-    checkLocators(clientVM, initialLocators, new InetSocketAddress(hostName, locator0Port),
-        new InetSocketAddress(hostName, locator1Port));
+    InetSocketAddress[] expectedLocators =
+        new InetSocketAddress[] {new InetSocketAddress(hostName, locator0Port),
+            new InetSocketAddress(hostName, locator1Port)};
+
+    final Pool pool = PoolManager.find(POOL_NAME);
+
+    verifyLocatorsMatched(initialLocators, pool.getLocators());
+
+    verifyLocatorsMatched(expectedLocators, pool.getOnlineLocators());
 
     // stop one of the locators and ensure that the client can find and use a server
     locator0VM.invoke("Stop Locator", this::stopLocator);
-    clientVM.invoke(() -> {
-      Pool pool = PoolManager.find(POOL_NAME);
-      await().until(() -> pool.getOnlineLocators().size() == 1);
-    });
+
+    await().until(() -> pool.getOnlineLocators().size() == 1);
+
 
     int serverPort = serverVM.invoke("Start BridgeServer",
         () -> startBridgeServer(null, getLocatorString(hostName, locator1Port)));
     assertThat(serverPort).isGreaterThan(0);
 
-    putAndWaitForSuccess(clientVM, REGION_NAME, KEY, VALUE);
-    Assert.assertEquals(VALUE, getInVM(serverVM, KEY));
+    verifyLocatorsMatched(initialLocators, pool.getLocators());
 
-    checkLocators(clientVM, initialLocators, new InetSocketAddress(hostName, locator1Port));
+    verifyLocatorsMatched(expectedLocators, pool.getOnlineLocators());
+
+    putAndWaitForSuccess(clientVM, REGION_NAME, KEY, VALUE);
+
+    await().untilAsserted(
+        () -> assertThatCode(
+            () -> ((Cache) remoteObjects.get(CACHE_KEY)).getRegion(REGION_NAME).put(KEY, VALUE))
+                .doesNotThrowAnyException());
+    Assert.assertEquals(VALUE, getInVM(serverVM, KEY));
 
   }
 
