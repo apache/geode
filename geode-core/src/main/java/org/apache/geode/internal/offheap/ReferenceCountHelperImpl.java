@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * All access to this class should be done through the static methods of ReferenceCountHelper.
@@ -259,16 +260,20 @@ class ReferenceCountHelperImpl {
    * given address.
    */
   void freeRefCountInfo(Long address) {
+    LogService.getLogger().info("JASON free reference count:" + Long.toHexString(address) + " and is ref count tracked:" + trackReferenceCounts());
     if (!trackReferenceCounts())
       return;
     List<RefCountChangeInfo> freedInfo = stacktraces.remove(address);
     if (freedInfo == LOCKED) {
+      LogService.getLogger().info("JASON freed after orphan detected:" + Long.toHexString(address));
       MemoryAllocatorImpl.debugLog("freed after orphan detected for @" + Long.toHexString(address),
           true);
     } else if (trackFreedReferenceCounts()) {
       if (freedInfo != null) {
+        LogService.getLogger().info("JASON freedInfo is null" + Long.toHexString(address));
         freedStacktraces.put(address, freedInfo);
       } else {
+        LogService.getLogger().info("JASON freed is removed?" + Long.toHexString(address));
         freedStacktraces.remove(address);
       }
     }
