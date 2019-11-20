@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -217,15 +216,8 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
       await().until(() -> pool.getOnlineLocators().size() == 1);
     });
 
-
-
-    int serverPort = serverVM.invoke("Start BridgeServer", () -> {
-      try {
-        return startBridgeServer(null, getLocatorString(hostName, locator1Port));
-      } catch (IOException e) {
-        return -1;
-      }
-    });
+    int serverPort = serverVM.invoke("Start BridgeServer",
+        () -> startBridgeServer(null, getLocatorString(hostName, locator1Port)));
     assertThat(serverPort).isGreaterThan(0);
 
     putAndWaitForSuccess(clientVM, REGION_NAME, KEY, VALUE);

@@ -249,8 +249,8 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
         }
       }
 
-      // logger.debug("updateLocatorInLocatorList locator list from: {} to {}",
-      // locatorList.getLocators(), newLocatorsList);
+      logger.debug("updateLocatorInLocatorList locator list from: {} to {}",
+          locatorList.getLocators(), newLocatorsList);
 
       LocatorList newLocatorList = new LocatorList(newLocatorsList);
       locators.set(newLocatorList);
