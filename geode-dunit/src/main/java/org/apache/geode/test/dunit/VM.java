@@ -194,14 +194,6 @@ public class VM implements Serializable {
     return Host.getHost(0).getVMEventNotifier();
   }
 
-  /**
-   * Creates a new {@code VM} that runs on a given host with a given process id.
-   */
-  public VM(final Host host, final int id, final RemoteDUnitVMIF client,
-      final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher) {
-    this(host, VersionManager.CURRENT_VERSION, id, client, processHolder, childVMLauncher);
-  }
-
   public VM(final Host host, final String version, final int id, final RemoteDUnitVMIF client,
       final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher) {
     this.host = host;
