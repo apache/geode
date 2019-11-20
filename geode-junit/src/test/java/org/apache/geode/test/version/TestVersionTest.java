@@ -45,17 +45,23 @@ public class TestVersionTest {
 
   @Test
   public void lessThanOrEqualTo() {
-    assertThat(TestVersion.valueOf("1.0.0").lessThanOrEqualTo(TestVersion.valueOf("1.0.0"))).isTrue();
-    assertThat(TestVersion.valueOf("1.0.0").lessThanOrEqualTo(TestVersion.valueOf("1.1.0"))).isTrue();
+    assertThat(TestVersion.valueOf("1.0.0").lessThanOrEqualTo(TestVersion.valueOf("1.0.0")))
+        .isTrue();
+    assertThat(TestVersion.valueOf("1.0.0").lessThanOrEqualTo(TestVersion.valueOf("1.1.0")))
+        .isTrue();
 
-    assertThat(TestVersion.valueOf("12.0.1").lessThanOrEqualTo(TestVersion.valueOf("1.20.1"))).isFalse();
+    assertThat(TestVersion.valueOf("12.0.1").lessThanOrEqualTo(TestVersion.valueOf("1.20.1")))
+        .isFalse();
   }
 
   @Test
   public void greaterThanOrEqualTo() {
-    assertThat(TestVersion.valueOf("1.0.0").greaterThanOrEqualTo(TestVersion.valueOf("1.0.0"))).isTrue();
-    assertThat(TestVersion.valueOf("2.0.1").greaterThanOrEqualTo(TestVersion.valueOf("2.0.0"))).isTrue();
+    assertThat(TestVersion.valueOf("1.0.0").greaterThanOrEqualTo(TestVersion.valueOf("1.0.0")))
+        .isTrue();
+    assertThat(TestVersion.valueOf("2.0.1").greaterThanOrEqualTo(TestVersion.valueOf("2.0.0")))
+        .isTrue();
 
-    assertThat(TestVersion.valueOf("2.0.0").greaterThanOrEqualTo(TestVersion.valueOf("20.0.1"))).isFalse();
+    assertThat(TestVersion.valueOf("2.0.0").greaterThanOrEqualTo(TestVersion.valueOf("20.0.1")))
+        .isFalse();
   }
 }
