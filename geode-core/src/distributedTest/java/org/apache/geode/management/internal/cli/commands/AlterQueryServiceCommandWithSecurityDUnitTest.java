@@ -24,7 +24,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -36,7 +35,6 @@ import java.util.Set;
 import java.util.stream.IntStream;
 
 import junitparams.JUnitParamsRunner;
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,7 +65,8 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
   private static final String REGEX_AUTHORIZER_PARAMETERS =
       "^java.util.List..{4,8}$;^java.util.Set..{4,8}$";
   private static final String USER_AUTHORIZER_PARAMETERS = "param1;param2;param3";
-  private static final String TEST_AUTHORIZER_TXT = "TestMethodAuthorizer.txt";
+  public static final String TEST_AUTHORIZER_PATH =
+      "src/distributedTest/java/org/apache/geode/management/internal/cli/util/TestMethodAuthorizer.java";
   private final int serversToStart = 2;
 
   @Rule
@@ -150,8 +149,7 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
     Class<TestMethodAuthorizer> authorizerClass = TestMethodAuthorizer.class;
     String authorizerName = authorizerClass.getName();
 
-    String classContent =
-        new String(Files.readAllBytes(Paths.get(getFilePath(TEST_AUTHORIZER_TXT))));
+    String classContent = new String(Files.readAllBytes(Paths.get(TEST_AUTHORIZER_PATH)));
     String jarFileName = "testJar.jar";
     File jarFile = tempFolder.newFile(jarFileName);
     new ClassBuilder().writeJarFromContent(authorizerName, classContent, jarFile);
@@ -232,13 +230,5 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
           .getMethodAuthorizer();
       assertThat(methodAuthorizer.getClass()).isEqualTo(authorizerClass);
     }));
-  }
-
-  private String getFilePath(String fileName) throws IOException {
-    URL url = getClass().getResource(fileName);
-    File textFile = this.tempFolder.newFile(fileName);
-    FileUtils.copyURLToFile(url, textFile);
-
-    return textFile.getAbsolutePath();
   }
 }

@@ -20,7 +20,6 @@ import java.util.Set;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 
-// Any changes to this class should be reflected in TestMethodAuthorizer.txt
 public class TestMethodAuthorizer implements MethodInvocationAuthorizer {
 
   private Set<String> parameters;
