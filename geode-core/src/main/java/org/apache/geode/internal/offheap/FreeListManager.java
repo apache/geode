@@ -780,7 +780,7 @@ public class FreeListManager {
   }
 
   private void free(long addr, boolean updateStats) {
-    logger.info("JASON free:", new Exception("JASON freeing" + addr));
+    logger.info("JASON free:", new Exception("JASON freeing" + Long.toHexString(addr)));
     int cSize = OffHeapStoredObject.getSize(addr);
     if (updateStats) {
       OffHeapMemoryStats stats = this.ma.getStats();
