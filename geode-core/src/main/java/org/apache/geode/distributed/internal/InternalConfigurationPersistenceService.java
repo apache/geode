@@ -135,6 +135,12 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     this(null, null, jaxbService, null, null);
   }
 
+  @VisibleForTesting
+  public InternalConfigurationPersistenceService(DistributedLockService dls,
+      JAXBService jaxbService) {
+    this(null, dls, jaxbService, null, null);
+  }
+
   private InternalConfigurationPersistenceService(InternalCache cache,
       DistributedLockService sharedConfigLockingService, JAXBService jaxbService,
       Path configDirPath, Path configDiskDirPath) {
@@ -145,6 +151,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     status.set(SharedConfigurationStatus.NOT_STARTED);
     this.jaxbService = jaxbService;
   }
+
+
 
   /**
    * Gets or creates (if not created) shared configuration lock service

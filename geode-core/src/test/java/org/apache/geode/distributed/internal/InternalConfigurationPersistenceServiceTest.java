@@ -24,11 +24,14 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import junitparams.JUnitParamsRunner;
@@ -43,6 +46,7 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.config.JAXBServiceTest;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementOne;
@@ -50,6 +54,7 @@ import org.apache.geode.internal.config.JAXBServiceTest.ElementTwo;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.metrics.internal.MetricsService;
 
 @RunWith(JUnitParamsRunner.class)
 public class InternalConfigurationPersistenceServiceTest {
@@ -263,6 +268,26 @@ public class InternalConfigurationPersistenceServiceTest {
     document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
     assertThat(document.getElementsByTagName("gateway-receiver").getLength())
         .isEqualTo(expectFinalElements);
+  }
+
+  @Test
+  public void dontUnlockSharedConfigurationIfNoLockedPreviously() {
+    InternalConfigurationPersistenceService service3;
+
+    MetricsService.Builder metricsSessionBuilder = mock(MetricsService.Builder.class);
+    when(metricsSessionBuilder.build(any())).thenReturn(mock(MetricsService.class));;
+
+    InternalDistributedSystem.Builder b =
+        new InternalDistributedSystem.Builder(new Properties(), metricsSessionBuilder);
+    InternalDistributedSystem ds = b.build();
+
+    service3 = spy(new InternalConfigurationPersistenceService(
+        DistributedLockService.create("test", ds),
+        JAXBService.createWithValidation(CacheConfig.class)));
+    doReturn(false).when(service3).lockSharedConfiguration();
+
+    service3.createConfigurationResponse(null);
+    verify(service3, times(0)).unlockSharedConfiguration();
   }
 
   private String getDuplicateReceiversWithDefaultPropertiesXml() {
