@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import static org.apache.geode.internal.JarDeployer.SEQUENCED_VERSION_SCHEME;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,7 +32,6 @@ import java.util.Properties;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -381,10 +378,11 @@ public class DeployedJar {
    * @return the filename as user deployed, i.e remove the sequence number
    */
   public String getDeployedFileName() {
-    String fileName = this.file.getName();
-    Matcher matcher = SEQUENCED_VERSION_SCHEME.matcher(fileName);
-    matcher.find();
-    return matcher.group("artifact") + ".jar";
+    String fileBaseName = JarDeployer.getDeployedFileBaseName(this.file.getName());
+    if (fileBaseName == null) {
+      throw new IllegalStateException("file name needs to have a sequence number");
+    }
+    return fileBaseName + ".jar";
   }
 
   public String getFileCanonicalPath() throws IOException {

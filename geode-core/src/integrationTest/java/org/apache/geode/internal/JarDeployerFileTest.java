@@ -371,11 +371,11 @@ public class JarDeployerFileTest {
 
   @Test
   public void isSequenceVersion() throws Exception {
-    assertThat(JarDeployer.isSequenceVersion("abc.v1.jar")).isTrue();
-    assertThat(JarDeployer.isSequenceVersion("abc.v2.jar")).isTrue();
-    assertThat(JarDeployer.isSequenceVersion("abc.jar")).isFalse();
-    assertThat(JarDeployer.isSequenceVersion("abc-1.0.jar")).isFalse();
-    assertThat(JarDeployer.isSequenceVersion("abc-1.0.v1.jar")).isTrue();
+    assertThat(JarDeployer.isDeployedFile("abc.v1.jar")).isTrue();
+    assertThat(JarDeployer.isDeployedFile("abc.v2.jar")).isTrue();
+    assertThat(JarDeployer.isDeployedFile("abc.jar")).isFalse();
+    assertThat(JarDeployer.isDeployedFile("abc-1.0.jar")).isFalse();
+    assertThat(JarDeployer.isDeployedFile("abc-1.0.v1.jar")).isTrue();
   }
 
   @Test

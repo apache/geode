@@ -51,12 +51,12 @@ public class JarDeployer implements Serializable {
   // The pound version scheme predates the sequenced version scheme
   private static final Pattern POUND_VERSION_SCHEME =
       Pattern.compile("^vf\\.gf#(?<artifact>.*)\\.jar#(?<version>\\d+)$");
-  // The sequenced version scheme predates the semantic version scheme. We use this scheme when
-  // the file name has no semantic version
-  static final Pattern SEQUENCED_VERSION_SCHEME =
-      Pattern.compile("(?<artifact>..*)\\.v(?<version>\\d++).jar$");
-  // We use this scheme when we detect that the file has semantic version information
-  private static final Pattern SEMANTIC_VERSION_SCHEME =
+  // Every deployed file will use this scheme to signify the sequence it's been deployed
+  static final Pattern DEPLOYED_FILE_PATTERN =
+      Pattern.compile("(?<baseName>..*)\\.v(?<version>\\d++).jar$");
+  // we can recognize jar files with below pattern. If two jar files have the same artifact, then
+  // the latter will replace the former deployed jar
+  private static final Pattern SEMANTIC_VERSION_PATTERN =
       Pattern.compile("(?<artifact>.*?)[-.]\\d+.*\\.jar$");
 
   @MakeNotStatic
@@ -156,7 +156,7 @@ public class JarDeployer implements Serializable {
    * @return The version number embedded in the filename
    */
   public static int extractVersionFromFilename(final String filename) {
-    final Matcher matcher = SEQUENCED_VERSION_SCHEME.matcher(filename);
+    final Matcher matcher = DEPLOYED_FILE_PATTERN.matcher(filename);
     if (matcher.find()) {
       return Integer.parseInt(matcher.group(2));
     } else {
@@ -164,47 +164,55 @@ public class JarDeployer implements Serializable {
     }
   }
 
-  public static boolean isSequenceVersion(String filename) {
-    return SEQUENCED_VERSION_SCHEME.matcher(filename).find();
+  public static boolean isDeployedFile(String filename) {
+    return DEPLOYED_FILE_PATTERN.matcher(filename).find();
   }
 
   public static boolean isSemanticVersion(String filename) {
-    return SEMANTIC_VERSION_SCHEME.matcher(filename).find();
+    return SEMANTIC_VERSION_PATTERN.matcher(filename).find();
   }
 
   /**
    * get the artifact id from the existing files on the server. This will skip files that
-   * do not have sequence id or semantic version appended to them.
+   * do not have sequence id appended to them.
    *
-   * @param versionedJarFileName the file names that exists on the server, could be file with
-   *        sequence numbers abc.v1.jar, or file with semantic version abc-1.0.0.jar
-   * @return the artifact id, which could be optional for other forms of jar names
-   *         that might exists on server like abc.jar
+   * @param sequencedJarFileName the file names that exists on the server, it should always ends
+   *        with a sequence number
+   * @return the artifact id. if a file with no sequence number is passed in, this will return null
    */
-  static String toArtifactId(String versionedJarFileName) {
-    if (!isSequenceVersion(versionedJarFileName)) {
+  static String toArtifactId(String sequencedJarFileName) {
+    String baseName = getDeployedFileBaseName(sequencedJarFileName);
+    if (baseName == null) {
       return null;
     }
-    return Stream.of(SEMANTIC_VERSION_SCHEME, SEQUENCED_VERSION_SCHEME)
-        .map(pattern -> pattern.matcher(versionedJarFileName))
-        .filter(Matcher::matches)
-        .map(matcher -> matcher.group("artifact"))
-        .findFirst().orElse(null);
+
+    return getArtifactId(baseName + ".jar");
   }
 
   /**
-   * get the artifact id from the files deployed by the user
+   * get the artifact id from the files deployed by the user. This will recognize files with
+   * SEMANTIC_VERSION_PATTERN, it will strip off the version part from the filename. For all other
+   * file names, it will just return the basename.
    *
    * @param deployedJarFileName the filename that's deployed by the user. could be in the form of
    *        abc.jar or abc-1.0.0.jar, both should return abc
    * @return the artifact id of the string
    */
   public static String getArtifactId(String deployedJarFileName) {
-    Matcher semanticVersionMatcher = SEMANTIC_VERSION_SCHEME.matcher(deployedJarFileName);
+    Matcher semanticVersionMatcher = SEMANTIC_VERSION_PATTERN.matcher(deployedJarFileName);
     if (semanticVersionMatcher.matches()) {
       return semanticVersionMatcher.group("artifact");
     } else {
       return FilenameUtils.getBaseName(deployedJarFileName);
+    }
+  }
+
+  public static String getDeployedFileBaseName(String sequencedJarFileName) {
+    Matcher semanticVersionMatcher = DEPLOYED_FILE_PATTERN.matcher(sequencedJarFileName);
+    if (semanticVersionMatcher.matches()) {
+      return semanticVersionMatcher.group("baseName");
+    } else {
+      return null;
     }
   }
 
