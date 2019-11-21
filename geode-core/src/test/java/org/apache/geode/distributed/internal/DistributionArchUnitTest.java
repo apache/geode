@@ -22,12 +22,14 @@ import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchUnitRunner;
 import com.tngtech.archunit.lang.ArchRule;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode")
+@Ignore("Disabling until we can fix the memory usage of this test")
 public class DistributionArchUnitTest {
 
   @ArchTest
