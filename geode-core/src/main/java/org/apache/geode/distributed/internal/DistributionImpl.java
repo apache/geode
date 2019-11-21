@@ -151,6 +151,17 @@ public class DistributionImpl implements Distribution {
     GMSHealthMonitor.loadEmergencyClasses();
   }
 
+  public static void connectLocatorToServices(Services services) {
+    // see if a locator was started and put it in GMS Services
+    InternalLocator l = (InternalLocator) Locator.getLocator();
+    if (l != null && l.getLocatorHandler() != null) {
+      if (l.getLocatorHandler().setServices(services)) {
+        services
+            .setLocator(((GMSLocatorAdapter) l.getLocatorHandler()).getGMSLocator());
+      }
+    }
+  }
+
   @Override
   public void start() {
     membership.start();
@@ -879,14 +890,7 @@ public class DistributionImpl implements Distribution {
 
     @Override
     public void started() {
-      // see if a locator was started and put it in GMS Services
-      InternalLocator l = (InternalLocator) Locator.getLocator();
-      if (l != null && l.getLocatorHandler() != null) {
-        if (l.getLocatorHandler().setServices(distribution.getServices())) {
-          distribution.getServices()
-              .setLocator(((GMSLocatorAdapter) l.getLocatorHandler()).getGMSLocator());
-        }
-      }
+      connectLocatorToServices(distribution.getServices());
     }
 
     @Override

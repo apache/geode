@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,6 +51,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
@@ -267,6 +269,7 @@ public class MembershipJUnitTest {
         return new InternalDistributedMember((GMSMemberData) invocation.getArgument(0));
       }
     });
+    LifecycleListener lifeCycleListener = mock(LifecycleListener.class);
     final Membership m1 =
         MembershipBuilder.newMembershipBuilder(null)
             .setAuthenticator(new GMSAuthenticator(config.getSecurityProps(), securityService,
@@ -276,7 +279,7 @@ public class MembershipJUnitTest {
             .setMembershipListener(listener)
             .setConfig(new ServiceConfig(transport, config))
             .setSerializer(serializer)
-            .setLifecycleListener(mock(LifecycleListener.class))
+            .setLifecycleListener(lifeCycleListener)
             .setLocatorClient(new TcpClient(
                 asTcpSocketCreator(
                     SocketCreatorFactory
@@ -284,6 +287,10 @@ public class MembershipJUnitTest {
                 InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
                 InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
             .create();
+    doAnswer(invocation -> {
+      DistributionImpl.connectLocatorToServices(m1.getServices());
+      return null;
+    }).when(lifeCycleListener).started();
     m1.start();
     m1.startEventProcessing();
     return Pair.of(m1, messageListener);
