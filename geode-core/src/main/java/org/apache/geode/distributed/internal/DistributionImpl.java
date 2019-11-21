@@ -298,6 +298,9 @@ public class DistributionImpl implements Distribution {
       if (sentBytes == 0) {
         membership.checkCancelled();
       }
+    } catch (DistributedSystemDisconnectedException ex) {
+      membership.checkCancelled();
+      throw ex; // see bug 41416
     } catch (ConnectExceptions ex) {
       // Check if the connect exception is due to system shutting down.
       if (membership.shutdownInProgress()) {
