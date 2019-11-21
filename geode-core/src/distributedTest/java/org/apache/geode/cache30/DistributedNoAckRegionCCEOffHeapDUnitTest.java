@@ -55,23 +55,24 @@ public class DistributedNoAckRegionCCEOffHeapDUnitTest extends DistributedNoAckR
     return props;
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
+
+
   @Override
-  protected RegionAttributes getRegionAttributes() {
-    RegionAttributes attrs = super.getRegionAttributes();
-    AttributesFactory factory = new AttributesFactory(attrs);
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    RegionAttributes<K, V> attrs = super.getRegionAttributes();
+    AttributesFactory<K, V> factory = new AttributesFactory<>(attrs);
     factory.setOffHeap(true);
     return factory.create();
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
-  protected RegionAttributes getRegionAttributes(String type) {
-    RegionAttributes ra = super.getRegionAttributes(type);
-    AttributesFactory factory = new AttributesFactory(ra);
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
+    RegionAttributes<K, V> ra = super.getRegionAttributes(type);
+    AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
     if (!ra.getDataPolicy().isEmpty()) {
       factory.setOffHeap(true);
     }
     return factory.create();
+
   }
 }

@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
@@ -37,6 +36,7 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -66,7 +66,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     implements CacheTestFixture {
 
-  private static final Logger logger = LogService.getLogger();
+  protected static final Logger logger = LogService.getLogger();
   /**
    * The Cache from which regions are obtained.
    *
@@ -96,15 +96,15 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   /**
    * Creates the {@code Cache} for this test
    */
-  private final void createCache() {
+  private void createCache() {
     createCache(false);
   }
 
-  private final void createCache(final boolean client) {
+  private void createCache(final boolean client) {
     createCache(client, null);
   }
 
-  private final void createCache(final boolean client, final CacheFactory factory) {
+  private void createCache(final boolean client, final CacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {
       try {
         System.setProperty(GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
@@ -130,22 +130,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
         System.clearProperty(GEMFIRE_PREFIX + "locators");
         System.clearProperty(GEMFIRE_PREFIX + MCAST_PORT);
       }
-    }
-  }
-
-  /**
-   * Creates the {@code Cache} for this test that is not connected to other members.
-   */
-  public final InternalCache createLonerCache() {
-    synchronized (JUnit4CacheTestCase.class) {
-      try {
-        System.setProperty(GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
-        InternalCache newCache = (InternalCache) CacheFactory.create(getLonerSystem());
-        cache = newCache;
-      } finally {
-        System.clearProperty(GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
-      }
-      return cache;
     }
   }
 
@@ -223,7 +207,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return getCache(client, null);
   }
 
-  public final InternalCache getCache(final boolean client, final CacheFactory factory) {
+  private InternalCache getCache(final boolean client, final CacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {
       InternalCache gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
@@ -284,21 +268,21 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return (GemFireCacheImpl) getCache();
   }
 
-  public static final synchronized boolean hasCache() {
+  public static synchronized boolean hasCache() {
     return cache != null;
   }
 
   /**
    * Return current cache without creating one.
    */
-  public static final synchronized InternalCache basicGetCache() {
+  public static synchronized InternalCache basicGetCache() {
     return cache;
   }
 
   /**
    * Close the cache.
    */
-  public static final synchronized void closeCache() {
+  public static synchronized void closeCache() {
     // Workaround for the fact that some classes are now extending
     // CacheTestCase but not using it properly.
     if (cache == null) {
@@ -311,13 +295,13 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
             if (cache instanceof GemFireCacheImpl) {
               // this unnecessary type-cast prevents NoSuchMethodError
               // java.lang.NoSuchMethodError:
-              // org.apache.geode.internal.cache.InternalCache.getTxManager()Lorg/apache/geode/internal/cache/TXManagerImpl
+              // org.apache.geode.internal.cache.InternalCache.getTxManager()/org/apache/geode/internal/cache/TXManagerImpl
               CacheTransactionManager transactionManager =
-                  ((GemFireCacheImpl) cache).getTxManager();
+                  cache.getTxManager();
               if (transactionManager != null) {
                 if (transactionManager.exists()) {
                   try {
-                    // make sure we cleanup this threads txid stored in a thread local
+                    // make sure we cleanup this threads transactionID stored in a thread local
                     transactionManager.rollback();
                   } catch (Exception ignore) {
 
@@ -352,7 +336,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     postTearDownCacheTestCase();
   }
 
-  private final void tearDownCacheTestCase() {
+  private void tearDownCacheTestCase() {
     remoteTearDown();
     Invoke.invokeInEveryVM(JUnit4CacheTestCase::remoteTearDown);
   }
@@ -400,25 +384,38 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return createRegion(name, "root", attributes);
   }
 
+  private <K, V> RegionFactory<K, V> configRootRegionFactory(RegionFactory<K, V> regionFactory) {
+    ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
+
+    regionFactory.setCacheLoader(null);
+    regionFactory.setCacheWriter(null);
+    regionFactory.setPoolName(null);
+    regionFactory.setRegionTimeToLive(expiration);
+    regionFactory.setEntryTimeToLive(expiration);
+    regionFactory.setRegionIdleTimeout(expiration);
+    regionFactory.setEntryIdleTimeout(expiration);
+    return regionFactory;
+  }
+
+  private <K, V> RegionFactory<K, V> getRootRegionRegionFactory(RegionFactory<K, V> regionFactory) {
+    RegionFactory<K, V> regionFactory1 = getCache().createRegionFactory(regionFactory);
+    return configRootRegionFactory(regionFactory1);
+  }
+
+  private <K, V> RegionFactory<K, V> getRootRegionRegionFactory(
+      RegionAttributes<K, V> regionAttributes) {
+    RegionFactory<K, V> regionFactory = getCache().createRegionFactory(regionAttributes);
+    return configRootRegionFactory(regionFactory);
+  }
+
   public final <K, V> Region<K, V> createPartitionedRegion(final String rootName,
       final RegionAttributes<K, V> attributes) throws CacheException {
     Region<K, V> root = getRootRegion(rootName);
     if (root == null) {
-      // don't put listeners on root region
-      AttributesFactory<K, V> attributesFactory = new AttributesFactory<>(attributes);
-      ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
+      RegionFactory<K, V> regionFactory = getRootRegionRegionFactory(attributes);
+      regionFactory.setDataPolicy(DataPolicy.PARTITION);
 
-      attributesFactory.setCacheLoader(null);
-      attributesFactory.setCacheWriter(null);
-      attributesFactory.setPoolName(null);
-      attributesFactory.setDataPolicy(DataPolicy.PARTITION);
-      attributesFactory.setRegionTimeToLive(expiration);
-      attributesFactory.setEntryTimeToLive(expiration);
-      attributesFactory.setRegionIdleTimeout(expiration);
-      attributesFactory.setEntryIdleTimeout(expiration);
-
-      RegionAttributes<K, V> rootAttrs = attributesFactory.create();
-      root = createRootRegion(rootName, rootAttrs);
+      root = regionFactory.create(rootName);
     }
     return root;
   }
@@ -427,24 +424,30 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       final RegionAttributes<K, V> attributes) throws CacheException {
     Region<K, V> root = getRootRegion(rootName);
     if (root == null) {
-      // don't put listeners on root region
-      AttributesFactory<K, V> attributesFactory = new AttributesFactory<>(attributes);
-      ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
-
-      attributesFactory.setCacheLoader(null);
-      attributesFactory.setCacheWriter(null);
-      attributesFactory.setPoolName(null);
-      attributesFactory.setPartitionAttributes(null);
-      attributesFactory.setRegionTimeToLive(expiration);
-      attributesFactory.setEntryTimeToLive(expiration);
-      attributesFactory.setRegionIdleTimeout(expiration);
-      attributesFactory.setEntryIdleTimeout(expiration);
-
-      RegionAttributes<K, V> rootAttrs = attributesFactory.create();
-      root = createRootRegion(rootName, rootAttrs);
+      RegionFactory<K, V> regionFactory = getRootRegionRegionFactory(attributes);
+      root = regionFactory.create(rootName);
     }
 
     return root.createSubregion(name, attributes);
+  }
+
+
+  public final <K, V> Region<K, V> createRegion(final String name, final String rootName,
+      final RegionFactory<K, V> regionFactory) throws CacheException {
+    Region<K, V> root = getRootRegion(rootName);
+    if (root == null) {
+      RegionFactory<K, V> regionFactoryRoot = getRootRegionRegionFactory(regionFactory);
+      root = regionFactoryRoot.create(rootName);
+    }
+    return regionFactory.createSubregion(root, name);
+  }
+
+
+  public final <K, V> Region<K, V> createRegion(final String name,
+      final RegionFactory<K, V> regionFactory) throws CacheException {
+    final String rootName = "root";
+
+    return createRegion(name, rootName, regionFactory);
   }
 
   public final <K, V> Region<K, V> getRootRegion() {
@@ -460,13 +463,18 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return createRootRegion("root", attributes);
   }
 
+  protected final <K, V> Region<K, V> createRootRegion(final RegionFactory<K, V> regionFactory)
+      throws RegionExistsException, TimeoutException {
+    return regionFactory.create("root");
+  }
+
   public final <K, V> Region<K, V> createRootRegion(final String rootName,
       final RegionAttributes<K, V> attributes)
       throws RegionExistsException, TimeoutException {
     return getCache().createRegion(rootName, attributes);
   }
 
-  public final <K, V> Region<K, V> createExpiryRootRegion(final String rootName,
+  protected final <K, V> Region<K, V> createExpiryRootRegion(final String rootName,
       final RegionAttributes<K, V> attributes) throws RegionExistsException, TimeoutException {
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
@@ -507,9 +515,9 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     };
   }
 
-  public static final File getDiskDir() {
+  public static File getDiskDir() {
     int vmNum = VM.getCurrentVMNum();
-    File dir = new File("diskDir", "disk" + String.valueOf(vmNum)).getAbsoluteFile();
+    File dir = new File("diskDir", "disk" + vmNum).getAbsoluteFile();
     dir.mkdirs();
     return dir;
   }
@@ -518,7 +526,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    * Return a set of disk directories for persistence tests. These directories will be automatically
    * cleaned up on test case closure.
    */
-  public static final File[] getDiskDirs() {
+  public static File[] getDiskDirs() {
     return new File[] {getDiskDir()};
   }
 

@@ -21,8 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.NetworkUtils.getIPLiteral;
@@ -45,7 +43,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.ForcedDisconnectException;
-import org.apache.geode.LogWriter;
 import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.AdminDistributedSystemFactory;
 import org.apache.geode.admin.AlertLevel;
@@ -63,10 +60,9 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.test.dunit.DistributedTestCase;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -75,7 +71,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  * This class tests the functionality of the {@link ClusterDistributionManager} class.
  */
 @Category({MembershipTest.class})
-public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
+public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
   private static final Logger logger = LogService.getLogger();
 
   private static volatile boolean regionDestroyedInvoked;
@@ -94,13 +90,13 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   public SharedErrorCollector errorCollector = new SharedErrorCollector();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     executorService = Executors.newSingleThreadExecutor();
-    vm1 = Host.getHost(0).getVM(1);
+    vm1 = VM.getVM(1);
   }
 
   @After
-  public void tearDown() throws Exception {
+  public void tearDown() {
     disconnectAllFromDS();
     invokeInEveryVM(() -> {
       regionDestroyedInvoked = false;
@@ -115,7 +111,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
     DistributionManager dm = getSystem().getDistributionManager();
     InternalDistributedMember member = dm.getId();
 
-    assertEquals(ClusterDistributionManager.NORMAL_DM_TYPE, member.getVmKind());
+    assertThat(ClusterDistributionManager.NORMAL_DM_TYPE).isEqualTo(member.getVmKind());
   }
 
   /**
@@ -146,7 +142,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
    * should be gone and force more view processing to have it scrubbed from the set.
    **/
   @Test
-  public void testSurpriseMemberHandling() throws Exception {
+  public void testSurpriseMemberHandling() {
     System.setProperty(GEMFIRE_PREFIX + "surprise-member-timeout", "3000");
     InternalDistributedSystem system = getSystem();
     Distribution membershipManager =
@@ -191,32 +187,35 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
    * ack-wait-threshold + ack-severe-alert-threshold
    */
   @Test
-  public void testAckSevereAlertThreshold() throws Exception {
+  public void testAckSevereAlertThreshold() {
     // in order to set a small ack-wait-threshold, we have to remove the
     // system property established by the dunit harness
     System.clearProperty(GEMFIRE_PREFIX + ACK_WAIT_THRESHOLD);
-
     Properties config = getDistributedSystemProperties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(ACK_WAIT_THRESHOLD, "3");
     config.setProperty(ACK_SEVERE_ALERT_THRESHOLD, "3");
     config.setProperty(NAME, "putter");
+    getCache(config);
 
-    getSystem(config);
-    Region<String, String> region =
-        new RegionFactory<String, String>().setScope(Scope.DISTRIBUTED_ACK).setEarlyAck(false)
-            .setDataPolicy(DataPolicy.REPLICATE).create("testRegion");
+    RegionFactory<String, String> regionFactory = getCache().createRegionFactory();
+    regionFactory.setScope(Scope.DISTRIBUTED_ACK);
+    regionFactory.setDataPolicy(DataPolicy.REPLICATE);
+    assertThat(getCache().isClosed()).isFalse();
+    Region<String, String> region = regionFactory.create("testRegion");
 
     vm1.invoke("Connect to distributed system", () -> {
       config.setProperty(NAME, "sleeper");
       getSystem(config);
       addIgnoredException("elapsed while waiting for replies");
 
-      RegionFactory<String, String> regionFactory = new RegionFactory<>();
-      Region<String, String> sameRegion =
-          regionFactory.setScope(Scope.DISTRIBUTED_ACK).setDataPolicy(DataPolicy.REPLICATE)
-              .setEarlyAck(false).addCacheListener(getSleepingListener(false)).create("testRegion");
-      myCache = sameRegion.getCache();
+      RegionFactory<String, String> regionFactory2 = getCache().createRegionFactory();
+      regionFactory2.setScope(Scope.DISTRIBUTED_ACK);
+      regionFactory2.setDataPolicy(DataPolicy.REPLICATE);
+      regionFactory2.addCacheListener(getSleepingListener(false));
+
+      regionFactory2.create("testRegion");
+      myCache = getCache();
 
       createAlertListener();
     });
@@ -236,7 +235,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
    * Tests that a sick member is kicked out
    */
   @Test
-  public void testKickOutSickMember() throws Exception {
+  public void testKickOutSickMember() {
     addIgnoredException("10 seconds have elapsed while waiting");
 
     // in order to set a small ack-wait-threshold, we have to remove the
@@ -249,9 +248,11 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
     config.setProperty(ACK_SEVERE_ALERT_THRESHOLD, "5");
     config.setProperty(NAME, "putter");
 
-    getSystem(config);
-    Region<String, String> region = new RegionFactory<String, String>()
-        .setScope(Scope.DISTRIBUTED_ACK).setDataPolicy(DataPolicy.REPLICATE).create("testRegion");
+    getCache(config);
+    RegionFactory<String, String> regionFactory = getCache().createRegionFactory();
+    regionFactory.setScope(Scope.DISTRIBUTED_ACK);
+    regionFactory.setDataPolicy(DataPolicy.REPLICATE);
+    Region<String, String> region = regionFactory.create("testRegion");
 
     addIgnoredException("sec have elapsed while waiting for replies");
 
@@ -259,16 +260,17 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
       @Override
       public void run() {
         config.setProperty(NAME, "sleeper");
-        getSystem(config);
+        getCache(config);
 
         addIgnoredException("service failure");
         addIgnoredException(ForcedDisconnectException.class.getName());
+        RegionFactory<String, String> regionFactory2 = getCache().createRegionFactory();
+        regionFactory2.setScope(Scope.DISTRIBUTED_ACK);
+        regionFactory2.setDataPolicy(DataPolicy.REPLICATE);
+        regionFactory2.addCacheListener(getSleepingListener(true));
 
-        RegionFactory<String, String> regionFactory = new RegionFactory<>();
-        Region sameRegion =
-            regionFactory.setScope(Scope.DISTRIBUTED_ACK).setDataPolicy(DataPolicy.REPLICATE)
-                .addCacheListener(getSleepingListener(true)).create("testRegion");
-        myCache = sameRegion.getCache();
+        regionFactory2.create("testRegion");
+        myCache = getCache();
       }
     });
 
@@ -311,7 +313,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
 
     // use a valid bind address
     config.setProperty(BIND_ADDRESS, InetAddress.getLocalHost().getCanonicalHostName());
-    assertThatCode(() -> getSystem()).doesNotThrowAnyException();
+    assertThatCode(this::getSystem).doesNotThrowAnyException();
   }
 
   /**
@@ -362,10 +364,9 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
 
       @Override
       public void afterRegionDestroy(RegionEvent event) {
-        LogWriter logWriter = myCache.getLogger();
-        logWriter.info("afterRegionDestroyed invoked in sleeping listener");
-        logWriter.info("<ExpectedException action=remove>service failure</ExpectedException>");
-        logWriter.info(
+        logger.info("afterRegionDestroyed invoked in sleeping listener");
+        logger.info("<ExpectedException action=remove>service failure</ExpectedException>");
+        logger.info(
             "<ExpectedException action=remove>org.apache.geode.ForcedDisconnectException</ExpectedException>");
         regionDestroyedInvoked = true;
       }
@@ -388,6 +389,6 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
       alertReceived = true;
     });
     adminSystem.connect();
-    assertTrue(adminSystem.waitToBeConnected(5 * 1000));
+    assertThat(adminSystem.waitToBeConnected(5 * 1000)).isTrue();
   }
 }

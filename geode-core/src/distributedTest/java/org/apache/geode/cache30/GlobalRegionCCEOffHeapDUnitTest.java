@@ -58,23 +58,24 @@ public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
     return props;
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  @Override
-  protected RegionAttributes getRegionAttributes() {
-    RegionAttributes attrs = super.getRegionAttributes();
-    AttributesFactory factory = new AttributesFactory(attrs);
-    factory.setOffHeap(true);
-    return factory.create();
-  }
-
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  @Override
-  protected RegionAttributes getRegionAttributes(String type) {
-    RegionAttributes ra = super.getRegionAttributes(type);
-    AttributesFactory factory = new AttributesFactory(ra);
-    if (!ra.getDataPolicy().isEmpty()) {
+  private <K, V> RegionAttributes<K, V> getBasicAttributes(
+      RegionAttributes<K, V> regionAttributes) {
+    AttributesFactory<K, V> factory = new AttributesFactory<>(regionAttributes);
+    if (!regionAttributes.getDataPolicy().isEmpty()) {
       factory.setOffHeap(true);
     }
     return factory.create();
+  }
+
+  @Override
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    RegionAttributes<K, V> attrs = super.getRegionAttributes();
+    return getBasicAttributes(attrs);
+  }
+
+  @Override
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
+    RegionAttributes<K, V> ra = super.getRegionAttributes(type);
+    return getBasicAttributes(ra);
   }
 }

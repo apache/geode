@@ -4630,6 +4630,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return new RegionFactoryImpl<>(this, regionAttributes);
   }
 
+  @Override
+  public <K, V> RegionFactory<K, V> createRegionFactory(RegionFactory<K, V> regionFactory) {
+    throwIfClient();
+    return new RegionFactoryImpl<>(this, regionFactory);
+  }
+
   /**
    * @since GemFire 6.5
    */
