@@ -32,13 +32,13 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.RegionInformation;
 import org.apache.geode.management.internal.cli.functions.GetRegionsFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
 
 public class ListRegionCommand extends GfshCommand {
@@ -66,7 +66,7 @@ public class ListRegionCommand extends GfshCommand {
     }
 
     TabularResultModel resultData = result.addTable("regionInfo");
-    rc = CliUtil.executeFunction(getRegionsFunction, null, targetMembers);
+    rc = ManagementUtils.executeFunction(getRegionsFunction, null, targetMembers);
     ArrayList<?> resultList = (ArrayList<?>) rc.getResult();
 
     if (resultList != null) {

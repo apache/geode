@@ -33,7 +33,6 @@ import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.ContinuousQueryFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -41,6 +40,7 @@ import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
 
 public class DescribeClientCommand extends GfshCommand {
@@ -108,7 +108,7 @@ public class DescribeClientCommand extends GfshCommand {
     if (dsMembers.size() > 0) {
       ContinuousQueryFunction continuousQueryFunction = new ContinuousQueryFunction();
       FunctionService.registerFunction(continuousQueryFunction);
-      List<?> resultList = (List<?>) CliUtil
+      List<?> resultList = (List<?>) ManagementUtils
           .executeFunction(continuousQueryFunction, clientId, dsMembers).getResult();
       for (Object aResultList : resultList) {
         Object object = aResultList;

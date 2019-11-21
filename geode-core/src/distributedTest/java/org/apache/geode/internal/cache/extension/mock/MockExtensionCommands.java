@@ -31,12 +31,12 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -173,11 +173,11 @@ public class MockExtensionCommands implements CommandMarker {
   protected Result executeFunctionOnAllMembersTabulateResultPersist(final Function function,
       final boolean addXmlElement, final Object... args) {
     InternalCache cache = GemFireCacheImpl.getInstance();
-    final Set<DistributedMember> members = CliUtil.getAllNormalMembers(cache);
+    final Set<DistributedMember> members = ManagementUtils.getAllNormalMembers(cache);
 
     @SuppressWarnings("unchecked")
     final ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
-        (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) CliUtil
+        (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) ManagementUtils
             .executeFunction(function, args, members);
     final List<CliFunctionResult> functionResults = resultCollector.getResult();
 

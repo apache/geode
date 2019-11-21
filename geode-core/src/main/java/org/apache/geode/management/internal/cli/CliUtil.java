@@ -45,19 +45,11 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
@@ -68,6 +60,7 @@ import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
+import org.apache.geode.management.internal.util.ManagementUtils;
 
 /**
  * This class contains utility methods used by classes used to build the Command Line Interface
@@ -179,41 +172,6 @@ public class CliUtil {
     return nameOrId;
   }
 
-  /**
-   * Returns a set of all the members of the distributed system excluding locators.
-   */
-  @SuppressWarnings("unchecked")
-  public static Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
-    return new HashSet<DistributedMember>(
-        cache.getDistributionManager().getNormalDistributionManagerIds());
-  }
-
-  /**
-   * Returns a set of all the members of the distributed system of a specific version excluding
-   * locators.
-   */
-  @SuppressWarnings("unchecked")
-  public static Set<DistributedMember> getNormalMembersWithSameOrNewerVersion(InternalCache cache,
-      Version version) {
-    return getAllNormalMembers(cache).stream().filter(
-        member -> ((InternalDistributedMember) member).getVersionObject().compareTo(version) >= 0)
-        .collect(Collectors.toSet());
-  }
-
-  /**
-   * Returns a set of all the members of the distributed system including locators.
-   */
-  @SuppressWarnings("unchecked")
-  public static Set<DistributedMember> getAllMembers(InternalCache cache) {
-    return getAllMembers(cache.getInternalDistributedSystem());
-  }
-
-  @SuppressWarnings("unchecked")
-  public static Set<DistributedMember> getAllMembers(InternalDistributedSystem internalDS) {
-    return new HashSet<DistributedMember>(
-        internalDS.getDistributionManager().getDistributionManagerIds());
-  }
-
   public static Set<DistributedMember> getMembersWithAsyncEventQueue(InternalCache cache,
       String queueId) {
     Set<DistributedMember> members = findMembers(null, null, cache);
@@ -250,7 +208,7 @@ public class CliUtil {
    */
   public static Set<DistributedMember> findMembersIncludingLocators(String[] groups,
       String[] members, InternalCache cache) {
-    Set<DistributedMember> allMembers = getAllMembers(cache);
+    Set<DistributedMember> allMembers = ManagementUtils.getAllMembers(cache);
     return findMembers(allMembers, groups, members);
   }
 
@@ -260,7 +218,7 @@ public class CliUtil {
    */
   public static Set<DistributedMember> findMembers(String[] groups, String[] members,
       InternalCache cache) {
-    Set<DistributedMember> allNormalMembers = getAllNormalMembers(cache);
+    Set<DistributedMember> allNormalMembers = ManagementUtils.getAllNormalMembers(cache);
 
     return findMembers(allNormalMembers, groups, members);
   }
@@ -322,7 +280,7 @@ public class CliUtil {
       return null;
     }
 
-    Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
+    Set<DistributedMember> memberSet = ManagementUtils.getAllMembers(cache);
     return memberSet.stream().filter(member -> memberNameOrId.equalsIgnoreCase(member.getId())
         || memberNameOrId.equalsIgnoreCase(member.getName())).findFirst().orElse(null);
   }
@@ -502,29 +460,6 @@ public class CliUtil {
   public static String resolvePathname(final String pathname) {
     return (StringUtils.isBlank(pathname) ? pathname
         : IOUtils.tryGetCanonicalPathElseGetAbsolutePath(new File(pathname)));
-  }
-
-  /***
-   * Executes a function with arguments on a set of members, ignoring the departed members.
-   *
-   * @param function Function to be executed.
-   * @param args Arguments passed to the function, pass null if you wish to pass no arguments to the
-   *        function.
-   * @param targetMembers Set of members on which the function is to be executed.
-   *
-   */
-  public static ResultCollector<?, ?> executeFunction(final Function function, Object args,
-      final Set<DistributedMember> targetMembers) {
-    Execution execution;
-
-    if (args != null) {
-      execution = FunctionService.onMembers(targetMembers).setArguments(args);
-    } else {
-      execution = FunctionService.onMembers(targetMembers);
-    }
-
-    ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
-    return execution.execute(function);
   }
 
 

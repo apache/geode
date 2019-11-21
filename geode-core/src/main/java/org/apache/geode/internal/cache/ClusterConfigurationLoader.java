@@ -64,11 +64,11 @@ import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.FileUploader;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.functions.DownloadJarFunction;
 import org.apache.geode.management.internal.configuration.functions.GetClusterConfigurationFunction;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
+import org.apache.geode.management.internal.util.ManagementUtils;
 
 public class ClusterConfigurationLoader {
 
@@ -136,9 +136,10 @@ public class ClusterConfigurationLoader {
   public static File downloadJar(DistributedMember locator, String groupName, String jarName)
       throws IOException {
     ResultCollector<RemoteInputStream, List<RemoteInputStream>> rc =
-        (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) CliUtil.executeFunction(
-            new DownloadJarFunction(), new Object[] {groupName, jarName},
-            Collections.singleton(locator));
+        (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) ManagementUtils
+            .executeFunction(
+                new DownloadJarFunction(), new Object[] {groupName, jarName},
+                Collections.singleton(locator));
 
     List<RemoteInputStream> result = rc.getResult();
     if (result.get(0) instanceof Throwable) {

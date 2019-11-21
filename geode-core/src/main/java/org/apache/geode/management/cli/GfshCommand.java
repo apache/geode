@@ -41,6 +41,7 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
@@ -132,21 +133,21 @@ public abstract class GfshCommand implements CommandMarker {
    * Gets all members in the GemFire distributed system/cache, including locators
    */
   public Set<DistributedMember> getAllMembers() {
-    return CliUtil.getAllMembers(cache);
+    return ManagementUtils.getAllMembers(cache);
   }
 
   /**
    * Get All members, excluding locators
    */
   public Set<DistributedMember> getAllNormalMembers() {
-    return CliUtil.getAllNormalMembers(cache);
+    return ManagementUtils.getAllNormalMembers(cache);
   }
 
   /**
    * Get All members >= a specific version, excluding locators
    */
   public Set<DistributedMember> getNormalMembersWithSameOrNewerVersion(Version version) {
-    return CliUtil.getNormalMembersWithSameOrNewerVersion(cache, version);
+    return ManagementUtils.getNormalMembersWithSameOrNewerVersion(cache, version);
   }
 
   public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
@@ -199,7 +200,7 @@ public abstract class GfshCommand implements CommandMarker {
 
   public ResultCollector<?, ?> executeFunction(Function function, Object args,
       final Set<DistributedMember> targetMembers) {
-    return CliUtil.executeFunction(function, args, targetMembers);
+    return ManagementUtils.executeFunction(function, args, targetMembers);
   }
 
   public ResultCollector<?, ?> executeFunction(Function function, Object args,

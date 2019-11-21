@@ -35,4 +35,9 @@ public interface RebalanceResult extends OperationResult {
    * "succeeds" only because there are no partitioned regions or only one server.
    */
   String getStatusMessage();
+
+  /**
+   * Whether the rebalance operation was overall successful or not.
+   */
+  boolean getSuccess();
 }

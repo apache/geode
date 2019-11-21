@@ -35,10 +35,10 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.ExportStackTraceCommand;
 import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
 import org.apache.geode.management.internal.cli.functions.GetStackTracesFunction;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -105,7 +105,7 @@ public class PluckStacksDUnitTest extends JUnit4CacheTestCase {
     Map<String, byte[]> dumps = new HashMap<>();
 
     ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(new GetStackTracesFunction(), null, targetMembers);
+        ManagementUtils.executeFunction(new GetStackTracesFunction(), null, targetMembers);
     ArrayList<Object> resultList = (ArrayList<Object>) rc.getResult();
     assertEquals(targetMembers.size(), resultList.size());
 
