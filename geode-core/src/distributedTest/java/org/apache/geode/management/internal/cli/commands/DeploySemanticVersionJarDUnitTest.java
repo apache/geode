@@ -156,9 +156,11 @@ public class DeploySemanticVersionJarDUnitTest {
   }
 
   @Test
-  public void deployWithPlainWillClean() throws Exception {
+  public void deployWithPlainWillCleanSemanticVersion() throws Exception {
+    // deploy def-1.0.jar
     gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion0.getAbsolutePath())
         .statusIsSuccess();
+    // deploy def.jar
     gfsh.executeAndAssertThat("deploy --jar=" + semanticJarVersion0c.getAbsolutePath())
         .statusIsSuccess();
     MemberVM.invokeInEveryMember(() -> {
@@ -171,6 +173,27 @@ public class DeploySemanticVersionJarDUnitTest {
         .containsExactlyInAnyOrder("def-1.0.v1.jar", "def.v2.jar");
     server2.invoke(() -> verifyLoadAndHasVersion("def", "jddunit.function.Def", "version1c"));
 
+    gfsh.executeAndAssertThat("list deployed").statusIsSuccess().hasTableSection().hasColumn("JAR")
+        .contains("def.jar");
+
+    gfsh.executeAndAssertThat("undeploy --jar=def-1.0.jar").statusIsSuccess()
+        .containsOutput("def-1.0.jar not deployed");
+    MemberVM.invokeInEveryMember(() -> {
+      assertThat(Paths.get(".").resolve("cluster_config").resolve("cluster").toFile().list())
+          .containsExactly("def.jar");
+      Set<String> deployedJars = getDeployedJarsFromClusterConfig();
+      assertThat(deployedJars).containsExactly("def.jar");
+    }, locator0, locator1);
+
+    gfsh.executeAndAssertThat("undeploy --jar=def.jar").statusIsSuccess()
+        .containsOutput("def.v2.jar");
+    MemberVM.invokeInEveryMember(() -> {
+      assertThat(Paths.get(".").resolve("cluster_config").resolve("cluster").toFile().list())
+          .isEmpty();
+      Set<String> deployedJars = getDeployedJarsFromClusterConfig();
+      assertThat(deployedJars).isEmpty();
+    }, locator0, locator1);
+    assertThat(server2.getWorkingDir().list()).isEmpty();
   }
 
   static Set<String> getDeployedJarsFromClusterConfig() {

@@ -16,6 +16,7 @@
 package org.apache.geode.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.IOException;
@@ -152,6 +153,24 @@ public class JarDeployerIntegrationTest {
     assertThat(jarDeployer.getDeployedJars()).containsOnlyKeys("def");
     assertThat(jarDeployer.getDeployedJars().get("def")).isEqualTo(deployed);
     assertThat(getVersion("jddunit.function.Def")).isEqualTo("version1c");
+  }
+
+  @Test
+  public void undeploy() throws Exception {
+    // deploy abc.jar
+    jarDeployer.deploy(plainJarVersion1);
+    // deploy def.jar
+    jarDeployer.deploy(semanticJarVersion1c);
+    // deploy def-1.0.jar
+    jarDeployer.deploy(semanticJarVersion1);
+
+    assertThatThrownBy(() -> jarDeployer.undeploy("def.jar"))
+        .isInstanceOf(IllegalArgumentException.class);
+
+    jarDeployer.undeploy("def-1.0.jar");
+    assertThat(deployedDir.list()).containsExactly("abc.v1.jar");
+    assertThatThrownBy(() -> ClassPathLoader.getLatest().forName("jddunit.function.Def"))
+        .isInstanceOf(ClassNotFoundException.class);
   }
 
   private String getVersion(String classname) throws Exception {

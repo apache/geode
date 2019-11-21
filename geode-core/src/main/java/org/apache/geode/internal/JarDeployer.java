@@ -53,7 +53,7 @@ public class JarDeployer implements Serializable {
       Pattern.compile("^vf\\.gf#(?<artifact>.*)\\.jar#(?<version>\\d+)$");
   // The sequenced version scheme predates the semantic version scheme. We use this scheme when
   // the file name has no semantic version
-  private static final Pattern SEQUENCED_VERSION_SCHEME =
+  static final Pattern SEQUENCED_VERSION_SCHEME =
       Pattern.compile("(?<artifact>..*)\\.v(?<version>\\d++).jar$");
   // We use this scheme when we detect that the file has semantic version information
   private static final Pattern SEMANTIC_VERSION_SCHEME =
@@ -456,16 +456,22 @@ public class JarDeployer implements Serializable {
     lock.lock();
 
     try {
-      DeployedJar deployedJar = deployedJars.remove(artifactId);
+      DeployedJar deployedJar = deployedJars.get(artifactId);
       if (deployedJar == null) {
-        throw new IllegalArgumentException("JAR not deployed");
+        throw new IllegalArgumentException(jarName + " not deployed");
       }
 
+      if (!deployedJar.getDeployedFileName().equals(jarName)) {
+        throw new IllegalArgumentException(jarName + " not deployed");
+      }
+
+      // remove the deployedJar
+      deployedJars.remove(artifactId);
       ClassPathLoader.getLatest().unloadClassloaderForArtifact(artifactId);
 
       deployedJar.cleanUp(null);
 
-      deleteAllVersionsOfJar(artifactId);
+      deleteAllVersionsOfJar(jarName);
       return deployedJar.getFileCanonicalPath();
     } finally {
       lock.unlock();
@@ -481,7 +487,7 @@ public class JarDeployer implements Serializable {
     String artifactId = getArtifactId(jarName);
     try {
       for (File file : this.deployDirectory.listFiles()) {
-        if (file.getName().startsWith(artifactId)) {
+        if (artifactId.equals(toArtifactId(file.getName()))) {
           logger.info("Deleting: {}", file.getAbsolutePath());
           FileUtils.deleteQuietly(file);
         }
