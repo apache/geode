@@ -100,6 +100,7 @@ org/apache/geode/cache/client/internal/pooling/ConnectionManagerImpl$ClosedPoolC
 org/apache/geode/internal/cache/partitioned/ManageBackupBucketMessage$ReplyType
 org/apache/geode/internal/cache/AfterCompletion$Action
 org/apache/geode/internal/cache/LocalRegion$InitializationLevel
+org/apache/geode/cache/query/management/configuration/QueryConfigService
 org/apache/geode/cache/query/internal/xml/ElementType
 org/apache/geode/cache/query/internal/xml/ElementType$1
 org/apache/geode/cache/query/internal/xml/ElementType$2
