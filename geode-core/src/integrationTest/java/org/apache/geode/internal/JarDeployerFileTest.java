@@ -261,6 +261,8 @@ public class JarDeployerFileTest {
     assertThat(JarDeployer.getArtifactId("abc.v1.jar")).isEqualTo("abc.v1");
     assertThat(JarDeployer.getArtifactId("abc-1.0.snapshot.jar")).isEqualTo("abc");
     assertThat(JarDeployer.getArtifactId("abc-1.0.v1.jar")).isEqualTo("abc");
+    assertThat(JarDeployer.getArtifactId("spark-network-common_2.11-2.3.1.jar"))
+        .isEqualTo("spark-network-common_2");
   }
 
   @Test

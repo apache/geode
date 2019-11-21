@@ -176,7 +176,7 @@ public class JarDeployer implements Serializable {
    * get the artifact id from the existing files on the server. This will skip files that
    * do not have sequence id or semantic version appended to them.
    *
-   * @param versionedJarFileName: the file names that exists on the server, could be file with
+   * @param versionedJarFileName the file names that exists on the server, could be file with
    *        sequence numbers abc.v1.jar, or file with semantic version abc-1.0.0.jar
    * @return the artifact id, which could be optional for other forms of jar names
    *         that might exists on server like abc.jar
@@ -195,7 +195,7 @@ public class JarDeployer implements Serializable {
   /**
    * get the artifact id from the files deployed by the user
    *
-   * @param deployedJarFileName: the filename that's deployed by the user. could be in the form of
+   * @param deployedJarFileName the filename that's deployed by the user. could be in the form of
    *        abc.jar or abc-1.0.0.jar, both should return abc
    * @return the artifact id of the string
    */

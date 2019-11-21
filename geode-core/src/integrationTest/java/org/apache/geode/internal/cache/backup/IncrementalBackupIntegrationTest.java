@@ -378,7 +378,7 @@ public class IncrementalBackupIntegrationTest {
     for (DeployedJar jarClassLoader : ClassPathLoader.getLatest().getJarDeployer()
         .findDeployedJars()) {
       if (jarClassLoader.getArtifactId().startsWith(jarName)) {
-        ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getArtifactId());
+        ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getDeployedFileName());
       }
     }
 

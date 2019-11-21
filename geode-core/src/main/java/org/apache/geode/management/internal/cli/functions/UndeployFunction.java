@@ -66,7 +66,7 @@ public class UndeployFunction implements InternalFunction {
       } else {
         final List<DeployedJar> jarClassLoaders = jarDeployer.findDeployedJars();
         jarNamesToUndeploy =
-            jarClassLoaders.stream().map(l -> l.getArtifactId()).collect(Collectors.toList());
+            jarClassLoaders.stream().map(l -> l.getDeployedFileName()).collect(Collectors.toList());
       }
 
       Map<String, String> undeployedJars = new HashMap<>();
