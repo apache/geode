@@ -40,4 +40,7 @@ public class RegionFactoryImpl<K, V> extends RegionFactory<K, V> {
     super(cache, regionAttributesId);
   }
 
+  public RegionFactoryImpl(InternalCache cache, RegionFactory<K, V> regionFactory) {
+    super(cache, regionFactory);
+  }
 }

@@ -30,6 +30,7 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -37,13 +38,10 @@ import org.apache.geode.internal.cache.StateFlushOperation;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 
 /**
  * This class tests the functionality of a cache {@link Region region} that has a scope of
@@ -58,8 +56,8 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
    * Returns region attributes for a <code>GLOBAL</code> region
    */
   @Override
-  protected RegionAttributes getRegionAttributes() {
-    AttributesFactory factory = new AttributesFactory();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     factory.setDataPolicy(DataPolicy.PRELOADED);
     factory.setConcurrencyChecksEnabled(false);
@@ -67,7 +65,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
   }
 
   /**
-   * Tests creating a distributed subregion of a local scope region, which should fail.
+   * Tests creating a distributed sub-region of a local scope region, which should fail.
    */
   @Test
   public void testDistSubregionOfLocalRegion() throws Exception {
@@ -78,7 +76,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     try {
       createRegion(getUniqueName());
       fail("Should have thrown an IllegalStateException");
-    } catch (IllegalStateException e) {
+    } catch (IllegalStateException ignored) {
       // pass
     }
   }
@@ -89,10 +87,9 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
    * @see Region#createSubregion
    */
   @Test
-  public void testIncompatibleSubregions() throws Exception {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+  public void testIncompatibleSubRegions() throws Exception {
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
 
 
     // Scope.GLOBAL is illegal if there is any other cache in the
@@ -138,7 +135,8 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
       @Override
       public void run() {
         try {
-          AttributesFactory factory = new AttributesFactory(getRegionAttributes());
+          AttributesFactory<Object, Object> factory =
+              new AttributesFactory<>(getRegionAttributes());
           factory.setScope(Scope.DISTRIBUTED_ACK);
           assertNull(getRootRegion("INCOMPATIBLE_ROOT"));
           try {
@@ -163,7 +161,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
 
   private static final int NUM_PUTS = 100000;
 
-  protected static volatile boolean stopPutting = false;
+  private static volatile boolean stopPutting = false;
 
   /**
    * Messages pile up in overflow queue during long GetInitialImage This test was disabled since we
@@ -172,44 +170,35 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
    */
   @Ignore("TODO")
   @Test
-  public void testBug30705() throws Exception {
+  public void testBug30705() {
     final String name = this.getUniqueName();
-    final int numEntries = NUM_ENTRIES_VM;
-    final int valueSize = VALUE_SIZE_VM;
 
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm2 = host.getVM(2);
+    VM vm0 = VM.getVM(0);
+    VM vm2 = VM.getVM(2);
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Mirrored Region") {
       @Override
       public void run2() throws CacheException {
-        LogWriterUtils.getLogWriter().info("testBug30705: Start creating Mirrored Region");
-        AttributesFactory factory = new AttributesFactory(getRegionAttributes());
+        RegionFactory<Object, Object> factory =
+            getCache().createRegionFactory(getRegionAttributes());
         factory.setDataPolicy(DataPolicy.REPLICATE);
-        createRegion(name, factory.create());
-        LogWriterUtils.getLogWriter().info("testBug30705: Finished creating Mirrored Region");
+        createRegion(name, factory);
       }
     };
 
     SerializableRunnable put = new CacheSerializableRunnable("Distributed NoAck Puts") {
       @Override
       public void run2() throws CacheException {
-        Region rgn = getCache().getRegion("/root/" + name);
+        Region<Object, Object> rgn = getCache().getRegion("/root/" + name);
         assertNotNull(rgn);
-        Object key = new Integer(0x42);
+        Object key = 0x42;
         Object value = new byte[0];
         assertNotNull(value);
-        LogWriterUtils.getLogWriter().info("testBug30705: Started Distributed NoAck Puts");
         for (int i = 0; i < NUM_PUTS; i++) {
           if (stopPutting) {
-            LogWriterUtils.getLogWriter()
-                .info("testBug30705: Interrupted Distributed Ack Puts after " + i + " PUTS");
             break;
           }
-          if ((i % 1000) == 0) {
-            LogWriterUtils.getLogWriter().info("testBug30705: modification #" + i);
-          }
+
           rgn.put(key, value);
         }
       }
@@ -220,17 +209,14 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     vm0.invoke(new CacheSerializableRunnable("Put data") {
       @Override
       public void run2() throws CacheException {
-        LogWriterUtils.getLogWriter().info("testBug30705: starting initial data load");
-        Region region = getRootRegion().getSubregion(name);
-        final byte[] value = new byte[valueSize];
+        Region<Object, Object> region = getRootRegion().getSubregion(name);
+        final byte[] value = new byte[VALUE_SIZE_VM];
         Arrays.fill(value, (byte) 0x42);
-        for (int i = 0; i < numEntries; i++) {
-          if ((i % 1000) == 0) {
-            LogWriterUtils.getLogWriter().info("testBug30705: initial put #" + i);
+        for (int i = 0; i < NUM_ENTRIES_VM; i++) {
+          if ((i % 1000) != 0) {
+            region.put(i, value);
           }
-          region.put(new Integer(i), value);
         }
-        LogWriterUtils.getLogWriter().info("testBug30705: finished initial data load");
       }
     });
 
@@ -239,41 +225,21 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
 
     // do initial image
     try {
-      LogWriterUtils.getLogWriter().info("testBug30705: before the critical create");
       vm2.invoke(create);
-      LogWriterUtils.getLogWriter().info("testBug30705: after the critical create");
     } finally {
       // test passes if this does not hang
-      LogWriterUtils.getLogWriter()
-          .info("testBug30705: INTERRUPTING Distributed NoAck Puts after GetInitialImage");
       vm0.invoke(new SerializableRunnable("Interrupt Puts") {
         @Override
         public void run() {
-          LogWriterUtils.getLogWriter().info("testBug30705: interrupting putter");
           stopPutting = true;
         }
       });
       ThreadUtils.join(async, 30 * 1000);
       // wait for overflow queue to quiesce before continuing
-      vm2.invoke(new SerializableRunnable("Wait for Overflow Queue") {
-        @Override
-        public void run() {
-          WaitCriterion ev = new WaitCriterion() {
-            @Override
-            public boolean done() {
-              return getSystem().getDistributionManager().getStats().getOverflowQueueSize() == 0;
-            }
-
-            @Override
-            public String description() {
-              return "overflow queue remains nonempty";
-            }
-          };
-          GeodeAwaitility.await().untilAsserted(ev);
-        }
-      });
+      vm2.invoke("Wait for Overflow Queue",
+          () -> GeodeAwaitility.await().alias("overflow queue remains nonempty").until(
+              () -> getSystem().getDistributionManager().getStats().getOverflowQueueSize() == 0));
     } // finally
-    LogWriterUtils.getLogWriter().info("testBug30705: at end of test");
     if (async.exceptionOccurred()) {
       Assert.fail("Got exception", async.getException());
     }

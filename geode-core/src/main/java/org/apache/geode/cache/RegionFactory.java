@@ -103,6 +103,16 @@ public class RegionFactory<K, V> {
   /**
    * For internal use only.
    *
+   * @since GemFire 9.10
+   */
+  public RegionFactory(InternalCache cache, RegionFactory<K, V> regionFactory) {
+    this.attrsFactory = new AttributesFactory<>(regionFactory.attrsFactory.create());
+    this.cache = regionFactory.cache;
+  }
+
+  /**
+   * For internal use only.
+   *
    * @since GemFire 6.5
    */
   protected RegionFactory(InternalCache cache, String regionAttributesId) {
@@ -159,6 +169,10 @@ public class RegionFactory<K, V> {
   public RegionFactory(String regionAttributesId)
       throws CacheWriterException, RegionExistsException, TimeoutException {
     this((InternalCache) new CacheFactory().create(), regionAttributesId);
+  }
+
+  public RegionFactory(RegionFactory<K, V> regionFactory) {
+    this((InternalCache) new CacheFactory().create(), regionFactory);
   }
 
   /**
@@ -222,6 +236,7 @@ public class RegionFactory<K, V> {
     this((InternalCache) new CacheFactory(distributedSystemProperties).create(),
         regionAttributesId);
   }
+
 
   /**
    * Returns the cache used by this factory.

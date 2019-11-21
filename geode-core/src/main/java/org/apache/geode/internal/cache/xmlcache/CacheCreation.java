@@ -1134,6 +1134,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public <K, V> RegionFactory<K, V> createRegionFactory(RegionFactory<K, V> regionFactory) {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
   public Region createVMRegion(String name, RegionAttributes aRegionAttributes)
       throws RegionExistsException, TimeoutException {
     return createRegion(name, aRegionAttributes);
