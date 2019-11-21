@@ -991,8 +991,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           // Fix for #46517
           AbstractGatewaySenderEventProcessor ep = getEventProcessor();
           // if manual-start is true, ep is null
-          if (ep == null || (ep != null
-              && !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher))) {
+          if (ep == null || !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
             if (seca.getOriginatingDSId() == this.getRemoteDSId()) {
               if (isDebugEnabled) {
                 logger.debug(
