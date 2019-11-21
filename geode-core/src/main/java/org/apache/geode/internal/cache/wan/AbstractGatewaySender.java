@@ -32,6 +32,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -1102,6 +1103,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         clonedEvent.release(); // fix for bug 48035
       }
     }
+  }
+
+  @VisibleForTesting
+  int getTmpDroppedEventSize() {
+    return tmpDroppedEvents.size();
   }
 
   /**
