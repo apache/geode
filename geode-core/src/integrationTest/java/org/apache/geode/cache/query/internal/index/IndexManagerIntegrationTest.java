@@ -140,7 +140,9 @@ public class IndexManagerIntegrationTest {
     Index indexInvalid = internalCache.getQueryService().getIndex(region, indexName);
     assertThat(indexInvalid.isValid()).isFalse();
     LogFileAssert.assertThat(logFile)
-        .contains("Error adding an index mapping, index might be corrupt: " + indexName);
+        .contains(String.format(
+            "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+            indexName));
   }
 
   @Test
@@ -165,7 +167,9 @@ public class IndexManagerIntegrationTest {
     Index indexInvalid = internalCache.getQueryService().getIndex(region, indexName);
     assertThat(indexInvalid.isValid()).isFalse();
     LogFileAssert.assertThat(logFile)
-        .contains("Error adding an index mapping, index might be corrupt: " + indexName);
+        .contains(String.format(
+            "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+            indexName));
   }
 
   @Test
@@ -205,7 +209,9 @@ public class IndexManagerIntegrationTest {
     Index indexInvalid = internalCache.getQueryService().getIndex(region, indexName);
     assertThat(indexInvalid.isValid()).isFalse();
     LogFileAssert.assertThat(logFile)
-        .contains("Error removing an index mapping, index might be corrupt: " + indexName);
+        .contains(String.format(
+            "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+            indexName));
   }
 
   private static class TestQueryObject implements Serializable {
@@ -214,7 +220,6 @@ public class IndexManagerIntegrationTest {
 
     public int getId() {
       if (throwException) {
-        new Throwable("[JUAN]").printStackTrace();
         throw new RuntimeException("Mock Exception");
       } else {
         return id;

@@ -1155,8 +1155,9 @@ public class IndexManager {
     } catch (Exception exception) {
       index.markValid(false);
       setPRIndexAsInvalid((AbstractIndex) index);
-      logger.warn("Error adding an index mapping, index might be corrupt: "
-          + ((AbstractIndex) index).indexName + ".", exception);
+      logger.warn(String.format(
+          "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+          ((AbstractIndex) index).indexName), exception);
     }
   }
 
@@ -1166,8 +1167,9 @@ public class IndexManager {
     } catch (Exception exception) {
       index.markValid(false);
       setPRIndexAsInvalid((AbstractIndex) index);
-      logger.warn("Error removing an index mapping, index might be corrupt: "
-          + ((AbstractIndex) index).indexName + ".", exception);
+      logger.warn(String.format(
+          "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+          ((AbstractIndex) index).indexName), exception);
     }
   }
 
