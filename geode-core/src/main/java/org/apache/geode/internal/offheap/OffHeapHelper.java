@@ -16,6 +16,7 @@ package org.apache.geode.internal.offheap;
 
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 
@@ -129,6 +130,7 @@ public class OffHeapHelper {
    * @return true if release was done
    */
   public static boolean releaseAndTrackOwner(@Released final Object o, final Object owner) {
+    LogService.getLogger().info("JASON releaseAndTrackOwner " + o, new Exception());
     if (o instanceof StoredObject) {
       StoredObject so = (StoredObject) o;
       if (!so.hasRefCount()) {

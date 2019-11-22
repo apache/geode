@@ -369,13 +369,17 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   @Override
   public void close() {
     try {
+      logger.info("JASON closing memoryAllocator");
       LifecycleListener.invokeBeforeClose(this);
+      logger.info("JASON closed memoryAllocator");
     } finally {
       this.ooohml.close();
       if (Boolean.getBoolean(FREE_OFF_HEAP_MEMORY_PROPERTY)) {
         realClose();
       }
     }
+    logger.info("JASON closed memoryAllocator AND ooohml");
+
   }
 
   public static void freeOffHeapMemory() {
