@@ -123,7 +123,7 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
 
       Set<String> expectedParameters =
           new HashSet<>(Arrays.asList(JAVA_BEAN_AUTHORIZER_PARAMS.split(SPLITTING_REGEX)));
-      assertThat(methodAuthorizer.getParameters()).isEqualTo(expectedParameters);
+      assertThat(methodAuthorizer.getAllowedPackages()).isEqualTo(expectedParameters);
     }));
 
     gfsh.executeAndAssertThat(
@@ -138,7 +138,7 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
 
       Set<String> expectedParameters =
           new HashSet<>(Arrays.asList(REGEX_AUTHORIZER_PARAMETERS.split(SPLITTING_REGEX)));
-      assertThat(methodAuthorizer.getParameters()).isEqualTo(expectedParameters);
+      assertThat(methodAuthorizer.getAllowedPatterns()).isEqualTo(expectedParameters);
     }));
   }
 
@@ -221,7 +221,7 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
 
       Set<String> expectedParameters =
           new HashSet<>(Arrays.asList(JAVA_BEAN_AUTHORIZER_PARAMS.split(SPLITTING_REGEX)));
-      assertThat(methodAuthorizer.getParameters()).isEqualTo(expectedParameters);
+      assertThat(methodAuthorizer.getAllowedPackages()).isEqualTo(expectedParameters);
     });
   }
 

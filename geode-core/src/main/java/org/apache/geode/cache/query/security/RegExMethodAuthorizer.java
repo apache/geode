@@ -85,8 +85,7 @@ public final class RegExMethodAuthorizer implements MethodInvocationAuthorizer {
    *
    * @return an unmodifiable view of the regular expressions used to configure this authorizer.
    */
-  @Override
-  public Set<String> getParameters() {
+  public Set<String> getAllowedPatterns() {
     return allowedPatterns;
   }
 

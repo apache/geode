@@ -22,9 +22,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -85,10 +83,5 @@ public class DescribeQueryServiceFunctionTest {
 
     assertThat(queryConfigService.getMethodAuthorizer().getClassName())
         .isEqualTo(mockAuthorizer.getClass().getName());
-    List<QueryConfigService.MethodAuthorizer.Parameter> parameters =
-        queryConfigService.getMethodAuthorizer().getParameters();
-    assertThat(parameters.size()).isEqualTo(parameterSet.size());
-    assertThat(parameters.stream().map(p -> p.getParameterValue()).collect(Collectors.toSet()))
-        .isEqualTo(parameterSet);
   }
 }

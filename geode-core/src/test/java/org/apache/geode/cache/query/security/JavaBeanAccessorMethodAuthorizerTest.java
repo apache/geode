@@ -187,7 +187,7 @@ public class JavaBeanAccessorMethodAuthorizerTest {
   @Test
   public void allowedPackagesIsUnmodifiable() {
     assertThatThrownBy(
-        () -> authorizerWithLangAndIOPackagesSpecified.getParameters().remove(LANG_PACKAGE))
+        () -> authorizerWithLangAndIOPackagesSpecified.getAllowedPackages().remove(LANG_PACKAGE))
             .isInstanceOf(UnsupportedOperationException.class);
   }
 

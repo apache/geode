@@ -65,7 +65,6 @@ public class AlterQueryServiceFunction extends CliFunction<Object[]> {
         ((InternalCache) cache)
             .getService(org.apache.geode.cache.query.internal.QueryConfigurationService.class)
             .updateMethodAuthorizer(cache, authorizerName, parameterSet);
-        System.out.println("DONAL: Updated authorizer to " + authorizerName);
       } catch (Exception ex) {
         return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
             ex.getMessage());

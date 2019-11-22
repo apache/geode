@@ -16,13 +16,11 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.ALL_METHODS_ALLOWED;
+import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.AUTHORIZER_CLASS_NAME;
 import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.COMMAND_NAME;
 import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.FUNCTION_FAILED_ON_ALL_MEMBERS;
-import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.METHOD_AUTHORIZER_DATA_SECTION;
-import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.METHOD_AUTHORIZER_TABLE_SECTION;
-import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.METHOD_AUTH_INFO_SECTION;
 import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.NO_CLUSTER_CONFIG_AND_NO_MEMBERS;
-import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.PARAMETERS_COLUMN_NAME;
+import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.QUERY_SERVICE_DATA_SECTION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,6 +34,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -161,19 +160,11 @@ public class DescribeQueryServiceCommandTest {
     ResultModel result = new ResultModel();
     command.addMethodAuthorizerToResultModel(queryConfigService, result);
 
-    assertThat(result.getDataSection(METHOD_AUTHORIZER_DATA_SECTION)).isNotNull();
-    assertThat(result.getDataSection(METHOD_AUTHORIZER_DATA_SECTION).getContent().size())
+    assertThat(result.getDataSection(QUERY_SERVICE_DATA_SECTION)).isNotNull();
+    assertThat(result.getDataSection(QUERY_SERVICE_DATA_SECTION).getContent().size())
         .isEqualTo(1);
-    assertThat(result.getDataSection(METHOD_AUTHORIZER_DATA_SECTION).getContent())
+    assertThat(result.getDataSection(QUERY_SERVICE_DATA_SECTION).getContent())
         .containsValue(methodAuthClassName);
-
-    assertThat(result.getTableSection(METHOD_AUTHORIZER_TABLE_SECTION)).isNotNull();
-    assertThat(result.getTableSection(METHOD_AUTHORIZER_TABLE_SECTION).getColumnSize())
-        .isEqualTo(1);
-    assertThat(result.getTableSection(METHOD_AUTHORIZER_TABLE_SECTION).getRowSize())
-        .isEqualTo(numberOfParameters);
-    params.forEach(param -> assertThat(result.getTableSection(METHOD_AUTHORIZER_TABLE_SECTION)
-        .getValuesInColumn(PARAMETERS_COLUMN_NAME)).contains(param.getParameterValue()));
   }
 
   @Test
@@ -186,7 +177,9 @@ public class DescribeQueryServiceCommandTest {
     ResultModel result = new ResultModel();
     command.addMethodAuthorizerToResultModel(queryConfigService, result);
 
-    List<String> infoSection = result.getInfoSection(METHOD_AUTH_INFO_SECTION).getContent();
-    assertThat(infoSection.get(infoSection.size() - 1)).isEqualTo(ALL_METHODS_ALLOWED);
+    Map<String, String> dataSection =
+        result.getDataSection(QUERY_SERVICE_DATA_SECTION).getContent();
+
+    assertThat(dataSection.get(AUTHORIZER_CLASS_NAME)).isEqualTo(ALL_METHODS_ALLOWED);
   }
 }

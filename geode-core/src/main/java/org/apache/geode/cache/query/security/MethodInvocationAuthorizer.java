@@ -75,6 +75,4 @@ public interface MethodInvocationAuthorizer {
    *         {@code false} otherwise.
    */
   boolean authorize(Method method, Object target);
-
-  Set<String> getParameters();
 }

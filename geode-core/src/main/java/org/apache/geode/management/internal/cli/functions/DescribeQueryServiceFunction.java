@@ -15,9 +15,6 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -60,18 +57,6 @@ public class DescribeQueryServiceFunction extends CliFunction {
       QueryConfigService.MethodAuthorizer methodAuthorizerConfig =
           new QueryConfigService.MethodAuthorizer();
       methodAuthorizerConfig.setClassName(methodAuthorizer.getClass().getName());
-
-      Set<String> parameters = methodAuthorizer.getParameters();
-      if (parameters != null) {
-        List<QueryConfigService.MethodAuthorizer.Parameter> paramList = new ArrayList<>();
-        parameters.forEach(parameter -> {
-          QueryConfigService.MethodAuthorizer.Parameter param =
-              new QueryConfigService.MethodAuthorizer.Parameter();
-          param.setParameterValue(parameter);
-          paramList.add(param);
-        });
-        methodAuthorizerConfig.setParameters(paramList);
-      }
 
       queryConfigService.setMethodAuthorizer(methodAuthorizerConfig);
     }

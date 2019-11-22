@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -30,9 +29,7 @@ import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DescribeQueryServiceFunction;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
-import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -41,16 +38,13 @@ public class DescribeQueryServiceCommand extends SingleGfshCommand {
   static final String COMMAND_NAME = "describe query-service";
   private static final String COMMAND_HELP =
       "Describes the clusters query service";
-  static final String METHOD_AUTHORIZER_DATA_SECTION = "MethodAuthorizerName";
-  static final String METHOD_AUTHORIZER_TABLE_SECTION = "MethodAuthorizerParameters";
-  static final String PARAMETERS_COLUMN_NAME = "Parameters";
+  static final String QUERY_SERVICE_DATA_SECTION = "QueryService";
   public static final String ALL_METHODS_ALLOWED =
       "Security is not enabled. All methods will be authorized.";
-  public static final String METHOD_AUTH_INFO_SECTION = "MethodAuthDescriptionHeader";
   public static final String FUNCTION_FAILED_ON_ALL_MEMBERS = "Function was not successful";
   public static final String NO_CLUSTER_CONFIG_AND_NO_MEMBERS =
       "No cluster config found and no distributed members found.";
-  public static final String AUTHORIZER_CLASS_NAME = "Class Name";
+  public static final String AUTHORIZER_CLASS_NAME = "Method Authorizer Class";
 
   @CliCommand(value = COMMAND_NAME, help = COMMAND_HELP)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -102,28 +96,18 @@ public class DescribeQueryServiceCommand extends SingleGfshCommand {
 
   void addMethodAuthorizerToResultModel(QueryConfigService queryConfigurationService,
       ResultModel result) {
-    InfoResultModel authHeaderInfoModel = result.addInfo(METHOD_AUTH_INFO_SECTION);
-    authHeaderInfoModel.addLine("-- Method Authorizer --");
-
     QueryConfigService.MethodAuthorizer methodAuthorizer =
         queryConfigurationService.getMethodAuthorizer();
 
+    DataResultModel dataResultModel = result.addData(QUERY_SERVICE_DATA_SECTION);
+
     if (methodAuthorizer != null) {
       if (isSecurityEnabled()) {
-        DataResultModel dataResultModel = result.addData(METHOD_AUTHORIZER_DATA_SECTION);
         dataResultModel
             .addData(AUTHORIZER_CLASS_NAME, methodAuthorizer.getClassName());
-
-        List<QueryConfigService.MethodAuthorizer.Parameter> parameters =
-            methodAuthorizer.getParameters();
-        if (parameters.size() > 0) {
-          TabularResultModel parametersTableModel =
-              result.addTable(METHOD_AUTHORIZER_TABLE_SECTION);
-          parametersTableModel.setColumnHeader(PARAMETERS_COLUMN_NAME);
-          parameters.stream().map(p -> p.getParameterValue()).forEach(parametersTableModel::addRow);
-        }
       } else {
-        authHeaderInfoModel.addLine(ALL_METHODS_ALLOWED);
+        dataResultModel
+            .addData(AUTHORIZER_CLASS_NAME, ALL_METHODS_ALLOWED);
       }
     }
   }

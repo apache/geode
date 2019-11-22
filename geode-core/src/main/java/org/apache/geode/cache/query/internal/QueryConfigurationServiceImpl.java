@@ -162,10 +162,5 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
     public boolean authorize(Method method, Object target) {
       return true;
     }
-
-    @Override
-    public Set<String> getParameters() {
-      return null;
-    }
   }
 }

@@ -105,7 +105,7 @@ public class RegExMethodAuthorizerTest {
 
   @Test
   public void allowedPatternsShouldBeAccessibleBuNotModifiable() {
-    assertThatThrownBy(() -> geodeRegExMatchingMethodAuthorizer.getParameters().add(".*"))
+    assertThatThrownBy(() -> geodeRegExMatchingMethodAuthorizer.getAllowedPatterns().add(".*"))
         .isInstanceOf(UnsupportedOperationException.class);
   }
 

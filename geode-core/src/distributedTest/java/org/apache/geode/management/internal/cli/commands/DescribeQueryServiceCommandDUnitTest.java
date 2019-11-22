@@ -16,15 +16,10 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.AUTHORIZER_PARAMETERS;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.METHOD_AUTHORIZER_NAME;
-import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.SPLITTING_REGEX;
 import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.ALL_METHODS_ALLOWED;
 import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.AUTHORIZER_CLASS_NAME;
 import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.COMMAND_NAME;
-import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.METHOD_AUTHORIZER_DATA_SECTION;
-import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.METHOD_AUTHORIZER_TABLE_SECTION;
-import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.METHOD_AUTH_INFO_SECTION;
-import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.PARAMETERS_COLUMN_NAME;
-import static org.assertj.core.api.Assertions.entry;
+import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.QUERY_SERVICE_DATA_SECTION;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +28,6 @@ import org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class DescribeQueryServiceCommandDUnitTest {
@@ -52,7 +46,8 @@ public class DescribeQueryServiceCommandDUnitTest {
     gfsh.connectAndVerify(locator);
 
     gfsh.executeAndAssertThat(COMMAND_NAME).statusIsSuccess()
-        .hasInfoSection(METHOD_AUTH_INFO_SECTION).hasLines().contains(ALL_METHODS_ALLOWED);
+        .hasDataSection(QUERY_SERVICE_DATA_SECTION).hasContent()
+        .containsEntry(AUTHORIZER_CLASS_NAME, ALL_METHODS_ALLOWED);
   }
 
   @Test
@@ -102,11 +97,8 @@ public class DescribeQueryServiceCommandDUnitTest {
 
     gfsh.executeAndAssertThat(alterQueryService).statusIsSuccess();
 
-    CommandResultAssert result = gfsh.executeAndAssertThat(COMMAND_NAME).statusIsSuccess();
-    result.hasDataSection(METHOD_AUTHORIZER_DATA_SECTION).hasContent()
-        .containsExactly(entry(AUTHORIZER_CLASS_NAME, authorizerName));
-    String[] parameterList = parameters.split(SPLITTING_REGEX);
-    result.hasTableSection(METHOD_AUTHORIZER_TABLE_SECTION).hasColumn(PARAMETERS_COLUMN_NAME)
-        .containsExactlyInAnyOrder(parameterList);
+    gfsh.executeAndAssertThat(COMMAND_NAME).statusIsSuccess()
+        .hasDataSection(QUERY_SERVICE_DATA_SECTION).hasContent()
+        .containsEntry(AUTHORIZER_CLASS_NAME, authorizerName);
   }
 }
