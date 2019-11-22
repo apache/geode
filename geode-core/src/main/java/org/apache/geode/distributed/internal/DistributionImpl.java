@@ -37,12 +37,12 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.direct.ShunnedMemberException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
@@ -54,7 +54,9 @@ import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
+import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -94,6 +96,7 @@ public class DistributionImpl implements Distribution {
 
   private MyDCReceiver dcReceiver;
   private final long memberTimeout;
+  private boolean disableAutoReconnect;
 
 
   public DistributionImpl(final ClusterDistributionManager clusterDistributionManager,
@@ -107,6 +110,7 @@ public class DistributionImpl implements Distribution {
     mcastEnabled = transportConfig.isMcastEnabled();
     ackSevereAlertThreshold = system.getConfig().getAckSevereAlertThreshold();
     ackWaitThreshold = system.getConfig().getAckWaitThreshold();
+    disableAutoReconnect = system.getConfig().getDisableAutoReconnect();
     if (!tcpDisabled) {
       dcReceiver = new MyDCReceiver();
     }
@@ -145,6 +149,17 @@ public class DistributionImpl implements Distribution {
     DirectChannel.loadEmergencyClasses();
     GMSJoinLeave.loadEmergencyClasses();
     GMSHealthMonitor.loadEmergencyClasses();
+  }
+
+  public static void connectLocatorToServices(Services services) {
+    // see if a locator was started and put it in GMS Services
+    InternalLocator l = (InternalLocator) Locator.getLocator();
+    if (l != null && l.getLocatorHandler() != null) {
+      if (l.getLocatorHandler().setServices(services)) {
+        services
+            .setLocator(((GMSLocatorAdapter) l.getLocatorHandler()).getGMSLocator());
+      }
+    }
   }
 
   @Override
@@ -298,6 +313,9 @@ public class DistributionImpl implements Distribution {
       if (sentBytes == 0) {
         membership.checkCancelled();
       }
+    } catch (DistributedSystemDisconnectedException ex) {
+      membership.checkCancelled();
+      throw ex; // see bug 41416
     } catch (ConnectExceptions ex) {
       // Check if the connect exception is due to system shutting down.
       if (membership.shutdownInProgress()) {
@@ -539,14 +557,6 @@ public class DistributionImpl implements Distribution {
     return membership.getQuorumChecker();
   }
 
-  @Override
-  public void releaseQuorumChecker(
-      QuorumChecker checker,
-      InternalDistributedSystem distributedSystem) {
-    membership.releaseQuorumChecker(checker, distributedSystem);
-  }
-
-  @Override
   public DistributedMember getCoordinator() {
     return membership.getCoordinator();
   }
@@ -881,5 +891,20 @@ public class DistributionImpl implements Distribution {
       distribution.destroyMember(member, reason);
     }
 
+    @Override
+    public void started() {
+      connectLocatorToServices(distribution.getServices());
+    }
+
+    @Override
+    public void forcedDisconnect() {
+      // stop server locators immediately since they may not have correct
+      // information. This has caused client failures in bridge/wan
+      // network-down testing
+      InternalLocator loc = (InternalLocator) Locator.getLocator();
+      if (loc != null) {
+        loc.stop(true, !distribution.disableAutoReconnect, false);
+      }
+    }
   }
 }

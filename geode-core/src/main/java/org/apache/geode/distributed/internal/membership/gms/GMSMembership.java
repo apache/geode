@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -49,39 +50,31 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.StartupMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMessageAdapter;
-import org.apache.geode.distributed.internal.membership.adapter.GMSQuorumCheckerAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
+import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectReply;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.tcp.MemberShunnedException;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.security.GemFireSecurityException;
 
@@ -477,19 +470,12 @@ public class GMSMembership implements Membership {
         try {
           listener.newMemberConnected(m);
         } catch (VirtualMachineError err) {
-          SystemFailure.initiateFailure(err);
           // If this ever returns, rethrow the error. We're poisoned
           // now, so don't let this thread continue.
           throw err;
         } catch (DistributedSystemDisconnectedException e) {
           // don't log shutdown exceptions
         } catch (Throwable t) {
-          // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above). However, there is
-          // _still_ a possibility that you are dealing with a cascading
-          // error condition, so you also need to check to see if the JVM
-          // is still usable:
-          SystemFailure.checkFailure();
           logger.info(String.format("Membership: Fault while processing view addition of %s",
               m),
               t);
@@ -512,17 +498,10 @@ public class GMSMembership implements Membership {
               newView.getCrashedMembers().contains(m) || suspectedMembers.containsKey(m),
               "departed membership view");
         } catch (VirtualMachineError err) {
-          SystemFailure.initiateFailure(err);
           // If this ever returns, rethrow the error. We're poisoned
           // now, so don't let this thread continue.
           throw err;
         } catch (Throwable t) {
-          // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above). However, there is
-          // _still_ a possibility that you are dealing with a cascading
-          // error condition, so you also need to check to see if the JVM
-          // is still usable:
-          SystemFailure.checkFailure();
           logger.info(String.format("Membership: Fault while processing view removal of %s",
               m),
               t);
@@ -590,7 +569,7 @@ public class GMSMembership implements Membership {
    *
    * Concurrency: protected by {@link #latestViewLock} ReentrantReadWriteLock
    */
-  private SystemTimer cleanupTimer;
+  private ScheduledExecutorService cleanupTimer;
 
   private Services services;
 
@@ -703,7 +682,6 @@ public class GMSMembership implements Membership {
   public GMSMembership(MembershipListener listener, MessageListener messageListener,
       ClusterDistributionManager dm, LifecycleListener lifecycleListener) {
     this.lifecycleListener = lifecycleListener;
-    Assert.assertTrue(listener != null);
     this.listener = listener;
     this.messageListener = messageListener;
     this.gmsManager = new ManagerImpl();
@@ -875,14 +853,11 @@ public class GMSMembership implements Membership {
       return;
     }
     DistributedSystem ds = dm.getSystem();
-    this.cleanupTimer = new SystemTimer(ds, true);
-    SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {
-      @Override
-      public void run2() {
-        cleanUpSurpriseMembers();
-      }
-    };
-    this.cleanupTimer.scheduleAtFixedRate(st, surpriseMemberTimeout, surpriseMemberTimeout / 3);
+    this.cleanupTimer =
+        LoggingExecutors.newScheduledThreadPool("GMSMembership.cleanupTimer", 1, false);
+
+    this.cleanupTimer.scheduleAtFixedRate(this::cleanUpSurpriseMembers, surpriseMemberTimeout,
+        surpriseMemberTimeout / 3, TimeUnit.MILLISECONDS);
   }
 
   // invoked from the cleanupTimer task
@@ -989,9 +964,8 @@ public class GMSMembership implements Membership {
     if (shunned) { // bug #41538 - shun notification must be outside synchronization to avoid
       // hanging
       warnShun(m);
-      if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_VIEWS_VERBOSE)) {
-        logger.trace(LogMarker.DISTRIBUTION_VIEWS_VERBOSE,
-            "Membership: Ignoring message from shunned member <{}>:{}", m, msg);
+      if (logger.isTraceEnabled()) {
+        logger.trace("Membership: Ignoring message from shunned member <{}>:{}", m, msg);
       }
       throw new MemberShunnedException(m);
     }
@@ -1161,21 +1135,13 @@ public class GMSMembership implements Membership {
         try {
           processStartupEvent(ev);
         } catch (VirtualMachineError err) {
-          SystemFailure.initiateFailure(err);
           // If this ever returns, rethrow the error. We're poisoned
           // now, so don't let this thread continue.
           throw err;
         } catch (Throwable t) {
-          // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above). However, there is
-          // _still_ a possibility that you are dealing with a cascading
-          // error condition, so you also need to check to see if the JVM
-          // is still usable:
-          SystemFailure.checkFailure();
           logger.warn("Membership: Error handling startup event",
               t);
         }
-
       } // for
       if (logger.isDebugEnabled())
         logger.debug("Membership: finished processing startup events.");
@@ -1486,21 +1452,9 @@ public class GMSMembership implements Membership {
       return quorumChecker;
     }
 
-    GMSQuorumChecker impl = services.getMessenger().getQuorumChecker();
-    quorumChecker = new GMSQuorumCheckerAdapter(impl);
+    quorumChecker = services.getMessenger().getQuorumChecker();
     return quorumChecker;
   }
-
-  @Override
-  public void releaseQuorumChecker(QuorumChecker checker,
-      InternalDistributedSystem system) {
-    checker.suspend();
-    if (system == null || !system.isConnected()) {
-      checker.close();
-    }
-  }
-
-
 
   /**
    * Check to see if the membership system is being shutdown
@@ -2013,8 +1967,6 @@ public class GMSMembership implements Membership {
     public void init(Services services) {
       GMSMembership.this.services = services;
 
-      Assert.assertTrue(services != null);
-
       MembershipConfig config = services.getConfig();
 
       membershipCheckTimeout = config.getSecurityPeerMembershipTimeout();
@@ -2040,13 +1992,7 @@ public class GMSMembership implements Membership {
     @Override
     public void started() {
       startCleanupTimer();
-      // see if a locator was started and put it in GMS Services
-      InternalLocator l = (InternalLocator) org.apache.geode.distributed.Locator.getLocator();
-      if (l != null && l.getLocatorHandler() != null) {
-        if (l.getLocatorHandler().setServices(services)) {
-          services.setLocator(((GMSLocatorAdapter) l.getLocatorHandler()).getGMSLocator());
-        }
-      }
+      lifecycleListener.started();
     }
 
     /* Service interface */
@@ -2072,7 +2018,7 @@ public class GMSMembership implements Membership {
       }
 
       if (cleanupTimer != null) {
-        cleanupTimer.cancel();
+        cleanupTimer.shutdown();
       }
 
       if (logger.isDebugEnabled()) {
@@ -2180,14 +2126,7 @@ public class GMSMembership implements Membership {
       listener.saveConfig();
 
       Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
-        // stop server locators immediately since they may not have correct
-        // information. This has caused client failures in bridge/wan
-        // network-down testing
-        InternalLocator loc = (InternalLocator) Locator.getLocator();
-        if (loc != null) {
-          loc.stop(true, !services.getConfig().getDisableAutoReconnect(),
-              false);
-        }
+        lifecycleListener.forcedDisconnect();
         uncleanShutdown(reason, shutdownCause);
       });
       reconnectThread.start();
@@ -2289,4 +2228,5 @@ public class GMSMembership implements Membership {
     }
 
   }
+
 }

@@ -23,11 +23,11 @@ import java.util.function.Supplier;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
+import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 
 public interface Distribution {
   void start();
@@ -118,10 +118,6 @@ public interface Distribution {
   boolean isSurpriseMember(DistributedMember m);
 
   QuorumChecker getQuorumChecker();
-
-  void releaseQuorumChecker(
-      QuorumChecker checker,
-      InternalDistributedSystem distributedSystem);
 
   DistributedMember getCoordinator();
 

@@ -12,24 +12,32 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership;
+package org.apache.geode.management.internal.cli.util;
 
-/**
- * Test hook for membership test development
- */
-public interface MembershipTestHook {
+import java.lang.reflect.Method;
+import java.util.Set;
 
-  /**
-   * test hook invoked prior to shutting down distributed system
-   */
-  default void beforeMembershipFailure(String reason, Throwable cause) {
-    // nothing
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
+
+// Any changes to this class should be reflected in TestMethodAuthorizer.txt
+public class TestMethodAuthorizer implements MethodInvocationAuthorizer {
+
+  private Set<String> parameters;
+
+  public Set<String> getParameters() {
+    return this.parameters;
   }
 
-  /**
-   * test hook invoked after shutting down distributed system
-   */
-  default void afterMembershipFailure(String reason, Throwable cause) {
-    // nothing
+  @Override
+  public boolean authorize(Method method, Object target) {
+    return parameters.contains(method.getName());
+  }
+
+  @Override
+  public void initialize(Cache cache, Set<String> parameters) {
+    // To allow an exception to be thrown from a mock
+    cache.isClosed();
+    this.parameters = parameters;
   }
 }

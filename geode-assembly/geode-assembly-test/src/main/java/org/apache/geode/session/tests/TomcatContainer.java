@@ -25,6 +25,7 @@ import org.codehaus.cargo.container.configuration.StandaloneLocalConfiguration;
 import org.codehaus.cargo.container.tomcat.TomcatPropertySet;
 import org.codehaus.cargo.util.XmlReplacement;
 
+
 /**
  * Container for a tomcat installation
  *
@@ -64,8 +65,17 @@ public class TomcatContainer extends ServerContainer {
     setConfigFile(contextXMLFile.getAbsolutePath(), DEFAULT_TOMCAT_XML_REPLACEMENT_DIR,
         DEFAULT_TOMCAT_CONTEXT_XML_REPLACEMENT_NAME);
 
-    // Default properties
-    setCacheProperty("enableLocalCache", "false");
+    if (install.getConnectionType() == ContainerInstall.ConnectionType.CLIENT_SERVER) {
+      // using proxy region, override the default client/server setting to set to false
+      setCacheProperty("enableLocalCache",
+          String.valueOf(install.getConnectionType().enableLocalCache()));
+    } else {
+      // using default, either setting it explicitly or leave it off should have the same effect
+      if (System.currentTimeMillis() % 2 == 0) {
+        setCacheProperty("enableLocalCache",
+            String.valueOf(install.getConnectionType().enableLocalCache()));
+      }
+    }
     setCacheProperty("className", install.getContextSessionManagerClass());
 
     // Deploy war file to container configuration

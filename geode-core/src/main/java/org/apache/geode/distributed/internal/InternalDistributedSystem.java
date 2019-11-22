@@ -76,8 +76,8 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipInformation;
+import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
@@ -751,9 +751,6 @@ public class InternalDistributedSystem extends DistributedSystem
 
       if (!isLoner) {
         try {
-          if (quorumChecker != null) {
-            quorumChecker.suspend();
-          }
           dm = ClusterDistributionManager.create(this);
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
@@ -2725,8 +2722,8 @@ public class InternalDistributedSystem extends DistributedSystem
       if (newds != null) {
         newds.getDM().getDistribution().setReconnectCompleted(true);
       }
-      if (quorumChecker != null) {
-        mbrMgr.releaseQuorumChecker(quorumChecker, reconnectDS);
+      if (quorumChecker != null && (reconnectDS == null || !reconnectDS.isConnected())) {
+        quorumChecker.close();
       }
     }
 

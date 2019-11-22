@@ -358,6 +358,81 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 200));
   }
 
+  /**
+   * Test loop back issue between 2 WAN sites (LN & NY). LN -> NY -> LN.
+   * Site-LN: dsid=2: senderId="ny": vm2, vm4
+   * Site-NY: dsid=1: senderId="ln": vm3, vm6
+   * NY site's sender's manual-start=true
+   *
+   * Make sure the events are sent from LN to NY and will not be added into tmpDroppedEvents
+   * while normal events put from NY site can still be added to tmpDroppedEvents
+   * Start the sender, make sure the events in tmpDroppedEvents are sent to LN finally
+   */
+  @Test
+  public void unstartedSenderShouldNotAddReceivedEventsIntoTmpDropped() throws Exception {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(2));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(1, lnPort));
 
+    // create receiver on site-ln and site-ny
+    createCacheInVMs(lnPort, vm2, vm4);
+    createReceiverInVMs(vm2, vm4);
+    createCacheInVMs(nyPort, vm3, vm5);
+    createReceiverInVMs(vm3, vm5);
+
+    // create senders on site-ln, Note: sender-id is its destination, i.e. ny
+    vm2.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, true));
+    vm4.invoke(() -> WANTestBase.createSender("ny", 1, true, 100, 10, false, false, null, true));
+
+    // create senders on site-ny, Note: sender-id is its destination, i.e. ln
+    vm3.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+
+    // create PR on site-ln
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
+        isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ny", 1, 100,
+        isOffHeap()));
+
+    // create PR on site-ny
+    vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
+        isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 1, 100,
+        isOffHeap()));
+
+    // start sender on site-ln
+    startSenderInVMs("ny", vm2, vm4);
+    // Do 100 puts on site-ln
+    vm2.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 100));
+
+    // verify site-ny received the 100 events
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
+
+    // verify tmpDroppedEvents should be 0 at site-ny
+    vm3.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
+    vm5.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
+
+    // do next 100 puts on site-ny
+    vm3.invoke(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 100, 200));
+
+    // verify site-ny have 200 entries
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 200));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 200));
+
+    // verify tmpDroppedEvents should be 100 at site-ny, because the sender is not started yet
+    vm3.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 100));
+    vm5.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 100));
+
+    // verify site-ln has not received the events from site-ny yet
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 100));
+
+    // start sender on site-ny
+    startSenderInVMsAsync("ln", vm3, vm5);
+
+    // verify tmpDroppedEvents should be 0 now at site-ny
+    vm3.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
+    vm5.invoke(() -> WANTestBase.verifyTmpDroppedEventSize("ln", 0));
+  }
 
 }

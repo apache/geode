@@ -22,11 +22,8 @@ import java.util.function.Supplier;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 
@@ -293,16 +290,6 @@ public interface Membership {
    * @return the quorum checker to be used in reconnecting the system
    */
   QuorumChecker getQuorumChecker();
-
-  /**
-   * Frees resources used for quorum checks during auto-reconnect polling. Invoke this method when
-   * you're all done using the quorum checker.
-   *
-   * @param checker the QuorumChecker instance
-   * @param distributedSystem the current distributed system
-   */
-  void releaseQuorumChecker(QuorumChecker checker,
-      InternalDistributedSystem distributedSystem);
 
   /**
    * return the coordinator for the view.

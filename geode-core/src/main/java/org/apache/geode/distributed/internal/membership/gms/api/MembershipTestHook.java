@@ -12,26 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal;
-
-import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
 /**
- * Contains the distribution config and internal properties for connecting.
+ * Test hook for membership test development
  */
-public interface ConnectionConfig {
-  /**
-   * Indicates whether this config is reconnecting.
-   */
-  boolean isReconnecting();
+public interface MembershipTestHook {
 
   /**
-   * Returns the quorum checker to use while reconnecting.
+   * test hook invoked prior to shutting down distributed system
    */
-  QuorumChecker quorumChecker();
+  default void beforeMembershipFailure(String reason, Throwable cause) {
+    // nothing
+  }
 
   /**
-   * Returns the distribution config.
+   * test hook invoked after shutting down distributed system
    */
-  DistributionConfig distributionConfig();
+  default void afterMembershipFailure(String reason, Throwable cause) {
+    // nothing
+  }
 }

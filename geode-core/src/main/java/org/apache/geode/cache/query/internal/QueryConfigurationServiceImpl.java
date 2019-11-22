@@ -41,7 +41,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
 
   private static final Logger logger = LogService.getLogger();
   static final String UPDATE_ERROR_MESSAGE =
-      "Exception while updating MethodInvocationAuthorizer: ";
+      "Exception while updating MethodInvocationAuthorizer. ";
   public static final String INTERFACE_NOT_IMPLEMENTED_MESSAGE =
       "Provided method authorizer %S does not implement interface %S";
 

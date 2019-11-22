@@ -68,4 +68,31 @@ public class SerialAsyncEventQueueImplJUnitTest {
     assertEquals(0, queue.getStatistics().getEventsProcessedByPQRM());
   }
 
+  @Test
+  public void testStopStart() {
+    GatewaySenderAttributes attrs = new GatewaySenderAttributes();
+    attrs.id = AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX + "id";
+    SerialAsyncEventQueueImpl queue = new SerialAsyncEventQueueImpl(cache,
+        cache.getInternalDistributedSystem().getStatisticsManager(), cache.getStatisticsClock(),
+        attrs);
+    queue.getStatistics().incQueueSize(5);
+    queue.getStatistics().incSecondaryQueueSize(6);
+    queue.getStatistics().incTempQueueSize(10);
+    queue.getStatistics().incEventsProcessedByPQRM(3);
+
+    assertEquals(5, queue.getStatistics().getEventQueueSize());
+    assertEquals(6, queue.getStatistics().getSecondaryEventQueueSize());
+    assertEquals(10, queue.getStatistics().getTempEventQueueSize());
+    assertEquals(3, queue.getStatistics().getEventsProcessedByPQRM());
+
+    queue.start();
+    queue.stop();
+    queue.start();
+
+    assertEquals(0, queue.getStatistics().getEventQueueSize());
+    assertEquals(0, queue.getStatistics().getSecondaryEventQueueSize());
+    assertEquals(0, queue.getStatistics().getTempEventQueueSize());
+    assertEquals(0, queue.getStatistics().getEventsProcessedByPQRM());
+  }
+
 }

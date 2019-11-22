@@ -12,26 +12,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal;
+package org.apache.geode.management.internal.cli.util;
 
-import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
+import java.lang.reflect.Method;
+import java.util.Set;
 
-/**
- * Contains the distribution config and internal properties for connecting.
- */
-public interface ConnectionConfig {
-  /**
-   * Indicates whether this config is reconnecting.
-   */
-  boolean isReconnecting();
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 
-  /**
-   * Returns the quorum checker to use while reconnecting.
-   */
-  QuorumChecker quorumChecker();
+public class TestMethodAuthorizer implements MethodInvocationAuthorizer {
 
-  /**
-   * Returns the distribution config.
-   */
-  DistributionConfig distributionConfig();
+  private Set<String> parameters;
+
+  public Set<String> getParameters() {
+    return this.parameters;
+  }
+
+  @Override
+  public boolean authorize(Method method, Object target) {
+    return parameters.contains(method.getName());
+  }
+
+  @Override
+  public void initialize(Cache cache, Set<String> parameters) {
+    // To allow an exception to be thrown from a mock
+    cache.isClosed();
+    this.parameters = parameters;
+  }
 }
