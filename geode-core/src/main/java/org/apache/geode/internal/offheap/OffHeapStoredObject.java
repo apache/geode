@@ -623,6 +623,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   public static boolean retain(long memAddr) {
     MemoryAllocatorImpl.validateAddress(memAddr);
+      System.out.println("JASON retain for " + Long.toHexString(memAddr));
     int uc;
     int rawBits;
     int retryCount = 0;
