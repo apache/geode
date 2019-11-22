@@ -161,6 +161,31 @@ public class AsyncEventListenerDistributedTest implements Serializable {
   }
 
   @Test // serial, ReplicateRegion
+  public void testSerialAsyncEventQueueStopStart() {
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+
+    vm0.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(), false,
+        100, dispatcherThreadCount, 100));
+    vm1.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(), false,
+        100, dispatcherThreadCount, 100));
+
+    vm0.invoke(() -> createReplicateRegion(replicateRegionName, asyncEventQueueId));
+    vm1.invoke(() -> createReplicateRegion(replicateRegionName, asyncEventQueueId));
+
+    vm0.invoke(() -> getInternalGatewaySender().stop());
+    vm1.invoke(() -> getInternalGatewaySender().stop());
+
+    vm0.invoke(() -> doPuts(replicateRegionName, 10));
+
+    vm0.invoke(() -> getInternalGatewaySender().start());
+    vm1.invoke(() -> getInternalGatewaySender().start());
+
+    assertThat(vm0.invoke(() -> getAsyncEventQueue().size())).isEqualTo(0);
+    assertThat(vm1.invoke(() -> getAsyncEventQueue().size())).isEqualTo(0);
+  }
+
+  @Test // serial, ReplicateRegion
   public void testReplicatedSerialAsyncEventQueue() {
     vm0.invoke(this::createCache);
     vm1.invoke(this::createCache);

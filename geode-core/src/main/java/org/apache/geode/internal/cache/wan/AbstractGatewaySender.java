@@ -790,10 +790,10 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   protected void waitForRunningStatus() {
-    synchronized (this.eventProcessor.runningStateLock) {
+    synchronized (this.eventProcessor.getRunningStateLock()) {
       while (this.eventProcessor.getException() == null && this.eventProcessor.isStopped()) {
         try {
-          this.eventProcessor.runningStateLock.wait();
+          this.eventProcessor.getRunningStateLock().wait();
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }

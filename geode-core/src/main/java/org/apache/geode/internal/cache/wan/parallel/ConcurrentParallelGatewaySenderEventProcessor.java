@@ -182,14 +182,14 @@ public class ConcurrentParallelGatewaySenderEventProcessor
       this.ex = e;
     }
 
-    synchronized (this.runningStateLock) {
+    synchronized (this.getRunningStateLock()) {
       if (ex != null) {
         this.setException(ex);
         setIsStopped(true);
       } else {
         setIsStopped(false);
       }
-      this.runningStateLock.notifyAll();
+      this.getRunningStateLock().notifyAll();
     }
 
     for (ParallelGatewaySenderEventProcessor parallelProcessor : this.processors) {
@@ -206,10 +206,10 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
   private void waitForRunningStatus() {
     for (ParallelGatewaySenderEventProcessor parallelProcessor : this.processors) {
-      synchronized (parallelProcessor.runningStateLock) {
+      synchronized (parallelProcessor.getRunningStateLock()) {
         while (parallelProcessor.getException() == null && parallelProcessor.isStopped()) {
           try {
-            parallelProcessor.runningStateLock.wait();
+            parallelProcessor.getRunningStateLock().wait();
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
           }
