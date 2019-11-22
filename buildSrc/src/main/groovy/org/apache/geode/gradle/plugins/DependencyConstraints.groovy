@@ -100,7 +100,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.mockrunner', name: 'mockrunner-servlet', version: '1.1.2')
         api(group: 'com.sun.activation', name: 'javax.activation', version: '1.2.0')
         api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '2.2')
-        api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.10.2')
+        api(group: 'com.tngtech.archunit', name:'archunit-junit4', version: '0.12.0')
         api(group: 'com.zaxxer', name: 'HikariCP', version: '3.2.0')
         api(group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3')
         api(group: 'commons-collections', name: 'commons-collections', version: '3.2.2')
