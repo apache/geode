@@ -13,9 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.distributed.internal.membership;
-
-import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
 /**
  * A QuorumChecker is created after a forced-disconnect in order to probe the network to see if
@@ -31,11 +29,6 @@ public interface QuorumChecker {
    * @param timeoutMS time to wait for responses, in milliseconds
    */
   boolean checkForQuorum(long timeoutMS) throws InterruptedException;
-
-  /**
-   * suspends the quorum checker for an attempt to connect to the distributed system
-   */
-  void suspend();
 
   /**
    * resumes the quorum checker after having invoked suspend();

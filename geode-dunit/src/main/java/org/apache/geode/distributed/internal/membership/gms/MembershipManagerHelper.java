@@ -24,7 +24,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.MembershipTestHook;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 

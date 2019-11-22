@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
 /**
  * Test hook for membership test development
