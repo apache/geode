@@ -251,6 +251,11 @@ public class ColocationHelper {
     }
 
     String senderId = ParallelGatewaySenderQueue.getSenderId(childName);
+
+    if (region.getParallelGatewaySenderIds().contains(senderId)) {
+      return true;
+    }
+
     if (!region.getAsyncEventQueueIds().contains(senderId)
         && !region.getParallelGatewaySenderIds().contains(senderId) && IGNORE_UNRECOVERED_QUEUE) {
       return true;

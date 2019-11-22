@@ -530,6 +530,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         // started from stop operation)
         if (this.index == 0) // HItesh:for first parallelGatewaySenderQueue only
           handleShadowPRExistsScenario(cache, prQ);
+
       }
 
     } finally {
@@ -1572,6 +1573,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   @Override
   public void close() {
+    Region r = getRegion();
+    if (r != null && !r.isDestroyed()) {
+      try {
+        r.close();
+      } catch (RegionDestroyedException e) {
+      }
+    }
     // Because of bug 49060 do not close the regions of a parallel queue
   }
 
