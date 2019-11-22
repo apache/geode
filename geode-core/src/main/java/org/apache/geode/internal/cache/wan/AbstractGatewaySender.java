@@ -32,6 +32,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
@@ -937,20 +938,6 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     boolean freeClonedEvent = true;
     try {
 
-      // If this gateway is not running, return
-      if (!isRunning()) {
-        if (this.isPrimary()) {
-          tmpDroppedEvents.add(clonedEvent);
-          if (isDebugEnabled) {
-            logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);
-          }
-        }
-        if (isDebugEnabled) {
-          logger.debug("Returning back without putting into the gateway sender queue:" + event);
-        }
-        return;
-      }
-
       final GatewaySenderStats stats = getStatistics();
       stats.incEventsReceived();
 
@@ -1003,7 +990,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           // skip the below check of remoteDSId.
           // Fix for #46517
           AbstractGatewaySenderEventProcessor ep = getEventProcessor();
-          if (ep != null && !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
+          // if manual-start is true, ep is null
+          if (ep == null || !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
             if (seca.getOriginatingDSId() == this.getRemoteDSId()) {
               if (isDebugEnabled) {
                 logger.debug(
@@ -1027,6 +1015,20 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         GatewaySenderEventCallbackArgument geCallbackArg =
             new GatewaySenderEventCallbackArgument(callbackArg, this.getMyDSId(), allRemoteDSIds);
         clonedEvent.setCallbackArgument(geCallbackArg);
+      }
+
+      // If this gateway is not running, return
+      if (!isRunning()) {
+        if (this.isPrimary()) {
+          tmpDroppedEvents.add(clonedEvent);
+          if (isDebugEnabled) {
+            logger.debug("add to tmpDroppedEvents for evnet {}", clonedEvent);
+          }
+        }
+        if (isDebugEnabled) {
+          logger.debug("Returning back without putting into the gateway sender queue:" + event);
+        }
+        return;
       }
 
       if (!this.getLifeCycleLock().readLock().tryLock()) {
@@ -1100,6 +1102,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         clonedEvent.release(); // fix for bug 48035
       }
     }
+  }
+
+  @VisibleForTesting
+  int getTmpDroppedEventSize() {
+    return tmpDroppedEvents.size();
   }
 
   /**

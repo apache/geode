@@ -3399,6 +3399,21 @@ public class WANTestBase extends DistributedTestCase {
     return numEntries;
   }
 
+  public static void verifyTmpDroppedEventSize(String senderId, int size) {
+    Set<GatewaySender> senders = cache.getGatewaySenders();
+    GatewaySender sender = null;
+    for (GatewaySender s : senders) {
+      if (s.getId().equals(senderId)) {
+        sender = s;
+        break;
+      }
+    }
+
+    AbstractGatewaySender ags = (AbstractGatewaySender) sender;
+    await().untilAsserted(() -> assertEquals("Expected tmpDroppedEvents size: " + size
+        + " but actual size: " + ags.getTmpDroppedEventSize(), size, ags.getTmpDroppedEventSize()));
+  }
+
   public static void verifyQueueSize(String senderId, int size) {
     Set<GatewaySender> senders = cache.getGatewaySenders();
     GatewaySender sender = null;
