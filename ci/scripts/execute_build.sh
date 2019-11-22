@@ -65,7 +65,7 @@ DEFAULT_GRADLE_TASK_OPTIONS="${PARALLEL_GRADLE} --console=plain --no-daemon"
 GRADLE_SKIP_TASK_OPTIONS=""
 
 SSHKEY_FILE="instance-data/sshkey"
-SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no -o ServerAliveInterval=60"
+SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no -o ServerAliveInterval=60 ServerAliveCountMax=5"
 
 INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
 
