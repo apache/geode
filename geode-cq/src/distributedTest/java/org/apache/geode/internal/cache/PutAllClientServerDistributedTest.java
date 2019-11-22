@@ -1220,7 +1220,6 @@ public class PutAllClientServerDistributedTest extends CacheTestCase {
 
     // verify entries from client2
     client2.invoke(() -> {
-      // TODO:KIRK: do we need await here?
       await().untilAsserted(() -> {
         Region<String, TickerData> region = getCache().getRegion(regionName);
         for (int i = 0; i < ONE_HUNDRED; i++) {
