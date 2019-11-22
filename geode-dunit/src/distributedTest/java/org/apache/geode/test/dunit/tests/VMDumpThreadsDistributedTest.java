@@ -27,6 +27,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,6 +41,23 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 public class VMDumpThreadsDistributedTest implements Serializable {
 
   private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+
+  // Oracle: "pool-2-thread-1" Id=20 WAITING on
+  // java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@4efca67d
+  // OpenJDK: "pool-2-thread-1" prio=5 Id=35 WAITING on
+  // java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@42d5aa4f
+  private static final String THREAD_1_PATTERN_STRING =
+      "\"%s\".*Id=%d.*WAITING on java\\.util\\.concurrent\\.locks\\.AbstractQueuedSynchronizer\\$ConditionObject@[0-9a-z]+";
+
+  // Oracle: "pool-2-thread-2" Id=22 TIMED_WAITING on
+  // java.util.concurrent.CountDownLatch$Sync@7633184e
+  // OpenJDK: "pool-2-thread-2" prio=5 Id=37 TIMED_WAITING on
+  // java.util.concurrent.CountDownLatch$Sync@187eddd0
+  private static final String THREAD_2_PATTERN_STRING =
+      "\"%s\".*Id=%d.*TIMED_WAITING on java\\.util\\.concurrent\\.CountDownLatch\\$Sync@[0-9a-z]+";
+
+  private static final Pattern MAIN_THREAD_PATTERN =
+      Pattern.compile("\"main\".*Id=1 TIMED_WAITING");
 
   private static final AtomicReference<ExecutorService> executor = new AtomicReference<>();
   private static final AtomicReference<CountDownLatch> latch = new AtomicReference<>();
@@ -92,12 +110,15 @@ public class VMDumpThreadsDistributedTest implements Serializable {
 
     String threadDump = getVM(0).invoke(VM::dumpThreads);
 
+    Pattern thread1Pattern = Pattern.compile(String.format(THREAD_1_PATTERN_STRING,
+        remoteThreadInfo1.getThreadName(), remoteThreadInfo1.getThreadId()));
+    Pattern thread2Pattern = Pattern.compile(String.format(THREAD_2_PATTERN_STRING,
+        remoteThreadInfo2.getThreadName(), remoteThreadInfo2.getThreadId()));
+
     assertThat(threadDump)
-        .contains("\"" + remoteThreadInfo1.getThreadName() + "\" Id=" + remoteThreadInfo1.threadId +
-            " WAITING on java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject@")
-        .contains("\"" + remoteThreadInfo2.getThreadName() + "\" Id=" + remoteThreadInfo2.threadId +
-            " TIMED_WAITING on java.util.concurrent.CountDownLatch$Sync@")
-        .contains("\"main\" Id=1 TIMED_WAITING");
+        .containsPattern(thread1Pattern)
+        .containsPattern(thread2Pattern)
+        .containsPattern(MAIN_THREAD_PATTERN);
   }
 
   private synchronized void syncMethod() {
