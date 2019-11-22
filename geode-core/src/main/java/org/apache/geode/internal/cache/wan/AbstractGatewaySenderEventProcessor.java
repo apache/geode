@@ -104,7 +104,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    */
   protected final Object pausedLock = new Object();
 
-  public final Object runningStateLock = new Object();
+  private final Object runningStateLock = new Object();
 
   /**
    * A boolean verifying whether a warning has already been issued if the event queue has reached a
@@ -152,6 +152,10 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     this.sender = (AbstractGatewaySender) sender;
     this.batchSize = sender.getBatchSize();
     this.threadMonitoring = tMonitoring;
+  }
+
+  public Object getRunningStateLock() {
+    return runningStateLock;
   }
 
   @Override

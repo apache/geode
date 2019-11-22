@@ -907,7 +907,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
     } else {
       throw new IllegalStateException(
-          "Queue region " + this.region.getFullPath() + " already exists.");
+          "Queue region " + this.regionName + " already exists.");
     }
   }
 

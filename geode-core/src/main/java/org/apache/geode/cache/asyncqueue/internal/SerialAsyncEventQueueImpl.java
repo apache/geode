@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
@@ -85,13 +86,8 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
           getSenderAdvisor().makeSecondary();
         }
       }
-      if (getDispatcherThreads() > 1) {
-        eventProcessor = new ConcurrentSerialGatewaySenderEventProcessor(
-            SerialAsyncEventQueueImpl.this, getThreadMonitorObj());
-      } else {
-        eventProcessor = new SerialGatewaySenderEventProcessor(SerialAsyncEventQueueImpl.this,
-            getId(), getThreadMonitorObj());
-      }
+      eventProcessor = createEventProcessor();
+
       if (startEventProcessorInPausedState) {
         pauseEvenIfProcessorStopped();
       }
@@ -105,18 +101,29 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
       }
       new UpdateAttributesProcessor(this).distribute(false);
 
-
       InternalDistributedSystem system =
           (InternalDistributedSystem) this.cache.getDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
-      logger
-          .info("Started {}", this);
+      logger.info("Started {}", this);
 
       enqueueTempEvents();
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
+  }
+
+  protected AbstractGatewaySenderEventProcessor createEventProcessor() {
+    AbstractGatewaySenderEventProcessor eventProcessor;
+    if (getDispatcherThreads() > 1) {
+      eventProcessor = new ConcurrentSerialGatewaySenderEventProcessor(
+          SerialAsyncEventQueueImpl.this, getThreadMonitorObj());
+    } else {
+      eventProcessor =
+          new SerialGatewaySenderEventProcessor(SerialAsyncEventQueueImpl.this, getId(),
+              getThreadMonitorObj());
+    }
+    return eventProcessor;
   }
 
   @Override
@@ -177,12 +184,15 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     InternalDistributedSystem system =
         (InternalDistributedSystem) this.cache.getDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_STOP, this);
+
+    this.eventProcessor = null;
   }
 
   @Override
   public String toString() {
     StringBuffer sb = new StringBuffer();
-    sb.append("SerialGatewaySender{");
+    sb.append(getClass().getSimpleName());
+    sb.append("{");
     sb.append("id=" + getId());
     sb.append(",remoteDsId=" + getRemoteDSId());
     sb.append(",isRunning =" + isRunning());
