@@ -80,16 +80,16 @@ public class CacheXmlGeneratorIntegrationTest {
     assertThat(region.getAttributes().getOffHeap()).isTrue();
     PartitionAttributes parsedAttributes = region.getAttributes().getPartitionAttributes();
     assertThat(parsedAttributes.getLocalMaxMemory())
-        .isEqualTo(parsedAttributes.getLocalMaxMemory());
+        .isEqualTo(partitionAttributes.getLocalMaxMemory());
     assertThat(parsedAttributes.getTotalNumBuckets())
-        .isEqualTo(parsedAttributes.getTotalNumBuckets());
+        .isEqualTo(partitionAttributes.getTotalNumBuckets());
     assertThat(parsedAttributes.getRedundantCopies())
-        .isEqualTo(parsedAttributes.getRedundantCopies());
+        .isEqualTo(partitionAttributes.getRedundantCopies());
     assertThat(parsedAttributes.getPartitionResolver())
-        .isEqualTo(parsedAttributes.getPartitionResolver());
+        .isEqualTo(partitionAttributes.getPartitionResolver());
     assertThat(parsedAttributes.getPartitionListeners())
-        .isEqualTo(parsedAttributes.getPartitionListeners());
+        .isEqualTo(partitionAttributes.getPartitionListeners());
     assertThat(parsedAttributes.getFixedPartitionAttributes())
-        .isEqualTo(parsedAttributes.getFixedPartitionAttributes());
+        .isEqualTo(partitionAttributes.getFixedPartitionAttributes());
   }
 }
