@@ -79,7 +79,7 @@ class ReferenceCountHelperImpl {
    * could set the particular EntryEventImpl instance that incremented the reference count and is
    * responsible for decrementing it. Calling this method is a noop if !trackReferenceCounts.
    */
-  public void setReferenceCountOwner(Object owner) {
+  public synchronized void setReferenceCountOwner(Object owner) {
     if (trackReferenceCounts()) {
       if (refCountOwner.get() != null) {
         AtomicInteger ai = refCountReenterCount.get();
