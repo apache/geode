@@ -190,9 +190,8 @@ public class ClientServerSessionCache extends AbstractSessionCache {
         sessionRegion.getAttributesMutator().addCacheListener(new SessionExpirationCacheListener());
       }
 
-      // This is true for PROXY regions
-      if (sessionRegion.getAttributes().getDataPolicy() == DataPolicy.EMPTY) {
-        sessionRegion.registerInterest("ALL_KEYS", InterestResultPolicy.KEYS);
+      if (sessionRegion.getAttributes().getDataPolicy() != DataPolicy.EMPTY) {
+        sessionRegion.registerInterestForAllKeys(InterestResultPolicy.KEYS);
       }
     }
   }
@@ -247,12 +246,9 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     // Create the region
     Region region = factory.create(getSessionManager().getRegionName());
 
-    /*
-     * If we're using an empty client region, we register interest so that expired sessions are
-     * destroyed correctly.
-     */
-    if (!getSessionManager().getEnableLocalCache()) {
-      region.registerInterest("ALL_KEYS", InterestResultPolicy.KEYS);
+    // register interest to get updates from server if local cache is enabled
+    if (getSessionManager().getEnableLocalCache()) {
+      region.registerInterestForAllKeys(InterestResultPolicy.KEYS);
     }
 
     return region;
