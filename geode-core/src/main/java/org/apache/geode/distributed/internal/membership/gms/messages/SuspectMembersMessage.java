@@ -26,10 +26,10 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
-public class SuspectMembersMessage extends AbstractGMSMessage {
+public class SuspectMembersMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
   final List<SuspectRequest> suspectRequests;
 
-  public SuspectMembersMessage(List<MemberIdentifier> recipients, List<SuspectRequest> s) {
+  public SuspectMembersMessage(List<ID> recipients, List<SuspectRequest> s) {
     super();
     setRecipients(recipients);
     this.suspectRequests = s;

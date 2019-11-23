@@ -17,28 +17,26 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 
-public interface MembershipListener {
+public interface MembershipListener<ID extends MemberIdentifier> {
 
   /** this method is invoked when the processing of a new view is completed */
-  void viewInstalled(MembershipView view);
+  void viewInstalled(MembershipView<ID> view);
 
   /**
    * this is invoked when there has been a loss of quorum and enable-network-partition-detection is
    * not enabled
    */
-  void quorumLost(Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remainingMembers);
+  void quorumLost(Set<ID> failures,
+      List<ID> remainingMembers);
 
   /**
    * Event indicating that a new member has joined the system.
    *
    * @param m the new member
    */
-  void newMemberConnected(DistributedMember m);
+  void newMemberConnected(ID m);
 
   /**
    * Event indicating that a member has left the system
@@ -47,13 +45,13 @@ public interface MembershipListener {
    * @param crashed true if the departure was unexpected
    * @param reason a characterization of the departure
    */
-  void memberDeparted(InternalDistributedMember id, boolean crashed, String reason);
+  void memberDeparted(ID id, boolean crashed, String reason);
 
   /**
    * Event indicating that a member is suspected of having departed but is still in the membership
    * view
    */
-  void memberSuspect(InternalDistributedMember suspect, InternalDistributedMember whoSuspected,
+  void memberSuspect(ID suspect, ID whoSuspected,
       String reason);
 
   /**

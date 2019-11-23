@@ -22,21 +22,21 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.UnmodifiableException;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
 /**
  * The MembershipView class represents a membership view. Note that this class is not synchronized,
  * so take that under advisement if you decide to modify a view with add() or remove().
  */
-public class MembershipView {
+public class MembershipView<ID extends MemberIdentifier> {
 
   private int viewId;
-  private List<InternalDistributedMember> members;
-  private Set<InternalDistributedMember> shutdownMembers;
-  private Set<InternalDistributedMember> crashedMembers;
-  private InternalDistributedMember creator;
-  private Set<InternalDistributedMember> hashedMembers;
+  private List<ID> members;
+  private Set<ID> shutdownMembers;
+  private Set<ID> crashedMembers;
+  private ID creator;
+  private Set<ID> hashedMembers;
   private volatile boolean unmodifiable;
 
 
@@ -49,8 +49,8 @@ public class MembershipView {
     creator = null;
   }
 
-  public MembershipView(InternalDistributedMember creator, int viewId,
-      List<InternalDistributedMember> members) {
+  public MembershipView(ID creator, int viewId,
+      List<ID> members) {
     this.viewId = viewId;
     this.members = new ArrayList<>(members);
     hashedMembers = new HashSet<>(this.members);
@@ -62,7 +62,7 @@ public class MembershipView {
   /**
    * Create a new view with the contents of the given view and the specified view ID
    */
-  public MembershipView(MembershipView other, int viewId) {
+  public MembershipView(MembershipView<ID> other, int viewId) {
     this.creator = other.creator;
     this.viewId = viewId;
     this.members = new ArrayList<>(other.members);
@@ -71,9 +71,9 @@ public class MembershipView {
     this.crashedMembers = new HashSet<>(other.crashedMembers);
   }
 
-  public MembershipView(InternalDistributedMember creator, int viewId,
-      List<InternalDistributedMember> mbrs, Set<InternalDistributedMember> shutdowns,
-      Set<InternalDistributedMember> crashes) {
+  public MembershipView(ID creator, int viewId,
+      List<ID> mbrs, Set<ID> shutdowns,
+      Set<ID> crashes) {
     this.creator = creator;
     this.viewId = viewId;
     this.members = mbrs;
@@ -90,11 +90,11 @@ public class MembershipView {
     return this.viewId;
   }
 
-  public InternalDistributedMember getCreator() {
+  public ID getCreator() {
     return this.creator;
   }
 
-  public void setCreator(InternalDistributedMember creator) {
+  public void setCreator(ID creator) {
     this.creator = creator;
   }
 
@@ -104,15 +104,15 @@ public class MembershipView {
 
 
 
-  public List<InternalDistributedMember> getMembers() {
+  public List<ID> getMembers() {
     return Collections.unmodifiableList(this.members);
   }
 
   /**
    * return members that are i this view but not the given old view
    */
-  public List<InternalDistributedMember> getNewMembers(MembershipView olderView) {
-    List<InternalDistributedMember> result = new ArrayList<>(members);
+  public List<ID> getNewMembers(MembershipView olderView) {
+    List<ID> result = new ArrayList<>(members);
     result.removeAll(olderView.getMembers());
     return result;
   }
@@ -121,7 +121,7 @@ public class MembershipView {
     return this.members.get(i);
   }
 
-  public void add(InternalDistributedMember mbr) {
+  public void add(ID mbr) {
     if (unmodifiable) {
       throw new UnmodifiableException("this membership view is not modifiable");
     }
@@ -129,7 +129,7 @@ public class MembershipView {
     this.members.add(mbr);
   }
 
-  public boolean remove(InternalDistributedMember mbr) {
+  public boolean remove(ID mbr) {
     if (unmodifiable) {
       throw new UnmodifiableException("this membership view is not modifiable");
     }
@@ -137,7 +137,7 @@ public class MembershipView {
     return this.members.remove(mbr);
   }
 
-  public void removeAll(Collection<InternalDistributedMember> ids) {
+  public void removeAll(Collection<ID> ids) {
     if (unmodifiable) {
       throw new UnmodifiableException("this membership view is not modifiable");
     }
@@ -145,8 +145,7 @@ public class MembershipView {
     ids.forEach(this::remove);
   }
 
-  public boolean contains(DistributedMember mbr) {
-    assert mbr instanceof InternalDistributedMember;
+  public boolean contains(MemberIdentifier mbr) {
     return this.hashedMembers.contains(mbr);
   }
 
@@ -154,8 +153,8 @@ public class MembershipView {
     return this.members.size();
   }
 
-  public InternalDistributedMember getLeadMember() {
-    for (InternalDistributedMember mbr : this.members) {
+  public ID getLeadMember() {
+    for (ID mbr : this.members) {
       if (mbr.getVmKind() == ClusterDistributionManager.NORMAL_DM_TYPE) {
         return mbr;
       }
@@ -168,9 +167,9 @@ public class MembershipView {
    * Returns the ID from this view that is equal to the argument. If no such ID exists the argument
    * is returned.
    */
-  public synchronized InternalDistributedMember getCanonicalID(InternalDistributedMember id) {
+  public synchronized ID getCanonicalID(ID id) {
     if (hashedMembers.contains(id)) {
-      for (InternalDistributedMember m : this.members) {
+      for (ID m : this.members) {
         if (id.equals(m)) {
           return m;
         }
@@ -181,8 +180,8 @@ public class MembershipView {
 
 
 
-  public InternalDistributedMember getCoordinator() {
-    for (InternalDistributedMember addr : members) {
+  public ID getCoordinator() {
+    for (ID addr : members) {
       if (addr.getMemberData().isPreferredForCoordinator()) {
         return addr;
       }
@@ -193,21 +192,21 @@ public class MembershipView {
     return null;
   }
 
-  public Set<InternalDistributedMember> getShutdownMembers() {
+  public Set<ID> getShutdownMembers() {
     return this.shutdownMembers;
   }
 
-  public Set<InternalDistributedMember> getCrashedMembers() {
+  public Set<ID> getCrashedMembers() {
     return this.crashedMembers;
   }
 
   public String toString() {
-    InternalDistributedMember lead = getLeadMember();
+    ID lead = getLeadMember();
 
     StringBuilder sb = new StringBuilder(200);
     sb.append("View[").append(creator).append('|').append(viewId).append("] members: [");
     boolean first = true;
-    for (InternalDistributedMember mbr : this.members) {
+    for (ID mbr : this.members) {
       if (!first)
         sb.append(", ");
       sb.append(mbr);
@@ -219,7 +218,7 @@ public class MembershipView {
     if (!this.shutdownMembers.isEmpty()) {
       sb.append("]  shutdown: [");
       first = true;
-      for (InternalDistributedMember mbr : this.shutdownMembers) {
+      for (ID mbr : this.shutdownMembers) {
         if (!first)
           sb.append(", ");
         sb.append(mbr);
@@ -229,7 +228,7 @@ public class MembershipView {
     if (!this.crashedMembers.isEmpty()) {
       sb.append("]  crashed: [");
       first = true;
-      for (InternalDistributedMember mbr : this.crashedMembers) {
+      for (ID mbr : this.crashedMembers) {
         if (!first)
           sb.append(", ");
         sb.append(mbr);

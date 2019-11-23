@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
-public interface JoinLeave extends Service {
+public interface JoinLeave<ID extends MemberIdentifier> extends Service<ID> {
 
   /**
    * joins the distributed system and returns true if successful, false if not. Throws
@@ -44,7 +44,7 @@ public interface JoinLeave extends Service {
   /**
    * returns the local address
    */
-  MemberIdentifier getMemberID();
+  ID getMemberID();
 
   /**
    * Get canonical "GMSMember" from current view or prepared view.

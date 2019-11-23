@@ -50,7 +50,6 @@ import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ConflationKey;
@@ -893,8 +892,10 @@ public class Connection implements Runnable {
    * creates a new connection to a remote server. We are initiating this connection; the other side
    * must accept us We will almost always send messages; small acks are received.
    */
-  protected static Connection createSender(final Membership mgr, final ConnectionTable t,
-      final boolean preserveOrder, final DistributedMember remoteAddr, final boolean sharedResource,
+  protected static Connection createSender(final Membership<InternalDistributedMember> mgr,
+      final ConnectionTable t,
+      final boolean preserveOrder, final InternalDistributedMember remoteAddr,
+      final boolean sharedResource,
       final long startTime, final long ackTimeout, final long ackSATimeout)
       throws IOException, DistributedSystemDisconnectedException {
     boolean warningPrinted = false;
@@ -927,7 +928,7 @@ public class Connection implements Runnable {
               logger.warn("Unable to form a TCP/IP connection to {} in over {} seconds",
                   remoteAddr, (ackTimeout) / 1000);
             }
-            mgr.suspectMember((InternalDistributedMember) remoteAddr,
+            mgr.suspectMember(remoteAddr,
                 "Unable to form a TCP/IP connection in a reasonable amount of time");
             suspected = true;
           }
@@ -938,7 +939,7 @@ public class Connection implements Runnable {
           }
         } else if (!suspected && (startTime > 0) && (ackTimeout > 0)
             && (startTime + ackTimeout < now)) {
-          mgr.suspectMember((InternalDistributedMember) remoteAddr,
+          mgr.suspectMember(remoteAddr,
               "Unable to form a TCP/IP connection in a reasonable amount of time");
           suspected = true;
         }
@@ -1082,14 +1083,14 @@ public class Connection implements Runnable {
     return conn;
   }
 
-  private static boolean giveUpOnMember(Membership mgr,
-      DistributedMember remoteAddr) {
+  private static boolean giveUpOnMember(Membership<InternalDistributedMember> mgr,
+      InternalDistributedMember remoteAddr) {
     return !mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress();
   }
 
-  private void setRemoteAddr(DistributedMember m) {
+  private void setRemoteAddr(InternalDistributedMember m) {
     this.remoteAddr = this.owner.getDM().getCanonicalId(m);
-    Membership mgr = this.conduit.getMembership();
+    Membership<InternalDistributedMember> mgr = this.conduit.getMembership();
     mgr.addSurpriseMember(m);
   }
 
@@ -1097,11 +1098,10 @@ public class Connection implements Runnable {
    * creates a new connection to a remote server. We are initiating this connection; the other side
    * must accept us We will almost always send messages; small acks are received.
    */
-  private Connection(ConnectionTable t, boolean preserveOrder, DistributedMember remoteID,
+  private Connection(ConnectionTable t, boolean preserveOrder, InternalDistributedMember remoteID,
       boolean sharedResource) throws IOException, DistributedSystemDisconnectedException {
 
     // initialize a socket upfront. So that the
-    InternalDistributedMember remoteAddr = (InternalDistributedMember) remoteID;
     if (t == null) {
       throw new IllegalArgumentException(
           "ConnectionTable is null.");
@@ -1111,7 +1111,7 @@ public class Connection implements Runnable {
     this.owner = t;
     this.sharedResource = sharedResource;
     this.preserveOrder = preserveOrder;
-    setRemoteAddr(remoteAddr);
+    setRemoteAddr(remoteID);
     this.conduitIdStr = this.owner.getConduit().getSocketId().toString();
     this.handshakeRead = false;
     this.handshakeCancelled = false;
@@ -1122,7 +1122,7 @@ public class Connection implements Runnable {
     // connect to listening socket
 
     InetSocketAddress addr =
-        new InetSocketAddress(remoteAddr.getInetAddress(), remoteAddr.getDirectChannelPort());
+        new InetSocketAddress(remoteID.getInetAddress(), remoteID.getDirectChannelPort());
     SocketChannel channel = SocketChannel.open();
     this.owner.addConnectingSocket(channel.socket(), addr.getAddress());
 
@@ -1181,7 +1181,7 @@ public class Connection implements Runnable {
     this.socket = channel.socket();
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Connection: connected to {} with IP address {}", remoteAddr, addr);
+      logger.debug("Connection: connected to {} with IP address {}", remoteID, addr);
     }
     try {
       getSocket().setTcpNoDelay(true);

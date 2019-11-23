@@ -132,7 +132,7 @@ public class MembershipJUnitTest {
   private List<String> doTestMultipleManagersInSameProcessWithGroups(String groups)
       throws Exception {
 
-    Membership m1 = null, m2 = null;
+    Membership<InternalDistributedMember> m1 = null, m2 = null;
     Locator l = null;
     // int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
@@ -195,7 +195,7 @@ public class MembershipJUnitTest {
         }
       }
 
-      GMSMembershipView view = jl1.getView();
+      GMSMembershipView<InternalDistributedMember> view = jl1.getView();
       MemberIdentifier notCreator;
       if (view.getCreator().equals(jl1.getMemberID())) {
         notCreator = view.getMembers().get(1);
@@ -308,7 +308,7 @@ public class MembershipJUnitTest {
   @Test
   public void testLocatorAndTwoServersJoinUsingDiffeHellman() throws Exception {
 
-    Membership m1 = null, m2 = null;
+    Membership<InternalDistributedMember> m1 = null, m2 = null;
     Locator l = null;
     int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 

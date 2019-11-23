@@ -93,11 +93,11 @@ import org.apache.geode.logging.internal.executors.LoggingExecutors;
  * alive. Then based on removal flag it initiates the suspect processing for that member.
  */
 @SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter", "NullableProblems"})
-public class GMSHealthMonitor implements HealthMonitor {
+public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMonitor<ID> {
 
-  private Services services;
-  private volatile GMSMembershipView currentView;
-  private volatile MemberIdentifier nextNeighbor;
+  private Services<ID> services;
+  private volatile GMSMembershipView<ID> currentView;
+  private volatile ID nextNeighbor;
 
   long memberTimeout;
   private volatile boolean isStopping = false;
@@ -261,7 +261,7 @@ public class GMSHealthMonitor implements HealthMonitor {
         long oldTimeStamp = currentTimeStamp;
         currentTimeStamp = System.currentTimeMillis();
 
-        GMSMembershipView myView = GMSHealthMonitor.this.currentView;
+        GMSMembershipView<ID> myView = GMSHealthMonitor.this.currentView;
         if (myView == null) {
           return;
         }
@@ -271,7 +271,7 @@ public class GMSHealthMonitor implements HealthMonitor {
           logger.info(
               "Failure detector has noticed a JVM pause and is giving all members a heartbeat in view {}",
               currentView);
-          for (MemberIdentifier member : myView.getMembers()) {
+          for (ID member : myView.getMembers()) {
             contactedBy(member);
           }
           return;
@@ -501,7 +501,7 @@ public class GMSHealthMonitor implements HealthMonitor {
       hrm.clearRequestId();
     }
     try {
-      Set<MemberIdentifier> membersNotReceivedMsg = this.services.getMessenger().send(hrm);
+      Set<ID> membersNotReceivedMsg = this.services.getMessenger().send(hrm);
       this.stats.incHeartbeatRequestsSent();
       if (membersNotReceivedMsg != null && membersNotReceivedMsg.contains(member)) {
         // member is not part of current view.
@@ -852,7 +852,7 @@ public class GMSHealthMonitor implements HealthMonitor {
    * this method is primarily for tests. The current view should be pulled from JoinLeave or the
    * Membership (which includes surprise members)
    */
-  public synchronized GMSMembershipView getView() {
+  public synchronized GMSMembershipView<ID> getView() {
     return currentView;
   }
 
@@ -864,7 +864,8 @@ public class GMSHealthMonitor implements HealthMonitor {
    * It becomes null when we suspect current neighbour, during that time it watches member next to
    * suspect member.
    */
-  protected synchronized void setNextNeighbor(GMSMembershipView newView, MemberIdentifier nextTo) {
+  protected synchronized void setNextNeighbor(GMSMembershipView<ID> newView,
+      MemberIdentifier nextTo) {
     if (newView == null) {
       return;
     }
@@ -872,7 +873,7 @@ public class GMSHealthMonitor implements HealthMonitor {
       nextTo = localAddress;
     }
 
-    List<MemberIdentifier> allMembers = newView.getMembers();
+    List<ID> allMembers = newView.getMembers();
 
     if (allMembers.size() > 1 && suspectedMemberIds.size() >= allMembers.size() - 1) {
       boolean nonSuspectFound = false;
@@ -895,12 +896,12 @@ public class GMSHealthMonitor implements HealthMonitor {
     int index = allMembers.indexOf(nextTo);
     if (index != -1) {
       int nextNeighborIndex = (index + 1) % allMembers.size();
-      MemberIdentifier newNeighbor = allMembers.get(nextNeighborIndex);
+      ID newNeighbor = allMembers.get(nextNeighborIndex);
       if (suspectedMemberIds.containsKey(newNeighbor)) {
         setNextNeighbor(newView, newNeighbor);
         return;
       }
-      MemberIdentifier oldNeighbor = nextNeighbor;
+      ID oldNeighbor = nextNeighbor;
       if (oldNeighbor != newNeighbor) {
         logger.debug("Failure detection is now watching " + newNeighbor);
         nextNeighbor = newNeighbor;
@@ -923,7 +924,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   @Override
-  public void init(Services s) {
+  public void init(Services<ID> s) {
     isStopping = false;
     services = s;
     memberTimeout = s.getConfig().getMemberTimeout();
@@ -1103,7 +1104,7 @@ public class GMSHealthMonitor implements HealthMonitor {
     if (me == null || me.getVmViewId() >= 0 && m.getTarget().equals(me)) {
       HeartbeatMessage hm = new HeartbeatMessage(m.getRequestId());
       hm.setRecipient(m.getSender());
-      Set<MemberIdentifier> membersNotReceivedMsg = services.getMessenger().send(hm);
+      Set<ID> membersNotReceivedMsg = services.getMessenger().send(hm);
       this.stats.incHeartbeatsSent();
       if (membersNotReceivedMsg != null && membersNotReceivedMsg.contains(m.getSender())) {
         logger.debug("Unable to send heartbeat to member: {}", m.getSender());
@@ -1146,7 +1147,7 @@ public class GMSHealthMonitor implements HealthMonitor {
    * membership coordinator. it will to final check on that member and then it will send remove
    * request for that member
    */
-  void processMessage(SuspectMembersMessage incomingRequest) {
+  void processMessage(SuspectMembersMessage<ID> incomingRequest) {
     if (isStopping) {
       return;
     }
@@ -1159,7 +1160,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
     this.stats.incSuspectsReceived();
 
-    GMSMembershipView cv = currentView;
+    GMSMembershipView<ID> cv = currentView;
 
     if (cv == null) {
       return;
@@ -1214,7 +1215,7 @@ public class GMSHealthMonitor implements HealthMonitor {
         }
       }
       List membersLeaving = new ArrayList();
-      for (MemberIdentifier member : cv.getMembers()) {
+      for (ID member : cv.getMembers()) {
         if (services.getJoinLeave().isMemberLeaving(member)) {
           membersLeaving.add(member);
         }
@@ -1246,7 +1247,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
 
 
-  private void logSuspectRequests(SuspectMembersMessage incomingRequest,
+  private void logSuspectRequests(SuspectMembersMessage<ID> incomingRequest,
       MemberIdentifier sender) {
     for (SuspectRequest req : incomingRequest.getMembers()) {
       String who = sender.equals(localAddress) ? "myself" : sender.toString();
@@ -1446,17 +1447,18 @@ public class GMSHealthMonitor implements HealthMonitor {
 
   private void sendSuspectRequest(final List<SuspectRequest> requests) {
     logger.debug("Sending suspect request for members {}", requests);
-    List<MemberIdentifier> recipients;
+    List<ID> recipients;
     if (currentView.size() > MembershipConfig.SMALL_CLUSTER_SIZE) {
-      HashSet<MemberIdentifier> filter = new HashSet<>();
+      HashSet<ID> filter = new HashSet<>();
       for (Enumeration<MemberIdentifier> e = suspectedMemberIds.keys(); e
           .hasMoreElements();) {
-        filter.add(e.nextElement());
+        filter.add((ID) e.nextElement());
       }
       filter.addAll(
-          requests.stream().map(SuspectRequest::getSuspectMember).collect(Collectors.toList()));
+          (Collection<? extends ID>) requests.stream().map(SuspectRequest::getSuspectMember)
+              .collect(Collectors.toList()));
       recipients =
-          currentView.getPreferredCoordinators(filter, services.getJoinLeave().getMemberID(),
+          currentView.getPreferredCoordinators(filter, (ID) services.getJoinLeave().getMemberID(),
               MembershipConfig.SMALL_CLUSTER_SIZE + 1);
     } else {
       recipients = currentView.getMembers();
@@ -1465,7 +1467,7 @@ public class GMSHealthMonitor implements HealthMonitor {
     logger.trace("Sending suspect messages to {}", recipients);
     SuspectMembersMessage smm = new SuspectMembersMessage(recipients, requests);
     smm.setSender(localAddress);
-    Set<MemberIdentifier> failedRecipients;
+    Set<ID> failedRecipients;
     try {
       failedRecipients = services.getMessenger().send(smm);
       this.stats.incSuspectsSent();

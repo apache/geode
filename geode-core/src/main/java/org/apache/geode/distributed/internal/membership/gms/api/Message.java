@@ -31,7 +31,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
  * messages in geode-core and other higher-level modules.
  */
 
-public interface Message extends DataSerializableFixedID {
+public interface Message<ID extends MemberIdentifier> extends DataSerializableFixedID {
 
   /**
    * Indicates that a distribution message should be sent to all other distribution managers.
@@ -42,7 +42,7 @@ public interface Message extends DataSerializableFixedID {
   /**
    * Establishes the destination of a message
    */
-  void setRecipient(MemberIdentifier member);
+  void setRecipient(ID member);
 
   /**
    * Establishes one or more destinations of a message
@@ -66,7 +66,7 @@ public interface Message extends DataSerializableFixedID {
   /**
    * Returns the recipients of a message
    */
-  List<MemberIdentifier> getRecipients();
+  List<ID> getRecipients();
 
   /**
    * is this message intended for all members of the cluster? (note: this does not send
@@ -91,13 +91,13 @@ public interface Message extends DataSerializableFixedID {
   }
 
   /** establishes the sender of a message on the receiving side of a communications channel */
-  void setSender(MemberIdentifier sender);
+  void setSender(ID sender);
 
   /**
    * Returns the sender of this message. Note that this may be null in the member that
    * constructs a message to be sent to other members
    */
-  MemberIdentifier getSender();
+  ID getSender();
 
   /**
    * In messages supporting it, this resets the message's millisecond-clock timestamp

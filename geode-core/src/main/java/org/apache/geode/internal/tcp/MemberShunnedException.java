@@ -16,7 +16,6 @@
 package org.apache.geode.internal.tcp;
 
 import org.apache.geode.GemFireException;
-import org.apache.geode.distributed.DistributedMember;
 
 /**
  * MemberShunnedException may be thrown to prevent ack-ing a message received from a member that has
@@ -25,23 +24,13 @@ import org.apache.geode.distributed.DistributedMember;
  */
 public class MemberShunnedException extends GemFireException {
   private static final long serialVersionUID = -8453126202477831557L;
-  private DistributedMember member;
 
   /**
    * constructor
    *
-   * @param member the member that was shunned
    */
-  public MemberShunnedException(DistributedMember member) {
+  public MemberShunnedException() {
     super("");
-    this.member = member;
-  }
-
-  /**
-   * @return the member that was shunned
-   */
-  public DistributedMember getShunnedMember() {
-    return this.member;
   }
 
 }

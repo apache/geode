@@ -20,17 +20,18 @@ import java.io.IOException;
 import java.util.Objects;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
-public class InstallViewMessage extends AbstractGMSMessage {
+public class InstallViewMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
   enum messageType {
     INSTALL, PREPARE, SYNC
   }
 
-  private GMSMembershipView view;
+  private GMSMembershipView<ID> view;
   private Object credentials;
   private messageType kind;
   private int previousViewId;

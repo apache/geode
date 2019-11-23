@@ -32,7 +32,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 public interface Distribution {
   void start();
 
-  MembershipView getView();
+  MembershipView<InternalDistributedMember> getView();
 
   InternalDistributedMember getLocalMember();
 

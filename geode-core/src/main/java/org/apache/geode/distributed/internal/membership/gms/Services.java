@@ -74,7 +74,7 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 @SuppressWarnings("ConstantConditions")
-public class Services {
+public class Services<ID extends MemberIdentifier> {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -341,7 +341,7 @@ public class Services {
     return this.config;
   }
 
-  public Messenger getMessenger() {
+  public Messenger<ID> getMessenger() {
     return this.messenger;
   }
 
@@ -349,7 +349,7 @@ public class Services {
     return this.stats;
   }
 
-  public MemberIdentifierFactory getMemberFactory() {
+  public MemberIdentifierFactory<ID> getMemberFactory() {
     return memberFactory;
   }
 

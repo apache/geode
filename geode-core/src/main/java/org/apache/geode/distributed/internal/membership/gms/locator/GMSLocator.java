@@ -53,7 +53,7 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class GMSLocator implements Locator {
+public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
 
   static final int LOCATOR_FILE_STAMP = 0x7b8cf741;
 
@@ -246,7 +246,7 @@ public class GMSLocator implements Locator {
       }
     }
 
-    GMSMembershipView responseView = view;
+    GMSMembershipView<ID> responseView = view;
     if (responseView == null) {
       responseView = recoveredView;
     }
@@ -258,7 +258,7 @@ public class GMSLocator implements Locator {
       }
     }
 
-    MemberIdentifier coordinator = null;
+    ID coordinator = null;
     boolean fromView = false;
     if (responseView != null) {
       // if the ID of the requester matches an entry in the membership view then remove
@@ -277,7 +277,8 @@ public class GMSLocator implements Locator {
         // ignore the requests rejectedCoordinators if the view has changed
         coordinator = responseView.getCoordinator(Collections.emptyList());
       } else {
-        coordinator = responseView.getCoordinator(findRequest.getRejectedCoordinators());
+        coordinator = responseView.getCoordinator(
+            (Collection<ID>) findRequest.getRejectedCoordinators());
       }
       logger.info("Peer locator: coordinator from view is {}", coordinator);
       fromView = true;
@@ -291,13 +292,13 @@ public class GMSLocator implements Locator {
       }
 
       synchronized (registrants) {
-        coordinator = services.getJoinLeave().getMemberID();
+        coordinator = (ID) services.getJoinLeave().getMemberID();
         for (MemberIdentifier mbr : registrants) {
           if (mbr != coordinator && (coordinator == null || Objects.compare(mbr, coordinator,
               services.getMemberFactory().getComparator()) < 0)) {
             if (!rejections.contains(mbr) && (mbr.preferredForCoordinator()
                 || !mbr.getMemberData().isNetworkPartitionDetectionEnabled())) {
-              coordinator = mbr;
+              coordinator = (ID) mbr;
             }
           }
         }
@@ -307,7 +308,7 @@ public class GMSLocator implements Locator {
 
     synchronized (registrants) {
       if (isCoordinator) {
-        coordinator = localAddress;
+        coordinator = (ID) localAddress;
         if (responseView != null && localAddress != null
             && !localAddress.equals(responseView.getCoordinator())) {
           responseView = null;

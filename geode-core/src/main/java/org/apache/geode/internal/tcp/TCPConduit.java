@@ -112,13 +112,13 @@ public class TCPConduit implements Runnable {
   private final SocketCreator socketCreator;
 
 
-  private Membership membership;
+  private Membership<InternalDistributedMember> membership;
 
   static {
     init();
   }
 
-  public Membership getMembership() {
+  public Membership<InternalDistributedMember> getMembership() {
     return membership;
   }
 

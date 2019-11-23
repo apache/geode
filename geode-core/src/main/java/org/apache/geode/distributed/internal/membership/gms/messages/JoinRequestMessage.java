@@ -24,14 +24,14 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
-public class JoinRequestMessage extends AbstractGMSMessage {
-  private MemberIdentifier memberID;
+public class JoinRequestMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
+  private ID memberID;
   private Object credentials;
   private int failureDetectionPort = -1;
   private int requestId;
   private boolean useMulticast;
 
-  public JoinRequestMessage(MemberIdentifier coord, MemberIdentifier id,
+  public JoinRequestMessage(ID coord, ID id,
       Object credentials, int fdPort, int requestId) {
     super();
     if (coord != null) {
@@ -66,7 +66,7 @@ public class JoinRequestMessage extends AbstractGMSMessage {
     this.useMulticast = useMulticast;
   }
 
-  public MemberIdentifier getMemberID() {
+  public ID getMemberID() {
     return memberID;
   }
 

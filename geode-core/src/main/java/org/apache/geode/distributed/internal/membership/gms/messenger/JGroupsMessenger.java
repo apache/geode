@@ -103,7 +103,7 @@ import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.tcp.MemberShunnedException;
 
 @SuppressWarnings("StatementWithEmptyBody")
-public class JGroupsMessenger implements Messenger {
+public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<ID> {
 
   private static final Logger logger = Services.getLogger();
 
@@ -129,9 +129,9 @@ public class JGroupsMessenger implements Messenger {
   protected String jgStackConfig;
 
   JChannel myChannel;
-  MemberIdentifier localAddress;
+  ID localAddress;
   JGAddress jgAddress;
-  private Services services;
+  private Services<ID> services;
 
   /** handlers that receive certain classes of messages instead of the Manager */
   private final Map<Class, MessageHandler> handlers = new ConcurrentHashMap<>();
@@ -454,7 +454,7 @@ public class JGroupsMessenger implements Messenger {
       MemberIdentifier suspect, String reason) {}
 
   @Override
-  public void installView(GMSMembershipView v) {
+  public void installView(GMSMembershipView<ID> v) {
     this.view = v;
 
     if (this.jgAddress.getVmViewId() < 0) {
@@ -604,7 +604,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public void getMessageState(MemberIdentifier target, Map<String, Long> state,
+  public void getMessageState(ID target, Map<String, Long> state,
       boolean includeMulticast) {
     if (includeMulticast) {
       NAKACK2 nakack = (NAKACK2) myChannel.getProtocolStack().findProtocol("NAKACK2");
@@ -616,7 +616,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public void waitForMessageState(MemberIdentifier sender, Map<String, Long> state)
+  public void waitForMessageState(ID sender, Map<String, Long> state)
       throws InterruptedException {
     Long seqno = state.get("JGroups.mcastState");
     if (seqno == null) {
@@ -664,16 +664,16 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public Set<MemberIdentifier> sendUnreliably(Message msg) {
+  public Set<ID> sendUnreliably(Message msg) {
     return send(msg, false);
   }
 
   @Override
-  public Set<MemberIdentifier> send(Message msg) {
+  public Set<ID> send(Message msg) {
     return send(msg, true);
   }
 
-  private Set<MemberIdentifier> send(Message msg, boolean reliably) {
+  private Set<ID> send(Message msg, boolean reliably) {
 
     // perform the same jgroups messaging as in 8.2's GMSMembershipManager.send() method
 
@@ -682,7 +682,7 @@ public class JGroupsMessenger implements Messenger {
     // code to create a versioned input stream, read the sender address, then read the message
     // and set its sender address
     MembershipStatistics theStats = services.getStatistics();
-    GMSMembershipView oldView = this.view;
+    GMSMembershipView<ID> oldView = this.view;
 
     if (!myChannel.isConnected()) {
       logger.info("JGroupsMessenger channel is closed - messaging is not possible");
@@ -691,7 +691,7 @@ public class JGroupsMessenger implements Messenger {
 
     filterOutgoingMessage(msg);
 
-    List<MemberIdentifier> destinations = msg.getRecipients();
+    List<ID> destinations = msg.getRecipients();
     boolean allDestinations = msg.forAll();
 
     boolean useMcast = false;
@@ -836,10 +836,10 @@ public class JGroupsMessenger implements Messenger {
     if (msg.forAll()) {
       return Collections.emptySet();
     }
-    Set<MemberIdentifier> result = new HashSet<>();
-    GMSMembershipView newView = this.view;
+    Set<ID> result = new HashSet<>();
+    GMSMembershipView<ID> newView = this.view;
     if (newView != null && newView != oldView) {
-      for (MemberIdentifier d : destinations) {
+      for (ID d : destinations) {
         if (!newView.contains(d)) {
           logger.debug("messenger: member has left the view: {}  view is now {}", d, newView);
           result.add(d);
@@ -1209,7 +1209,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public MemberIdentifier getMemberID() {
+  public ID getMemberID() {
     return localAddress;
   }
 
@@ -1379,7 +1379,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public Set<MemberIdentifier> send(Message msg, GMSMembershipView alternateView) {
+  public Set<ID> send(Message msg, GMSMembershipView alternateView) {
     if (this.encrypt != null) {
       this.encrypt.installView(alternateView);
     }

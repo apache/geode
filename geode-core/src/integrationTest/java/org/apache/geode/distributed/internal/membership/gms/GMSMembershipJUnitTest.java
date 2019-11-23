@@ -90,7 +90,7 @@ public class GMSMembershipJUnitTest {
   private JoinLeave joinLeave;
   private Stopper stopper;
   private MembershipListener listener;
-  private GMSMembership manager;
+  private GMSMembership<InternalDistributedMember> manager;
   private List<InternalDistributedMember> members;
   private MessageListener messageListener;
   private LifecycleListener directChannelCallback;
@@ -313,21 +313,5 @@ public class GMSMembershipJUnitTest {
     }
   }
 
-  @Test
-  public void noDispatchWhenSick() {
-    final DistributionMessage msg = mock(DistributionMessage.class);
-    when(msg.containsRegionContentChange()).thenReturn(true);
-
-    final GMSMembership spy = Mockito.spy(manager);
-
-    spy.beSick();
-    spy.getGMSManager().start();
-    spy.getGMSManager().started();
-
-    spy.handleOrDeferMessage(msg);
-
-    verify(spy, never()).dispatchMessage(any(DistributionMessage.class));
-    assertThat(spy.getStartupEvents()).isEmpty();
-  }
 
 }

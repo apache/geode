@@ -90,7 +90,7 @@ public class DistributionImpl implements Distribution {
   private final long ackSevereAlertThreshold;
   private final long ackWaitThreshold;
   private final RemoteTransportConfig transportConfig;
-  private final Membership membership;
+  private final Membership<InternalDistributedMember> membership;
   private DirectChannel directChannel;
 
   /**
@@ -300,7 +300,7 @@ public class DistributionImpl implements Distribution {
     InternalDistributedMember[] keys;
     if (content.forAll()) {
       allDestinations = true;
-      keys = membership.getAllMembers();
+      keys = membership.getAllMembers(new InternalDistributedMember[0]);
     } else {
       allDestinations = false;
       keys = destinations;
@@ -380,7 +380,7 @@ public class DistributionImpl implements Distribution {
     if (dc != null) {
       dc.getChannelStates(member, result);
     }
-    return membership.getMessageState(member, includeMulticast, result);
+    return membership.getMessageState((InternalDistributedMember) member, includeMulticast, result);
   }
 
   @Override
@@ -392,7 +392,7 @@ public class DistributionImpl implements Distribution {
     if (dc != null) {
       dc.waitForChannelState(member, state);
     }
-    membership.waitForMessageState(member, state);
+    membership.waitForMessageState((InternalDistributedMember) member, state);
 
 
     if (mcastEnabled && !tcpDisabled) {
@@ -404,18 +404,18 @@ public class DistributionImpl implements Distribution {
   @Override
   public boolean requestMemberRemoval(DistributedMember member,
       String reason) {
-    return membership.requestMemberRemoval(member, reason);
+    return membership.requestMemberRemoval((InternalDistributedMember) member, reason);
   }
 
   @Override
   public boolean verifyMember(DistributedMember mbr,
       String reason) {
-    return membership.verifyMember(mbr, reason);
+    return membership.verifyMember((InternalDistributedMember) mbr, reason);
   }
 
   @Override
   public boolean isShunned(DistributedMember m) {
-    return membership.isShunned(m);
+    return membership.isShunned((InternalDistributedMember) m);
   }
 
   @Override
@@ -425,7 +425,7 @@ public class DistributionImpl implements Distribution {
 
   @Override
   public boolean memberExists(DistributedMember m) {
-    return membership.memberExists(m);
+    return membership.memberExists((InternalDistributedMember) m);
   }
 
   @Override
@@ -466,7 +466,7 @@ public class DistributionImpl implements Distribution {
   @Override
   public void shutdownMessageReceived(DistributedMember id,
       String reason) {
-    membership.shutdownMessageReceived(id, reason);
+    membership.shutdownMessageReceived((InternalDistributedMember) id, reason);
   }
 
   @Override
@@ -505,19 +505,19 @@ public class DistributionImpl implements Distribution {
   @Override
   public void addSurpriseMemberForTesting(DistributedMember mbr,
       long birthTime) {
-    membership.addSurpriseMemberForTesting(mbr, birthTime);
+    membership.addSurpriseMemberForTesting((InternalDistributedMember) mbr, birthTime);
   }
 
   @Override
   public void suspectMembers(Set<DistributedMember> members,
       String reason) {
-    membership.suspectMembers(members, reason);
+    membership.suspectMembers((Set) members, reason);
   }
 
   @Override
   public void suspectMember(DistributedMember member,
       String reason) {
-    membership.suspectMember(member, reason);
+    membership.suspectMember((InternalDistributedMember) member, reason);
   }
 
   @Override
@@ -539,13 +539,13 @@ public class DistributionImpl implements Distribution {
 
   @Override
   public boolean addSurpriseMember(DistributedMember mbr) {
-    return membership.addSurpriseMember(mbr);
+    return membership.addSurpriseMember((InternalDistributedMember) mbr);
   }
 
   @Override
   public void startupMessageFailed(DistributedMember mbr,
       String failureMessage) {
-    membership.startupMessageFailed(mbr, failureMessage);
+    membership.startupMessageFailed((InternalDistributedMember) mbr, failureMessage);
   }
 
   @Override
@@ -555,7 +555,7 @@ public class DistributionImpl implements Distribution {
 
   @Override
   public boolean isSurpriseMember(DistributedMember m) {
-    return membership.isSurpriseMember(m);
+    return membership.isSurpriseMember((InternalDistributedMember) m);
   }
 
   @Override
@@ -891,7 +891,8 @@ public class DistributionImpl implements Distribution {
     }
   }
 
-  public static class LifecycleListenerImpl implements LifecycleListener {
+  public static class LifecycleListenerImpl
+      implements LifecycleListener<InternalDistributedMember> {
     private DistributionImpl distribution;
 
     public LifecycleListenerImpl(final DistributionImpl distribution) {
@@ -899,7 +900,7 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    public void start(final MemberIdentifier memberID) {
+    public void start(final InternalDistributedMember memberID) {
       distribution.startDirectChannel(memberID);
     }
 

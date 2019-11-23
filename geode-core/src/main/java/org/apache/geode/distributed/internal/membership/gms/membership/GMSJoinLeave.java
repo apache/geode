@@ -56,6 +56,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
@@ -78,7 +79,7 @@ import org.apache.geode.security.GemFireSecurityException;
  * GMSJoinLeave handles membership communication with other processes in the distributed system. It
  * replaces the JGroups channel membership services that Geode formerly used for this purpose.
  */
-public class GMSJoinLeave implements JoinLeave {
+public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> {
 
   public static final String BYPASS_DISCOVERY_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "bypass-discovery";
@@ -129,7 +130,7 @@ public class GMSJoinLeave implements JoinLeave {
   /**
    * my address
    */
-  private MemberIdentifier localAddress;
+  private ID localAddress;
 
   private Services services;
 
@@ -161,17 +162,17 @@ public class GMSJoinLeave implements JoinLeave {
   /**
    * members who we have been declared dead in the current view
    */
-  private final Set<MemberIdentifier> removedMembers = new HashSet<>();
+  private final Set<ID> removedMembers = new HashSet<>();
 
   /**
    * members who we've received a leave message from
    **/
-  private final Set<MemberIdentifier> leftMembers = new HashSet<>();
+  private final Set<ID> leftMembers = new HashSet<>();
 
   /**
    * a new view being installed
    */
-  private volatile GMSMembershipView preparedView;
+  private volatile GMSMembershipView<ID> preparedView;
 
   /**
    * the last view that conflicted with view preparation
@@ -542,7 +543,7 @@ public class GMSJoinLeave implements JoinLeave {
    *
    * @param incomingRequest the request to be processed
    */
-  void processMessage(JoinRequestMessage incomingRequest) {
+  void processMessage(JoinRequestMessage<ID> incomingRequest) {
     if (isStopping) {
       return;
     }
@@ -629,7 +630,7 @@ public class GMSJoinLeave implements JoinLeave {
         check.addCrashedMembers(removedMembers);
       }
       synchronized (leftMembers) {
-        leftMembers.add(mbr);
+        leftMembers.add((ID) mbr);
         check.removeAll(leftMembers);
       }
       MemberIdentifier coordinator = check.getCoordinator();
@@ -697,7 +698,7 @@ public class GMSJoinLeave implements JoinLeave {
       logger.debug("Checking to see if I should become coordinator");
       GMSMembershipView check = new GMSMembershipView(v, v.getViewId() + 1);
       synchronized (removedMembers) {
-        removedMembers.add(mbr);
+        removedMembers.add((ID) mbr);
         check.addCrashedMembers(removedMembers);
         check.removeAll(removedMembers);
       }
@@ -981,7 +982,8 @@ public class GMSJoinLeave implements JoinLeave {
   private void addPublicKeysToView(GMSMembershipView view) {
     String sDHAlgo = services.getConfig().getSecurityUDPDHAlgo();
     if (sDHAlgo != null && !sDHAlgo.isEmpty()) {
-      for (MemberIdentifier mbr : view.getMembers()) {
+      List<MemberIdentifier> members = view.getMembers();
+      for (MemberIdentifier mbr : members) {
         if (Objects.isNull(view.getPublicKey(mbr))) {
           byte[] pk = services.getMessenger().getPublicKey(mbr);
           view.setPublicKey(mbr, pk);
@@ -997,13 +999,13 @@ public class GMSJoinLeave implements JoinLeave {
 
     logger.debug("processing membership view message {}", m);
 
-    GMSMembershipView view = m.getView();
+    GMSMembershipView<ID> view = m.getView();
 
     // If our current view doesn't contain sender then we wanrt to ignore that view.
     if (currentView != null && !currentView.contains(m.getSender())) {
       // but if preparedView contains sender then we don't want to ignore that view.
       // this may happen when we locator re-join and it take over coordinator's responsibility.
-      if (this.preparedView == null || !this.preparedView.contains(m.getSender())) {
+      if (this.preparedView == null || !this.preparedView.contains((ID) m.getSender())) {
         logger.info("Ignoring the view {} from member {}, which is not in my current view {} ",
             view, m.getSender(), currentView);
         return;
@@ -1451,7 +1453,7 @@ public class GMSJoinLeave implements JoinLeave {
   }
 
   @Override
-  public MemberIdentifier getMemberID() {
+  public ID getMemberID() {
     return this.localAddress;
   }
 
@@ -1468,7 +1470,8 @@ public class GMSJoinLeave implements JoinLeave {
 
       if (currentView == null && !this.isJoined) {
         boolean found = false;
-        for (MemberIdentifier mbr : newView.getMembers()) {
+        List<MemberIdentifier> members = newView.getMembers();
+        for (MemberIdentifier mbr : members) {
           if (this.localAddress.equals(mbr)) {
             found = true;
             this.birthViewId = mbr.getVmViewId();
@@ -1552,10 +1555,12 @@ public class GMSJoinLeave implements JoinLeave {
       }
     }
     synchronized (removedMembers) {
-      removeMembersFromCollectionIfNotInView(removedMembers, currentView);
+      removeMembersFromCollectionIfNotInView((Collection<MemberIdentifier>) removedMembers,
+          currentView);
     }
     synchronized (leftMembers) {
-      removeMembersFromCollectionIfNotInView(leftMembers, currentView);
+      removeMembersFromCollectionIfNotInView((Collection<MemberIdentifier>) leftMembers,
+          currentView);
     }
   }
 
@@ -1677,7 +1682,7 @@ public class GMSJoinLeave implements JoinLeave {
   @Override
   public void started() {}
 
-  public void setLocalAddress(MemberIdentifier address) {
+  public void setLocalAddress(ID address) {
     this.localAddress = address;
     MemberIdentifier mbr = (MemberIdentifier) this.localAddress;
 
@@ -1824,18 +1829,24 @@ public class GMSJoinLeave implements JoinLeave {
           + START_LOCATOR + ".");
     }
 
-    services.getMessenger().addHandler(JoinRequestMessage.class, this::processMessage);
-    services.getMessenger().addHandler(JoinResponseMessage.class, this::processMessage);
-    services.getMessenger().addHandler(InstallViewMessage.class, this::processMessage);
-    services.getMessenger().addHandler(ViewAckMessage.class, this::processMessage);
-    services.getMessenger().addHandler(LeaveRequestMessage.class, this::processMessage);
-    services.getMessenger().addHandler(RemoveMemberMessage.class, this::processMessage);
+    services.getMessenger().addHandler(JoinRequestMessage.class,
+        (MessageHandler<JoinRequestMessage>) this::processMessage);
+    services.getMessenger().addHandler(JoinResponseMessage.class,
+        (MessageHandler<JoinResponseMessage>) this::processMessage);
+    services.getMessenger().addHandler(InstallViewMessage.class,
+        (MessageHandler<InstallViewMessage>) this::processMessage);
+    services.getMessenger().addHandler(ViewAckMessage.class,
+        (MessageHandler<ViewAckMessage>) this::processMessage);
+    services.getMessenger().addHandler(LeaveRequestMessage.class,
+        (MessageHandler<LeaveRequestMessage>) this::processMessage);
+    services.getMessenger().addHandler(RemoveMemberMessage.class,
+        (MessageHandler<RemoveMemberMessage>) this::processMessage);
     services.getMessenger().addHandler(FindCoordinatorRequest.class,
-        this::processMessage);
+        (MessageHandler<FindCoordinatorRequest>) this::processMessage);
     services.getMessenger().addHandler(FindCoordinatorResponse.class,
-        this::processMessage);
+        (MessageHandler<FindCoordinatorResponse>) this::processMessage);
     services.getMessenger().addHandler(NetworkPartitionMessage.class,
-        this::processMessage);
+        (MessageHandler<NetworkPartitionMessage>) this::processMessage);
 
     long ackCollectionTimeout = config.getMemberTimeout() * 2 * 12437 / 10000;
     if (ackCollectionTimeout < 1500) {
@@ -2644,7 +2655,8 @@ public class GMSJoinLeave implements JoinLeave {
           GMSMembershipView tempView =
               new GMSMembershipView(localAddress, newView.getViewId() + 1, newMembers,
                   leaveReqs, removalReqs);
-          for (MemberIdentifier mbr : newView.getMembers()) {
+          List<MemberIdentifier> members = newView.getMembers();
+          for (MemberIdentifier mbr : members) {
             if (tempView.contains(mbr)) {
               tempView.setFailureDetectionPort(mbr, newView.getFailureDetectionPort(mbr));
             }

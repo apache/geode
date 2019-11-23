@@ -290,7 +290,8 @@ public class ConnectionTable {
    * @return the Connection, or null if someone else already created or closed it
    * @throws IOException if unable to connect
    */
-  private Connection handleNewPendingConnection(DistributedMember id, boolean sharedResource,
+  private Connection handleNewPendingConnection(InternalDistributedMember id,
+      boolean sharedResource,
       boolean preserveOrder, Map m, PendingConnection pc, long startTime, long ackThreshold,
       long ackSAThreshold) throws IOException, DistributedSystemDisconnectedException {
     // handle new pending connection
@@ -378,7 +379,7 @@ public class ConnectionTable {
    * @return the new Connection, or null if an error
    * @throws IOException if unable to create the connection
    */
-  private Connection getSharedConnection(DistributedMember id, boolean scheduleTimeout,
+  private Connection getSharedConnection(InternalDistributedMember id, boolean scheduleTimeout,
       boolean preserveOrder, long startTime, long ackTimeout, long ackSATimeout)
       throws IOException, DistributedSystemDisconnectedException {
     Connection result = null;
@@ -448,7 +449,7 @@ public class ConnectionTable {
    * @return the connection, or null if an error
    * @throws IOException if the connection could not be created
    */
-  Connection getThreadOwnedConnection(DistributedMember id, long startTime, long ackTimeout,
+  Connection getThreadOwnedConnection(InternalDistributedMember id, long startTime, long ackTimeout,
       long ackSATimeout) throws IOException, DistributedSystemDisconnectedException {
     Connection result = null;
 
@@ -581,7 +582,7 @@ public class ConnectionTable {
    * @return the new Connection, or null if a problem
    * @throws java.io.IOException if the connection could not be created
    */
-  protected Connection get(DistributedMember id, boolean preserveOrder, long startTime,
+  protected Connection get(InternalDistributedMember id, boolean preserveOrder, long startTime,
       long ackTimeout, long ackSATimeout)
       throws java.io.IOException, DistributedSystemDisconnectedException {
     if (this.closed) {

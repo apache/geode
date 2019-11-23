@@ -24,6 +24,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
@@ -106,7 +107,7 @@ public class MembershipManagerHelper {
    * before the member leaves
    */
   public static void waitForMemberDeparture(final DistributedSystem sys,
-      final DistributedMember member, final long timeout) {
+      final InternalDistributedMember member, final long timeout) {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {

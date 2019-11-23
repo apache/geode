@@ -668,7 +668,7 @@ public class ClusterDistributionManager implements DistributionManager {
     try {
 
       // And the distinguished guests today are...
-      MembershipView v = distribution.getView();
+      MembershipView<InternalDistributedMember> v = distribution.getView();
       logger.info("Initial (distribution manager) view, {}",
           String.valueOf(v));
 
@@ -1803,7 +1803,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public boolean isCurrentMember(DistributedMember id) {
-    return distribution.getView().contains(id);
+    return distribution.getView().contains((InternalDistributedMember) id);
   }
 
   /**
@@ -2277,7 +2277,7 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    */
   private class DMListener implements
-      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener {
+      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener<InternalDistributedMember> {
     ClusterDistributionManager dm;
 
     DMListener(ClusterDistributionManager dm) {
@@ -2292,12 +2292,12 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    public void newMemberConnected(DistributedMember member) {
+    public void newMemberConnected(InternalDistributedMember member) {
       // Do not elect the elder here as surprise members invoke this callback
       // without holding the view lock. That can cause a race condition and
       // subsequent deadlock (#45566). Elder selection is now done when a view
       // is installed.
-      dm.addNewMember((InternalDistributedMember) member);
+      dm.addNewMember(member);
     }
 
     @Override

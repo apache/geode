@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
-public interface HealthMonitor extends Service {
+public interface HealthMonitor<ID extends MemberIdentifier> extends Service<ID> {
 
   /**
    * Note that this member has been contacted by the given member

@@ -22,7 +22,7 @@ org/apache/geode/cache/SubscriptionAttributes,2
 fromData,14
 toData,14
 
-org/apache/geode/cache/client/internal/CacheServerLoadMessage,2
+org/apache/geode/cache/client/interngit al/CacheServerLoadMessage,2
 fromData,53
 toData,31
 
@@ -2033,6 +2033,14 @@ org/apache/geode/management/internal/ManagerStartupMessage,2
 fromData,17
 toData,17
 
+org/apache/geode/management/internal/cli/functions/CliFunctionResult,6
+fromData,20
+fromDataPre_GEODE_1_6_0_0,86
+fromDataPre_GFE_8_0_0_0,39
+toData,15
+toDataPre_GEODE_1_6_0_0,65
+toDataPre_GFE_8_0_0_0,33
+
 org/apache/geode/management/internal/configuration/domain/Configuration,2
 fromData,49
 toData,52
@@ -2058,14 +2066,6 @@ toData,1
 org/apache/geode/management/internal/configuration/messages/SharedConfigurationStatusResponse,2
 fromData,22
 toData,20
-
-org/apache/geode/management/internal/functions/CliFunctionResult,6
-fromData,20
-fromDataPre_GEODE_1_6_0_0,86
-fromDataPre_GFE_8_0_0_0,39
-toData,15
-toDataPre_GEODE_1_6_0_0,65
-toDataPre_GFE_8_0_0_0,33
 
 org/apache/geode/management/internal/messages/CompactRequest,2
 fromData,15

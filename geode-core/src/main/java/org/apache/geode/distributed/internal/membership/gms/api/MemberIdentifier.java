@@ -18,6 +18,7 @@ import java.net.InetAddress;
 import java.util.List;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * MemberIdentifier should be implemented by a user of GMS if the default member identifier
@@ -117,4 +118,26 @@ public interface MemberIdentifier extends DataSerializableFixedID {
    */
   void setVmKind(int dmType);
 
+  /**
+   * Get the Geode version of this member
+   */
+  Version getVersionObject();
+
+  /**
+   * Replace the current member data with the given member data. This can be used to fill out a
+   * MemberIdentifier that was created from a partial data created by readEssentialData.
+   *
+   * @param memberData the replacement member data
+   */
+  void setMemberData(MemberData memberData);
+
+  void setIsPartial(boolean b);
+
+  /**
+   * An InternalDistributedMember created for a test or via readEssentialData will be a Partial ID,
+   * possibly not having ancillary info like "name".
+   *
+   * @return true if this is a partial ID
+   */
+  boolean isPartial();
 }
