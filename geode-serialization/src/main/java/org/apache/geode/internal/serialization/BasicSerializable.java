@@ -25,28 +25,14 @@ import java.io.IOException;
 public interface BasicSerializable {
 
   /**
-   * Writes the state of this object as primitive data to the given <code>DataOutput</code>.<br>
-   * <br>
-   * Note: For rolling upgrades, if there is a change in the object format from previous version,
-   * add a new toDataPre_GFE_X_X_X_X() method and add an entry for the current {@link
-   * Version} in the getSerializationVersions array of the
-   * implementing class. e.g. if msg format changed in version 80, create toDataPre_GFE_8_0_0_0, add
-   * Version.GFE_80 to the getSerializationVersions array and copy previous toData contents to this
-   * newly created toDataPre_GFE_X_X_X_X() method.
+   * Writes the state of this object as primitive data to the given <code>DataOutput</code>.
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
   default void toData(DataOutput out, SerializationContext context) throws IOException {};
 
   /**
-   * Reads the state of this object as primitive data from the given <code>DataInput</code>. <br>
-   * <br>
-   * Note: For rolling upgrades, if there is a change in the object format from previous version,
-   * add a new fromDataPre_GFE_X_X_X_X() method and add an entry for the current {@link
-   * Version} in the getSerializationVersions array of the
-   * implementing class. e.g. if msg format changed in version 80, create fromDataPre_GFE_8_0_0_0,
-   * add Version.GFE_80 to the getSerializationVersions array and copy previous fromData contents to
-   * this newly created fromDataPre_GFE_X_X_X_X() method.
+   * Reads the state of this object as primitive data from the given <code>DataInput</code>.
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>

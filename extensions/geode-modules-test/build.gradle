@@ -41,7 +41,6 @@ dependencies {
     // this version of httpunit contains very outdated xercesImpl
     exclude group: 'xerces'
   }
-  implementation(project(':geode-serialization'))
 
   compileOnly('org.apache.tomcat:catalina-ha:' + DependencyConstraints.get('tomcat6.version')) {
     exclude module: 'annotations-api'
