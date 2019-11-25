@@ -19,11 +19,11 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
@@ -95,7 +95,7 @@ public class DefaultQuerySecurityIntegrationTest {
   }
 
   private void executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(
-      String queryString, RegionShortcut regionShortcut) {
+      String queryString) {
     IntStream.range(1, executions).forEach(counter -> {
       try {
         DefaultQuery query = spy(new DefaultQuery(queryString, spiedCache, false));
@@ -103,12 +103,7 @@ public class DefaultQuerySecurityIntegrationTest {
 
         SelectResults result = (SelectResults) query.execute();
         assertThat(result.size()).isEqualTo(entries);
-        if (!regionShortcut.equals(RegionShortcut.PARTITION)) {
-          assertThat(SpyAuthorizer.instantiations.get()).isEqualTo(counter);
-        } else {
-          // execute + getEmptyResultSet + executeOnLocalNode
-          assertThat(SpyAuthorizer.instantiations.get()).isEqualTo(3 * counter);
-        }
+        assertThat(SpyAuthorizer.instantiations.get()).isEqualTo(1);
       } catch (Exception exception) {
         throw new RuntimeException(exception);
       }
@@ -116,17 +111,14 @@ public class DefaultQuerySecurityIntegrationTest {
   }
 
   @Before
-  public void setUp() {
+  public void setUp() throws ClassNotFoundException {
     SpyAuthorizer.instantiations.set(0);
     SpyAuthorizer.authorizations.set(0);
 
     spiedCache = spy(server.getCache());
-    doAnswer(answer -> {
-      InternalQueryService spyQueryService = spy((InternalQueryService) answer.callRealMethod());
-      doReturn(new SpyAuthorizer()).when(spyQueryService).getMethodInvocationAuthorizer();
-
-      return spyQueryService;
-    }).when(spiedCache).getQueryService();
+    QueryConfigurationService queryConfig = spiedCache.getService(QueryConfigurationService.class);
+    queryConfig.updateMethodAuthorizer(spiedCache, SpyAuthorizer.class.getName(),
+        Collections.emptySet());
   }
 
   @Test
@@ -186,8 +178,7 @@ public class DefaultQuerySecurityIntegrationTest {
     createAndPopulateRegion(regionName, regionShortcut);
     String queryString = "SELECT object.name FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString,
-        regionShortcut);
+    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString);
   }
 
   @Test
@@ -199,8 +190,7 @@ public class DefaultQuerySecurityIntegrationTest {
     createAndPopulateRegion(regionName, regionShortcut);
     String queryString = "SELECT object.privateID, object.name FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString,
-        regionShortcut);
+    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString);
   }
 
   @Test
@@ -212,8 +202,7 @@ public class DefaultQuerySecurityIntegrationTest {
     createAndPopulateRegion(regionName, regionShortcut);
     String queryString = "SELECT object.getName() FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString,
-        regionShortcut);
+    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString);
   }
 
   @Test
@@ -225,8 +214,7 @@ public class DefaultQuerySecurityIntegrationTest {
     createAndPopulateRegion(regionName, regionShortcut);
     String queryString = "SELECT object.getId(), object.getName() FROM /" + regionName + " object";
 
-    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString,
-        regionShortcut);
+    executeQueryAndAssertThatAuthorizerWasInstantiatedExpectedAmountOfTimes(queryString);
   }
 
   private static class SpyQueryExecutor implements Answer {

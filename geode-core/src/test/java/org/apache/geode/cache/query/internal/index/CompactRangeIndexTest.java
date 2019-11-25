@@ -86,7 +86,6 @@ public class CompactRangeIndexTest {
     when(region.getCache()).thenReturn(cache);
     when(cache.getCachePerfStats()).thenReturn(cacheperfstat);
     when(cache.getQueryService()).thenReturn(queryservice);
-    when(queryservice.getMethodInvocationAuthorizer()).thenReturn(null);
 
     index.addMapping(entry);
     verify(indstats).incNumUpdates();
@@ -98,7 +97,6 @@ public class CompactRangeIndexTest {
     when(region.getCache()).thenReturn(cache);
     when(cache.getCachePerfStats()).thenReturn(cacheperfstat);
     when(cache.getQueryService()).thenReturn(queryservice);
-    when(queryservice.getMethodInvocationAuthorizer()).thenReturn(null);
 
     index.removeMapping(entry, 3);
 
@@ -109,7 +107,6 @@ public class CompactRangeIndexTest {
     when(region.getCache()).thenReturn(cache);
     when(cache.getCachePerfStats()).thenReturn(cacheperfstat);
     when(cache.getQueryService()).thenReturn(queryservice);
-    when(queryservice.getMethodInvocationAuthorizer()).thenReturn(null);
 
     index.removeMapping(entry, 1);
     index.addMapping(entry);
