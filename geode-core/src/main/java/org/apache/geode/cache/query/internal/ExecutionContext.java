@@ -102,13 +102,19 @@ public class ExecutionContext {
   static final ThreadLocal<AtomicBoolean> isCanceled =
       ThreadLocal.withInitial(AtomicBoolean::new);
 
-  // Authorizer to use during the query execution.
-  private final MethodInvocationAuthorizer methodInvocationAuthorizer;
+  /**
+   * Authorizer to use during query execution.
+   * It can not be changed for queries in flight, but it should be modifiable for running CQs,
+   * that's the only reason why this field is not marked as {@code final}.
+   *
+   * @see ExecutionContext#reset()
+   */
+  private MethodInvocationAuthorizer methodInvocationAuthorizer;
+  private final QueryConfigurationService queryConfigurationService;
 
   /**
    * Returns the {@link MethodInvocationAuthorizer} that will be used, if needed, during the
-   * execution
-   * of the query associated with this context.
+   * execution of the query associated with this context.
    *
    * @return the {@link MethodInvocationAuthorizer} that will be used, if needed, during the
    *         execution of the query associated with this context.
@@ -127,13 +133,8 @@ public class ExecutionContext {
     this.bindArguments = bindArguments;
     this.cache = cache;
     this.cancelationTask = Optional.empty();
-
-    // Authorization & authentication logic happens on server side only.
-    if (cache.isClient()) {
-      this.methodInvocationAuthorizer = QueryConfigurationServiceImpl.getNoOpAuthorizer();
-    } else {
-      this.methodInvocationAuthorizer = cache.getQueryService().getMethodInvocationAuthorizer();
-    }
+    this.queryConfigurationService = cache.getService(QueryConfigurationService.class);
+    this.methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
   }
 
   Optional<ScheduledFuture> getCancelationTask() {
@@ -585,6 +586,8 @@ public class ExecutionContext {
    */
   public void reset() {
     scopes.clear();
+    // Make sure we use the most up to date authorizer in CQs.
+    methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
   }
 
   public BucketRegion getBucketRegion() {

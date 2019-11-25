@@ -54,6 +54,13 @@ public interface ServerCQ extends InternalCqQuery {
   void removeFromCqResultKeys(Object key, boolean isTokenMode);
 
   /**
+   * Invalidates the internal cache containing the keys that are part of the CQ query results.
+   * Once this method finishes, the CQ engine will not apply the internal optimization for already
+   * seen keys anymore, not until the cache is manually rebuilt.
+   */
+  void invalidateCqResultKeys();
+
+  /**
    * Sets the CQ Results key cache state as initialized.
    */
   void setCqResultsCacheInitialized();
