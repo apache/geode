@@ -192,3 +192,7 @@ The following constraints apply when the `MethodInvocationAuthorizer` used by th
 - Indexes configured with an expression using methods forbidden by the newly configured `MethodInvocationAuthorizer` will be marked as invalid the next time a mapping is added or removed from the index.
 - Continuous queries already running will pick up the newly configured `MethodInvocationAuthorizer` the next time the CQ is processed upon the arrival of a cache event.
 If the CQ has methods forbidden by the newly configured `MethodInvocationAuthorizer`, any subsequent execution will result in an error during the CQ processing, and the `onError` method will be invoked for the associated `CqListener`.
+
+**Note:**
+In order to improve performance, the continuous query engine uses an internal cache to avoid executing the query in scenarios for which the answer can be automatically inferred.
+These results might become invalid after applying the new security rules, so <%=vars.product_name%> disables the usage of this optimization until the member is restarted or the query is registered again.
