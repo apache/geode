@@ -12,28 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit;
+package org.apache.geode.test.dunit.internal;
 
-public class NamedRunnable implements SerializableRunnableIF {
+import static org.apache.geode.test.dunit.VM.getVMId;
 
-  private static final long serialVersionUID = -2786841298145567914L;
+public class StackTrace extends Throwable {
 
-  String name;
-  SerializableRunnableIF delegate;
-
-  public NamedRunnable(String name, SerializableRunnableIF delegate) {
-    this.name = name;
-    this.delegate = delegate;
+  public StackTrace(long threadId) {
+    this(getVMId(), threadId);
   }
 
-  @Override
-  public void run() throws Exception {
-    delegate.run();
+  public StackTrace(int vmId, long threadId) {
+    this(StackTraceInfo.create(vmId, threadId));
   }
 
-  @Override
-  public String toString() {
-    return ("runnable(" + name + ")");
+  StackTrace(StackTraceInfo info) {
+    super(info.getMessage());
+    setStackTrace(info.getStackTraceElements());
   }
-
 }

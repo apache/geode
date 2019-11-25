@@ -329,7 +329,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     final String invalidationKey = "invalidationKey";
     final String destroyKey = "destroyKey";
     SerializableRunnable test =
-        new SerializableRunnable("case 1: second invalidation not applied or distributed") {
+        new SerializableRunnable() {
           @Override
           public void run() {
             CCRegion.put(invalidationKey, "initialValue");
@@ -351,11 +351,10 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
             assertEquals(destroyCount + 1, CCRegion.getCachePerfStats().getDestroys());
           }
         };
-    vm0.invoke(test);
+    vm0.invoke("case 1: second invalidation not applied or distributed", test);
 
     // now do the same with the datapolicy=normal region
-    test.setName("case 2: second invalidation not applied or distributed");
-    vm1.invoke(test);
+    vm1.invoke("case 2: second invalidation not applied or distributed", test);
   }
 
   /**

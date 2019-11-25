@@ -14,11 +14,19 @@
  */
 package org.apache.geode.test.dunit;
 
-import java.io.Serializable;
+import org.apache.geode.test.dunit.internal.Identifiable;
+import org.apache.geode.test.dunit.internal.Invocable;
 
 /**
  * Interface for {@link SerializableRunnable} to enable use with lambdas.
  */
-public interface SerializableRunnableIF extends Serializable {
-  public void run() throws Exception;
+@FunctionalInterface
+public interface SerializableRunnableIF extends Identifiable, Invocable {
+
+  void run() throws Exception;
+
+  @Override
+  default String getMethodName() {
+    return "run";
+  }
 }

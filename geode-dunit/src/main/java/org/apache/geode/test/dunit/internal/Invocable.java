@@ -12,21 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit;
+package org.apache.geode.test.dunit.internal;
 
-import java.util.concurrent.Callable;
-
-import org.apache.geode.test.dunit.internal.Identifiable;
-import org.apache.geode.test.dunit.internal.Invocable;
-
-/**
- * Interface for {@link SerializableCallable} to enable use with lambdas.
- */
 @FunctionalInterface
-public interface SerializableCallableIF<T> extends Callable<T>, Identifiable, Invocable {
+public interface Invocable {
 
-  @Override
-  default String getMethodName() {
-    return "call";
-  }
+  String getMethodName();
 }

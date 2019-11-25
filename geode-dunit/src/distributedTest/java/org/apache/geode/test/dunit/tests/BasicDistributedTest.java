@@ -129,24 +129,24 @@ public class BasicDistributedTest extends DistributedTestCase {
 
   @Test
   public void testInvokeWithLambda() {
-    assertThat(vm0.invoke(() -> DUnitEnv.get().getVMID()), is(0));
-    assertThat(vm1.invoke(() -> DUnitEnv.get().getVMID()), is(1));
+    assertThat(vm0.invoke(() -> DUnitEnv.get().getId()), is(0));
+    assertThat(vm1.invoke(() -> DUnitEnv.get().getId()), is(1));
   }
 
   @Test
   public void testInvokeLambdaAsync() throws Exception {
-    assertThat(vm0.invokeAsync(() -> DUnitEnv.get().getVMID()).getResult(), is(0));
+    assertThat(vm0.invokeAsync(() -> DUnitEnv.get().getId()).getResult(), is(0));
   }
 
   @Test
   public void testInvokeWithNamedLambda() {
-    assertThat(vm0.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(0));
-    assertThat(vm1.invoke("getVMID", () -> DUnitEnv.get().getVMID()), is(1));
+    assertThat(vm0.invoke("getId", () -> DUnitEnv.get().getId()), is(0));
+    assertThat(vm1.invoke("getId", () -> DUnitEnv.get().getId()), is(1));
   }
 
   @Test
   public void testInvokeNamedLambdaAsync() throws Exception {
-    assertThat(vm0.invokeAsync("getVMID", () -> DUnitEnv.get().getVMID()).getResult(), is(0));
+    assertThat(vm0.invokeAsync("getId", () -> DUnitEnv.get().getId()).getResult(), is(0));
   }
 
   @Test

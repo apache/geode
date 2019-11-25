@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit.internal;
 
+
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +27,7 @@ class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMIF {
   private static final Logger logger = LogService.getLogger();
 
   RemoteDUnitVM() throws RemoteException {
-    super();
+    // super
   }
 
   /**
@@ -63,12 +64,25 @@ class RemoteDUnitVM extends UnicastRemoteObject implements RemoteDUnitVMIF {
   @Override
   public MethodInvokerResult executeMethodOnObject(Object target, String methodName,
       Object[] args) {
-    String name = target.getClass().getName() + '.' + methodName
-        + (args != null ? " with " + args.length + " args" : "") + " on object: " + target;
-    long start = start(name);
-    MethodInvokerResult result = MethodInvoker.executeObject(target, methodName, args);
-    logDelta(name, start, result);
-    return result;
+    long asyncId = 0;
+    if (target instanceof Identifiable) {
+      asyncId = ((Identifiable) target).getId();
+      if (asyncId > 0) {
+        AsyncThreadId.put(asyncId, Thread.currentThread().getId());
+      }
+    }
+    try {
+      String name = target.getClass().getName() + '.' + methodName
+          + (args != null ? " with " + args.length + " args" : "") + " on object: " + target;
+      long start = start(name);
+      MethodInvokerResult result = MethodInvoker.executeObject(target, methodName, args);
+      logDelta(name, start, result);
+      return result;
+    } finally {
+      if (asyncId != 0) {
+        AsyncThreadId.remove(asyncId);
+      }
+    }
   }
 
   /**

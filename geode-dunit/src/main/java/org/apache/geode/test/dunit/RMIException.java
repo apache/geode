@@ -14,6 +14,8 @@
  */
 package org.apache.geode.test.dunit;
 
+import java.io.PrintWriter;
+
 import org.apache.geode.GemFireException;
 
 /**
@@ -21,7 +23,7 @@ import org.apache.geode.GemFireException;
  * {@link RuntimeException} wraps the actual exception. It allows distributed unit tests to verify
  * that an exception was thrown in a different VM.
  *
- * <PRE>
+ * <pre>
  *     VM vm0 = host0.getVM(0);
  *     try {
  *       vm.invoke(() -> this.getUnknownObject());
@@ -29,14 +31,12 @@ import org.apache.geode.GemFireException;
  *     } catch (RMIException ex) {
  *       assertIndexDetailsEquals(ex.getCause() instanceof ObjectException);
  *     }
- * </PRE>
+ * </pre>
  *
+ * <p>
  * Note that special steps are taken so that the stack trace of the cause exception reflects the
  * call stack on the remote machine. The stack trace of the exception returned by
  * {@link #getCause()} may not be available.
- *
- * see hydra.RemoteTestModuleIF
- *
  */
 @SuppressWarnings("serial")
 public class RMIException extends GemFireException {
@@ -44,29 +44,21 @@ public class RMIException extends GemFireException {
   /**
    * SHADOWED FIELD that holds the cause exception (as opposed to the HokeyException
    */
-  private Throwable cause;
+  private final Throwable cause;
 
   /** The name of the method being invoked */
-  private String methodName;
+  private final String methodName;
 
   /**
    * The name of the class (or class of the object type) whose method was being invoked
    */
-  private String className;
-
-  /** The type of exception that was thrown in the remote VM */
-  private String exceptionClassName;
-
-  /** Stack trace for the exception that was thrown in the remote VM */
-  private String stackTrace;
+  private final String className;
 
   /** The VM in which the method was executing */
-  private VM vm;
-
-  //////////////////////// Constructors ////////////////////////
+  private final VM vm;
 
   /**
-   * Creates a new <code>RMIException</code> that was caused by a given <code>Throwable</code> while
+   * Creates a new {@code RMIException} that was caused by a given {@code Throwable} while
    * invoking a given method.
    */
   public RMIException(VM vm, String className, String methodName, Throwable cause) {
@@ -78,7 +70,7 @@ public class RMIException extends GemFireException {
   }
 
   /**
-   * Creates a new <code>RMIException</code> to indicate that an exception of a given type was
+   * Creates a new {@code RMIException} to indicate that an exception of a given type was
    * thrown while invoking a given method.
    *
    * @param vm The VM in which the method was executing
@@ -95,24 +87,7 @@ public class RMIException extends GemFireException {
     this.cause = cause;
     this.className = className;
     this.methodName = methodName;
-    // this.exceptionClassName = exceptionClassName; assignment has no effect
-    this.stackTrace = stackTrace;
   }
-
-  /**
-   * Returns the class name of the exception that was thrown in a remote method invocation.
-   */
-  public String getExceptionClassName() {
-    return this.exceptionClassName;
-  }
-
-  // /**
-  // * Returns the stack trace for the exception that was thrown in a
-  // * remote method invocation.
-  // */
-  // public String getStackTrace() {
-  // return this.stackTrace;
-  // }
 
   /**
    * Returns the cause of this exception. Note that this is not necessarily the exception that gets
@@ -120,38 +95,37 @@ public class RMIException extends GemFireException {
    */
   @Override
   public Throwable getCause() {
-    return this.cause;
+    return cause;
   }
 
   /**
    * Returns the VM in which the remote method was invoked
    */
   public VM getVM() {
-    return this.vm;
+    return vm;
   }
-
-  ////////////////////// Inner Classes //////////////////////
 
   /**
    * A hokey exception class that makes it looks like we have a real cause exception.
    */
   private static class HokeyException extends Throwable {
-    private String stackTrace;
-    private String toString;
+
+    private final String stackTrace;
+    private final String toString;
 
     HokeyException(Throwable cause, String stackTrace) {
-      this.toString = cause.toString();
+      toString = cause.toString();
       this.stackTrace = stackTrace;
     }
 
     @Override
-    public void printStackTrace(java.io.PrintWriter pw) {
-      pw.print(this.stackTrace);
+    public void printStackTrace(PrintWriter pw) {
+      pw.print(stackTrace);
       pw.flush();
     }
 
     public String toString() {
-      return this.toString;
+      return toString;
     }
   }
 }
