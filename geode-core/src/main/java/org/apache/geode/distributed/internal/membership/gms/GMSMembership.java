@@ -895,14 +895,14 @@ public class GMSMembership implements Membership {
    * @param msg the message to process
    */
   protected void handleOrDeferMessage(DistributionMessage msg) {
-    // if (!processingEvents) {
-    // synchronized(startupLock) {
-    // if (!startupMessagesDrained) {
-    // startupMessages.add(new StartupEvent(msg));
-    // return;
-    // }
-    // }
-    // }
+    if (!processingEvents) {
+      synchronized (startupLock) {
+        if (!startupMessagesDrained) {
+          startupMessages.add(new StartupEvent(msg));
+          return;
+        }
+      }
+    }
     dispatchMessage(msg);
   }
 
