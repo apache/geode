@@ -25,6 +25,7 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation('org.apache.logging.log4j:log4j-api')
   implementation('com.github.stephenc.findbugs:findbugs-annotations')
+  implementation(project(':geode-serialization'))
 
   testImplementation('org.mockito:mockito-core')
   testImplementation(project(':geode-junit'))

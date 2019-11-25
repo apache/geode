@@ -61,7 +61,9 @@ public interface DSFIDSerializer {
 
 
 
-  void writeDSFID(DataSerializableFixedID dsfid, DataOutput out) throws IOException;
+  void write(DataSerializableFixedID dsfid, DataOutput out) throws IOException;
+
+  void write(BasicSerializable bs, DataOutput out) throws IOException;
 
   void writeDSFIDHeader(int dsfid, DataOutput out) throws IOException;
 

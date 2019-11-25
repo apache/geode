@@ -19,6 +19,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.apache.geode.internal.serialization.BasicSerializable;
+
 /**
  * An interface for objects whose state can be written/read as primitive types and strings ("data").
  * That is, instead of serializing itself to an {@link java.io.ObjectOutputStream}, a
@@ -71,7 +73,7 @@ import java.io.Serializable;
  *
  * @since GemFire 3.5
  */
-public interface DataSerializable extends Serializable {
+public interface DataSerializable extends Serializable, BasicSerializable {
 
   /**
    * Writes the state of this object as primitive data to the given <code>DataOutput</code>.

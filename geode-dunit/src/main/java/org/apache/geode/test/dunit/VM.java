@@ -512,7 +512,7 @@ public class VM implements Serializable {
   private synchronized void bounce(final String targetVersion, boolean force) {
     checkAvailability(getClass().getName(), "bounceVM");
 
-    logger.info("Bouncing {} old pid is {}", id, getPid());
+    logger.info("Bouncing {} old pid is {} and version is {}", id, getPid(), version);
     getVMEventNotifier().notifyBeforeBounceVM(this);
 
     available = false;
@@ -537,7 +537,7 @@ public class VM implements Serializable {
       client = childVMLauncher.getStub(id);
       available = true;
 
-      logger.info("Bounced {} new pid is {}", id, getPid());
+      logger.info("Bounced {}.  New pid is {} and version is {}", id, getPid(), version);
       getVMEventNotifier().notifyAfterBounceVM(this);
 
     } catch (InterruptedException | IOException | NotBoundException e) {

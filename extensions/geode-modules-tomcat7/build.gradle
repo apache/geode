@@ -47,7 +47,7 @@ dependencies {
     exclude module: 'tomcat-servlet-api'
   }
   compile('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat7.version'))
-
+  implementation(project(':geode-serialization'))
 
   testCompile('org.httpunit:httpunit')
   testCompile('junit:junit')
