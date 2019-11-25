@@ -17,50 +17,43 @@ package org.apache.geode.modules.session;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
-import java.util.Properties;
-
 import javax.security.auth.message.config.AuthConfigFactory;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.springframework.util.SocketUtils;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.modules.session.catalina.ClientServerCacheLifecycleListener;
 import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SessionTest;
 
 @Category(SessionTest.class)
 public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Base {
+  @Rule
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule(2);
+
   private ClientCache clientCache;
+  private MemberVM locatorVM;
+  private MemberVM serverVM;
 
   @Before
   public void setUp() throws Exception {
-    vm0 = VM.getVM(1);
-    String hostName = vm0.getHost().getHostName();
-    int cacheServerPort = vm0.invoke(() -> {
-      Properties props = new Properties();
-      CacheFactory cf = new CacheFactory(props);
-      Cache cache = cf.create();
-      CacheServer server = cache.addCacheServer();
-      server.setPort(0);
-      server.start();
-
-      return server.getPort();
-    });
+    locatorVM = clusterStartupRule.startLocatorVM(0, 0);
+    Integer locatorPort = locatorVM.getPort();
+    serverVM = clusterStartupRule.startServerVM(1, locatorPort);
 
     port = SocketUtils.findAvailableTcpPort();
     server = new EmbeddedTomcat8(port, "JVM-1");
 
     ClientCacheFactory cacheFactory = new ClientCacheFactory();
-    cacheFactory.addPoolServer(hostName, cacheServerPort);
+    cacheFactory.addPoolServer("localhost", serverVM.getPort()).setPoolSubscriptionEnabled(true);
     clientCache = cacheFactory.create();
     DeltaSessionManager manager = new Tomcat8DeltaSessionManager();
 
@@ -84,8 +77,6 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
 
   @After
   public void tearDown() {
-    vm0.invoke(() -> CacheFactory.getAnyInstance().getCacheServers().forEach(CacheServer::stop));
-
     clientCache.close();
     server.stopContainer();
   }

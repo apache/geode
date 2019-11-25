@@ -281,8 +281,13 @@ public abstract class CargoTestBase {
   protected void verifyMaxInactiveInterval(int expected) throws IOException, URISyntaxException {
     for (int i = 0; i < manager.numContainers(); i++) {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      assertEquals(Integer.toString(expected),
-          client.executionFunction(GetMaxInactiveInterval.class).getResponse());
+      if (install.getConnectionType() == ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER) {
+        GeodeAwaitility.await().until(() -> Integer.toString(expected)
+            .equals(client.executionFunction(GetMaxInactiveInterval.class).getResponse()));
+      } else {
+        assertEquals(Integer.toString(expected),
+            client.executionFunction(GetMaxInactiveInterval.class).getResponse());
+      }
     }
   }
 
