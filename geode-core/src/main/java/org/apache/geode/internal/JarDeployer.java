@@ -56,7 +56,7 @@ public class JarDeployer implements Serializable {
       Pattern.compile("(?<baseName>..*)\\.v(?<version>\\d++).jar$");
   // we can recognize jar files with below pattern. If two jar files have the same artifact, then
   // the latter will replace the former deployed jar
-  private static final Pattern SEMANTIC_VERSION_PATTERN =
+  private static final Pattern USER_VERSION_PATTERN =
       Pattern.compile("(?<artifact>.*?)[-.]\\d+.*\\.jar$");
 
   @MakeNotStatic
@@ -169,7 +169,7 @@ public class JarDeployer implements Serializable {
   }
 
   public static boolean isSemanticVersion(String filename) {
-    return SEMANTIC_VERSION_PATTERN.matcher(filename).find();
+    return USER_VERSION_PATTERN.matcher(filename).find();
   }
 
   /**
@@ -199,7 +199,7 @@ public class JarDeployer implements Serializable {
    * @return the artifact id of the string
    */
   public static String getArtifactId(String deployedJarFileName) {
-    Matcher semanticVersionMatcher = SEMANTIC_VERSION_PATTERN.matcher(deployedJarFileName);
+    Matcher semanticVersionMatcher = USER_VERSION_PATTERN.matcher(deployedJarFileName);
     if (semanticVersionMatcher.matches()) {
       return semanticVersionMatcher.group("artifact");
     } else {
