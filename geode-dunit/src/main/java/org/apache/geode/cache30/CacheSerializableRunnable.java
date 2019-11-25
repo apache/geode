@@ -29,14 +29,14 @@ import org.apache.geode.test.dunit.VM;
 public abstract class CacheSerializableRunnable extends SerializableRunnable {
 
   /**
-   * Creates a new {@code CacheSerializableRunnable} with the given name
+   * Creates a new {@code CacheSerializableRunnable}.
    */
   public CacheSerializableRunnable() {
     // super
   }
 
   /**
-   * Creates a new {@code CacheSerializableRunnable} with the given name
+   * Creates a new {@code CacheSerializableRunnable} with the given name.
    *
    * @deprecated Please pass name as the first argument to {@link VM} invoke or asyncInvoke.
    */
