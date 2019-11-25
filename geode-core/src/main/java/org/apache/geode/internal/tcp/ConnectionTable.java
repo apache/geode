@@ -107,7 +107,7 @@ public class ConnectionTable {
    * threadOrderedConnMap. The value is an ArrayList since we can have any number of connections
    * with the same key.
    */
-  private volatile ConcurrentMap threadConnectionMap;
+  private final ConcurrentMap threadConnectionMap;
 
   /**
    * Used for all non-ordered messages. Only connections used for sending messages, and receiving
@@ -496,29 +496,12 @@ public class ConnectionTable {
 
     // Update the list of connections owned by this thread....
 
-    final ConcurrentMap threadConnectionMap = this.threadConnectionMap;
-    if (threadConnectionMap == null) {
-      // This instance is being destroyed; fail the operation
-      closeCon(
-          "Connection table being destroyed",
-          result);
-      return null;
-    }
-
     ArrayList al = (ArrayList) threadConnectionMap.get(id);
     if (al == null) {
       // First connection for this DistributedMember. Make sure list for this
       // stub is created if it isn't already there.
       al = new ArrayList();
 
-      final Map local = this.threadConnectionMap;
-      if (local == null) {
-        // This instance is being destroyed; fail the operation
-        closeCon(
-            "Connection table being destroyed",
-            result);
-        return null;
-      }
       // Since it's a concurrent map, we just try to put it and then
       // return whichever we got.
       ArrayList tempAl = al;
@@ -709,7 +692,6 @@ public class ConnectionTable {
         }
         this.threadConnectionMap.clear();
       }
-      this.threadConnectionMap = null;
     }
     if (this.threadConnMaps != null) {
       synchronized (this.threadConnMaps) {
