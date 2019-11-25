@@ -69,7 +69,6 @@ import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectReply;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectionException;
@@ -340,6 +339,12 @@ public class GMSMembership implements Membership {
    * Set to true when upcalls should be generated for events.
    */
   private volatile boolean processingEvents = false;
+
+  /**
+   * Set to true under startupLock when processingEvents has been set to true
+   * and startup messages have been removed from the queue and dispatched
+   */
+  private boolean startupMessagesDrained = false;
 
   /**
    * This is the latest viewId installed
@@ -730,9 +735,11 @@ public class GMSMembership implements Membership {
    * @param member the member
    */
   protected void handleOrDeferSurpriseConnect(InternalDistributedMember member) {
-    synchronized (startupLock) {
-      if (!processingEvents) {
-        startupMessages.add(new StartupEvent(member));
+    if (!processingEvents) {
+      synchronized (startupLock) {
+        if (!startupMessagesDrained) {
+          startupMessages.add(new StartupEvent(member));
+        }
         return;
       }
     }
@@ -888,19 +895,14 @@ public class GMSMembership implements Membership {
    * @param msg the message to process
    */
   protected void handleOrDeferMessage(DistributionMessage msg) {
-    synchronized (startupLock) {
-      if (beingSick || playingDead) {
-        // cache operations are blocked in a "sick" member
-        if (msg.containsRegionContentChange() || msg instanceof PartitionMessageWithDirectReply) {
-          startupMessages.add(new StartupEvent(msg));
-          return;
-        }
-      }
-      if (!processingEvents) {
-        startupMessages.add(new StartupEvent(msg));
-        return;
-      }
-    }
+    // if (!processingEvents) {
+    // synchronized(startupLock) {
+    // if (!startupMessagesDrained) {
+    // startupMessages.add(new StartupEvent(msg));
+    // return;
+    // }
+    // }
+    // }
     dispatchMessage(msg);
   }
 
@@ -1013,10 +1015,12 @@ public class GMSMembership implements Membership {
     }
     latestViewWriteLock.lock();
     try {
-      synchronized (startupLock) {
-        if (!processingEvents) {
-          startupMessages.add(new StartupEvent(viewArg));
-          return;
+      if (!processingEvents) {
+        synchronized (startupLock) {
+          if (!startupMessagesDrained) {
+            startupMessages.add(new StartupEvent(viewArg));
+            return;
+          }
         }
       }
       // view processing can take a while, so we use a separate thread
@@ -1042,10 +1046,8 @@ public class GMSMembership implements Membership {
   protected void handleOrDeferSuspect(SuspectMember suspectInfo) {
     latestViewWriteLock.lock();
     try {
-      synchronized (startupLock) {
-        if (!processingEvents) {
-          return;
-        }
+      if (!processingEvents) {
+        return;
       }
       InternalDistributedMember suspect = gmsMemberToDMember(suspectInfo.suspectedMember);
       InternalDistributedMember who = gmsMemberToDMember(suspectInfo.whoSuspected);
@@ -1121,11 +1123,13 @@ public class GMSMembership implements Membership {
           int remaining = startupMessages.size();
           if (remaining == 0) {
             // While holding the lock, flip the bit so that
-            // no more events get put into startupMessages, and
-            // notify all waiters to proceed.
+            // no more events get put into startupMessages
+            startupMessagesDrained = true;
+            // set the volatile boolean that states that queueing is completely done now
             processingEvents = true;
+            // notify any threads waiting for event processing that we're open for business
             startupLock.notifyAll();
-            break; // ...and we're done.
+            break;
           }
           if (logger.isDebugEnabled()) {
             logger.debug("Membership: {} remaining startup message(s)", remaining);
@@ -1163,8 +1167,9 @@ public class GMSMembership implements Membership {
       services.getCancelCriterion().checkCancelInProgress(null);
       synchronized (startupLock) {
         // Now check using a memory fence and synchronization.
-        if (processingEvents)
+        if (processingEvents && startupMessagesDrained) {
           break;
+        }
         boolean interrupted = Thread.interrupted();
         try {
           startupLock.wait();
