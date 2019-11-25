@@ -27,6 +27,7 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 
+@Ignore
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode")
 @Ignore("Disabling until we can fix the memory usage of this test")

@@ -38,6 +38,7 @@ dependencies {
   compile('javax.servlet:javax.servlet-api')
   compile('org.apache.tomcat:servlet-api:' + DependencyConstraints.get('tomcat6.version'))
   compile('org.slf4j:slf4j-api')
+  implementation(project(':geode-serialization'))
 
   integrationTestCompile('com.mockrunner:mockrunner-servlet') {
     exclude group: 'jboss'

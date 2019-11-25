@@ -78,7 +78,6 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.GemFireRethrowable;
 import org.apache.geode.Instantiator;
-import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
@@ -107,6 +106,7 @@ import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.BasicSerializable;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
@@ -254,10 +254,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
       LOAD_CLASS_EACH_TIME ? null : new CopyOnWriteHashMap<>();
   private static final Object cacheAccessLock = new Object();
 
-  private static final String PRE_GEODE_100_TCPSERVER_PACKAGE =
-      "com.gemstone.org.jgroups.stack.tcpserver";
-  private static final String POST_GEODE_100_TCPSERVER_PACKAGE =
-      "org.apache.geode.distributed.internal.tcpserver";
   private static final String POST_GEODE_190_SERVER_CQIMPL =
       "org.apache.geode.cache.query.cq.internal.ServerCQImpl";
   private static final String PRE_GEODE_190_SERVER_CQIMPL =
@@ -321,15 +317,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * For backward compatibility we must swizzle the package of some classes that had to be moved
    * when GemFire was open- sourced. This preserves backward-compatibility.
    *
-   * @param name the fully qualified class name
+   * @param nameArg the fully qualified class name
    * @return the name of the class in this implementation
    */
-  public static String processIncomingClassName(String name) {
-    // TCPServer classes are used before a cache exists and support for old clients has been
-    // initialized
-    if (name.startsWith(PRE_GEODE_100_TCPSERVER_PACKAGE)) {
-      return POST_GEODE_100_TCPSERVER_PACKAGE
-          + name.substring(PRE_GEODE_100_TCPSERVER_PACKAGE.length());
+  public static String processIncomingClassName(String nameArg) {
+    final String name = StaticSerialization.processIncomingClassName(nameArg);
+    // using identity comparison on purpose because we are on the hot path
+    if (name != nameArg) {
+      return name;
     }
     if (name.equals(PRE_GEODE_190_SERVER_CQIMPL)) {
       return POST_GEODE_190_SERVER_CQIMPL;
@@ -345,17 +340,18 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * For backward compatibility we must swizzle the package of some classes that had to be moved
    * when GemFire was open- sourced. This preserves backward-compatibility.
    *
-   * @param name the fully qualified class name
+   * @param nameArg the fully qualified class name
    * @param out the consumer of the serialized object
    * @return the name of the class in this implementation
    */
-  public static String processOutgoingClassName(String name, DataOutput out) {
-    // TCPServer classes are used before a cache exists and support for old clients has been
-    // initialized
-    if (name.startsWith(POST_GEODE_100_TCPSERVER_PACKAGE)) {
-      return PRE_GEODE_100_TCPSERVER_PACKAGE
-          + name.substring(POST_GEODE_100_TCPSERVER_PACKAGE.length());
+  public static String processOutgoingClassName(final String nameArg, DataOutput out) {
+
+    final String name = StaticSerialization.processOutgoingClassName(nameArg);
+    // using identity comparison on purpose because we are on the hot path
+    if (name != nameArg) {
+      return name;
     }
+
     if (out instanceof VersionedDataStream) {
       VersionedDataStream vout = (VersionedDataStream) out;
       Version version = vout.getVersion();
@@ -506,7 +502,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       public boolean toData(Object o, DataOutput out) throws IOException {
         Class c = (Class) o;
         if (c.isPrimitive()) {
-          writePrimitiveClass(c, out);
+          StaticSerialization.writePrimitiveClass(c, out);
         } else {
           out.writeByte(DSCODE.CLASS.toByte());
           writeClass(c, out);
@@ -1487,7 +1483,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     int dsfid = o.getDSFID();
     try {
       if (dsfid != DataSerializableFixedID.NO_FIXED_ID) {
-        dsfidSerializer.writeDSFID(o, out);
+        dsfidSerializer.write(o, out);
         return;
       }
       out.writeByte(DSCODE.DS_NO_FIXED_ID.toByte());
@@ -1835,66 +1831,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Writes the type code for a primitive type Class to {@code DataOutput}.
-   */
-  public static void writePrimitiveClass(Class c, DataOutput out) throws IOException {
-    if (c == Boolean.TYPE) {
-      out.writeByte(DSCODE.BOOLEAN_TYPE.toByte());
-    } else if (c == Character.TYPE) {
-      out.writeByte(DSCODE.CHARACTER_TYPE.toByte());
-    } else if (c == Byte.TYPE) {
-      out.writeByte(DSCODE.BYTE_TYPE.toByte());
-    } else if (c == Short.TYPE) {
-      out.writeByte(DSCODE.SHORT_TYPE.toByte());
-    } else if (c == Integer.TYPE) {
-      out.writeByte(DSCODE.INTEGER_TYPE.toByte());
-    } else if (c == Long.TYPE) {
-      out.writeByte(DSCODE.LONG_TYPE.toByte());
-    } else if (c == Float.TYPE) {
-      out.writeByte(DSCODE.FLOAT_TYPE.toByte());
-    } else if (c == Double.TYPE) {
-      out.writeByte(DSCODE.DOUBLE_TYPE.toByte());
-    } else if (c == Void.TYPE) {
-      out.writeByte(DSCODE.VOID_TYPE.toByte());
-    } else if (c == null) {
-      out.writeByte(DSCODE.NULL.toByte());
-    } else {
-      throw new InternalGemFireError(
-          String.format("unknown primitive type: %s",
-              c.getName()));
-    }
-  }
-
-  public static Class<?> decodePrimitiveClass(byte typeCode) throws IOException {
-    DSCODE dscode = DscodeHelper.toDSCODE(typeCode);
-    switch (dscode) {
-      case BOOLEAN_TYPE:
-        return Boolean.TYPE;
-      case CHARACTER_TYPE:
-        return Character.TYPE;
-      case BYTE_TYPE:
-        return Byte.TYPE;
-      case SHORT_TYPE:
-        return Short.TYPE;
-      case INTEGER_TYPE:
-        return Integer.TYPE;
-      case LONG_TYPE:
-        return Long.TYPE;
-      case FLOAT_TYPE:
-        return Float.TYPE;
-      case DOUBLE_TYPE:
-        return Double.TYPE;
-      case VOID_TYPE:
-        return Void.TYPE;
-      case NULL:
-        return null;
-      default:
-        throw new InternalGemFireError(
-            String.format("unexpected typeCode: %s", typeCode));
-    }
-  }
-
-  /**
    * Reads a {@code TimeUnit} from a {@code DataInput}.
    *
    * @throws IOException A problem occurs while writing to {@code out}
@@ -2064,10 +2000,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
     // Handle special objects first
     if (o == null) {
       out.writeByte(DSCODE.NULL.toByte());
-    } else if (o instanceof DataSerializableFixedID) {
+    } else if (o instanceof BasicSerializable) {
       checkPdxCompatible(o, ensurePdxCompatibility);
-      DataSerializableFixedID dsfid = (DataSerializableFixedID) o;
-      dsfidSerializer.writeDSFID(dsfid, out);
+      BasicSerializable bs = (BasicSerializable) o;
+      dsfidSerializer.write(bs, out);
     } else if (autoSerialized(o, out)) {
       // all done
     } else if (o instanceof DataSerializable.Replaceable) {
@@ -2094,8 +2030,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
         out.writeByte(DSCODE.DATA_SERIALIZABLE.toByte());
         DataSerializer.writeClass(c, out);
       }
-      DataSerializable ds = (DataSerializable) o;
-      invokeToData(ds, out);
+      final DataSerializable bs = (DataSerializable) o;
+      invokeToData(bs, out);
 
     } else if (o instanceof Sendable) {
       if (!(o instanceof PdxInstance) || o instanceof PdxInstanceEnum) {
@@ -2267,13 +2203,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * information. This method does not write information about the class of the object. When
    * deserializing use the method invokeFromData to read the contents of the object.
    *
-   * @param ds the object to write
+   * @param serializableObject the object to write
    * @param out the output stream.
    */
-  public static void invokeToData(Object ds, DataOutput out) throws IOException {
+  public static void invokeToData(Object serializableObject, DataOutput out) throws IOException {
     try {
-      if (ds instanceof DataSerializableFixedID) {
-        dsfidSerializer.invokeToData(ds, out);
+      if (serializableObject instanceof BasicSerializable) {
+        dsfidSerializer.invokeToData(serializableObject, out);
         return;
       }
       boolean invoked = false;
@@ -2282,8 +2218,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
         Version[] versions = null;
-        if (ds instanceof SerializationVersions) {
-          SerializationVersions sv = (SerializationVersions) ds;
+        if (serializableObject instanceof SerializationVersions) {
+          SerializationVersions sv = (SerializationVersions) serializableObject;
           versions = sv.getSerializationVersions();
         }
         // check if the version of the peer or diskstore is different and
@@ -2292,8 +2228,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
           for (Version version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
-              ds.getClass().getMethod("toDataPre_" + version.getMethodSuffix(),
-                  new Class[] {DataOutput.class}).invoke(ds, out);
+              serializableObject.getClass().getMethod("toDataPre_" + version.getMethodSuffix(),
+                  new Class[] {DataOutput.class}).invoke(serializableObject, out);
               invoked = true;
               break;
             }
@@ -2302,10 +2238,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
       }
 
       if (!invoked) {
-        ((DataSerializable) ds).toData(out);
+        ((DataSerializable) serializableObject).toData(out);
       }
     } catch (IOException io) {
-      throw new ToDataException("toData failed on DataSerializable " + ds.getClass(), io);
+      throw new ToDataException(
+          "toData failed on DataSerializable " + serializableObject.getClass(), io);
     } catch (CancelException | ToDataException | GemFireRethrowable ex) {
       // Serializing a PDX can result in a cache closed exception. Just rethrow
       throw ex;
@@ -2322,7 +2259,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
       // is still usable:
       SystemFailure.checkFailure();
       throw new ToDataException(
-          "toData failed on DataSerializable " + null == ds ? "null" : ds.getClass().toString(), t);
+          "toData failed on DataSerializable " + null == serializableObject ? "null"
+              : serializableObject.getClass().toString(),
+          t);
     }
   }
 
@@ -2332,13 +2271,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * information. This method does not read information about the class of the object. When
    * serializing use the method invokeToData to write the contents of the object.
    *
-   * @param ds the object to write
+   * @param deserializableObject the object to write
    * @param in the input stream.
    */
-  public static void invokeFromData(Object ds, DataInput in)
+  public static void invokeFromData(Object deserializableObject, DataInput in)
       throws IOException, ClassNotFoundException {
-    if (ds instanceof DataSerializableFixedID) {
-      dsfidSerializer.invokeFromData(ds, in);
+    if (deserializableObject instanceof BasicSerializable) {
+      dsfidSerializer.invokeFromData(deserializableObject, in);
       return;
     }
     try {
@@ -2347,8 +2286,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
         Version[] versions = null;
-        if (ds instanceof SerializationVersions) {
-          SerializationVersions vds = (SerializationVersions) ds;
+        if (deserializableObject instanceof SerializationVersions) {
+          SerializationVersions vds = (SerializationVersions) deserializableObject;
           versions = vds.getSerializationVersions();
         }
         // check if the version of the peer or diskstore is different and
@@ -2357,8 +2296,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
           for (Version version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
-              ds.getClass().getMethod("fromDataPre" + '_' + version.getMethodSuffix(),
-                  new Class[] {DataInput.class}).invoke(ds, in);
+              deserializableObject.getClass()
+                  .getMethod("fromDataPre" + '_' + version.getMethodSuffix(),
+                      new Class[] {DataInput.class})
+                  .invoke(deserializableObject, in);
               invoked = true;
               break;
             }
@@ -2366,11 +2307,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
         }
       }
       if (!invoked) {
-        ((DataSerializable) ds).fromData(in);
+        ((DataSerializable) deserializableObject).fromData(in);
 
         if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
           logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read DataSerializable {}",
-              ds);
+              deserializableObject);
         }
       }
     } catch (EOFException | ClassNotFoundException | CacheClosedException | SocketException ex) {
@@ -2379,7 +2320,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     } catch (Exception ex) {
       throw new SerializationException(
           String.format("Could not create an instance of %s .",
-              ds.getClass().getName()),
+              deserializableObject.getClass().getName()),
           ex);
     }
   }
@@ -2387,9 +2328,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
   @SuppressWarnings("unchecked")
   private static Object readDataSerializable(final DataInput in)
       throws IOException, ClassNotFoundException {
-    Class<? extends DataSerializer> c = (Class<? extends DataSerializer>) readClass(in);
+    final Class<?> c = readClass(in);
     try {
-      Constructor<? extends DataSerializer> init = c.getConstructor();
+      Constructor<?> init = c.getConstructor();
       init.setAccessible(true);
       Object o = init.newInstance();
 

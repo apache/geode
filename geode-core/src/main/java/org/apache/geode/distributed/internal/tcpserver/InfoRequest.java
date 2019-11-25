@@ -15,11 +15,9 @@
 
 package org.apache.geode.distributed.internal.tcpserver;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.io.Serializable;
 
-import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.serialization.BasicSerializable;
 
 /**
  * A request to the TCP server to provide information about the server
@@ -27,12 +25,6 @@ import org.apache.geode.DataSerializable;
  * @since GemFire 5.7
  *
  */
-public class InfoRequest implements DataSerializable {
+public class InfoRequest implements BasicSerializable, Serializable {
   private static final long serialVersionUID = -9129777520477738699L;
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
-
-  @Override
-  public void toData(DataOutput out) throws IOException {}
 }

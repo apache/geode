@@ -18,8 +18,11 @@ package org.apache.geode.distributed.internal.tcpserver;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.Serializable;
 
-import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.serialization.BasicSerializable;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
@@ -27,7 +30,7 @@ import org.apache.geode.internal.serialization.StaticSerialization;
  *
  * @since GemFire 5.7
  */
-public class InfoResponse implements DataSerializable {
+public class InfoResponse implements BasicSerializable, Serializable {
   private static final long serialVersionUID = 6249492407448855032L;
   private String[] info;
 
@@ -43,12 +46,13 @@ public class InfoResponse implements DataSerializable {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    info = StaticSerialization.readStringArray(in);
+  public void toData(final DataOutput out, final SerializationContext context) throws IOException {
+    StaticSerialization.writeStringArray(info, out);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    StaticSerialization.writeStringArray(info, out);
+  public void fromData(final DataInput in, final DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    info = StaticSerialization.readStringArray(in);
   }
 }

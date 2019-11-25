@@ -83,8 +83,6 @@ class DUnitHost extends Host {
     if (n < getVMCount()) {
       VM current = super.getVM(n);
       if (!current.getVersion().equals(version)) {
-        System.out.println(
-            "Bouncing VM" + n + " from version " + current.getVersion() + " to " + version);
         current.bounce(version);
       }
       return current;

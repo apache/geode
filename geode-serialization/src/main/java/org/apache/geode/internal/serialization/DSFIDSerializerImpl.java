@@ -20,6 +20,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.SocketException;
@@ -56,7 +57,14 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     return new ObjectSerializer() {
       @Override
       public void writeObject(Object obj, DataOutput output) throws IOException {
-        DSFIDSerializerImpl.this.writeDSFID((DataSerializableFixedID) obj, output);
+        if (obj instanceof DataSerializableFixedID) {
+          write((DataSerializableFixedID) obj, output);
+        } else if (obj instanceof BasicSerializable) {
+          write((BasicSerializable) obj, output);
+        } else {
+          throw new NotSerializableException("object with class " + obj.getClass().getName() +
+              " is not serializable via DSFIDSerializerImpl");
+        }
       }
 
       @Override
@@ -111,19 +119,34 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
   }
 
   @Override
-  public void writeDSFID(DataSerializableFixedID o, DataOutput out) throws IOException {
-    if (o == null) {
-      out.writeByte(DSCODE.NULL.toByte());
+  public void write(final BasicSerializable bs, final DataOutput out) throws IOException {
+    if (writeMetaData(bs, out)) {
       return;
     }
-    int dsfid = o.getDSFID();
-    if (dsfid == NO_FIXED_ID) {
-      throw new IllegalArgumentException(
-          "NO_FIXED_ID is not supported by BasicDSFIDSerializer - use InternalDataSerializer instead: "
-              + o.getClass().getName());
+    invokeToData(bs, out);
+  }
+
+  private boolean writeMetaData(final BasicSerializable bs, final DataOutput out)
+      throws IOException {
+    if (bs == null) {
+      out.writeByte(DSCODE.NULL.toByte());
+      return true;
     }
-    writeDSFIDHeader(dsfid, out);
-    invokeToData(o, out);
+    if (bs instanceof DataSerializableFixedID) {
+      final DataSerializableFixedID dsfid = (DataSerializableFixedID) bs;
+      final int id = dsfid.getDSFID();
+      if (id == NO_FIXED_ID) {
+        throw new IllegalArgumentException(
+            "NO_FIXED_ID is not supported by BasicDSFIDSerializer - use InternalDataSerializer instead: "
+                + dsfid.getClass().getName());
+      }
+      writeDSFIDHeader(id, out);
+    } else {
+      out.writeByte(DSCODE.DATA_SERIALIZABLE.toByte());
+      final Class c = bs.getClass();
+      StaticSerialization.writeClass(c, out);
+    }
+    return false;
   }
 
   /**
@@ -137,12 +160,20 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
    */
   @Override
   public void invokeToData(Object ds, DataOutput out) throws IOException {
+
+    final SerializationContext context = new SerializationContextImpl(out, this);
+
     boolean isDSFID = ds instanceof DataSerializableFixedID;
+
     if (!isDSFID) {
+      if (ds instanceof BasicSerializable) {
+        ((BasicSerializable) ds).toData(out, context);
+        return;
+      }
       throw new IllegalArgumentException(
           "Expected a DataSerializableFixedID but found " + ds.getClass().getName());
     }
-    SerializationContext context = new SerializationContextImpl(out, this);
+
     try {
       boolean invoked = false;
       Version v = context.getSerializationVersion();
@@ -191,8 +222,16 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     }
   }
 
+  private Object readDSFID(final DataInput in) throws IOException, ClassNotFoundException {
+    checkIn(in);
+    DSCODE dsHeaderType = DscodeHelper.toDSCODE(in.readByte());
+    if (dsHeaderType == DSCODE.NULL) {
+      return null;
+    }
+    return readDSFID(in, dsHeaderType);
+  }
 
-  public Object readDSFID(final DataInput in, DSCODE dscode)
+  private Object readDSFID(final DataInput in, DSCODE dscode)
       throws IOException, ClassNotFoundException {
     switch (dscode) {
       case DS_FIXED_ID_BYTE:
@@ -204,21 +243,14 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
             "DS_NO_FIXED_ID is not supported in readDSFID - use InternalDataSerializer instead");
       case DS_FIXED_ID_INT:
         return create(in.readInt(), in);
+      case DATA_SERIALIZABLE:
+        return readDataSerializable(in);
       default:
         throw new IllegalStateException("unexpected byte: " + dscode + " while reading dsfid");
     }
   }
 
-  public Object readDSFID(final DataInput in) throws IOException, ClassNotFoundException {
-    checkIn(in);
-    DSCODE dsHeaderType = DscodeHelper.toDSCODE(in.readByte());
-    if (dsHeaderType == DSCODE.NULL) {
-      return null;
-    }
-    return readDSFID(in, dsHeaderType);
-  }
-
-  public int readDSFIDHeader(final DataInput in, DSCODE dscode) throws IOException {
+  private int readDSFIDHeader(final DataInput in, DSCODE dscode) throws IOException {
     switch (dscode) {
       case DS_FIXED_ID_BYTE:
         return in.readByte();
@@ -264,7 +296,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     try {
       boolean invoked = false;
       Version v = context.getSerializationVersion();
-      if (!v.isCurrentVersion()) {
+      if (!v.isCurrentVersion() && ds instanceof SerializationVersions) {
         // get versions where DataOutput was upgraded
         Version[] versions = null;
         SerializationVersions vds = (SerializationVersions) ds;
@@ -285,7 +317,12 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
         }
       }
       if (!invoked) {
-        ((DataSerializableFixedID) ds).fromData(in, context);
+        if (ds instanceof BasicSerializable) {
+          ((BasicSerializable) ds).fromData(in, context);
+        } else {
+          throw new IOException(
+              "problem invoking fromData method on object of class" + ds.getClass().getName());
+        }
       }
     } catch (EOFException | ClassNotFoundException | SocketException ex) {
       // client went away - ignore
@@ -352,6 +389,27 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     throw new DSFIDNotFoundException("Unknown DataSerializableFixedID: " + dsfid, dsfid);
   }
 
+  private Object readDataSerializable(final DataInput in)
+      throws IOException, ClassNotFoundException {
+    Class<?> c = StaticSerialization.readClass(in);
+    try {
+      Constructor<?> init = c.getConstructor();
+      init.setAccessible(true);
+      Object o = init.newInstance();
+
+      invokeFromData(o, in);
+
+      return o;
+    } catch (EOFException | SocketException ex) {
+      // client went away - ignore
+      throw ex;
+    } catch (Exception ex) {
+      throw new IOException(
+          String.format("Could not create an instance of %s .",
+              c.getName()),
+          ex);
+    }
+  }
 
   public Constructor<?>[] getDsfidmap() {
     return dsfidMap;
