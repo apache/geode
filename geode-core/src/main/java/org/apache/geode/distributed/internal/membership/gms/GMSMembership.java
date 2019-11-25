@@ -739,8 +739,8 @@ public class GMSMembership implements Membership {
       synchronized (startupLock) {
         if (!startupMessagesDrained) {
           startupMessages.add(new StartupEvent(member));
+          return;
         }
-        return;
       }
     }
     processSurpriseConnect(member);
