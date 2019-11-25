@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -439,4 +440,9 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   Set<String> getVisibleAsyncEventQueueIds();
 
   CachePerfStats getRegionPerfStats();
+
+  VersionedObjectList basicRemoveAll(Collection<Object> keys,
+      DistributedRemoveAllOperation removeAllOp, List<VersionTag> retryVersions);
+
+  VersionTag getVersionTag(Object key);
 }

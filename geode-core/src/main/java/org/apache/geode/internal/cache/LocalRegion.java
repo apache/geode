@@ -773,6 +773,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @return the entry version information
    */
+  @Override
   public VersionTag getVersionTag(Object key) {
     Region.Entry entry = getEntry(key, true);
     VersionTag tag = null;
@@ -9101,7 +9102,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return succeeded;
   }
 
-  VersionedObjectList basicRemoveAll(final Collection<Object> keys,
+  @Override
+  public VersionedObjectList basicRemoveAll(final Collection<Object> keys,
       final DistributedRemoveAllOperation removeAllOp, final List<VersionTag> retryVersions) {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
