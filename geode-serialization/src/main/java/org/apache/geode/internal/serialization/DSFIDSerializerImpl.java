@@ -57,9 +57,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     return new ObjectSerializer() {
       @Override
       public void writeObject(Object obj, DataOutput output) throws IOException {
-        if (obj instanceof DataSerializableFixedID) {
-          write((DataSerializableFixedID) obj, output);
-        } else if (obj instanceof BasicSerializable) {
+        if (obj == null || obj instanceof BasicSerializable) {
           write((BasicSerializable) obj, output);
         } else {
           throw new NotSerializableException("object with class " + obj.getClass().getName() +

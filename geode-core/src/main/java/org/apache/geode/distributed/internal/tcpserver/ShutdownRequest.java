@@ -15,7 +15,6 @@
 
 package org.apache.geode.distributed.internal.tcpserver;
 
-import java.io.Serializable;
 
 import org.apache.geode.internal.serialization.BasicSerializable;
 
@@ -24,6 +23,5 @@ import org.apache.geode.internal.serialization.BasicSerializable;
  *
  * @since GemFire 5.7
  */
-public class ShutdownRequest implements BasicSerializable, Serializable {
-  private static final long serialVersionUID = 7920535743546544136L;
+public class ShutdownRequest implements BasicSerializable {
 }

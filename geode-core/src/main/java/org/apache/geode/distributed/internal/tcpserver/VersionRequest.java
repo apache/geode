@@ -14,14 +14,11 @@
  */
 package org.apache.geode.distributed.internal.tcpserver;
 
-import java.io.Serializable;
 
 import org.apache.geode.internal.serialization.BasicSerializable;
 
 /**
  * @since GemFire 7.1
  */
-public class VersionRequest implements BasicSerializable, Serializable {
-
-  private static final long serialVersionUID = -8272913634136267812L;
+public class VersionRequest implements BasicSerializable {
 }

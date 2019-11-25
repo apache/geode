@@ -147,20 +147,26 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     clientVM.invoke(() -> System.out.println("BB: client vm started"));
 
     clientVM.invoke("issue version request",
-        createRequestResponseFunction(locatorPort, new VersionRequest(), VersionResponse.class));
+        createRequestResponseFunction(locatorPort, VersionRequest.class.getName(),
+            VersionResponse.class.getName()));
     clientVM.invoke("issue info request",
-        createRequestResponseFunction(locatorPort, new InfoRequest(), InfoResponse.class));
+        createRequestResponseFunction(locatorPort, InfoRequest.class.getName(),
+            InfoResponse.class.getName()));
     clientVM.invoke("issue shutdown request",
-        createRequestResponseFunction(locatorPort, new ShutdownRequest(), ShutdownResponse.class));
+        createRequestResponseFunction(locatorPort, ShutdownRequest.class.getName(),
+            ShutdownResponse.class.getName()));
   }
 
   @NotNull
   private SerializableRunnableIF createRequestResponseFunction(
       final int locatorPort,
-      final Object request,
-      final Class responseType) {
+      final String requestClassName,
+      final String responseClassName) {
 
     return () -> {
+
+      final Class<?> requestClass = Class.forName(requestClassName);
+      final Object requestMessage = requestClass.newInstance();
 
       final TcpClient tcpClient;
       System.out.println("BB: clientVM clientProductVersion is " + versions.clientProductVersion
@@ -172,9 +178,11 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
       }
 
       final Object response = tcpClient
-          .requestToServer(SocketCreator.getLocalHost(), locatorPort, request, 1000);
+          .requestToServer(SocketCreator.getLocalHost(), locatorPort, requestMessage, 1000);
 
-      assertThat(response).isInstanceOf(responseType);
+      final Class<?> responseClass = Class.forName(responseClassName);
+
+      assertThat(response).isInstanceOf(responseClass);
     };
 
   }

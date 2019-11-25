@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal.tcpserver;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 
 import org.apache.geode.internal.serialization.BasicSerializable;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -29,9 +28,7 @@ import org.apache.geode.internal.serialization.Version;
  *
  * @since GemFire 7.1
  */
-public class VersionResponse implements BasicSerializable, Serializable {
-
-  private static final long serialVersionUID = 8320323031808601748L;
+public class VersionResponse implements BasicSerializable {
   private short versionOrdinal = Version.TOKEN.ordinal();
 
   public short getVersionOrdinal() {
