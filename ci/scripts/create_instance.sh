@@ -107,6 +107,7 @@ TTL=$(($(date +%s) + 60 * 60 * 12))
 LABELS="instance_type=heavy-lifter,time-to-live=${TTL},job-name=${SANITIZED_BUILD_JOB_NAME},pipeline-name=${SANITIZED_BUILD_PIPELINE_NAME},build-name=${SANITIZED_BUILD_NAME},sha=${GEODE_SHA}"
 echo "Applying the following labels to the instance: ${LABELS}"
 
+set +e
 INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create ${INSTANCE_NAME} \
   --zone=${ZONE} \
   --machine-type=custom-${CPUS}-${RAM_MEGABYTES} \
@@ -120,6 +121,14 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
   --tags="heavy-lifter" \
   --scopes="default,storage-rw" \
   --format=json)
+
+CREATE_RC=$?
+set -e
+
+if [[ ${CREATE_RC} -ne 0 ]]; then
+  sleep 30
+  exit 1
+fi
 
 echo "${INSTANCE_INFORMATION}" > instance-data/instance-information
 
