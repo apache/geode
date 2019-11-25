@@ -152,12 +152,14 @@ public class SocketCreator {
   /**
    * flag to force always using DNS (regardless of the fact that these lookups can hang)
    */
+  @Deprecated
   public static final boolean FORCE_DNS_USE =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "forceDnsUse");
 
   /**
    * set this to false to inhibit host name lookup
    */
+  @Deprecated
   @MakeNotStatic
   public static volatile boolean resolve_dns = true;
 
