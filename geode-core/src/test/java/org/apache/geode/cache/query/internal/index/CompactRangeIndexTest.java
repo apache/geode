@@ -30,7 +30,7 @@ import org.mockito.junit.MockitoRule;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
-import org.apache.geode.cache.query.internal.InternalQueryService;
+import org.apache.geode.cache.query.internal.QueryConfigurationService;
 import org.apache.geode.cache.query.internal.index.AbstractIndex.InternalIndexStatistics;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.types.ObjectType;
@@ -60,15 +60,16 @@ public class CompactRangeIndexTest {
 
   @Before
   public void setup() {
+    QueryConfigurationService mockService = mock(QueryConfigurationService.class);
+    when(mockService.getMethodAuthorizer()).thenReturn(mock(MethodInvocationAuthorizer.class));
+
     when(region.getCache()).thenReturn(cache);
     when(region.getAttributes()).thenReturn(mock(RegionAttributes.class));
     when(cache.getDistributedSystem()).thenReturn(ids);
     when(ids.createAtomicStatistics(any(), eq("Index1"))).thenReturn(stats);
     when(cache.getRegion(any())).thenReturn(region);
     when(img.putCanonicalizedIteratorNameIfAbsent(any())).thenReturn("index_iter");
-    when(cache.getQueryService()).thenReturn(mock(InternalQueryService.class));
-    when(cache.getQueryService().getMethodInvocationAuthorizer())
-        .thenReturn(mock(MethodInvocationAuthorizer.class));
+    when(cache.getService(QueryConfigurationService.class)).thenReturn(mockService);
 
     IndexCreationHelper helper = new FunctionalIndexCreationHelper("/exampleRegion", "status",
         "*", null, cache, null, img);

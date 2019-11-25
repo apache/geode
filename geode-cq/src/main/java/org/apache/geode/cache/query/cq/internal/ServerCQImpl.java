@@ -280,7 +280,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    *
    * @return String modified query.
    */
-  private Query constructServerSideQuery() throws QueryException {
+  Query constructServerSideQuery() throws QueryException {
     InternalCache cache = cqService.getInternalCache();
     DefaultQuery locQuery = (DefaultQuery) cache.getLocalQueryService().newQuery(this.queryString);
     CompiledSelect select = locQuery.getSimpleSelect();
@@ -359,6 +359,20 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
             this.destroysWhileCqResultsInProgress.add(key);
           }
         }
+      }
+    }
+  }
+
+  @Override
+  public void invalidateCqResultKeys() {
+    if (!CqServiceProvider.MAINTAIN_KEYS) {
+      return;
+    }
+
+    if (this.cqResultKeys != null) {
+      synchronized (this.cqResultKeys) {
+        this.cqResultKeys.clear();
+        this.cqResultKeysInitialized = false;
       }
     }
   }

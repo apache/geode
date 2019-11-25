@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -33,13 +34,14 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
+import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -131,6 +133,14 @@ public class ExecutionContextIntegrationTest {
     return i;
   }
 
+  private void restartServerWithSecurityEnabled() {
+    server.stopMember();
+    server.withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName())
+        .withProperty("security-username", "cluster")
+        .withProperty("security-password", "cluster")
+        .startServer();
+  }
+
   @Test
   public void constructorShouldUseConfiguredMethodAuthorizer() {
     ExecutionContext unsecuredContext = new QueryExecutionContext(null, server.getCache());
@@ -140,17 +150,35 @@ public class ExecutionContextIntegrationTest {
     assertThat(noOpAuthorizer).isNotNull();
     assertThat(noOpAuthorizer).isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
 
-    server.stopMember();
-
     // Security Enabled -> RestrictedMethodAuthorizer
-    server.withProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName())
-        .withProperty("security-username", "cluster")
-        .withProperty("security-password", "cluster")
-        .startServer();
+    restartServerWithSecurityEnabled();
     ExecutionContext securedContext = new QueryExecutionContext(null, server.getCache());
     MethodInvocationAuthorizer authorizer = securedContext.getMethodInvocationAuthorizer();
     assertThat(authorizer).isNotNull();
     assertThat(authorizer).isInstanceOf(RestrictedMethodAuthorizer.class);
+  }
+
+  @Test
+  public void resetShouldUpdateTheMethodInvocationAuthorizer() throws ClassNotFoundException {
+    server.stopMember();
+
+    // Security Enabled -> RestrictedMethodAuthorizer
+    restartServerWithSecurityEnabled();
+    ExecutionContext securedContext = new QueryExecutionContext(null, server.getCache());
+    MethodInvocationAuthorizer authorizer = securedContext.getMethodInvocationAuthorizer();
+    assertThat(authorizer).isNotNull();
+    assertThat(authorizer).isInstanceOf(RestrictedMethodAuthorizer.class);
+
+    // Change the authorizer
+    InternalCache internalCache = server.getCache();
+    internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(internalCache,
+        RegExMethodAuthorizer.class.getName(), Collections.emptySet());
+
+    // Reset the context - used by CQs when processing events
+    securedContext.reset();
+    MethodInvocationAuthorizer newAuthorizer = securedContext.getMethodInvocationAuthorizer();
+    assertThat(newAuthorizer).isNotNull();
+    assertThat(newAuthorizer).isInstanceOf(RegExMethodAuthorizer.class);
   }
 
   @Test
@@ -323,9 +351,6 @@ public class ExecutionContextIntegrationTest {
         while (runtimeIterator.hasNext()) {
           assertIteratorScopeMultiThreaded(runtimeIterator);
         }
-      } catch (VirtualMachineError e) {
-        SystemFailure.initiateFailure(e);
-        throw e;
       } catch (Throwable th) {
         throw new RuntimeException(th);
       }

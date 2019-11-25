@@ -58,10 +58,11 @@ public class MethodDispatchTest {
     emptyList = Collections.emptyList();
     methodInvocationAuthorizer = spy(MethodInvocationAuthorizer.class);
 
+    QueryConfigurationService mockService = mock(QueryConfigurationService.class);
+    when(mockService.getMethodAuthorizer()).thenReturn(methodInvocationAuthorizer);
     InternalCache mockCache = mock(InternalCache.class);
-    InternalQueryService mockQueryService = mock(InternalQueryService.class);
-    when(mockCache.getQueryService()).thenReturn(mockQueryService);
-    when(mockQueryService.getMethodInvocationAuthorizer()).thenReturn(methodInvocationAuthorizer);
+    when(mockCache.getService(QueryConfigurationService.class)).thenReturn(mockService);
+
     queryExecutionContext = new QueryExecutionContext(null, mockCache);
   }
 
