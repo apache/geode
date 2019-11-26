@@ -109,6 +109,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   private volatile boolean isQueueEmpty = true;
 
+  private final boolean cleanQueues;
+
   /**
    * False signal is fine on this condition. As processor will loop again and find out if it was a
    * false signal. However, make sure that whatever scenario can cause an entry to be peeked shoudld
@@ -232,14 +234,16 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private MetaRegionFactory metaRegionFactory;
 
   public ParallelGatewaySenderQueue(AbstractGatewaySender sender, Set<Region> userRegions, int idx,
-      int nDispatcher) {
-    this(sender, userRegions, idx, nDispatcher, new MetaRegionFactory());
+      int nDispatcher, boolean cleanQueues) {
+    this(sender, userRegions, idx, nDispatcher, new MetaRegionFactory(), cleanQueues);
   }
 
   ParallelGatewaySenderQueue(AbstractGatewaySender sender, Set<Region> userRegions, int idx,
-      int nDispatcher, MetaRegionFactory metaRegionFactory) {
+      int nDispatcher, MetaRegionFactory metaRegionFactory, boolean cleanQueues) {
 
     this.metaRegionFactory = metaRegionFactory;
+
+    this.cleanQueues = cleanQueues;
 
     this.index = idx;
     this.nDispatcher = nDispatcher;
@@ -539,6 +543,15 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Created queue region: {}", this, prQ);
         }
+        if ((prQ != null) && this.cleanQueues && sender.isPersistenceEnabled()) {
+          // now, clean up the shadowPR's buckets on this node (primary as well as
+          // secondary) for a fresh start
+          Set<BucketRegion> localBucketRegions = prQ.getDataStore().getAllLocalBucketRegions();
+          for (BucketRegion bucketRegion : localBucketRegions) {
+            bucketRegion.clear();
+          }
+        }
+
       } else {
         if (isAccessor)
           return; // return from here if accessor node
