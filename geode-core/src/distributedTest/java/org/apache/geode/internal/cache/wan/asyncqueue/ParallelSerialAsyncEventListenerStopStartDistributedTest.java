@@ -201,7 +201,7 @@ public class ParallelSerialAsyncEventListenerStopStartDistributedTest implements
     for (final AsyncEventQueue aeq : getAsyncEventQueues()) {
       GatewaySender sender = ((InternalAsyncEventQueue) aeq).getSender();
       assertThat(sender.isRunning()).isFalse();
-      sender.start();
+      sender.start(false);
       assertThat(sender.isRunning()).isTrue();
     }
   }

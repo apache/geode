@@ -71,7 +71,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
         pFact.setRedundantCopies(1);
         regionFactory.setPartitionAttributes(pFact.create());
         Region r = regionFactory.create("MyRegion");
-        sender1.start();
+        sender1.start(false);
       } finally {
         ex.remove();
       }

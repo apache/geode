@@ -2233,7 +2233,7 @@ public class CliStrings {
   public static final String CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS =
       "Gateway Sender cannot be created until all members are the current version";
 
-  /* stop gateway-receiver */
+  /* start gateway-sender */
   public static final String START_GATEWAYSENDER = "start gateway-sender";
   public static final String START_GATEWAYSENDER__HELP =
       "Start the Gateway Sender on a member or members.";
@@ -2244,6 +2244,9 @@ public class CliStrings {
   public static final String START_GATEWAYSENDER__MEMBER__HELP =
       "Name/Id of the member on which to start the Gateway Sender.";
 
+  public static final String START_GATEWAYSENDER__CLEAN_QUEUE = "cleanQueues";
+  public static final String START_GATEWAYSENDER__CLEAN_QUEUE__HELP =
+      "Option to clean existing queue at start of the Gateway Sender.";
 
   /* destroy gateway-sender */
   public static final String DESTROY_GATEWAYSENDER = "destroy gateway-sender";

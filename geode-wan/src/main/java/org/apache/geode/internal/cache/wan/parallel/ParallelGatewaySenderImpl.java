@@ -51,7 +51,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
   }
 
   @Override
-  public void start() {
+  public void start(boolean cleanQueues) {
     this.getLifeCycleLock().writeLock().lock();
     try {
       if (isRunning()) {
