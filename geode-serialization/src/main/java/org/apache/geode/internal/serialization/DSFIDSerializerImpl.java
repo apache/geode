@@ -118,17 +118,17 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
   @Override
   public void write(final BasicSerializable bs, final DataOutput out) throws IOException {
-    if (writeMetaData(bs, out)) {
-      return;
+    writeMetaData(bs, out);
+    if (bs != null) {
+      invokeToData(bs, out);
     }
-    invokeToData(bs, out);
   }
 
-  private boolean writeMetaData(final BasicSerializable bs, final DataOutput out)
+  private void writeMetaData(final BasicSerializable bs, final DataOutput out)
       throws IOException {
     if (bs == null) {
       out.writeByte(DSCODE.NULL.toByte());
-      return true;
+      return;
     }
     if (bs instanceof DataSerializableFixedID) {
       final DataSerializableFixedID dsfid = (DataSerializableFixedID) bs;
@@ -144,7 +144,6 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       final Class c = bs.getClass();
       StaticSerialization.writeClass(c, out);
     }
-    return false;
   }
 
   /**

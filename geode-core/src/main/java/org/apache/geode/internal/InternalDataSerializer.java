@@ -2030,9 +2030,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         out.writeByte(DSCODE.DATA_SERIALIZABLE.toByte());
         DataSerializer.writeClass(c, out);
       }
-      final DataSerializable bs = (DataSerializable) o;
-      invokeToData(bs, out);
-
+      invokeToData(o, out);
     } else if (o instanceof Sendable) {
       if (!(o instanceof PdxInstance) || o instanceof PdxInstanceEnum) {
         checkPdxCompatible(o, ensurePdxCompatibility);
