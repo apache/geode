@@ -133,6 +133,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    */
   private boolean enablePersistence;
 
+  private final boolean cleanQueues;
+
+
   /**
    * Whether write to disk is synchronous.
    */
@@ -178,10 +181,12 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   private AbstractGatewaySender sender = null;
 
   public SerialGatewaySenderQueue(AbstractGatewaySender abstractSender, String regionName,
-      CacheListener listener) {
+      CacheListener listener, boolean cleanQueues) {
     // The queue starts out with headKey and tailKey equal to -1 to force
     // them to be initialized from the region.
     this.regionName = regionName;
+    this.cleanQueues = cleanQueues;
+
     this.headKey = -1;
     this.tailKey.set(-1);
     this.indexes = new HashMap<String, Map<Object, Long>>();
@@ -905,6 +910,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
             new Object[] {this, this.regionName}),
             e);
       }
+      if ((this.region != null) && this.cleanQueues && this.enablePersistence) {
+        this.region.clear();
+      }
+
     } else {
       throw new IllegalStateException(
           "Queue region " + this.regionName + " already exists.");

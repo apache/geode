@@ -86,7 +86,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
           getSenderAdvisor().makeSecondary();
         }
       }
-      eventProcessor = createEventProcessor();
+      eventProcessor = createEventProcessor(cleanQueues);
 
       if (startEventProcessorInPausedState) {
         pauseEvenIfProcessorStopped();
@@ -113,15 +113,15 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
     }
   }
 
-  protected AbstractGatewaySenderEventProcessor createEventProcessor() {
+  protected AbstractGatewaySenderEventProcessor createEventProcessor(boolean cleanQueues) {
     AbstractGatewaySenderEventProcessor eventProcessor;
     if (getDispatcherThreads() > 1) {
       eventProcessor = new ConcurrentSerialGatewaySenderEventProcessor(
-          SerialAsyncEventQueueImpl.this, getThreadMonitorObj());
+          SerialAsyncEventQueueImpl.this, getThreadMonitorObj(), cleanQueues);
     } else {
       eventProcessor =
           new SerialGatewaySenderEventProcessor(SerialAsyncEventQueueImpl.this, getId(),
-              getThreadMonitorObj());
+              getThreadMonitorObj(), cleanQueues);
     }
     return eventProcessor;
   }
