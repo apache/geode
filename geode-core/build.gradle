@@ -174,7 +174,8 @@ dependencies {
   compileOnly files("${System.getProperty('java.home')}/../lib/tools.jar")
 
   //Find bugs is used in multiple places in the code to suppress findbugs warnings
-  implementation('com.github.stephenc.findbugs:findbugs-annotations')
+  compile('com.github.stephenc.findbugs:findbugs-annotations')
+  testCompile('com.github.stephenc.findbugs:findbugs-annotations')
 
   //Jgroups is a core component of our membership system.
   implementation('org.jgroups:jgroups')
