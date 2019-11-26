@@ -79,6 +79,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   protected static InternalCache cache;
 
   private final CacheTestFixture cacheTestFixture;
+  private final String RootRegionName = "root";
 
   public JUnit4CacheTestCase() {
     this(null);
@@ -434,20 +435,24 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
   public final <K, V> Region<K, V> createRegion(final String name, final String rootName,
       final RegionFactory<K, V> regionFactory) throws CacheException {
+    Region<K,V> root = createRootRegion(rootName, regionFactory);
+    return regionFactory.createSubregion(root, name);
+  }
+
+  public final <K, V> Region<K, V> createRootRegion(final String rootName,
+                                                final RegionFactory<K, V> regionFactory) throws CacheException {
     Region<K, V> root = getRootRegion(rootName);
     if (root == null) {
       RegionFactory<K, V> regionFactoryRoot = getRootRegionRegionFactory(regionFactory);
       root = regionFactoryRoot.create(rootName);
     }
-    return regionFactory.createSubregion(root, name);
+    return root;
   }
-
 
   public final <K, V> Region<K, V> createRegion(final String name,
       final RegionFactory<K, V> regionFactory) throws CacheException {
-    final String rootName = "root";
 
-    return createRegion(name, rootName, regionFactory);
+    return createRegion(name, RootRegionName, regionFactory);
   }
 
   public final <K, V> Region<K, V> getRootRegion() {
@@ -460,12 +465,12 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
   protected final <K, V> Region<K, V> createRootRegion(final RegionAttributes<K, V> attributes)
       throws RegionExistsException, TimeoutException {
-    return createRootRegion("root", attributes);
+    return createRootRegion(RootRegionName, attributes);
   }
 
   protected final <K, V> Region<K, V> createRootRegion(final RegionFactory<K, V> regionFactory)
       throws RegionExistsException, TimeoutException {
-    return regionFactory.create("root");
+    return createRootRegion(RootRegionName, regionFactory);
   }
 
   public final <K, V> Region<K, V> createRootRegion(final String rootName,
