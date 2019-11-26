@@ -1183,8 +1183,9 @@ public abstract class DistributedCacheOperation {
         }
 
         @Released
-        InternalCacheEvent event = createEvent(rgn);
+        InternalCacheEvent event = null;
         try {
+          event = createEvent(rgn);
           boolean isEntry = event.getOperation().isEntry();
 
           if (isEntry && this.possibleDuplicate) {
