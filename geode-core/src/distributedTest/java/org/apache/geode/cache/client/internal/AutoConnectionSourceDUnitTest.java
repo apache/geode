@@ -240,7 +240,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     await().untilAsserted(
         () -> assertThatCode(
             () -> ((Cache) remoteObjects.get(CACHE_KEY)).getRegion(REGION_NAME).put(KEY, VALUE))
-            .doesNotThrowAnyException());
+                .doesNotThrowAnyException());
     Assert.assertEquals(VALUE, getInVM(serverVM, KEY));
 
   }
@@ -467,7 +467,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   }
 
   private void putAndWaitForSuccess(VM vm, final String regionName, final Serializable key,
-                                    final Serializable value) {
+      final Serializable value) {
     await().untilAsserted(
         () -> assertThatCode(() -> putInVM(vm, regionName, key, value)).doesNotThrowAnyException());
   }
@@ -477,7 +477,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   }
 
   private void putInVM(VM vm, final String regionName, final Serializable key,
-                       final Serializable value) {
+      final Serializable value) {
     vm.invoke("Put in VM",
         () -> ((Cache) remoteObjects.get(CACHE_KEY)).getRegion(regionName).put(key, value));
   }
@@ -485,7 +485,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   /**
    * Assert that there is one endpoint with the given host in port on the client vm.
    *
-   * @param vm            - the vm the client is running in
+   * @param vm - the vm the client is running in
    * @param expectedPorts - The server ports we expect the client to be connected to.
    */
   private void checkEndpoints(VM vm, final int... expectedPorts) {
@@ -509,7 +509,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   }
 
   private Boolean verifyLocatorsMatched(InetSocketAddress[] expected,
-                                        List<InetSocketAddress> initialLocators) {
+      List<InetSocketAddress> initialLocators) {
 
     if (expected.length != initialLocators.size()) {
       return false;
@@ -532,7 +532,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
   }
 
   private void checkLocators(VM vm, final InetSocketAddress[] expectedInitial,
-                             final InetSocketAddress... expected) {
+      final InetSocketAddress... expected) {
     vm.invoke("Check locators", () -> {
       Pool pool = PoolManager.find(POOL_NAME);
 
