@@ -5578,9 +5578,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               overwriteDestroyed, true, false);
       returned = true;
     } finally {
-      if (!returned) {
+//      if (!returned) {
         event.release();
-      }
+//      }
     }
 
 
