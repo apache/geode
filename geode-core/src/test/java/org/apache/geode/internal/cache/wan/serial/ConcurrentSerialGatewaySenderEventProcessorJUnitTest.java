@@ -32,7 +32,7 @@ public class ConcurrentSerialGatewaySenderEventProcessorJUnitTest {
   @Before
   public void setUp() throws Exception {
     AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
-    processor = new ConcurrentSerialGatewaySenderEventProcessor(sender, null);
+    processor = new ConcurrentSerialGatewaySenderEventProcessor(sender, null, false);
     queue = mock(RegionQueue.class);
     when(queue.size()).thenReturn(3);
   }

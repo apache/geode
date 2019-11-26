@@ -26,15 +26,15 @@ public class RemoteConcurrentSerialGatewaySenderEventProcessor
   private static final Logger logger = LogService.getLogger();
 
   public RemoteConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
-      ThreadsMonitoring tMonitoring) {
-    super(sender, tMonitoring);
+      ThreadsMonitoring tMonitoring, boolean cleanQueues) {
+    super(sender, tMonitoring, cleanQueues);
   }
 
   @Override
-  protected void initializeMessageQueue(String id) {
+  protected void initializeMessageQueue(String id, boolean cleanQueues) {
     for (int i = 0; i < sender.getDispatcherThreads(); i++) {
       processors.add(new RemoteSerialGatewaySenderEventProcessor(this.sender, id + "." + i,
-          getThreadMonitorObj()));
+          getThreadMonitorObj(), cleanQueues));
       if (logger.isDebugEnabled()) {
         logger.debug("Created the RemoteSerialGatewayEventProcessor_{}->{}", i, processors.get(i));
       }
