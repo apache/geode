@@ -58,7 +58,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
   }
 
   @Override
-  public void start() {
+  public void start(boolean cleanQueues) {
     this.getLifeCycleLock().writeLock().lock();
     try {
       if (isRunning()) {

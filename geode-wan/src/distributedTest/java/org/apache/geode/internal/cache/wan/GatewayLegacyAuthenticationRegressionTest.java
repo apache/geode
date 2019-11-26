@@ -234,7 +234,7 @@ public class GatewayLegacyAuthenticationRegressionTest implements Serializable {
 
     GatewaySenderFactory senderFactory = createGatewaySenderFactory(dirs, uniqueName);
     GatewaySender sender = senderFactory.create(remoteName, remoteSystemId);
-    sender.start();
+    sender.start(false);
 
     GatewayReceiverFactory receiverFactory = createGatewayReceiverFactory(receiverPort);
     GatewayReceiver receiver = receiverFactory.create();
