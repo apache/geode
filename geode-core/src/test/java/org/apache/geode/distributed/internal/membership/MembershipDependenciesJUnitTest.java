@@ -20,10 +20,12 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPac
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.type;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchIgnore;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchUnitRunner;
+import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
@@ -51,7 +53,9 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..")
+@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",
+    cacheMode = CacheMode.PER_CLASS,
+    importOptions = ImportOption.DoNotIncludeArchives.class)
 public class MembershipDependenciesJUnitTest {
 
   /*
