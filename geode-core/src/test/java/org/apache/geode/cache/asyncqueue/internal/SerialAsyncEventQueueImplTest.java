@@ -95,7 +95,7 @@ public class SerialAsyncEventQueueImplTest {
             gatewaySenderAttributes);
     SerialAsyncEventQueueImpl spySerialAsyncEventQueue = spy(serialAsyncEventQueue);
     doReturn(gatewaySenderAdvisor).when(spySerialAsyncEventQueue).getSenderAdvisor();
-    doReturn(eventProcessor).when(spySerialAsyncEventQueue).createEventProcessor();
+    doReturn(eventProcessor).when(spySerialAsyncEventQueue).createEventProcessor(false);
     doReturn(null).when(spySerialAsyncEventQueue).getQueues();
 
     return spySerialAsyncEventQueue;

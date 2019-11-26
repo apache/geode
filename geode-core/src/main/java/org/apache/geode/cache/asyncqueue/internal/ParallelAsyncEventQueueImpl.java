@@ -80,7 +80,8 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
        * of Concurrent version of processor and queue.
        */
       eventProcessor =
-          new ConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj());
+          new ConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj(),
+              cleanQueues);
       if (startEventProcessorInPausedState) {
         pauseEvenIfProcessorStopped();
       }
