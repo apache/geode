@@ -1019,8 +1019,7 @@ public class InternalDistributedMember
 
     String hostName = DataSerializer.readString(in);
 
-    hostName = SocketCreator.resolve_dns
-        ? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
+
 
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
@@ -1041,6 +1040,8 @@ public class InternalDistributedMember
       if (str != null) { // backward compatibility from earlier than 6.5
         vmViewId = Integer.parseInt(str);
       }
+      hostName = SocketCreator.resolve_dns
+          ? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
     }
 
     String durableId = DataSerializer.readString(in);
