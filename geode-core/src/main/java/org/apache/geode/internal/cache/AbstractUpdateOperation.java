@@ -260,6 +260,9 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
           "DistributedLock should not be acquired",
           e);
     }
+    finally {
+      ev.release();
+    }
   }
 
   public abstract static class AbstractUpdateMessage extends CacheOperationMessage {
