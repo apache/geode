@@ -453,7 +453,11 @@ public class RebalanceOperationPerformer {
 
     @Override
     public boolean equals(Object o2) {
-      return o2 != null && this.region.equals(((MemberPRInfo) o2).region);
+      if (o2 instanceof MemberPRInfo) {
+        return this.region.equals(((MemberPRInfo) o2).region);
+      } else {
+        return false;
+      }
     }
 
     @Override
