@@ -57,7 +57,7 @@ public class GatewayManagementController extends AbstractManagementController {
 
   @ApiOperation(value = "get gateway-receiver")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
-  @GetMapping(GATEWAY_RECEIVERS_ENDPOINTS + "/{id}")
+  @GetMapping(GATEWAY_RECEIVERS_ENDPOINTS + "/{id:.+}")
   public ClusterManagementGetResult<GatewayReceiver, GatewayReceiverInfo> getGatewayReceiver(
       @PathVariable(name = "id") String id) {
     GatewayReceiver config = new GatewayReceiver();

@@ -42,7 +42,7 @@ public class MemberManagementController extends AbstractManagementController {
           @ExtensionProperty(name = "jqFilter",
               value = ".result | .runtimeInfo[] | {name:.memberName,status:.status}")})})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
-  @GetMapping(MEMBER_ENDPOINT + "/{id}")
+  @GetMapping(MEMBER_ENDPOINT + "/{id:.+}")
   public ClusterManagementGetResult<Member, MemberInformation> getMember(
       @PathVariable(name = "id") String id) {
     Member config = new Member();
