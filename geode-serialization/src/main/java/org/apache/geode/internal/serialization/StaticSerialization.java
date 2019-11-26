@@ -51,6 +51,11 @@ public class StaticSerialization {
   public static final byte LONG_VL = 127;
   public static final int MAX_BYTE_VL = 125;
 
+  public static final String PRE_GEODE_100_TCPSERVER_PACKAGE =
+      "com.gemstone.org.jgroups.stack.tcpserver";
+  public static final String POST_GEODE_100_TCPSERVER_PACKAGE =
+      "org.apache.geode.distributed.internal.tcpserver";
+
   @MakeNotStatic("not tied to the cache lifecycle")
   private static final ThreadLocalByteArrayCache threadLocalByteArrayCache =
       new ThreadLocalByteArrayCache(65535);
@@ -373,5 +378,120 @@ public class StaticSerialization {
    */
   public static byte[] getThreadLocalByteArray(int minimumLength) {
     return threadLocalByteArrayCache.get(minimumLength);
+  }
+
+  public static void writeClass(final Class<?> c, final DataOutput out) throws IOException {
+    if (c == null || c.isPrimitive()) {
+      writePrimitiveClass(c, out);
+    } else {
+      // non-primitive classes have a second CLASS byte
+      // if readObject/writeObject is called:
+      // the first CLASS byte indicates it's a Class, the second
+      // one indicates it's a non-primitive Class
+      out.writeByte(DSCODE.CLASS.toByte());
+      String cname = c.getName();
+      cname = processOutgoingClassName(cname);
+      writeString(cname, out);
+    }
+  }
+
+  public static Class<?> readClass(DataInput in) throws IOException, ClassNotFoundException {
+    byte typeCode = in.readByte();
+    if (typeCode == DSCODE.CLASS.toByte()) {
+      String className = readString(in);
+      return Class.forName(className);
+    } else {
+      return StaticSerialization.decodePrimitiveClass(typeCode);
+    }
+  }
+
+  /**
+   * Map from new package to old package.
+   *
+   * @return the same name String (identity) if the package name does not need to change
+   */
+  public static String processOutgoingClassName(String name) {
+    // TCPServer classes are used before a cache exists and support for old clients has been
+    // initialized
+    if (name.startsWith(POST_GEODE_100_TCPSERVER_PACKAGE)) {
+      return PRE_GEODE_100_TCPSERVER_PACKAGE
+          + name.substring(POST_GEODE_100_TCPSERVER_PACKAGE.length());
+    }
+    return name;
+  }
+
+  /**
+   * Map from old package to new package.
+   *
+   * @return the same name String (identity) if the package name does not need to change
+   */
+  public static String processIncomingClassName(String name) {
+    // TCPServer classes are used before a cache exists and support for old clients has been
+    // initialized
+    if (name.startsWith(StaticSerialization.PRE_GEODE_100_TCPSERVER_PACKAGE)) {
+      return StaticSerialization.POST_GEODE_100_TCPSERVER_PACKAGE
+          + name.substring(StaticSerialization.PRE_GEODE_100_TCPSERVER_PACKAGE.length());
+    }
+    return name;
+  }
+
+  /**
+   * Writes the type code for a primitive type Class to {@code DataOutput}.
+   */
+  public static void writePrimitiveClass(Class c, DataOutput out) throws IOException {
+    if (c == Boolean.TYPE) {
+      out.writeByte(DSCODE.BOOLEAN_TYPE.toByte());
+    } else if (c == Character.TYPE) {
+      out.writeByte(DSCODE.CHARACTER_TYPE.toByte());
+    } else if (c == Byte.TYPE) {
+      out.writeByte(DSCODE.BYTE_TYPE.toByte());
+    } else if (c == Short.TYPE) {
+      out.writeByte(DSCODE.SHORT_TYPE.toByte());
+    } else if (c == Integer.TYPE) {
+      out.writeByte(DSCODE.INTEGER_TYPE.toByte());
+    } else if (c == Long.TYPE) {
+      out.writeByte(DSCODE.LONG_TYPE.toByte());
+    } else if (c == Float.TYPE) {
+      out.writeByte(DSCODE.FLOAT_TYPE.toByte());
+    } else if (c == Double.TYPE) {
+      out.writeByte(DSCODE.DOUBLE_TYPE.toByte());
+    } else if (c == Void.TYPE) {
+      out.writeByte(DSCODE.VOID_TYPE.toByte());
+    } else if (c == null) {
+      out.writeByte(DSCODE.NULL.toByte());
+    } else {
+      throw new IllegalArgumentException(
+          String.format("unknown primitive type: %s",
+              c.getName()));
+    }
+  }
+
+  public static Class<?> decodePrimitiveClass(byte typeCode) throws IOException {
+    DSCODE dscode = DscodeHelper.toDSCODE(typeCode);
+    switch (dscode) {
+      case BOOLEAN_TYPE:
+        return Boolean.TYPE;
+      case CHARACTER_TYPE:
+        return Character.TYPE;
+      case BYTE_TYPE:
+        return Byte.TYPE;
+      case SHORT_TYPE:
+        return Short.TYPE;
+      case INTEGER_TYPE:
+        return Integer.TYPE;
+      case LONG_TYPE:
+        return Long.TYPE;
+      case FLOAT_TYPE:
+        return Float.TYPE;
+      case DOUBLE_TYPE:
+        return Double.TYPE;
+      case VOID_TYPE:
+        return Void.TYPE;
+      case NULL:
+        return null;
+      default:
+        throw new IllegalArgumentException(
+            String.format("unexpected typeCode: %s", typeCode));
+    }
   }
 }

@@ -18,7 +18,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.serialization.BasicSerializable;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
 /**
@@ -26,21 +28,8 @@ import org.apache.geode.internal.serialization.Version;
  *
  * @since GemFire 7.1
  */
-public class VersionResponse implements DataSerializable {
-
-
-  private static final long serialVersionUID = 8320323031808601748L;
+public class VersionResponse implements BasicSerializable {
   private short versionOrdinal = Version.TOKEN.ordinal();
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    out.writeShort(versionOrdinal);
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    versionOrdinal = in.readShort();
-  }
 
   public short getVersionOrdinal() {
     return versionOrdinal;
@@ -48,5 +37,16 @@ public class VersionResponse implements DataSerializable {
 
   public void setVersionOrdinal(short versionOrdinal) {
     this.versionOrdinal = versionOrdinal;
+  }
+
+  @Override
+  public void toData(final DataOutput out, final SerializationContext context) throws IOException {
+    out.writeShort(versionOrdinal);
+  }
+
+  @Override
+  public void fromData(final DataInput in, final DeserializationContext context)
+      throws IOException, ClassNotFoundException {
+    versionOrdinal = in.readShort();
   }
 }

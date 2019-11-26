@@ -49,7 +49,7 @@ import org.apache.geode.test.version.VersionManager;
  * This tests the rolling upgrade for locators with different GOSSIPVERSION.
  */
 @Category({MembershipTest.class})
-public class TcpServerBackwardCompatDUnitTest extends JUnit4DistributedTestCase {
+public class TcpServerGossipVersionDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void postSetUp() throws Exception {

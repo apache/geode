@@ -19,6 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 
+
 /**
  * An interface for objects whose state can be written/read as primitive types and strings ("data").
  * That is, instead of serializing itself to an {@link java.io.ObjectOutputStream}, a
