@@ -65,7 +65,7 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
       }
     }
     try {
-      sender.start();
+      sender.start(false);
     } catch (Exception e) {
       e.printStackTrace();
       fail("Failed with IOException");

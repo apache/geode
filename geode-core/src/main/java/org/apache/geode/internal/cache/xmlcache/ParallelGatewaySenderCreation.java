@@ -43,7 +43,7 @@ public class ParallelGatewaySenderCreation extends AbstractGatewaySender impleme
       List<Integer> remoteDSIds) {}
 
   @Override
-  public void start() {}
+  public void start(boolean cleanQueues) {}
 
   @Override
   public void stop() {}

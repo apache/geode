@@ -1060,7 +1060,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     try (IgnoredException ie1 = addIgnoredException("Could not connect");
         IgnoredException ie2 = addIgnoredException(ForceReattemptException.class);
         IgnoredException ie3 = addIgnoredException(InterruptedException.class)) {
-      findGatewaySender(senderId).start();
+      findGatewaySender(senderId).start(false);
     }
   }
 

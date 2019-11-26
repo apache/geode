@@ -59,7 +59,12 @@ public class StartGatewaySenderCommand extends SingleGfshCommand {
 
       @CliOption(key = {CliStrings.MEMBER, CliStrings.MEMBERS},
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP) String[] onMember) {
+          help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
+
+      @CliOption(key = CliStrings.START_GATEWAYSENDER__CLEAN_QUEUE,
+          unspecifiedDefaultValue = "false",
+          specifiedDefaultValue = "true",
+          help = CliStrings.START_GATEWAYSENDER__CLEAN_QUEUE__HELP) final Boolean cleanQueues) {
 
     final String id = senderId.trim();
 
@@ -96,7 +101,7 @@ public class StartGatewaySenderCommand extends SingleGfshCommand {
             statusList.add(CliStrings.format(
                 CliStrings.GATEWAY_SENDER_0_IS_ALREADY_STARTED_ON_MEMBER_1, id, member.getId()));
           } else {
-            bean.start();
+            bean.start(cleanQueues);
             statusList.add(member.getId());
             statusList.add(CliStrings.GATEWAY_OK);
             statusList.add(CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_STARTED_ON_MEMBER_1, id,
