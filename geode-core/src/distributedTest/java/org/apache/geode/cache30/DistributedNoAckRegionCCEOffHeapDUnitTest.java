@@ -55,8 +55,6 @@ public class DistributedNoAckRegionCCEOffHeapDUnitTest extends DistributedNoAckR
     return props;
   }
 
-
-
   @Override
   protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
     RegionAttributes<K, V> attrs = super.getRegionAttributes();
@@ -73,6 +71,5 @@ public class DistributedNoAckRegionCCEOffHeapDUnitTest extends DistributedNoAckR
       factory.setOffHeap(true);
     }
     return factory.create();
-
   }
 }

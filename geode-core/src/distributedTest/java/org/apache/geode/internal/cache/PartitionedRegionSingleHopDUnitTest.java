@@ -17,20 +17,13 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.cache.PartitionedRegionSingleHopDUnitTest.verifyMetadata;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.Assert.fail;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -40,21 +33,21 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
@@ -75,59 +68,59 @@ import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+
 
 @Category({ClientServerTest.class})
 public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
   private static final String PR_NAME = "single_hop_pr";
+  private static final String ORDER = "ORDER";
+  private static final String CUSTOMER = "CUSTOMER";
+  private static final String SHIPMENT = "SHIPMENT";
 
-  VM member0 = null;
+  private VM member0 = null;
 
-  VM member1 = null;
+  private VM member1 = null;
 
-  VM member2 = null;
+  private VM member2 = null;
 
-  VM member3 = null;
+  private VM member3 = null;
 
-  private static Region region = null;
+  private static Region<Object, Object> testRegion = null;
 
-  private static Region customerRegion = null;
+  private static Region<Object, Object> customerRegion = null;
 
-  private static Region orderRegion = null;
+  private static Region<Object, Object> orderRegion = null;
 
-  private static Region shipmentRegion = null;
+  private static Region<Object, Object> shipmentRegion = null;
 
-  private static Region replicatedRegion = null;
+  private static Region<Object, Object> replicatedRegion = null;
 
   private static Cache cache = null;
 
   private static Locator locator = null;
+  private static final int LOCAL_MAX_MEMORY_DEFAULT = -1;
 
   @Override
-  public final void postSetUp() throws Exception {
+  public final void postSetUp() {
     IgnoredException.addIgnoredException("Connection refused");
-    Host host = Host.getHost(0);
-    member0 = host.getVM(0);
-    member1 = host.getVM(1);
-    member2 = host.getVM(2);
-    member3 = host.getVM(3);
+
+    member0 = VM.getVM(0);
+    member1 = VM.getVM(1);
+    member2 = VM.getVM(2);
+    member3 = VM.getVM(3);
   }
 
   @Override
-  public final void postTearDownCacheTestCase() throws Exception {
+  public final void postTearDownCacheTestCase() {
     try {
       closeCacheAndDisconnect();
 
@@ -141,20 +134,20 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  public static void closeCacheAndDisconnect() {
+  private static void closeCacheAndDisconnect() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
     }
   }
 
-  public static void stopServer() {
+  private static void stopServer() {
     for (CacheServer cacheServer : cache.getCacheServers()) {
       cacheServer.stop();
     }
   }
 
-  public static void startLocatorInVM(final int locatorPort) {
+  private static void startLocatorInVM(final int locatorPort) {
 
     File logFile = new File("locator-" + locatorPort + ".log");
 
@@ -164,16 +157,15 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     try {
       locator = Locator.startLocatorAndDS(locatorPort, logFile, null, props);
     } catch (IOException e) {
-      fail("failed to startLocatorInVM", e);
+      Assertions.fail("failed to startLocatorInVM", e);
     }
   }
 
-  public static void stopLocator() {
+  private static void stopLocator() {
     locator.stop();
   }
 
-  public static int createServerWithLocator(String locString, int redundantCopies,
-      int totalNoofBuckets) {
+  private static int createServerWithLocator(String locString) {
 
     Properties props = new Properties();
     props.setProperty(LOCATORS, locString);
@@ -182,63 +174,28 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     cache = CacheFactory.create(ds);
 
     CacheServer server = cache.addCacheServer();
-    server.setPort(0);
+    final int redundantCopies = 0;
+    server.setPort(redundantCopies);
     server.setHostnameForClients("localhost");
     try {
       server.start();
     } catch (IOException e) {
-      Assert.fail("Failed to start server ", e);
+      Assertions.fail("Failed to start server ", e);
     }
 
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets);
-    AttributesFactory attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    region = cache.createRegion(PR_NAME, attr.create());
-    assertNotNull(region);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
+    final int totalNumberOfBuckets = 8;
+    testRegion = createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
 
-    // creating colocated Regions
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    customerRegion = cache.createRegion("CUSTOMER", attr.create());
-    assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
+    customerRegion = createColocatedRegion(CUSTOMER, null, redundantCopies, totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setColocatedWith("CUSTOMER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    orderRegion = cache.createRegion("ORDER", attr.create());
-    assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
+    orderRegion = createColocatedRegion(ORDER, CUSTOMER, redundantCopies, totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setColocatedWith("ORDER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
-    assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
+    shipmentRegion = createColocatedRegion(SHIPMENT, ORDER, redundantCopies, totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
+
     return server.getPort();
   }
 
-  public static void clearMetadata() {
+  private static void clearMetadata() {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.getClientPartitionAttributesMap().clear();
     cms.getClientPRMetadata_TEST_ONLY().clear();
@@ -252,38 +209,38 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
 
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::createPeer);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::createPeer);
 
     createAccessorServer();
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.clearMetadata());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.clearMetadata());
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.clearMetadata());
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.clearMetadata());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::clearMetadata);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::clearMetadata);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::clearMetadata);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::clearMetadata);
     clearMetadata();
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoPartitionedRegions());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoPartitionedRegions());
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoPartitionedRegions());
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoPartitionedRegions());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::putIntoPartitionedRegions);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::putIntoPartitionedRegions);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::putIntoPartitionedRegions);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::putIntoPartitionedRegions);
     putIntoPartitionedRegions();
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.getFromPartitionedRegions());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.getFromPartitionedRegions());
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.getFromPartitionedRegions());
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.getFromPartitionedRegions());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::getFromPartitionedRegions);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::getFromPartitionedRegions);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::getFromPartitionedRegions);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::getFromPartitionedRegions);
     getFromPartitionedRegions();
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyMetadata());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyMetadata());
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyMetadata());
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyMetadata());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::verifyEmptyMetadata);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::verifyEmptyMetadata);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::verifyEmptyMetadata);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::verifyEmptyMetadata);
     verifyEmptyMetadata();
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyStaticData());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyStaticData());
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyStaticData());
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyEmptyStaticData());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::verifyEmptyStaticData);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::verifyEmptyStaticData);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::verifyEmptyStaticData);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::verifyEmptyStaticData);
     verifyEmptyStaticData();
   }
 
@@ -294,13 +251,13 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void test_ClientConnectedToAccessors() {
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createAccessorServer());
+        member0.invoke(PartitionedRegionSingleHopDUnitTest::createAccessorServer);
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createAccessorServer());
+        member1.invoke(PartitionedRegionSingleHopDUnitTest::createAccessorServer);
 
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::createPeer);
 
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::createPeer);
 
     createClient(port0, port1);
 
@@ -320,12 +277,12 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void test_ClientConnectedTo1Server() {
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
 
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createPeer());
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::createPeer);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::createPeer);
 
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createAccessorServer());
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::createAccessorServer);
 
     createClient(port0);
 
@@ -346,23 +303,23 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void test_MetadataContents() {
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
     Integer port2 =
-        (Integer) member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
+        member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
     Integer port3 =
-        (Integer) member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
+        member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
     createClient(port0, port1, port2, port3);
 
     putIntoPartitionedRegions();
 
     getFromPartitionedRegions();
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::printView);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::printView);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::printView);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::printView);
 
     verifyMetadata();
     updateIntoSinglePR();
@@ -376,331 +333,345 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void test_MetadataServiceCallAccuracy() {
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
 
     member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createClient(port0));
     createClient(port1);
 
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::putIntoSinglePR);
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::printView);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::printView);
     final ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
 
-    region.put(new Integer(0), "create0");
-    region.put(new Integer(1), "create1");
-    region.put(new Integer(2), "create2");
-    region.put(new Integer(3), "create3");
+    testRegion.put(0, "create0");
+    testRegion.put(1, "create1");
+    testRegion.put(2, "create2");
+    testRegion.put(3, "create3");
 
     await()
-        .until(() -> cms.isRefreshMetadataTestOnly() == true);
+        .until(cms::isRefreshMetadataTestOnly);
 
     // make sure all fetch tasks are completed
     await()
         .until(() -> cms.getRefreshTaskCount_TEST_ONLY() == 0);
 
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    region.put(new Integer(0), "create0");
-    region.put(new Integer(1), "create1");
-    region.put(new Integer(2), "create2");
-    region.put(new Integer(3), "create3");
+    testRegion.put(0, "create0");
+    testRegion.put(1, "create1");
+    testRegion.put(2, "create2");
+    testRegion.put(3, "create3");
 
     await()
-        .until(() -> cms.isRefreshMetadataTestOnly() == false);
+        .until(() -> !cms.isRefreshMetadataTestOnly());
   }
 
   @Test
   public void test_MetadataServiceCallAccuracy_FromDestroyOp() {
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
 
     member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createClient(port0));
     createClient(port1);
 
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::putIntoSinglePR);
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::printView);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::printView);
     final ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
 
-    region.destroy(new Integer(0));
-    region.destroy(new Integer(1));
-    region.destroy(new Integer(2));
-    region.destroy(new Integer(3));
+    testRegion.destroy(0);
+    testRegion.destroy(1);
+    testRegion.destroy(2);
+    testRegion.destroy(3);
 
     await()
-        .until(() -> cms.isRefreshMetadataTestOnly() == true);
+        .until(cms::isRefreshMetadataTestOnly);
   }
 
   @Test
   public void test_MetadataServiceCallAccuracy_FromGetOp() {
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
 
     member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createClient(port0));
     createClient(port1);
 
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::putIntoSinglePR);
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::printView);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::printView);
     final ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
 
-    region.get(new Integer(0));
-    region.get(new Integer(1));
-    region.get(new Integer(2));
-    region.get(new Integer(3));
+    testRegion.get(0);
+    testRegion.get(1);
+    testRegion.get(2);
+    testRegion.get(3);
 
     await()
-        .until(() -> cms.isRefreshMetadataTestOnly() == true);
+        .until(cms::isRefreshMetadataTestOnly);
     printMetadata();
     Wait.pause(5000);
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    region.get(new Integer(0));
-    region.get(new Integer(1));
-    region.get(new Integer(2));
-    region.get(new Integer(3));
+    testRegion.get(0);
+    testRegion.get(1);
+    testRegion.get(2);
+    testRegion.get(3);
     Wait.pause(5000);
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    await().until(() -> !cms.isRefreshMetadataTestOnly());
+
   }
 
   @Test
   public void test_SingleHopWithHA() {
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 8));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 8));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 8));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 8));
     Integer port2 =
-        (Integer) member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 8));
+        member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 8));
     Integer port3 =
-        (Integer) member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 8));
+        member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 8));
     createClient(port0, port1, port2, port3);
     final ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
 
     // put
     for (int i = 1; i <= 16; i++) {
-      region.put(new Integer(i), new Integer(i));
+      testRegion.put(i, i);
     }
 
     // update
     for (int i = 1; i <= 16; i++) {
-      region.put(new Integer(i), new Integer(i + 1));
+      testRegion.put(i, i + 1);
     }
 
     await()
-        .until(() -> cms.isRefreshMetadataTestOnly() == true);
+        .until(cms::isRefreshMetadataTestOnly);
 
     // kill server
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::stopServer);
 
     // again update
     for (int i = 1; i <= 16; i++) {
-      region.put(new Integer(i), new Integer(i + 10));
+      testRegion.put(i, i + 10);
     }
   }
 
   @Test
   public void test_SingleHopWithHAWithLocator() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String host0 = NetworkUtils.getServerHostName(member3.getHost());
+    final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.startLocatorInVM(port3));
     try {
 
-      Integer port0 = (Integer) member0
-          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator, 0, 8));
-      Integer port1 = (Integer) member1
-          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator, 0, 8));
-      Integer port2 = (Integer) member2
-          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator, 0, 8));
+      member0
+          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator));
+      member1
+          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator));
+      member2
+          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator));
 
       createClientWithLocator(host0, port3);
 
       // put
       for (int i = 1; i <= 16; i++) {
-        region.put(new Integer(i), new Integer(i));
+        testRegion.put(i, i);
       }
 
       // update
       for (int i = 1; i <= 16; i++) {
-        region.put(new Integer(i), new Integer(i + 1));
+        testRegion.put(i, i + 1);
       }
 
       // kill server
-      member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
+      member0.invoke(PartitionedRegionSingleHopDUnitTest::stopServer);
 
       // again update
       for (int i = 1; i <= 16; i++) {
-        region.put(new Integer(i), new Integer(i + 10));
+        testRegion.put(i, i + 10);
       }
 
     } finally {
-      member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopLocator());
+      member3.invoke(PartitionedRegionSingleHopDUnitTest::stopLocator);
     }
   }
 
   @Test
   public void test_NoMetadataServiceCall_ForGetOp() {
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
 
     member2.invoke(
         () -> PartitionedRegionSingleHopDUnitTest.createClientWithoutPRSingleHopEnabled(port0));
     createClientWithoutPRSingleHopEnabled(port1);
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::putIntoSinglePR);
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::printView);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::printView);
 
-    region.get(new Integer(0));
-    region.get(new Integer(1));
-    region.get(new Integer(2));
-    region.get(new Integer(3));
+    testRegion.get(0);
+    testRegion.get(1);
+    testRegion.get(2);
+    testRegion.get(3);
     Wait.pause(5000);
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    await().until(() -> !cms.isRefreshMetadataTestOnly());
     printMetadata();
 
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    region.get(new Integer(0));
-    region.get(new Integer(1));
-    region.get(new Integer(2));
-    region.get(new Integer(3));
+    testRegion.get(0);
+    testRegion.get(1);
+    testRegion.get(2);
+    testRegion.get(3);
     Wait.pause(5000);
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    await().until(() -> !cms.isRefreshMetadataTestOnly());
   }
 
   @Test
   public void test_NoMetadataServiceCall() {
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(1, 4));
 
     member2.invoke(
         () -> PartitionedRegionSingleHopDUnitTest.createClientWithoutPRSingleHopEnabled(port0));
     createClientWithoutPRSingleHopEnabled(port1);
 
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::putIntoSinglePR);
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::printView);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::printView);
 
-    region.put(new Integer(0), "create0");
+    testRegion.put(0, "create0");
     final boolean metadataRefreshed_get1 = cms.isRefreshMetadataTestOnly();
 
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    region.put(new Integer(1), "create1");
+    testRegion.put(1, "create1");
     final boolean metadataRefreshed_get2 = cms.isRefreshMetadataTestOnly();
 
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    region.put(new Integer(2), "create2");
+    testRegion.put(2, "create2");
     final boolean metadataRefreshed_get3 = cms.isRefreshMetadataTestOnly();
 
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    region.put(new Integer(3), "create3");
+    testRegion.put(3, "create3");
     final boolean metadataRefreshed_get4 = cms.isRefreshMetadataTestOnly();
     Wait.pause(5000);
-    assertFalse(metadataRefreshed_get1 || metadataRefreshed_get2 || metadataRefreshed_get3
-        || metadataRefreshed_get4);
+    await().until(() -> !(metadataRefreshed_get1
+        || metadataRefreshed_get2 || metadataRefreshed_get3
+        || metadataRefreshed_get4));
 
     printMetadata();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    region.put(new Integer(0), "create0");
-    region.put(new Integer(1), "create1");
-    region.put(new Integer(2), "create2");
-    region.put(new Integer(3), "create3");
+    testRegion.put(0, "create0");
+    testRegion.put(1, "create1");
+    testRegion.put(2, "create2");
+    testRegion.put(3, "create3");
+
     Wait.pause(5000);
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    await().until(() -> !cms.isRefreshMetadataTestOnly());
+
   }
 
   @Test
   public void test_NoMetadataServiceCall_ForDestroyOp() {
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(0, 4));
 
     member2.invoke(
         () -> PartitionedRegionSingleHopDUnitTest.createClientWithoutPRSingleHopEnabled(port0));
     createClientWithoutPRSingleHopEnabled(port1);
 
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoSinglePR());
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::putIntoSinglePR);
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.printView());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::printView);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::printView);
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
-    region.destroy(new Integer(0));
-    region.destroy(new Integer(1));
-    region.destroy(new Integer(2));
-    region.destroy(new Integer(3));
+    testRegion.destroy(0);
+    testRegion.destroy(1);
+    testRegion.destroy(2);
+    testRegion.destroy(3);
     Wait.pause(5000);
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    await().until(() -> !cms.isRefreshMetadataTestOnly());
+
   }
 
   @Test
   public void testServerLocationRemovalThroughPing() {
+    final int redundantCopies = 3;
+    final int totalNumberOfBuckets = 4;
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies, totalNumberOfBuckets));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies, totalNumberOfBuckets));
     Integer port2 =
-        (Integer) member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies, totalNumberOfBuckets));
     Integer port3 =
-        (Integer) member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies, totalNumberOfBuckets));
     createClient(port0, port1, port2, port3);
     putIntoPartitionedRegions();
     getFromPartitionedRegions();
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     await().until(() -> regionMetaData.size() == 4);
-    assertTrue(regionMetaData.containsKey(region.getFullPath()));
-    assertTrue(regionMetaData.containsKey(customerRegion.getFullPath()));
-    assertTrue(regionMetaData.containsKey(orderRegion.getFullPath()));
-    assertTrue(regionMetaData.containsKey(shipmentRegion.getFullPath()));
+    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
+    assertThat(regionMetaData.containsKey(customerRegion.getFullPath())).isTrue();
+    assertThat(regionMetaData.containsKey(orderRegion.getFullPath())).isTrue();
+    assertThat(regionMetaData.containsKey(shipmentRegion.getFullPath())).isTrue();
 
-    ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
-    assertEquals(4/* numBuckets */, prMetaData.getBucketServerLocationsMap_TEST_ONLY().size());
+    ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
+    assertThat(prMetaData.getBucketServerLocationsMap_TEST_ONLY().size())
+        .isEqualTo(totalNumberOfBuckets);
 
     for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-      assertEquals(4, ((List) entry.getValue()).size());
+      assertThat(((List) entry.getValue()).size()).isEqualTo(totalNumberOfBuckets);
     }
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::stopServer);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::stopServer);
     Wait.pause(5000);// make sure that ping detects the dead servers
     getFromPartitionedRegions();
     verifyDeadServer(regionMetaData, customerRegion, port0, port1);
-    verifyDeadServer(regionMetaData, region, port0, port1);
+    verifyDeadServer(regionMetaData, testRegion, port0, port1);
   }
 
   @Test
-  public void testMetadataFetchOnlyThroughFunctions() throws Exception {
+  public void testMetadataFetchOnlyThroughFunctions() {
     // Workaround for 52004
     IgnoredException.addIgnoredException("InternalFunctionInvocationTargetException");
+    final int redundantCopies = 3;
+    final int totalNumberOfBuckets = 4;
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     Integer port2 =
-        (Integer) member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     Integer port3 =
-        (Integer) member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     createClient(port0, port1, port2, port3);
     executeFunctions();
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
@@ -708,169 +679,145 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
     await().until(() -> regionMetaData.size() == 1);
 
-    assertEquals(1, regionMetaData.size());
-    assertTrue(regionMetaData.containsKey(region.getFullPath()));
+    assertThat(regionMetaData.size()).isEqualTo(1);
+    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
 
-    final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
+    final ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
 
-    // Fixes a race condition in GEODE-414 by retrying as
-    // region.clientMetaDataLock.tryLock() may prevent fetching the
-    // metadata through functional calls as only limited functions are executed in the test.
-    long start = System.currentTimeMillis();
-    do {
-      if ((prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() != 4)) {
+    await().pollDelay(1000, TimeUnit.MILLISECONDS).until(() -> {
+      if (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() != totalNumberOfBuckets) {
         // waiting if there is another thread holding the lock
-        Thread.sleep(1000);
-        cms.getClientPRMetadata((LocalRegion) region);
+        cms.getClientPRMetadata((LocalRegion) testRegion);
+        return false;
       } else {
-        break;
+        return true;
       }
-    } while (System.currentTimeMillis() - start < 60000);
+    });
 
     await()
-        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
-    // assertIndexDetailsEquals(4/*numBuckets*/,
-    // prMetaData.getBucketServerLocationsMap_TEST_ONLY().size());
+        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size()
+            == totalNumberOfBuckets));
   }
 
   @Test
   public void testMetadataFetchOnlyThroughputAll() {
+    final int redundantCopies = 3;
+    final int totalNumberOfBuckets = 4;
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     Integer port2 =
-        (Integer) member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     Integer port3 =
-        (Integer) member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(3, 4));
+        member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     createClient(port0, port1, port2, port3);
     putAll();
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
 
     await().until(() -> (regionMetaData.size() == 1));
-    assertTrue(regionMetaData.containsKey(region.getFullPath()));
+    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
 
-    final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
+    final ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
 
     await()
-        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
+        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size()
+            == totalNumberOfBuckets));
   }
 
   @Test
   public void testMetadataIsSameOnAllServersAndClients() {
-    Integer port0 =
-        (Integer) member0.invoke(() -> createServer(3, 4));
-    Integer port1 =
-        (Integer) member1.invoke(() -> createServer(3, 4));
-    Integer port2 =
-        (Integer) member2.invoke(() -> createServer(3, 4));
-    Integer port3 =
-        (Integer) member3.invoke(() -> createServer(3, 4));
+    final int redundantCopies = 3;
+    final int totalNumberOfBuckets = 4;
+    Integer port0 = member0.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
+    Integer port1 = member1.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
+    Integer port2 = member2.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
+    Integer port3 = member3.invoke(() -> createServer(redundantCopies, totalNumberOfBuckets));
     createClient(port0, port1, port2, port3);
     put();
-    member0.invoke(() -> waitForLocalBucketsCreation(4));
-    member1.invoke(() -> waitForLocalBucketsCreation(4));
-    member2.invoke(() -> waitForLocalBucketsCreation(4));
-    member3.invoke(() -> waitForLocalBucketsCreation(4));
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
 
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-    cms.getClientPRMetadata((LocalRegion) region);
+    cms.getClientPRMetadata((LocalRegion) testRegion);
 
     Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
-    assertEquals(1, regionMetaData.size());
-    assertTrue(regionMetaData.containsKey(region.getFullPath()));
+    assertThat(regionMetaData.size()).isEqualTo(1);
+    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
 
-    ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
+    ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    WaitCriterion wc = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return (clientMap.size() == 4);
-      }
 
-      @Override
-      public String description() {
-        return "expected no metadata to be refreshed";
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(wc);
+    await().alias("expected no metadata to be refreshed")
+        .until(() -> clientMap.size() == totalNumberOfBuckets);
+
     for (Entry entry : clientMap.entrySet()) {
-      assertEquals(4, ((List) entry.getValue()).size());
+      assertThat(((List) entry.getValue()).size()).isEqualTo(4);
     }
     member0.invoke(() -> verifyMetadata(clientMap));
     member1.invoke(() -> verifyMetadata(clientMap));
     member2.invoke(() -> verifyMetadata(clientMap));
     member3.invoke(() -> verifyMetadata(clientMap));
 
-    member0.invoke(() -> stopServer());
-    member1.invoke(() -> stopServer());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::stopServer);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::stopServer);
 
     member0.invoke(() -> startServerOnPort(port0));
     member1.invoke(() -> startServerOnPort(port1));
     put();
-    member0.invoke(() -> waitForLocalBucketsCreation(4));
-    member1.invoke(() -> waitForLocalBucketsCreation(4));
-    member2.invoke(() -> waitForLocalBucketsCreation(4));
-    member3.invoke(() -> waitForLocalBucketsCreation(4));
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
 
-    cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-
-    wc = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-        Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
-        assertEquals(1, regionMetaData.size());
-        assertTrue(regionMetaData.containsKey(region.getFullPath()));
-        ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
-        Map<Integer, List<BucketServerLocation66>> clientMap =
-            prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-        assertEquals(4/* numBuckets */, clientMap.size());
-        boolean finished = true;
-        for (Entry entry : clientMap.entrySet()) {
-          List list = (List) entry.getValue();
-          if (list.size() < 4) {
-            getLogWriter()
-                .info("still waiting for 4 bucket owners in " + entry.getKey() + ": " + list);
-            finished = false;
-            break;
-          }
+    ((GemFireCacheImpl) cache).getClientMetadataService();
+    await().alias("bucket copies are not created").until(() -> {
+      ClientMetadataService lambdaCms = ((GemFireCacheImpl) cache).getClientMetadataService();
+      Map<String, ClientPartitionAdvisor> lambdaRegionMetaData =
+          lambdaCms.getClientPRMetadata_TEST_ONLY();
+      assertThat(lambdaRegionMetaData.size()).isEqualTo(1);
+      assertThat(lambdaRegionMetaData.containsKey(testRegion.getFullPath())).isTrue();
+      ClientPartitionAdvisor lambdaPartitionMetaData =
+          lambdaRegionMetaData.get(testRegion.getFullPath());
+      Map<Integer, List<BucketServerLocation66>> lambdaClientMap =
+          lambdaPartitionMetaData.getBucketServerLocationsMap_TEST_ONLY();
+      assertThat(lambdaClientMap.size()).isEqualTo(totalNumberOfBuckets);
+      boolean finished = true;
+      for (Entry entry : lambdaClientMap.entrySet()) {
+        List list = (List) entry.getValue();
+        if (list.size() < totalNumberOfBuckets) {
+          logger
+              .info("still waiting for 4 bucket owners in " + entry.getKey() + ": " + list);
+          finished = false;
+          break;
         }
-        return finished;
       }
+      return finished;
+    });
 
-      @Override
-      public String description() {
-        return "bucket copies are not created";
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(wc);
     cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-    cms.getClientPRMetadata((LocalRegion) region);
+    cms.getClientPRMetadata((LocalRegion) testRegion);
 
     regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
-    assertEquals(1, regionMetaData.size());
-    assertTrue(regionMetaData.containsKey(region.getFullPath()));
+    assertThat(regionMetaData.size()).isEqualTo(1);
+    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
 
-    prMetaData = regionMetaData.get(region.getFullPath());
+    prMetaData = regionMetaData.get(testRegion.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap2 =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    wc = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return (clientMap2.size() == 4);
-      }
 
-      @Override
-      public String description() {
-        return "expected no metadata to be refreshed";
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(wc);
+    await().alias("expected no metadata to be refreshed")
+        .until(() -> clientMap2.size() == totalNumberOfBuckets);
     for (Entry entry : clientMap.entrySet()) {
-      assertEquals(4, ((List) entry.getValue()).size());
+      assertThat(((List) entry.getValue()).size()).isEqualTo(totalNumberOfBuckets);
     }
 
     member0.invoke(() -> verifyMetadata(clientMap));
@@ -878,143 +825,125 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     member2.invoke(() -> verifyMetadata(clientMap));
     member3.invoke(() -> verifyMetadata(clientMap));
 
-    member0.invoke(() -> closeCacheAndDisconnect());
-    member1.invoke(() -> closeCacheAndDisconnect());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::closeCacheAndDisconnect);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::closeCacheAndDisconnect);
 
-    // member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerOnPort(3,4,port0 ));
-    // member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerOnPort(3,4,port1 ));
     put();
-    member2.invoke(new CacheSerializableRunnable("aba") {
+    member2.invoke("aba", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        final PartitionedRegion pr = (PartitionedRegion) region;
-        ConcurrentHashMap<Integer, Set<ServerBucketProfile>> serverMap =
-            pr.getRegionAdvisor().getAllClientBucketProfilesTest();
+        final PartitionedRegion pr = (PartitionedRegion) testRegion;
+        pr.getRegionAdvisor().getAllClientBucketProfilesTest();
       }
     });
 
-    member3.invoke(new CacheSerializableRunnable("aba") {
+    member3.invoke("aba", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        final PartitionedRegion pr = (PartitionedRegion) region;
-        ConcurrentHashMap<Integer, Set<ServerBucketProfile>> serverMap =
-            pr.getRegionAdvisor().getAllClientBucketProfilesTest();
+        final PartitionedRegion pr = (PartitionedRegion) testRegion;
+        pr.getRegionAdvisor().getAllClientBucketProfilesTest();
       }
     });
 
-    // member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    // member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    member2.invoke(() -> waitForLocalBucketsCreation(4));
-    member3.invoke(() -> waitForLocalBucketsCreation(4));
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
 
     cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-    cms.getClientPRMetadata((LocalRegion) region);
+    cms.getClientPRMetadata((LocalRegion) testRegion);
 
     regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
-    assertEquals(1, regionMetaData.size());
-    assertTrue(regionMetaData.containsKey(region.getFullPath()));
+    assertThat(regionMetaData.size()).isEqualTo(1);
+    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
 
-    prMetaData = regionMetaData.get(region.getFullPath());
+    prMetaData = regionMetaData.get(testRegion.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap3 =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    await().until(() -> (clientMap3.size() == 4));
+
+    await().until(() -> (clientMap3.size() == totalNumberOfBuckets));
     for (Entry entry : clientMap.entrySet()) {
-      assertEquals(2, ((List) entry.getValue()).size());
+      assertThat(((List) entry.getValue()).size()).isEqualTo(2);
     }
-    final Map<Integer, List<BucketServerLocation66>> fclientMap = clientMap;
-    GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
 
-      @Override
-      public boolean done() {
-        try {
-          // member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(fclientMap));
-          // member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(fclientMap));
-          member2.invoke(() -> verifyMetadata(fclientMap));
-          member3.invoke(() -> verifyMetadata(fclientMap));
-        } catch (Exception e) {
-          getLogWriter().info("verification failed", e);
-          return false;
-        }
-        return true;
+    await().alias("verification of metadata on all members").until(() -> {
+      try {
+        member2.invoke(() -> verifyMetadata(clientMap));
+        member3.invoke(() -> verifyMetadata(clientMap));
+      } catch (Exception e) {
+        logger.info("verification failed", e);
+        return false;
       }
-
-      @Override
-      public String description() {
-        return "verification of metadata on all members";
-      }
-
+      return true;
     });
   }
 
   @Test
   public void testMetadataIsSameOnAllServersAndClientsHA() {
+    final int totalNumberOfBuckets = 4;
     Integer port0 =
-        (Integer) member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(2, 4));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(2,
+            totalNumberOfBuckets));
     Integer port1 =
-        (Integer) member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(2, 4));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(2,
+            totalNumberOfBuckets));
 
     createClient(port0, port1, port0, port1);
     put();
 
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-    cms.getClientPRMetadata((LocalRegion) region);
+    cms.getClientPRMetadata((LocalRegion) testRegion);
 
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
 
     await().until(() -> (regionMetaData.size() == 1));
 
-    assertEquals(1, regionMetaData.size());
-    assertTrue(regionMetaData.containsKey(region.getFullPath()));
+    assertThat(regionMetaData.size()).isEqualTo(1);
+    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
 
-    member0.invoke(new CacheSerializableRunnable("aba") {
+    member0.invoke("aba", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        final PartitionedRegion pr = (PartitionedRegion) region;
-        ConcurrentHashMap<Integer, Set<ServerBucketProfile>> serverMap =
-            pr.getRegionAdvisor().getAllClientBucketProfilesTest();
+        final PartitionedRegion pr = (PartitionedRegion) testRegion;
+        pr.getRegionAdvisor().getAllClientBucketProfilesTest();
       }
     });
 
-    member1.invoke(new CacheSerializableRunnable("aba") {
+    member1.invoke("aba", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        final PartitionedRegion pr = (PartitionedRegion) region;
-        ConcurrentHashMap<Integer, Set<ServerBucketProfile>> serverMap =
-            pr.getRegionAdvisor().getAllClientBucketProfilesTest();
+        final PartitionedRegion pr = (PartitionedRegion) testRegion;
+        pr.getRegionAdvisor().getAllClientBucketProfilesTest();
       }
     });
 
-    ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
+    ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
     final Map<Integer, List<BucketServerLocation66>> clientMap =
         prMetaData.getBucketServerLocationsMap_TEST_ONLY();
-    await().until(() -> (clientMap.size() == 4));
+    await().until(() -> (clientMap.size() == totalNumberOfBuckets));
     for (Entry entry : clientMap.entrySet()) {
-      assertEquals(2, ((List) entry.getValue()).size());
+      assertThat(((List) entry.getValue()).size()).isEqualTo(2);
     }
     member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
     member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.stopServer());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::stopServer);
 
     put();
 
     cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-    cms.getClientPRMetadata((LocalRegion) region);
+    cms.getClientPRMetadata((LocalRegion) testRegion);
 
-    // member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.verifyMetadata(clientMap));
-
-    assertEquals(4/* numBuckets */, clientMap.size());
+    assertThat(clientMap.size()).isEqualTo(totalNumberOfBuckets/* numBuckets */);
     for (Entry entry : clientMap.entrySet()) {
-      assertEquals(1, ((List) entry.getValue()).size());
+      assertThat(((List) entry.getValue()).size()).isEqualTo(1);
     }
 
-    assertEquals(1, regionMetaData.size());
-    assertTrue(regionMetaData.containsKey(region.getFullPath()));
-    assertEquals(4/* numBuckets */, clientMap.size());
+    assertThat(regionMetaData.size()).isEqualTo(1);
+    assertThat(regionMetaData.containsKey(testRegion.getFullPath())).isTrue();
+    assertThat(clientMap.size()).isEqualTo(totalNumberOfBuckets/* numBuckets */);
     await().until(() -> {
-      int bucketId = -1;
-      int size = -1;
-      List globalList = new ArrayList();
+      int bucketId;
+      int size;
+      List globalList;
       boolean finished = true;
       for (Entry entry : clientMap.entrySet()) {
         List list = (List) entry.getValue();
@@ -1033,62 +962,60 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testClientMetadataForPersistentPrs() throws Exception {
-    Integer port0 = (Integer) member0
-        .invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer(3, 4));
-    Integer port1 = (Integer) member1
-        .invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer(3, 4));
-    Integer port2 = (Integer) member2
-        .invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer(3, 4));
-    Integer port3 = (Integer) member3
-        .invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer(3, 4));
+    Integer port0 = member0
+        .invoke(PartitionedRegionSingleHopDUnitTest::createPersistentPrsAndServer);
+    Integer port1 = member1
+        .invoke(PartitionedRegionSingleHopDUnitTest::createPersistentPrsAndServer);
+    Integer port2 = member2
+        .invoke(PartitionedRegionSingleHopDUnitTest::createPersistentPrsAndServer);
+    Integer port3 = member3
+        .invoke(PartitionedRegionSingleHopDUnitTest::createPersistentPrsAndServer);
 
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.putIntoPartitionedRegions());
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::putIntoPartitionedRegions);
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
 
     createClient(port0, port1, port2, port3);
-    await().until(() -> fetchAndValidateMetadata());
+    await().until(this::fetchAndValidateMetadata);
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.closeCacheAndDisconnect());
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::closeCacheAndDisconnect);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::closeCacheAndDisconnect);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::closeCacheAndDisconnect);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::closeCacheAndDisconnect);
     Wait.pause(1000); // let client detect that servers are dead through ping
     AsyncInvocation m3 = member3.invokeAsync(
-        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(3, 4, port3));
+        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(port3));
     AsyncInvocation m2 = member2.invokeAsync(
-        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(3, 4, port2));
+        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(port2));
     AsyncInvocation m1 = member1.invokeAsync(
-        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(3, 4, port1));
+        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(port1));
     AsyncInvocation m0 = member0.invokeAsync(
-        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(3, 4, port0));
-    m3.join();
-    m2.join();
-    m1.join();
-    m0.join();
+        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(port0));
+    m3.get();
+    m2.get();
+    m1.get();
+    m0.get();
     fetchAndValidateMetadata();
   }
 
   private boolean fetchAndValidateMetadata() {
-    ClientMetadataService service = ((GemFireCacheImpl) this.cache).getClientMetadataService();
-    service.getClientPRMetadata((LocalRegion) this.region);
+    ClientMetadataService service = ((GemFireCacheImpl) cache).getClientMetadataService();
+    service.getClientPRMetadata((LocalRegion) testRegion);
     HashMap<ServerLocation, HashSet<Integer>> servers =
-        service.groupByServerToAllBuckets(this.region, true);
+        service.groupByServerToAllBuckets(testRegion, true);
     if (servers == null) {
-      // fail("The client metadata contains no servers for region "
-      // + this.region.getFullPath());
       return false;
     } else if (servers.size() == 4) {
-      region.getCache().getLogger().fine("The client metadata contains the following "
-          + servers.size() + " servers for region " + this.region.getFullPath() + ":");
+      logger.debug("The client metadata contains the following "
+          + servers.size() + " servers for region " + testRegion.getFullPath() + ":");
       for (Map.Entry entry : servers.entrySet()) {
-        region.getCache().getLogger().fine(entry.getKey() + "->" + entry.getValue());
+        logger.debug(entry.getKey() + "->" + entry.getValue());
       }
       if (servers.size() < 4) {
-        region.getCache().getLogger()
+        logger
             .info("Servers size is " + servers.size() + " less than expected 4.");
         return false;
       }
@@ -1096,12 +1023,12 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     return true;
   }
 
-  public static void verifyMetadata(Map<Integer, List<BucketServerLocation66>> clientMap) {
-    final PartitionedRegion pr = (PartitionedRegion) region;
+  private static void verifyMetadata(Map<Integer, List<BucketServerLocation66>> clientMap) {
+    final PartitionedRegion pr = (PartitionedRegion) testRegion;
     ConcurrentHashMap<Integer, Set<ServerBucketProfile>> serverMap =
         pr.getRegionAdvisor().getAllClientBucketProfilesTest();
-    assertEquals(clientMap.size(), serverMap.size());
-    assertTrue(clientMap.keySet().containsAll(serverMap.keySet()));
+    assertThat(serverMap.size()).isEqualTo(clientMap.size());
+    assertThat(clientMap.keySet().containsAll(serverMap.keySet())).isTrue();
     for (Map.Entry<Integer, List<BucketServerLocation66>> entry : clientMap.entrySet()) {
       int bucketId = entry.getKey();
       List<BucketServerLocation66> list = entry.getValue();
@@ -1113,46 +1040,34 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
           primaryCnt++;
         }
       }
-      assertTrue(primaryCnt == 1);
+      assertThat(primaryCnt).isEqualTo(1);
       Set<ServerBucketProfile> set = serverMap.get(bucketId);
-      assertEquals(list.size(), set.size());
+      assertThat(set.size()).isEqualTo(list.size());
       primaryCnt = 0;
       for (ServerBucketProfile bp : set) {
         ServerLocation sl = (ServerLocation) bp.bucketServerLocations.toArray()[0];
-        assertTrue(list.contains(sl));
+        assertThat(list.contains(sl)).isTrue();
         // should be only one primary
         if (bp.isPrimary) {
           primaryCnt++;
-          assertTrue(primaryBSL.equals(sl));
+          assertThat(sl).isEqualTo(primaryBSL);
         }
       }
-      assertTrue(primaryCnt == 1);
+      assertThat(primaryCnt).isEqualTo(1);
     }
   }
 
-  public static void waitForLocalBucketsCreation(final int numBuckets) {
-    final PartitionedRegion pr = (PartitionedRegion) region;
-    WaitCriterion wc = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        if (pr.getDataStore().getAllLocalBuckets().size() == numBuckets) {
-          return true;
-        }
-        return false;
-      }
+  private static void waitForLocalBucketsCreation() {
+    final PartitionedRegion pr = (PartitionedRegion) testRegion;
 
-      @Override
-      public String description() {
-        return "bucket copies are not created, the total number of buckets expected are "
-            + numBuckets + " but the total num of buckets are "
-            + pr.getDataStore().getAllLocalBuckets().size();
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(wc);
+    await().alias("bucket copies are not created, the total number of buckets expected are "
+        + 4 + " but the total num of buckets are "
+        + pr.getDataStore().getAllLocalBuckets().size())
+        .until(() -> pr.getDataStore().getAllLocalBuckets().size() == 4);
   }
 
   private void verifyDeadServer(Map<String, ClientPartitionAdvisor> regionMetaData, Region region,
-      int port0, int port1) {
+                                int port0, int port1) {
 
     ServerLocation sl0 = new ServerLocation("localhost", port0);
     ServerLocation sl1 = new ServerLocation("localhost", port1);
@@ -1161,20 +1076,19 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
     for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
       List servers = (List) entry.getValue();
-      assertFalse(servers.contains(sl0));
-      assertFalse(servers.contains(sl1));
+      assertThat(servers.contains(sl0)).isFalse();
+      assertThat(servers.contains(sl1)).isFalse();
     }
   }
 
-  public static void createClientWithoutPRSingleHopEnabled(int port0) {
+  private static void createClientWithoutPRSingleHopEnabled(int port0) {
     Properties props = new Properties();
-    props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
-    assertNotNull(cache);
+    assertThat(cache).isNotNull();
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
@@ -1189,7 +1103,10 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     createRegionsInClientCache(p.getName());
   }
 
-  public static int createAccessorServer() {
+  private static int createAccessorServer() {
+    final int redundantCopies = 1;
+    final int totalNumberOfBuckets = 4;
+    final int localMaxMemory = 0;
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
@@ -1199,59 +1116,80 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     try {
       server.start();
     } catch (IOException e) {
-      Assert.fail("Failed to start server ", e);
+      Assertions.fail("Failed to start server ", e);
     }
 
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(1).setTotalNumBuckets(4).setLocalMaxMemory(0);
-    AttributesFactory attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    region = cache.createRegion(PR_NAME, attr.create());
+    testRegion =
+        createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets, localMaxMemory);
 
-    assertNotNull(region);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
+    customerRegion =
+        createColocatedRegion(CUSTOMER, null, redundantCopies, totalNumberOfBuckets,
+            localMaxMemory);
 
-    // creating colocated Regions
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(1).setTotalNumBuckets(4).setLocalMaxMemory(0)
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    customerRegion = cache.createRegion("CUSTOMER", attr.create());
-    assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
+    orderRegion =
+        createColocatedRegion(ORDER, CUSTOMER, redundantCopies, totalNumberOfBuckets,
+            localMaxMemory);
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(1).setTotalNumBuckets(4).setLocalMaxMemory(0)
-        .setColocatedWith("CUSTOMER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    orderRegion = cache.createRegion("ORDER", attr.create());
-    assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
+    shipmentRegion =
+        createColocatedRegion(SHIPMENT, ORDER, redundantCopies, totalNumberOfBuckets,
+            localMaxMemory);
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(1).setTotalNumBuckets(4).setLocalMaxMemory(0).setColocatedWith("ORDER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
-    assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
-    replicatedRegion = cache.createRegion("rr", new AttributesFactory().create());
+    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
+    replicatedRegion = regionFactory.create("rr");
     return port;
   }
 
-  public static int createServer(int redundantCopies, int totalNoofBuckets) {
+  private static <K, V> Region<K, V> createBasicPartitionedRegion(int redundantCopies,
+                                                                  int totalNumberOfBuckets,
+                                                                  int localMaxMemory) {
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumberOfBuckets);
+
+    if (localMaxMemory > -1) {
+      paf.setLocalMaxMemory(localMaxMemory);
+    }
+
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
+
+    regionFactory.setPartitionAttributes(paf.create());
+    regionFactory.setConcurrencyChecksEnabled(true);
+
+    Region<K, V> region = regionFactory.create(PartitionedRegionSingleHopDUnitTest.PR_NAME);
+    assertThat(region).isNotNull();
+    logger
+        .info("Partitioned Region " + PartitionedRegionSingleHopDUnitTest.PR_NAME
+            + " created Successfully :" + region.toString());
+    return region;
+  }
+
+  private static <K, V> Region<K, V> createColocatedRegion(String regionName,
+                                                           String colocatedRegionName,
+                                                           int redundantCopies,
+                                                           int totalNumberOfBuckets,
+                                                           int localMaxMemory) {
+
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumberOfBuckets)
+        .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
+
+    if (colocatedRegionName != null) {
+      paf.setColocatedWith(colocatedRegionName);
+    }
+
+    if (localMaxMemory > -1) {
+      paf.setLocalMaxMemory(localMaxMemory);
+    }
+
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
+    regionFactory.setPartitionAttributes(paf.create());
+    regionFactory.setConcurrencyChecksEnabled(true);
+    Region<K, V> region = regionFactory.create(regionName);
+    assertThat(region).isNotNull();
+    logger.info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
+    return region;
+  }
+
+  private static int createServer(int redundantCopies, int totalNumberOfBuckets) {
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
@@ -1261,122 +1199,54 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     try {
       server.start();
     } catch (IOException e) {
-      Assert.fail("Failed to start server ", e);
+      Assertions.fail("Failed to start server ", e);
     }
 
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets);
-    AttributesFactory attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    region = cache.createRegion(PR_NAME, attr.create());
-    assertNotNull(region);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
+    testRegion = createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets, -1);
 
     // creating colocated Regions
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    customerRegion = cache.createRegion("CUSTOMER", attr.create());
-    assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
+    customerRegion =
+        createColocatedRegion(CUSTOMER, null, redundantCopies, totalNumberOfBuckets,
+            LOCAL_MAX_MEMORY_DEFAULT);
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setColocatedWith("CUSTOMER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    orderRegion = cache.createRegion("ORDER", attr.create());
-    assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
+    orderRegion =
+        createColocatedRegion(ORDER, CUSTOMER, redundantCopies, totalNumberOfBuckets,
+            LOCAL_MAX_MEMORY_DEFAULT);
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setColocatedWith("ORDER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
-    assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
+    shipmentRegion =
+        createColocatedRegion(SHIPMENT, ORDER, redundantCopies, totalNumberOfBuckets,
+            LOCAL_MAX_MEMORY_DEFAULT);
 
-    replicatedRegion = cache.createRegion("rr", new AttributesFactory().create());
+    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
+    replicatedRegion = regionFactory.create("rr");
 
     return port;
   }
 
-  public static int createPersistentPrsAndServer(int redundantCopies, int totalNoofBuckets) {
+  private static int createPersistentPrsAndServer() {
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
-    DiskStore disk = cache.findDiskStore("disk");
-    if (disk == null) {
-      disk = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
+    if (cache.findDiskStore("disk") == null) {
+      cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
     }
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets);
-    AttributesFactory attr = new AttributesFactory();
-    attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    attr.setDiskStoreName("disk");
-    attr.setPartitionAttributes(paf.create());
-    // attr.setConcurrencyChecksEnabled(true);
-    region = cache.createRegion(PR_NAME, attr.create());
-    assertNotNull(region);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
+    testRegion = createBasicPersistentPartitionRegion();
 
     // creating colocated Regions
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    attr.setDiskStoreName("disk");
-    attr.setPartitionAttributes(paf.create());
-    // attr.setConcurrencyChecksEnabled(true);
-    customerRegion = cache.createRegion("CUSTOMER", attr.create());
-    assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setColocatedWith("CUSTOMER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    attr.setDiskStoreName("disk");
-    attr.setPartitionAttributes(paf.create());
-    // attr.setConcurrencyChecksEnabled(true);
-    orderRegion = cache.createRegion("ORDER", attr.create());
-    assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
+    final int redundantCopies = 3;
+    final int totalNumberOfBuckets = 4;
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setColocatedWith("ORDER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    attr.setDiskStoreName("disk");
-    attr.setPartitionAttributes(paf.create());
-    // attr.setConcurrencyChecksEnabled(true);
-    shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
-    assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
+    customerRegion = createColocatedPersistentRegionForTest(CUSTOMER, null,
+        redundantCopies, totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
 
-    replicatedRegion = cache.createRegion("rr", new AttributesFactory().create());
+    orderRegion = createColocatedPersistentRegionForTest(ORDER, CUSTOMER, redundantCopies,
+        totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
+
+    shipmentRegion = createColocatedPersistentRegionForTest(SHIPMENT, ORDER, redundantCopies,
+        totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
+
+    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
+    replicatedRegion = regionFactory.create("rr");
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
@@ -1384,86 +1254,100 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     try {
       server.start();
     } catch (IOException e) {
-      Assert.fail("Failed to start server ", e);
+      Assertions.fail("Failed to start server ", e);
     }
     return port;
   }
 
-  public static int createPersistentPrsAndServerOnPort(int redundantCopies, int totalNoofBuckets,
-      int port) {
+  private static <K, V> Region<K, V> createBasicPersistentPartitionRegion() {
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
+    paf.setRedundantCopies(3).setTotalNumBuckets(4);
+
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
+    regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+    regionFactory.setDiskStoreName("disk");
+    regionFactory.setPartitionAttributes(paf.create());
+
+    Region<K, V> region = regionFactory.create(PartitionedRegionSingleHopDUnitTest.PR_NAME);
+    assertThat(region).isNotNull();
+    logger
+        .info("Partitioned Region " + PartitionedRegionSingleHopDUnitTest.PR_NAME
+            + " created Successfully :" + region.toString());
+    return region;
+  }
+
+  private static <K, V> Region<K, V> createColocatedPersistentRegionForTest(final String regionName,
+                                                                            String colocatedRegionName,
+                                                                            int redundantCopies,
+                                                                            int totalNumberOfBuckets,
+                                                                            int localMaxMemory) {
+
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
+
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumberOfBuckets)
+        .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
+
+    if (localMaxMemory > -1) {
+      paf.setLocalMaxMemory(localMaxMemory);
+    }
+
+    if (colocatedRegionName != null) {
+      paf.setColocatedWith(colocatedRegionName);
+    }
+
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
+
+    regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+    regionFactory.setDiskStoreName("disk");
+    regionFactory.setPartitionAttributes(paf.create());
+    Region<K, V> region = regionFactory.create(regionName);
+
+    assertThat(region).isNotNull();
+    logger.info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
+    return region;
+  }
+
+  private static int createPersistentPrsAndServerOnPort(int port) {
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
-    DiskStore disk = cache.findDiskStore("disk");
-    if (disk == null) {
-      disk = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
+
+    if (cache.findDiskStore("disk") == null) {
+      cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
     }
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets);
-    AttributesFactory attr = new AttributesFactory();
-    attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    attr.setDiskStoreName("disk");
-    attr.setPartitionAttributes(paf.create());
-    // attr.setConcurrencyChecksEnabled(true);
-    region = cache.createRegion(PR_NAME, attr.create());
-    assertNotNull(region);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
+    testRegion = createBasicPersistentPartitionRegion();
 
     // creating colocated Regions
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    attr.setDiskStoreName("disk");
-    attr.setPartitionAttributes(paf.create());
-    // attr.setConcurrencyChecksEnabled(true);
-    customerRegion = cache.createRegion("CUSTOMER", attr.create());
-    assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
+    final int redundantCopies = 3;
+    final int totalNumberOfBuckets = 4;
+    customerRegion =
+        createColocatedPersistentRegionForTest(CUSTOMER, null, redundantCopies,
+            totalNumberOfBuckets,
+            LOCAL_MAX_MEMORY_DEFAULT);
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setColocatedWith("CUSTOMER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    attr.setDiskStoreName("disk");
-    attr.setPartitionAttributes(paf.create());
-    // attr.setConcurrencyChecksEnabled(true);
-    orderRegion = cache.createRegion("ORDER", attr.create());
-    assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
+    orderRegion =
+        createColocatedPersistentRegionForTest(ORDER, CUSTOMER, redundantCopies,
+            totalNumberOfBuckets,
+            LOCAL_MAX_MEMORY_DEFAULT);
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setColocatedWith("ORDER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    attr.setDiskStoreName("disk");
-    attr.setPartitionAttributes(paf.create());
-    // attr.setConcurrencyChecksEnabled(true);
-    shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
-    assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
+    shipmentRegion =
+        createColocatedPersistentRegionForTest(SHIPMENT, ORDER, redundantCopies,
+            totalNumberOfBuckets,
+            LOCAL_MAX_MEMORY_DEFAULT);
 
-    replicatedRegion = cache.createRegion("rr", new AttributesFactory().create());
+    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
+    replicatedRegion = regionFactory.create("rr");
     CacheServer server = cache.addCacheServer();
     server.setPort(port);
     server.setHostnameForClients("localhost");
     try {
       server.start();
     } catch (IOException e) {
-      Assert.fail("Failed to start server ", e);
+      Assertions.fail("Failed to start server ", e);
     }
     return port;
   }
 
-  public static void createServerOnPort(int redundantCopies, int totalNoofBuckets, int port) {
+  private static void startServerOnPort(int port) {
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
@@ -1472,130 +1356,39 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     try {
       server.start();
     } catch (IOException e) {
-      Assert.fail("Failed to start server ", e);
-    }
-
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets);
-    AttributesFactory attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    region = cache.createRegion(PR_NAME, attr.create());
-    assertNotNull(region);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
-
-    // creating colocated Regions
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    customerRegion = cache.createRegion("CUSTOMER", attr.create());
-    assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
-
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setColocatedWith("CUSTOMER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    orderRegion = cache.createRegion("ORDER", attr.create());
-    assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
-
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setColocatedWith("ORDER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
-    assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
-
-    replicatedRegion = cache.createRegion("rr", new AttributesFactory().create());
-  }
-
-  public static void startServerOnPort(int port) {
-    PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
-    cache = test.getCache();
-    CacheServer server = cache.addCacheServer();
-    server.setPort(port);
-    server.setHostnameForClients("localhost");
-    try {
-      server.start();
-    } catch (IOException e) {
-      Assert.fail("Failed to start server ", e);
+      Assertions.fail("Failed to start server ", e);
     }
   }
 
-  public static void createPeer() {
+  private static void createPeer() {
+    int redundantCopies = 1;
+    int totalNumberOfBuckets = 4;
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
 
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(1).setTotalNumBuckets(4);
-    AttributesFactory attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    region = cache.createRegion(PR_NAME, attr.create());
-    assertNotNull(region);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
+    testRegion = createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets, -1);
 
-    // creating colocated Regions
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(1).setTotalNumBuckets(4)
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    customerRegion = cache.createRegion("CUSTOMER", attr.create());
-    assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
+    customerRegion =
+        createColocatedRegion(CUSTOMER, null, redundantCopies, totalNumberOfBuckets, -1);
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(1).setTotalNumBuckets(4).setColocatedWith("CUSTOMER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    orderRegion = cache.createRegion("ORDER", attr.create());
-    assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
+    orderRegion =
+        createColocatedRegion(ORDER, CUSTOMER, redundantCopies, totalNumberOfBuckets, -1);
 
-    paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(1).setTotalNumBuckets(4).setColocatedWith("ORDER")
-        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
-    attr = new AttributesFactory();
-    attr.setPartitionAttributes(paf.create());
-    attr.setConcurrencyChecksEnabled(true);
-    shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
-    assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
-    replicatedRegion = cache.createRegion("rr", new AttributesFactory().create());
+    shipmentRegion =
+        createColocatedRegion(SHIPMENT, ORDER, redundantCopies, totalNumberOfBuckets, -1);
+
+    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
+    replicatedRegion = regionFactory.create("rr");
   }
 
-  public static void createClient(int port0) {
+  private static void createClient(int port0) {
     Properties props = new Properties();
-    props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
-    assertNotNull(cache);
+    assertThat(cache).isNotNull();
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
@@ -1610,15 +1403,14 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     createRegionsInClientCache(p.getName());
   }
 
-  public static void createClient(int port0, int port1) {
+  private static void createClient(int port0, int port1) {
     Properties props = new Properties();
-    props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
-    assertNotNull(cache);
+    assertThat(cache).isNotNull();
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
@@ -1633,15 +1425,14 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     createRegionsInClientCache(p.getName());
   }
 
-  public static void createClientWithLocator(String host, int port0) {
+  private static void createClientWithLocator(String host, int port0) {
     Properties props = new Properties();
-    props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
-    assertNotNull(cache);
+    assertThat(cache).isNotNull();
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
@@ -1656,15 +1447,14 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     createRegionsInClientCache(p.getName());
   }
 
-  public static void createClient(int port0, int port1, int port2, int port3) {
+  private static void createClient(int port0, int port1, int port2, int port3) {
     Properties props = new Properties();
-    props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
-    assertNotNull(cache);
+    assertThat(cache).isNotNull();
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
@@ -1680,52 +1470,41 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static void createRegionsInClientCache(String poolName) {
-    AttributesFactory factory = new AttributesFactory();
-    factory.setPoolName(poolName);
-    factory.setDataPolicy(DataPolicy.EMPTY);
-    RegionAttributes attrs = factory.create();
-    region = cache.createRegion(PR_NAME, attrs);
-    assertNotNull(region);
-    LogWriterUtils.getLogWriter()
-        .info("Distributed Region " + PR_NAME + " created Successfully :" + region.toString());
+    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
+    regionFactory.setPoolName(poolName);
+    regionFactory.setDataPolicy(DataPolicy.EMPTY);
+    testRegion = regionFactory.create(PR_NAME);
+    assertThat(testRegion).isNotNull();
+    logger
+        .info("Distributed Region " + PR_NAME + " created Successfully :" + testRegion.toString());
 
-    factory = new AttributesFactory();
-    factory.setPoolName(poolName);
-    factory.setScope(Scope.LOCAL);
-    factory.setConcurrencyChecksEnabled(true);
-    attrs = factory.create();
-    customerRegion = cache.createRegion("CUSTOMER", attrs);
-    assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter()
+    regionFactory = cache.createRegionFactory();
+    regionFactory.setPoolName(poolName);
+    regionFactory.setScope(Scope.LOCAL);
+    regionFactory.setConcurrencyChecksEnabled(true);
+    customerRegion = regionFactory.create(CUSTOMER);
+    assertThat(customerRegion).isNotNull();
+    logger
         .info("Distributed Region CUSTOMER created Successfully :" + customerRegion.toString());
 
-    factory = new AttributesFactory();
-    factory.setPoolName(poolName);
-    factory.setScope(Scope.LOCAL);
-    factory.setConcurrencyChecksEnabled(true);
-    attrs = factory.create();
-    orderRegion = cache.createRegion("ORDER", attrs);
-    assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter()
+    orderRegion = regionFactory.create(ORDER);
+    assertThat(orderRegion).isNotNull();
+    logger
         .info("Distributed Region ORDER created Successfully :" + orderRegion.toString());
 
-    factory = new AttributesFactory();
-    factory.setPoolName(poolName);
-    factory.setScope(Scope.LOCAL);
-    factory.setConcurrencyChecksEnabled(true);
-    attrs = factory.create();
-    shipmentRegion = cache.createRegion("SHIPMENT", attrs);
-    assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter()
+    shipmentRegion = regionFactory.create(SHIPMENT);
+    assertThat(shipmentRegion).isNotNull();
+    logger
         .info("Distributed Region SHIPMENT created Successfully :" + shipmentRegion.toString());
-    factory = new AttributesFactory();
-    factory.setScope(Scope.LOCAL);
-    factory.setConcurrencyChecksEnabled(true);
-    factory.setPoolName(poolName);
-    replicatedRegion = cache.createRegion("rr", factory.create());
+
+    regionFactory = cache.createRegionFactory();
+    regionFactory.setScope(Scope.LOCAL);
+    regionFactory.setConcurrencyChecksEnabled(true);
+    regionFactory.setPoolName(poolName);
+    replicatedRegion = regionFactory.create("rr");
   }
 
-  public static void putIntoPartitionedRegions() {
+  private static void putIntoPartitionedRegions() {
     for (int i = 0; i <= 3; i++) {
       CustId custid = new CustId(i);
       Customer customer = new Customer("name" + i, "Address" + i);
@@ -1733,7 +1512,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
       for (int j = 1; j <= 10; j++) {
         int oid = (i * 10) + j;
         OrderId orderId = new OrderId(oid, custid);
-        Order order = new Order("OREDR" + oid);
+        Order order = new Order("Order" + oid);
         orderRegion.put(orderId, order);
         for (int k = 1; k <= 10; k++) {
           int sid = (oid * 10) + k;
@@ -1744,27 +1523,28 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
       }
     }
 
-    region.put(new Integer(0), "create0");
-    region.put(new Integer(1), "create1");
-    region.put(new Integer(2), "create2");
-    region.put(new Integer(3), "create3");
+    testRegion.put(0, "create0");
+    testRegion.put(1, "create1");
+    testRegion.put(2, "create2");
+    testRegion.put(3, "create3");
 
-    region.put(new Integer(0), "update0");
-    region.put(new Integer(1), "update1");
-    region.put(new Integer(2), "update2");
-    region.put(new Integer(3), "update3");
+    testRegion.put(0, "update0");
+    testRegion.put(1, "update1");
+    testRegion.put(2, "update2");
+    testRegion.put(3, "update3");
 
-    region.put(new Integer(0), "update00");
-    region.put(new Integer(1), "update11");
-    region.put(new Integer(2), "update22");
-    region.put(new Integer(3), "update33");
-    Map map = new HashMap();
+    testRegion.put(0, "update00");
+    testRegion.put(1, "update11");
+    testRegion.put(2, "update22");
+    testRegion.put(3, "update33");
+    Map<Object, Object> map = new HashMap<>();
     map.put(1, 1);
     replicatedRegion.putAll(map);
   }
 
   static class MyFunctionAdapter extends FunctionAdapter implements DataSerializable {
-    public MyFunctionAdapter() {}
+    public MyFunctionAdapter() {
+    }
 
     @Override
     public String getId() {
@@ -1775,7 +1555,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     public void execute(FunctionContext context) {
       System.out.println("YOGS function called");
       RegionFunctionContext rc = (RegionFunctionContext) context;
-      Region r = rc.getDataSet();
+      Region<Object, Object> r = rc.getDataSet();
       Set filter = rc.getFilter();
       if (rc.getFilter() == null) {
         for (int i = 0; i < 200; i++) {
@@ -1800,7 +1580,8 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {}
+    public void toData(DataOutput out) throws IOException {
+    }
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -1808,49 +1589,44 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  public static void executeFunctions() {
-    Set filter = new HashSet();
+  private static void executeFunctions() {
+    Set<Object> filter = new HashSet<>();
     filter.add(0);
-    FunctionService.onRegion(region).withFilter(filter).execute(new MyFunctionAdapter())
+    FunctionService.onRegion(testRegion).withFilter(filter).execute(new MyFunctionAdapter())
         .getResult();
     filter.add(1);
-    FunctionService.onRegion(region).withFilter(filter).execute(new MyFunctionAdapter())
+    FunctionService.onRegion(testRegion).withFilter(filter).execute(new MyFunctionAdapter())
         .getResult();
     filter.add(2);
     filter.add(3);
-    FunctionService.onRegion(region).withFilter(filter).execute(new MyFunctionAdapter())
+    FunctionService.onRegion(testRegion).withFilter(filter).execute(new MyFunctionAdapter())
         .getResult();
-    FunctionService.onRegion(region).execute(new MyFunctionAdapter()).getResult();
+    FunctionService.onRegion(testRegion).execute(new MyFunctionAdapter()).getResult();
   }
 
-  public static void putAll() {
-    Map map = new HashMap();
+  private static void putAll() {
+    Map<Object, Object> map = new HashMap<>();
     map.put(0, 0);
     map.put(1, 1);
     map.put(2, 2);
     map.put(3, 3);
-    region.putAll(map, "putAllCallback");
-    region.putAll(map);
-    region.putAll(map);
-    region.putAll(map);
+    testRegion.putAll(map, "putAllCallback");
+    testRegion.putAll(map);
+    testRegion.putAll(map);
+    testRegion.putAll(map);
   }
 
-  public static void put() {
-    region.put(new Integer(0), "create0");
-    region.put(new Integer(1), "create1");
-    region.put(new Integer(2), "create2");
-    region.put(new Integer(3), "create3");
+  private static void put() {
+    testRegion.put(0, "create0");
+    testRegion.put(1, "create1");
+    testRegion.put(2, "create2");
+    testRegion.put(3, "create3");
     for (int i = 0; i < 40; i++) {
-      region.put(new Integer(i), "create" + i);
+      testRegion.put(i, "create" + i);
     }
-    /*
-     * pause(2000); region.put(new Integer(0), "update0"); region.put(new Integer(1), "update1");
-     * region.put(new Integer(2), "update2"); region.put(new Integer(3), "update3"); pause(2000);
-     * region.put(new Integer(0), "update00"); region.put(new Integer(1), "update11");
-     * region.put(new Integer(2), "update22"); region.put(new Integer(3), "update33");
-     */ }
+  }
 
-  public static void getFromPartitionedRegions() {
+  private static void getFromPartitionedRegions() {
     for (int i = 0; i <= 3; i++) {
       CustId custid = new CustId(i);
       Customer customer = new Customer("name" + i, "Address" + i);
@@ -1858,7 +1634,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
       for (int j = 1; j <= 10; j++) {
         int oid = (i * 10) + j;
         OrderId orderId = new OrderId(oid, custid);
-        Order order = new Order("OREDR" + oid);
+        Order order = new Order("Order" + oid);
         orderRegion.get(orderId, order);
         for (int k = 1; k <= 10; k++) {
           int sid = (oid * 10) + k;
@@ -1869,79 +1645,78 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
       }
     }
 
-    region.get(new Integer(0), "create0");
-    region.get(new Integer(1), "create1");
-    region.get(new Integer(2), "create2");
-    region.get(new Integer(3), "create3");
+    testRegion.get(0, "create0");
+    testRegion.get(1, "create1");
+    testRegion.get(2, "create2");
+    testRegion.get(3, "create3");
 
-    region.get(new Integer(0), "update0");
-    region.get(new Integer(1), "update1");
-    region.get(new Integer(2), "update2");
-    region.get(new Integer(3), "update3");
+    testRegion.get(0, "update0");
+    testRegion.get(1, "update1");
+    testRegion.get(2, "update2");
+    testRegion.get(3, "update3");
 
-    region.get(new Integer(0), "update00");
-    region.get(new Integer(1), "update11");
-    region.get(new Integer(2), "update22");
-    region.get(new Integer(3), "update33");
+    testRegion.get(0, "update00");
+    testRegion.get(1, "update11");
+    testRegion.get(2, "update22");
+    testRegion.get(3, "update33");
   }
 
-  public static void putIntoSinglePR() {
-    region.put(new Integer(0), "create0");
-    region.put(new Integer(1), "create1");
-    region.put(new Integer(2), "create2");
-    region.put(new Integer(3), "create3");
+  private static void putIntoSinglePR() {
+    testRegion.put(0, "create0");
+    testRegion.put(1, "create1");
+    testRegion.put(2, "create2");
+    testRegion.put(3, "create3");
   }
 
-  public static void updateIntoSinglePR() {
+  private static void updateIntoSinglePR() {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
 
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
 
-    region.put(new Integer(0), "update0");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    testRegion.put(0, "update0");
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
+    testRegion.put(1, "update1");
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
-    region.put(new Integer(1), "update1");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    testRegion.put(2, "update2");
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
-    region.put(new Integer(2), "update2");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    testRegion.put(3, "update3");
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
-    region.put(new Integer(3), "update3");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    testRegion.put(0, "update00");
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
-    region.put(new Integer(0), "update00");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    testRegion.put(1, "update11");
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
-    region.put(new Integer(1), "update11");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    testRegion.put(2, "update22");
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
-    region.put(new Integer(2), "update22");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
-
-    region.put(new Integer(3), "update33");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    testRegion.put(3, "update33");
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
   }
 
-  public static void verifyEmptyMetadata() {
+  private static void verifyEmptyMetadata() {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-    assertTrue(cms.getClientPRMetadata_TEST_ONLY().isEmpty());
+    assertThat(cms.getClientPRMetadata_TEST_ONLY().isEmpty()).isTrue();
   }
 
-  public static void verifyEmptyStaticData() {
+  private static void verifyEmptyStaticData() {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-    assertTrue(cms.getClientPartitionAttributesMap().isEmpty());
+    assertThat(cms.getClientPartitionAttributesMap().isEmpty()).isTrue();
   }
 
-  public static void printMetadata() {
+  private static void printMetadata() {
     if (cache != null) {
       ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
       cache.getLogger().info("Metadata is " + cms.getClientPRMetadata_TEST_ONLY());
     }
   }
 
-  public static void printView() {
-    PartitionedRegion pr = (PartitionedRegion) region;
+  private static void printView() {
+    PartitionedRegion pr = (PartitionedRegion) testRegion;
     if (pr.cache != null) {
       cache.getLogger().info("Primary Bucket view of server  "
           + pr.getDataStore().getLocalPrimaryBucketsListTestOnly());
@@ -1955,26 +1730,18 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     // make sure all fetch tasks are completed
     await()
         .until(() -> cms.getRefreshTaskCount_TEST_ONLY() == 0);
-
-    // final Map<String, ClientPartitionAdvisor> regionMetaData = cms
-    // .getClientPRMetadata_TEST_ONLY();
-    // Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() -> (regionMetaData.size() == 4));
-    // assertEquals(4, regionMetaData.size());
-    // assertTrue(regionMetaData.containsKey(region.getFullPath()));
-    // final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
-    // Awaitility.waitAtMost(60, TimeUnit.SECONDS).until(() ->
-    // (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
   }
 }
 
 
 class Customer implements DataSerializable { // TODO: move this to be an inner class and make it
-                                             // static
-  String name;
+  // static
+  private String name;
 
   String address;
 
-  public Customer() {}
+  public Customer() {
+  }
 
   public Customer(String name, String address) {
     this.name = name;
@@ -1982,7 +1749,7 @@ class Customer implements DataSerializable { // TODO: move this to be an inner c
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException {
     this.name = DataSerializer.readString(in);
     this.address = DataSerializer.readString(in);
 
@@ -2001,11 +1768,13 @@ class Customer implements DataSerializable { // TODO: move this to be an inner c
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
+    if (this == o) {
       return true;
+    }
 
-    if (!(o instanceof Customer))
+    if (!(o instanceof Customer)) {
       return false;
+    }
 
     Customer cust = (Customer) o;
     return (cust.name.equals(name) && cust.address.equals(address));
@@ -2021,14 +1790,15 @@ class Customer implements DataSerializable { // TODO: move this to be an inner c
 class Order implements DataSerializable {
   String orderName;
 
-  public Order() {}
+  public Order() {
+  }
 
   public Order(String orderName) {
     this.orderName = orderName;
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException {
     this.orderName = DataSerializer.readString(in);
   }
 
@@ -2044,14 +1814,13 @@ class Order implements DataSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
+    }
 
     if (obj instanceof Order) {
       Order other = (Order) obj;
-      if (other.orderName != null && other.orderName.equals(this.orderName)) {
-        return true;
-      }
+      return other.orderName != null && other.orderName.equals(this.orderName);
     }
     return false;
   }
@@ -2063,14 +1832,14 @@ class Order implements DataSerializable {
     }
     return orderName.hashCode();
   }
-
 }
 
 
 class Shipment implements DataSerializable {
   String shipmentName;
 
-  public Shipment() {}
+  public Shipment() {
+  }
 
   public Shipment(String shipmentName) {
     this.shipmentName = shipmentName;
@@ -2093,8 +1862,9 @@ class Shipment implements DataSerializable {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
+    if (this == obj) {
       return true;
+    }
 
     if (obj instanceof Shipment) {
       Shipment other = (Shipment) obj;
@@ -2104,7 +1874,6 @@ class Shipment implements DataSerializable {
     }
     return false;
   }
-
 
   @Override
   public int hashCode() {
