@@ -71,6 +71,7 @@ import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.util.JavaWorkarounds;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 
 /**
@@ -419,8 +420,9 @@ public class GMSHealthMonitor implements HealthMonitor {
    * Record member activity at a specified time
    */
   private void contactedBy(MemberIdentifier sender, long timeStamp) {
-    TimeStamp cTS = new TimeStamp(timeStamp);
-    cTS = memberTimeStamps.putIfAbsent(sender, cTS);
+    final TimeStamp cTS = JavaWorkarounds.computeIfAbsent(memberTimeStamps, sender, (s) -> {
+      return new TimeStamp(timeStamp);
+    });
     if (cTS != null && cTS.getTime() < timeStamp) {
       cTS.setTime(timeStamp);
     }
