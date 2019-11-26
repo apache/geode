@@ -154,7 +154,7 @@ public class RebalanceOperationPerformer {
 
       // translate to the return type we want
       RebalanceRegionResultImpl result = new RebalanceRegionResultImpl();
-      result.setRegionName(regionName);
+      result.setRegionName(regionName.replace("/", ""));
       result.setBucketCreateBytes(results.getTotalBucketCreateBytes());
       result.setBucketCreateTimeInMilliseconds(results.getTotalBucketCreateTime());
       result.setBucketCreatesCompleted(results.getTotalBucketCreatesCompleted());
@@ -437,7 +437,7 @@ public class RebalanceOperationPerformer {
     result.setPrimaryTransferTimeInMilliseconds(Long.parseLong(rstList.get(6)));
     result.setPrimaryTransfersCompleted(Integer.parseInt(rstList.get(7)));
     result.setTimeInMilliseconds(Long.parseLong(rstList.get(8)));
-    result.setRegionName(rstList.get(9));
+    result.setRegionName(rstList.get(9).replace("/", ""));
 
     return result;
   }
