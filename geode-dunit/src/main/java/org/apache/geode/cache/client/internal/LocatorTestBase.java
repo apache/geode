@@ -73,7 +73,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
    * A map for storing temporary objects in a remote VM so that they can be used between calls.
    * Cleared after each test.
    */
-  protected static final HashMap remoteObjects = new HashMap();
+  protected static final HashMap<Object, Object> remoteObjects = new HashMap<>();
 
   public LocatorTestBase() {
     super();
