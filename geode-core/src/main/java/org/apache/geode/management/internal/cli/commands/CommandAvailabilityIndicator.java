@@ -54,7 +54,7 @@ public class CommandAvailabilityIndicator extends GfshCommand {
       DestroyGatewayReceiverCommand.DESTROY_GATEWAYRECEIVER,
       CreateJndiBindingCommand.CREATE_JNDIBINDING, DestroyJndiBindingCommand.DESTROY_JNDIBINDING,
       DescribeJndiBindingCommand.DESCRIBE_JNDI_BINDING, ListJndiBindingCommand.LIST_JNDIBINDING,
-      AlterQueryServiceCommand.COMMAND_NAME})
+      AlterQueryServiceCommand.COMMAND_NAME, DescribeQueryServiceCommand.COMMAND_NAME})
   public boolean available() {
     return isOnlineCommandAvailable();
   }
