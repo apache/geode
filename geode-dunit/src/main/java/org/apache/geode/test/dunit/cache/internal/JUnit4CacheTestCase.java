@@ -435,12 +435,12 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
   public final <K, V> Region<K, V> createRegion(final String name, final String rootName,
       final RegionFactory<K, V> regionFactory) throws CacheException {
-    Region<K,V> root = createRootRegion(rootName, regionFactory);
+    Region<K, V> root = createRootRegion(rootName, regionFactory);
     return regionFactory.createSubregion(root, name);
   }
 
   public final <K, V> Region<K, V> createRootRegion(final String rootName,
-                                                final RegionFactory<K, V> regionFactory) throws CacheException {
+      final RegionFactory<K, V> regionFactory) throws CacheException {
     Region<K, V> root = getRootRegion(rootName);
     if (root == null) {
       RegionFactory<K, V> regionFactoryRoot = getRootRegionRegionFactory(regionFactory);

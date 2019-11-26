@@ -64,7 +64,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     // creating a distributed subregion of a LOCAL region is illegal.
     RegionFactory<Object, Object> factory = getCache().createRegionFactory();
     factory.setScope(Scope.LOCAL);
-    Region<Object, Object> rootRegion  = createRootRegion(factory);
+    Region<Object, Object> rootRegion = createRootRegion(factory);
     try {
       RegionFactory<Object, Object> factory2 = getCache().createRegionFactory();
       factory2.createSubregion(rootRegion, getUniqueName());
@@ -91,51 +91,54 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
 
     final String name = this.getUniqueName() + "-NO_ACK";
     vm0.invoke("Create NO ACK Region", () -> {
-        try {
-          RegionFactory<Object, Object> factory = getCache().createRegionFactory(getRegionAttributes());
-          Region<Object, Object> region = createRegion(name, "INCOMPATIBLE_ROOT", factory);
-          assertThat(
-              getRootRegion("INCOMPATIBLE_ROOT").getAttributes().getScope().isDistributedNoAck()).isTrue();
-          assertThat(region.getAttributes().getScope().isDistributedNoAck()).isTrue();
-        } catch (CacheException ex) {
-         fail("While creating NO ACK region", ex);
-        }
+      try {
+        RegionFactory<Object, Object> factory =
+            getCache().createRegionFactory(getRegionAttributes());
+        Region<Object, Object> region = createRegion(name, "INCOMPATIBLE_ROOT", factory);
+        assertThat(
+            getRootRegion("INCOMPATIBLE_ROOT").getAttributes().getScope().isDistributedNoAck())
+                .isTrue();
+        assertThat(region.getAttributes().getScope().isDistributedNoAck()).isTrue();
+      } catch (CacheException ex) {
+        fail("While creating NO ACK region", ex);
+      }
     });
 
     vm1.invoke("Create GLOBAL Region", () -> {
+      try {
+        RegionFactory<Object, Object> factory =
+            getCache().createRegionFactory(getRegionAttributes());
+        factory.setScope(Scope.GLOBAL);
+        assertThat(getRootRegion("INCOMPATIBLE_ROOT")).isNull();
         try {
-          RegionFactory<Object, Object> factory = getCache().createRegionFactory(getRegionAttributes());
-          factory.setScope(Scope.GLOBAL);
-          assertThat(getRootRegion("INCOMPATIBLE_ROOT")).isNull();
-          try {
-            createRootRegion("INCOMPATIBLE_ROOT", factory);
-            fail("Should have thrown an IllegalStateException");
-          } catch (IllegalStateException ex) {
-            // pass...
-          }
-
-        } catch (CacheException ex) {
-          fail("While creating GLOBAL Region", ex);
+          createRootRegion("INCOMPATIBLE_ROOT", factory);
+          fail("Should have thrown an IllegalStateException");
+        } catch (IllegalStateException ex) {
+          // pass...
         }
+
+      } catch (CacheException ex) {
+        fail("While creating GLOBAL Region", ex);
+      }
     });
 
     vm1.invoke("Create ACK Region", () -> {
 
+      try {
+        RegionFactory<Object, Object> factory =
+            getCache().createRegionFactory(getRegionAttributes());
+        factory.setScope(Scope.DISTRIBUTED_ACK);
+        assertThat(getRootRegion("INCOMPATIBLE_ROOT")).isNull();
         try {
-          RegionFactory<Object, Object> factory =
-              getCache().createRegionFactory(getRegionAttributes());
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          assertThat(getRootRegion("INCOMPATIBLE_ROOT")).isNull();
-          try {
-            createRootRegion("INCOMPATIBLE_ROOT", factory);
-            fail("Should have thrown an IllegalStateException");
-          } catch (IllegalStateException ex) {
-            // pass...
-          }
-
-        } catch (CacheException ex) {
-          fail("While creating ACK Region", ex);
+          createRootRegion("INCOMPATIBLE_ROOT", factory);
+          fail("Should have thrown an IllegalStateException");
+        } catch (IllegalStateException ex) {
+          // pass...
         }
+
+      } catch (CacheException ex) {
+        fail("While creating ACK Region", ex);
+      }
     });
   }
 
