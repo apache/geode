@@ -245,7 +245,7 @@ When the `SecurityManager` is enabled, by default <%=vars.product_name%> throws 
 
 In order to further customize this authorization check, see [Changing the Method Authorizer](../../managing/security/method_invocation_authorizers.html#changing_method_authorizer).
 
-In the past you could use the system property `gemfire.QueryService.allowUntrustedMethodInvocation` to disable the check altogether, but this approach is deprecated now and will be removed in future releases,
+In the past you could use the system property `gemfire.QueryService.allowUntrustedMethodInvocation` to disable the check altogether, but this approach is deprecated and will be removed in future releases;
 you need to configure the [UnrestrictedMethodAuthorizer](../../managing/security/method_invocation_authorizers.html#unrestrictedMethodAuthorizer) instead.
 
 ## <a id="the_where_clause__section_59E7D64746AE495D942F2F09EF7DB9B5" class="no-quick-link"></a>Enum Objects
@@ -309,7 +309,7 @@ The following is an example of a set value type comparison where sp is of type S
 SELECT * FROM /exampleRegion WHERE sp = set('20','21','22')
 ```
 
-In this case, if sp only contains '20' and '21', then the query will evalute to false. The query compares the two sets and looks for the presence of all elements in both sets.
+In this case, if sp contains only '20' and '21', then the query evaluates to false. The query compares the two sets and looks for the presence of all elements in both sets.
 
 For other collections types like list, the query can be written as follows:
 
