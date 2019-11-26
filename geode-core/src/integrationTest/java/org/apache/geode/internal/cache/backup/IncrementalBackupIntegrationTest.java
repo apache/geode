@@ -329,12 +329,12 @@ public class IncrementalBackupIntegrationTest {
     String jarName = getClass().getSimpleName();
     byte[] classBytes = new ClassBuilder().createJarFromName(jarName);
 
-    File jarFile = temporaryFolder.newFile(jarName + ".jar");
+    File jarFile = temporaryFolder.newFile();
     IOUtils.copyLarge(new ByteArrayInputStream(classBytes), new FileOutputStream(jarFile));
 
     // Deploy a "dummy" jar to the VM.
     File deployedJarFile =
-        ClassPathLoader.getLatest().getJarDeployer().deploy(jarFile).getFile();
+        ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarFile).getFile();
 
     assertThat(deployedJarFile).exists();
 
@@ -377,8 +377,8 @@ public class IncrementalBackupIntegrationTest {
     // Remove the "dummy" jar from the VM.
     for (DeployedJar jarClassLoader : ClassPathLoader.getLatest().getJarDeployer()
         .findDeployedJars()) {
-      if (jarClassLoader.getArtifactId().startsWith(jarName)) {
-        ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getDeployedFileName());
+      if (jarClassLoader.getJarName().startsWith(jarName)) {
+        ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getJarName());
       }
     }
 

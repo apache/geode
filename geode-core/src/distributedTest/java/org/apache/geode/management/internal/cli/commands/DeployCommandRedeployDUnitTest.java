@@ -29,7 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -144,8 +143,6 @@ public class DeployCommandRedeployDUnitTest {
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
   }
 
-  private static LoopingFunctionExecutor executor;
-
   @Test
   public void hotDeployShouldNotResultInAnyFailedFunctionExecutions() throws Exception {
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion1.getCanonicalPath())
@@ -153,22 +150,16 @@ public class DeployCommandRedeployDUnitTest {
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
 
-    server.invoke(() -> {
-      executor = new LoopingFunctionExecutor();
-      executor.startExecuting(FUNCTION_A);
-      executor.waitForExecutions(100);
-    });
-
+    server.invoke(() -> LoopingFunctionExecutor.startExecuting(FUNCTION_A));
+    server.invoke(() -> LoopingFunctionExecutor.waitForExecutions(100));
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarAVersion2.getCanonicalPath())
         .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
 
-    server.invoke(() -> {
-      executor.waitForExecutions(100);
-      executor.stopExecutionAndThrowAnyException();
-    });
+    server.invoke(() -> LoopingFunctionExecutor.waitForExecutions(100));
+    server.invoke(LoopingFunctionExecutor::stopExecutionAndThrowAnyException);
   }
 
   // Note that jar A is a Declarable Function, while jar B is only a Function.
@@ -217,18 +208,16 @@ public class DeployCommandRedeployDUnitTest {
 
   private static void assertThatCanLoad(String jarName, String className)
       throws ClassNotFoundException {
-    assertThat(ClassPathLoader.getLatest().getJarDeployer()
-        .getDeployedJar(FilenameUtils.getBaseName(jarName))).isNotNull();
+    assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNotNull();
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
   }
 
   private static class LoopingFunctionExecutor implements Serializable {
-    private final AtomicInteger COUNT_OF_EXECUTIONS = new AtomicInteger();
-    private final AtomicReference<Exception> EXCEPTION = new AtomicReference<>();
-    private final ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
+    private static final AtomicInteger COUNT_OF_EXECUTIONS = new AtomicInteger();
+    private static final AtomicReference<Exception> EXCEPTION = new AtomicReference<>();
+    private static final ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
 
-    public void startExecuting(String functionId) {
-      ExecutorService EXECUTOR_SERVICE = Executors.newSingleThreadExecutor();
+    public static void startExecuting(String functionId) {
       EXECUTOR_SERVICE.submit(() -> {
         GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
         DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
@@ -246,7 +235,7 @@ public class DeployCommandRedeployDUnitTest {
       });
     }
 
-    public void waitForExecutions(int numberOfExecutions) {
+    public static void waitForExecutions(int numberOfExecutions) {
       int initialCount = COUNT_OF_EXECUTIONS.get();
       int countToWaitFor = initialCount + numberOfExecutions;
       Callable<Boolean> doneWaiting = () -> COUNT_OF_EXECUTIONS.get() >= countToWaitFor;
@@ -254,7 +243,7 @@ public class DeployCommandRedeployDUnitTest {
       await().until(doneWaiting);
     }
 
-    public void stopExecutionAndThrowAnyException() throws Exception {
+    public static void stopExecutionAndThrowAnyException() throws Exception {
       EXECUTOR_SERVICE.shutdownNow();
       Exception e = EXCEPTION.get();
       if (e != null) {

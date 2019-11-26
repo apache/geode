@@ -65,7 +65,6 @@ import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.ClusterConfigurationLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
@@ -136,8 +135,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     this(null, null, jaxbService, null, null);
   }
 
-  @VisibleForTesting
-  InternalConfigurationPersistenceService(InternalCache cache,
+  private InternalConfigurationPersistenceService(InternalCache cache,
       DistributedLockService sharedConfigLockingService, JAXBService jaxbService,
       Path configDirPath, Path configDiskDirPath) {
     this.cache = cache;
@@ -305,20 +303,9 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
         Set<String> jarNames = new HashSet<>();
         for (String jarFullPath : jarFullPaths) {
           File stagedJar = new File(jarFullPath);
-          String jarFileName = stagedJar.getName();
-          jarNames.add(jarFileName);
-          Path filePath = groupDir.resolve(jarFileName);
+          jarNames.add(stagedJar.getName());
+          Path filePath = groupDir.resolve(stagedJar.getName());
           FileUtils.copyFile(stagedJar, filePath.toFile());
-          // remove old version for the same artifact id
-          String artifactId = JarDeployer.getArtifactId(jarFileName);
-          for (File file : groupDir.toFile().listFiles()) {
-            if (file.getName().equals(jarFileName)) {
-              continue;
-            }
-            if (JarDeployer.getArtifactId(file.getName()).equals(artifactId)) {
-              FileUtils.deleteQuietly(file);
-            }
-          }
         }
 
         // update the record after writing the jars to the file system, since the listener

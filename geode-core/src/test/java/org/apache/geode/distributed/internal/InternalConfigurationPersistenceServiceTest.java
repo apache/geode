@@ -265,11 +265,6 @@ public class InternalConfigurationPersistenceServiceTest {
         .isEqualTo(expectFinalElements);
   }
 
-  @Test
-  public void addJarsToThisLocator() throws Exception {
-
-  }
-
   private String getDuplicateReceiversWithDefaultPropertiesXml() {
     return "<cache>\n<gateway-receiver/>\n<gateway-receiver/>\n</cache>";
   }
