@@ -105,7 +105,7 @@ public class SerialAsyncEventQueueImplTest {
   public void whenStartedShouldCreateEventProcessor() {
     serialAsyncEventQueue = createSerialAsyncEventQueueImplSpy();
 
-    serialAsyncEventQueue.start();
+    serialAsyncEventQueue.start(false);
 
     assertThat(serialAsyncEventQueue.getEventProcessor()).isNotNull();
   }

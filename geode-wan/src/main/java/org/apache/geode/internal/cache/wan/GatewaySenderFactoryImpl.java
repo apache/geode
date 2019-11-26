@@ -254,7 +254,8 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
-          sender.start();
+          // set cleanQueues to default value
+          sender.start(false);
         }
       } else if (this.cache instanceof CacheCreation) {
         sender = new ParallelGatewaySenderCreation(this.cache, this.attrs);
@@ -275,7 +276,8 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         this.cache.addGatewaySender(sender);
 
         if (!this.attrs.isManualStart()) {
-          sender.start();
+          // set cleanQueues to default value
+          sender.start(false);
         }
       } else if (this.cache instanceof CacheCreation) {
         sender = new SerialGatewaySenderCreation(this.cache, this.attrs);
@@ -309,7 +311,8 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         sender = new ParallelGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
-          sender.start();
+          // set cleanQueues to default value
+          sender.start(false);
         }
       } else if (this.cache instanceof CacheCreation) {
         sender = new ParallelGatewaySenderCreation(this.cache, this.attrs);
@@ -323,7 +326,8 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         sender = new SerialGatewaySenderImpl(cache, statisticsClock, attrs);
         this.cache.addGatewaySender(sender);
         if (!this.attrs.isManualStart()) {
-          sender.start();
+          // set cleanQueues to default value
+          sender.start(false);
         }
       } else if (this.cache instanceof CacheCreation) {
         sender = new SerialGatewaySenderCreation(this.cache, this.attrs);

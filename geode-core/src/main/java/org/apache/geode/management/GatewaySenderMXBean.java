@@ -183,7 +183,7 @@ public interface GatewaySenderMXBean {
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
       target = Target.GATEWAY)
-  void start();
+  void start(boolean cleanQueues);
 
   /**
    * Stops this GatewaySender.
