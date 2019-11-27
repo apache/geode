@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,7 +33,6 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 /**
@@ -71,7 +69,7 @@ public class Configuration implements DataSerializable {
     this.cacheXmlFileName = configName + ".xml";
     this.propertiesFileName = configName + ".properties";
     this.gemfireProperties = new Properties();
-    this.jarNames = new HashSet<>();
+    this.jarNames = new HashSet<String>();
   }
 
   public String getCacheXmlContent() {
@@ -136,18 +134,16 @@ public class Configuration implements DataSerializable {
   }
 
   public void addJarNames(Set<String> jarNames) {
-    for (String jarName : jarNames) {
-      String artifactId = JarDeployer.getArtifactId(jarName);
-      Iterator<String> iterator = this.jarNames.iterator();
-      while (iterator.hasNext()) {
-        String next = iterator.next();
-        if (JarDeployer.getArtifactId(next).equals(artifactId)) {
-          iterator.remove();
-        }
-      }
-    }
     this.jarNames.addAll(jarNames);
   }
+
+  public void addJarNames(String[] jarNames) {
+    if (jarNames == null)
+      return;
+
+    this.jarNames.addAll(Stream.of(jarNames).collect(Collectors.toSet()));
+  }
+
 
   public void removeJarNames(String[] jarNames) {
     if (jarNames != null) {

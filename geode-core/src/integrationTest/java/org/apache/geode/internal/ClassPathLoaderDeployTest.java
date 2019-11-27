@@ -129,7 +129,7 @@ public class ClassPathLoaderDeployTest {
     GemFireCache gemFireCache = server.getCache();
     DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
 
-    ClassPathLoader.getLatest().getJarDeployer().deploy(jarVersion1);
+    ClassPathLoader.getLatest().getJarDeployer().deploy("MyJar.jar", jarVersion1);
 
     assertThatClassCanBeLoaded("jddunit.function.MyFunction");
     Execution execution = FunctionService.onMember(distributedSystem.getDistributedMember());
@@ -137,7 +137,7 @@ public class ClassPathLoaderDeployTest {
     List<String> result = (List<String>) execution.execute("MyFunction").getResult();
     assertThat(result.get(0)).isEqualTo("Version1");
 
-    ClassPathLoader.getLatest().getJarDeployer().deploy(jarVersion2);
+    ClassPathLoader.getLatest().getJarDeployer().deploy("MyJar.jar", jarVersion2);
     result = (List<String>) execution.execute("MyFunction").getResult();
     assertThat(result.get(0)).isEqualTo("Version2");
   }

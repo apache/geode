@@ -21,9 +21,9 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamClient;
@@ -69,16 +69,16 @@ public class DeployFunction implements InternalFunction {
         memberId = member.getName();
       }
 
-      Set<File> stagedFiles = stageJarContent(jarFilenames, jarStreams);
-      stagingDir = stagedFiles.stream().findFirst().get().getParentFile();
+      Map<String, File> stagedFiles;
+
+      stagedFiles = stageJarContent(jarFilenames, jarStreams);
+      stagingDir = stagedFiles.values().stream().findFirst().get().getParentFile();
 
       List<String> deployedList = new ArrayList<>();
       List<DeployedJar> jarClassLoaders =
           ClassPathLoader.getLatest().getJarDeployer().deploy(stagedFiles);
       for (int i = 0; i < jarFilenames.size(); i++) {
         deployedList.add(jarFilenames.get(i));
-        // if deploy(jar) returns null, i.e. the staged file bytes matched the latest
-        // deployed version
         if (jarClassLoaders.get(i) != null) {
           deployedList.add(jarClassLoaders.get(i).getFileCanonicalPath());
         } else {
@@ -145,9 +145,9 @@ public class DeployFunction implements InternalFunction {
     }
   }
 
-  private Set<File> stageJarContent(List<String> jarNames,
+  private Map<String, File> stageJarContent(List<String> jarNames,
       List<RemoteInputStream> jarStreams) throws IOException {
-    Set<File> stagedJars = new HashSet<>();
+    Map<String, File> stagedJars = new HashMap<>();
 
     try {
       Path tempDir = FileUploader.createSecuredTempDirectory("deploy-");
@@ -163,7 +163,7 @@ public class DeployFunction implements InternalFunction {
         fos.close();
         input.close();
 
-        stagedJars.add(tempJar.toFile());
+        stagedJars.put(jarNames.get(i), tempJar.toFile());
       }
     } catch (IOException iox) {
       for (int i = 0; i < jarStreams.size(); i++) {
