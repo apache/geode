@@ -53,6 +53,10 @@ Display details of a member's configuration, shell connection, disk-stores, memb
 
     Display information about an offline member's disk store.
 
+-   **[describe query-service](#topic_describe_query_service)**
+
+    Display information about the configuration of the query service.
+
 -   **[describe region](#topic_DECF7D3D33F54071B6B8AD4EA7E3F90B)**
 
     Display the attributes and key information of a region.
@@ -443,6 +447,31 @@ PDX Types:
     Date date;
 PDX Enums:
   com.app.data.StockPdx$Day.Monday
+```
+
+## <a id="topic_describe_query_service" class="no-quick-link"></a>describe query-service
+
+Print the information that describes the current configuration of the query service.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+describe query-service
+```
+
+**Example Commands:**
+
+``` pre
+describe query-service
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>describe query-service
+Method Authorizer Class : org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer
 ```
 
 ## <a id="topic_DECF7D3D33F54071B6B8AD4EA7E3F90B" class="no-quick-link"></a>describe region
