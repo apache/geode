@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -216,7 +217,8 @@ public class DeployCommandRedeployDUnitTest {
 
   private static void assertThatCanLoad(String jarName, String className)
       throws ClassNotFoundException {
-    assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNotNull();
+    assertThat(ClassPathLoader.getLatest().getJarDeployer()
+        .getDeployedJar(FilenameUtils.getBaseName(jarName))).isNotNull();
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
   }
 

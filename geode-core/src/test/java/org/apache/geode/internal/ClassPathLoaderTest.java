@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 import org.apache.bcel.Constants;
@@ -75,27 +75,23 @@ public class ClassPathLoaderTest {
 
   @Test
   public void testZeroLengthFile() throws IOException {
-    File zeroFile = tempFolder.newFile();
+    File zeroFile = tempFolder.newFile("JarDeployerDUnitZLF.jar");
     zeroFile.createNewFile();
 
-    Map<String, File> jarFiles = new HashMap<>();
-    jarFiles.put("JarDeployerDUnitZLF.jar", zeroFile);
-
     assertThatThrownBy(() -> {
-      ClassPathLoader.getLatest().getJarDeployer().deploy(jarFiles);
+      ClassPathLoader.getLatest().getJarDeployer().deploy(zeroFile);
     }).isInstanceOf(IllegalArgumentException.class);
 
     byte[] validBytes = new ClassBuilder().createJarFromName("JarDeployerDUnitZLF1");
-    File validFile = tempFolder.newFile();
-
+    File validFile = tempFolder.newFile("JarDeployerDUnitZLF1.jar");
     IOUtils.copy(new ByteArrayInputStream(validBytes), new FileOutputStream(validFile));
 
-    jarFiles.put("JarDeployerDUnitZLF1.jar", validFile);
-
-    jarFiles.put("JarDeployerDUnitZLF2.jar", zeroFile);
+    Set<File> files = new HashSet<>();
+    files.add(validFile);
+    files.add(zeroFile);
 
     assertThatThrownBy(() -> {
-      ClassPathLoader.getLatest().getJarDeployer().deploy(jarFiles);
+      ClassPathLoader.getLatest().getJarDeployer().deploy(files);
     }).isInstanceOf(IllegalArgumentException.class);
   }
 

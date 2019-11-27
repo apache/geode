@@ -22,6 +22,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -108,7 +110,7 @@ public class ExportClusterConfigurationCommandTest {
     properties.put("key1", "value1");
     properties.put("key2", "value2");
     configuration.setGemfireProperties(properties);
-    configuration.addJarNames(new String[] {"jar1.jar", "jar2.jar"});
+    configuration.addJarNames(new HashSet<>(Arrays.asList("jar1.jar", "jar2.jar")));
     gfsh.executeAndAssertThat(command, EXPORT_SHARED_CONFIG).statusIsSuccess()
         .containsOutput("cluster.xml:").containsOutput("Properties:").containsOutput("Jars:")
         .containsOutput("jar1.jar, jar2.jar").containsOutput("<?xml version=\"1.0\"")
