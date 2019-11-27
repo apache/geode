@@ -130,16 +130,16 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
       member2 = null;
       member3 = null;
       Invoke.invokeInEveryVM(() -> {
-          cache = null;
-          orderRegion = null;
-          orderRegion2 = null;
-          customerRegion = null;
-          customerRegion2 = null;
-          shipmentRegion = null;
-          shipmentRegion2 = null;
-          region = null;
-          region2 = null;
-          locator = null;
+        cache = null;
+        orderRegion = null;
+        orderRegion2 = null;
+        customerRegion = null;
+        customerRegion2 = null;
+        shipmentRegion = null;
+        shipmentRegion2 = null;
+        region = null;
+        region2 = null;
+        locator = null;
       });
 
     } finally {
@@ -597,7 +597,8 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
 
 
     await().alias("expected metadata for each region to be" + numRegions + " but it is "
-        + regionMetaData.size() + "Metadata is " + regionMetaData.keySet()).until(() -> regionMetaData.size() == numRegions);
+        + regionMetaData.size() + "Metadata is " + regionMetaData.keySet())
+        .until(() -> regionMetaData.size() == numRegions);
 
     if (numRegions != 0) {
       assertThat(regionMetaData.containsKey(region.getFullPath())).isTrue();
@@ -609,7 +610,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
       }
 
       for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-        assertThat( ((List) entry.getValue()).size()).isEqualTo(numBucketLocations);
+        assertThat(((List) entry.getValue()).size()).isEqualTo(numBucketLocations);
       }
     }
   }
@@ -620,7 +621,8 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
 
 
     await().alias("expected metadata for each region to be " + 4 + " but it is "
-        + regionMetaData.size() + " they are " + regionMetaData.keySet()).until(() -> regionMetaData.size() == 4);
+        + regionMetaData.size() + " they are " + regionMetaData.keySet())
+        .until(() -> regionMetaData.size() == 4);
 
     assertThat(regionMetaData.containsKey(region.getFullPath())).isTrue();
     ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
@@ -629,7 +631,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
     }
 
     for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-      assertThat( ((List) entry.getValue()).size()).isEqualTo(2);
+      assertThat(((List) entry.getValue()).size()).isEqualTo(2);
     }
 
     assertThat(regionMetaData.containsKey(customerRegion.getFullPath())).isTrue();
@@ -639,7 +641,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
     }
 
     for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-      assertThat( ((List) entry.getValue()).size()).isEqualTo(2);
+      assertThat(((List) entry.getValue()).size()).isEqualTo(2);
     }
 
     assertThat(regionMetaData.containsKey(orderRegion.getFullPath())).isTrue();
@@ -649,7 +651,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
     }
 
     for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-      assertThat( ((List) entry.getValue()).size()).isEqualTo(1);
+      assertThat(((List) entry.getValue()).size()).isEqualTo(1);
     }
 
     assertThat(regionMetaData.containsKey(shipmentRegion.getFullPath())).isTrue();
@@ -659,18 +661,19 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
     }
 
     for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-      assertThat( ((List) entry.getValue()).size()).isEqualTo(3);
+      assertThat(((List) entry.getValue()).size()).isEqualTo(3);
     }
 
   }
 
   private static void verifyMetadataFor2ClientsInOneVM(final int numBucketLocations,
-                                                       final int numBucketLocations2) {
+      final int numBucketLocations2) {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
 
     await().alias("expected metadata for each region to be " + 8 + " but it is "
-        + regionMetaData.size() + " they are " + regionMetaData.keySet()).until(() -> regionMetaData.size() == 8);
+        + regionMetaData.size() + " they are " + regionMetaData.keySet())
+        .until(() -> regionMetaData.size() == 8);
 
     if (8 != 0) {
       assertThat(regionMetaData.containsKey(region.getFullPath())).isTrue();
@@ -680,7 +683,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
       }
 
       for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-        assertThat( ((List) entry.getValue()).size()).isEqualTo(numBucketLocations);
+        assertThat(((List) entry.getValue()).size()).isEqualTo(numBucketLocations);
       }
 
       assertThat(regionMetaData.containsKey(customerRegion.getFullPath())).isTrue();
@@ -690,7 +693,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
       }
 
       for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-        assertThat( ((List) entry.getValue()).size()).isEqualTo(numBucketLocations);
+        assertThat(((List) entry.getValue()).size()).isEqualTo(numBucketLocations);
       }
 
       assertThat(regionMetaData.containsKey(customerRegion2.getFullPath())).isTrue();
@@ -700,14 +703,14 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
       }
 
       for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-        assertThat( ((List) entry.getValue()).size()).isEqualTo(numBucketLocations2);
+        assertThat(((List) entry.getValue()).size()).isEqualTo(numBucketLocations2);
       }
     }
   }
 
 
   private static int createServerWithLocatorAndServerGroup(String locator, int localMaxMemory,
-                                                           String group) {
+      String group) {
 
     Properties props = new Properties();
     props.setProperty(LOCATORS, locator);
@@ -737,14 +740,15 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
       fail("Failed to start server ", e);
     }
 
-    PartitionAttributesFactory<Object,Object> paf = new PartitionAttributesFactory<>();
+    PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(2).setLocalMaxMemory(localMaxMemory)
         .setTotalNumBuckets(8);
-    RegionFactory<Object,Object> regionFactory = cache.createRegionFactory();
+    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
     regionFactory.setPartitionAttributes(paf.create());
     PartitionedRegionSingleHopWithServerGroupDUnitTest.region = regionFactory.create(PR_NAME);
     assertThat(PartitionedRegionSingleHopWithServerGroupDUnitTest.region).isNotNull();
-    logger.info("Partitioned Region " + PR_NAME + " created Successfully :" + PartitionedRegionSingleHopWithServerGroupDUnitTest.region
+    logger.info("Partitioned Region " + PR_NAME + " created Successfully :"
+        + PartitionedRegionSingleHopWithServerGroupDUnitTest.region
             .toString());
 
     // creating colocated Regions
@@ -781,7 +785,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
   }
 
   private static int createServerWithLocatorAndServerGroup2Regions(String locator,
-                                                                   String group) {
+      String group) {
 
     Properties props = new Properties();
     props.setProperty(LOCATORS, locator);
@@ -916,7 +920,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
   }
 
   private static void create2ClientWithLocator(String host, int port0, String group1,
-                                               String group2) {
+      String group2) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -1071,7 +1075,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
     assertThat(orderRegion).isNotNull();
     logger.info("Distributed Region ORDER created Successfully :" + orderRegion.toString());
 
-    factory =cache.createRegionFactory();
+    factory = cache.createRegionFactory();
     factory.setPoolName(poolName3);
     shipmentRegion = factory.create("SHIPMENT");
     assertThat(shipmentRegion).isNotNull();
