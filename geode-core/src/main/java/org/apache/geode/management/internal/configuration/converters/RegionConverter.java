@@ -93,7 +93,6 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     attributesType.setDiskStoreName(configObject.getDiskStoreName());
     attributesType.setKeyConstraint(configObject.getKeyConstraint());
     attributesType.setValueConstraint(configObject.getValueConstraint());
-    region.setRegionAttributes(attributesType);
 
     if (configObject.getRedundantCopies() != null) {
       RegionAttributesType.PartitionAttributes partitionAttributes =
@@ -115,7 +114,32 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
         }
       }
     }
+
+    if(configObject.getEviction() != null) {
+      attributesType.setEvictionAttributes(convertFrom(configObject.getEviction()));
+    }
+
+    region.setRegionAttributes(attributesType);
     return region;
+  }
+
+  RegionAttributesType.EvictionAttributes convertFrom(Region.Eviction eviction) {
+    return RegionAttributesType.EvictionAttributes.generate(getEvictionActionString(eviction), eviction.getMemorySizeMb(), eviction.getEntryCount(), eviction.getObjectSizer());
+  }
+
+  private String getEvictionActionString(Region.Eviction eviction) {
+    if (eviction.getAction() == null) {
+      return "local-destroy";
+    } else {
+      switch (eviction.getAction()) {
+        case LOCAL_DESTROY:
+          return "local-destroy";
+        case OVERFLOW_TO_DISK:
+          return "overflow-to-disk";
+        default:
+          throw new IllegalStateException("Unhandled eviction action: " + eviction.getAction());
+      }
+    }
   }
 
   RegionAttributesType.ExpirationAttributesType convertFrom(Region.Expiration expiration) {

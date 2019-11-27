@@ -43,6 +43,8 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
   private Integer redundantCopies;
 
   private List<Expiration> expirations;
+  private Eviction eviction;
+
 
   public Region() {}
 
@@ -144,6 +146,14 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
     this.expirations = expirations.stream().filter(Objects::nonNull).collect(Collectors.toList());
   }
 
+  public Eviction getEviction() {
+    return eviction;
+  }
+
+  public void setEviction(Eviction eviction) {
+    this.eviction = eviction;
+  }
+
   public void addExpiry(ExpirationType type, Integer timeout, ExpirationAction action) {
     if (expirations == null) {
       expirations = new ArrayList<>();
@@ -172,6 +182,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
      */
     LEGACY
   }
+
 
   public static class Expiration implements Serializable {
     private ExpirationType type;
@@ -211,6 +222,76 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
 
     public void setAction(ExpirationAction action) {
       this.action = action;
+    }
+  }
+
+  public enum EvictionType {
+    ENTRY_COUNT,
+    MEMORY_SIZE,
+    HEAP_PERCENTAGE
+  }
+
+  public enum EvictionAction {
+    LOCAL_DESTROY,
+    OVERFLOW_TO_DISK
+  }
+
+  public static class Eviction implements Serializable {
+    private EvictionType type;
+    private EvictionAction action;
+    private Integer entryCount;
+    private Integer memorySizeMb;
+    private String objectSizer;
+
+    public Eviction() {};
+
+    public Eviction(EvictionType type, EvictionAction action, Integer entryCount,
+        Integer memorySizeMb, String objectSizer) {
+      this.type = type;
+      this.action = action;
+      this.entryCount = entryCount;
+      this.memorySizeMb = memorySizeMb;
+      this.objectSizer = objectSizer;
+    };
+
+    public EvictionType getType() {
+      return type;
+    }
+
+    public void setType(EvictionType type) {
+      this.type = type;
+    }
+
+    public EvictionAction getAction() {
+      return action;
+    }
+
+    public void setAction(EvictionAction action) {
+      this.action = action;
+    }
+
+    public Integer getEntryCount() {
+      return entryCount;
+    }
+
+    public void setEntryCount(Integer entryCount) {
+      this.entryCount = entryCount;
+    }
+
+    public Integer getMemorySizeMb() {
+      return memorySizeMb;
+    }
+
+    public void setMemorySizeMb(Integer memorySizeMb) {
+      this.memorySizeMb = memorySizeMb;
+    }
+
+    public String getObjectSizer() {
+      return objectSizer;
+    }
+
+    public void setObjectSizer(String objectSizer) {
+      this.objectSizer = objectSizer;
     }
   }
 }

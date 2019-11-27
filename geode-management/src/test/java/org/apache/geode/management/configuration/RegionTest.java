@@ -65,6 +65,16 @@ public class RegionTest {
   }
 
   @Test
+  public void correctJsonWithExperiations() throws Exception {
+
+  }
+
+  @Test
+  public void correctJsonWithEviction() throws Exception {
+
+  }
+
+  @Test
   public void getUri() {
     regionConfig.setName("regionA");
     assertThat(regionConfig.getLinks().getList()).isEqualTo("/regions");
