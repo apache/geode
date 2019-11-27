@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.internal.CommandProcessor;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
@@ -42,6 +43,7 @@ public class MemberCommandServiceTest {
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
     when(cache.isClosed()).thenReturn(true);
     when(cache.getSecurityService()).thenReturn(securityService);
+    when(cache.getService(CommandProcessor.class)).thenReturn(new OnlineCommandProcessor());
     when(distributedSystem.getProperties()).thenReturn(cacheProperties);
   }
 
