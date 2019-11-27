@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
@@ -26,7 +25,6 @@ import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -70,14 +68,9 @@ public class RebalanceFunction implements InternalFunction {
           + "," + results.getTotalBucketCreatesCompleted() + ","
           + results.getTotalBucketTransferBytes() + "," + results.getTotalBucketTransferTime() + ","
           + results.getTotalBucketTransfersCompleted() + "," + results.getTotalPrimaryTransferTime()
-          + "," + results.getTotalPrimaryTransfersCompleted() + "," + results.getTotalTime() + ",");
+          + "," + results.getTotalPrimaryTransfersCompleted() + "," + results.getTotalTime() + ","
+          + String.join(",", includeRegionNames));
 
-      Set<PartitionRebalanceInfo> regns1 = results.getPartitionRebalanceDetails();
-      Iterator it = regns1.iterator();
-      while (it.hasNext()) {
-        PartitionRebalanceInfo rgn = (PartitionRebalanceInfo) it.next();
-        str1.append(rgn.getRegionPath() + ",");
-      }
       logger.info("Starting RebalanceFunction str1={}", str1);
       context.getResultSender().lastResult(str1.toString());
     } catch (CancellationException e) {

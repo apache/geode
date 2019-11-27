@@ -49,6 +49,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
 
 public class NetstatCommand extends GfshCommand {
@@ -90,7 +91,7 @@ public class NetstatCommand extends GfshCommand {
       if (members != null) {
         Set<String> notFoundMembers = new HashSet<>();
         for (String memberIdOrName : members) {
-          Set<DistributedMember> membersToExecuteOn = CliUtil.getAllMembers(system);
+          Set<DistributedMember> membersToExecuteOn = ManagementUtils.getAllMembers(system);
           boolean memberFound = false;
           for (DistributedMember distributedMember : membersToExecuteOn) {
             String memberName = distributedMember.getName();
@@ -118,7 +119,7 @@ public class NetstatCommand extends GfshCommand {
           membersToExecuteOn = system.getGroupMembers(group);
         } else {
           // consider all members
-          membersToExecuteOn = CliUtil.getAllMembers(system);
+          membersToExecuteOn = ManagementUtils.getAllMembers(system);
         }
 
         for (DistributedMember distributedMember : membersToExecuteOn) {
@@ -142,7 +143,7 @@ public class NetstatCommand extends GfshCommand {
       if (!hostMemberMap.isEmpty()) {
         Set<DistributedMember> membersToExecuteOn = new HashSet<>(hostMemberMap.values());
         ResultCollector<?, ?> netstatResult =
-            CliUtil.executeFunction(NetstatFunction.INSTANCE, nfa, membersToExecuteOn);
+            ManagementUtils.executeFunction(NetstatFunction.INSTANCE, nfa, membersToExecuteOn);
         List<?> resultList = (List<?>) netstatResult.getResult();
         for (Object aResultList : resultList) {
           NetstatFunction.NetstatFunctionResult netstatFunctionResult =

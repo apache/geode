@@ -33,6 +33,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -137,11 +138,11 @@ public class CliUtilDUnitTest {
   public void getAllMembers() throws Exception {
     locator.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      members = CliUtil.getAllMembers(cache);
+      members = ManagementUtils.getAllMembers(cache);
       assertThat(getNames(members)).containsExactlyInAnyOrder("locator-0", "member1", "member2",
           "member3", "member4");
 
-      members = CliUtil.getAllNormalMembers(cache);
+      members = ManagementUtils.getAllNormalMembers(cache);
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2", "member3",
           "member4");
     });

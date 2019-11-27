@@ -26,7 +26,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.FetchSharedConfigurationStatusFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -34,6 +33,7 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -65,7 +65,8 @@ public class StatusClusterConfigServiceCommand extends GfshCommand {
       TabularResultModel tabularResultModel) {
     boolean isSharedConfigRunning = false;
     ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(new FetchSharedConfigurationStatusFunction(), null, locators);
+        ManagementUtils.executeFunction(new FetchSharedConfigurationStatusFunction(), null,
+            locators);
     List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
 
     for (CliFunctionResult result : results) {

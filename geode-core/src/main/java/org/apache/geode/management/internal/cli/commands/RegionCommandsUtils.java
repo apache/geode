@@ -27,8 +27,8 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.util.ManagementUtils;
 
 public class RegionCommandsUtils {
 
@@ -55,7 +55,7 @@ public class RegionCommandsUtils {
   static void validateGroups(InternalCache cache, String[] groups) {
     if (groups != null && groups.length != 0) {
       Set<String> existingGroups = new HashSet<>();
-      Set<DistributedMember> members = CliUtil.getAllNormalMembers(cache);
+      Set<DistributedMember> members = ManagementUtils.getAllNormalMembers(cache);
       for (DistributedMember distributedMember : members) {
         List<String> memberGroups = distributedMember.getGroups();
         existingGroups.addAll(memberGroups);

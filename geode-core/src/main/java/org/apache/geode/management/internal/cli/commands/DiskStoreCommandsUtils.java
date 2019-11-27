@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.Configuration;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.DistributedSystemMXBean;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.util.ManagementUtils;
 
 class DiskStoreCommandsUtils {
   private static final Logger logger = LogService.getLogger();
@@ -67,7 +67,7 @@ class DiskStoreCommandsUtils {
   }
 
   static Set<DistributedMember> getNormalMembers(final InternalCache cache) {
-    return CliUtil.getAllNormalMembers(cache);
+    return ManagementUtils.getAllNormalMembers(cache);
   }
 
 

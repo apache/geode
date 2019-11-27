@@ -109,4 +109,18 @@ public class RebalanceResultsImpl implements RebalanceResults, Serializable {
   public long getTotalTime() {
     return this.totalTime;
   }
+
+  @Override
+  public String toString() {
+    return "{totalBucketCreateBytes=" + totalBucketCreateBytes +
+        ", totalBucketCreateTimeInMilliseconds=" + totalBucketCreateTime +
+        ", totalBucketCreatesCompleted=" + totalBucketCreatesCompleted +
+        ", totalBucketTransferBytes=" + totalBucketTransferBytes +
+        ", totalBucketTransferTimeInMilliseconds=" + totalBucketTransferTime +
+        ", totalBucketTransfersCompleted=" + totalBucketTransfersCompleted +
+        ", totalPrimaryTransferTimeInMilliseconds=" + totalPrimaryTransferTime +
+        ", totalPrimaryTransfersCompleted=" + totalPrimaryTransfersCompleted +
+        ", totalTimeInMilliseconds=" + totalTime +
+        "}";
+  }
 }

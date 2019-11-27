@@ -29,7 +29,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.GarbageCollectionFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -37,6 +36,7 @@ import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
 
 public class GCCommand extends GfshCommand {
@@ -71,7 +71,8 @@ public class GCCommand extends GfshCommand {
 
     Function garbageCollectionFunction = new GarbageCollectionFunction();
     List<?> resultList =
-        (List<?>) CliUtil.executeFunction(garbageCollectionFunction, null, dsMembers).getResult();
+        (List<?>) ManagementUtils.executeFunction(garbageCollectionFunction, null, dsMembers)
+            .getResult();
 
     for (Object object : resultList) {
       if (object == null) {

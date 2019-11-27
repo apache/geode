@@ -98,13 +98,13 @@ public class RepeatedRebalanceDUnitTest {
     // Because we have 2 redundant copies and begin with 4 servers, redundancy is already satisfied
     // before this rebalance. As such we expect to see no redundant copies created.
     TabularResultModelAssert firstRebalance =
-        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection();
+        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection("Table2");
     assertRedundancyNotChanged(firstRebalance);
     assertBucketsMoved(firstRebalance);
     assertPrimariesTransfered(firstRebalance);
 
     TabularResultModelAssert secondRebalance =
-        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection();
+        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection("Table2");
     assertRedundancyNotChanged(secondRebalance);
     assertBucketsNotMoved(secondRebalance);
     assertPrimariesNotTransfered(secondRebalance);
@@ -118,13 +118,13 @@ public class RepeatedRebalanceDUnitTest {
     addOrRestartServers(2, 1);
 
     TabularResultModelAssert firstRebalance =
-        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection();
+        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection("Table2");
     assertRedundancyChanged(firstRebalance);
     assertBucketsMoved(firstRebalance);
     assertPrimariesTransfered(firstRebalance);
 
     TabularResultModelAssert secondRebalance =
-        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection();
+        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection("Table2");
     assertRedundancyNotChanged(secondRebalance);
     assertBucketsNotMoved(secondRebalance);
     assertPrimariesNotTransfered(secondRebalance);
