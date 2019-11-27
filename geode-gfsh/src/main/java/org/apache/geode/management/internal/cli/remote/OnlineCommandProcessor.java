@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import com.fasterxml.jackson.databind.annotation.JsonAppend;
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ParseResult;
 import org.springframework.util.StringUtils;
@@ -28,7 +27,6 @@ import org.springframework.util.StringUtils;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.internal.CommandProcessor;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
@@ -57,12 +55,11 @@ public class OnlineCommandProcessor implements CommandProcessor {
 
   private InternalCache cache;
 
-  public OnlineCommandProcessor() {
-  }
+  public OnlineCommandProcessor() {}
 
   @VisibleForTesting
   public OnlineCommandProcessor(Properties cacheProperties, SecurityService securityService,
-                                CommandExecutor commandExecutor, InternalCache cache) {
+      CommandExecutor commandExecutor, InternalCache cache) {
     this.gfshParser = new GfshParser(new CommandManager(cacheProperties, cache));
     this.executor = commandExecutor;
     this.securityService = securityService;
@@ -93,7 +90,7 @@ public class OnlineCommandProcessor implements CommandProcessor {
   }
 
   public ResultModel executeCommand(String command, Map<String, String> env,
-                                    List<String> stagedFilePaths) {
+      List<String> stagedFilePaths) {
     CommentSkipHelper commentSkipper = new CommentSkipHelper();
     String commentLessLine = commentSkipper.skipComments(command);
     if (StringUtils.isEmpty(commentLessLine)) {
@@ -132,15 +129,15 @@ public class OnlineCommandProcessor implements CommandProcessor {
 
   @Override
   public String executeCommandReturningJson(String command, Map<String, String> env,
-                                            List<String> stagedFilePaths) {
+      List<String> stagedFilePaths) {
     return executeCommand(command, env, stagedFilePaths).toJson();
   }
 
   @Override
   public boolean init(Cache cache) {
     Properties cacheProperties = cache.getDistributedSystem().getProperties();
-    this.securityService = ((InternalCache)cache).getSecurityService();
-    this.gfshParser = new GfshParser(new CommandManager(cacheProperties, (InternalCache)cache));
+    this.securityService = ((InternalCache) cache).getSecurityService();
+    this.gfshParser = new GfshParser(new CommandManager(cacheProperties, (InternalCache) cache));
     this.executor = new CommandExecutor();
     this.cache = (InternalCache) cache;
 
