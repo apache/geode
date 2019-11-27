@@ -38,7 +38,6 @@ import javax.servlet.http.HttpSession;
 
 import com.mockrunner.mock.web.MockHttpServletRequest;
 import com.mockrunner.mock.web.MockHttpServletResponse;
-import com.mockrunner.servlet.BasicServletTestCaseAdapter;
 import org.junit.Test;
 
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
@@ -47,7 +46,7 @@ import org.apache.geode.modules.session.filter.SessionCachingFilter;
  * This servlet tests the effects of the downstream SessionCachingFilter filter. When these tests
  * are performed, the filter would already have taken effect.
  */
-public abstract class CommonTests extends BasicServletTestCaseAdapter {
+public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdapter {
   static final String CONTEXT_PATH = "/test";
 
   @Test
@@ -439,6 +438,38 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
     request.getSession().setMaxInactiveInterval(50);
 
     assertEquals(50, request.getSession().getMaxInactiveInterval());
+  }
+
+  @Test
+  public void testCookieSecure() {
+
+    boolean secure = true;
+    ((MyMockServletContext) getWebMockObjectFactory().getMockServletContext())
+        .getSessionCookieConfig().setSecure(secure);
+
+    doFilter();
+    ((HttpServletRequest) getFilteredRequest()).getSession();
+
+    MockHttpServletResponse response = getWebMockObjectFactory().getMockResponse();
+    Cookie cookie = (Cookie) response.getCookies().get(0);
+
+    assertEquals(secure, cookie.getSecure());
+  }
+
+  @Test
+  public void testCookieHttpOnly() {
+
+    boolean httpOnly = true;
+    ((MyMockServletContext) getWebMockObjectFactory().getMockServletContext())
+        .getSessionCookieConfig().setHttpOnly(httpOnly);
+
+    doFilter();
+    ((HttpServletRequest) getFilteredRequest()).getSession();
+
+    MockHttpServletResponse response = getWebMockObjectFactory().getMockResponse();
+    Cookie cookie = (Cookie) response.getCookies().get(0);
+
+    assertEquals(httpOnly, cookie.isHttpOnly());
   }
 
   @Test

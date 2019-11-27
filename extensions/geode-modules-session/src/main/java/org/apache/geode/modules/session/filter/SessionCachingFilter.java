@@ -31,6 +31,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletRequestWrapper;
 import javax.servlet.ServletResponse;
+import javax.servlet.SessionCookieConfig;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
@@ -203,8 +204,11 @@ public class SessionCachingFilter implements Filter {
         return;
       }
 
+      SessionCookieConfig cookieConfig = context.getSessionCookieConfig();
       Cookie cookie = new Cookie(manager.getSessionCookieName(), session.getId());
       cookie.setPath("".equals(getContextPath()) ? "/" : getContextPath());
+      cookie.setHttpOnly(cookieConfig.isHttpOnly());
+      cookie.setSecure(cookieConfig.isSecure());
       response.addCookie(cookie);
     }
 
