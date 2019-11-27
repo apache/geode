@@ -392,6 +392,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     regionFactory.setCacheLoader(null);
     regionFactory.setCacheWriter(null);
     regionFactory.setPoolName(null);
+    regionFactory.setPartitionAttributes(null);
     regionFactory.setRegionTimeToLive(expiration);
     regionFactory.setEntryTimeToLive(expiration);
     regionFactory.setRegionIdleTimeout(expiration);
@@ -425,22 +426,14 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   public final <K, V> Region<K, V> createRegion(final String name, final String rootName,
       final RegionAttributes<K, V> attributes) throws CacheException {
     Region<K, V> root = getRootRegion(rootName);
+    RegionFactory<K,V> regionFactory = getCache().createRegionFactory(attributes);
+
     if (root == null) {
       // don't put listeners on root region
-      AttributesFactory<K, V> attributesFactory = new AttributesFactory<>(attributes);
-      ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
+      RegionFactory<K,V> regionFactory2 = new RegionFactory<>(regionFactory);
+      configRootRegionFactory(regionFactory2);
 
-      attributesFactory.setCacheLoader(null);
-      attributesFactory.setCacheWriter(null);
-      attributesFactory.setPoolName(null);
-      attributesFactory.setPartitionAttributes(null);
-      attributesFactory.setRegionTimeToLive(expiration);
-      attributesFactory.setEntryTimeToLive(expiration);
-      attributesFactory.setRegionIdleTimeout(expiration);
-      attributesFactory.setEntryIdleTimeout(expiration);
-
-      RegionAttributes<K, V> rootAttrs = attributesFactory.create();
-      root = createRootRegion(rootName, rootAttrs);
+      root = createRootRegion(rootName, regionFactory2);
     }
 
     return root.createSubregion(name, attributes);
