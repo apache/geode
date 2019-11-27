@@ -83,6 +83,10 @@ public abstract class CancelCriterion {
     throw generateCancelledException(e);
   }
 
+  public void checkCancelInProgress() {
+    checkCancelInProgress(null);
+  }
+
   /**
    * Template factory method for generating the exception to be thrown by
    * {@link #checkCancelInProgress(Throwable)}. Override this to specify different exception for

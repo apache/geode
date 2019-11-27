@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
@@ -45,6 +46,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.logging.log4j.Logger;
@@ -454,7 +456,8 @@ public class PartitionedRegion extends LocalRegion
 
   private final ColocationLoggerFactory colocationLoggerFactory;
 
-  private ColocationLogger missingColocatedRegionLogger;
+  private final AtomicReference<ColocationLogger> missingColocatedRegionLogger =
+      new AtomicReference<>();
 
   private List<BucketRegion> sortedBuckets;
 
@@ -7216,30 +7219,44 @@ public class PartitionedRegion extends LocalRegion
   }
 
   private void stopMissingColocatedRegionLogger() {
-    if (missingColocatedRegionLogger != null) {
-      missingColocatedRegionLogger.stop();
+    ColocationLogger colocationLogger = missingColocatedRegionLogger.getAndSet(null);
+    if (colocationLogger != null) {
+      colocationLogger.stop();
     }
-    missingColocatedRegionLogger = null;
   }
 
   public void addMissingColocatedRegionLogger(String childName) {
-    if (missingColocatedRegionLogger == null) {
-      missingColocatedRegionLogger = colocationLoggerFactory.startColocationLogger(this);
-    }
-    missingColocatedRegionLogger.addMissingChildRegion(childName);
+    getOrSetMissingColocatedRegionLogger().addMissingChildRegion(childName);
   }
 
   public void addMissingColocatedRegionLogger(PartitionedRegion childRegion) {
-    if (missingColocatedRegionLogger == null) {
-      missingColocatedRegionLogger = colocationLoggerFactory.startColocationLogger(this);
+    getOrSetMissingColocatedRegionLogger().addMissingChildRegions(childRegion);
+  }
+
+  /**
+   * Returns existing ColocationLogger or creates and sets a new instance if one does not yet exist.
+   * Spins to ensure that if another thread sets ColocationLogger, we return that one instead of
+   * setting another instance. Checks CancelCriterion during spin and either returns an instance or
+   * throws NullPointerException. The only way to exist the loop is with an instance or by throwing
+   * CancelException if the Cache closes.
+   */
+  private ColocationLogger getOrSetMissingColocatedRegionLogger() {
+    ColocationLogger colocationLogger = missingColocatedRegionLogger.get();
+    while (colocationLogger == null) {
+      colocationLogger = colocationLoggerFactory.startColocationLogger(this);
+      if (!missingColocatedRegionLogger.compareAndSet(null, colocationLogger)) {
+        colocationLogger = missingColocatedRegionLogger.get();
+      }
+      getCancelCriterion().checkCancelInProgress();
     }
-    missingColocatedRegionLogger.addMissingChildRegions(childRegion);
+    requireNonNull(colocationLogger);
+    return colocationLogger;
   }
 
   public List<String> getMissingColocatedChildren() {
-    ColocationLogger regionLogger = missingColocatedRegionLogger;
-    if (regionLogger != null) {
-      return regionLogger.updateAndGetMissingChildRegions();
+    ColocationLogger colocationLogger = missingColocatedRegionLogger.get();
+    if (colocationLogger != null) {
+      return colocationLogger.updateAndGetMissingChildRegions();
     }
     return Collections.emptyList();
   }
