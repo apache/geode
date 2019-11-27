@@ -27,8 +27,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -133,7 +133,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   }
 
   @Override
-  public void process(DistributionMessage msg) {
+  public void process(ClusterMessage msg) {
     try {
       Assert.assertTrue(msg instanceof DLockRecoverGrantorReplyMessage,
           "DLockRecoverGrantorProcessor is unable to process message of type " + msg.getClass());

@@ -34,8 +34,8 @@ import org.apache.geode.cache.CommitIncompleteException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -246,7 +246,7 @@ public class DistTXRollbackMessage extends TXMessage {
     }
 
     @Override
-    public void process(DistributionMessage msg) {
+    public void process(ClusterMessage msg) {
       if (DistributionStats.enableClockStats) {
         this.start = DistributionStats.getStatTime();
       }
@@ -296,7 +296,7 @@ public class DistTXRollbackMessage extends TXMessage {
     }
 
     @Override
-    public void process(DistributionMessage msg) {
+    public void process(ClusterMessage msg) {
       if (msg instanceof DistTXRollbackReplyMessage) {
         DistTXRollbackReplyMessage reply = (DistTXRollbackReplyMessage) msg;
         this.rollbackResponseMap.put(reply.getSender(), reply.getRollbackState());
@@ -313,7 +313,7 @@ public class DistTXRollbackMessage extends TXMessage {
     }
 
     @Override
-    protected void processException(DistributionMessage msg, ReplyException ex) {
+    protected void processException(ClusterMessage msg, ReplyException ex) {
       if (msg instanceof ReplyMessage) {
         synchronized (this) {
           if (this.exception == null) {

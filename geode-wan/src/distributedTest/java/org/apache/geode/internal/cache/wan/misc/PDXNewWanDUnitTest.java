@@ -32,7 +32,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.UpdateOperation;
 import org.apache.geode.internal.cache.wan.WANTestBase;
@@ -854,7 +854,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     private CountDownLatch startedBlocking = new CountDownLatch(1);
 
     @Override
-    public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+    public void beforeSendMessage(ClusterDistributionManager dm, ClusterMessage message) {
       if (message instanceof UpdateOperation.UpdateMessage
           && ((UpdateOperation.UpdateMessage) message).getRegionPath()
               .contains(PeerTypeRegistration.REGION_FULL_PATH)) {

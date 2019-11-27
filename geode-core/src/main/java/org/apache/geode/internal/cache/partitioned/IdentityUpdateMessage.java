@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.OperationExecutors;
@@ -37,7 +37,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
-public class IdentityUpdateMessage extends DistributionMessage implements MessageWithReply {
+public class IdentityUpdateMessage extends ClusterMessage implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 
   private int processorId;

@@ -46,7 +46,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
@@ -281,7 +281,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     vm0.invoke(() -> {
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
         @Override
-        public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+        public void beforeSendMessage(ClusterDistributionManager dm, ClusterMessage message) {
           if (message instanceof ManageBucketMessage.ManageBucketReplyMessage) {
             Cache cache = getCache();
             disconnectFromDS();
@@ -347,7 +347,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
+            ClusterMessage message) {
           if (message instanceof RequestImageMessage) {
             RequestImageMessage requestImageMessage = (RequestImageMessage) message;
             if (requestImageMessage.regionPath.contains("_0")) {
@@ -399,7 +399,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
+            ClusterMessage message) {
           if (message instanceof RequestImageMessage) {
             RequestImageMessage requestImageMessage = (RequestImageMessage) message;
             if (requestImageMessage.regionPath.contains("_0")) {

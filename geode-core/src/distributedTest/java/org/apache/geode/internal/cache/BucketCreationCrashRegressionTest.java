@@ -49,7 +49,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage.ManageBucketReplyMessage;
@@ -231,7 +231,7 @@ public class BucketCreationCrashRegressionTest implements Serializable {
     return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
   }
 
-  private void handleBeforeProcessMessage(final Class<? extends DistributionMessage> messageClass,
+  private void handleBeforeProcessMessage(final Class<? extends ClusterMessage> messageClass,
       final SerializableRunnableIF runnable) {
     DistributionMessageObserver
         .setInstance(new RunnableBeforeProcessMessageObserver(messageClass, runnable));
@@ -243,17 +243,17 @@ public class BucketCreationCrashRegressionTest implements Serializable {
 
   private class RunnableBeforeProcessMessageObserver extends DistributionMessageObserver {
 
-    private final Class<? extends DistributionMessage> messageClass;
+    private final Class<? extends ClusterMessage> messageClass;
     private final SerializableRunnableIF runnable;
 
-    RunnableBeforeProcessMessageObserver(final Class<? extends DistributionMessage> messageClass,
+    RunnableBeforeProcessMessageObserver(final Class<? extends ClusterMessage> messageClass,
         final SerializableRunnableIF runnable) {
       this.messageClass = messageClass;
       this.runnable = runnable;
     }
 
     @Override
-    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
       if (messageClass.isInstance(message)) {
         try {
           runnable.run();

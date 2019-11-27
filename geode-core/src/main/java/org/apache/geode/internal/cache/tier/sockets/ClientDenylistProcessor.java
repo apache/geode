@@ -24,8 +24,8 @@ import java.util.Set;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -59,7 +59,7 @@ public class ClientDenylistProcessor extends ReplyProcessor21 {
   ////////////// Instance methods //////////////
 
   @Override
-  public void process(DistributionMessage msg) {
+  public void process(ClusterMessage msg) {
     super.process(msg);
   }
 

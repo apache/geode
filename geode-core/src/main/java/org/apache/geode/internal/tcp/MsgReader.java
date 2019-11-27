@@ -20,8 +20,8 @@ import java.nio.ByteBuffer;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -85,7 +85,7 @@ public class MsgReader {
    *
    * @return the message, or null if we only received a chunk of the message
    */
-  DistributionMessage readMessage(Header header)
+  ClusterMessage readMessage(Header header)
       throws IOException, ClassNotFoundException {
     ByteBuffer nioInputBuffer = readAtLeast(header.messageLength);
     Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
@@ -94,7 +94,7 @@ public class MsgReader {
     try {
       byteBufferInputStream.setBuffer(nioInputBuffer);
       ReplyProcessor21.initMessageRPId();
-      return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
+      return (ClusterMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
     } catch (RuntimeException e) {
       throw e;
     } catch (IOException e) {

@@ -171,7 +171,7 @@ public interface DistributionManager extends ReplySender {
    * @return recipients who did not receive the message
    */
   @Override
-  Set<InternalDistributedMember> putOutgoing(DistributionMessage msg);
+  Set<InternalDistributedMember> putOutgoing(ClusterMessage msg);
 
   /**
    * Returns the distributed system to which this distribution manager is connected.

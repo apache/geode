@@ -35,8 +35,8 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -297,7 +297,7 @@ public class DistTXCommitMessage extends TXMessage {
     }
 
     @Override
-    public void process(DistributionMessage msg) {
+    public void process(ClusterMessage msg) {
       if (msg instanceof DistTXCommitReplyMessage) {
         DistTXCommitReplyMessage reply = (DistTXCommitReplyMessage) msg;
         this.commitResponseMap.put(reply.getSender(), reply.getCommitMessage());
@@ -314,7 +314,7 @@ public class DistTXCommitMessage extends TXMessage {
     }
 
     @Override
-    protected void processException(DistributionMessage msg, ReplyException ex) {
+    protected void processException(ClusterMessage msg, ReplyException ex) {
       if (msg instanceof ReplyMessage) {
         synchronized (this) {
           if (this.exception == null) {

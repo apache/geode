@@ -62,6 +62,7 @@ import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
+import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
@@ -87,19 +88,19 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * The <code>DistributionManager</code> uses a {@link Membership} to distribute
- * {@link DistributionMessage messages}. It also reports on who is currently in the distributed
+ * {@link ClusterMessage messages}. It also reports on who is currently in the distributed
  * system and tracks the elder member for the distributed lock service. You may also register a
  * membership listener with the DistributionManager to receive notification of changes in
  * membership.
  *
  * <P>
  *
- * Code that wishes to send a {@link DistributionMessage} must get the
+ * Code that wishes to send a {@link ClusterMessage} must get the
  * <code>DistributionManager</code> and invoke {@link #putOutgoing}.
  *
  * <P>
  *
- * @see DistributionMessage#process
+ * @see ClusterMessage#process
  * @see IgnoredByManager
  */
 public class ClusterDistributionManager implements DistributionManager {
@@ -748,7 +749,7 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    * @param msg the messsage that is currently being sent
    */
-  private void waitUntilReadyToSendMsgs(DistributionMessage msg) {
+  private void waitUntilReadyToSendMsgs(ClusterMessage msg) {
     if (readyToSendMsgs) {
       return;
     }
@@ -1060,7 +1061,7 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   @Override
-  public Set<InternalDistributedMember> putOutgoing(final DistributionMessage msg) {
+  public Set<InternalDistributedMember> putOutgoing(final ClusterMessage msg) {
     try {
       DistributionMessageObserver observer = DistributionMessageObserver.getInstance();
       if (observer != null) {
@@ -1828,7 +1829,7 @@ public class ClusterDistributionManager implements DistributionManager {
     if (logger.isDebugEnabled()) {
       logger.debug("Received message '{}' from <{}>", message, message.getSender());
     }
-    scheduleIncomingMessage(message);
+    scheduleIncomingMessage((ClusterMessage) message);
   }
 
   /**
@@ -1939,7 +1940,7 @@ public class ClusterDistributionManager implements DistributionManager {
     try {
       // m.resetTimestamp(); // nanotimers across systems don't match
       long startTime = DistributionStats.getStatTime();
-      sendViaMembershipManager(m.getRecipients(), m, this, stats);
+      sendViaMembershipManager(m.getRecipientsArray(), m, this, stats);
       stats.incSentMessages(1L);
       if (DistributionStats.enableClockStats) {
         stats.incSentMessagesTime(DistributionStats.getStatTime() - startTime);
@@ -1963,12 +1964,12 @@ public class ClusterDistributionManager implements DistributionManager {
    *         all received it or it was sent to {@link DistributionMessage#ALL_RECIPIENTS}.
    * @throws NotSerializableException If <code>message</code> cannot be serialized
    */
-  Set<InternalDistributedMember> sendOutgoing(DistributionMessage message)
+  Set<InternalDistributedMember> sendOutgoing(ClusterMessage message)
       throws NotSerializableException {
     long startTime = DistributionStats.getStatTime();
 
     Set<InternalDistributedMember> result =
-        sendViaMembershipManager(message.getRecipients(), message, this, stats);
+        sendViaMembershipManager(message.getRecipientsArray(), message, this, stats);
     long endTime = 0L;
     if (DistributionStats.enableClockStats) {
       endTime = NanoTimer.getTime();
@@ -1996,7 +1997,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * @return recipients who did not receive the message
    * @throws NotSerializableException If <codE>message</code> cannot be serialized
    */
-  private Set<InternalDistributedMember> sendMessage(DistributionMessage message)
+  private Set<InternalDistributedMember> sendMessage(ClusterMessage message)
       throws NotSerializableException {
     try {
       // Verify we're not too far into the shutdown
@@ -2020,7 +2021,7 @@ public class ClusterDistributionManager implements DistributionManager {
       if (message == null || message.forAll()) {
         return null;
       }
-      return new HashSet<>(Arrays.asList(message.getRecipients()));
+      return new HashSet<>(Arrays.asList(message.getRecipientsArray()));
     }
   }
 
@@ -2031,7 +2032,7 @@ public class ClusterDistributionManager implements DistributionManager {
    */
   private Set<InternalDistributedMember> sendViaMembershipManager(
       InternalDistributedMember[] destinations,
-      DistributionMessage content, ClusterDistributionManager dm, DistributionStats stats)
+      ClusterMessage content, ClusterDistributionManager dm, DistributionStats stats)
       throws NotSerializableException {
     if (distribution == null) {
       logger.warn("Attempting a send to a disconnected DistributionManager");
@@ -2048,7 +2049,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * Schedule a given message appropriately, depending upon its executor kind.
    */
-  private void scheduleIncomingMessage(DistributionMessage message) {
+  private void scheduleIncomingMessage(ClusterMessage message) {
     /*
      * Potential race condition between starting up and getting other distribution manager ids -- DM
      * will only be initialized upto the point at which it called startThreads

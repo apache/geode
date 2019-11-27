@@ -40,22 +40,22 @@ public abstract class DistributionMessageObserver {
   }
 
   /**
-   * Called before a the process method of the DistributionMessage is called
+   * Called before a the process method of the ClusterMessage is called
    *
    * @param dm the distribution manager that received the message
    * @param message The message itself
    */
-  public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+  public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
     // override as needed
   }
 
   /**
-   * Called after the process method of the DistributionMessage is called
+   * Called after the process method of the ClusterMessage is called
    *
    * @param dm the distribution manager that received the message
    * @param message The message itself
    */
-  public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+  public void afterProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
     // override as needed
   }
 
@@ -65,7 +65,7 @@ public abstract class DistributionMessageObserver {
    * @param dm the distribution manager that's sending the message
    * @param message the message itself
    */
-  public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+  public void beforeSendMessage(ClusterDistributionManager dm, ClusterMessage message) {
     // override as needed
   }
 }

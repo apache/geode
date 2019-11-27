@@ -67,9 +67,9 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.OperationExecutors;
@@ -363,7 +363,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
    * of SERIAL_ACKED_MESSAGE. Don't forget to reset the registration to
    * SerialAckedMessage at the end of the test.
    */
-  private static class SerialAckedMessageWithBigReply extends DistributionMessage
+  private static class SerialAckedMessageWithBigReply extends ClusterMessage
       implements MessageWithReply, DirectReplyMessage {
     static final int DSFID = SERIAL_ACKED_MESSAGE;
 

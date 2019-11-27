@@ -35,7 +35,7 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -420,7 +420,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
           new DistributionMessageObserver() {
             @Override
             public void beforeProcessMessage(ClusterDistributionManager dm,
-                DistributionMessage message) {
+                ClusterMessage message) {
               if (message instanceof InitialImageOperation.RequestImageMessage) {
                 InitialImageOperation.RequestImageMessage rim =
                     (InitialImageOperation.RequestImageMessage) message;

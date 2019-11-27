@@ -31,7 +31,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.UpdateOperation.UpdateMessage;
@@ -107,7 +107,7 @@ public class InterruptClientServerDUnitTest extends JUnit4CacheTestCase {
 
           @Override
           public void beforeProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
+              ClusterMessage message) {
             if (message instanceof UpdateMessage
                 && ((UpdateMessage) message).regionPath.contains("region")
                 && doInterrupt.compareAndSet(true, false)) {

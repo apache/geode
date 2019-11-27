@@ -43,6 +43,7 @@ import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
+import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -92,7 +93,7 @@ public class DistributionTest {
 
     distribution.setDirectChannel(dc);
     when(dc.send(any(GMSMembership.class), any(mockMembers.getClass()),
-        any(DistributionMessage.class), anyInt(), anyInt())).thenReturn(100);
+        any(ClusterMessage.class), anyInt(), anyInt())).thenReturn(100);
 
   }
 
@@ -120,7 +121,7 @@ public class DistributionTest {
     ConnectExceptions exception = new ConnectExceptions();
     exception.addFailure(recipients[0], new Exception("testing"));
     when(dc.send(any(), any(mockMembers.getClass()),
-        any(DistributionMessage.class), anyLong(), anyLong())).thenThrow(exception);
+        any(ClusterMessage.class), anyLong(), anyLong())).thenThrow(exception);
     failures = distribution.directChannelSend(recipients, m);
     assertTrue(failures != null);
     assertEquals(1, failures.size());
@@ -136,7 +137,7 @@ public class DistributionTest {
     Set<InternalDistributedMember> failures = distribution
         .directChannelSend(recipients, m);
     when(dc.send(any(), any(mockMembers.getClass()),
-        any(DistributionMessage.class), anyInt(), anyInt())).thenReturn(0);
+        any(ClusterMessage.class), anyInt(), anyInt())).thenReturn(0);
     doThrow(DistributedSystemDisconnectedException.class).when(membership).checkCancelled();
 
     try {
@@ -156,7 +157,7 @@ public class DistributionTest {
         .directChannelSend(null, m);
     assertTrue(failures == null);
     verify(dc).send(any(), isA(mockMembers.getClass()),
-        isA(DistributionMessage.class), anyLong(), anyLong());
+        isA(ClusterMessage.class), anyLong(), anyLong());
   }
 
   @Test
@@ -172,7 +173,7 @@ public class DistributionTest {
     ConnectExceptions exception = new ConnectExceptions();
     exception.addFailure(recipients[0], new Exception("testing"));
     when(dc.send(any(), any(mockMembers.getClass()),
-        any(DistributionMessage.class), anyLong(), anyLong())).thenThrow(exception);
+        any(ClusterMessage.class), anyLong(), anyLong())).thenThrow(exception);
     Assertions.assertThatThrownBy(() -> {
       distribution.directChannelSend(recipients, m);
     }).isInstanceOf(DistributedSystemDisconnectedException.class);

@@ -38,11 +38,11 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
@@ -242,7 +242,7 @@ public class DirectChannel {
    */
   private int sendToOne(final Membership mgr,
       InternalDistributedMember[] p_destinations,
-      final DistributionMessage msg, long ackWaitThreshold, long ackSAThreshold)
+      final ClusterMessage msg, long ackWaitThreshold, long ackSAThreshold)
       throws ConnectExceptions, NotSerializableException {
     return sendToMany(mgr, p_destinations, msg, ackWaitThreshold, ackSAThreshold);
   }
@@ -262,7 +262,7 @@ public class DirectChannel {
    */
   private int sendToMany(final Membership mgr,
       InternalDistributedMember[] p_destinations,
-      final DistributionMessage msg, long ackWaitThreshold, long ackSAThreshold)
+      final ClusterMessage msg, long ackWaitThreshold, long ackSAThreshold)
       throws ConnectExceptions, NotSerializableException {
     InternalDistributedMember destinations[] = p_destinations;
 
@@ -510,7 +510,7 @@ public class DirectChannel {
    * @return null if everything went okay, or a ConnectExceptions object if some connections
    *         couldn't be obtained
    */
-  private ConnectExceptions getConnections(Membership mgr, DistributionMessage msg,
+  private ConnectExceptions getConnections(Membership mgr, ClusterMessage msg,
       InternalDistributedMember[] destinations, boolean preserveOrder, boolean retry,
       long ackTimeout, long ackSDTimeout, List cons) {
     ConnectExceptions ce = null;
@@ -575,7 +575,7 @@ public class DirectChannel {
    * @throws ConnectionException if the conduit has stopped
    */
   public int send(Membership mgr, InternalDistributedMember[] destinations,
-      DistributionMessage msg, long ackWaitThreshold, long ackSAThreshold)
+      ClusterMessage msg, long ackWaitThreshold, long ackSAThreshold)
       throws ConnectExceptions, NotSerializableException {
 
     if (disconnected) {
@@ -698,7 +698,7 @@ public class DirectChannel {
     }
   }
 
-  public void receive(DistributionMessage msg, int bytesRead) {
+  public void receive(ClusterMessage msg, int bytesRead) {
     if (disconnected) {
       return;
     }

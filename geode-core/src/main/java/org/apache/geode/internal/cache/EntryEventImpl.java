@@ -45,8 +45,8 @@ import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache.util.TimestampedEntryEvent;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -150,7 +150,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   /**
    * transient storage for the message that caused the event
    */
-  transient DistributionMessage causedByMessage;
+  transient ClusterMessage causedByMessage;
 
   /**
    * The originating membershipId of this event.
@@ -580,8 +580,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     return testEventFlag(EventFlags.FLAG_CONCURRENCY_CONFLICT);
   }
 
-  /** set the DistributionMessage that caused this event */
-  public void setCausedByMessage(DistributionMessage msg) {
+  /** set the ClusterMessage that caused this event */
+  public void setCausedByMessage(ClusterMessage msg) {
     this.causedByMessage = msg;
   }
 

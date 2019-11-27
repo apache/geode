@@ -29,8 +29,8 @@ import org.junit.Test;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
@@ -47,7 +47,7 @@ public class BackupReplyProcessorTest {
   private Set<PersistentID> persistentIds;
 
   private BackupResponse backupResponse;
-  private DistributionMessage nonBackupResponse;
+  private ClusterMessage nonBackupResponse;
 
   @Before
   public void setUp() throws Exception {
@@ -55,7 +55,7 @@ public class BackupReplyProcessorTest {
     dm = mock(DistributionManager.class);
     system = mock(InternalDistributedSystem.class);
     backupResponse = mock(BackupResponse.class);
-    nonBackupResponse = mock(DistributionMessage.class);
+    nonBackupResponse = mock(ClusterMessage.class);
     sender = mock(InternalDistributedMember.class);
 
     recipients = new HashSet<>();

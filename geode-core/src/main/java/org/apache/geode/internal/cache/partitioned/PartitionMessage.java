@@ -37,9 +37,9 @@ import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.OperationExecutors;
@@ -73,7 +73,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 5.0
  */
-public abstract class PartitionMessage extends DistributionMessage
+public abstract class PartitionMessage extends ClusterMessage
     implements MessageWithReply, TransactionMessage {
   private static final Logger logger = LogService.getLogger();
 
@@ -102,7 +102,7 @@ public abstract class PartitionMessage extends DistributionMessage
    *
    */
   /** flag to indicate notification message */
-  protected static final short NOTIFICATION_ONLY = DistributionMessage.UNRESERVED_FLAGS_START;
+  protected static final short NOTIFICATION_ONLY = ClusterMessage.UNRESERVED_FLAGS_START;
   /** flag to indicate ifNew in PutMessages */
   protected static final short IF_NEW = (NOTIFICATION_ONLY << 1);
   /** flag to indicate ifOld in PutMessages */
@@ -663,7 +663,7 @@ public abstract class PartitionMessage extends DistributionMessage
   }
 
   public InternalDistributedMember getRecipient() {
-    return getRecipients()[0];
+    return getRecipientsArray()[0];
   }
 
   public void setOperation(Operation op) {
@@ -855,7 +855,7 @@ public abstract class PartitionMessage extends DistributionMessage
 
     /* overridden from ReplyProcessor21 */
     @Override
-    public void process(DistributionMessage msg) {
+    public void process(ClusterMessage msg) {
       this.responseReceived = true;
       super.process(msg);
     }

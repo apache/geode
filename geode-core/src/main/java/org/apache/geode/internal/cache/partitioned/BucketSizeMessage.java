@@ -24,8 +24,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -245,7 +245,7 @@ public class BucketSizeMessage extends PartitionMessage {
     }
 
     @Override
-    public void process(DistributionMessage msg) {
+    public void process(ClusterMessage msg) {
       try {
         if (msg instanceof BucketSizeReplyMessage) {
           BucketSizeReplyMessage reply = (BucketSizeReplyMessage) msg;

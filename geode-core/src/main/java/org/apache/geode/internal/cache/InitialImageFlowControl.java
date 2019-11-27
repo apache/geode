@@ -27,8 +27,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ProcessorKeeper21;
@@ -199,7 +199,7 @@ public class InitialImageFlowControl implements MembershipListener {
   }
 
 
-  public static class FlowControlPermitMessage extends DistributionMessage
+  public static class FlowControlPermitMessage extends ClusterMessage
       implements DataSerializableFixedID {
     private int keeperId;
 

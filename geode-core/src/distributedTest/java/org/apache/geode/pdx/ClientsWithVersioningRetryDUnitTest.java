@@ -45,8 +45,8 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
@@ -270,7 +270,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
               @Override
               public void beforeSendMessage(ClusterDistributionManager dm,
-                  DistributionMessage message) {
+                  ClusterMessage message) {
                 if (message instanceof DistributedCacheOperation.CacheOperationMessage) {
                   DistributedCacheOperation.CacheOperationMessage com =
                       (DistributedCacheOperation.CacheOperationMessage) message;
@@ -378,7 +378,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
               @Override
               public void beforeSendMessage(ClusterDistributionManager dm,
-                  DistributionMessage message) {
+                  ClusterMessage message) {
                 if (message instanceof DistributedPutAllOperation.PutAllMessage) {
                   DistributionMessageObserver.setInstance(null);
                   disconnectFromDS(vm1);
@@ -483,7 +483,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
 
                   @Override
                   public void beforeProcessMessage(ClusterDistributionManager dm,
-                      DistributionMessage msg) {
+                      ClusterMessage msg) {
                     if (msg instanceof DistributedPutAllOperation.PutAllMessage) {
                       DistributionMessageObserver.setInstance(null);
                       Wait.pause(

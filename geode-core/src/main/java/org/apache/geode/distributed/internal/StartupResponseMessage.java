@@ -37,7 +37,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 /**
  * A message that is sent to all other distribution manager when a distribution manager starts up.
  */
-public class StartupResponseMessage extends DistributionMessage
+public class StartupResponseMessage extends ClusterMessage
     implements AdminMessageType {
   private static final Logger logger = LogService.getLogger();
 

@@ -978,7 +978,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       ClusterDistributionManager dm, VersionTag versionTag) {
     // NOTE: keep this method efficient since it is optimized
     // by executing it in the p2p reader.
-    // This is done with this line in DistributionMessage.java:
+    // This is done with this line in ClusterMessage.java:
     // || c.equals(SearchLoadAndWriteProcessor.ResponseMessage.class)
 
     // bug 35266 - don't pay attention to late breaking "get" responses
@@ -1666,7 +1666,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     protected void process(ClusterDistributionManager dm) {
       // NOTE: keep this method efficient since it is optimized
       // by executing it in the p2p reader.
-      // This is done with this line in DistributionMessage.java:
+      // This is done with this line in ClusterMessage.java:
       // || c.equals(SearchLoadAndWriteProcessor.ResponseMessage.class)
       SearchLoadAndWriteProcessor processor = null;
       processor = (SearchLoadAndWriteProcessor) getProcessorKeeper().retrieve(this.processorId);

@@ -32,8 +32,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.InitialImageOperation.ImageReplyMessage;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -470,7 +470,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
     private volatile boolean started = false;
 
     @Override
-    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
       if (started && message instanceof ImageReplyMessage) {
         messageCount.incrementAndGet();
         try {

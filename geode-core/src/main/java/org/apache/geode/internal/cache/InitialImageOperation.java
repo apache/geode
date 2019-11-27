@@ -57,9 +57,9 @@ import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -1289,10 +1289,10 @@ public class InitialImageOperation {
      *
      * @see
      * org.apache.geode.distributed.internal.ReplyProcessor21#process(org.apache.geode.distributed.
-     * internal.DistributionMessage)
+     * internal.ClusterMessage)
      */
     @Override
-    public void process(DistributionMessage msg) {
+    public void process(ClusterMessage msg) {
       // ignore messages from members not in the wait list
       if (!waitingOnMember(msg.getSender())) {
         return;
@@ -1530,7 +1530,7 @@ public class InitialImageOperation {
   /**
    * This is the message that initiates a request for an image
    */
-  public static class RequestImageMessage extends DistributionMessage implements MessageWithReply {
+  public static class RequestImageMessage extends ClusterMessage implements MessageWithReply {
 
     /**
      * a version vector is transmitted with the request if we are merely synchronizing with an
@@ -2213,7 +2213,7 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void process(DistributionMessage msg) {
+    public void process(ClusterMessage msg) {
       // ignore messages from members not in the wait list
       if (!waitingOnMember(msg.getSender())) {
         return;
@@ -2270,7 +2270,7 @@ public class InitialImageOperation {
   /**
    * This is the message thats sent to get Filter information.
    */
-  public static class RequestFilterInfoMessage extends DistributionMessage
+  public static class RequestFilterInfoMessage extends ClusterMessage
       implements MessageWithReply {
 
     /**
@@ -2410,7 +2410,7 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void process(DistributionMessage msg) {
+    public void process(ClusterMessage msg) {
       final boolean isGiiDebugEnabled = logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE);
 
       ReplyMessage reply = (ReplyMessage) msg;
@@ -2542,7 +2542,7 @@ public class InitialImageOperation {
   /**
    * This is the message thats sent to get RVV from GII provider.
    */
-  public static class RequestRVVMessage extends DistributionMessage implements MessageWithReply {
+  public static class RequestRVVMessage extends ClusterMessage implements MessageWithReply {
 
     /**
      * Name of the region.

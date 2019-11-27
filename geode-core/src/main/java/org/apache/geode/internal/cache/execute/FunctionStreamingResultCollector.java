@@ -36,8 +36,8 @@ import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -500,7 +500,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21
   }
 
   @Override
-  public void process(DistributionMessage msg) {
+  public void process(ClusterMessage msg) {
     if (!waitingOnMember(msg.getSender())) {
       return;
     }

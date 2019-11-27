@@ -63,8 +63,8 @@ import org.apache.geode.cache.query.internal.utils.PDXUtils;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -165,7 +165,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
   }
 
   @Override
-  protected DistributionMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
+  protected ClusterMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
     throw new UnsupportedOperationException();
   }
 
@@ -445,7 +445,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     return requiresRetry | localNeedsRetry;
   }
 
-  protected Set sendMessage(DistributionMessage m) {
+  protected Set sendMessage(ClusterMessage m) {
     return this.sys.getDistributionManager().putOutgoing(m);
   }
 
@@ -1093,7 +1093,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     }
 
     @Override
-    public void process(DistributionMessage msg) {
+    public void process(ClusterMessage msg) {
       // ignore messages from members not in the wait list
       if (!waitingOnMember(msg.getSender())) {
         return;

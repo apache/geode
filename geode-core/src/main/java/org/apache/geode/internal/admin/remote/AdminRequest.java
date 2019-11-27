@@ -176,7 +176,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
   }
 
   public InternalDistributedMember getRecipient() {
-    InternalDistributedMember[] recipients = getRecipients();
+    InternalDistributedMember[] recipients = getRecipientsArray();
     int size = recipients.length;
     if (size == 0) {
       return null;

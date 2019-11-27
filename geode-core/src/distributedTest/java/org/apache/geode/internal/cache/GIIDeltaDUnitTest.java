@@ -46,8 +46,8 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -2090,7 +2090,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
           @Override
           public void beforeSendMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
+              ClusterMessage message) {
             if (message instanceof TombstoneMessage
                 && ((TombstoneMessage) message).regionPath.contains(REGION_NAME)) {
               System.err.println("DAN DEBUG  about to send tombstone message, starting up R - "
@@ -2114,7 +2114,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
           @Override
           public void afterProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
+              ClusterMessage message) {
             if (message instanceof TombstoneMessage
                 && ((TombstoneMessage) message).regionPath.contains(REGION_NAME)) {
               System.err.println(
@@ -2803,7 +2803,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     }
 
     @Override
-    public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+    public void beforeSendMessage(ClusterDistributionManager dm, ClusterMessage message) {
       VersionTag tag = null;
       if (message instanceof UpdateMessage) {
         UpdateMessage um = (UpdateMessage) message;

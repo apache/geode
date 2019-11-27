@@ -16,8 +16,8 @@ package org.apache.geode.internal.cache.backup;
 
 import java.util.Set;
 
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
 
@@ -49,7 +49,7 @@ class BackupReplyProcessor extends AdminMultipleReplyProcessor {
   }
 
   @Override
-  protected void process(DistributionMessage message, boolean warn) {
+  protected void process(ClusterMessage message, boolean warn) {
     if (message instanceof BackupResponse) {
       BackupResponse response = (BackupResponse) message;
       resultCollector.addToResults(response.getSender(), response.getPersistentIds());

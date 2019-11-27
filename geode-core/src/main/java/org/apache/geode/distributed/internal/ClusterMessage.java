@@ -19,6 +19,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -27,15 +29,14 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.MessageLogger;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
@@ -45,7 +46,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * <P>
- * A <code>DistributionMessage</code> carries some piece of information to a distribution manager.
+ * A <code>ClusterMessage</code> carries some piece of information to a distribution manager.
  * </P>
  *
  * <P>
@@ -53,11 +54,12 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * {@link org.apache.geode.distributed.internal.PooledDistributionMessage}. Messages that must be
  * processed serially in the order they were received can extend
  * {@link org.apache.geode.distributed.internal.SerialDistributionMessage}. To customize the
- * sequentialness/thread requirements of a message, extend DistributionMessage and implement
+ * sequentialness/thread requirements of a message, extend ClusterMessage and implement
  * getExecutor().
  * </P>
  */
-public abstract class DistributionMessage implements DataSerializableFixedID, Cloneable {
+public abstract class ClusterMessage
+    implements DistributionMessage, Cloneable {
 
   /**
    * WARNING: setting this to true may break dunit tests.
@@ -68,12 +70,6 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
       !Boolean.getBoolean("DistributionManager.enqueueOrderedMessages");
 
   private static final Logger logger = LogService.getLogger();
-
-  /**
-   * Indicates that a distribution message should be sent to all other distribution managers.
-   */
-  @Immutable
-  public static final InternalDistributedMember ALL_RECIPIENTS = null;
 
   // common flags used by operation messages
   /** Keep this compatible with the other GFE layer PROCESSOR_ID flags. */
@@ -91,6 +87,12 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
 
   /** the unreserved flags start for child classes */
   protected static final short UNRESERVED_FLAGS_START = (HAS_PROCESSOR_TYPE << 1);
+
+  public static final InternalDistributedMember[] EMPTY_RECIPIENTS_ARRAY =
+      new InternalDistributedMember[0];
+
+  public static final List<MemberIdentifier> ALL_RECIPIENTS_LIST =
+      Collections.singletonList(null);
 
   //////////////////// Instance Fields ////////////////////
 
@@ -124,7 +126,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
 
   ////////////////////// Constructors //////////////////////
 
-  protected DistributionMessage() {
+  protected ClusterMessage() {
     this.timeStamp = DistributionStats.getStatTime();
   }
 
@@ -206,7 +208,8 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   }
 
   /**
-   * Sets the intended recipient of the message. If recipient is {@link #ALL_RECIPIENTS} then the
+   * Sets the intended recipient of the message. If recipient is DistributionMessage.ALL_RECIPIENTS
+   * then the
    * message will be sent to all distribution managers.
    */
   public void setRecipient(InternalDistributedMember recipient) {
@@ -244,17 +247,41 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   }
 
   /**
-   * Sets the intended recipient of the message. If recipient set contains {@link #ALL_RECIPIENTS}
+   * Sets the intended recipient of the message. If recipient set contains
+   * DistributionMessage.ALL_RECIPIENTS
    * then the message will be sent to all distribution managers.
    */
-  public void setRecipients(Collection<? extends DistributedMember> recipients) {
-    if (this.recipients != null) {
-      throw new IllegalStateException(
-          "Recipients can only be set once");
-    }
-    this.recipients = recipients
-        .toArray(new InternalDistributedMember[0]);
+  @Override
+  public void setRecipients(Collection recipients) {
+    this.recipients = (InternalDistributedMember[]) recipients
+        .toArray(EMPTY_RECIPIENTS_ARRAY);
   }
+
+  @Override
+  public void setRecipient(MemberIdentifier recipient) {
+    this.recipients = new InternalDistributedMember[] {(InternalDistributedMember) recipient};
+  }
+
+  @Override
+  public void registerProcessor() {
+    // override if direct-ack is supported
+  }
+
+  @Override
+  public boolean isHighPriority() {
+    return false;
+  }
+
+  @Override
+  public List<MemberIdentifier> getRecipients() {
+    InternalDistributedMember[] recipients = getRecipientsArray();
+    if (recipients == null
+        || recipients.length == 1 && recipients[0] == ClusterMessage.ALL_RECIPIENTS) {
+      return ALL_RECIPIENTS_LIST;
+    }
+    return Arrays.asList(recipients);
+  }
+
 
   public void resetRecipients() {
     this.recipients = null;
@@ -267,7 +294,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * all distribution managers, then the array will contain ALL_RECIPIENTS. If the recipients have
    * not been set null is returned.
    */
-  public InternalDistributedMember[] getRecipients() {
+  public InternalDistributedMember[] getRecipientsArray() {
     if (this.multicast) {
       return new InternalDistributedMember[] {ALL_RECIPIENTS};
     } else if (this.recipients != null) {
@@ -318,8 +345,9 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * Sets the sender of this message. This method is only invoked when the message is
    * <B>received</B> by a <code>DistributionManager</code>.
    */
-  public void setSender(InternalDistributedMember _sender) {
-    this.sender = _sender;
+  @Override
+  public void setSender(MemberIdentifier _sender) {
+    this.sender = (InternalDistributedMember) _sender;
   }
 
   /**
@@ -438,7 +466,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
 
           @Override
           public String toString() {
-            return "Processing {" + DistributionMessage.this.toString() + "}";
+            return "Processing {" + ClusterMessage.this.toString() + "}";
           }
         });
       } catch (RejectedExecutionException ex) {
@@ -552,7 +580,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   }
 
   /**
-   * Writes the contents of this <code>DistributionMessage</code> to the given output. Note that
+   * Writes the contents of this <code>ClusterMessage</code> to the given output. Note that
    * classes that override this method should always invoke the inherited method
    * (<code>super.toData()</code>).
    */
@@ -566,7 +594,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   }
 
   /**
-   * Reads the contents of this <code>DistributionMessage</code> from the given input. Note that
+   * Reads the contents of this <code>ClusterMessage</code> from the given input. Note that
    * classes that override this method should always invoke the inherited method
    * (<code>super.fromData()</code>).
    */

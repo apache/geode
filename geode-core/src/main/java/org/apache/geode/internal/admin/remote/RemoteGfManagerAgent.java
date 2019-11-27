@@ -42,9 +42,9 @@ import org.apache.geode.admin.RuntimeAdminException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.DisconnectListener;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ReconnectListener;
@@ -583,7 +583,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
   /**
    * Sends a message and does not wait for a response
    */
-  void sendAsync(DistributionMessage msg) {
+  void sendAsync(ClusterMessage msg) {
     if (system != null) {
       system.getDistributionManager().putOutgoing(msg);
     }

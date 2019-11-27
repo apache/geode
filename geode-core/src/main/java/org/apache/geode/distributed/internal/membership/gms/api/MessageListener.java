@@ -14,8 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.api;
 
-import org.apache.geode.distributed.internal.DistributionMessage;
-
 public interface MessageListener {
 
   /**

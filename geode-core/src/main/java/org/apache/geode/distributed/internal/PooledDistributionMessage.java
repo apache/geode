@@ -20,7 +20,7 @@ package org.apache.geode.distributed.internal;
  * DistributionManager's getThreadPool(). This is sufficient for messages that don't need to be
  * processed serially with respect to any other message.
  */
-public abstract class PooledDistributionMessage extends DistributionMessage {
+public abstract class PooledDistributionMessage extends ClusterMessage {
 
   @Override
   public int getProcessorType() {

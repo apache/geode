@@ -26,7 +26,7 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.test.dunit.VM;
@@ -105,7 +105,7 @@ public class BucketCreationGIIHARegressionTest extends CacheTestCase {
   private class MyDistributionMessageObserver extends DistributionMessageObserver {
 
     @Override
-    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
       if (message instanceof RequestImageMessage) {
         RequestImageMessage rim = (RequestImageMessage) message;
         Region region = getCache().getRegion(rim.regionPath);

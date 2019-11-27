@@ -68,7 +68,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -523,7 +523,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
         @Override
         public void beforeSendMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
+            ClusterMessage message) {
           if (message instanceof PrepareNewPersistentMemberMessage) {
             DistributionMessageObserver.setInstance(null);
             system = dm.getSystem();
@@ -766,7 +766,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
+            ClusterMessage message) {
           if (message instanceof RequestImageMessage) {
             DistributionMessageObserver.setInstance(null);
             system = dm.getSystem();
@@ -833,7 +833,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
+            ClusterMessage message) {
           if (message instanceof DestroyRegionMessage) {
             createPersistentRegionAsync(vm2);
             try {
@@ -885,7 +885,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
+            ClusterMessage message) {
           if (message instanceof PrepareNewPersistentMemberMessage) {
             DistributionMessageObserver.setInstance(null);
             system = dm.getSystem();
@@ -952,7 +952,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
+            ClusterMessage message) {
           if (message instanceof RequestImageMessage) {
             Region<String, String> region = getCache().getRegion(regionName);
 
@@ -1206,7 +1206,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
           @Override
           public void beforeSendMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
+              ClusterMessage message) {
             if (message instanceof AbstractUpdateMessage) {
               try {
                 Thread.sleep(2000);
@@ -1218,7 +1218,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
           @Override
           public void afterProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
+              ClusterMessage message) {
             if (message instanceof AbstractUpdateMessage) {
               DistributionMessageObserver.setInstance(null);
             }

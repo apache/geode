@@ -43,7 +43,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -388,9 +388,9 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
           new DistributionMessageObserver() {
             @Override
             public void beforeSendMessage(ClusterDistributionManager dm,
-                DistributionMessage message) {
+                ClusterMessage message) {
               if (message instanceof TXCommitMessage.CommitProcessForTXIdMessage) {
-                InternalDistributedMember m = message.getRecipients()[0];
+                InternalDistributedMember m = message.getRecipientsArray()[0];
                 message.resetRecipients();
                 message.setRecipient(m);
               }
@@ -403,7 +403,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
           new DistributionMessageObserver() {
             @Override
             public void beforeProcessMessage(ClusterDistributionManager dm,
-                DistributionMessage message) {
+                ClusterMessage message) {
               if (message instanceof TXCommitMessage.CommitProcessForTXIdMessage) {
                 getBlackboard().signalGate("bounce");
               }
@@ -416,7 +416,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
           new DistributionMessageObserver() {
             @Override
             public void beforeProcessMessage(ClusterDistributionManager dm,
-                DistributionMessage message) {
+                ClusterMessage message) {
               if (message instanceof TXCommitMessage.CommitProcessForTXIdMessage) {
                 getBlackboard().signalGate("bounce");
               }

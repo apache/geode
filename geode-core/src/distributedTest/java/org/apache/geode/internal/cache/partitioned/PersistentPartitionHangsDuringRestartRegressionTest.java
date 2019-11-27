@@ -44,7 +44,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.InternalCache;
@@ -237,7 +237,7 @@ public class PersistentPartitionHangsDuringRestartRegressionTest implements Seri
   private class WaitToBounceWhenImageRequested extends DistributionMessageObserver
       implements Serializable {
     @Override
-    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
       if (message instanceof RequestImageMessage) {
         RequestImageMessage requestImageMessage = (RequestImageMessage) message;
         // Don't bounce until we see a bucket

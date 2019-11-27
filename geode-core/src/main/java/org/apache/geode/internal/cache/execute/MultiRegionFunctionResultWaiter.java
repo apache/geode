@@ -21,7 +21,7 @@ import java.util.Set;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.MemberFunctionStreamingMessage;
@@ -39,7 +39,7 @@ public class MultiRegionFunctionResultWaiter extends StreamingFunctionOperation 
   }
 
   @Override
-  protected DistributionMessage createRequestMessage(Set recipients,
+  protected ClusterMessage createRequestMessage(Set recipients,
       FunctionStreamingResultCollector processor, boolean isReExecute,
       boolean isFnSerializationReqd) {
     InternalDistributedMember target = (InternalDistributedMember) recipients.toArray()[0];

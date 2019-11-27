@@ -38,7 +38,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.ForceReattemptException;
@@ -228,7 +228,7 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
     }
 
     @Override
-    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
       if (message instanceof ManageBucketMessage) {
         vm.invoke(() -> crashDistributedSystem(cacheRule.getSystem()));
       }

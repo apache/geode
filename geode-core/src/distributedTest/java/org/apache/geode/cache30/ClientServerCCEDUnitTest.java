@@ -58,7 +58,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.DistributedLockStats;
@@ -441,7 +441,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     public String thName;
 
     @Override
-    public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+    public void afterProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
       thName = Thread.currentThread().getName();
 
       if (message instanceof TombstoneMessage) {

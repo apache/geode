@@ -42,7 +42,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 /**
  * A message that is sent to all other distribution manager when a distribution manager starts up.
  */
-public class StartupMessage extends DistributionMessage implements AdminMessageType {
+public class StartupMessage extends ClusterMessage implements AdminMessageType {
   private static final Logger logger = LogService.getLogger();
 
   private String version = GemFireVersion.getGemFireVersion(); // added for bug 29005

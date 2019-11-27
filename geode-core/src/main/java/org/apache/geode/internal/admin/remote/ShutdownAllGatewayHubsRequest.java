@@ -19,7 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -37,7 +37,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
  * @since Geode 1.0
  *
  */
-public class ShutdownAllGatewayHubsRequest extends DistributionMessage {
+public class ShutdownAllGatewayHubsRequest extends ClusterMessage {
 
   protected int rpid;
 

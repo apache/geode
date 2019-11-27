@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
 import org.apache.geode.internal.Assert;
 
 /**
@@ -36,7 +37,7 @@ public class ProduceDateMessages {
 
       // Make sure that message state was reset
       Assert.assertTrue(message.getDate() == null);
-      Assert.assertTrue(message.getRecipients() == null);
+      Assert.assertTrue(message.getRecipientsArray() == null);
       Assert.assertTrue(message.getSender() == null);
 
       message.setRecipient(DistributionMessage.ALL_RECIPIENTS);

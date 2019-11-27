@@ -21,7 +21,7 @@ import org.apache.geode.SerializationException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
- * Exception thrown when a DistributionMessage is processed to be propagated back to the sender of
+ * Exception thrown when a ClusterMessage is processed to be propagated back to the sender of
  * the message.
  *
  */

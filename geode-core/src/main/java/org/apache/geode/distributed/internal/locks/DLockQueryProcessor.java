@@ -26,8 +26,8 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -112,7 +112,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
   }
 
   @Override
-  public void process(DistributionMessage msg) {
+  public void process(ClusterMessage msg) {
     try {
       DLockQueryReplyMessage myReply = (DLockQueryReplyMessage) msg;
       if (logger.isTraceEnabled(LogMarker.DLS_VERBOSE)) {

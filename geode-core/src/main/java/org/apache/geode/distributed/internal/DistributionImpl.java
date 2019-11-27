@@ -16,6 +16,9 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,6 +51,7 @@ import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenti
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
@@ -59,11 +63,15 @@ import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -211,7 +219,7 @@ public class DistributionImpl implements Distribution {
 
   @Override
   public Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
-      DistributionMessage msg) throws NotSerializableException {
+      ClusterMessage msg) throws NotSerializableException {
     Set<InternalDistributedMember> result;
     boolean allDestinations = msg.forAll();
 
@@ -232,7 +240,7 @@ public class DistributionImpl implements Distribution {
 
     if (msg instanceof AdminMessageType && shutdownInProgress()) {
       // no admin messages while shutting down - this can cause threads to hang
-      return new HashSet<>(Arrays.asList(msg.getRecipients()));
+      return new HashSet<>(Arrays.asList(msg.getRecipientsArray()));
     }
 
     // Handle trivial cases
@@ -287,7 +295,7 @@ public class DistributionImpl implements Distribution {
   @Override
   public Set<InternalDistributedMember> directChannelSend(
       InternalDistributedMember[] destinations,
-      DistributionMessage content)
+      ClusterMessage content)
       throws NotSerializableException {
     MembershipStatistics theStats = clusterDistributionManager.getStats();
     boolean allDestinations;
@@ -581,7 +589,7 @@ public class DistributionImpl implements Distribution {
   // TODO - this method is only used by tests
   @Override
   @VisibleForTesting
-  public void replacePartialIdentifierInMessage(DistributionMessage message) {
+  public void replacePartialIdentifierInMessage(ClusterMessage message) {
     ((GMSMembership) membership).replacePartialIdentifierInMessage(message);
 
   }
@@ -834,7 +842,7 @@ public class DistributionImpl implements Distribution {
   }
 
   /** this is a fake message class that is used to flush the serial execution queue */
-  static class FlushingMessage extends DistributionMessage {
+  static class FlushingMessage extends AbstractGMSMessage {
     final boolean[] done;
 
     FlushingMessage(boolean[] done) {
@@ -849,18 +857,24 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    protected void process(ClusterDistributionManager dm) {
-      // not used
-    }
-
-    @Override
     public int getDSFID() {
       return 0;
     }
 
     @Override
-    public int getProcessorType() {
-      return OperationExecutors.SERIAL_EXECUTOR;
+    public void toData(DataOutput out, SerializationContext context) throws IOException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void fromData(DataInput in, DeserializationContext context)
+        throws IOException, ClassNotFoundException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Version[] getSerializationVersions() {
+      return null;
     }
   }
 

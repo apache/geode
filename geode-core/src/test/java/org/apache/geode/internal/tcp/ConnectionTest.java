@@ -24,7 +24,7 @@ import java.nio.channels.SocketChannel;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -36,7 +36,7 @@ public class ConnectionTest {
     SocketChannel channel = null;
     ByteBuffer buffer = null;
     boolean forceAsync = true;
-    DistributionMessage mockDistributionMessage = mock(DistributionMessage.class);
+    ClusterMessage mockDistributionMessage = mock(ClusterMessage.class);
 
     mockConnection.writeFully(channel, buffer, forceAsync, mockDistributionMessage);
 

@@ -40,7 +40,7 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.partitioned.QueryMessage;
 import org.apache.geode.test.dunit.VM;
@@ -107,7 +107,7 @@ public class PRQueryWithPdxDuringRebalanceRegressionTest implements Serializable
 
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
+            ClusterMessage message) {
           if (message instanceof QueryMessage) {
             RebalanceOperation rebalance =
                 cacheRule.getCache().getResourceManager().createRebalanceFactory().start();

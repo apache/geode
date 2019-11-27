@@ -81,11 +81,11 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
@@ -665,16 +665,16 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public Set<MemberIdentifier> sendUnreliably(GMSMessage msg) {
+  public Set<MemberIdentifier> sendUnreliably(DistributionMessage msg) {
     return send(msg, false);
   }
 
   @Override
-  public Set<MemberIdentifier> send(GMSMessage msg) {
+  public Set<MemberIdentifier> send(DistributionMessage msg) {
     return send(msg, true);
   }
 
-  private Set<MemberIdentifier> send(GMSMessage msg, boolean reliably) {
+  private Set<MemberIdentifier> send(DistributionMessage msg, boolean reliably) {
 
     // perform the same jgroups messaging as in 8.2's GMSMembershipManager.send() method
 
@@ -852,15 +852,16 @@ public class JGroupsMessenger implements Messenger {
 
   /**
    * This is the constructor to use to create a JGroups message holding a GemFire
-   * DistributionMessage. It sets the appropriate flags in the Message and properly serializes the
-   * DistributionMessage for the recipient's product version
+   * ClusterMessage. It sets the appropriate flags in the Message and properly serializes the
+   * ClusterMessage for the recipient's product version
    *
-   * @param gfmsg the DistributionMessage
+   * @param gfmsg the ClusterMessage
    * @param src the sender address
    * @param version the version of the recipient
    * @return the new message
    */
-  Message createJGMessage(GMSMessage gfmsg, JGAddress src, MemberIdentifier dst, short version) {
+  Message createJGMessage(DistributionMessage gfmsg, JGAddress src, MemberIdentifier dst,
+      short version) {
     gfmsg.registerProcessor();
     Message msg = new Message();
     msg.setDest(null);
@@ -900,7 +901,7 @@ public class JGroupsMessenger implements Messenger {
     return msg;
   }
 
-  void writeEncryptedMessage(GMSMessage gfmsg, MemberIdentifier recipient, short version,
+  void writeEncryptedMessage(DistributionMessage gfmsg, MemberIdentifier recipient, short version,
       BufferDataOutputStream out)
       throws Exception {
     long start = services.getStatistics().startUDPMsgEncryption();
@@ -950,7 +951,7 @@ public class JGroupsMessenger implements Messenger {
     }
   }
 
-  int getRequestId(GMSMessage gfmsg, MemberIdentifier destination, boolean add) {
+  int getRequestId(DistributionMessage gfmsg, MemberIdentifier destination, boolean add) {
     int requestId = 0;
     if (gfmsg instanceof FindCoordinatorRequest) {
       requestId = ((FindCoordinatorRequest) gfmsg).getRequestId();
@@ -969,18 +970,18 @@ public class JGroupsMessenger implements Messenger {
     return requestId;
   }
 
-  byte[] serializeMessage(GMSMessage gfmsg, BufferDataOutputStream out_stream)
+  byte[] serializeMessage(DistributionMessage gfmsg, BufferDataOutputStream out_stream)
       throws IOException {
     MemberIdentifier m = this.localAddress;
     m.getMemberData().writeEssentialData(out_stream,
         services.getSerializer().createSerializationContext(out_stream));
     services.getSerializer().getObjectSerializer()
-        .writeObject(services.getManager().unwrapMessage(gfmsg), out_stream);
+        .writeObject(gfmsg, out_stream);
 
     return out_stream.toByteArray();
   }
 
-  void setMessageFlags(GMSMessage gfmsg, Message msg) {
+  void setMessageFlags(DistributionMessage gfmsg, Message msg) {
     // Bundling is mostly only useful if we're doing no-ack work,
     // which is fairly rare
     msg.setFlag(Flag.DONT_BUNDLE);
@@ -996,7 +997,7 @@ public class JGroupsMessenger implements Messenger {
 
 
   /**
-   * deserialize a jgroups payload. If it's a DistributionMessage find the ID of the sender and
+   * deserialize a jgroups payload. If it's a ClusterMessage find the ID of the sender and
    * establish it as the message's sender
    */
   Object readJGMessage(Message jgmsg) {
@@ -1059,7 +1060,7 @@ public class JGroupsMessenger implements Messenger {
     return result;
   }
 
-  void setSender(GMSMessage dm, MemberIdentifier m, short ordinal) {
+  void setSender(DistributionMessage dm, MemberIdentifier m, short ordinal) {
     MemberIdentifier sender = null;
     // JoinRequestMessages are sent with an ID that may have been
     // reused from a previous life by way of auto-reconnect,
@@ -1074,7 +1075,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @SuppressWarnings("resource")
-  GMSMessage readEncryptedMessage(DataInputStream dis, short ordinal,
+  DistributionMessage readEncryptedMessage(DataInputStream dis, short ordinal,
       GMSEncrypt encryptLocal) throws Exception {
     int dfsid = services.getSerializer().readDSFIDHeader(dis);
     int requestId = dis.readInt();
@@ -1127,7 +1128,7 @@ public class JGroupsMessenger implements Messenger {
               Version.fromOrdinalNoThrow((short) ordinal, false));
         }
 
-        GMSMessage result = deserializeMessage(in, ordinal);
+        DistributionMessage result = deserializeMessage(in, ordinal);
 
         if (pk != null) {
           logger.info("Setting public key for " + result.getSender() + " len " + pk.length);
@@ -1144,13 +1145,12 @@ public class JGroupsMessenger implements Messenger {
 
   }
 
-  GMSMessage deserializeMessage(DataInputStream in, short ordinal)
+  DistributionMessage deserializeMessage(DataInputStream in, short ordinal)
       throws ClassNotFoundException, IOException {
     GMSMemberData info = new GMSMemberData();
     info.readEssentialData(in, services.getSerializer().createDeserializationContext(in));
     MemberIdentifier m = services.getMemberFactory().create(info);
-    GMSMessage result = services.getManager()
-        .wrapMessage(services.getSerializer().getObjectDeserializer().readObject(in));
+    DistributionMessage result = services.getSerializer().getObjectDeserializer().readObject(in);
 
     setSender(result, m, ordinal);
 
@@ -1158,7 +1158,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   /** look for certain messages that may need to be altered before being sent */
-  void filterOutgoingMessage(GMSMessage m) {
+  void filterOutgoingMessage(DistributionMessage m) {
     switch (m.getDSFID()) {
       case JOIN_RESPONSE:
         JoinResponseMessage jrsp = (JoinResponseMessage) m;
@@ -1182,7 +1182,7 @@ public class JGroupsMessenger implements Messenger {
     }
   }
 
-  void filterIncomingMessage(GMSMessage m) {
+  void filterIncomingMessage(DistributionMessage m) {
     switch (m.getDSFID()) {
       case JOIN_RESPONSE:
         JoinResponseMessage jrsp = (JoinResponseMessage) m;
@@ -1302,7 +1302,7 @@ public class JGroupsMessenger implements Messenger {
           return;
         }
 
-        GMSMessage msg = services.getManager().wrapMessage(o);
+        DistributionMessage msg = (DistributionMessage) o;
 
         // admin-only VMs don't have caches, so we ignore cache operations
         // multicast to them, avoiding deserialization cost and classpath
@@ -1360,7 +1360,7 @@ public class JGroupsMessenger implements Messenger {
      * returns the handler that should process the given message. The default handler is the
      * membership manager
      */
-    private MessageHandler getMessageHandler(GMSMessage msg) {
+    private MessageHandler getMessageHandler(DistributionMessage msg) {
       Class<?> msgClazz = msg.getClass();
       MessageHandler h = handlers.get(msgClazz);
       if (h == null) {
@@ -1380,7 +1380,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public Set<MemberIdentifier> send(GMSMessage msg, GMSMembershipView alternateView) {
+  public Set<MemberIdentifier> send(DistributionMessage msg, GMSMembershipView alternateView) {
     if (this.encrypt != null) {
       this.encrypt.installView(alternateView);
     }

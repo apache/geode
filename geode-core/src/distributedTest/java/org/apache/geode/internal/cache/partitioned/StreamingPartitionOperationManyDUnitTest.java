@@ -39,7 +39,7 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -129,7 +129,7 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
     }
 
     @Override
-    protected DistributionMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
+    protected ClusterMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
       TestStreamingPartitionMessageManyProviderNoExceptions msg =
           new TestStreamingPartitionMessageManyProviderNoExceptions(recipients, this.regionId,
               processor);

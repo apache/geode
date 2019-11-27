@@ -32,7 +32,7 @@ import org.apache.geode.admin.OperationCancelledException;
 import org.apache.geode.admin.RegionSubRegionSnapshot;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Config;
 import org.apache.geode.internal.admin.AdminBridgeServer;
@@ -936,7 +936,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * Sends a message to this dm (that is, to member of the distributed system represented by this
    * <code>RemoteGemFireVM</code>) and does not wait for a response
    */
-  void sendAsync(DistributionMessage msg) {
+  void sendAsync(ClusterMessage msg) {
     msg.setRecipient(id);
     if (msg instanceof AdminRequest) {
       ((AdminRequest) msg).setModifiedClasspath(inspectionClasspath);

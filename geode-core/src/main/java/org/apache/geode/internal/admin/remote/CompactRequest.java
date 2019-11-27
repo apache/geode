@@ -31,8 +31,8 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -115,7 +115,7 @@ public class CompactRequest extends CliLegacyMessage {
 
   @Override
   public String toString() {
-    return "Compact request sent to " + ArrayUtils.toString((Object[]) this.getRecipients())
+    return "Compact request sent to " + ArrayUtils.toString((Object[]) this.getRecipientsArray())
         + " from " + this.getSender();
   }
 
@@ -138,7 +138,7 @@ public class CompactRequest extends CliLegacyMessage {
     }
 
     @Override
-    protected void process(DistributionMessage message, boolean warn) {
+    protected void process(ClusterMessage message, boolean warn) {
       if (message instanceof CompactResponse) {
         final Set<PersistentID> persistentIds = ((CompactResponse) message).getPersistentIds();
         if (persistentIds != null && !persistentIds.isEmpty()) {

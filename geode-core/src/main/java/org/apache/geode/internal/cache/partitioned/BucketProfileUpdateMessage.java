@@ -26,8 +26,8 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -45,7 +45,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 5.1
  */
-public class BucketProfileUpdateMessage extends DistributionMessage implements MessageWithReply {
+public class BucketProfileUpdateMessage extends ClusterMessage implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;

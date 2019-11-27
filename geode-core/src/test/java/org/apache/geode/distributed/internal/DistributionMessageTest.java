@@ -28,7 +28,7 @@ public class DistributionMessageTest {
 
   @Test
   public void shouldBeMockable() throws Exception {
-    DistributionMessage mockDistributionMessage = mock(DistributionMessage.class);
+    ClusterMessage mockDistributionMessage = mock(ClusterMessage.class);
     ReplySender mockReplySender = mock(ReplySender.class);
 
     mockDistributionMessage.setReplySender(mockReplySender);

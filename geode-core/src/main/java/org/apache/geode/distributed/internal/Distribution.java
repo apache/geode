@@ -37,11 +37,11 @@ public interface Distribution {
   InternalDistributedMember getLocalMember();
 
   Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
-      DistributionMessage msg) throws NotSerializableException;
+      ClusterMessage msg) throws NotSerializableException;
 
   Set<InternalDistributedMember> directChannelSend(
       InternalDistributedMember[] destinations,
-      DistributionMessage content)
+      ClusterMessage content)
       throws NotSerializableException;
 
   Map<String, Long> getMessageState(
@@ -131,7 +131,7 @@ public interface Distribution {
 
   // TODO - this method is only used by tests
   @VisibleForTesting
-  void replacePartialIdentifierInMessage(DistributionMessage message);
+  void replacePartialIdentifierInMessage(ClusterMessage message);
 
   // TODO - this method is only used by tests
   @VisibleForTesting

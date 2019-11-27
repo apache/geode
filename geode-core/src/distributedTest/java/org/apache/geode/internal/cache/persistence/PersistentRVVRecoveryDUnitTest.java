@@ -59,7 +59,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.CacheObserverAdapter;
@@ -533,7 +533,7 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
         @Override
-        public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage msg) {
+        public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage msg) {
           if (msg instanceof InitialImageOperation.RequestImageMessage) {
             if (((InitialImageOperation.RequestImageMessage) msg).regionPath.contains(regionName)) {
               createData(vm0, 0, 1, "value4");

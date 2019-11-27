@@ -20,8 +20,8 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -53,7 +53,7 @@ class PrepareBackupStep extends BackupStep {
   }
 
   @Override
-  DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
+  ClusterMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
     return prepareBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId(),
         properties);
   }

@@ -36,10 +36,10 @@ import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -60,7 +60,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * <pre>
  * <p>
- * DistributionMessage - message is delivered to the server's
+ * ClusterMessage - message is delivered to the server's
  * ServerDelegate
  * <p>
  * </pre>
@@ -170,7 +170,7 @@ public class TCPConduit implements Runnable {
   private final boolean isBindAddress;
 
   /**
-   * the object that receives DistributionMessage messages received by this conduit.
+   * the object that receives ClusterMessage messages received by this conduit.
    */
   private final DirectChannel directChannel;
 
@@ -690,13 +690,13 @@ public class TCPConduit implements Runnable {
    *
    * @param bytesRead number of bytes read off of network to get this message
    */
-  protected void messageReceived(Connection receiver, DistributionMessage message, int bytesRead) {
+  protected void messageReceived(Connection receiver, ClusterMessage message, int bytesRead) {
     if (logger.isTraceEnabled()) {
       logger.trace("{} received {} from {}", id, message, receiver);
     }
 
     if (directChannel != null) {
-      DistributionMessage msg = message;
+      ClusterMessage msg = message;
       msg.setBytesRead(bytesRead);
       msg.setSender(receiver.getRemoteAddress());
       msg.setSharedReceiver(receiver.isSharedResource());

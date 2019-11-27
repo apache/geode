@@ -83,7 +83,7 @@ import org.apache.geode.cache.persistence.RevokeFailedException;
 import org.apache.geode.cache.persistence.RevokedPersistentDataException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -1779,7 +1779,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     @Override
     public void beforeSendMessage(final ClusterDistributionManager dm,
-        final DistributionMessage message) {
+        final ClusterMessage message) {
       if (message instanceof RequestImageMessage) {
         RequestImageMessage requestImageMessage = (RequestImageMessage) message;
         // make sure this is a bucket region doing a GII
