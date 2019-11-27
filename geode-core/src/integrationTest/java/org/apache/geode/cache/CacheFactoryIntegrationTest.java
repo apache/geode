@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -34,6 +35,15 @@ public class CacheFactoryIntegrationTest {
     if (cache != null) {
       cache.close();
     }
+  }
+
+  @Test
+  public void recreateDoesNotThrowDistributedSystemDisconnectedException() {
+    cache = (InternalCache) new CacheFactory().set(LOCATORS, "").create();
+
+    cache.close();
+
+    cache = (InternalCache) new CacheFactory().set(LOCATORS, "").create();
   }
 
   @Test
