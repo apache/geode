@@ -69,7 +69,7 @@ resources:
         JOB_COUNT: 50
         CONCOURSE_TEAM: ((concourse-team))
         PUBLIC_PIPELINE: ((public-pipelines))
-        UPSTREAM_FORK: upstream-fork
+        UPSTREAM_FORK: ((upstream-fork))
       run:
         path: bash
         args:
