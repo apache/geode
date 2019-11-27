@@ -67,7 +67,7 @@ public class QueryResultFormatterPdxIntegrationTest {
     QueryResultFormatter queryResultFormatter =
         new QueryResultFormatter(100).add(RESULT, pdxInstance);
     checkResult(queryResultFormatter,
-        "{\"result\":[[\"org.apache.geode.pdx.PdxInstance\",{\"ID\":[\"java.lang.Integer\",111],\"status\":[\"java.lang.String\",\"active\"],\"secId\":[\"java.lang.String\",\"IBM\"],\"object\":[\"org.apache.geode.management.internal.cli.json.QueryResultFormatterPdxIntegrationTest.SerializableObject\",{}]}]]}");
+        "{\"result\":[[\"org.apache.geode.pdx.PdxInstance\",{\"ID\":[\"java.lang.Integer\",111],\"status\":[\"java.lang.String\",\"active\"],\"secId\":[\"java.lang.String\",\"IBM\"],\"object\":[\"org.apache.geode.management.internal.json.QueryResultFormatterPdxIntegrationTest.SerializableObject\",{}]}]]}");
   }
 
   @Test
@@ -80,7 +80,7 @@ public class QueryResultFormatterPdxIntegrationTest {
     QueryResultFormatter queryResultFormatter =
         new QueryResultFormatter(100).add(RESULT, pdxContainer);
     checkResult(queryResultFormatter,
-        "{\"result\":[[\"org.apache.geode.management.internal.cli.json.QueryResultFormatterPdxIntegrationTest.PdxContainer\",{}]]}");
+        "{\"result\":[[\"org.apache.geode.management.internal.json.QueryResultFormatterPdxIntegrationTest.PdxContainer\",{}]]}");
   }
 
   private static class SerializableObject implements Serializable {
