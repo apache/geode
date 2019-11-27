@@ -565,6 +565,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
                 logger.debug("The CME event: {} is removed from Gateway Sender queue: {}", event,
                     sender);
                 statistics.incEventsNotQueued();
+                event.release();
                 continue;
               }
             }
