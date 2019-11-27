@@ -149,6 +149,7 @@ dependencies {
   //These bom dependencies are used to constrain the versions of the dependencies listed below
   api(platform(project(':boms:geode-all-bom')))
   compileOnly(platform(project(':boms:geode-all-bom')))
+  testCompileOnly(platform(project(':boms:geode-all-bom')))
   // As plugin configurations that do not extend from compile,
   // we must explicitly impose version constraints on these configurations.
   antlr platform(project(':boms:geode-all-bom'))
