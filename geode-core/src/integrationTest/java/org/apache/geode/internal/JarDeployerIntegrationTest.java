@@ -28,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.test.compiler.JarBuilder;
 
 
@@ -168,7 +169,12 @@ public class JarDeployerIntegrationTest {
         .isInstanceOf(IllegalArgumentException.class);
 
     jarDeployer.undeploy("def-1.0.jar");
-    assertThat(deployedDir.list()).containsExactly("abc.v1.jar");
+
+    // do not verify this on window's machine since it can not remove a file that a process has
+    // open
+    if (!SystemUtils.isWindows()) {
+      assertThat(deployedDir.list()).containsExactly("abc.v1.jar");
+    }
     assertThatThrownBy(() -> ClassPathLoader.getLatest().forName("jddunit.function.Def"))
         .isInstanceOf(ClassNotFoundException.class);
   }

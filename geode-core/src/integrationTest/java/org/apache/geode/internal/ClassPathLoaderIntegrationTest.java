@@ -554,22 +554,11 @@ public class ClassPathLoaderIntegrationTest {
     }
   }
 
-  /**
-   * Custom class loader which uses BCEL to always dynamically generate a class for any class name
-   * it tries to load.
-   */
-  private class GeneratingClassLoader2 extends GeneratingClassLoader {
-    @Override
-    protected File getTempFile() {
-      return tempFile2;
-    }
-  }
-
   private File createJarWithClass(String fileName, String className) throws IOException {
     String stringBuilder = "package integration.parent;" + "public class " + className + " {}";
     File jarFile = new File(temporaryFolder.getRoot(), fileName);
     if (jarFile.exists()) {
-      jarFile.delete();
+      jarFile = new File(temporaryFolder.newFolder(), fileName);
     }
     JarBuilder jarBuilder = new JarBuilder();
     jarBuilder.buildJar(jarFile, stringBuilder);
