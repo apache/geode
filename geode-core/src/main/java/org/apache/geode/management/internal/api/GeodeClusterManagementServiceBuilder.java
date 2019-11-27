@@ -48,9 +48,9 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.builder.ClusterManagementServiceBuilder;
 import org.apache.geode.management.internal.PlainClusterManagementServiceBuilder;
 import org.apache.geode.management.internal.SSLUtil;
-import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfo;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
+import org.apache.geode.management.internal.functions.GetMemberInformationFunction;
 import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.security.AuthInitialize;
 

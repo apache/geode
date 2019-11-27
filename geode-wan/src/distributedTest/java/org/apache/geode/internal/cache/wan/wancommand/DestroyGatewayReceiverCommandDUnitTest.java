@@ -29,9 +29,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.management.internal.cli.commands.DestroyGatewayReceiverCommand;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;

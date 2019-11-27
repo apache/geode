@@ -45,7 +45,7 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.management.internal.cli.json.QueryResultFormatter;
+import org.apache.geode.management.internal.json.QueryResultFormatter;
 
 /**
  * This function is executed on one or multiple members based on the member input to

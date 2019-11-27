@@ -32,7 +32,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.pdx.SimpleClass;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;

@@ -41,7 +41,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -348,7 +348,7 @@ public class RegionMembershipMBeanDUnitTestBase {
     return locator.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       Set<DistributedMember> distributedMembers =
-          CliUtil.getRegionAssociatedMembers(regionName, cache, true);
+          ManagementUtils.getRegionAssociatedMembers(regionName, cache, true);
 
       return distributedMembers.size();
     });

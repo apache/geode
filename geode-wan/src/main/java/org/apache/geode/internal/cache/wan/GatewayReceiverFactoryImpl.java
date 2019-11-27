@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import static org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateFunction.A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

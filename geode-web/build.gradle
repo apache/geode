@@ -32,6 +32,7 @@ dependencies {
   //in particular should not be duplicated in the war.
   providedCompile(project(':geode-logging'))
   providedCompile(project(':geode-serialization'))
+  providedCompile(project(':geode-gfsh'))
   providedCompile(project(path: ':geode-core')) {
     //spring-web is excluded from the providedCompile configuration to ensure
     //that it is included as part of the war. spring-web must be loaded with the war's

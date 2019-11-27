@@ -26,12 +26,12 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexF
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.exceptions.UserErrorException;
+import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.management.internal.util.ManagementUtils;
 
 public abstract class LuceneCommandBase extends GfshCommand {
 
@@ -90,7 +90,7 @@ public abstract class LuceneCommandBase extends GfshCommand {
 
   protected ResultCollector<?, ?> executeFunctionOnRegion(Function function,
       LuceneFunctionSerializable functionArguments, boolean returnAllMembers) {
-    Set<DistributedMember> targetMembers = CliUtil.getRegionAssociatedMembers(
+    Set<DistributedMember> targetMembers = ManagementUtils.getRegionAssociatedMembers(
         functionArguments.getRegionPath(), (InternalCache) getCache(), returnAllMembers);
     if (targetMembers.isEmpty()) {
       throw new UserErrorException(CliStrings.format(

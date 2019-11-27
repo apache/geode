@@ -42,6 +42,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.internal.CommandProcessor;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.Locator;
@@ -100,8 +101,6 @@ import org.apache.geode.management.internal.beans.stats.StatsKey;
 import org.apache.geode.management.internal.beans.stats.StatsLatency;
 import org.apache.geode.management.internal.beans.stats.StatsRate;
 import org.apache.geode.management.internal.beans.stats.VMStatsMonitor;
-import org.apache.geode.management.internal.cli.remote.OnlineCommandProcessor;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 /**
  * This class acts as an Bridge between MemberMBean and GemFire Cache and Distributed System
@@ -122,7 +121,7 @@ public class MemberMBeanBridge {
   private InternalDistributedSystem system;
   private StatisticsManager statisticsManager;
   private DistributionManager dm;
-  private OnlineCommandProcessor commandProcessor;
+  private CommandProcessor commandProcessor;
 
   private String commandServiceInitError;
   private MemoryMXBean memoryMXBean;
@@ -203,8 +202,10 @@ public class MemberMBeanBridge {
 
     config = system.getConfig();
     try {
-      commandProcessor =
-          new OnlineCommandProcessor(system.getProperties(), cache.getSecurityService(), cache);
+      commandProcessor = cache.getService(CommandProcessor.class);
+      commandProcessor.init(cache);
+      // commandProcessor =
+      // new OnlineCommandProcessor(system.getProperties(), cache.getSecurityService(), cache);
     } catch (Exception e) {
       commandServiceInitError = e.getMessage();
       logger.info(LogMarker.CONFIG_MARKER, "Command processor could not be initialized. {}",
@@ -1251,10 +1252,8 @@ public class MemberMBeanBridge {
               + commandServiceInitError);
     }
 
-    ResultModel result =
-        commandProcessor.executeCommand(commandString, environment, stagedFilePaths);
-
-    return result.toJson();
+    return commandProcessor.executeCommandReturningJson(commandString, environment,
+        stagedFilePaths);
   }
 
   public long getTotalDiskUsage() {

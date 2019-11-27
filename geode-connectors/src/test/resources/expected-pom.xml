@@ -52,6 +52,11 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-gfsh</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
       <scope>compile</scope>

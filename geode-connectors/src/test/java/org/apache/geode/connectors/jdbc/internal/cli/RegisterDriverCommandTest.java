@@ -33,8 +33,8 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class RegisterDriverCommandTest {
   private RegisterDriverCommand command;
