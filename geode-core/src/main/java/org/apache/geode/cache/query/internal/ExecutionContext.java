@@ -130,8 +130,8 @@ public class ExecutionContext {
    * @see org.apache.geode.cache.Region#query
    */
   public ExecutionContext(Object[] bindArguments, InternalCache cache) {
-    this.bindArguments = bindArguments;
     this.cache = cache;
+    this.bindArguments = bindArguments;
     this.cancelationTask = Optional.empty();
     this.queryConfigurationService = cache.getService(QueryConfigurationService.class);
     this.methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
