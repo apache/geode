@@ -79,8 +79,8 @@ import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.InternalCache;
@@ -161,7 +161,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
   public void tearDown() {
     for (VM vm : toArray(vm0, vm1, vm2, getController())) {
       vm.invoke(() -> {
-        DistributionMessageObserver.setInstance(null);
+        ClusterMessageObserver.setInstance(null);
         tearDownPartitionedRegionObserver();
 
         while (latch != null && latch.getCount() > 0) {
@@ -1404,15 +1404,15 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     vm0.invoke(() -> {
       latch = new CountDownLatch(1);
 
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
-            DistributionMessage message) {
+            ClusterMessage message) {
           if (message instanceof RequestImageMessage) {
             RequestImageMessage requestImageMessage = (RequestImageMessage) message;
             if (requestImageMessage.getRegionPath().contains(regionName) ||
                 requestImageMessage.getRegionPath().contains(childRegionName1)) {
-              DistributionMessageObserver.setInstance(null);
+              ClusterMessageObserver.setInstance(null);
 
               latch.countDown();
             }

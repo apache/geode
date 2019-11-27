@@ -69,7 +69,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.AbstractUpdateOperation.AbstractUpdateMessage;
@@ -112,7 +112,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
   public void tearDown() {
     for (VM vm : toArray(getAllVMs(), getController())) {
       vm.invoke(() -> {
-        DistributionMessageObserver.setInstance(null);
+        ClusterMessageObserver.setInstance(null);
       });
     }
     disconnectAllFromDS();
@@ -519,13 +519,13 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
     // Add a hook which will disconnect the DS before sending a prepare message
     vm1.invoke(() -> {
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
 
         @Override
         public void beforeSendMessage(ClusterDistributionManager dm,
             ClusterMessage message) {
           if (message instanceof PrepareNewPersistentMemberMessage) {
-            DistributionMessageObserver.setInstance(null);
+            ClusterMessageObserver.setInstance(null);
             system = dm.getSystem();
             disconnectFromDS();
           }
@@ -568,7 +568,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
   /**
    * vm0 and vm1 are peers, each holds a DR. They do put to the same key for different value at the
-   * same time. Use DistributionMessageObserver.beforeSendMessage to hold on the distribution
+   * same time. Use ClusterMessageObserver.beforeSendMessage to hold on the distribution
    * message. One of the member will persist the conflict version tag, while another member will
    * persist both of the 2 operations. Overall, their RVV should match after the operations.
    */
@@ -762,13 +762,13 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     vm1.invoke(() -> {
       SAW_REQUEST_IMAGE_MESSAGE.set(false);
 
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
 
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
             ClusterMessage message) {
           if (message instanceof RequestImageMessage) {
-            DistributionMessageObserver.setInstance(null);
+            ClusterMessageObserver.setInstance(null);
             system = dm.getSystem();
             disconnectFromDS();
             synchronized (SAW_REQUEST_IMAGE_MESSAGE) {
@@ -829,7 +829,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     // Add a hook which will disconnect from the distributed
     // system when the initial image message shows up.
     vm1.invoke(() -> {
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
 
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
@@ -841,7 +841,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
             } catch (InterruptedException e) {
               errorCollector.addError(e);
             } finally {
-              DistributionMessageObserver.setInstance(null);
+              ClusterMessageObserver.setInstance(null);
             }
           }
         }
@@ -882,12 +882,12 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     // Add a hook which will disconnect from the distributed
     // system when the initial image message shows up.
     vm0.invoke(() -> {
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
             ClusterMessage message) {
           if (message instanceof PrepareNewPersistentMemberMessage) {
-            DistributionMessageObserver.setInstance(null);
+            ClusterMessageObserver.setInstance(null);
             system = dm.getSystem();
             disconnectFromDS();
           }
@@ -948,7 +948,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
     // Add a hook which will perform some updates while the region is initializing
     vm0.invoke(() -> {
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
 
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
@@ -1202,7 +1202,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
     return new SerializableRunnable() {
       @Override
       public void run() {
-        DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+        ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
 
           @Override
           public void beforeSendMessage(ClusterDistributionManager dm,
@@ -1220,7 +1220,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
           public void afterProcessMessage(ClusterDistributionManager dm,
               ClusterMessage message) {
             if (message instanceof AbstractUpdateMessage) {
-              DistributionMessageObserver.setInstance(null);
+              ClusterMessageObserver.setInstance(null);
             }
           }
         });

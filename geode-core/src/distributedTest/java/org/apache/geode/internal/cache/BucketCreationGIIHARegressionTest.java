@@ -27,7 +27,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
@@ -63,9 +63,9 @@ public class BucketCreationGIIHARegressionTest extends CacheTestCase {
 
   @After
   public void tearDown() throws Exception {
-    DistributionMessageObserver.setInstance(null);
+    ClusterMessageObserver.setInstance(null);
     invokeInEveryVM(() -> {
-      DistributionMessageObserver.setInstance(null);
+      ClusterMessageObserver.setInstance(null);
     });
 
     disconnectAllFromDS();
@@ -91,7 +91,7 @@ public class BucketCreationGIIHARegressionTest extends CacheTestCase {
   }
 
   private void createRegion() {
-    DistributionMessageObserver.setInstance(new MyDistributionMessageObserver());
+    ClusterMessageObserver.setInstance(new MyDistributionMessageObserver());
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(1);
@@ -102,7 +102,7 @@ public class BucketCreationGIIHARegressionTest extends CacheTestCase {
     getCache().createRegion(uniqueName, af.create());
   }
 
-  private class MyDistributionMessageObserver extends DistributionMessageObserver {
+  private class MyDistributionMessageObserver extends ClusterMessageObserver {
 
     @Override
     public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {

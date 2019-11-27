@@ -16,9 +16,9 @@ package org.apache.geode.internal.cache;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 
-public abstract class OnRequestImageMessageObserver extends DistributionMessageObserver {
+public abstract class OnRequestImageMessageObserver extends ClusterMessageObserver {
   private final String regionName;
   private final Runnable onMessageReceived;
   private boolean hasExecutedOnMessageReceived = false;

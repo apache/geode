@@ -33,8 +33,8 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.InitialImageOperation.ImageReplyMessage;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
@@ -112,7 +112,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         observer = new FlowControlObserver();
-        DistributionMessageObserver.setInstance(observer);
+        ClusterMessageObserver.setInstance(observer);
         getCache();
         observer.start();
 
@@ -188,7 +188,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         observer = new FlowControlObserver();
-        DistributionMessageObserver.setInstance(observer);
+        ClusterMessageObserver.setInstance(observer);
         getCache();
         observer.start();
 
@@ -280,7 +280,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         observer = new FlowControlObserver();
-        DistributionMessageObserver.setInstance(observer);
+        ClusterMessageObserver.setInstance(observer);
         getCache();
         observer.start();
 
@@ -464,7 +464,7 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(checkData);
   }
 
-  private static class FlowControlObserver extends DistributionMessageObserver {
+  private static class FlowControlObserver extends ClusterMessageObserver {
     CountDownLatch allowMessages = new CountDownLatch(1);
     AtomicInteger messageCount = new AtomicInteger();
     private volatile boolean started = false;

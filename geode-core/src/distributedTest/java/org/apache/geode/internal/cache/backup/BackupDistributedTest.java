@@ -70,7 +70,7 @@ import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.locks.DLockRequestProcessor;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
@@ -152,7 +152,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
   @After
   public void tearDown() throws Exception {
     vm0.invoke(() -> {
-      DistributionMessageObserver.setInstance(null);
+      ClusterMessageObserver.setInstance(null);
       disconnectFromDS();
     });
 
@@ -243,7 +243,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     });
 
     vm2.invoke(() -> {
-      DistributionMessageObserver.setInstance(
+      ClusterMessageObserver.setInstance(
           createTestHookToCreateRegionBeforeSendingPrepareBackupRequest());
     });
 
@@ -290,7 +290,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
         false));
 
     vm0.invoke(() -> {
-      DistributionMessageObserver.setInstance(
+      ClusterMessageObserver.setInstance(
           createTestHookToWaitForRegionCreationBeforeSendingDLockRequestMessage());
     });
 
@@ -422,7 +422,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
       // destroy region message, and then trigger a backup.
       // That will backup before this member has finished destroying
       // a bucket, but after the peer has removed the bucket.
-      DistributionMessageObserver.setInstance(createTestHookToBackup(whenToInvokeBackup));
+      ClusterMessageObserver.setInstance(createTestHookToBackup(whenToInvokeBackup));
     });
 
     vm0.invoke(() -> createRegions(vm0));
@@ -467,7 +467,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     vm0.invoke(() -> {
       disconnectFromDS();
       // create an observer that will fail a backup when this member receives a prepare
-      DistributionMessageObserver.setInstance(
+      ClusterMessageObserver.setInstance(
           createTestHookToThrowIOExceptionBeforeProcessingPrepareBackupRequest(exceptionMessage));
     });
 
@@ -582,7 +582,7 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     putsInVM0.await();
   }
 
-  private DistributionMessageObserver createTestHookToBackup(
+  private ClusterMessageObserver createTestHookToBackup(
       WhenToInvokeBackup backupInvocationTestHook) {
     switch (backupInvocationTestHook) {
       case BEFORE_SENDING_DESTROYREGIONMESSAGE:
@@ -596,9 +596,9 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     }
   }
 
-  private DistributionMessageObserver createTestHookToBackupBeforeProcessingReplyMessage(
+  private ClusterMessageObserver createTestHookToBackupBeforeProcessingReplyMessage(
       final Runnable task) {
-    return new DistributionMessageObserver() {
+    return new ClusterMessageObserver() {
 
       private final AtomicInteger count = new AtomicInteger();
       private volatile int replyId = -0xBAD;
@@ -623,9 +623,9 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     };
   }
 
-  private DistributionMessageObserver createTestHookToBackupBeforeSendingDestroyRegionMessage(
+  private ClusterMessageObserver createTestHookToBackupBeforeSendingDestroyRegionMessage(
       final Runnable task) {
-    return new DistributionMessageObserver() {
+    return new ClusterMessageObserver() {
 
       private volatile boolean done;
 
@@ -647,14 +647,14 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     FileUtils.deleteDirectory(getDiskDirFor(vm3));
   }
 
-  private DistributionMessageObserver createTestHookToThrowIOExceptionBeforeProcessingPrepareBackupRequest(
+  private ClusterMessageObserver createTestHookToThrowIOExceptionBeforeProcessingPrepareBackupRequest(
       final String exceptionMessage) {
-    return new DistributionMessageObserver() {
+    return new ClusterMessageObserver() {
 
       @Override
       public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
         if (message instanceof PrepareBackupRequest) {
-          DistributionMessageObserver.setInstance(null);
+          ClusterMessageObserver.setInstance(null);
           IOException exception = new IOException(exceptionMessage);
           AdminFailureResponse response = create(message.getSender(), exception);
           response.setMsgId(((PrepareBackupRequest) message).getMsgId());
@@ -665,13 +665,13 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     };
   }
 
-  private DistributionMessageObserver createTestHookToCreateRegionBeforeSendingPrepareBackupRequest() {
-    return new DistributionMessageObserver() {
+  private ClusterMessageObserver createTestHookToCreateRegionBeforeSendingPrepareBackupRequest() {
+    return new ClusterMessageObserver() {
 
       @Override
       public void beforeSendMessage(ClusterDistributionManager dm, ClusterMessage message) {
         if (message instanceof PrepareBackupRequest) {
-          DistributionMessageObserver.setInstance(null);
+          ClusterMessageObserver.setInstance(null);
           logger.info("#### After getting into observer to create regionName2 in vm1");
           getBlackboard().signalGate("createRegion");
           logger.info("#### After signalling create region");
@@ -685,13 +685,13 @@ public class BackupDistributedTest extends JUnit4DistributedTestCase implements 
     };
   }
 
-  private DistributionMessageObserver createTestHookToWaitForRegionCreationBeforeSendingDLockRequestMessage() {
-    return new DistributionMessageObserver() {
+  private ClusterMessageObserver createTestHookToWaitForRegionCreationBeforeSendingDLockRequestMessage() {
+    return new ClusterMessageObserver() {
 
       @Override
       public void beforeSendMessage(ClusterDistributionManager dm, ClusterMessage message) {
         if (message instanceof DLockRequestProcessor.DLockRequestMessage) {
-          DistributionMessageObserver.setInstance(null);
+          ClusterMessageObserver.setInstance(null);
           try {
             logger.info("#### before waiting for createdRegionAfterRecovery");
             getBlackboard().waitForGate("createdRegionAfterRecovery", 30, SECONDS);

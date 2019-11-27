@@ -17,25 +17,25 @@ package org.apache.geode.distributed.internal;
 import org.apache.geode.annotations.internal.MutableForTesting;
 
 /**
- * This class is a test hook to intercept DistributionMessages in the VM receiving the message.
+ * This class is a test hook to intercept messages in the VM receiving the message.
  */
-public abstract class DistributionMessageObserver {
+public abstract class ClusterMessageObserver {
 
   @MutableForTesting
-  private static DistributionMessageObserver instance;
+  private static ClusterMessageObserver instance;
 
   /**
    * Set the instance of the observer. Setting to null will clear the observer.
    *
    * @return the old observer, or null if there was no old observer.
    */
-  public static DistributionMessageObserver setInstance(DistributionMessageObserver instance) {
-    DistributionMessageObserver oldInstance = DistributionMessageObserver.instance;
-    DistributionMessageObserver.instance = instance;
+  public static ClusterMessageObserver setInstance(ClusterMessageObserver instance) {
+    ClusterMessageObserver oldInstance = ClusterMessageObserver.instance;
+    ClusterMessageObserver.instance = instance;
     return oldInstance;
   }
 
-  public static DistributionMessageObserver getInstance() {
+  public static ClusterMessageObserver getInstance() {
     return instance;
   }
 

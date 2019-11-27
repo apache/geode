@@ -41,7 +41,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.internal.cache.partitioned.QueryMessage;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
@@ -103,7 +103,7 @@ public class PRQueryWithPdxDuringRebalanceRegressionTest implements Serializable
 
     // Add a listener that will trigger a rebalance as soon as the query arrives on this node.
     vm1.invoke("add listener", () -> {
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
 
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,

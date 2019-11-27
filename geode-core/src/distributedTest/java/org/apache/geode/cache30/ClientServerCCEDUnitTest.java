@@ -59,7 +59,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.DistributedLockStats;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -354,14 +354,14 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
     try {
       vm1.invoke(() -> {
-        DistributionMessageObserver.setInstance(new PRTombstoneMessageObserver());
+        ClusterMessageObserver.setInstance(new PRTombstoneMessageObserver());
       });
       destroyEntries(vm0);
       forceGC(vm0);
 
       vm1.invoke(() -> {
         PRTombstoneMessageObserver mo =
-            (PRTombstoneMessageObserver) DistributionMessageObserver.getInstance();
+            (PRTombstoneMessageObserver) ClusterMessageObserver.getInstance();
         await().until(() -> {
           return mo.tsMessageProcessed >= 1;
         });
@@ -371,7 +371,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
     } finally {
       vm1.invoke(() -> {
-        DistributionMessageObserver.setInstance(null);
+        ClusterMessageObserver.setInstance(null);
       });
     }
   }
@@ -399,10 +399,10 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
 
     try {
       vm1.invoke(() -> {
-        DistributionMessageObserver.setInstance(new PRTombstoneMessageObserver());
+        ClusterMessageObserver.setInstance(new PRTombstoneMessageObserver());
       });
       vm2.invoke(() -> {
-        DistributionMessageObserver.setInstance(new PRTombstoneMessageObserver());
+        ClusterMessageObserver.setInstance(new PRTombstoneMessageObserver());
       });
 
       destroyEntries(vm0);
@@ -411,7 +411,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
       // vm2 should receive tombstone GC messages
       vm2.invoke(() -> {
         PRTombstoneMessageObserver mo =
-            (PRTombstoneMessageObserver) DistributionMessageObserver.getInstance();
+            (PRTombstoneMessageObserver) ClusterMessageObserver.getInstance();
         // Should receive tombstone message for each bucket.
         await().until(() -> {
           return mo.prTsMessageProcessed >= 2;
@@ -422,20 +422,20 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
       // Since there is no interest registered, vm1 should not receive any tombstone GC messages
       vm1.invoke(() -> {
         PRTombstoneMessageObserver mo =
-            (PRTombstoneMessageObserver) DistributionMessageObserver.getInstance();
+            (PRTombstoneMessageObserver) ClusterMessageObserver.getInstance();
         assertEquals("Tombstone GC message is not expected.", 0, mo.prTsMessageProcessed);
       });
     } finally {
       vm1.invoke(() -> {
-        DistributionMessageObserver.setInstance(null);
+        ClusterMessageObserver.setInstance(null);
       });
       vm2.invoke(() -> {
-        DistributionMessageObserver.setInstance(null);
+        ClusterMessageObserver.setInstance(null);
       });
     }
   }
 
-  private class PRTombstoneMessageObserver extends DistributionMessageObserver {
+  private class PRTombstoneMessageObserver extends ClusterMessageObserver {
     public int tsMessageProcessed = 0;
     public int prTsMessageProcessed = 0;
     public String thName;

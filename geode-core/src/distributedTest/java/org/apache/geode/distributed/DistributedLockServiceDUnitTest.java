@@ -47,7 +47,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockGrantor;
 import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
@@ -2085,7 +2085,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     vm0.invoke(() -> createLockGrantor(serviceName));
 
-    DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+    ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
 
       @Override
       public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
@@ -2125,7 +2125,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     vm0.invoke(() -> createLockGrantor(serviceName));
 
-    DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+    ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
 
       @Override
       public void beforeSendMessage(ClusterDistributionManager dm, ClusterMessage message) {

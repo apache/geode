@@ -42,7 +42,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -376,7 +376,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    */
   private static synchronized void remoteTearDown() {
     try {
-      DistributionMessageObserver.setInstance(null);
+      ClusterMessageObserver.setInstance(null);
       destroyRegions(cache);
     } finally {
       try {

@@ -44,7 +44,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
@@ -384,8 +384,8 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     client.invoke(() -> createClientRegion(true, port1, port2));
 
     server1.invoke(() -> {
-      DistributionMessageObserver.setInstance(
-          new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(
+          new ClusterMessageObserver() {
             @Override
             public void beforeSendMessage(ClusterDistributionManager dm,
                 ClusterMessage message) {
@@ -399,8 +399,8 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     });
 
     server2.invoke(() -> {
-      DistributionMessageObserver.setInstance(
-          new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(
+          new ClusterMessageObserver() {
             @Override
             public void beforeProcessMessage(ClusterDistributionManager dm,
                 ClusterMessage message) {
@@ -412,8 +412,8 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     });
 
     server3.invoke(() -> {
-      DistributionMessageObserver.setInstance(
-          new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(
+          new ClusterMessageObserver() {
             @Override
             public void beforeProcessMessage(ClusterDistributionManager dm,
                 ClusterMessage message) {
@@ -438,7 +438,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
 
     await().until(() -> getBlackboard().isGateSignaled("bounce"));
     server1.invoke(() -> {
-      DistributionMessageObserver.setInstance(null);
+      ClusterMessageObserver.setInstance(null);
     });
     server1.bounceForcibly();
 
@@ -467,10 +467,10 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     });
 
     server2.invoke(() -> {
-      DistributionMessageObserver.setInstance(null);
+      ClusterMessageObserver.setInstance(null);
     });
     server3.invoke(() -> {
-      DistributionMessageObserver.setInstance(null);
+      ClusterMessageObserver.setInstance(null);
     });
   }
 }

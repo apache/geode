@@ -47,7 +47,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.InternalCache;
@@ -279,7 +279,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
   @Test
   public void recoversAfterBucketCreationCrashes() throws Exception {
     vm0.invoke(() -> {
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
         @Override
         public void beforeSendMessage(ClusterDistributionManager dm, ClusterMessage message) {
           if (message instanceof ManageBucketMessage.ManageBucketReplyMessage) {
@@ -344,14 +344,14 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
 
     // Add an observer which will close the cache when the GII starts
     vm0.invoke(() -> {
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
             ClusterMessage message) {
           if (message instanceof RequestImageMessage) {
             RequestImageMessage requestImageMessage = (RequestImageMessage) message;
             if (requestImageMessage.regionPath.contains("_0")) {
-              DistributionMessageObserver.setInstance(null);
+              ClusterMessageObserver.setInstance(null);
               getCache().close();
             }
           }
@@ -396,14 +396,14 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
 
     // Add an observer which will close the cache when the GII starts
     vm0.invoke(() -> {
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
             ClusterMessage message) {
           if (message instanceof RequestImageMessage) {
             RequestImageMessage requestImageMessage = (RequestImageMessage) message;
             if (requestImageMessage.regionPath.contains("_0")) {
-              DistributionMessageObserver.setInstance(null);
+              ClusterMessageObserver.setInstance(null);
               getCache().close();
             }
           }

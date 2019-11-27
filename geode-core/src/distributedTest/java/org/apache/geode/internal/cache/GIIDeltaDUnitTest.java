@@ -47,8 +47,8 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.DestroyOperation.DestroyMessage;
@@ -2086,7 +2086,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
       @Override
       public void run() {
-        DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+        ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
 
           @Override
           public void beforeSendMessage(ClusterDistributionManager dm,
@@ -2100,7 +2100,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
               // Wait for R to finish requesting the RVV before letting the tombstone GC proceeed.
               waitForCallbackStarted(vmR, GIITestHookType.AfterCalculatedUnfinishedOps);
               System.err.println("DAN DEBUG  R has received the RVV, sending tombstone message");
-              DistributionMessageObserver.setInstance(null);
+              ClusterMessageObserver.setInstance(null);
             }
           }
         });
@@ -2111,7 +2111,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
       @Override
       public void run() {
-        DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+        ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
           @Override
           public void afterProcessMessage(ClusterDistributionManager dm,
               ClusterMessage message) {
@@ -2121,7 +2121,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
                   "DAN DEBUG  P has processed the tombstone message, allowing R to proceed with the GII");
               vmR.invoke(() -> InitialImageOperation
                   .resetGIITestHook(GIITestHookType.AfterCalculatedUnfinishedOps, true));
-              DistributionMessageObserver.setInstance(null);
+              ClusterMessageObserver.setInstance(null);
             }
           }
         });
@@ -2763,12 +2763,12 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void slowGII(final long[] versionsToBlock) {
-    DistributionMessageObserver.setInstance(new BlockMessageObserver(versionsToBlock));
+    ClusterMessageObserver.setInstance(new BlockMessageObserver(versionsToBlock));
   }
 
   public static void resetSlowGII() {
     BlockMessageObserver observer =
-        (BlockMessageObserver) DistributionMessageObserver.setInstance(null);
+        (BlockMessageObserver) ClusterMessageObserver.setInstance(null);
     if (observer != null) {
       observer.cdl.countDown();
     }
@@ -2793,7 +2793,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   // vm.invoke(resetSlowGII);
   // }
 
-  private static class BlockMessageObserver extends DistributionMessageObserver {
+  private static class BlockMessageObserver extends ClusterMessageObserver {
     private long[] versionsToBlock;
 
     CountDownLatch cdl = new CountDownLatch(1);

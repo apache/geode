@@ -33,7 +33,7 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.internal.cache.UpdateOperation;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.pdx.PdxReader;
@@ -530,7 +530,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     try {
       // Delay processing of sending type registry update from vm2
       vm2.invoke(() -> {
-        DistributionMessageObserver.setInstance(new BlockingPdxTypeUpdateObserver());
+        ClusterMessageObserver.setInstance(new BlockingPdxTypeUpdateObserver());
       });
 
       // Create the sender side of the WAN connection. 2 VMs, with paused senders
@@ -579,7 +579,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
 
       boolean blocking = vm2.invoke(() -> {
         BlockingPdxTypeUpdateObserver observer =
-            (BlockingPdxTypeUpdateObserver) DistributionMessageObserver.getInstance();
+            (BlockingPdxTypeUpdateObserver) ClusterMessageObserver.getInstance();
         return observer.startedBlocking.await(1, TimeUnit.MINUTES);
       });
 
@@ -612,7 +612,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
 
       vm2.invoke(() -> {
         BlockingPdxTypeUpdateObserver observer =
-            (BlockingPdxTypeUpdateObserver) DistributionMessageObserver.getInstance();
+            (BlockingPdxTypeUpdateObserver) ClusterMessageObserver.getInstance();
         observer.latch.countDown();
       });
     }
@@ -849,7 +849,7 @@ public class PDXNewWanDUnitTest extends WANTestBase {
   }
 
 
-  private static class BlockingPdxTypeUpdateObserver extends DistributionMessageObserver {
+  private static class BlockingPdxTypeUpdateObserver extends ClusterMessageObserver {
     private CountDownLatch latch = new CountDownLatch(1);
     private CountDownLatch startedBlocking = new CountDownLatch(1);
 

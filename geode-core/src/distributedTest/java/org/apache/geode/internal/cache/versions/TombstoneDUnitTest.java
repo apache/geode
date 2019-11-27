@@ -27,7 +27,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.internal.cache.DestroyOperation;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -100,7 +100,7 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke(() -> {
       createRegion("TestRegion", false);
-      DistributionMessageObserver.setInstance(new RegionObserver());
+      ClusterMessageObserver.setInstance(new RegionObserver());
     });
 
     AsyncInvocation vm0Async1 = vm0.invokeAsync(() -> {
@@ -133,7 +133,7 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  private class RegionObserver extends DistributionMessageObserver implements Serializable {
+  private class RegionObserver extends ClusterMessageObserver implements Serializable {
 
     VersionTag versionTag = null;
     CountDownLatch tombstoneGcLatch = new CountDownLatch(1);

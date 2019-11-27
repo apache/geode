@@ -46,8 +46,8 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
@@ -265,8 +265,8 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
         // Add a listener to close vm0 when we send a distributed operation
         // this will cause a retry after we have applied the original operation to
         // the cache, causing a retry
-        DistributionMessageObserver
-            .setInstance(new DistributionMessageObserver() {
+        ClusterMessageObserver
+            .setInstance(new ClusterMessageObserver() {
 
               @Override
               public void beforeSendMessage(ClusterDistributionManager dm,
@@ -277,7 +277,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
                   VersionTag tag = com.getVersionTag();
                   if (((opType == OpType.CREATE || opType == OpType.PUT_IF_ABSENT)
                       && tag.getEntryVersion() == 1) || tag.getEntryVersion() == 2) {
-                    DistributionMessageObserver.setInstance(null);
+                    ClusterMessageObserver.setInstance(null);
                     disconnectFromDS(vm0);
                   }
                 }
@@ -328,7 +328,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         // if the observer was triggered, it would have cleared itself
-        assertNull(DistributionMessageObserver.getInstance());
+        assertNull(ClusterMessageObserver.getInstance());
         VersionTag tag = ((LocalRegion) getCache().getRegion("region"))
             .getVersionTag(0);
         if (opType == OpType.CREATE || opType == OpType.PUT_IF_ABSENT) {
@@ -373,14 +373,14 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
         // Add a listener to close vm1 when we send a distributed put all operation
         // this will cause a retry after we have applied the original put all to
         // the cache, causing a retry
-        DistributionMessageObserver
-            .setInstance(new DistributionMessageObserver() {
+        ClusterMessageObserver
+            .setInstance(new ClusterMessageObserver() {
 
               @Override
               public void beforeSendMessage(ClusterDistributionManager dm,
                   ClusterMessage message) {
                 if (message instanceof DistributedPutAllOperation.PutAllMessage) {
-                  DistributionMessageObserver.setInstance(null);
+                  ClusterMessageObserver.setInstance(null);
                   disconnectFromDS(vm1);
                 }
               }
@@ -424,7 +424,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         // if the observer was triggered, it would have cleared itself
-        assertNull(DistributionMessageObserver.getInstance());
+        assertNull(ClusterMessageObserver.getInstance());
       }
     });
 
@@ -478,14 +478,14 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
             // Add a listener to close vm2 when we send a distributed put all operation
             // this will cause a retry after we have applied the original put all to
             // the cache, causing a retry
-            DistributionMessageObserver
-                .setInstance(new DistributionMessageObserver() {
+            ClusterMessageObserver
+                .setInstance(new ClusterMessageObserver() {
 
                   @Override
                   public void beforeProcessMessage(ClusterDistributionManager dm,
                       ClusterMessage msg) {
                     if (msg instanceof DistributedPutAllOperation.PutAllMessage) {
-                      DistributionMessageObserver.setInstance(null);
+                      ClusterMessageObserver.setInstance(null);
                       Wait.pause(
                           5000); // give vm1 time to process the message that we're ignoring
                       disconnectFromDS(vm0);
@@ -525,7 +525,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         // if the observer was triggered, it would have cleared itself
-        assertNull(DistributionMessageObserver.getInstance());
+        assertNull(ClusterMessageObserver.getInstance());
 
         Region region = getCache().getRegion("region");
         VersionTag tag = ((LocalRegion) region).getVersionTag(0);
@@ -539,7 +539,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         // if the observer was triggered, it would have cleared itself
-        assertNull(DistributionMessageObserver.getInstance());
+        assertNull(ClusterMessageObserver.getInstance());
 
         Region region = getCache().getRegion("region");
         VersionTag tag = ((LocalRegion) region).getVersionTag(0);

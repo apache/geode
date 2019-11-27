@@ -41,7 +41,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
@@ -103,7 +103,7 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
   public void tearDown() {
     invokeInEveryVM(() -> {
       InternalResourceManager.setResourceObserver(null);
-      DistributionMessageObserver.setInstance(null);
+      ClusterMessageObserver.setInstance(null);
     });
   }
 

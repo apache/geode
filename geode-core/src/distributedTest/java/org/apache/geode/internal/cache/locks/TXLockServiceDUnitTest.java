@@ -38,8 +38,8 @@ import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockRecoverGrantorProcessor;
@@ -231,7 +231,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
     // create an observer that will block recovery messages from being processed
     MessageObserver observer = new MessageObserver();
-    DistributionMessageObserver.setInstance(observer);
+    ClusterMessageObserver.setInstance(observer);
 
     try {
       System.out.println("starting thread to take over being lock grantor from vm0");
@@ -277,11 +277,11 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
       });
     } finally {
       observer.releasePreventionOfProcessing();
-      DistributionMessageObserver.setInstance(null);
+      ClusterMessageObserver.setInstance(null);
     }
   }
 
-  static class MessageObserver extends DistributionMessageObserver {
+  static class MessageObserver extends ClusterMessageObserver {
     final boolean[] preventingMessageProcessing = new boolean[] {false};
     final boolean[] preventMessageProcessing = new boolean[] {true};
 

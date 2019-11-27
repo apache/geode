@@ -84,7 +84,7 @@ import org.apache.geode.cache.persistence.RevokedPersistentDataException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -154,7 +154,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
   public void tearDown() {
     invokeInEveryVM(() -> {
       InternalResourceManager.setResourceObserver(null);
-      DistributionMessageObserver.setInstance(null);
+      ClusterMessageObserver.setInstance(null);
     });
   }
 
@@ -1357,7 +1357,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     });
 
     vm0.invoke(() -> {
-      DistributionMessageObserver
+      ClusterMessageObserver
           .setInstance(new CacheClosingDistributionMessageObserver(
               "_B__" + partitionedRegionName + "_", getCache()));
     });
@@ -1441,7 +1441,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   private void resetSlowGII() throws InterruptedException {
     BlockGIIMessageObserver messageObserver =
-        (BlockGIIMessageObserver) DistributionMessageObserver.setInstance(null);
+        (BlockGIIMessageObserver) ClusterMessageObserver.setInstance(null);
     RecoveryObserver recoveryObserver =
         (RecoveryObserver) InternalResourceManager.getResourceObserver();
     messageObserver.unblock();
@@ -1451,7 +1451,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   private void slowGII() {
     InternalResourceManager.setResourceObserver(new RecoveryObserver(partitionedRegionName));
-    DistributionMessageObserver.setInstance(new BlockGIIMessageObserver());
+    ClusterMessageObserver.setInstance(new BlockGIIMessageObserver());
   }
 
   private void createNestedPartitionedRegion() throws InterruptedException {
@@ -1773,7 +1773,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     }
   }
 
-  private static class BlockGIIMessageObserver extends DistributionMessageObserver {
+  private static class BlockGIIMessageObserver extends ClusterMessageObserver {
 
     private final CountDownLatch latch = new CountDownLatch(1);
 

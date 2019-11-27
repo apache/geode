@@ -393,7 +393,7 @@ public abstract class ClusterMessage
     setBreadcrumbsInReceiver();
     try {
 
-      DistributionMessageObserver observer = DistributionMessageObserver.getInstance();
+      ClusterMessageObserver observer = ClusterMessageObserver.getInstance();
       if (observer != null) {
         observer.beforeProcessMessage(dm, this);
       }

@@ -50,7 +50,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage.ManageBucketReplyMessage;
 import org.apache.geode.test.dunit.RMIException;
@@ -120,9 +120,9 @@ public class BucketCreationCrashRegressionTest implements Serializable {
 
   @After
   public void tearDown() {
-    DistributionMessageObserver.setInstance(null);
+    ClusterMessageObserver.setInstance(null);
     invokeInEveryVM(() -> {
-      DistributionMessageObserver.setInstance(null);
+      ClusterMessageObserver.setInstance(null);
     });
   }
 
@@ -233,7 +233,7 @@ public class BucketCreationCrashRegressionTest implements Serializable {
 
   private void handleBeforeProcessMessage(final Class<? extends ClusterMessage> messageClass,
       final SerializableRunnableIF runnable) {
-    DistributionMessageObserver
+    ClusterMessageObserver
         .setInstance(new RunnableBeforeProcessMessageObserver(messageClass, runnable));
   }
 
@@ -241,7 +241,7 @@ public class BucketCreationCrashRegressionTest implements Serializable {
     crashDistributedSystem(cacheRule.getSystem());
   }
 
-  private class RunnableBeforeProcessMessageObserver extends DistributionMessageObserver {
+  private class RunnableBeforeProcessMessageObserver extends ClusterMessageObserver {
 
     private final Class<? extends ClusterMessage> messageClass;
     private final SerializableRunnableIF runnable;

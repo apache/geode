@@ -39,7 +39,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
@@ -97,7 +97,7 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
   public void testCrashWhileCreatingABucket() {
     for (VM vm : toArray(vm1, vm2)) {
       vm.invoke(() -> {
-        DistributionMessageObserver.setInstance(new CrashMemberBeforeManageBucketMessage(vm0));
+        ClusterMessageObserver.setInstance(new CrashMemberBeforeManageBucketMessage(vm0));
 
         PartitionAttributesFactory<?, ?> partitionAttributesFactory =
             new PartitionAttributesFactory();
@@ -218,7 +218,7 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
     return getAllDistributedSystemProperties(config);
   }
 
-  private class CrashMemberBeforeManageBucketMessage extends DistributionMessageObserver
+  private class CrashMemberBeforeManageBucketMessage extends ClusterMessageObserver
       implements Serializable {
 
     private final VM vm;

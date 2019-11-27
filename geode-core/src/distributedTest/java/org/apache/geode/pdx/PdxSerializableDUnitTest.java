@@ -42,7 +42,7 @@ import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.TransactionWriterException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -276,7 +276,7 @@ public class PdxSerializableDUnitTest extends JUnit4CacheTestCase {
 
       // this message observer will ensure that a new PDX registration doesn't occur
       final DUnitBlackboard bb = getBlackboard();
-      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
+      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage msg) {
           if (msg instanceof DistributedCacheOperation.CacheOperationMessage) {

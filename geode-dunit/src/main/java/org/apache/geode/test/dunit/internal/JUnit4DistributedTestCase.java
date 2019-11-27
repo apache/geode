@@ -42,8 +42,8 @@ import org.junit.Rule;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
@@ -547,7 +547,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
     tearDownVM();
     invokeInEveryVM("tearDownVM", () -> tearDownVM());
     invokeInLocator(() -> {
-      DistributionMessageObserver.setInstance(null);
+      ClusterMessageObserver.setInstance(null);
       unregisterInstantiatorsInThisVM();
     });
     DUnitLauncher.closeAndCheckForSuspects();
