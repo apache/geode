@@ -361,6 +361,8 @@ dependencies {
   integrationTestCompile('org.powermock:powermock-api-mockito2')
   integrationTestCompile('org.springframework:spring-test')
   integrationTestCompile('pl.pragmatists:JUnitParams')
+  integrationTestCompile('com.tngtech.archunit:archunit-junit4')
+
 
   integrationTestRuntime('org.apache.derby:derby')
   integrationTestRuntime('xerces:xercesImpl')

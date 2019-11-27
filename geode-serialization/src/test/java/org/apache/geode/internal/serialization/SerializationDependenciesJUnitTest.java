@@ -22,13 +22,15 @@ import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchUnitRunner;
+import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.internal.serialization..",
-    importOptions = ImportOption.DoNotIncludeTests.class)
+    cacheMode = CacheMode.PER_CLASS,
+    importOptions = {ImportOption.DoNotIncludeArchives.class, ImportOption.DoNotIncludeTests.class})
 public class SerializationDependenciesJUnitTest {
 
   @ArchTest

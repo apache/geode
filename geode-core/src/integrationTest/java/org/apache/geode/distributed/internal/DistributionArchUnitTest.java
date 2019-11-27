@@ -18,18 +18,20 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPac
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.type;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchUnitRunner;
+import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.distributed.internal.membership.MembershipJUnitTest;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "org.apache.geode")
-@Ignore("Disabling until we can fix the memory usage of this test")
+@AnalyzeClasses(packages = "org.apache.geode", cacheMode = CacheMode.PER_CLASS,
+    importOptions = ImportOption.DoNotIncludeArchives.class)
 public class DistributionArchUnitTest {
 
   @ArchTest
@@ -38,7 +40,7 @@ public class DistributionArchUnitTest {
       .should()
       .onlyBeAccessed()
       .byClassesThat(type(Distribution.class)
-          .or(type(DistributionTest.class))
+          .or(type(MembershipJUnitTest.class)) // another integrationTest
           .or(type(DistributionImpl.MyDCReceiver.class))
           .or(resideInAPackage("org.apache.geode.distributed.internal.membership.gms.."))
           .or(resideInAPackage("org.apache.geode.internal.tcp.."))
