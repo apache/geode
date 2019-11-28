@@ -24,12 +24,41 @@ import org.apache.geode.internal.cache.CacheService;
 
 public interface QueryConfigurationService extends CacheService {
 
+  /**
+   * Returns the currently configured {@link MethodInvocationAuthorizer} instance.
+   *
+   * @return the currently configured {@link MethodInvocationAuthorizer}
+   */
   MethodInvocationAuthorizer getMethodAuthorizer();
 
-  void updateMethodAuthorizer(Cache cache, QueryMethodAuthorizerCreation creation)
-      throws ClassNotFoundException;
+  /**
+   * Updates the configured {@link MethodInvocationAuthorizer}.
+   *
+   * @param cache the cache on which the {@link MethodInvocationAuthorizer} instance will be
+   *        configured.
+   * @param forceUpdate {@code true} to apply the configuration change even when there are
+   *        continuous queries running, {@code false} otherwise.
+   * @param creation the authorizer creation parameters.
+   * @throws QueryConfigurationServiceException when there is an error while updating the new
+   *         {@link MethodInvocationAuthorizer}.
+   */
+  void updateMethodAuthorizer(Cache cache, boolean forceUpdate,
+      QueryMethodAuthorizerCreation creation) throws QueryConfigurationServiceException;
 
-  void updateMethodAuthorizer(Cache cache, String className, Set<String> parameters)
-      throws ClassNotFoundException, QueryConfigurationServiceException;
-
+  /**
+   * Updates the configured {@link MethodInvocationAuthorizer}.
+   *
+   * @param cache the cache on which the {@link MethodInvocationAuthorizer} instance will be
+   *        configured.
+   * @param forceUpdate {@code true} to apply the configuration change even when there are
+   *        continuous queries running, {@code false} otherwise.
+   * @param className the fully qualified name of the class that will be created and configured as
+   *        the new {@link MethodInvocationAuthorizer}.
+   * @param parameters the list of parameters that will be used to initialize the new
+   *        {@link MethodInvocationAuthorizer}.
+   * @throws QueryConfigurationServiceException when there is an error while updating the new
+   *         {@link MethodInvocationAuthorizer}.
+   */
+  void updateMethodAuthorizer(Cache cache, boolean forceUpdate, String className,
+      Set<String> parameters) throws QueryConfigurationServiceException;
 }

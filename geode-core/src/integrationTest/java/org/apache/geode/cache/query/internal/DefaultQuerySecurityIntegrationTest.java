@@ -117,7 +117,7 @@ public class DefaultQuerySecurityIntegrationTest {
 
     spiedCache = spy(server.getCache());
     QueryConfigurationService queryConfig = spiedCache.getService(QueryConfigurationService.class);
-    queryConfig.updateMethodAuthorizer(spiedCache, SpyAuthorizer.class.getName(),
+    queryConfig.updateMethodAuthorizer(spiedCache, false, SpyAuthorizer.class.getName(),
         Collections.emptySet());
   }
 

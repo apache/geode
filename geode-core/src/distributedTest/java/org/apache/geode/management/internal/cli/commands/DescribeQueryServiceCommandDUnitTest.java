@@ -14,8 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.AUTHORIZER_NAME;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.AUTHORIZER_PARAMETERS;
-import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.METHOD_AUTHORIZER_NAME;
 import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.ALL_METHODS_ALLOWED;
 import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.AUTHORIZER_CLASS_NAME;
 import static org.apache.geode.management.internal.cli.commands.DescribeQueryServiceCommand.COMMAND_NAME;
@@ -92,7 +92,7 @@ public class DescribeQueryServiceCommandDUnitTest {
     String authorizerName = JavaBeanAccessorMethodAuthorizer.class.getName();
     String parameters = "param1;param2;param3";
     String alterQueryService = AlterQueryServiceCommand.COMMAND_NAME + " --"
-        + METHOD_AUTHORIZER_NAME + "=" + authorizerName
+        + AUTHORIZER_NAME + "=" + authorizerName
         + " --" + AUTHORIZER_PARAMETERS + "=" + parameters;
 
     gfsh.executeAndAssertThat(alterQueryService).statusIsSuccess();

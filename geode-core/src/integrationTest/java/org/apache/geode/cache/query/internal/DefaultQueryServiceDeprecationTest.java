@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY;
 import static org.apache.geode.distributed.internal.DistributionConfig.LOG_FILE_NAME;
 
 import java.io.File;
@@ -38,10 +38,10 @@ public class DefaultQueryServiceDeprecationTest implements Serializable {
   public ServerStarterRule server = new ServerStarterRule();
 
   @Test
+  @SuppressWarnings("deprecation")
   public void warningMessageIsOnlyLoggedOnceWhenDeprecatedPropertyUsed() throws IOException {
     File logFile = folderRule.newFile("customLog1.log");
-    System.setProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation",
-        "true");
+    System.setProperty(ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY, "true");
     server.withProperty(LOG_FILE_NAME, logFile.getAbsolutePath()).startServer();
     server.getCache().getQueryService();
     server.getCache().getQueryService();
