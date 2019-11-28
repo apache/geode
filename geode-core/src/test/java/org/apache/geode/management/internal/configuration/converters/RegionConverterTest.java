@@ -343,9 +343,11 @@ public class RegionConverterTest {
     RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
     assertThat(regionAttributes.getEvictionAttributes()).isNotNull();
     assertThat(regionAttributes.getEvictionAttributes().getLruHeapPercentage()).isNotNull();
-    assertThat(regionAttributes.getEvictionAttributes().getLruHeapPercentage().getAction()).isEqualTo(
-        EnumActionDestroyOverflow.LOCAL_DESTROY);
-    assertThat(regionAttributes.getEvictionAttributes().getLruHeapPercentage().getClassName()).isNull();
+    assertThat(regionAttributes.getEvictionAttributes().getLruHeapPercentage().getAction())
+        .isEqualTo(
+            EnumActionDestroyOverflow.LOCAL_DESTROY);
+    assertThat(regionAttributes.getEvictionAttributes().getLruHeapPercentage().getClassName())
+        .isNull();
   }
 
   @Test
@@ -364,8 +366,10 @@ public class RegionConverterTest {
     assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize()).isNotNull();
     assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize().getAction()).isEqualTo(
         EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-    assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize().getMaximum()).isEqualTo("10");
-    assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize().getClassName()).isEqualTo("ObjectSizer");
+    assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize().getMaximum())
+        .isEqualTo("10");
+    assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize().getClassName())
+        .isEqualTo("ObjectSizer");
   }
 
   @Test
@@ -383,6 +387,96 @@ public class RegionConverterTest {
     assertThat(regionAttributes.getEvictionAttributes().getLruEntryCount()).isNotNull();
     assertThat(regionAttributes.getEvictionAttributes().getLruEntryCount().getAction()).isEqualTo(
         EnumActionDestroyOverflow.LOCAL_DESTROY);
-    assertThat(regionAttributes.getEvictionAttributes().getLruEntryCount().getMaximum()).isEqualTo("10");
+    assertThat(regionAttributes.getEvictionAttributes().getLruEntryCount().getMaximum())
+        .isEqualTo("10");
   }
+
+  @Test
+  public void convertRegionEvictionFromXMLMemorySize() {
+    config.setType("REPLICATE");
+    config.setName("test");
+    RegionAttributesType attributes = new RegionAttributesType();
+
+    RegionAttributesType.EvictionAttributes.LruMemorySize evictionXmlConfig =
+        new RegionAttributesType.EvictionAttributes.LruMemorySize();
+    evictionXmlConfig.setMaximum("100");
+    evictionXmlConfig.setAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
+    evictionXmlConfig.setClassName("ObjectSizer");
+
+    RegionAttributesType.EvictionAttributes evictionAttributes =
+        new RegionAttributesType.EvictionAttributes();
+    evictionAttributes.setLruMemorySize(evictionXmlConfig);
+    attributes.setEvictionAttributes(evictionAttributes);
+    config.setRegionAttributes(attributes);
+
+    Region region = converter.fromXmlObject(config);
+    Region.Eviction eviction = region.getEviction();
+    assertThat(eviction.getType()).isEqualTo(Region.EvictionType.MEMORY_SIZE);
+    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
+    assertThat(eviction.getMemorySizeMb()).isEqualTo(100);
+    assertThat(eviction.getObjectSizer()).isEqualTo("ObjectSizer");
+    assertThat(eviction.getEntryCount()).isNull();
+
+    evictionXmlConfig.setAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
+    eviction = converter.convertFrom(evictionXmlConfig);
+    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.LOCAL_DESTROY);
+  }
+
+  @Test
+  public void convertRegionEvicionFromXMLEntrySize() {
+    config.setType("REPLICATE");
+    config.setName("test");
+    RegionAttributesType attributes = new RegionAttributesType();
+
+    RegionAttributesType.EvictionAttributes.LruEntryCount evictionXmlConfig =
+        new RegionAttributesType.EvictionAttributes.LruEntryCount();
+    evictionXmlConfig.setMaximum("100");
+    evictionXmlConfig.setAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
+
+    RegionAttributesType.EvictionAttributes evictionAttributes =
+        new RegionAttributesType.EvictionAttributes();
+    evictionAttributes.setLruEntryCount(evictionXmlConfig);
+    attributes.setEvictionAttributes(evictionAttributes);
+    config.setRegionAttributes(attributes);
+
+    Region region = converter.fromXmlObject(config);
+    Region.Eviction eviction = region.getEviction();
+    assertThat(eviction.getType()).isEqualTo(Region.EvictionType.ENTRY_COUNT);
+    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
+    assertThat(eviction.getEntryCount()).isEqualTo(100);
+    assertThat(eviction.getMemorySizeMb()).isNull();
+
+    evictionXmlConfig.setAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
+    eviction = converter.convertFrom(evictionXmlConfig);
+    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.LOCAL_DESTROY);
+  }
+
+  @Test
+  public void convertRegionEvictionFromXMLHeapSize() {
+    config.setType("REPLICATE");
+    config.setName("test");
+    RegionAttributesType attributes = new RegionAttributesType();
+
+    RegionAttributesType.EvictionAttributes.LruHeapPercentage evictionXmlConfig =
+        new RegionAttributesType.EvictionAttributes.LruHeapPercentage();
+    evictionXmlConfig.setAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
+
+    RegionAttributesType.EvictionAttributes evictionAttributes =
+        new RegionAttributesType.EvictionAttributes();
+    evictionAttributes.setLruHeapPercentage(evictionXmlConfig);
+    attributes.setEvictionAttributes(evictionAttributes);
+    config.setRegionAttributes(attributes);
+
+    Region region = converter.fromXmlObject(config);
+    Region.Eviction eviction = region.getEviction();
+    assertThat(eviction.getType()).isEqualTo(Region.EvictionType.HEAP_PERCENTAGE);
+    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
+    assertThat(eviction.getMemorySizeMb()).isNull();
+    assertThat(eviction.getEntryCount()).isNull();
+
+    evictionXmlConfig.setAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
+    eviction = converter.convertFrom(evictionXmlConfig);
+    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.LOCAL_DESTROY);
+  }
+
 }

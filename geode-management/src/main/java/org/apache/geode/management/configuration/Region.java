@@ -189,7 +189,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
     private Integer timeInSeconds;
     private ExpirationAction action;
 
-    public Expiration() {};
+    public Expiration() {}
 
     public Expiration(ExpirationType type, Integer timeInSeconds, ExpirationAction action) {
       setType(type);
@@ -243,7 +243,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
     private Integer memorySizeMb;
     private String objectSizer;
 
-    public Eviction() {};
+    public Eviction() {}
 
     public Eviction(EvictionType type, EvictionAction action, Integer entryCount,
         Integer memorySizeMb, String objectSizer) {
@@ -252,7 +252,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
       this.entryCount = entryCount;
       this.memorySizeMb = memorySizeMb;
       this.objectSizer = objectSizer;
-    };
+    }
 
     public EvictionType getType() {
       return type;

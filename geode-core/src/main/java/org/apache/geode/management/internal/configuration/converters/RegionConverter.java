@@ -74,6 +74,20 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
       if (!expirations.isEmpty()) {
         region.setExpirations(expirations);
       }
+
+      if (regionAttributes.getEvictionAttributes() != null) {
+        RegionAttributesType.EvictionAttributes evictionAttributes =
+            regionAttributes.getEvictionAttributes();
+        if (evictionAttributes.getLruMemorySize() != null) {
+          region.setEviction(convertFrom(evictionAttributes.getLruMemorySize()));
+        }
+        if (evictionAttributes.getLruEntryCount() != null) {
+          region.setEviction(convertFrom(evictionAttributes.getLruEntryCount()));
+        }
+        if (evictionAttributes.getLruHeapPercentage() != null) {
+          region.setEviction(convertFrom(evictionAttributes.getLruHeapPercentage()));
+        }
+      }
     }
 
     return region;
@@ -115,7 +129,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
       }
     }
 
-    if(configObject.getEviction() != null) {
+    if (configObject.getEviction() != null) {
       attributesType.setEvictionAttributes(convertFrom(configObject.getEviction()));
     }
 
@@ -123,8 +137,9 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     return region;
   }
 
-  RegionAttributesType.EvictionAttributes convertFrom(Region.Eviction eviction) {
-    return RegionAttributesType.EvictionAttributes.generate(getEvictionActionString(eviction), eviction.getMemorySizeMb(), eviction.getEntryCount(), eviction.getObjectSizer());
+  private RegionAttributesType.EvictionAttributes convertFrom(Region.Eviction eviction) {
+    return RegionAttributesType.EvictionAttributes.generate(getEvictionActionString(eviction),
+        eviction.getMemorySizeMb(), eviction.getEntryCount(), eviction.getObjectSizer());
   }
 
   private String getEvictionActionString(Region.Eviction eviction) {
@@ -140,6 +155,38 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
           throw new IllegalStateException("Unhandled eviction action: " + eviction.getAction());
       }
     }
+  }
+
+  private Region.EvictionAction getEvictionAction(EnumActionDestroyOverflow evictionAction) {
+    switch (evictionAction) {
+      case LOCAL_DESTROY:
+        return Region.EvictionAction.LOCAL_DESTROY;
+      case OVERFLOW_TO_DISK:
+        return Region.EvictionAction.OVERFLOW_TO_DISK;
+      default:
+        throw new IllegalStateException("Unhandled eviction action xml: " + evictionAction);
+    }
+  }
+
+  Region.Eviction convertFrom(
+      RegionAttributesType.EvictionAttributes.LruMemorySize evictionAttributes) {
+    return new Region.Eviction(Region.EvictionType.MEMORY_SIZE,
+        getEvictionAction(evictionAttributes.getAction()), null,
+        Integer.parseInt(evictionAttributes.getMaximum()), evictionAttributes.getClassName());
+  }
+
+  Region.Eviction convertFrom(
+      RegionAttributesType.EvictionAttributes.LruEntryCount evictionAttributes) {
+    return new Region.Eviction(Region.EvictionType.ENTRY_COUNT,
+        getEvictionAction(evictionAttributes.getAction()),
+        Integer.parseInt(evictionAttributes.getMaximum()), null, null);
+  }
+
+  Region.Eviction convertFrom(
+      RegionAttributesType.EvictionAttributes.LruHeapPercentage evictionAttributes) {
+    return new Region.Eviction(Region.EvictionType.HEAP_PERCENTAGE,
+        getEvictionAction(evictionAttributes.getAction()), null, null,
+        evictionAttributes.getClassName());
   }
 
   RegionAttributesType.ExpirationAttributesType convertFrom(Region.Expiration expiration) {
