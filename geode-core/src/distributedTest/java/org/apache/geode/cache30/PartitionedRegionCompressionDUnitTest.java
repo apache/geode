@@ -33,17 +33,16 @@ public class PartitionedRegionCompressionDUnitTest extends PartitionedRegionDUni
   }
 
   @Override
-  protected <K,V> RegionAttributes<K,V> getRegionAttributes() {
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
     return getRegionAttributes(null);
   }
 
   @Override
-  protected <K,V> RegionAttributes<K,V> getRegionAttributes(String type) {
-    RegionAttributes<K,V> ra;
-    if(type != null) {
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
+    RegionAttributes<K, V> ra;
+    if (type != null) {
       ra = super.getRegionAttributes(type);
-    }
-    else {
+    } else {
       ra = super.getRegionAttributes();
     }
 
@@ -54,7 +53,7 @@ public class PartitionedRegionCompressionDUnitTest extends PartitionedRegionDUni
       // Not a supported OS
       return ra;
     }
-    AttributesFactory<K,V> factory = new AttributesFactory<>(ra);
+    AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
     if (!ra.getDataPolicy().isEmpty()) {
       factory.setCompressor(compressor);
     }

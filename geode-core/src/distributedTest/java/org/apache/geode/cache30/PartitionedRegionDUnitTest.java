@@ -53,6 +53,7 @@ import org.apache.geode.test.dunit.VM;
 /**
  * This class tests the functionality of a cache {@link Region region} that has a scope of {@link
  * Scope#DISTRIBUTED_ACK distributed ACK} and {@link PartitionAttributes partition-attributes}.
+ *
  * @since GemFire 5.1
  */
 public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
@@ -143,8 +144,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
     vm1.invoke("create PR", new SerializableRunnable() {
       @Override
       public void run() {
-        RegionFactory<String, String>
-            fact =
+        RegionFactory<String, String> fact =
             getCache().createRegionFactory(RegionShortcut.PARTITION);
         fact.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
         fact.addCacheListener(new CacheListenerAdapter<String, String>() {
@@ -323,54 +323,46 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
   @Ignore("Not implemented for partitioned regions")
   @Override
   @Test
-  public void testDefinedEntryUpdated() {
-  }
+  public void testDefinedEntryUpdated() {}
 
   @Ignore("Not implemented for partitioned regions")
   @Override
   @Test
-  public void testRemoteCacheListener() {
-  }
+  public void testRemoteCacheListener() {}
 
   // user attributes aren't supported in partitioned regions at this time (5.1)
 
   @Ignore("Not implemented for partitioned regions")
   @Override
   @Test
-  public void testEntryUserAttribute() {
-  }
+  public void testEntryUserAttribute() {}
 
   // these tests require misc Region operations not currently supported by PRs
 
   @Ignore("Not implemented for partitioned regions")
   @Override
   @Test
-  public void testInvalidateRegion() {
-  }
+  public void testInvalidateRegion() {}
 
   @Ignore("Not implemented for partitioned regions")
   @Override
   @Test
-  public void testLocalDestroyRegion() {
-  }
+  public void testLocalDestroyRegion() {}
 
   @Ignore("Not implemented for partitioned regions")
   @Override
   @Test
-  public void testLocalInvalidateRegion() {
-  }
+  public void testLocalInvalidateRegion() {}
 
   @Ignore("Not implemented for partitioned regions")
   @Override
   @Test
-  public void testSnapshot() {
-  }
+  public void testSnapshot() {}
 
   @Ignore("Not implemented for partitioned regions")
   @Override
   @Test
-  public void testRootSnapshot() {
-  }
+  public void testRootSnapshot() {}
 
   static class PoisonedKey implements Serializable {
     static volatile boolean poisoned = false;
@@ -378,6 +370,7 @@ public class PartitionedRegionDUnitTest extends MultiVMRegionTestCase {
 
     /**
      * Accessed via reflection
+     *
      * @return true if poison found
      */
     static boolean poisonFound() {

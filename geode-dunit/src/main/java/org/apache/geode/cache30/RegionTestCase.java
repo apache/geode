@@ -84,7 +84,6 @@ import org.apache.geode.internal.cache.ExpiryTask;
 import org.apache.geode.internal.cache.ExpiryTask.ExpiryTaskListener;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -1941,6 +1940,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     long tilt = p_tilt;
     // up until the time that the expiry fires, the entry
     // better not be null...
+
     for (;;) {
       long now = System.currentTimeMillis();
       if (now >= tilt)
@@ -1988,7 +1988,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     regionFactory.setEntryTimeToLive(expire);
     regionFactory.setStatisticsEnabled(true);
     Region<Object, Object> region;
-    /**
+    /*
      * Crank up the expiration so test runs faster. This property only needs to be set while the
      * region is created
      */
@@ -2033,7 +2033,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     regionFactory.setStatisticsEnabled(true);
 
     Region<Object, Object> region;
-    /**
+    /*
      * Crank up the expiration so test runs faster. This property only needs to be set while the
      * region is created
      */
@@ -2136,7 +2136,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     assertEquals(region.get(key1), value);
   }
 
-  protected AtomicInteger eventCount = new AtomicInteger();
+  private final AtomicInteger eventCount = new AtomicInteger();
 
   /**
    * Expire an entry with a custom expiration. Set a new custom expiration, create the same entry
@@ -2404,7 +2404,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     VM vm0 = VM.getVM(0);
     final String name = this.getUniqueName();
 
-    vm0.invoke(new CacheSerializableRunnable("testRegionTtlInvalidate") {
+    vm0.invoke("testRegionTtlInvalidate", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         final int timeout = 22; // ms
@@ -2458,7 +2458,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     final Object key = "KEY";
     final Object value = "VALUE";
 
-    AttributesFactory<Object, Object> factory = new AttributesFactory(getRegionAttributes());
+    RegionFactory<Object, Object> factory = getCache().createRegionFactory(getRegionAttributes());
     ExpirationAttributes expire = new ExpirationAttributes(timeout, ExpirationAction.DESTROY);
     factory.setRegionTimeToLive(expire);
     factory.setStatisticsEnabled(true);
@@ -2470,7 +2470,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     ExpiryTask.suspendExpiration();
     try {
       try {
-        region = createRegion(name, factory.create());
+        region = createRegion(name, factory);
         assertFalse(region.isDestroyed());
         tilt = System.currentTimeMillis() + timeout;
         region.put(key, value);
@@ -2497,7 +2497,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     final String key = "KEY";
     final String value = "VALUE";
 
-    AttributesFactory<Object, Object> factory = new AttributesFactory<>(getRegionAttributes());
+    RegionFactory<Object, Object> factory = getCache().createRegionFactory(getRegionAttributes());
     ExpirationAttributes expire = new ExpirationAttributes(timeout, ExpirationAction.INVALIDATE);
     factory.setEntryIdleTimeout(expire);
     factory.setStatisticsEnabled(true);
@@ -2508,7 +2508,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     Region<Object, Object> region;
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
-      region = createRegion(name, factory.create());
+      region = createRegion(name, factory);
 
       ExpiryTask.suspendExpiration();
       Region.Entry entry;
@@ -2881,7 +2881,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     final String special;
     final ExpirationAttributes specialAtt;
 
-    protected CountExpiry(String flagged, ExpirationAttributes att) {
+    CountExpiry(String flagged, ExpirationAttributes att) {
       this.special = flagged;
       this.specialAtt = att;
     }
@@ -2921,23 +2921,22 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     final String key2 = "KEY2";
     final String value = "VALUE";
 
-    AttributesFactory<Object, Object> factory = new AttributesFactory<>(getRegionAttributes());
+    RegionFactory<Object, Object> factory = getCache().createRegionFactory(getRegionAttributes());
     ExpirationAttributes expire = new ExpirationAttributes(timeout, ExpirationAction.INVALIDATE);
     factory.setCustomEntryTimeToLive(new CountExpiry<>(key2, expire));
     factory.setStatisticsEnabled(true);
-    RegionAttributes<Object, Object> attrs = factory.create();
     synchronized (CountExpiry.class) {
       CountExpiry.invokeCounts.clear();
     }
 
     Region<Object, Object> region = null;
-    /**
+    /*
      * Crank up the expiration so test runs faster. This property only needs to be set while the
      * region is created
      */
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
-      region = createRegion(name, attrs);
+      region = createRegion(name, factory);
     } finally {
       if (region.getAttributes().getPartitionAttributes() == null)
         System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
@@ -3388,9 +3387,8 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     final Object value = "VALUE";
 
 
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    vm0.invoke(new CacheSerializableRunnable("testRegionIdleInvalidate") {
+    VM vm0 = VM.getVM(0);
+    vm0.invoke("testRegionIdleInvalidate", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         TestCacheListener<Object, Object> list = new TestCacheListener<Object, Object>() {
@@ -3560,7 +3558,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     // create region in other VMs if distributed
     boolean isDistributed = getRegionAttributes().getScope().isDistributed();
     if (isDistributed) {
-      invokeInEveryVM(new CacheSerializableRunnable("create presnapshot region") {
+      invokeInEveryVM("create presnapshot region", new CacheSerializableRunnable() {
         @Override
         public void run2() throws CacheException {
           preSnapshotRegion = createRegion(name);
@@ -3602,7 +3600,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
       // test postSnapshot behavior in other VMs if distributed
       if (isDistributed) {
-        invokeInEveryVM(new CacheSerializableRunnable("postSnapshot") {
+        invokeInEveryVM("postSnapshot", new CacheSerializableRunnable() {
           @Override
           public void run2() throws CacheException {
             RegionTestCase.this.remoteTestPostSnapshot(name, false, false);
@@ -3624,7 +3622,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     // create region in other VMs if distributed
     boolean isDistributed = getRegionAttributes().getScope().isDistributed();
     if (isDistributed) {
-      invokeInEveryVM(new CacheSerializableRunnable("create presnapshot region") {
+      invokeInEveryVM("create presnapshot region", new CacheSerializableRunnable() {
         @Override
         public void run2() throws CacheException {
           preSnapshotRegion = createRootRegion(name, getRegionAttributes());
@@ -3668,7 +3666,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
       // test postSnapshot behavior in other VMs if distributed
       if (isDistributed) {
-        invokeInEveryVM(new CacheSerializableRunnable("postSnapshot") {
+        invokeInEveryVM("postSnapshot", new CacheSerializableRunnable() {
           @Override
           public void run2() throws CacheException {
             RegionTestCase.this.remoteTestPostSnapshot(name, false, true);

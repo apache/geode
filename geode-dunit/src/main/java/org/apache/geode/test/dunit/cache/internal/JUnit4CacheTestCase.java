@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
@@ -426,11 +425,11 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   public final <K, V> Region<K, V> createRegion(final String name, final String rootName,
       final RegionAttributes<K, V> attributes) throws CacheException {
     Region<K, V> root = getRootRegion(rootName);
-    RegionFactory<K,V> regionFactory = getCache().createRegionFactory(attributes);
+    RegionFactory<K, V> regionFactory = getCache().createRegionFactory(attributes);
 
     if (root == null) {
       // don't put listeners on root region
-      RegionFactory<K,V> regionFactory2 = new RegionFactory<>(regionFactory);
+      RegionFactory<K, V> regionFactory2 = new RegionFactory<>(regionFactory);
       configRootRegionFactory(regionFactory2);
 
       root = createRootRegion(rootName, regionFactory2);
