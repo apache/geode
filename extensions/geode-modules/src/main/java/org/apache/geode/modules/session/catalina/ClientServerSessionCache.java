@@ -20,7 +20,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
@@ -176,7 +175,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
       createSessionRegionOnServers();
 
       // Create the region on the client
-      this.sessionRegion = createLocalSessionRegion();
+      this.sessionRegion = createLocalSessionRegionWithRegisterInterest();
       if (getSessionManager().getLogger().isDebugEnabled()) {
         getSessionManager().getLogger().debug("Created session region: " + this.sessionRegion);
       }
@@ -190,9 +189,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
         sessionRegion.getAttributesMutator().addCacheListener(new SessionExpirationCacheListener());
       }
 
-      if (sessionRegion.getAttributes().getDataPolicy() != DataPolicy.EMPTY) {
-        sessionRegion.registerInterestForAllKeys(InterestResultPolicy.KEYS);
-      }
+      sessionRegion.registerInterestForAllKeys(InterestResultPolicy.KEYS);
     }
   }
 
@@ -224,6 +221,17 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     }
   }
 
+  Region<String, HttpSession> createLocalSessionRegionWithRegisterInterest() {
+    Region<String, HttpSession> region = createLocalSessionRegion();
+
+    // register interest are needed for proxy or caching-proxy client:
+    // to get updates from server if local cache is enabled;
+    // to get callbacks for listener invocation for proxy client.
+    region.registerInterestForAllKeys(InterestResultPolicy.KEYS);
+
+    return region;
+  }
+
   Region<String, HttpSession> createLocalSessionRegion() {
     ClientRegionFactory<String, HttpSession> factory = null;
     if (getSessionManager().getEnableLocalCache()) {
@@ -244,14 +252,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     }
 
     // Create the region
-    Region region = factory.create(getSessionManager().getRegionName());
-
-    // register interest to get updates from server if local cache is enabled
-    if (getSessionManager().getEnableLocalCache()) {
-      region.registerInterestForAllKeys(InterestResultPolicy.KEYS);
-    }
-
-    return region;
+    return factory.create(getSessionManager().getRegionName());
   }
 
   // Helper methods added to improve unit testing of class
