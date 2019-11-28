@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
@@ -88,10 +89,12 @@ public abstract class ClusterMessage
   /** the unreserved flags start for child classes */
   protected static final short UNRESERVED_FLAGS_START = (HAS_PROCESSOR_TYPE << 1);
 
-  public static final InternalDistributedMember[] EMPTY_RECIPIENTS_ARRAY =
+  @MakeImmutable
+  private static final InternalDistributedMember[] EMPTY_RECIPIENTS_ARRAY =
       new InternalDistributedMember[0];
 
-  public static final List<MemberIdentifier> ALL_RECIPIENTS_LIST =
+  @MakeImmutable
+  private static final List<MemberIdentifier> ALL_RECIPIENTS_LIST =
       Collections.singletonList(null);
 
   //////////////////// Instance Fields ////////////////////
