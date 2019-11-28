@@ -71,9 +71,10 @@ public class AttributeDescriptorTest {
     typeRegistry = new TypeRegistry(mockCache, true);
     methodInvocationAuthorizer = spy(MethodInvocationAuthorizer.class);
 
-    InternalQueryService mockQueryService = mock(InternalQueryService.class);
-    when(mockCache.getQueryService()).thenReturn(mockQueryService);
-    when(mockQueryService.getMethodInvocationAuthorizer()).thenReturn(methodInvocationAuthorizer);
+    QueryConfigurationService mockService = mock(QueryConfigurationService.class);
+    when(mockService.getMethodAuthorizer()).thenReturn(methodInvocationAuthorizer);
+
+    when(mockCache.getService(QueryConfigurationService.class)).thenReturn(mockService);
     queryExecutionContext = new QueryExecutionContext(null, mockCache);
   }
 

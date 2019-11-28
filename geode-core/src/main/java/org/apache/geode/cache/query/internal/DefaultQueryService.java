@@ -108,14 +108,20 @@ public class DefaultQueryService implements InternalQueryService {
   private Map<Region, HashSet<IndexCreationData>> indexDefinitions =
       Collections.synchronizedMap(new HashMap<>());
 
-
   public DefaultQueryService(InternalCache cache) {
     if (cache == null)
-      throw new IllegalArgumentException("cache must not be null");
-    this.cache = cache;
+      throw new IllegalArgumentException("Cache must not be null");
     QueryConfigurationService queryConfigurationService =
         cache.getService(QueryConfigurationService.class);
+
+    this.cache = cache;
     this.methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
+
+    // Should never happen, adding the check as a safeguard.
+    if (this.methodInvocationAuthorizer == null) {
+      logger.warn(
+          "MethodInvocationAuthorizer returned by the QueryConfigurationService is null, problems might arise if there are queries using method invocations.");
+    }
   }
 
   /**

@@ -16,8 +16,6 @@ package org.apache.geode.cache.query.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
@@ -29,30 +27,19 @@ import org.apache.geode.internal.cache.InternalCache;
 public class ExecutionContextTest {
 
   @Test
-  public void constructorShouldUseNoOpMethodAuthorizerOnClientSide() {
+  public void constructorShouldUseConfiguredMethodAuthorizer() {
     InternalCache mockCache = mock(InternalCache.class);
-    when(mockCache.isClient()).thenReturn(true);
-
-    ExecutionContext executionContext = new ExecutionContext(null, mockCache);
-    assertThat(executionContext.getMethodInvocationAuthorizer())
-        .isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
-    verify(mockCache, times(0)).getQueryService();
-  }
-
-  @Test
-  public void constructorShouldUseConfiguredMethodAuthorizerOnServerSide() {
-    InternalCache mockCache = mock(InternalCache.class);
-    InternalQueryService mockQueryService = mock(InternalQueryService.class);
-    when(mockCache.getQueryService()).thenReturn(mockQueryService);
+    QueryConfigurationService mockService = mock(QueryConfigurationService.class);
+    when(mockCache.getService(QueryConfigurationService.class)).thenReturn(mockService);
 
     MethodInvocationAuthorizer noOpAuthorizer = QueryConfigurationServiceImpl.getNoOpAuthorizer();
-    when(mockQueryService.getMethodInvocationAuthorizer()).thenReturn(noOpAuthorizer);
+    when(mockService.getMethodAuthorizer()).thenReturn(noOpAuthorizer);
     ExecutionContext executionContextNoOpAuthorizer = new ExecutionContext(null, mockCache);
     assertThat(executionContextNoOpAuthorizer.getMethodInvocationAuthorizer())
         .isSameAs(noOpAuthorizer);
 
     MethodInvocationAuthorizer restrictedAuthorizer = new RestrictedMethodAuthorizer(mockCache);
-    when(mockQueryService.getMethodInvocationAuthorizer()).thenReturn(restrictedAuthorizer);
+    when(mockService.getMethodAuthorizer()).thenReturn(restrictedAuthorizer);
     ExecutionContext executionContextRestrictedAuthorizer = new ExecutionContext(null, mockCache);
     assertThat(executionContextRestrictedAuthorizer.getMethodInvocationAuthorizer())
         .isSameAs(restrictedAuthorizer);

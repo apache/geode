@@ -40,8 +40,8 @@ import org.apache.geode.cache.query.internal.CompiledSelect;
 import org.apache.geode.cache.query.internal.CompiledValue;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.ExecutionContext;
-import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.LinkedResultSet;
+import org.apache.geode.cache.query.internal.QueryConfigurationService;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -66,14 +66,15 @@ public class PartitionedRegionQueryEvaluatorTest {
 
   @Before
   public void setup() throws Exception {
+    QueryConfigurationService mockService = mock(QueryConfigurationService.class);
+    when(mockService.getMethodAuthorizer()).thenReturn(mock(MethodInvocationAuthorizer.class));
+
     localNode = new InternalDistributedMember("localhost", 8888);
     remoteNodeA = new InternalDistributedMember("localhost", 8889);
     remoteNodeB = new InternalDistributedMember("localhost", 8890);
     GemFireCacheImpl cache = Fakes.cache();
     system = (InternalDistributedSystem) cache.getDistributedSystem();
-    when(cache.getQueryService()).thenReturn(mock(InternalQueryService.class));
-    when(cache.getQueryService().getMethodInvocationAuthorizer())
-        .thenReturn(mock(MethodInvocationAuthorizer.class));
+    when(cache.getService(QueryConfigurationService.class)).thenReturn(mockService);
 
     allNodes.add(localNode);
     allNodes.add(remoteNodeA);

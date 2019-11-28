@@ -45,10 +45,10 @@ public class NWayMergeResultsTest {
 
   @Before
   public void setUp() {
+    QueryConfigurationService mockService = mock(QueryConfigurationService.class);
+    when(mockService.getMethodAuthorizer()).thenReturn(mock(MethodInvocationAuthorizer.class));
     InternalCache mockCache = mock(InternalCache.class);
-    when(mockCache.getQueryService()).thenReturn(mock(InternalQueryService.class));
-    when(mockCache.getQueryService().getMethodInvocationAuthorizer())
-        .thenReturn(mock(MethodInvocationAuthorizer.class));
+    when(mockCache.getService(QueryConfigurationService.class)).thenReturn(mockService);
 
     context = new ExecutionContext(null, mockCache);
   }
