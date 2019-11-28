@@ -79,8 +79,10 @@ public class BundledJarsJUnitTest {
         "The bundled jars have changed. Please make sure you update the licence and notice"
             + System.lineSeparator()
             + "as described in https://cwiki.apache.org/confluence/display/GEODE/License+Guide+for+Contributors"
-            + System.lineSeparator() + "When fixed, copy geode-assembly/build/test/bundled_jars.txt"
-            + System.lineSeparator() + "to src/test/resources/expected_jars.txt"
+            + System.lineSeparator()
+            + "When fixed, copy geode-assembly/build/integrationTest/bundled_jars.txt"
+            + System.lineSeparator()
+            + "to geode-assembly/src/integrationTest/resources/expected_jars.txt"
             + System.lineSeparator() + "Removed Jars" + System.lineSeparator() + "--------------"
             + System.lineSeparator() + String.join(System.lineSeparator(), missingJars)
             + System.lineSeparator() + System.lineSeparator() + "Added Jars"
