@@ -85,7 +85,7 @@ public class GatewaySenderMBeanSecurityTest {
     bean.pause();
     bean.rebalance();
     bean.resume();
-    bean.start(false);
+    bean.start();
     bean.stop();
   }
 
@@ -114,7 +114,7 @@ public class GatewaySenderMBeanSecurityTest {
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
     softly.assertThatThrownBy(() -> bean.resume())
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
-    softly.assertThatThrownBy(() -> bean.start(false))
+    softly.assertThatThrownBy(() -> bean.start())
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());
     softly.assertThatThrownBy(() -> bean.stop())
         .hasMessageContaining(TestCommand.clusterManageGateway.toString());

@@ -118,7 +118,7 @@ public class WANCommandUtils implements Serializable {
       Set<GatewaySender> senders = cache.getGatewaySenders();
       AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
           .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
-      sender.start(false);
+      sender.start();
     } finally {
       exln.remove();
     }

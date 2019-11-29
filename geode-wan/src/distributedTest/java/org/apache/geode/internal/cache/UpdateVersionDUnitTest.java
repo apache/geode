@@ -637,7 +637,7 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
     Set<GatewaySender> senders = cache.getGatewaySenders();
     for (GatewaySender sender : senders) {
       if (sender.getId().equals(senderId)) {
-        sender.start(false);
+        sender.start();
         break;
       }
     }

@@ -181,8 +181,7 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
         sender.setStartEventProcessorInPausedState();
       }
       if (!gatewaySenderAttributes.isManualStart()) {
-        // set cleanQueues to default value
-        sender.start(false);
+        sender.start();
       }
     }
 

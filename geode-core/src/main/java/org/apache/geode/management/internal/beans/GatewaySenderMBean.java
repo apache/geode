@@ -169,8 +169,13 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   }
 
   @Override
-  public void start(boolean cleanQueues) {
-    bridge.start(cleanQueues);
+  public void start() {
+    bridge.start();
+  }
+
+  @Override
+  public void startWithClean() {
+    bridge.startWithClean();
   }
 
   @Override
