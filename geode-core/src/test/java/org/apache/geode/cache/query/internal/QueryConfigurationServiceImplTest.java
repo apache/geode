@@ -17,6 +17,7 @@ package org.apache.geode.cache.query.internal;
 import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY;
 import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.CONTINUOUS_QUERIES_RUNNING_MESSAGE;
 import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.INTERFACE_NOT_IMPLEMENTED_MESSAGE;
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.NULL_CACHE_ERROR_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -95,7 +96,7 @@ public class QueryConfigurationServiceImplTest {
   public void initThrowsExceptionWhenCacheIsNull() {
     assertThatThrownBy(() -> configService.init(null))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Cache must not be null");
+        .hasMessage(NULL_CACHE_ERROR_MESSAGE);
   }
 
   @Test

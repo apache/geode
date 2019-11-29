@@ -32,7 +32,8 @@ public interface QueryConfigurationService extends CacheService {
   MethodInvocationAuthorizer getMethodAuthorizer();
 
   /**
-   * Updates the configured {@link MethodInvocationAuthorizer}.
+   * Sets the configured {@link MethodInvocationAuthorizer} when creating the cache using a
+   * declarative approach.
    *
    * @param cache the cache on which the {@link MethodInvocationAuthorizer} instance will be
    *        configured.
@@ -54,7 +55,7 @@ public interface QueryConfigurationService extends CacheService {
    *        continuous queries running, {@code false} otherwise.
    * @param className the fully qualified name of the class that will be created and configured as
    *        the new {@link MethodInvocationAuthorizer}.
-   * @param parameters the list of parameters that will be used to initialize the new
+   * @param parameters the set of parameters that will be used to initialize the new
    *        {@link MethodInvocationAuthorizer}.
    * @throws QueryConfigurationServiceException when there is an error while updating the new
    *         {@link MethodInvocationAuthorizer}.

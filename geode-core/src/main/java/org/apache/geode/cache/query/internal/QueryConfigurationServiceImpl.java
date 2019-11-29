@@ -41,6 +41,7 @@ import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 public class QueryConfigurationServiceImpl implements QueryConfigurationService {
   private static final Logger logger = LogService.getLogger();
+  static final String NULL_CACHE_ERROR_MESSAGE = "Cache must not be null";
   private static final String UPDATE_ERROR_MESSAGE =
       "Exception while updating MethodInvocationAuthorizer.";
   public static final String INTERFACE_NOT_IMPLEMENTED_MESSAGE =
@@ -85,7 +86,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   @Override
   public boolean init(Cache cache) {
     if (cache == null) {
-      throw new IllegalArgumentException("Cache must not be null");
+      throw new IllegalArgumentException(NULL_CACHE_ERROR_MESSAGE);
     }
 
     if (System.getProperty(ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY) != null) {

@@ -100,7 +100,8 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
     return commandBuilder.toString();
   }
 
-  private void executeAndAssertGfshCommandIsSuccessful(Class authorizerClass,
+  private void executeAndAssertGfshCommandIsSuccessful(
+      Class<? extends MethodInvocationAuthorizer> authorizerClass,
       String authorizerParameters) {
     gfsh.executeAndAssertThat(buildCommand(authorizerClass.getName(), authorizerParameters))
         .statusIsSuccess().hasTableSection().hasRowSize(servers.size());
@@ -123,7 +124,8 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
     });
   }
 
-  private void verifyCurrentAuthorizerClass(Class authorizerClass) {
+  private void verifyCurrentAuthorizerClass(
+      Class<? extends MethodInvocationAuthorizer> authorizerClass) {
     servers.forEach(server -> server.invoke(() -> {
       MethodInvocationAuthorizer methodAuthorizer =
           Objects.requireNonNull(ClusterStartupRule.getCache())
@@ -132,7 +134,7 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
     }));
   }
 
-  private String getFilePath() throws IOException {
+  private String getTestMethodAuthorizerFilePath() throws IOException {
     URL url = getClass().getResource(TEST_AUTHORIZER_TXT);
     File textFile = this.tempFolder.newFile(TEST_AUTHORIZER_TXT);
     FileUtils.copyURLToFile(url, textFile);
@@ -186,7 +188,8 @@ public class AlterQueryServiceCommandWithSecurityDUnitTest {
     verifyCurrentAuthorizerClass(DEFAULT_AUTHORIZER_CLASS);
     Class<TestMethodAuthorizer> authorizerClass = TestMethodAuthorizer.class;
     String authorizerName = authorizerClass.getName();
-    String classContent = new String(Files.readAllBytes(Paths.get(getFilePath())));
+    String classContent =
+        new String(Files.readAllBytes(Paths.get(getTestMethodAuthorizerFilePath())));
     String jarFileName = "testJar.jar";
     File jarFile = tempFolder.newFile(jarFileName);
     new ClassBuilder().writeJarFromContent(authorizerName, classContent, jarFile);

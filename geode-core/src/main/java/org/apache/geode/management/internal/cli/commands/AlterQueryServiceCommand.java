@@ -46,7 +46,7 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
   private static final String AUTHORIZER_PARAMETERS_HELP =
       "A semicolon separated list of all parameter values for the specified method authorizer.";
   static final String FORCE_UPDATE = "force-update";
-  private static final String FORCE_PARAMETER_HELP =
+  private static final String FORCE_UPDATE_HELP =
       "Flag to indicate whether to forcibly update the currently configured authorizer, even when there are continuous queries registered (use with caution)";
   static final String NO_MEMBERS_FOUND_MESSAGE = "No members found.";
   public static final String PARTIAL_FAILURE_MESSAGE =
@@ -64,7 +64,7 @@ public class AlterQueryServiceCommand extends SingleGfshCommand {
           mandatory = true) String methodAuthorizerName,
       @CliOption(key = AUTHORIZER_PARAMETERS, help = AUTHORIZER_PARAMETERS_HELP,
           optionContext = "splittingRegex=" + SPLITTING_REGEX) String[] authorizerParameters,
-      @CliOption(key = FORCE_UPDATE, help = FORCE_PARAMETER_HELP, specifiedDefaultValue = "true",
+      @CliOption(key = FORCE_UPDATE, help = FORCE_UPDATE_HELP, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false") boolean forceUpdate) {
 
     ResultModel result;
