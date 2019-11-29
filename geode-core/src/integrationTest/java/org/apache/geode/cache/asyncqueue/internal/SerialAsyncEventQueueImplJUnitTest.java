@@ -85,9 +85,9 @@ public class SerialAsyncEventQueueImplJUnitTest {
     assertEquals(10, queue.getStatistics().getTempEventQueueSize());
     assertEquals(3, queue.getStatistics().getEventsProcessedByPQRM());
 
-    queue.start(false);
+    queue.start();
     queue.stop();
-    queue.start(false);
+    queue.start();
 
     assertEquals(0, queue.getStatistics().getEventQueueSize());
     assertEquals(0, queue.getStatistics().getSecondaryEventQueueSize());

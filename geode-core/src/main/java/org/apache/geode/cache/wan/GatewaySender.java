@@ -178,11 +178,15 @@ public interface GatewaySender {
   /**
    * Starts this GatewaySender. Once the GatewaySender is running, its configuration cannot be
    * changed.
-   * In case, GatewaySender was previosly stopped, and some events wefe leftin queue, with option
-   * cleanQueues
-   * we choose whether to restore or discard previos queue. Default is to restore queue.
    */
-  void start(boolean cleanQueues);
+  void start();
+
+  /**
+   * Starts this GatewaySender and discards previous queue content. Once the GatewaySender is
+   * running,
+   * its configuration cannot be changed.
+   */
+  void startWithClean();
 
   /**
    * Stops this GatewaySender. The scope of this operation is the VM on which it is invoked. In case
