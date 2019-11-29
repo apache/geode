@@ -178,8 +178,8 @@ public class AsyncEventListenerDistributedTest implements Serializable {
 
     vm0.invoke(() -> doPuts(replicateRegionName, 10));
 
-    vm0.invoke(() -> getInternalGatewaySender().start(false));
-    vm1.invoke(() -> getInternalGatewaySender().start(false));
+    vm0.invoke(() -> getInternalGatewaySender().start());
+    vm1.invoke(() -> getInternalGatewaySender().start());
 
     assertThat(vm0.invoke(() -> getAsyncEventQueue().size())).isEqualTo(0);
     assertThat(vm1.invoke(() -> getAsyncEventQueue().size())).isEqualTo(0);

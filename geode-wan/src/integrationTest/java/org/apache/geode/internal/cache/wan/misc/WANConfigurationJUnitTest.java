@@ -69,7 +69,7 @@ public class WANConfigurationJUnitTest {
       GatewaySenderFactory fact = cache.createGatewaySenderFactory();
       fact.setParallel(true);
       GatewaySender sender1 = fact.create("NYSender", 2);
-      sender1.start(false);
+      sender1.start();
       fail("Expected IllegalStateException but not thrown");
     } catch (Exception e) {
       if ((e instanceof IllegalStateException && e.getMessage().startsWith(

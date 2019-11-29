@@ -62,7 +62,7 @@ public class MyDistributedSystemListener implements DistributedSystemListener {
         System.out.println("Created Region : " + region.getName());
 
         try {
-          serialSender.start(false);
+          serialSender.start();
           System.out.println("Sender Started: " + serialSender.getId());
         } catch (Exception e) {
           e.printStackTrace();

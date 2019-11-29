@@ -101,7 +101,11 @@ public class StartGatewaySenderCommand extends SingleGfshCommand {
             statusList.add(CliStrings.format(
                 CliStrings.GATEWAY_SENDER_0_IS_ALREADY_STARTED_ON_MEMBER_1, id, member.getId()));
           } else {
-            bean.start(cleanQueues);
+            if (cleanQueues) {
+              bean.startWithClean();
+            } else {
+              bean.start();
+            }
             statusList.add(member.getId());
             statusList.add(CliStrings.GATEWAY_OK);
             statusList.add(CliStrings.format(CliStrings.GATEWAY_SENDER_0_IS_STARTED_ON_MEMBER_1, id,
