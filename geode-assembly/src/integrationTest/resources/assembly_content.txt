@@ -622,6 +622,7 @@ javadoc/org/apache/geode/examples/security/ExamplePostProcessor.html
 javadoc/org/apache/geode/examples/security/ExampleSecurityManager.Role.html
 javadoc/org/apache/geode/examples/security/ExampleSecurityManager.User.html
 javadoc/org/apache/geode/examples/security/ExampleSecurityManager.html
+javadoc/org/apache/geode/examples/security/ExampleAnnotationBasedMethodInvocationAuthorizer.html
 javadoc/org/apache/geode/examples/security/package-frame.html
 javadoc/org/apache/geode/examples/security/package-summary.html
 javadoc/org/apache/geode/examples/security/package-tree.html
