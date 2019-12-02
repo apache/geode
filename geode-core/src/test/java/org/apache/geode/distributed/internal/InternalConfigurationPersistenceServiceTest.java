@@ -24,6 +24,7 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.AbstractMap;
@@ -263,6 +264,16 @@ public class InternalConfigurationPersistenceServiceTest {
     document = XmlUtils.createDocumentFromXml(configuration.getCacheXmlContent());
     assertThat(document.getElementsByTagName("gateway-receiver").getLength())
         .isEqualTo(expectFinalElements);
+  }
+
+  @Test
+  public void dontUnlockSharedConfigurationIfNoLockedPreviously() {
+    JAXBService jaxbService = mock(JAXBService.class);
+    InternalConfigurationPersistenceService cps =
+        spy(new InternalConfigurationPersistenceService(jaxbService));
+    doReturn(false).when(cps).lockSharedConfiguration();
+    cps.createConfigurationResponse(null);
+    verify(cps, times(0)).unlockSharedConfiguration();
   }
 
   @Test
