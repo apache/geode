@@ -112,11 +112,6 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>com.github.stephenc.findbugs</groupId>
-      <artifactId>findbugs-annotations</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
       <groupId>org.jgroups</groupId>
       <artifactId>jgroups</artifactId>
       <scope>runtime</scope>

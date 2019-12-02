@@ -23,7 +23,6 @@ commons-validator
 error_prone_annotations
 failureaccess
 fastutil
-findbugs-annotations
 geo
 gfsh-dependencies.jar
 grumpy-core
