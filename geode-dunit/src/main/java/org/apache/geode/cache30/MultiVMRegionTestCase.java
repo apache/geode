@@ -628,7 +628,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         region.put(key, newValue);
       }
     });
-    vm1.invoke("Get entry", repeatingIfNecessary( new CacheSerializableRunnable() {
+    vm1.invoke("Get entry", repeatingIfNecessary(new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -4836,7 +4836,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // start asynchronous process that does updates to the data
     AsyncInvocation async =
-        vm0.invokeAsync("Do Nonblocking Operations",new CacheSerializableRunnable() {
+        vm0.invokeAsync("Do Nonblocking Operations", new CacheSerializableRunnable() {
           @Override
           public void run2() throws CacheException {
             Wait.pause(200); // give the gii a chance to start

@@ -27,7 +27,6 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
@@ -405,7 +404,8 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   }
 
 
-  private <K,V> RegionFactory<K,V> getRootRegionRegionFactory(RegionAttributes<K, V> regionAttributes) {
+  private <K, V> RegionFactory<K, V> getRootRegionRegionFactory(
+      RegionAttributes<K, V> regionAttributes) {
     RegionFactory<K, V> regionFactory1 = getCache().createRegionFactory(regionAttributes);
     return configRootRegionFactory(regionFactory1);
   }

@@ -775,7 +775,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
     logger.info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
 
 
-        paf = new PartitionAttributesFactory<>();
+    paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(2).setLocalMaxMemory(localMaxMemory)
         .setTotalNumBuckets(8).setColocatedWith(ORDER)
         .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
@@ -853,15 +853,16 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
     return port;
   }
 
-  private static <K,V> Region<K,V> CreateColocatedRegion(String regionName) {
+  private static <K, V> Region<K, V> CreateColocatedRegion(String regionName) {
 
-    PartitionAttributesFactory<K,V> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(2).setLocalMaxMemory(100).setTotalNumBuckets(8).setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
+    paf.setRedundantCopies(2).setLocalMaxMemory(100).setTotalNumBuckets(8)
+        .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
 
-    RegionFactory<K,V> regionFactory = cache.createRegionFactory();
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
     regionFactory.setPartitionAttributes(paf.create());
 
-    Region<K,V> region = regionFactory.create(regionName);
+    Region<K, V> region = regionFactory.create(regionName);
     assertThat(region).isNotNull();
     logger.info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
     return region;
@@ -959,11 +960,12 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
 
   }
 
-  private static <K,V> Region<K,V> CreateColocatedDistributedRegion(String poolName, final String regionName) {
-    RegionFactory<K,V> factory;
+  private static <K, V> Region<K, V> CreateColocatedDistributedRegion(String poolName,
+      final String regionName) {
+    RegionFactory<K, V> factory;
     factory = cache.createRegionFactory();
     factory.setPoolName(poolName);
-    Region<K,V> region = factory.create(regionName);
+    Region<K, V> region = factory.create(regionName);
     assertThat(region).isNotNull();
     logger.info("Distributed Region " + regionName + " created Successfully :" + region.toString());
     return region;
