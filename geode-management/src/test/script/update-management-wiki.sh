@@ -71,13 +71,13 @@ else
 fi
 
 
-GEODE_VERSION=$($GEODE/bin/gfsh version)
+GEODE_VERSION=$($GEODE/bin/gfsh version | sed 's/-SNAPSHOT//')
 [[ "${GEODE_VERSION%.*}" == "1.10" ]] && PAGE_ID=115511910
 [[ "${GEODE_VERSION%.*}" == "1.11" ]] && PAGE_ID=135861023
-[[ "${BRANCH}" == "develop" ]] && GEODE_VERSION=develop && PAGE_ID=132322415
+[[ "${GEODE_VERSION%.*}" == "1.12" ]] && PAGE_ID=132322415
 
 if [[ -z "${PAGE_ID}" ]] ; then
-    echo "Please create a new wiki page for $GEODE_VERSION and add its page ID to $0 near line 77"
+    echo "Please create a new wiki page for $GEODE_VERSION and add its page ID to $0 near line 78"
     exit 1
 fi
 
@@ -181,6 +181,7 @@ sed -e "s#/management${URI_VERSION}#${URI_VERSION}#g" -e "s#${URI_VERSION}#/mana
 # remove internal swagger endpoint id */*
 sed -e 's/ .<span class="nickname" style="font-weight:bold">[^<]*<.span>.//' |
 # remove Controller from endpoint categories
+sed -e 's/DocLinksController/Supported Versions/g' |
 sed -e 's/PingManagementController/Ping/g' |
 sed -e 's/ManagementController/ Management/g' |
 sed -e 's/OperationController/ Operation/g' |
