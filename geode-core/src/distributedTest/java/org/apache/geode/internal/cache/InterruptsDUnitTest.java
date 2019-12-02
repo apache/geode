@@ -26,8 +26,8 @@ import org.junit.Test;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.UpdateOperation.UpdateMessage;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -93,16 +93,16 @@ public class InterruptsDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         disconnectFromDS();
-        ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
+        DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
           @Override
           public void beforeProcessMessage(ClusterDistributionManager dm,
-              ClusterMessage message) {
+              DistributionMessage message) {
             if (message instanceof UpdateMessage
                 && ((UpdateMessage) message).regionPath.contains("region")
                 && doInterrupt.compareAndSet(true, false)) {
               vm0.invoke(interruptTask);
-              ClusterMessageObserver.setInstance(null);
+              DistributionMessageObserver.setInstance(null);
             }
           }
 

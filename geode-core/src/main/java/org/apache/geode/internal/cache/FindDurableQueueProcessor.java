@@ -27,8 +27,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -94,7 +94,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
   }
 
   @Override
-  public void process(ClusterMessage msg) {
+  public void process(DistributionMessage msg) {
     // TODO Auto-generated method stub
     if (msg instanceof FindDurableQueueReply) {
       FindDurableQueueReply reply = (FindDurableQueueReply) msg;

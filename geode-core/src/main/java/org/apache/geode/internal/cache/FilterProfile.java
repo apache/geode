@@ -1850,7 +1850,7 @@ public class FilterProfile implements DataSerializableFixedID {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.distributed.internal.ClusterMessage#process(org.apache.geode.
+     * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.
      * distributed.internal.DistributionManager)
      */
     @Override

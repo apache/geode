@@ -35,8 +35,8 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.backup.BackupOperation;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -81,7 +81,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
   @After
   public void tearDown() {
     invokeInEveryVM(() -> {
-      ClusterMessageObserver.setInstance(null);
+      DistributionMessageObserver.setInstance(null);
     });
   }
 
@@ -224,7 +224,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
     });
 
     vm0.invoke(() -> {
-      ClusterMessageObserver.setInstance(
+      DistributionMessageObserver.setInstance(
           new SignalBounceOnRequestImageMessageObserver(regionName, cacheRule.getCache(),
               getBlackboard()));
     });
@@ -282,7 +282,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
     });
 
     vm0.invoke(() -> {
-      ClusterMessageObserver.setInstance(
+      DistributionMessageObserver.setInstance(
           new SignalBounceOnRequestImageMessageObserver(regionName, cacheRule.getCache(),
               getBlackboard()));
     });
@@ -416,11 +416,11 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
     vm1.invoke(() -> flushAsyncDiskRegion());
 
     vm1.invoke(() -> {
-      ClusterMessageObserver.setInstance(
-          new ClusterMessageObserver() {
+      DistributionMessageObserver.setInstance(
+          new DistributionMessageObserver() {
             @Override
             public void beforeProcessMessage(ClusterDistributionManager dm,
-                ClusterMessage message) {
+                DistributionMessage message) {
               if (message instanceof InitialImageOperation.RequestImageMessage) {
                 InitialImageOperation.RequestImageMessage rim =
                     (InitialImageOperation.RequestImageMessage) message;

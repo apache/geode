@@ -32,8 +32,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -211,7 +211,7 @@ public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
     }
 
     @Override
-    public void process(ClusterMessage msg) {
+    public void process(DistributionMessage msg) {
       if (msg instanceof PersistentStateQueryReplyMessage) {
         PersistentStateQueryReplyMessage reply = (PersistentStateQueryReplyMessage) msg;
         results.addResult(reply.persistedStateOfPeer, reply.getSender(), reply.myId,

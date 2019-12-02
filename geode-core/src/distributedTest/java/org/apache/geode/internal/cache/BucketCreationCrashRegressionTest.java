@@ -49,8 +49,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage;
 import org.apache.geode.internal.cache.partitioned.ManageBucketMessage.ManageBucketReplyMessage;
 import org.apache.geode.test.dunit.RMIException;
@@ -120,9 +120,9 @@ public class BucketCreationCrashRegressionTest implements Serializable {
 
   @After
   public void tearDown() {
-    ClusterMessageObserver.setInstance(null);
+    DistributionMessageObserver.setInstance(null);
     invokeInEveryVM(() -> {
-      ClusterMessageObserver.setInstance(null);
+      DistributionMessageObserver.setInstance(null);
     });
   }
 
@@ -231,9 +231,9 @@ public class BucketCreationCrashRegressionTest implements Serializable {
     return new TreeSet<>(region.getDataStore().getAllLocalBucketIds());
   }
 
-  private void handleBeforeProcessMessage(final Class<? extends ClusterMessage> messageClass,
+  private void handleBeforeProcessMessage(final Class<? extends DistributionMessage> messageClass,
       final SerializableRunnableIF runnable) {
-    ClusterMessageObserver
+    DistributionMessageObserver
         .setInstance(new RunnableBeforeProcessMessageObserver(messageClass, runnable));
   }
 
@@ -241,19 +241,19 @@ public class BucketCreationCrashRegressionTest implements Serializable {
     crashDistributedSystem(cacheRule.getSystem());
   }
 
-  private class RunnableBeforeProcessMessageObserver extends ClusterMessageObserver {
+  private class RunnableBeforeProcessMessageObserver extends DistributionMessageObserver {
 
-    private final Class<? extends ClusterMessage> messageClass;
+    private final Class<? extends DistributionMessage> messageClass;
     private final SerializableRunnableIF runnable;
 
-    RunnableBeforeProcessMessageObserver(final Class<? extends ClusterMessage> messageClass,
+    RunnableBeforeProcessMessageObserver(final Class<? extends DistributionMessage> messageClass,
         final SerializableRunnableIF runnable) {
       this.messageClass = messageClass;
       this.runnable = runnable;
     }
 
     @Override
-    public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (messageClass.isInstance(message)) {
         try {
           runnable.run();

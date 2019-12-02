@@ -44,11 +44,11 @@ public class StartupMessageJUnitTest {
 
     // We expect process to send a ReplyMessage with an exception
     // So that the sender is not blocked
-    ArgumentCaptor<ClusterMessage> responseCaptor =
-        ArgumentCaptor.forClass(ClusterMessage.class);
+    ArgumentCaptor<DistributionMessage> responseCaptor =
+        ArgumentCaptor.forClass(DistributionMessage.class);
     verify(distributionManager).putOutgoing(responseCaptor.capture());
 
-    ClusterMessage response = responseCaptor.getValue();
+    DistributionMessage response = responseCaptor.getValue();
     assertThat(response).isInstanceOf(ReplyMessage.class);
     assertThat(((ReplyMessage) response).getException())
         .isInstanceOf(ReplyException.class)
@@ -72,11 +72,11 @@ public class StartupMessageJUnitTest {
 
     // We expect process to send a ReplyMessage with an exception
     // So that the sender is not blocked
-    ArgumentCaptor<ClusterMessage> responseCaptor =
-        ArgumentCaptor.forClass(ClusterMessage.class);
+    ArgumentCaptor<DistributionMessage> responseCaptor =
+        ArgumentCaptor.forClass(DistributionMessage.class);
     verify(distributionManager).putOutgoing(responseCaptor.capture());
 
-    ClusterMessage response = responseCaptor.getValue();
+    DistributionMessage response = responseCaptor.getValue();
     assertThat(response).isInstanceOf(ReplyMessage.class);
     assertThat(((ReplyMessage) response).getException())
         .isInstanceOf(ReplyException.class)

@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.junit.Test;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -86,7 +86,7 @@ public class StreamingOperationOneDUnitTest extends JUnit4DistributedTestCase {
     }
 
     @Override
-    protected ClusterMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
+    protected DistributionMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
       TestRequestStreamingMessageOneProviderNoExceptions msg =
           new TestRequestStreamingMessageOneProviderNoExceptions();
       msg.processorId = processor == null ? 0 : processor.getProcessorId();

@@ -37,9 +37,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockRecoverGrantorProcessor;
@@ -231,7 +231,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
     // create an observer that will block recovery messages from being processed
     MessageObserver observer = new MessageObserver();
-    ClusterMessageObserver.setInstance(observer);
+    DistributionMessageObserver.setInstance(observer);
 
     try {
       System.out.println("starting thread to take over being lock grantor from vm0");
@@ -277,11 +277,11 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
       });
     } finally {
       observer.releasePreventionOfProcessing();
-      ClusterMessageObserver.setInstance(null);
+      DistributionMessageObserver.setInstance(null);
     }
   }
 
-  static class MessageObserver extends ClusterMessageObserver {
+  static class MessageObserver extends DistributionMessageObserver {
     final boolean[] preventingMessageProcessing = new boolean[] {false};
     final boolean[] preventMessageProcessing = new boolean[] {true};
 
@@ -299,7 +299,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     }
 
     @Override
-    public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof DLockRecoverGrantorMessage) {
         synchronized (preventingMessageProcessing) {
           preventingMessageProcessing[0] = true;
@@ -865,7 +865,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     }
 
     @Override
-    public void process(ClusterMessage msg) {
+    public void process(DistributionMessage msg) {
       DLockRecoverGrantorProcessor.DLockRecoverGrantorReplyMessage reply =
           (DLockRecoverGrantorProcessor.DLockRecoverGrantorReplyMessage) msg;
       testTXRecoverGrantor_replyCode_PASS =

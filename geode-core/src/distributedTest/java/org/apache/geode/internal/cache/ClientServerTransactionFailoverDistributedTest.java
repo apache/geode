@@ -43,8 +43,8 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
@@ -384,11 +384,11 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     client.invoke(() -> createClientRegion(true, port1, port2));
 
     server1.invoke(() -> {
-      ClusterMessageObserver.setInstance(
-          new ClusterMessageObserver() {
+      DistributionMessageObserver.setInstance(
+          new DistributionMessageObserver() {
             @Override
             public void beforeSendMessage(ClusterDistributionManager dm,
-                ClusterMessage message) {
+                DistributionMessage message) {
               if (message instanceof TXCommitMessage.CommitProcessForTXIdMessage) {
                 InternalDistributedMember m = message.getRecipientsArray()[0];
                 message.resetRecipients();
@@ -399,11 +399,11 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     });
 
     server2.invoke(() -> {
-      ClusterMessageObserver.setInstance(
-          new ClusterMessageObserver() {
+      DistributionMessageObserver.setInstance(
+          new DistributionMessageObserver() {
             @Override
             public void beforeProcessMessage(ClusterDistributionManager dm,
-                ClusterMessage message) {
+                DistributionMessage message) {
               if (message instanceof TXCommitMessage.CommitProcessForTXIdMessage) {
                 getBlackboard().signalGate("bounce");
               }
@@ -412,11 +412,11 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     });
 
     server3.invoke(() -> {
-      ClusterMessageObserver.setInstance(
-          new ClusterMessageObserver() {
+      DistributionMessageObserver.setInstance(
+          new DistributionMessageObserver() {
             @Override
             public void beforeProcessMessage(ClusterDistributionManager dm,
-                ClusterMessage message) {
+                DistributionMessage message) {
               if (message instanceof TXCommitMessage.CommitProcessForTXIdMessage) {
                 getBlackboard().signalGate("bounce");
               }
@@ -438,7 +438,7 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
 
     await().until(() -> getBlackboard().isGateSignaled("bounce"));
     server1.invoke(() -> {
-      ClusterMessageObserver.setInstance(null);
+      DistributionMessageObserver.setInstance(null);
     });
     server1.bounceForcibly();
 
@@ -467,10 +467,10 @@ public class ClientServerTransactionFailoverDistributedTest implements Serializa
     });
 
     server2.invoke(() -> {
-      ClusterMessageObserver.setInstance(null);
+      DistributionMessageObserver.setInstance(null);
     });
     server3.invoke(() -> {
-      ClusterMessageObserver.setInstance(null);
+      DistributionMessageObserver.setInstance(null);
     });
   }
 }

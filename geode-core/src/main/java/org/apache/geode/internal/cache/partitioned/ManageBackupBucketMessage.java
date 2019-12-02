@@ -24,8 +24,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.OperationExecutors;
@@ -396,7 +396,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
     }
 
     @Override
-    public void process(ClusterMessage m) {
+    public void process(DistributionMessage m) {
       try {
         if (m instanceof ManageBackupBucketReplyMessage) {
           ManageBackupBucketReplyMessage reply = (ManageBackupBucketReplyMessage) m;

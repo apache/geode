@@ -27,8 +27,8 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -45,7 +45,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 6.6
  */
-public class AllBucketProfilesUpdateMessage extends ClusterMessage
+public class AllBucketProfilesUpdateMessage extends DistributionMessage
     implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 

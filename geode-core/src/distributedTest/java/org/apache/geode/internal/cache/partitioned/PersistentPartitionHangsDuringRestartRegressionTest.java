@@ -44,8 +44,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -117,7 +117,7 @@ public class PersistentPartitionHangsDuringRestartRegressionTest implements Seri
     removeVMEventListener(vmEventListener);
     for (VM vm : toArray(getAllVMs(), getController())) {
       vm.invoke(() -> {
-        ClusterMessageObserver.setInstance(null);
+        DistributionMessageObserver.setInstance(null);
         InternalResourceManager.setResourceObserver(null);
       });
     }
@@ -146,7 +146,7 @@ public class PersistentPartitionHangsDuringRestartRegressionTest implements Seri
 
     vm0.invoke(() -> {
       // notify controller and then wait to bounce
-      ClusterMessageObserver.setInstance(new WaitToBounceWhenImageRequested());
+      DistributionMessageObserver.setInstance(new WaitToBounceWhenImageRequested());
     });
 
     addVMEventListener(vmEventListener);
@@ -234,15 +234,15 @@ public class PersistentPartitionHangsDuringRestartRegressionTest implements Seri
     return cache;
   }
 
-  private class WaitToBounceWhenImageRequested extends ClusterMessageObserver
+  private class WaitToBounceWhenImageRequested extends DistributionMessageObserver
       implements Serializable {
     @Override
-    public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof RequestImageMessage) {
         RequestImageMessage requestImageMessage = (RequestImageMessage) message;
         // Don't bounce until we see a bucket
         if (requestImageMessage.regionPath.contains("_B_")) {
-          ClusterMessageObserver.setInstance(null);
+          DistributionMessageObserver.setInstance(null);
           addIgnoredException(CancelException.class);
           vmController.invoke(() -> beforeBounceLatch.countDown());
           try {

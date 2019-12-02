@@ -34,8 +34,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -271,7 +271,7 @@ public class StateFlushOperation {
    * @see StateFlushOperation.StateStabilizedMessage
    *
    */
-  public static class StateMarkerMessage extends ClusterMessage implements MessageWithReply {
+  public static class StateMarkerMessage extends DistributionMessage implements MessageWithReply {
     /** roll the membership version to force flushing of new ops */
     public boolean flushNewOps;
     /** the member acting as the relay point */

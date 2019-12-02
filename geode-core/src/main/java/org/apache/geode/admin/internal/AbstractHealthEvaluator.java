@@ -52,7 +52,7 @@ public abstract class AbstractHealthEvaluator {
    * <code>GemFireHealthConfig</code> and <code>DistributionManager</code>.
    *
    * Originally, this method took an <code>InternalDistributedSystem</code>, but we found there were
-   * race conditions during initialization. Namely, that a <code>ClusterMessage</code> can be
+   * race conditions during initialization. Namely, that a <code>DistributionMessage</code> can be
    * processed before the <code>InternalDistributedSystem</code>'s <code>DistributionManager</code>
    * is set.
    */

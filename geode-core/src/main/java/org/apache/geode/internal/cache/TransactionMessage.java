@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
@@ -46,7 +46,7 @@ public interface TransactionMessage {
   boolean canStartRemoteTransaction();
 
   /**
-   * @see ClusterMessage#getSender()
+   * @see DistributionMessage#getSender()
    * @return the sender of this message
    */
   InternalDistributedMember getSender();

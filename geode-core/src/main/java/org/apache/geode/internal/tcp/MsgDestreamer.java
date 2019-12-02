@@ -24,8 +24,8 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.LogWriter;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -50,7 +50,7 @@ public class MsgDestreamer {
   /**
    * Used to store the deserialized message on success.
    */
-  private ClusterMessage result;
+  private DistributionMessage result;
   /**
    * The current failed messages reply processor id if it has one
    */
@@ -156,7 +156,7 @@ public class MsgDestreamer {
    * @throws ClassNotFoundException The class of an object read from <code>in</code> could not be
    *         found
    */
-  public ClusterMessage getMessage()
+  public DistributionMessage getMessage()
       throws InterruptedException, IOException, ClassNotFoundException {
     // if (Thread.interrupted()) throw new InterruptedException(); not necessary done in
     // waitUntilDone
@@ -196,7 +196,7 @@ public class MsgDestreamer {
     }
   }
 
-  protected void setResult(ClusterMessage msg) {
+  protected void setResult(DistributionMessage msg) {
     synchronized (this) {
       this.result = msg;
       this.RPid = 0;
@@ -242,7 +242,7 @@ public class MsgDestreamer {
               v == null ? new DataInputStream(this.is)
                   : new VersionedDataInputStream(this.is, v);
           long startSer = this.stats.startMsgDeserialization();
-          setResult((ClusterMessage) InternalDataSerializer.readDSFID(dis));
+          setResult((DistributionMessage) InternalDataSerializer.readDSFID(dis));
           this.stats.endMsgDeserialization(startSer);
         } catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);

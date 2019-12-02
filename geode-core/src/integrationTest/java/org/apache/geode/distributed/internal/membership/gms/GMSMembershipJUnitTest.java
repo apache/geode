@@ -59,7 +59,7 @@ import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership.StartupEvent;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
-import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
@@ -179,7 +179,7 @@ public class GMSMembershipJUnitTest {
     manager.getGMSManager().installView(new GMSMembershipView(myGMSMemberId, 1, gmsMembers));
     Set<InternalDistributedMember> failures =
         manager.send(m.getRecipientsArray(), m);
-    verify(messenger).send(isA(DistributionMessage.class));
+    verify(messenger).send(isA(GMSMessage.class));
     if (failures != null) {
       assertEquals(0, failures.size());
     }

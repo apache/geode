@@ -34,8 +34,8 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -87,7 +87,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       return Collections.emptySet();
 
     StreamingPartitionResponse processor = new StreamingPartitionResponse(this.sys, recipients);
-    ClusterMessage m = createRequestMessage(recipients, processor);
+    DistributionMessage m = createRequestMessage(recipients, processor);
     this.sys.getDistributionManager().putOutgoing(m);
     // should we allow this to timeout?
     Set<InternalDistributedMember> failedMembers = processor.waitForCacheOrQueryException();
@@ -96,7 +96,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
 
   /** Override in subclass to instantiate request message */
   @Override
-  protected abstract ClusterMessage createRequestMessage(Set recipients,
+  protected abstract DistributionMessage createRequestMessage(Set recipients,
       ReplyProcessor21 processor);
 
   protected class StreamingPartitionResponse extends ReplyProcessor21 {
@@ -145,7 +145,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     }
 
     @Override
-    public void process(ClusterMessage msg) {
+    public void process(DistributionMessage msg) {
       // ignore messages from members not in the wait list
       if (!waitingOnMember(msg.getSender())) {
         return;
@@ -187,7 +187,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     }
 
     @Override
-    protected synchronized void processException(ClusterMessage msg, ReplyException ex) {
+    protected synchronized void processException(DistributionMessage msg, ReplyException ex) {
       Throwable t = ex.getCause();
       if (t instanceof ForceReattemptException || t instanceof CacheClosedException) {
         if (logger.isDebugEnabled()) {

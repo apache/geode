@@ -24,8 +24,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -79,7 +79,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
   }
 
   @Override
-  public void process(ClusterMessage msg) {
+  public void process(DistributionMessage msg) {
     try {
       Assert.assertTrue(msg instanceof NonGrantorDestroyedReplyMessage,
           "NonGrantorDestroyedProcessor is unable to process message of type " + msg.getClass());

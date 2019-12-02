@@ -21,7 +21,7 @@ public interface MessageListener {
    *
    * @param o the message that should be processed.
    */
-  void messageReceived(DistributionMessage o);
+  void messageReceived(GMSMessage o);
 
 
 }

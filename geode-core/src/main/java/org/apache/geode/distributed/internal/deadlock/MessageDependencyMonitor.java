@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -56,13 +56,13 @@ public class MessageDependencyMonitor implements DependencyMonitor {
     INSTANCE.waitingProcessors.set(null);
   }
 
-  public static void processingMessage(ClusterMessage message) {
+  public static void processingMessage(DistributionMessage message) {
     if (message instanceof MessageWithReply) {
       INSTANCE.processingMessages.set((MessageWithReply) message);
     }
   }
 
-  public static void doneProcessing(ClusterMessage message) {
+  public static void doneProcessing(DistributionMessage message) {
     if (message instanceof MessageWithReply) {
       INSTANCE.processingMessages.set(null);
     }

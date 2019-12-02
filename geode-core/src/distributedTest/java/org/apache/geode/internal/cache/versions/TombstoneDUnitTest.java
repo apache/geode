@@ -26,8 +26,8 @@ import org.junit.Test;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.DestroyOperation;
 import org.apache.geode.internal.cache.DistributedTombstoneOperation;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -100,7 +100,7 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
 
     vm1.invoke(() -> {
       createRegion("TestRegion", false);
-      ClusterMessageObserver.setInstance(new RegionObserver());
+      DistributionMessageObserver.setInstance(new RegionObserver());
     });
 
     AsyncInvocation vm0Async1 = vm0.invokeAsync(() -> {
@@ -133,13 +133,13 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  private class RegionObserver extends ClusterMessageObserver implements Serializable {
+  private class RegionObserver extends DistributionMessageObserver implements Serializable {
 
     VersionTag versionTag = null;
     CountDownLatch tombstoneGcLatch = new CountDownLatch(1);
 
     @Override
-    public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       // Allow destroy with higher version to complete first.
       if (message instanceof DestroyOperation.DestroyMessage) {
         // wait for tombstoneGC message to complete.
@@ -167,7 +167,7 @@ public class TombstoneDUnitTest extends JUnit4CacheTestCase {
     }
 
     @Override
-    public void afterProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
+    public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof DestroyOperation.DestroyMessage) {
         // Notify the destroy with smaller version to continue.
         synchronized (this) {

@@ -24,8 +24,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -44,7 +44,7 @@ abstract class BackupStep implements BackupResultCollector {
 
   abstract ReplyProcessor21 createReplyProcessor();
 
-  abstract ClusterMessage createDistributionMessage(ReplyProcessor21 replyProcessor);
+  abstract DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor);
 
   abstract void processLocally();
 

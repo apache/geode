@@ -18,14 +18,14 @@ import java.util.Collection;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
 /**
  * Manager presents the GMS services to the outside world and handles startup/shutdown race
  * conditions. It is also the default MessageHandler
  */
-public interface Manager extends Service, MessageHandler<DistributionMessage> {
+public interface Manager extends Service, MessageHandler<GMSMessage> {
 
   /**
    * After all services have been started this is used to join the distributed system

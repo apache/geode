@@ -44,7 +44,7 @@ import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.LinkedResultSet;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
-import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
@@ -332,7 +332,7 @@ public class PartitionedRegionQueryEvaluatorTest {
     }
 
     @Override
-    protected Set sendMessage(ClusterMessage m) {
+    protected Set sendMessage(DistributionMessage m) {
       // Don't need to actually send the message...
       return null;
     }

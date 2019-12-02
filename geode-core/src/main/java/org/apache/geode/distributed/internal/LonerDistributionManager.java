@@ -1245,7 +1245,7 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  public Set<InternalDistributedMember> putOutgoing(ClusterMessage msg) {
+  public Set<InternalDistributedMember> putOutgoing(DistributionMessage msg) {
     return null;
   }
 

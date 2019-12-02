@@ -42,8 +42,8 @@ import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
@@ -101,7 +101,7 @@ public abstract class StreamingOperation {
     }
 
     StreamingProcessor processor = new StreamingProcessor(this.sys, recipients);
-    ClusterMessage m = createRequestMessage(recipients, processor);
+    DistributionMessage m = createRequestMessage(recipients, processor);
     this.sys.getDistributionManager().putOutgoing(m);
     // while() loop removed for bug 36983 - you can't loop on waitForReplies()
     try {
@@ -122,7 +122,7 @@ public abstract class StreamingOperation {
   /**
    * Override in subclass to instantiate request message
    */
-  protected abstract ClusterMessage createRequestMessage(Set recipients,
+  protected abstract DistributionMessage createRequestMessage(Set recipients,
       ReplyProcessor21 processor);
 
   /**
@@ -189,7 +189,7 @@ public abstract class StreamingOperation {
     }
 
     @Override
-    public void process(ClusterMessage msg) {
+    public void process(DistributionMessage msg) {
       // ignore messages from members not in the wait list
       if (!waitingOnMember(msg.getSender())) {
         return;

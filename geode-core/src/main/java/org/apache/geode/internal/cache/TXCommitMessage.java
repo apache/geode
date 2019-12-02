@@ -49,8 +49,8 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
@@ -1961,7 +1961,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     @Override
-    public void process(ClusterMessage msg) {
+    public void process(DistributionMessage msg) {
       CommitProcessQueryReplyMessage ccMess = (CommitProcessQueryReplyMessage) msg;
       if (ccMess.wasReceived()) {
         this.receivedOnePositive = true;
@@ -2169,7 +2169,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     @Override
-    protected void processException(ClusterMessage msg, ReplyException ex) {
+    protected void processException(DistributionMessage msg, ReplyException ex) {
       if (msg instanceof ReplyMessage) {
         synchronized (this) {
           if (this.exception == null) {

@@ -21,7 +21,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 
 /**
  * OperationExecutors holds the thread pools used to execute cache operations. There
- * are a number of different thread pools available. Each ClusterMessage has
+ * are a number of different thread pools available. Each DistributionMessage has
  * a processor-type that determines which pool will be used to execute the message.
  */
 public interface OperationExecutors {

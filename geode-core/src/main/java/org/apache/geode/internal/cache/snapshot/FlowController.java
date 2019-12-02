@@ -29,8 +29,8 @@ import org.apache.geode.cache.RegionMembershipListener;
 import org.apache.geode.cache.util.RegionMembershipListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ProcessorKeeper21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -251,7 +251,7 @@ public class FlowController {
    * @see Window#isAborted()
    * @see FlowController#sendAbort(DistributionManager, int, DistributedMember)
    */
-  public static class FlowControlAbortMessage extends ClusterMessage {
+  public static class FlowControlAbortMessage extends DistributionMessage {
     /** the window id */
     private int windowId;
 
@@ -305,7 +305,7 @@ public class FlowController {
    *
    * @see FlowController#sendAck(DistributionManager, DistributedMember, int, String)
    */
-  public static class FlowControlAckMessage extends ClusterMessage {
+  public static class FlowControlAckMessage extends DistributionMessage {
     /** the window id */
     private int windowId;
 

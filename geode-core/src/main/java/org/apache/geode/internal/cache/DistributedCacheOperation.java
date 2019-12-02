@@ -47,9 +47,9 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -153,7 +153,7 @@ public abstract class DistributedCacheOperation {
 
 
   public static final byte DESERIALIZATION_POLICY_NUMBITS =
-      ClusterMessage.getNumBits(DESERIALIZATION_POLICY_LAZY);
+      DistributionMessage.getNumBits(DESERIALIZATION_POLICY_LAZY);
 
   public static final short DESERIALIZATION_POLICY_END =
       (short) (1 << DESERIALIZATION_POLICY_NUMBITS);
@@ -904,7 +904,7 @@ public abstract class DistributedCacheOperation {
       implements MessageWithReply, DirectReplyMessage, OldValueImporter {
 
     protected static final short POSSIBLE_DUPLICATE_MASK = POS_DUP;
-    protected static final short OLD_VALUE_MASK = ClusterMessage.UNRESERVED_FLAGS_START;
+    protected static final short OLD_VALUE_MASK = DistributionMessage.UNRESERVED_FLAGS_START;
     protected static final short DIRECT_ACK_MASK = (OLD_VALUE_MASK << 1);
     protected static final short FILTER_INFO_MASK = (DIRECT_ACK_MASK << 1);
     protected static final short CALLBACK_ARG_MASK = (FILTER_INFO_MASK << 1);
@@ -1568,7 +1568,7 @@ public abstract class DistributedCacheOperation {
     }
 
     @Override
-    protected synchronized void processException(ClusterMessage dmsg, ReplyException ex) {
+    protected synchronized void processException(DistributionMessage dmsg, ReplyException ex) {
       Throwable cause = ex.getCause();
       // only interested in CacheClosedException and RegionDestroyedException
       if (cause instanceof CancelException || cause instanceof RegionDestroyedException) {
@@ -1581,7 +1581,7 @@ public abstract class DistributedCacheOperation {
     }
 
     @Override
-    protected void process(ClusterMessage dmsg, boolean warn) {
+    protected void process(DistributionMessage dmsg, boolean warn) {
       if (dmsg instanceof ReplyMessage && ((ReplyMessage) dmsg).getIgnored()) {
         if (logger.isDebugEnabled()) {
           logger.debug("{} replied with ignored true", dmsg.getSender());
@@ -1602,7 +1602,7 @@ public abstract class DistributedCacheOperation {
     }
 
     @Override
-    protected void process(final ClusterMessage dmsg, boolean warn) {
+    protected void process(final DistributionMessage dmsg, boolean warn) {
       if (dmsg instanceof ReplyMessage) {
         ReplyMessage replyMessage = (ReplyMessage) dmsg;
         if (msg != null) {

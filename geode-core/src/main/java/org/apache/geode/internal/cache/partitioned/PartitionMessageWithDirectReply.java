@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -34,7 +34,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
  * used for message with a response from a single member, or responses which are small.
  *
  * Messages that extend this class *must* reply using the ReplySender returned by
- * {@link ClusterMessage#getReplySender(DistributionManager)}
+ * {@link DistributionMessage#getReplySender(DistributionManager)}
  *
  * Additionally, if the ReplyProcessor used for this message extends PartitionResponse, it should
  * pass false for the register parameter of the PartitionResponse.

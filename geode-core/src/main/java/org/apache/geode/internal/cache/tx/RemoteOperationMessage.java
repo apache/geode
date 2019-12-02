@@ -30,9 +30,9 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.OperationExecutors;
@@ -61,7 +61,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 6.5
  */
-public abstract class RemoteOperationMessage extends ClusterMessage
+public abstract class RemoteOperationMessage extends DistributionMessage
     implements MessageWithReply, TransactionMessage {
   private static final Logger logger = LogService.getLogger();
 
@@ -577,7 +577,7 @@ public abstract class RemoteOperationMessage extends ClusterMessage
 
     /* overridden from ReplyProcessor21 */
     @Override
-    public void process(ClusterMessage msg) {
+    public void process(DistributionMessage msg) {
       this.responseReceived = true;
       super.process(msg);
     }

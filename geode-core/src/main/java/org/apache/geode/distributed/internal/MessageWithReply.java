@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
- * A marker interface that denotes {@link ClusterMessage}s that require a reply. Messages that
+ * A marker interface that denotes {@link DistributionMessage}s that require a reply. Messages that
  * do not implement this interface can be sent asynchronously through the transport layer.
  *
  *

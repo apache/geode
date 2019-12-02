@@ -16,8 +16,8 @@ package org.apache.geode.internal.cache.backup;
 
 import java.util.Collection;
 
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
 
 class FlushToDiskProcessor extends AdminMultipleReplyProcessor {
@@ -32,7 +32,7 @@ class FlushToDiskProcessor extends AdminMultipleReplyProcessor {
   }
 
   @Override
-  protected void process(ClusterMessage message, boolean warn) {
+  protected void process(DistributionMessage message, boolean warn) {
     super.process(message, warn);
   }
 }

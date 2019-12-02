@@ -102,7 +102,7 @@ public class ThrottlingMemLinkedQueueWithDMStats<E> extends OverflowQueueWithDMS
       throw new InterruptedException();
     // only block threads reading from tcp stream sockets. blocking udp
     // will cause retransmission storms
-    if (!ClusterMessage.isPreciousThread()) {
+    if (!DistributionMessage.isPreciousThread()) {
       long startTime = DistributionStats.getStatTime();
       do {
         try {

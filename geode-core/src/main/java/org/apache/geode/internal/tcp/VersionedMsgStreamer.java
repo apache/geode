@@ -17,8 +17,8 @@ package org.apache.geode.internal.tcp;
 
 import java.util.List;
 
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataStream;
@@ -32,7 +32,7 @@ class VersionedMsgStreamer extends MsgStreamer implements VersionedDataStream {
 
   private final Version version;
 
-  VersionedMsgStreamer(List<?> cons, ClusterMessage msg, boolean directReply, DMStats stats,
+  VersionedMsgStreamer(List<?> cons, DistributionMessage msg, boolean directReply, DMStats stats,
       BufferPool bufferPool, int sendBufferSize, Version version) {
     super(cons, msg, directReply, stats, sendBufferSize, bufferPool);
     this.version = version;

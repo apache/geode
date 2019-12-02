@@ -36,9 +36,9 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -224,7 +224,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
     @SuppressWarnings("unchecked")
     @Override
-    public void process(ClusterMessage msg) {
+    public void process(DistributionMessage msg) {
       Assert.assertTrue(msg instanceof CreateRegionReplyMessage,
           "CreateRegionProcessor is unable to process message of type " + msg.getClass());
       CreateRegionReplyMessage reply = (CreateRegionReplyMessage) msg;

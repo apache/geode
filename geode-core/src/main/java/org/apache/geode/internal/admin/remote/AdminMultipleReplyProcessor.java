@@ -16,8 +16,8 @@ package org.apache.geode.internal.admin.remote;
 
 import java.util.Collection;
 
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 
@@ -33,7 +33,7 @@ public class AdminMultipleReplyProcessor extends ReplyProcessor21 {
   }
 
   @Override
-  protected void process(ClusterMessage message, boolean warn) {
+  protected void process(DistributionMessage message, boolean warn) {
     if (message instanceof AdminFailureResponse) {
       Exception ex = ((AdminFailureResponse) message).getCause();
       if (ex != null) {

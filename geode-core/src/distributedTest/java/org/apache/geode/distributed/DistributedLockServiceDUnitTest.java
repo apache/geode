@@ -46,8 +46,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockGrantor;
 import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
@@ -2085,10 +2085,10 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     vm0.invoke(() -> createLockGrantor(serviceName));
 
-    ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
+    DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
       @Override
-      public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
+      public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
         if (message instanceof DLockResponseMessage) {
           DistributedLockService.destroy(serviceName);
         }
@@ -2125,10 +2125,10 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
 
     vm0.invoke(() -> createLockGrantor(serviceName));
 
-    ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
+    DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
       @Override
-      public void beforeSendMessage(ClusterDistributionManager dm, ClusterMessage message) {
+      public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
         if (message instanceof DLockRequestMessage) {
           DistributedLockService.destroy(serviceName);
         }

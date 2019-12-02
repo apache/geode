@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
@@ -65,7 +65,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
 
   /**
    *
-   * @see ClusterMessage#process(ClusterDistributionManager)
+   * @see DistributionMessage#process(ClusterDistributionManager)
    */
   @Override
   protected void process(ClusterDistributionManager dm) {

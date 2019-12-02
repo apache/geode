@@ -79,7 +79,7 @@ public class ShutdownMessage extends HighPriorityDistributionMessage
     // reply.setRecipient(getSender());
     // can't send a response in a UDP receiver thread or we might miss
     // the other side going away due to blocking receipt of views
-    // if (ClusterMessage.isPreciousThread()) {
+    // if (DistributionMessage.isPreciousThread()) {
     // dm.getWaitingThreadPool().execute(new Runnable() {
     // public void run() {
     // dm.putOutgoing(reply);

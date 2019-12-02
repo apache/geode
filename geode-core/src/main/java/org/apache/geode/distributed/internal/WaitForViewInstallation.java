@@ -107,7 +107,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
    * (non-Javadoc)
    *
    * @see
-   * org.apache.geode.distributed.internal.ClusterMessage#process(org.apache.geode.distributed.
+   * org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.distributed.
    * internal.DistributionManager)
    */
   @Override

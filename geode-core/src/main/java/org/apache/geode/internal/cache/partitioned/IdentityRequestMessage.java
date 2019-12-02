@@ -25,8 +25,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -46,7 +46,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 5.0
  */
-public class IdentityRequestMessage extends ClusterMessage implements MessageWithReply {
+public class IdentityRequestMessage extends DistributionMessage implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
 
   private static final int UNINITIALIZED = -1;
@@ -282,7 +282,7 @@ public class IdentityRequestMessage extends ClusterMessage implements MessageWit
     }
 
     @Override
-    public void process(ClusterMessage msg) {
+    public void process(DistributionMessage msg) {
       try {
         if (msg instanceof IdentityReplyMessage) {
           IdentityReplyMessage reply = (IdentityReplyMessage) msg;

@@ -34,7 +34,7 @@ public class CollectingReplyProcessor<T> extends ReplyProcessor21 {
   }
 
   @Override
-  protected void process(ClusterMessage msg, boolean warn) {
+  protected void process(DistributionMessage msg, boolean warn) {
     if (msg instanceof ReplyMessage) {
       InternalDistributedSystem.getLogger().info(String.format("%s",
           "processing message with return value " + ((ReplyMessage) msg).getReturnValue()));

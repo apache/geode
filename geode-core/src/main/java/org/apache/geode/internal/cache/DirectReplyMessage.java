@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 
 /**
  * A message that can reply directly to the sender
@@ -35,7 +35,7 @@ public interface DirectReplyMessage {
    * was sent on. This flag only takes effect when
    * {@link org.apache.geode.distributed.DistributedSystem#setThreadsSocketPolicy(boolean)} is set
    * to <code>false</code> If this flag is set to true, the process method <b> must </b> reply by
-   * calling {@link ClusterMessage#getReplySender(DistributionManager)} and using the result to
+   * calling {@link DistributionMessage#getReplySender(DistributionManager)} and using the result to
    * send the reply. the ReplySender determines whether to reply directly or through the shared
    * channel.
    *

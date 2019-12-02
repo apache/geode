@@ -32,8 +32,8 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
 import org.apache.geode.internal.admin.remote.AdminRequest;
@@ -166,7 +166,7 @@ public class CompactRequest extends AdminRequest {
     }
 
     @Override
-    protected void process(ClusterMessage message, boolean warn) {
+    protected void process(DistributionMessage message, boolean warn) {
       if (message instanceof CompactResponse) {
         final PersistentID persistentId = ((CompactResponse) message).getPersistentId();
         if (persistentId != null) {

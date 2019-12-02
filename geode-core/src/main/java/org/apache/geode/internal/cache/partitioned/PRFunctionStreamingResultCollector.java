@@ -26,8 +26,8 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -393,7 +393,7 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
 
 
   @Override
-  protected synchronized void processException(ClusterMessage msg, ReplyException ex) {
+  protected synchronized void processException(DistributionMessage msg, ReplyException ex) {
     logger.debug(
         "StreamingPartitionResponseWithResultCollector received exception {} from member {}",
         ex.getCause(), msg.getSender());

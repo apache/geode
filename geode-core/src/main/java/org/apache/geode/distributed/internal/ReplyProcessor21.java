@@ -42,7 +42,7 @@ import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * This class processes responses to {@link ClusterMessage}s. It handles a the generic case of
+ * This class processes responses to {@link DistributionMessage}s. It handles a the generic case of
  * simply waiting for responses from all members. It is intended to be subclassed for special cases.
  *
  * <P>
@@ -56,7 +56,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * <pre>
  *
- * public void process(ClusterMessage msg) {
+ * public void process(DistributionMessage msg) {
  *   try {
  *     ...custom code for subclass goes here...
  *   }
@@ -404,11 +404,11 @@ public class ReplyProcessor21 implements MembershipListener {
    * signaled. This method can be overridden to provide customized functionality, however the
    * overriden method should always invoke <code>super.process()</code>.
    */
-  public void process(ClusterMessage msg) {
+  public void process(DistributionMessage msg) {
     process(msg, true);
   }
 
-  protected void process(ClusterMessage msg, boolean warn) {
+  protected void process(DistributionMessage msg, boolean warn) {
     if (logger.isDebugEnabled()) {
       logger.debug("{} got process({}) from {}", this, msg, msg.getSender());
     }
@@ -443,7 +443,7 @@ public class ReplyProcessor21 implements MembershipListener {
   }
 
 
-  protected synchronized void processException(ClusterMessage msg, ReplyException ex) {
+  protected synchronized void processException(DistributionMessage msg, ReplyException ex) {
     processException(ex);
   }
 
@@ -470,7 +470,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * scenarios. It will be upto individual messages to handle differently by overriding the above
    * method.
    */
-  protected synchronized void processException(ClusterMessage msg, DSFIDNotFoundException ex) {
+  protected synchronized void processException(DistributionMessage msg, DSFIDNotFoundException ex) {
     final short versionOrdinal = ex.getProductVersionOrdinal();
     String versionStr = null;
     try {

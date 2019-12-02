@@ -53,13 +53,13 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.ConflationKey;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -1970,7 +1970,7 @@ public class Connection implements Runnable {
    * @throws ConnectionException if the conduit has stopped
    */
   void sendPreserialized(ByteBuffer buffer, boolean cacheContentChanges,
-      ClusterMessage msg) throws IOException, ConnectionException {
+      DistributionMessage msg) throws IOException, ConnectionException {
     if (!connected) {
       throw new ConnectionException(
           String.format("Not connected to %s", this.remoteAddr));
@@ -2138,7 +2138,7 @@ public class Connection implements Runnable {
     return false;
   }
 
-  private boolean addToQueue(ByteBuffer buffer, ClusterMessage msg, boolean force)
+  private boolean addToQueue(ByteBuffer buffer, DistributionMessage msg, boolean force)
       throws ConnectionException {
     final DMStats stats = this.owner.getConduit().getStats();
     long start = DistributionStats.getStatTime();
@@ -2256,7 +2256,7 @@ public class Connection implements Runnable {
    *
    * @throws ConnectionException if the conduit has stopped
    */
-  private boolean handleBlockedWrite(ByteBuffer buffer, ClusterMessage msg)
+  private boolean handleBlockedWrite(ByteBuffer buffer, DistributionMessage msg)
       throws ConnectionException {
     if (!addToQueue(buffer, msg, true)) {
       return false;
@@ -2548,8 +2548,8 @@ public class Connection implements Runnable {
   private static final int MAX_WAIT_TIME = (1 << 5); // ms (must be a power of 2)
 
   private void writeAsync(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
-      ClusterMessage p_msg, final DMStats stats) throws IOException {
-    ClusterMessage msg = p_msg;
+      DistributionMessage p_msg, final DMStats stats) throws IOException {
+    DistributionMessage msg = p_msg;
     // async/non-blocking
     boolean socketWriteStarted = false;
     long startSocketWrite = 0;
@@ -2710,7 +2710,7 @@ public class Connection implements Runnable {
    * @throws ConnectionException if the conduit has stopped
    */
   void writeFully(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
-      ClusterMessage msg) throws IOException, ConnectionException {
+      DistributionMessage msg) throws IOException, ConnectionException {
     final DMStats stats = this.owner.getConduit().getStats();
     if (!this.sharedResource) {
       stats.incTOSentMsg();
@@ -3108,14 +3108,14 @@ public class Connection implements Runnable {
       ByteBufferInputStream bbis =
           remoteVersion == null ? new ByteBufferInputStream(peerDataBuffer)
               : new VersionedByteBufferInputStream(peerDataBuffer, remoteVersion);
-      ClusterMessage msg;
+      DistributionMessage msg;
       try {
         ReplyProcessor21.initMessageRPId();
         // add serialization stats
         long startSer = this.owner.getConduit().getStats().startMsgDeserialization();
         int startingPosition = peerDataBuffer.position();
         try {
-          msg = (ClusterMessage) InternalDataSerializer.readDSFID(bbis);
+          msg = (DistributionMessage) InternalDataSerializer.readDSFID(bbis);
         } catch (SerializationException e) {
           logger.info("input buffer starting position {} "
               + " current position {} limit {} capacity {} message length {}",
@@ -3199,7 +3199,7 @@ public class Connection implements Runnable {
       } catch (IOException ex) {
         logger.fatal("Failed handling end chunk message", ex);
       }
-      ClusterMessage msg = null;
+      DistributionMessage msg = null;
       int msgLength;
       String failureMsg = null;
       Throwable failureEx = null;
@@ -3382,7 +3382,7 @@ public class Connection implements Runnable {
     }
   }
 
-  private boolean dispatchMessage(ClusterMessage msg, int bytesRead, boolean directAck) {
+  private boolean dispatchMessage(DistributionMessage msg, int bytesRead, boolean directAck) {
     try {
       msg.setDoDecMessagesBeingReceived(true);
       if (directAck) {

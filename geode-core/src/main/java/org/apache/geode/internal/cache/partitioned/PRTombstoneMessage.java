@@ -28,7 +28,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -165,7 +165,7 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
     }
 
     @Override
-    public void process(ClusterMessage msg) {
+    public void process(DistributionMessage msg) {
       ReplyMessage reply = (ReplyMessage) msg;
       if (reply.getException() != null) {
         Throwable cause = reply.getException().getCause();

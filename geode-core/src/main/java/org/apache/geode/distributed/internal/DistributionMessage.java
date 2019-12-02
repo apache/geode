@@ -32,7 +32,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.EventID;
@@ -47,7 +47,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * <P>
- * A <code>ClusterMessage</code> carries some piece of information to a distribution manager.
+ * A <code>DistributionMessage</code> carries some piece of information to a distribution manager.
  * </P>
  *
  * <P>
@@ -55,12 +55,12 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * {@link org.apache.geode.distributed.internal.PooledDistributionMessage}. Messages that must be
  * processed serially in the order they were received can extend
  * {@link org.apache.geode.distributed.internal.SerialDistributionMessage}. To customize the
- * sequentialness/thread requirements of a message, extend ClusterMessage and implement
+ * sequentialness/thread requirements of a message, extend DistributionMessage and implement
  * getExecutor().
  * </P>
  */
-public abstract class ClusterMessage
-    implements DistributionMessage, Cloneable {
+public abstract class DistributionMessage
+    implements GMSMessage, Cloneable {
 
   /**
    * WARNING: setting this to true may break dunit tests.
@@ -129,7 +129,7 @@ public abstract class ClusterMessage
 
   ////////////////////// Constructors //////////////////////
 
-  protected ClusterMessage() {
+  protected DistributionMessage() {
     this.timeStamp = DistributionStats.getStatTime();
   }
 
@@ -211,7 +211,7 @@ public abstract class ClusterMessage
   }
 
   /**
-   * Sets the intended recipient of the message. If recipient is DistributionMessage.ALL_RECIPIENTS
+   * Sets the intended recipient of the message. If recipient is GMSMessage.ALL_RECIPIENTS
    * then the
    * message will be sent to all distribution managers.
    */
@@ -251,7 +251,7 @@ public abstract class ClusterMessage
 
   /**
    * Sets the intended recipient of the message. If recipient set contains
-   * DistributionMessage.ALL_RECIPIENTS
+   * GMSMessage.ALL_RECIPIENTS
    * then the message will be sent to all distribution managers.
    */
   @Override
@@ -279,7 +279,7 @@ public abstract class ClusterMessage
   public List<MemberIdentifier> getRecipients() {
     InternalDistributedMember[] recipients = getRecipientsArray();
     if (recipients == null
-        || recipients.length == 1 && recipients[0] == ClusterMessage.ALL_RECIPIENTS) {
+        || recipients.length == 1 && recipients[0] == DistributionMessage.ALL_RECIPIENTS) {
       return ALL_RECIPIENTS_LIST;
     }
     return Arrays.asList(recipients);
@@ -396,7 +396,7 @@ public abstract class ClusterMessage
     setBreadcrumbsInReceiver();
     try {
 
-      ClusterMessageObserver observer = ClusterMessageObserver.getInstance();
+      DistributionMessageObserver observer = DistributionMessageObserver.getInstance();
       if (observer != null) {
         observer.beforeProcessMessage(dm, this);
       }
@@ -469,7 +469,7 @@ public abstract class ClusterMessage
 
           @Override
           public String toString() {
-            return "Processing {" + ClusterMessage.this.toString() + "}";
+            return "Processing {" + DistributionMessage.this.toString() + "}";
           }
         });
       } catch (RejectedExecutionException ex) {
@@ -583,7 +583,7 @@ public abstract class ClusterMessage
   }
 
   /**
-   * Writes the contents of this <code>ClusterMessage</code> to the given output. Note that
+   * Writes the contents of this <code>DistributionMessage</code> to the given output. Note that
    * classes that override this method should always invoke the inherited method
    * (<code>super.toData()</code>).
    */
@@ -597,7 +597,7 @@ public abstract class ClusterMessage
   }
 
   /**
-   * Reads the contents of this <code>ClusterMessage</code> from the given input. Note that
+   * Reads the contents of this <code>DistributionMessage</code> from the given input. Note that
    * classes that override this method should always invoke the inherited method
    * (<code>super.fromData()</code>).
    */

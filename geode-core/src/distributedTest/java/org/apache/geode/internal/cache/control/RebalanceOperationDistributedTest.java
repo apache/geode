@@ -87,8 +87,8 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CacheClosingDistributionMessageObserver;
@@ -135,7 +135,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
   public void tearDown() {
     invokeInEveryVM(() -> {
       InternalResourceManager.setResourceObserver(null);
-      ClusterMessageObserver.setInstance(null);
+      DistributionMessageObserver.setInstance(null);
     });
   }
 
@@ -2222,7 +2222,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
       // This will cause a CacheClosedException to occur during rebalance, specifically
       // when a RequestImageMessage during any bucket GII is received.
-      ClusterMessageObserver
+      DistributionMessageObserver
           .setInstance(
               new CacheClosingDistributionMessageObserver("_B__" + regionName + "_", getCache()));
 
@@ -2231,7 +2231,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       } catch (CacheClosedException ex) {
         // The CacheClosingDistributionMessageObserver will cause an expected CacheClosedException
       } finally {
-        ClusterMessageObserver.setInstance(null);
+        DistributionMessageObserver.setInstance(null);
       }
 
       // Rebuild the cache and retry the rebalance. We expect it to succeed because the
@@ -2300,7 +2300,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
       // This will signal a bounce of the VM upon receving the request for any bucket GII for the
       // test partitioned region
-      ClusterMessageObserver
+      DistributionMessageObserver
           .setInstance(new SignalBounceOnRequestImageMessageObserver("_B__" + regionName + "_",
               getCache(), getBlackboard()));
 

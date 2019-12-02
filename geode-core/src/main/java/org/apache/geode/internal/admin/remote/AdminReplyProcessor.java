@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -69,7 +69,7 @@ class AdminReplyProcessor extends ReplyProcessor21 {
    * Keep track of the <code>AdminResponse</code> we received.
    */
   @Override
-  public void process(ClusterMessage message) {
+  public void process(DistributionMessage message) {
     try {
       this.response = (AdminResponse) message;
 

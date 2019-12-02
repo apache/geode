@@ -18,8 +18,8 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -58,7 +58,7 @@ class AbortBackupStep extends BackupStep {
   }
 
   @Override
-  ClusterMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
+  DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
     return abortBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId());
   }
 

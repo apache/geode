@@ -51,7 +51,7 @@ import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenti
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
@@ -219,7 +219,7 @@ public class DistributionImpl implements Distribution {
 
   @Override
   public Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
-      ClusterMessage msg) throws NotSerializableException {
+      DistributionMessage msg) throws NotSerializableException {
     Set<InternalDistributedMember> result;
     boolean allDestinations = msg.forAll();
 
@@ -295,7 +295,7 @@ public class DistributionImpl implements Distribution {
   @Override
   public Set<InternalDistributedMember> directChannelSend(
       InternalDistributedMember[] destinations,
-      ClusterMessage content)
+      DistributionMessage content)
       throws NotSerializableException {
     MembershipStatistics theStats = clusterDistributionManager.getStats();
     boolean allDestinations;
@@ -589,7 +589,7 @@ public class DistributionImpl implements Distribution {
   // TODO - this method is only used by tests
   @Override
   @VisibleForTesting
-  public void replacePartialIdentifierInMessage(ClusterMessage message) {
+  public void replacePartialIdentifierInMessage(DistributionMessage message) {
     ((GMSMembership) membership).replacePartialIdentifierInMessage(message);
 
   }
@@ -834,7 +834,7 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    public void messageReceived(DistributionMessage msg) {
+    public void messageReceived(GMSMessage msg) {
       membership.processMessage(msg);
 
     }

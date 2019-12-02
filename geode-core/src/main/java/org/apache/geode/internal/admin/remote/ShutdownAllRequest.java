@@ -31,9 +31,9 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -257,7 +257,7 @@ public class ShutdownAllRequest extends AdminRequest {
      * member is departed before sent response, no wait for its response
      */
     @Override
-    public void process(ClusterMessage msg) {
+    public void process(DistributionMessage msg) {
       if (logger.isDebugEnabled()) {
         logger.debug("shutdownAll reply processor is processing {}", msg);
       }

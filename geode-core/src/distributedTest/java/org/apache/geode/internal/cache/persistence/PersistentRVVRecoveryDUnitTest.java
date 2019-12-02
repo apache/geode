@@ -59,8 +59,8 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.CacheObserverAdapter;
 import org.apache.geode.internal.cache.CacheObserverHolder;
@@ -530,14 +530,14 @@ public class PersistentRVVRecoveryDUnitTest extends PersistentReplicatedTestBase
     // conflict check, this operation will be rejected because it will have a lower entry version
     // that what vm1 recovered from disk
     vm0.invoke(() -> {
-      ClusterMessageObserver.setInstance(new ClusterMessageObserver() {
+      DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
         @Override
-        public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage msg) {
+        public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage msg) {
           if (msg instanceof InitialImageOperation.RequestImageMessage) {
             if (((InitialImageOperation.RequestImageMessage) msg).regionPath.contains(regionName)) {
               createData(vm0, 0, 1, "value4");
-              ClusterMessageObserver.setInstance(null);
+              DistributionMessageObserver.setInstance(null);
             }
           }
         }

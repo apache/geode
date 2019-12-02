@@ -24,8 +24,8 @@ import org.apache.geode.cache.query.QueryTestUtils;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.cache30.RegionTestCase;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.ClientStatsManager;
@@ -209,7 +209,7 @@ public class DistributedRule extends AbstractDistributedRule {
         tearDownInVM();
       });
       invokeInLocator(() -> {
-        ClusterMessageObserver.setInstance(null);
+        DistributionMessageObserver.setInstance(null);
         unregisterInstantiatorsInThisVM();
       });
       DUnitLauncher.closeAndCheckForSuspects();
@@ -228,7 +228,7 @@ public class DistributedRule extends AbstractDistributedRule {
       ClientStatsManager.cleanupForTests();
       DiskStoreObserver.setInstance(null);
       unregisterInstantiatorsInThisVM();
-      ClusterMessageObserver.setInstance(null);
+      DistributionMessageObserver.setInstance(null);
       InitialImageOperation.slowImageProcessing = 0;
       InternalClientMembership.unregisterAllListeners();
       LogWrapper.close();

@@ -80,7 +80,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
-import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -245,7 +245,7 @@ public class JGroupsMessengerJUnitTest {
   public void normalMessagesUseFlowControl() throws Exception {
     initMocks(false);
     Message jgmsg = new Message();
-    DistributionMessage dmsg = mock(DistributionMessage.class);
+    GMSMessage dmsg = mock(GMSMessage.class);
     when(dmsg.isHighPriority()).thenReturn(false);
     messenger.setMessageFlags(dmsg, jgmsg);
     assertFalse("expected flow-control to be used: " + jgmsg,
@@ -256,7 +256,7 @@ public class JGroupsMessengerJUnitTest {
   public void highPriorityMessagesBypassFlowControl() throws Exception {
     initMocks(false);
     Message jgmsg = new Message();
-    DistributionMessage dmsg = mock(DistributionMessage.class);
+    GMSMessage dmsg = mock(GMSMessage.class);
     when(dmsg.isHighPriority()).thenReturn(true);
     messenger.setMessageFlags(dmsg, jgmsg);
     assertTrue("expected flow-control to not be used: " + jgmsg,
@@ -865,7 +865,7 @@ public class JGroupsMessengerJUnitTest {
         recipients.get(0), Version.getCurrentVersion().ordinal());
     when(manager.shutdownInProgress()).thenReturn(Boolean.TRUE);
     receiver.receive(msg);
-    verify(manager, never()).processMessage(isA(DistributionMessage.class));
+    verify(manager, never()).processMessage(isA(GMSMessage.class));
     verify(services.getStatistics(), times(3)).startUDPDispatchRequest();
     verify(services.getStatistics(), times(3)).endUDPDispatchRequest(anyLong());
   }
@@ -992,7 +992,7 @@ public class JGroupsMessengerJUnitTest {
 
     DataInputStream dis = new DataInputStream(new ByteArrayInputStream(requestBytes));
 
-    DistributionMessage distributionMessage =
+    GMSMessage distributionMessage =
         messenger.readEncryptedMessage(dis, version, otherMbrEncrptor);
 
     assertEquals(gfmsg, distributionMessage);
@@ -1035,7 +1035,7 @@ public class JGroupsMessengerJUnitTest {
 
     messenger.addRequestId(1, messenger.getMemberID());
 
-    DistributionMessage distributionMessage =
+    GMSMessage distributionMessage =
         messenger.readEncryptedMessage(dis, version, otherMbrEncrptor);
 
     assertEquals(gfmsg, distributionMessage);
@@ -1070,7 +1070,7 @@ public class JGroupsMessengerJUnitTest {
 
     DataInputStream dis = new DataInputStream(new ByteArrayInputStream(requestBytes));
 
-    DistributionMessage distributionMessage =
+    GMSMessage distributionMessage =
         messenger.readEncryptedMessage(dis, version, otherMbrEncrptor);
 
     assertEquals(gfmsg, distributionMessage);
@@ -1109,7 +1109,7 @@ public class JGroupsMessengerJUnitTest {
 
     messenger.addRequestId(1, messenger.getMemberID());
 
-    DistributionMessage gfMessageAtOtherMbr =
+    GMSMessage gfMessageAtOtherMbr =
         messenger.readEncryptedMessage(dis, version, otherMbrEncrptor);
 
     assertEquals(gfmsg, gfMessageAtOtherMbr);

@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache.tx;
 
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 
@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.DirectReplyMessage;
  * for message with a response from a single member, or responses which are small.
  *
  * Messages that extend this class *must* reply using the ReplySender returned by
- * {@link ClusterMessage#getReplySender(DistributionManager)}
+ * {@link DistributionMessage#getReplySender(DistributionManager)}
  *
  */
 public abstract class RemoteOperationMessageWithDirectReply extends RemoteOperationMessage

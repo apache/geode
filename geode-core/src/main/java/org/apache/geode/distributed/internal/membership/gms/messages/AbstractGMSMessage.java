@@ -20,10 +20,10 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.membership.gms.api.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
-public abstract class AbstractGMSMessage implements DistributionMessage {
+public abstract class AbstractGMSMessage implements GMSMessage {
   @Immutable
   public static final MemberIdentifier ALL_RECIPIENTS = null;
   private List<MemberIdentifier> recipients;

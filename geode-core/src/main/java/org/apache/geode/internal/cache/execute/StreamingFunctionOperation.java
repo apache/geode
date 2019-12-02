@@ -22,7 +22,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
@@ -95,7 +95,7 @@ public abstract class StreamingFunctionOperation {
         new FunctionStreamingResultCollector(this, this.sys, recipients, rc, function, execution);
     this.reply = processor;
     for (InternalDistributedMember recip : this.memberArgs.keySet()) {
-      ClusterMessage m = null;
+      DistributionMessage m = null;
       if (execution instanceof DistributedRegionFunctionExecutor
           || execution instanceof MultiRegionFunctionExecutor) {
         m = createRequestMessage(Collections.singleton(recip), processor, execution.isReExecute(),
@@ -109,7 +109,7 @@ public abstract class StreamingFunctionOperation {
     return processor;
   }
 
-  protected abstract ClusterMessage createRequestMessage(
+  protected abstract DistributionMessage createRequestMessage(
       Set<InternalDistributedMember> singleton, FunctionStreamingResultCollector processor,
       boolean isReExecute, boolean isFnSerializationReqd);
 }

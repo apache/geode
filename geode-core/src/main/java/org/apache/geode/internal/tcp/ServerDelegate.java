@@ -16,14 +16,14 @@ package org.apache.geode.internal.tcp;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 
 /**
  * <p>
  * ServerDelegate is a conduit plugin that receives
- * {@link ClusterMessage} objects received from other
+ * {@link DistributionMessage} objects received from other
  * conduits.
  * </p>
  *
@@ -34,7 +34,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  */
 public interface ServerDelegate {
 
-  void receive(ClusterMessage message, int bytesRead, DistributedMember connId);
+  void receive(DistributionMessage message, int bytesRead, DistributedMember connId);
 
   LogWriter getLogger();
 

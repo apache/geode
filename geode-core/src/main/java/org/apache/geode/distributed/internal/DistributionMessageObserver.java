@@ -19,43 +19,43 @@ import org.apache.geode.annotations.internal.MutableForTesting;
 /**
  * This class is a test hook to intercept messages in the VM receiving the message.
  */
-public abstract class ClusterMessageObserver {
+public abstract class DistributionMessageObserver {
 
   @MutableForTesting
-  private static ClusterMessageObserver instance;
+  private static DistributionMessageObserver instance;
 
   /**
    * Set the instance of the observer. Setting to null will clear the observer.
    *
    * @return the old observer, or null if there was no old observer.
    */
-  public static ClusterMessageObserver setInstance(ClusterMessageObserver instance) {
-    ClusterMessageObserver oldInstance = ClusterMessageObserver.instance;
-    ClusterMessageObserver.instance = instance;
+  public static DistributionMessageObserver setInstance(DistributionMessageObserver instance) {
+    DistributionMessageObserver oldInstance = DistributionMessageObserver.instance;
+    DistributionMessageObserver.instance = instance;
     return oldInstance;
   }
 
-  public static ClusterMessageObserver getInstance() {
+  public static DistributionMessageObserver getInstance() {
     return instance;
   }
 
   /**
-   * Called before a the process method of the ClusterMessage is called
+   * Called before a the process method of the DistributionMessage is called
    *
    * @param dm the distribution manager that received the message
    * @param message The message itself
    */
-  public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
+  public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
     // override as needed
   }
 
   /**
-   * Called after the process method of the ClusterMessage is called
+   * Called after the process method of the DistributionMessage is called
    *
    * @param dm the distribution manager that received the message
    * @param message The message itself
    */
-  public void afterProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
+  public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
     // override as needed
   }
 
@@ -65,7 +65,7 @@ public abstract class ClusterMessageObserver {
    * @param dm the distribution manager that's sending the message
    * @param message the message itself
    */
-  public void beforeSendMessage(ClusterDistributionManager dm, ClusterMessage message) {
+  public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
     // override as needed
   }
 }

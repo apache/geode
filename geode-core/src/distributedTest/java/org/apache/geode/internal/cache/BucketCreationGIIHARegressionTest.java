@@ -26,8 +26,8 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
@@ -63,9 +63,9 @@ public class BucketCreationGIIHARegressionTest extends CacheTestCase {
 
   @After
   public void tearDown() throws Exception {
-    ClusterMessageObserver.setInstance(null);
+    DistributionMessageObserver.setInstance(null);
     invokeInEveryVM(() -> {
-      ClusterMessageObserver.setInstance(null);
+      DistributionMessageObserver.setInstance(null);
     });
 
     disconnectAllFromDS();
@@ -91,7 +91,7 @@ public class BucketCreationGIIHARegressionTest extends CacheTestCase {
   }
 
   private void createRegion() {
-    ClusterMessageObserver.setInstance(new MyDistributionMessageObserver());
+    DistributionMessageObserver.setInstance(new MyDistributionMessageObserver());
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(1);
@@ -102,10 +102,10 @@ public class BucketCreationGIIHARegressionTest extends CacheTestCase {
     getCache().createRegion(uniqueName, af.create());
   }
 
-  private class MyDistributionMessageObserver extends ClusterMessageObserver {
+  private class MyDistributionMessageObserver extends DistributionMessageObserver {
 
     @Override
-    public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof RequestImageMessage) {
         RequestImageMessage rim = (RequestImageMessage) message;
         Region region = getCache().getRegion(rim.regionPath);

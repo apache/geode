@@ -34,8 +34,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.SearchLoadAndWriteProcessor.NetSearchRequestMessage;
 import org.apache.geode.test.dunit.Host;
@@ -412,25 +412,25 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         listenerHasFinished.set(false);
-        ClusterMessageObserver ob = new ClusterMessageObserver() {
+        DistributionMessageObserver ob = new DistributionMessageObserver() {
           @Override
           public void beforeProcessMessage(ClusterDistributionManager dm,
-              ClusterMessage message) {
+              DistributionMessage message) {
             if (message instanceof NetSearchRequestMessage) {
-              ClusterMessageObserver.setInstance(null);
+              DistributionMessageObserver.setInstance(null);
               disconnectFromDS();
               listenerHasFinished.set(true);
             }
           }
         };
-        ClusterMessageObserver.setInstance(ob);
+        DistributionMessageObserver.setInstance(ob);
       }
     });
   }
 
   private void waitForListenerToFinish(VM vm) {
     vm.invoke("wait for listener to finish", () -> {
-      assertThat(ClusterMessageObserver.getInstance())
+      assertThat(DistributionMessageObserver.getInstance())
           .withFailMessage("listener was not invoked")
           .isNull();
       await("listener to finish")

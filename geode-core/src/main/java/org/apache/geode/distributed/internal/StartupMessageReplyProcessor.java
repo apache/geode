@@ -75,7 +75,7 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21 {
   }
 
   @Override
-  public void process(ClusterMessage msg) {
+  public void process(DistributionMessage msg) {
     final LogWriter log = this.system.getLogWriter();
     super.process(msg);
     if (log.fineEnabled()) {

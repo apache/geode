@@ -15,7 +15,7 @@
 package org.apache.geode.internal.sequencelog;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public class MessageLogger {
@@ -27,7 +27,7 @@ public class MessageLogger {
     return LOGGER.isEnabled(GraphType.MESSAGE);
   }
 
-  public static void logMessage(ClusterMessage message, InternalDistributedMember source,
+  public static void logMessage(DistributionMessage message, InternalDistributedMember source,
       InternalDistributedMember dest) {
     if (isEnabled()) {
       LOGGER.logTransition(GraphType.MESSAGE, message.getClass().getSimpleName(), "", "received",

@@ -18,8 +18,8 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -43,7 +43,7 @@ public class LatestLastAccessTimeReplyProcessor extends ReplyProcessor21 {
   }
 
   @Override
-  public void process(ClusterMessage msg) {
+  public void process(DistributionMessage msg) {
     try {
       ReplyMessage reply = (ReplyMessage) msg;
       long replyTime = (long) reply.getReturnValue();

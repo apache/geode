@@ -34,9 +34,9 @@ import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -1059,7 +1059,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     }
 
     @Override
-    public void process(final ClusterMessage msg) {
+    public void process(final DistributionMessage msg) {
 
       if (msg instanceof ReplyMessage) {
         ReplyException ex = ((ReplyMessage) msg).getException();

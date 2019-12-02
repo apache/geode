@@ -18,8 +18,8 @@ import java.util.Set;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AlertLevelChangeMessage;
@@ -116,7 +116,7 @@ public class MemberMessenger {
    * <p>
    * Actually, it's the message implementation that determines if it's sync or async, not this call.
    */
-  private void sendAsync(ClusterMessage msg) {
+  private void sendAsync(DistributionMessage msg) {
     if (system != null) {
       system.getDistributionManager().putOutgoing(msg);
     }

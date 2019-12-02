@@ -15,10 +15,10 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
-import org.apache.geode.distributed.internal.ClusterMessageObserver;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 
-public abstract class OnRequestImageMessageObserver extends ClusterMessageObserver {
+public abstract class OnRequestImageMessageObserver extends DistributionMessageObserver {
   private final String regionName;
   private final Runnable onMessageReceived;
   private boolean hasExecutedOnMessageReceived = false;
@@ -29,7 +29,7 @@ public abstract class OnRequestImageMessageObserver extends ClusterMessageObserv
   }
 
   @Override
-  public void beforeProcessMessage(ClusterDistributionManager dm, ClusterMessage message) {
+  public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
     if (message instanceof InitialImageOperation.RequestImageMessage) {
       InitialImageOperation.RequestImageMessage rim =
           (InitialImageOperation.RequestImageMessage) message;

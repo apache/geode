@@ -15,7 +15,7 @@
 
 package org.apache.geode.distributed.internal;
 
-public abstract class HighPriorityDistributionMessage extends ClusterMessage {
+public abstract class HighPriorityDistributionMessage extends DistributionMessage {
 
   @Override
   public int getProcessorType() {

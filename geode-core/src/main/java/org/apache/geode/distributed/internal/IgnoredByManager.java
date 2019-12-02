@@ -15,7 +15,7 @@
 package org.apache.geode.distributed.internal;
 
 /**
- * This marker indicates messages (usually {@link ClusterMessage}s) that may be received by a
+ * This marker indicates messages (usually {@link DistributionMessage}s) that may be received by a
  * distribution manager, but should ignored.
  */
 public interface IgnoredByManager {

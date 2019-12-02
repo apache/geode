@@ -20,7 +20,7 @@ import java.util.Set;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.distributed.internal.ClusterMessage;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedRegionFunctionStreamingMessage;
@@ -40,7 +40,7 @@ public class DistributedRegionFunctionResultWaiter extends StreamingFunctionOper
   }
 
   @Override
-  protected ClusterMessage createRequestMessage(Set recipients,
+  protected DistributionMessage createRequestMessage(Set recipients,
       FunctionStreamingResultCollector processor, boolean isReExecute,
       boolean isFnSerializationReqd) {
     DistributedRegionFunctionStreamingMessage msg = new DistributedRegionFunctionStreamingMessage(

@@ -25,8 +25,8 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -98,7 +98,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
   }
 
   @Override
-  public void process(ClusterMessage msg) {
+  public void process(DistributionMessage msg) {
     try {
       Assert.assertTrue(msg instanceof DLockReleaseReplyMessage,
           "DLockReleaseProcessor is unable to process message of type " + msg.getClass());

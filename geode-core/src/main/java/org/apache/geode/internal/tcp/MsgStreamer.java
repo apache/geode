@@ -27,9 +27,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterMessage;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteBufferWriter;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -69,7 +69,7 @@ public class MsgStreamer extends OutputStream
   private final ByteBuffer buffer;
   private int flushedBytes = 0;
   // the message this streamer is to send
-  private final ClusterMessage msg;
+  private final DistributionMessage msg;
   /**
    * True if this message went out as a normal one (it fit it one chunk) False if this message
    * needed to be chunked.
@@ -124,7 +124,7 @@ public class MsgStreamer extends OutputStream
    * Note: This is no longer supposed to be called directly rather the {@link #create} method should
    * now be used.
    */
-  MsgStreamer(List<?> cons, ClusterMessage msg, boolean directReply, DMStats stats,
+  MsgStreamer(List<?> cons, DistributionMessage msg, boolean directReply, DMStats stats,
       int sendBufferSize, BufferPool bufferPool) {
     this.stats = stats;
     this.msg = msg;
@@ -143,7 +143,7 @@ public class MsgStreamer extends OutputStream
    * connections to remote nodes. This method can either return a single MsgStreamer object or a
    * List of MsgStreamer objects.
    */
-  public static BaseMsgStreamer create(List<?> cons, final ClusterMessage msg,
+  public static BaseMsgStreamer create(List<?> cons, final DistributionMessage msg,
       final boolean directReply, final DMStats stats, BufferPool bufferPool) {
     final Connection firstCon = (Connection) cons.get(0);
     // split into different versions if required
@@ -312,7 +312,7 @@ public class MsgStreamer extends OutputStream
     setMessageHeader();
     final int serializedBytes = this.buffer.limit();
     this.flushedBytes += serializedBytes;
-    ClusterMessage conflationMsg = null;
+    DistributionMessage conflationMsg = null;
     if (this.normalMsg) {
       // we can't conflate chunked messages; this fixes bug 36633
       conflationMsg = this.msg;
