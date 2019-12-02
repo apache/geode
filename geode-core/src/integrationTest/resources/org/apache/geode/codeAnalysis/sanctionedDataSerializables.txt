@@ -162,6 +162,10 @@ org/apache/geode/distributed/internal/DistributionAdvisor$Profile,2
 fromData,40
 toData,29
 
+org/apache/geode/distributed/internal/DistributionImpl$FlushingMessage,2
+fromData,8
+toData,8
+
 org/apache/geode/distributed/internal/DistributionMessage,2
 fromData,1
 toData,1
@@ -354,25 +358,9 @@ org/apache/geode/distributed/internal/streaming/StreamingOperation$StreamingRepl
 fromData,425
 toData,86
 
-org/apache/geode/distributed/internal/tcpserver/InfoRequest,2
-fromData,1
-toData,1
-
 org/apache/geode/distributed/internal/tcpserver/InfoResponse,2
 fromData,9
 toData,9
-
-org/apache/geode/distributed/internal/tcpserver/ShutdownRequest,2
-fromData,1
-toData,1
-
-org/apache/geode/distributed/internal/tcpserver/ShutdownResponse,2
-fromData,1
-toData,1
-
-org/apache/geode/distributed/internal/tcpserver/VersionRequest,2
-fromData,1
-toData,1
 
 org/apache/geode/distributed/internal/tcpserver/VersionResponse,2
 fromData,11
