@@ -486,19 +486,19 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
   }
 
   void releaseOffHeapRefIfRegionBeingClosedOrDestroyed(RegionEntryContext context, Object ref) {
-    if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
-      ((Releasable) this).release();
-    }
-    // try {
-    // Thread.sleep(1000);
-    // if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
-    // ((Releasable) this).release();
-    // logger.info("JASON race condition???", new Exception());
-    // }
-    // } catch (InterruptedException e) {
-    //
-    // e.printStackTrace();
-    // }
+//    if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
+//      ((Releasable) this).release();
+//    }
+     try {
+     Thread.sleep(200);
+     if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
+     ((Releasable) this).release();
+     logger.info("JASON race condition???", new Exception());
+     }
+     } catch (InterruptedException e) {
+logger.info("JASON woo interrupted", e);
+     e.printStackTrace();
+     }
 
   }
 
