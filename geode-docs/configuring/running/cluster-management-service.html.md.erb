@@ -1,0 +1,141 @@
+---
+title: Cluster Management Service
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+**Note:** This feature is experimental and is subject to change in future releases of <%=vars.product_name_long%>.
+
+The cluster management service enables you to change the configuration of
+the cluster (create/destroy regions, indices or gateway receivers/senders etc), and have these
+changes replicated on all the applicable servers and persisted in the cluster configuration service.
+
+With the cluster management service, you can:
+
+- Create regions/indices on the fly.
+
+- Persist the configuration and apply it to the cluster, so when a new node joins, it has the configuration, and when the server restarts, it has the configuration.
+
+- Obtain a consistent view of the current configuration
+
+- Apply a change to all elements of the cluster in the same way
+
+- Be able to change the configuration in one place
+
+- Obtain this configuration without being on the cluster
+
+- Invoke the configuration service from the server or from a client
+
+The cluster management service is documented in the Geode Wiki: [Cluster Management Service](https://cwiki.apache.org/confluence/display/GEODE/Cluster+Management+Service).
+The Wiki write-up offers separate choices for the cluster management service implementation on each Geode version that supports it.
+
+The cluster management service is available as a [REST API](#cms-reference) and as a [Java API](#cms-java-api).
+
+## <a id='cms-reference'>Cluster Management Service REST API</a>
+
+The cluster management service REST API adheres to standard REST semantics, so users can use POST, PATCH, DELETE and GET to create,
+update, delete and read, respectively.
+
+This version of <%=vars.product_name%> uses the [1.11.0 Management REST API](https://cwiki.apache.org/confluence/display/GEODE/1.11.0+Management+REST+API+-+v1).
+As mentioned, the feature is experimental and still undergoing revision.
+
+For a definitive description of the cluster management service for your version of <%=vars.product_name%>, you can query the API directly to describe itself.
+The API returns a JSON body that contains a message describing the result along with standard HTTP status codes:
+
+1. Invoke `gfsh` on your current version of <%=vars.product_name%> and issue the `start locator` to start a locator using the default settings.
+2. Quit `gfsh` to return to the command prompt.
+3. Use `curl` to send a message asking the locator to describe its Cluster Management REST API. The API returns its description in JSON format. Pipe the output through the `jq` JSON formatting utility for readable output.
+4. If you're finished, remember to use `gfsh` to stop the locator.
+
+For example:
+
+```console
+$ geode/bin/gfsh
+    _________________________     __
+   / _____/ ______/ ______/ /____/ /
+  / /  __/ /___  /_____  / _____  / 
+ / /__/ / ____/  _____/ / /    / /  
+/______/_/      /______/_/    /_/    1.11.0
+
+Monitor and Manage Apache Geode
+gfsh>start locator
+Starting a Geode Locator in ...
+...........
+Locator in ... is currently online.
+...
+Cluster configuration service is up and running.
+
+gfsh>quit
+Exiting...
+```
+
+With the default settings, this starts a locator that is accessible at `localhost:7070`. The message to send to the locator is simply the address of the top-level
+API docs. For Geode v1.11, this address is `curl localhost:7070/management/v1/api-docs`. Pipe the results through `jq` for readability:
+
+``` console
+$ curl localhost:7070/management/v1/api-docs | jq
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 23731  100 23731    0     0   109k      0 --:--:-- --:--:-- --:--:--  109k
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "REST API to manage Geode. This is experimental. All request/response formats are subject to change.",
+    "version": "v1",
+    "title": "Apache Geode Management REST API",
+    "termsOfService": "http://www.apache.org/licenses/",
+    "contact": {
+      "name": "the Apache Geode Community",
+      "url": "http://geode.apache.org",
+      "email": "user@geode.apache.org"
+    },
+    "license": {
+      "name": "Apache License, version 2.0",
+      "url": "http://www.apache.org/licenses/"
+    },
+    "authTokenEnabled": "false"
+  },
+...
+    "RuntimeRegionInfo": {
+      "type": "object",
+      "properties": {
+        "entryCount": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "memberName": {
+          "type": "string"
+        }
+      },
+      "title": "RuntimeRegionInfo"
+    }
+  }
+}
+```
+
+Remember to stop the locator, if you're through with it:
+
+1. Start `gfsh`.
+2. Issue the `connect` command to reconnect to the locator.
+3. Issue the `shutdown --include-locators` command to stop the locator.
+4. Quit `gfsh`.
+
+## <a id='cms-java-api'>Cluster Management Service Java API</a>
+
+The cluster management service is available to Java clients via a Java API. To enable the cluster management service Java API, include `geode-management.jar` in your client classpath.
+See the [Cluster Management Service Java Client topic on the Geode Wiki](https://cwiki.apache.org/confluence/display/GEODE/Cluster+Management+Service#ClusterManagementService-JavaClient) for more details.
