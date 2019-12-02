@@ -275,7 +275,7 @@ public class InternalConfigurationPersistenceServiceTest {
     cps.createConfigurationResponse(null);
     verify(cps, times(0)).unlockSharedConfiguration();
   }
- 
+
   @Test
   public void addJarsToThisLocator() throws Exception {
 
