@@ -23,7 +23,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
-public class GemfireCacheImplDUnitTest {
+public class GemFireCacheImplEmergencyCloseDistributedTest {
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
