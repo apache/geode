@@ -28,6 +28,8 @@ public class RebalanceResultImpl implements RebalanceResult {
 
   private String statusMessage;
 
+  private boolean success;
+
   public RebalanceResultImpl() {}
 
   @Override
@@ -42,6 +44,15 @@ public class RebalanceResultImpl implements RebalanceResult {
   @Override
   public String getStatusMessage() {
     return statusMessage;
+  }
+
+  @Override
+  public boolean getSuccess() {
+    return success;
+  }
+
+  public void setSuccess(boolean success) {
+    this.success = success;
   }
 
   public void setStatusMessage(String statusMessage) {

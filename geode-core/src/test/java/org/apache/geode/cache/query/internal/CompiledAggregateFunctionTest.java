@@ -51,9 +51,9 @@ public class CompiledAggregateFunctionTest {
   @Before
   public void setUp() throws Exception {
     cache = mock(InternalCache.class);
-    when(cache.getQueryService()).thenReturn(mock(InternalQueryService.class));
-    when(cache.getQueryService().getMethodInvocationAuthorizer())
-        .thenReturn(mock(MethodInvocationAuthorizer.class));
+    QueryConfigurationService mockService = mock(QueryConfigurationService.class);
+    when(mockService.getMethodAuthorizer()).thenReturn(mock(MethodInvocationAuthorizer.class));
+    when(cache.getService(QueryConfigurationService.class)).thenReturn(mockService);
 
     bucketList = Collections.singletonList(1);
   }

@@ -2929,6 +2929,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * Make sure that this event will never own an off-heap value. Once this is called on an event it
    * does not need to have release called.
    */
+  @Override
   public void disallowOffHeapValues() {
     if (isOffHeapReference(this.newValue) || isOffHeapReference(this.oldValue)) {
       throw new IllegalStateException("This event already has off-heap values");

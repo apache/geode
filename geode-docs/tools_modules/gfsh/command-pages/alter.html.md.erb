@@ -31,6 +31,10 @@ Modify an existing <%=vars.product_name%> resource.
 
     Modifies or removes a region from an offline disk-store.
 
+-   **[alter query-service](#topic_alter_query_service)**
+
+    Alter configuration details of the query configuration service.
+
 -   **[alter region](#topic_E74ED23CB60342538B2175C326E7D758)**
 
     Alters the configuration of a region.
@@ -177,6 +181,34 @@ The three required options, `--name`, `--region`, and `--disk-dirs`, identify th
 ``` pre
 alter disk-store --name=DiskStore1 --region=region1 --disk-dirs=/Disks/DiskStore1 --off-heap
 alter disk-store --name=DiskStore1 --region=region1 --disk-dirs=/Disks/DiskStore1 --remove
+```
+
+## <a id="topic_alter_query_service" class="no-quick-link"></a>alter query-service
+
+Alter configuration details of the query configuration service.
+
+**Availability:** Online. You must be connected in <span class="keyword parmname">gfsh</span> to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+alter query-service [--method-authorizer=value]
+    [--authorizer-parameters=value(;value)*]
+```
+
+**Parameters, alter query-service**
+
+| Name | Description |
+|------|-------------|
+| &#8209;&#8209;method-authorizer   | Fully qualified class name of the `MethodInvocationAuthorizer` to be used for query authorization. |
+| &#8209;&#8209;authorizer-parameters | A **semicolon-separated** list of parameters to be used by the specified `MethodInvocationAuthorizer`. This requires that a method-authorizer option has been specified. |
+
+
+**Example Commands:**
+
+``` pre
+alter query-service --method-authorizer=org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer
+alter query-service --method-authorizer=org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer --authorizer-parameters=java.lang;java.util
 ```
 
 ## <a id="topic_E74ED23CB60342538B2175C326E7D758" class="no-quick-link"></a>alter region

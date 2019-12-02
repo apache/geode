@@ -15,23 +15,13 @@
 
 package org.apache.geode.distributed.internal.tcpserver;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 
-import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.serialization.BasicSerializable;
 
 /**
  * A request to the TCP server to shutdown
  *
  * @since GemFire 5.7
  */
-public class ShutdownRequest implements DataSerializable {
-  private static final long serialVersionUID = 7920535743546544136L;
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
-
-  @Override
-  public void toData(DataOutput out) throws IOException {}
+public class ShutdownRequest implements BasicSerializable {
 }

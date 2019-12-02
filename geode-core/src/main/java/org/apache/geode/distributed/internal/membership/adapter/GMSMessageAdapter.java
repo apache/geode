@@ -117,7 +117,7 @@ public class GMSMessageAdapter implements GMSMessage {
     return geodeMessage.toString();
   }
 
-  DataSerializableFixedID getGeodeMessage() {
+  public DataSerializableFixedID getGeodeMessage() {
     return geodeMessage;
   }
 }

@@ -21,7 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTE
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
-import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getMembership;
+import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getDistribution;
 import static org.apache.geode.internal.logging.Banner.BannerHeader.displayValues;
 import static org.apache.geode.logging.internal.Configuration.STARTUP_CONFIGURATION;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -46,8 +46,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -136,8 +136,8 @@ public class LoggingWithReconnectDistributedTest implements Serializable {
     });
 
     server2VM.invoke(() -> {
-      GMSMembershipManager membershipManager = (GMSMembershipManager) getMembership(system);
-      membershipManager.getGMSManager()
+      Distribution membershipManager = getDistribution(system);
+      membershipManager
           .forceDisconnect("Forcing disconnect in " + testName.getMethodName());
 
       await().until(() -> system.isReconnecting());

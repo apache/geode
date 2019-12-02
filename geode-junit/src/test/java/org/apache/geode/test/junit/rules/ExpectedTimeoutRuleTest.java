@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -31,6 +32,8 @@ import org.apache.geode.test.junit.runners.TestRunner;
  * Unit tests for {@link ExpectedTimeoutRule}.
  */
 public class ExpectedTimeoutRuleTest {
+
+  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
 
   @Test
   public void passesUnused() {
@@ -167,7 +170,7 @@ public class ExpectedTimeoutRuleTest {
       timeout.expect(TimeoutException.class);
       timeout.expectMessage(message);
       timeout.expectMinimumDuration(10);
-      timeout.expectMaximumDuration(1000);
+      timeout.expectMaximumDuration(TIMEOUT_MILLIS);
       timeout.expectTimeUnit(TimeUnit.MILLISECONDS);
       Thread.sleep(100);
     }
@@ -186,7 +189,7 @@ public class ExpectedTimeoutRuleTest {
       timeout.expect(TimeoutException.class);
       timeout.expectMessage(message);
       timeout.expectMinimumDuration(10);
-      timeout.expectMaximumDuration(1000);
+      timeout.expectMaximumDuration(TIMEOUT_MILLIS);
       timeout.expectTimeUnit(TimeUnit.MILLISECONDS);
       Thread.sleep(100);
       throw new NullPointerException();
@@ -208,7 +211,7 @@ public class ExpectedTimeoutRuleTest {
       timeout.expect(exceptionClass);
       timeout.expectMessage(message);
       timeout.expectMinimumDuration(10);
-      timeout.expectMaximumDuration(1000);
+      timeout.expectMaximumDuration(TIMEOUT_MILLIS);
       timeout.expectTimeUnit(TimeUnit.MILLISECONDS);
       Thread.sleep(100);
       throw new TimeoutException(message);
@@ -226,8 +229,8 @@ public class ExpectedTimeoutRuleTest {
     public void doTest() throws Exception {
       timeout.expect(TimeoutException.class);
       timeout.expectMessage(message);
-      timeout.expectMinimumDuration(1000);
-      timeout.expectMaximumDuration(2000);
+      timeout.expectMinimumDuration(TIMEOUT_MILLIS / 2);
+      timeout.expectMaximumDuration(TIMEOUT_MILLIS);
       timeout.expectTimeUnit(TimeUnit.MILLISECONDS);
       Thread.sleep(10);
     }

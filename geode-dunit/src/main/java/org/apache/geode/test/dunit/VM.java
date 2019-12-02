@@ -14,14 +14,20 @@
  */
 package org.apache.geode.test.dunit;
 
+import static org.apache.geode.test.dunit.internal.AsyncThreadId.nextId;
 import static org.apache.geode.test.dunit.internal.DUnitLauncher.NUM_VMS;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -30,6 +36,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.internal.ChildVMLauncher;
+import org.apache.geode.test.dunit.internal.IdentifiableCallable;
+import org.apache.geode.test.dunit.internal.IdentifiableRunnable;
 import org.apache.geode.test.dunit.internal.MethodInvokerResult;
 import org.apache.geode.test.dunit.internal.ProcessHolder;
 import org.apache.geode.test.dunit.internal.RemoteDUnitVMIF;
@@ -42,18 +50,19 @@ import org.apache.geode.test.version.VersionManager;
  */
 @SuppressWarnings("serial,unused")
 public class VM implements Serializable {
-
   private static final Logger logger = LogService.getLogger();
 
   public static final int CONTROLLER_VM = -1;
 
   public static final int DEFAULT_VM_COUNT = NUM_VMS;
 
+  private static final Object[] EMPTY = new Object[0];
+
   /** The host on which this VM runs */
   private final Host host;
 
   /** The sequential id of this VM */
-  private int id;
+  private final int id;
 
   /** The version of Geode used in this VM */
   private String version;
@@ -72,8 +81,16 @@ public class VM implements Serializable {
    * Returns the {@code VM} identity. For {@link StandAloneDUnitEnv} the number returned is a
    * zero-based sequence representing the order in with the DUnit {@code VM}s were launched.
    */
+  public static int getVMId() {
+    return DUnitEnv.get().getId();
+  }
+
+  /**
+   * @deprecated Please use {@link #getVMId()} instead.
+   */
+  @Deprecated
   public static int getCurrentVMNum() {
-    return DUnitEnv.get().getVMID();
+    return DUnitEnv.get().getId();
   }
 
   /**
@@ -190,16 +207,20 @@ public class VM implements Serializable {
     getVMEventNotifier().removeVMEventListener(listener);
   }
 
-  private static VMEventNotifier getVMEventNotifier() {
-    return Host.getHost(0).getVMEventNotifier();
+  public static String dumpThreads() {
+    ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    long[] allThreadIds = threadMXBean.getAllThreadIds();
+    ThreadInfo[] threadInfos = threadMXBean.getThreadInfo(allThreadIds, true, true);
+
+    StringBuilder dumpWriter = new StringBuilder();
+    Arrays.stream(threadInfos)
+        .filter(Objects::nonNull)
+        .forEach(dumpWriter::append);
+    return dumpWriter.toString();
   }
 
-  /**
-   * Creates a new {@code VM} that runs on a given host with a given process id.
-   */
-  public VM(final Host host, final int id, final RemoteDUnitVMIF client,
-      final ProcessHolder processHolder, final ChildVMLauncher childVMLauncher) {
-    this(host, VersionManager.CURRENT_VERSION, id, client, processHolder, childVMLauncher);
+  private static VMEventNotifier getVMEventNotifier() {
+    return Host.getHost(0).getVMEventNotifier();
   }
 
   public VM(final Host host, final String version, final int id, final RemoteDUnitVMIF client,
@@ -268,7 +289,7 @@ public class VM implements Serializable {
    * @param targetClass The class on which to invoke the method
    * @param methodName The name of the method to invoke
    *
-   * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead
+   * @deprecated Please use {@link #invokeAsync(SerializableCallableIF)} instead
    */
   @Deprecated
   public <V> AsyncInvocation<V> invokeAsync(final Class<?> targetClass, final String methodName) {
@@ -281,7 +302,7 @@ public class VM implements Serializable {
    *
    * @param targetClass The class on which to invoke the method
    * @param methodName The name of the method to invoke
-   * @param args Arguments passed to the method call (must be {@link java.io.Serializable}).
+   * @param args Arguments passed to the method call (must be {@link Serializable}).
    *
    * @throws RMIException Wraps any underlying exception thrown while invoking the method in this
    *         {@code VM}
@@ -300,15 +321,16 @@ public class VM implements Serializable {
    *
    * @param targetObject The object on which to invoke the method
    * @param methodName The name of the method to invoke
-   * @param args Arguments passed to the method call (must be {@link java.io.Serializable}).
+   * @param args Arguments passed to the method call (must be {@link Serializable}).
    *
    * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead
    */
   @Deprecated
   public <V> AsyncInvocation<V> invokeAsync(final Object targetObject, final String methodName,
       final Object[] args) {
-    return new AsyncInvocation<V>(targetObject, methodName,
-        () -> invoke(targetObject, methodName, args)).start();
+    return AsyncInvocation
+        .<V>create(targetObject, methodName, () -> invoke(targetObject, methodName, args), this)
+        .start();
   }
 
   /**
@@ -317,15 +339,16 @@ public class VM implements Serializable {
    *
    * @param targetClass The class on which to invoke the method
    * @param methodName The name of the method to invoke
-   * @param args Arguments passed to the method call (must be {@link java.io.Serializable}).
+   * @param args Arguments passed to the method call (must be {@link Serializable}).
    *
    * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead
    */
   @Deprecated
   public <V> AsyncInvocation<V> invokeAsync(final Class<?> targetClass, final String methodName,
       final Object[] args) {
-    return new AsyncInvocation<V>(targetClass, methodName,
-        () -> invoke(targetClass, methodName, args)).start();
+    return AsyncInvocation
+        .<V>create(targetClass, methodName, () -> invoke(targetClass, methodName, args), this)
+        .start();
   }
 
   /**
@@ -337,13 +360,15 @@ public class VM implements Serializable {
    * @see SerializableRunnable
    */
   public <V> AsyncInvocation<V> invokeAsync(final SerializableRunnableIF runnable) {
-    return invokeAsync(runnable, "run", new Object[0]);
+    IdentifiableRunnable target = new IdentifiableRunnable(nextId(), runnable);
+    return AsyncInvocation
+        .<V>create(target, () -> invoke(target, target.getMethodName(), EMPTY), this).start();
   }
 
   /**
    * Invokes the {@code run} method of a {@link Runnable} in this VM. Recall that {@code run} takes
    * no arguments and has no return value. The {@code Runnable} is wrapped in a
-   * {@link NamedRunnable} having the given name so it shows up in DUnit logs.
+   * {@link IdentifiableRunnable} having the given name so it shows up in DUnit logs.
    *
    * @param runnable The {@code Runnable} to be run
    * @param name The name of the {@code Runnable}, which will be logged in DUnit output
@@ -352,7 +377,9 @@ public class VM implements Serializable {
    */
   public <V> AsyncInvocation<V> invokeAsync(final String name,
       final SerializableRunnableIF runnable) {
-    return invokeAsync(new NamedRunnable(name, runnable), "run", new Object[0]);
+    IdentifiableRunnable target = new IdentifiableRunnable(nextId(), name, runnable);
+    return AsyncInvocation
+        .<V>create(target, () -> invoke(target, target.getMethodName(), EMPTY), this).start();
   }
 
   /**
@@ -365,7 +392,9 @@ public class VM implements Serializable {
    */
   public <V> AsyncInvocation<V> invokeAsync(final String name,
       final SerializableCallableIF<V> callable) {
-    return invokeAsync(new NamedCallable<>(name, callable), "call", new Object[0]);
+    IdentifiableCallable<V> target = new IdentifiableCallable<>(nextId(), name, callable);
+    return AsyncInvocation.create(target, () -> invoke(target, target.getMethodName(), EMPTY), this)
+        .start();
   }
 
   /**
@@ -376,7 +405,9 @@ public class VM implements Serializable {
    * @see SerializableCallable
    */
   public <V> AsyncInvocation<V> invokeAsync(final SerializableCallableIF<V> callable) {
-    return invokeAsync(callable, "call", new Object[0]);
+    IdentifiableCallable<V> target = new IdentifiableCallable<>(nextId(), callable);
+    return AsyncInvocation.create(target, () -> invoke(target, target.getMethodName(), EMPTY), this)
+        .start();
   }
 
   /**
@@ -389,8 +420,8 @@ public class VM implements Serializable {
    * @see SerializableRunnable
    */
   public void invoke(final String name, final SerializableRunnableIF runnable) {
-    checkAvailability(NamedRunnable.class.getName(), "run");
-    executeMethodOnObject(new NamedRunnable(name, runnable), "run", new Object[0]);
+    checkAvailability(IdentifiableRunnable.class.getName(), "run");
+    executeMethodOnObject(new IdentifiableRunnable(name, runnable), "run", new Object[0]);
   }
 
   /**
@@ -415,8 +446,8 @@ public class VM implements Serializable {
    * @see SerializableCallable
    */
   public <V> V invoke(final String name, final SerializableCallableIF<V> callable) {
-    checkAvailability(NamedCallable.class.getName(), "call");
-    return executeMethodOnObject(new NamedCallable<>(name, callable), "call", new Object[0]);
+    checkAvailability(IdentifiableCallable.class.getName(), "call");
+    return executeMethodOnObject(new IdentifiableCallable<>(name, callable), "call", new Object[0]);
   }
 
   /**
@@ -457,7 +488,7 @@ public class VM implements Serializable {
    *
    * @param targetObject The receiver of the method invocation
    * @param methodName The name of the method to invoke
-   * @param args Arguments passed to the method call (must be {@link java.io.Serializable}).
+   * @param args Arguments passed to the method call (must be {@link Serializable}).
    *
    * @throws RMIException Wraps any underlying exception thrown while invoking the method in this
    *         {@code VM}
@@ -520,7 +551,7 @@ public class VM implements Serializable {
   private synchronized void bounce(final String targetVersion, boolean force) {
     checkAvailability(getClass().getName(), "bounceVM");
 
-    logger.info("Bouncing {} old pid is {}", id, getPid());
+    logger.info("Bouncing {} old pid is {} and version is {}", id, getPid(), version);
     getVMEventNotifier().notifyBeforeBounceVM(this);
 
     available = false;
@@ -545,7 +576,7 @@ public class VM implements Serializable {
       client = childVMLauncher.getStub(id);
       available = true;
 
-      logger.info("Bounced {} new pid is {}", id, getPid());
+      logger.info("Bounced {}.  New pid is {} and version is {}", id, getPid(), version);
       getVMEventNotifier().notifyAfterBounceVM(this);
 
     } catch (InterruptedException | IOException | NotBoundException e) {

@@ -55,7 +55,7 @@ public class JsonWriter {
     generator.writeStartObject();
 
     generator.writeFieldName("rel");
-    generator.writeString(value.getRel());
+    generator.writeString(value.getRel().value());
 
     generator.writeFieldName("href");
     generator.writeString(value.getHref());

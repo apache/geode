@@ -55,7 +55,7 @@ dependencies {
   }
   compile('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat8.version'))
   compile('javax.servlet:javax.servlet-api')
-  
+
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }

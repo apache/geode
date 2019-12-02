@@ -28,6 +28,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 
 public class PRTXJUnitTest extends TXJUnitTest {
 
@@ -90,7 +91,8 @@ public class PRTXJUnitTest extends TXJUnitTest {
 
     PRWithLocalOps(String regionName, RegionAttributes ra, LocalRegion parentRegion,
         GemFireCacheImpl cache, InternalRegionArguments internalRegionArgs) {
-      super(regionName, ra, parentRegion, cache, internalRegionArgs, disabledClock());
+      super(regionName, ra, parentRegion, cache, internalRegionArgs, disabledClock(),
+          ColocationLoggerFactory.create());
     }
 
     @Override

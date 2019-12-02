@@ -43,12 +43,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.IncompatibleSystemException;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.test.dunit.Host;
@@ -304,8 +304,8 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     HighPriorityAckedMessage message = new HighPriorityAckedMessage();
     message.setSender(partialID);
 
-    GMSMembershipManager manager =
-        (GMSMembershipManager) MembershipManagerHelper.getMembership(basicGetSystem());
+    Distribution manager =
+        MembershipManagerHelper.getDistribution(basicGetSystem());
     manager.replacePartialIdentifierInMessage(message);
 
     assertFalse(message.getSender().isPartial());

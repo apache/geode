@@ -35,10 +35,12 @@ import org.jgroups.View;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipInformation;
+import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class GMSQuorumChecker {
+public class GMSQuorumChecker implements QuorumChecker {
   private static final Logger logger = LogService.getLogger();
   private boolean isInfoEnabled = false;
   private Map<SocketAddress, MemberIdentifier> addressConversionMap;
@@ -100,12 +102,6 @@ public class GMSQuorumChecker {
     return quorumAchieved;
   }
 
-
-  public void suspend() {
-    // NO-OP for this implementation
-  }
-
-
   public void close() {
     if (channel != null && !channel.isClosed()) {
       channel.close();
@@ -119,7 +115,7 @@ public class GMSQuorumChecker {
 
 
   public MembershipInformation getMembershipInfo() {
-    return new MembershipInformation(channel, oldMemberIdentifiers, messageQueue);
+    return new MembershipInformationImpl(channel, oldMemberIdentifiers, messageQueue);
   }
 
   private boolean calculateQuorum() {

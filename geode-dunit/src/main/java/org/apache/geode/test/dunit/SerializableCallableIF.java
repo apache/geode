@@ -14,11 +14,19 @@
  */
 package org.apache.geode.test.dunit;
 
-import java.io.Serializable;
 import java.util.concurrent.Callable;
+
+import org.apache.geode.test.dunit.internal.Identifiable;
+import org.apache.geode.test.dunit.internal.Invocable;
 
 /**
  * Interface for {@link SerializableCallable} to enable use with lambdas.
  */
-public interface SerializableCallableIF<T> extends Serializable, Callable<T> {
+@FunctionalInterface
+public interface SerializableCallableIF<T> extends Callable<T>, Identifiable, Invocable {
+
+  @Override
+  default String getMethodName() {
+    return "call";
+  }
 }

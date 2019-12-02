@@ -38,7 +38,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.AlterRuntimeConfigFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -48,6 +47,7 @@ import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.security.ResourcePermission;
 
 public class AlterRuntimeConfigCommand extends GfshCommand {
@@ -184,7 +184,8 @@ public class AlterRuntimeConfigCommand extends GfshCommand {
     allRunTimeAttributes.putAll(rumTimeCacheAttributes);
 
     ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(alterRunTimeConfigFunction, allRunTimeAttributes, targetMembers);
+        ManagementUtils
+            .executeFunction(alterRunTimeConfigFunction, allRunTimeAttributes, targetMembers);
     List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
     Set<String> successfulMembers = new TreeSet<>();
     Set<String> errorMessages = new TreeSet<>();

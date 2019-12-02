@@ -275,7 +275,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
       dm.putOutgoing(m);
       replySent = true;
       if (rejectionMessage != null) {
-        dm.getMembershipManager().startupMessageFailed(getSender(), rejectionMessage);
+        dm.getDistribution().startupMessageFailed(getSender(), rejectionMessage);
       }
 
       // We need to discard this member if they aren't a peer.

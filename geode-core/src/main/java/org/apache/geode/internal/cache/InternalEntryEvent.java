@@ -28,4 +28,6 @@ public interface InternalEntryEvent extends EntryEvent {
   void setCachedSerializedNewValue(byte[] v);
 
   byte[] getCachedSerializedNewValue();
+
+  void disallowOffHeapValues();
 }

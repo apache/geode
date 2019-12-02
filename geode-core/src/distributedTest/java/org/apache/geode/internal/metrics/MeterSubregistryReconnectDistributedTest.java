@@ -21,7 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getMembership;
+import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getDistribution;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -46,8 +46,8 @@ import org.junit.Test;
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -135,8 +135,8 @@ public class MeterSubregistryReconnectDistributedTest implements Serializable {
   }
 
   private void reconnect() throws InterruptedException {
-    GMSMembershipManager membershipManager = (GMSMembershipManager) getMembership(system);
-    membershipManager.getGMSManager().forceDisconnect("Forcing disconnect in test");
+    Distribution membershipManager = getDistribution(system);
+    membershipManager.forceDisconnect("Forcing disconnect in test");
 
     await().until(() -> system.isReconnecting());
     system.waitUntilReconnected(TIMEOUT, MILLISECONDS);

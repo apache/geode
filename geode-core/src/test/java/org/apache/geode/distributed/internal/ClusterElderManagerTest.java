@@ -38,11 +38,10 @@ import org.junit.Test;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.test.junit.rules.ConcurrencyRule;
 
 public class ClusterElderManagerTest {
-  private MembershipManager memberManager;
+  private Distribution distribution;
   private CancelCriterion systemCancelCriterion;
   private InternalDistributedSystem system;
   private CancelCriterion cancelCriterion;
@@ -61,12 +60,12 @@ public class ClusterElderManagerTest {
     cancelCriterion = mock(CancelCriterion.class);
     system = mock(InternalDistributedSystem.class);
     systemCancelCriterion = mock(CancelCriterion.class);
-    memberManager = mock(MembershipManager.class);
+    distribution = mock(Distribution.class);
 
     when(clusterDistributionManager.getCancelCriterion()).thenReturn(cancelCriterion);
     when(clusterDistributionManager.getSystem()).thenReturn(system);
     when(system.getCancelCriterion()).thenReturn(systemCancelCriterion);
-    when(clusterDistributionManager.getMembershipManager()).thenReturn(memberManager);
+    when(clusterDistributionManager.getDistribution()).thenReturn(distribution);
   }
 
   @Test
@@ -99,7 +98,7 @@ public class ClusterElderManagerTest {
   @Test
   public void getElderIdIgnoresSurpriseMembers() {
     ClusterElderManager clusterElderManager = new ClusterElderManager(clusterDistributionManager);
-    when(memberManager.isSurpriseMember(eq(member1))).thenReturn(true);
+    when(distribution.isSurpriseMember(eq(member1))).thenReturn(true);
 
     when(clusterDistributionManager.getViewMembers()).thenReturn(Arrays.asList(member1, member2));
 

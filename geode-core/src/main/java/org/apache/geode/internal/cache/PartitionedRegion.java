@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 
@@ -45,6 +46,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.logging.log4j.Logger;
@@ -221,6 +223,8 @@ import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.partitioned.RemoveIndexesMessage;
 import org.apache.geode.internal.cache.partitioned.SizeMessage;
 import org.apache.geode.internal.cache.partitioned.SizeMessage.SizeResponse;
+import org.apache.geode.internal.cache.partitioned.colocation.ColocationLogger;
+import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -450,7 +454,10 @@ public class PartitionedRegion extends LocalRegion
 
   private final PartitionedRegion colocatedWithRegion;
 
-  private ColocationLogger missingColocatedRegionLogger;
+  private final ColocationLoggerFactory colocationLoggerFactory;
+
+  private final AtomicReference<ColocationLogger> missingColocatedRegionLogger =
+      new AtomicReference<>();
 
   private List<BucketRegion> sortedBuckets;
 
@@ -741,12 +748,17 @@ public class PartitionedRegion extends LocalRegion
    * storage enabled. A PartitionedRegion can be created by a factory method of RegionFactory.java
    * and also by invoking Cache.createRegion(). (Cache.xml etc to be added)
    */
-  public PartitionedRegion(String regionName, RegionAttributes regionAttributes,
-      LocalRegion parentRegion, InternalCache cache, InternalRegionArguments internalRegionArgs,
-      StatisticsClock statisticsClock) {
+  public PartitionedRegion(String regionName,
+      RegionAttributes regionAttributes,
+      LocalRegion parentRegion,
+      InternalCache cache,
+      InternalRegionArguments internalRegionArgs,
+      StatisticsClock statisticsClock,
+      ColocationLoggerFactory colocationLoggerFactory) {
     super(regionName, regionAttributes, parentRegion, cache, internalRegionArgs,
         new PartitionedRegionDataView(), statisticsClock);
 
+    this.colocationLoggerFactory = colocationLoggerFactory;
     this.node = initializeNode();
     this.prStats = new PartitionedRegionStats(cache.getDistributedSystem(), getFullPath(),
         statisticsClock);
@@ -956,7 +968,7 @@ public class PartitionedRegion extends LocalRegion
           diskStore.handleDiskAccessException(dae);
           throw new IllegalStateException(
               String.format(
-                  "For partition region %s, Cannot change colocated-with to %s because there is persistent data with different colocation. Previous configured value is %s.",
+                  "For partition region %s, cannot change colocated-with to \"%s\" because there is persistent data with different colocation. Previous configured value is \"%s\".",
                   prms));
         }
       } else {
@@ -6830,7 +6842,7 @@ public class PartitionedRegion extends LocalRegion
                 DLockRemoteToken remoteToken = this.lockService.queryLock(this.lockName);
                 lockHolder = remoteToken.getLessee();
                 if (lockHolder != null) {
-                  dm.getMembershipManager().suspectMember((InternalDistributedMember) lockHolder,
+                  dm.getDistribution().suspectMember((InternalDistributedMember) lockHolder,
                       "Has not released a partitioned region lock in over "
                           + ackWaitThreshold / 1000 + " sec");
                 }
@@ -6917,7 +6929,7 @@ public class PartitionedRegion extends LocalRegion
                 DLockRemoteToken remoteToken = this.lockService.queryLock(key);
                 lockHolder = remoteToken.getLessee();
                 if (lockHolder != null) {
-                  dm.getMembershipManager().suspectMember((InternalDistributedMember) lockHolder,
+                  dm.getDistribution().suspectMember((InternalDistributedMember) lockHolder,
                       "Has not released a global region entry lock in over "
                           + ackWaitThreshold / 1000 + " sec");
                 }
@@ -7207,30 +7219,44 @@ public class PartitionedRegion extends LocalRegion
   }
 
   private void stopMissingColocatedRegionLogger() {
-    if (missingColocatedRegionLogger != null) {
-      missingColocatedRegionLogger.stopLogger();
+    ColocationLogger colocationLogger = missingColocatedRegionLogger.getAndSet(null);
+    if (colocationLogger != null) {
+      colocationLogger.stop();
     }
-    missingColocatedRegionLogger = null;
   }
 
   public void addMissingColocatedRegionLogger(String childName) {
-    if (missingColocatedRegionLogger == null) {
-      missingColocatedRegionLogger = new ColocationLogger(this);
-    }
-    missingColocatedRegionLogger.addMissingChildRegion(childName);
+    getOrSetMissingColocatedRegionLogger().addMissingChildRegion(childName);
   }
 
   public void addMissingColocatedRegionLogger(PartitionedRegion childRegion) {
-    if (missingColocatedRegionLogger == null) {
-      missingColocatedRegionLogger = new ColocationLogger(this);
+    getOrSetMissingColocatedRegionLogger().addMissingChildRegions(childRegion);
+  }
+
+  /**
+   * Returns existing ColocationLogger or creates and sets a new instance if one does not yet exist.
+   * Spins to ensure that if another thread sets ColocationLogger, we return that one instead of
+   * setting another instance. Checks CancelCriterion during spin and either returns an instance or
+   * throws NullPointerException. The only way to exist the loop is with an instance or by throwing
+   * CancelException if the Cache closes.
+   */
+  private ColocationLogger getOrSetMissingColocatedRegionLogger() {
+    ColocationLogger colocationLogger = missingColocatedRegionLogger.get();
+    while (colocationLogger == null) {
+      colocationLogger = colocationLoggerFactory.startColocationLogger(this);
+      if (!missingColocatedRegionLogger.compareAndSet(null, colocationLogger)) {
+        colocationLogger = missingColocatedRegionLogger.get();
+      }
+      getCancelCriterion().checkCancelInProgress();
     }
-    missingColocatedRegionLogger.addMissingChildRegions(childRegion);
+    requireNonNull(colocationLogger);
+    return colocationLogger;
   }
 
   public List<String> getMissingColocatedChildren() {
-    ColocationLogger regionLogger = missingColocatedRegionLogger;
-    if (regionLogger != null) {
-      return regionLogger.updateAndGetMissingChildRegions();
+    ColocationLogger colocationLogger = missingColocatedRegionLogger.get();
+    if (colocationLogger != null) {
+      return colocationLogger.updateAndGetMissingChildRegions();
     }
     return Collections.emptyList();
   }

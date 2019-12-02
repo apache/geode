@@ -199,6 +199,16 @@ gradle.taskGraph.whenReady({ graph ->
         executable = "${testJVM}/bin/java"
       }
 
+      def basePort = 'dunit.debug.basePort'
+      if (project.hasProperty(basePort)) {
+        systemProperty basePort, project.getProperties()[basePort]
+      }
+
+      def suspendVM = 'dunit.debug.suspendVM'
+      if (project.hasProperty(suspendVM)) {
+        systemProperty suspendVM, project.getProperties()[suspendVM]
+      }
+
       systemProperty 'gemfire.DEFAULT_MAX_OPLOG_SIZE', '10'
       systemProperty 'gemfire.disallowMcastDefaults', 'true'
       systemProperty 'jline.terminal', 'jline.UnsupportedTerminal'

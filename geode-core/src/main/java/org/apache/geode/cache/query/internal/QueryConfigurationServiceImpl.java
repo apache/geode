@@ -39,16 +39,10 @@ import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 public class QueryConfigurationServiceImpl implements QueryConfigurationService {
 
-  private static final Logger logger = LogService.getLogger();
   static final String UPDATE_ERROR_MESSAGE =
-      "Exception while updating MethodInvocationAuthorizer: ";
+      "Exception while updating MethodInvocationAuthorizer. ";
   public static final String INTERFACE_NOT_IMPLEMENTED_MESSAGE =
       "Provided method authorizer %S does not implement interface %S";
-
-  private MethodInvocationAuthorizer authorizer;
-
-  @Immutable
-  private static final MethodInvocationAuthorizer NO_OP_AUTHORIZER = new NoOpAuthorizer();
 
   /**
    * Instead of the below property, please use the UnrestrictedMethodAuthorizer
@@ -61,6 +55,13 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
       "QueryService.allowUntrustedMethodInvocation is deprecated. " +
       "Please use the UnrestrictedMethodAuthorizer implementation of MethodInvocationAuthorizer " +
       "instead";
+
+  private static final Logger logger = LogService.getLogger();
+
+  private MethodInvocationAuthorizer authorizer;
+
+  @Immutable
+  private static final MethodInvocationAuthorizer NO_OP_AUTHORIZER = new NoOpAuthorizer();
 
   public QueryConfigurationServiceImpl() {
     ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.parseBoolean(

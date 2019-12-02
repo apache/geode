@@ -192,6 +192,7 @@ import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.locks.TXLockService;
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
+import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.snapshot.CacheSnapshotServiceImpl;
@@ -2989,7 +2990,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
               region = internalRegionArgs.getInternalMetaRegion();
             } else if (isPartitionedRegion) {
               region = new PartitionedRegion(name, attrs, null, this, internalRegionArgs,
-                  statisticsClock);
+                  statisticsClock, ColocationLoggerFactory.create());
             } else {
               // Abstract region depends on the default pool existing so lazily initialize it
               // if necessary.

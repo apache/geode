@@ -48,7 +48,6 @@ dependencies {
   }
   compile('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat7.version'))
 
-
   testCompile('org.httpunit:httpunit')
   testCompile('junit:junit')
   testCompile('org.assertj:assertj-core')

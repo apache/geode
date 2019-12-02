@@ -79,6 +79,13 @@ resources:
     password: ((docker-password))
     repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
 
+- name: bionic-scm-docker-image
+  type: registry-image
+  icon: docker
+  source:
+    repository: buildpack-deps
+    tag: bionic-scm
+
 - name: test-container-dockerfile
   type: git
   source:
@@ -231,7 +238,7 @@ jobs:
   serial: true
   plan:
   - aggregate:
-    - get: openjdk8-docker-image
+    - get: bionic-scm-docker-image
       trigger: true
     - get: test-container-dockerfile
       trigger: true

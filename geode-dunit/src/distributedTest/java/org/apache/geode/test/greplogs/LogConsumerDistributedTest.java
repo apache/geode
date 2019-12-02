@@ -26,6 +26,7 @@ import static org.apache.geode.test.junit.runners.TestRunner.runTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -50,8 +51,10 @@ public class LogConsumerDistributedTest implements Serializable {
   private static final String EXCEPTION_MESSAGE =
       "java.lang.ClassNotFoundException: does.not.Exist";
 
-  private static volatile TargetVM targetVM;
-  private static volatile SerializableRunnableIF task;
+  private static final AtomicReference<TargetVM> targetVM = new AtomicReference<>();
+  private static final AtomicReference<SerializableRunnableIF> task = new AtomicReference<>();
+  private static final AtomicReference<AsyncInvocation<Void>> asyncInvocation =
+      new AtomicReference<>();
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -60,8 +63,9 @@ public class LogConsumerDistributedTest implements Serializable {
   public void tearDown() {
     for (VM vm : toArray(getAllVMs(), getController(), getLocator())) {
       vm.invoke(() -> {
-        targetVM = null;
-        task = null;
+        targetVM.set(null);
+        task.set(null);
+        asyncInvocation.set(null);
       });
     }
   }
@@ -345,8 +349,8 @@ public class LogConsumerDistributedTest implements Serializable {
   private static void given(TargetVM targetVM, SerializableRunnableIF task) {
     for (VM vm : toArray(getAllVMs(), getController(), getLocator())) {
       vm.invoke(() -> {
-        LogConsumerDistributedTest.targetVM = targetVM;
-        LogConsumerDistributedTest.task = task;
+        LogConsumerDistributedTest.targetVM.set(targetVM);
+        LogConsumerDistributedTest.task.set(task);
       });
     }
   }
@@ -357,7 +361,8 @@ public class LogConsumerDistributedTest implements Serializable {
   }
 
   private static VM getTargetVm() {
-    switch (targetVM) {
+    TargetVM vm = targetVM.get();
+    switch (vm) {
       case CONTROLLER:
         return getController();
       case ANY_VM:
@@ -365,7 +370,7 @@ public class LogConsumerDistributedTest implements Serializable {
       case LOCATOR:
         return getLocator();
       default:
-        throw new IllegalStateException("VM for " + targetVM + " not found");
+        throw new IllegalStateException("VM for " + vm + " not found");
     }
   }
 
@@ -382,25 +387,23 @@ public class LogConsumerDistributedTest implements Serializable {
 
     @Test
     public void invokeTaskInTargetVm() {
-      getTargetVm().invoke(() -> task.run());
+      getTargetVm().invoke(() -> task.get().run());
     }
   }
 
   public static class ExecuteTaskAsync implements Serializable {
-
-    private transient AsyncInvocation<Void> asyncInvocation;
 
     @Rule
     public DistributedRule distributedRule = new DistributedRule();
 
     @After
     public void tearDown() throws Exception {
-      asyncInvocation.await();
+      asyncInvocation.get().await();
     }
 
     @Test
     public void invokeTaskInTargetVm() {
-      asyncInvocation = getTargetVm().invokeAsync(() -> task.run());
+      asyncInvocation.set(getTargetVm().invokeAsync(() -> task.get().run()));
     }
   }
 
@@ -411,12 +414,12 @@ public class LogConsumerDistributedTest implements Serializable {
 
     @Before
     public void invokeTaskInBefore() {
-      getTargetVm().invokeAsync(() -> task.run());
+      asyncInvocation.set(getTargetVm().invokeAsync(() -> task.get().run()));
     }
 
     @Test
-    public void doNothing() {
-      // nothing
+    public void doNothing() throws Exception {
+      asyncInvocation.get().await();
     }
   }
 
@@ -424,15 +427,15 @@ public class LogConsumerDistributedTest implements Serializable {
 
     @BeforeClass
     public static void invokeTaskInBeforeClass() {
-      getTargetVm().invokeAsync(() -> task.run());
+      asyncInvocation.set(getTargetVm().invokeAsync(() -> task.get().run()));
     }
 
     @Rule
     public DistributedRule distributedRule = new DistributedRule();
 
     @Test
-    public void doNothing() {
-      // nothing
+    public void doNothing() throws Exception {
+      asyncInvocation.get().await();
     }
   }
 }

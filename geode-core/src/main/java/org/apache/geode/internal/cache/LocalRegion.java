@@ -183,6 +183,7 @@ import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSende
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
+import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
@@ -773,6 +774,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @return the entry version information
    */
+  @Override
   public VersionTag getVersionTag(Object key) {
     Region.Entry entry = getEntry(key, true);
     VersionTag tag = null;
@@ -929,7 +931,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               }
             } else if (regionAttributes.getPartitionAttributes() != null) {
               newRegion = new PartitionedRegion(subregionName, regionAttributes, this, cache,
-                  internalRegionArgs, getStatisticsClock());
+                  internalRegionArgs, getStatisticsClock(), ColocationLoggerFactory.create());
             } else {
               boolean local = regionAttributes.getScope().isLocal();
               newRegion = local
@@ -9101,7 +9103,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return succeeded;
   }
 
-  VersionedObjectList basicRemoveAll(final Collection<Object> keys,
+  @Override
+  public VersionedObjectList basicRemoveAll(final Collection<Object> keys,
       final DistributedRemoveAllOperation removeAllOp, final List<VersionTag> retryVersions) {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();

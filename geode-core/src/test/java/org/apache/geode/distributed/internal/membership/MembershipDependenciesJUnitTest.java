@@ -20,10 +20,12 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPac
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.type;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchIgnore;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchUnitRunner;
+import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
@@ -36,7 +38,8 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMessageAdapter;
+import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ClassPathLoader;
@@ -50,7 +53,9 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..")
+@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",
+    cacheMode = CacheMode.PER_CLASS,
+    importOptions = ImportOption.DoNotIncludeArchives.class)
 public class MembershipDependenciesJUnitTest {
 
   /*
@@ -115,9 +120,6 @@ public class MembershipDependenciesJUnitTest {
               .or(type(InternalDataSerializer.class)) // still used by GMSLocator
               .or(type(DistributionMessage.class)) // still used by GMSLocator
 
-              // TODO: Membership needs its own config object
-              .or(type(MembershipManager.class))
-
               // TODO
               .or(assignableTo(CancelCriterion.class))
 
@@ -157,8 +159,9 @@ public class MembershipDependenciesJUnitTest {
               .or(type(InternalDistributedMember[].class))
               .or(type(DistributedMember.class))
               .or(type(MembershipView.class))
+              .or(type(LocalViewMessage.class))
+              .or(type(GMSMessageAdapter.class))
 
-              .or(type(GMSMembershipManager.class))
               .or(type(ClusterDistributionManager.class))
 
   );

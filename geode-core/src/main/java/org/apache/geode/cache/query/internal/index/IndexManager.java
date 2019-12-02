@@ -1129,7 +1129,7 @@ public class IndexManager {
               }
               start = ((AbstractIndex) index).updateIndexUpdateStats();
 
-              index.removeIndexMapping(entry, opCode);
+              removeIndexMapping(entry, index, opCode);
 
               ((AbstractIndex) index).updateIndexUpdateStats(start);
             }
@@ -1149,14 +1149,27 @@ public class IndexManager {
     }
   }
 
-  private void addIndexMapping(RegionEntry entry, IndexProtocol index) throws IMQException {
+  void addIndexMapping(RegionEntry entry, IndexProtocol index) {
     try {
       index.addIndexMapping(entry);
     } catch (Exception exception) {
       index.markValid(false);
       setPRIndexAsInvalid((AbstractIndex) index);
-      logger.warn("Put operation for the entry corrupted the index : "
-          + ((AbstractIndex) index).indexName + " with the exception : \n " + exception);
+      logger.warn(String.format(
+          "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+          ((AbstractIndex) index).indexName), exception);
+    }
+  }
+
+  void removeIndexMapping(RegionEntry entry, IndexProtocol index, int opCode) {
+    try {
+      index.removeIndexMapping(entry, opCode);
+    } catch (Exception exception) {
+      index.markValid(false);
+      setPRIndexAsInvalid((AbstractIndex) index);
+      logger.warn(String.format(
+          "Updating the Index %s failed. The index is corrupted and marked as invalid.",
+          ((AbstractIndex) index).indexName), exception);
     }
   }
 

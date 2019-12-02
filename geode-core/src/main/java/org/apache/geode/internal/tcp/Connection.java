@@ -68,7 +68,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSFIDFactory;
@@ -709,7 +709,7 @@ public class Connection implements Runnable {
                 // when accept() was not even being called. This started causing timeouts
                 // to occur in the handshake threads instead of causing failures in
                 // connection-formation. So, we need to initiate suspect processing here
-                owner.getDM().getMembershipManager().suspectMember(this.remoteAddr,
+                owner.getDM().getDistribution().suspectMember(this.remoteAddr,
                     String.format(
                         "Connection handshake with %s timed out after waiting %s milliseconds.",
 
@@ -736,7 +736,7 @@ public class Connection implements Runnable {
             if (success) {
               if (this.isReceiver) {
                 needToClose =
-                    !owner.getConduit().getMembershipManager().addSurpriseMember(this.remoteAddr);
+                    !owner.getConduit().getMembership().addSurpriseMember(this.remoteAddr);
                 if (needToClose) {
                   reason = "this member is shunned";
                 }
@@ -893,7 +893,7 @@ public class Connection implements Runnable {
    * creates a new connection to a remote server. We are initiating this connection; the other side
    * must accept us We will almost always send messages; small acks are received.
    */
-  protected static Connection createSender(final MembershipManager mgr, final ConnectionTable t,
+  protected static Connection createSender(final Membership mgr, final ConnectionTable t,
       final boolean preserveOrder, final DistributedMember remoteAddr, final boolean sharedResource,
       final long startTime, final long ackTimeout, final long ackSATimeout)
       throws IOException, DistributedSystemDisconnectedException {
@@ -1082,14 +1082,14 @@ public class Connection implements Runnable {
     return conn;
   }
 
-  private static boolean giveUpOnMember(MembershipManager mgr,
+  private static boolean giveUpOnMember(Membership mgr,
       DistributedMember remoteAddr) {
     return !mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress();
   }
 
   private void setRemoteAddr(DistributedMember m) {
     this.remoteAddr = this.owner.getDM().getCanonicalId(m);
-    MembershipManager mgr = this.conduit.getMembershipManager();
+    Membership mgr = this.conduit.getMembership();
     mgr.addSurpriseMember(m);
   }
 
@@ -1868,7 +1868,7 @@ public class Connection implements Runnable {
   private void initiateSuspicionIfSharedUnordered() {
     if (this.isReceiver && this.handshakeRead && !this.preserveOrder && this.sharedResource) {
       if (!this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
-        this.owner.getDM().getMembershipManager().suspectMember(this.getRemoteAddress(),
+        this.owner.getDM().getDistribution().suspectMember(this.getRemoteAddress(),
             INITIATING_SUSPECT_PROCESSING);
       }
     }
@@ -2131,7 +2131,7 @@ public class Connection implements Runnable {
           ? "Sender has been unable to transmit a message within ack-wait-threshold seconds"
           : "Sender has been unable to receive a response to a message within ack-wait-threshold seconds";
       if (ackSATimeout > 0) {
-        this.owner.getDM().getMembershipManager()
+        this.owner.getDM().getDistribution()
             .suspectMembers(Collections.singleton(getRemoteAddress()), state);
       }
     }
@@ -2362,7 +2362,7 @@ public class Connection implements Runnable {
           "no distribution manager");
       return;
     }
-    dm.getMembershipManager().requestMemberRemoval(this.remoteAddr,
+    dm.getDistribution().requestMemberRemoval(this.remoteAddr,
         "Disconnected as a slow-receiver");
     // Ok, we sent the message, the coordinator should kick the member out
     // immediately and inform this process with a new view.

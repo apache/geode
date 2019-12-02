@@ -26,6 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,17 +51,20 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
@@ -128,7 +132,7 @@ public class MembershipJUnitTest {
   private List<String> doTestMultipleManagersInSameProcessWithGroups(String groups)
       throws Exception {
 
-    MembershipManager m1 = null, m2 = null;
+    Membership m1 = null, m2 = null;
     Locator l = null;
     // int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
@@ -138,7 +142,7 @@ public class MembershipJUnitTest {
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
       InetAddress localHost = SocketCreator.getLocalHost();
 
-      // this locator will hook itself up with the first MembershipManager
+      // this locator will hook itself up with the first Membership
       // to be created
       l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
           new Properties(), null, temporaryFolder.getRoot().toPath());
@@ -165,7 +169,7 @@ public class MembershipJUnitTest {
       }
 
       // start the second membership manager
-      final Pair<MembershipManager, MessageListener> pair =
+      final Pair<Membership, MessageListener> pair =
           createMembershipManager(config, transport);
       m2 = pair.getLeft();
       final MessageListener listener2 = pair.getRight();
@@ -174,8 +178,8 @@ public class MembershipJUnitTest {
       // manager queues new views for processing through the DM listener,
       // which is a mock object in this test
       System.out.println("waiting for views to stabilize");
-      JoinLeave jl1 = ((GMSMembershipManager) m1).getServices().getJoinLeave();
-      JoinLeave jl2 = ((GMSMembershipManager) m2).getServices().getJoinLeave();
+      JoinLeave jl1 = ((GMSMembership) m1).getServices().getJoinLeave();
+      JoinLeave jl2 = ((GMSMembership) m2).getServices().getJoinLeave();
       long giveUp = System.currentTimeMillis() + 15000;
       for (;;) {
         try {
@@ -249,7 +253,7 @@ public class MembershipJUnitTest {
     }
   }
 
-  private Pair<MembershipManager, MessageListener> createMembershipManager(
+  private Pair<Membership, MessageListener> createMembershipManager(
       final DistributionConfigImpl config,
       final RemoteTransportConfig transport) {
     final MembershipListener listener = mock(MembershipListener.class);
@@ -265,7 +269,8 @@ public class MembershipJUnitTest {
         return new InternalDistributedMember((GMSMemberData) invocation.getArgument(0));
       }
     });
-    final MembershipManager m1 =
+    LifecycleListener lifeCycleListener = mock(LifecycleListener.class);
+    final Membership m1 =
         MembershipBuilder.newMembershipBuilder(null)
             .setAuthenticator(new GMSAuthenticator(config.getSecurityProps(), securityService,
                 mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()))
@@ -274,6 +279,7 @@ public class MembershipJUnitTest {
             .setMembershipListener(listener)
             .setConfig(new ServiceConfig(transport, config))
             .setSerializer(serializer)
+            .setLifecycleListener(lifeCycleListener)
             .setLocatorClient(new TcpClient(
                 asTcpSocketCreator(
                     SocketCreatorFactory
@@ -281,6 +287,11 @@ public class MembershipJUnitTest {
                 InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
                 InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
             .create();
+    doAnswer(invocation -> {
+      DistributionImpl.connectLocatorToServices(m1.getServices());
+      return null;
+    }).when(lifeCycleListener).started();
+    m1.start();
     m1.startEventProcessing();
     return Pair.of(m1, messageListener);
   }
@@ -297,7 +308,7 @@ public class MembershipJUnitTest {
   @Test
   public void testLocatorAndTwoServersJoinUsingDiffeHellman() throws Exception {
 
-    MembershipManager m1 = null, m2 = null;
+    Membership m1 = null, m2 = null;
     Locator l = null;
     int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
@@ -308,7 +319,7 @@ public class MembershipJUnitTest {
       InetAddress localHost = SocketCreator.getLocalHost();
       Properties p = new Properties();
       p.setProperty(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
-      // this locator will hook itself up with the first MembershipManager
+      // this locator will hook itself up with the first Membership
       // to be created
       l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null,
           temporaryFolder.getRoot().toPath());
@@ -336,7 +347,7 @@ public class MembershipJUnitTest {
       }
 
       // start the second membership manager
-      final Pair<MembershipManager, MessageListener> pair =
+      final Pair<Membership, MessageListener> pair =
           createMembershipManager(config, transport);
       m2 = pair.getLeft();
       final MessageListener listener2 = pair.getRight();
@@ -345,8 +356,8 @@ public class MembershipJUnitTest {
       // manager queues new views for processing through the DM listener,
       // which is a mock object in this test
       System.out.println("waiting for views to stabilize");
-      JoinLeave jl1 = ((GMSMembershipManager) m1).getServices().getJoinLeave();
-      JoinLeave jl2 = ((GMSMembershipManager) m2).getServices().getJoinLeave();
+      JoinLeave jl1 = ((GMSMembership) m1).getServices().getJoinLeave();
+      JoinLeave jl2 = ((GMSMembership) m2).getServices().getJoinLeave();
       long giveUp = System.currentTimeMillis() + 15000;
       for (;;) {
         try {

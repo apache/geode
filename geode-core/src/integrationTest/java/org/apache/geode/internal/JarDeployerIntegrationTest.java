@@ -11,249 +11,186 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 
 package org.apache.geode.internal;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.test.compiler.JarBuilder;
+
 
 public class JarDeployerIntegrationTest {
-  private ClassBuilder classBuilder;
+
+  @ClassRule
+  public static TemporaryFolder stagedTempDir = new TemporaryFolder();
 
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public TemporaryFolder deployTempDir = new TemporaryFolder();
 
-  JarDeployer jarDeployer;
+  private JarDeployer jarDeployer;
+
+  private static File stagedDir;
+  private static File plainJarVersion1, plainJarVersion1b, plainJarVersion2, semanticJarVersion1,
+      semanticJarVersion2, semanticJarVersion1b, semanticJarVersion1c;
+
+  private File deployedDir;
+
+  @BeforeClass
+  public static void createStagedJars() throws IOException {
+    stagedDir = stagedTempDir.getRoot();
+    JarBuilder jarBuilder = new JarBuilder();
+    plainJarVersion1 = new File(stagedTempDir.newFolder("v1"), "abc.jar");
+    jarBuilder.buildJar(plainJarVersion1, createClassContent("version1", "Abc"));
+    plainJarVersion2 = new File(stagedTempDir.newFolder("v2"), "abc.jar");
+    jarBuilder.buildJar(plainJarVersion2, createClassContent("version2", "Abc"));
+    plainJarVersion1b = new File(stagedDir, "abc-1.0.jar");
+    jarBuilder.buildJar(plainJarVersion1b, createClassContent("version1b", "Abc"));
+
+    semanticJarVersion1 = new File(stagedDir, "def-1.0.jar");
+    jarBuilder.buildJar(semanticJarVersion1, createClassContent("version1", "Def"));
+    semanticJarVersion2 = new File(stagedDir, "def-1.1.jar");
+    jarBuilder.buildJar(semanticJarVersion2, createClassContent("version2", "Def"));
+
+    semanticJarVersion1b = new File(stagedTempDir.newFolder("v1b"), "def-1.0.jar");
+    jarBuilder.buildJar(semanticJarVersion1b, createClassContent("version1b", "Def"));
+    semanticJarVersion1c = new File(stagedTempDir.newFolder("v1c"), "def.jar");
+    jarBuilder.buildJar(semanticJarVersion1c, createClassContent("version1c", "Def"));
+  }
 
   @Before
-  public void setup() {
-    classBuilder = new ClassBuilder();
-    jarDeployer = new JarDeployer(temporaryFolder.getRoot());
-  }
-
-  private byte[] createJarWithClass(String className) throws IOException {
-    String stringBuilder = "package integration.parent;" + "public class " + className + " {}";
-
-    return this.classBuilder.createJarFromClassContent("integration/parent/" + className,
-        stringBuilder);
+  public void before() throws IOException {
+    deployedDir = deployTempDir.getRoot();
+    jarDeployer = new JarDeployer(deployedDir);
   }
 
   @Test
-  public void testFileVersioning() throws Exception {
-    String jarName = "JarDeployerIntegrationTest.jar";
+  public void deployABC() throws Exception {
+    // deploy first version of abc.jar
+    DeployedJar deployed = jarDeployer.deploy(plainJarVersion1);
+    assertThat(deployed.getFile()).hasName("abc.v1.jar");
+    assertThat(deployed.getArtifactId()).isEqualTo("abc");
+    assertThat(deployedDir.list()).containsExactly("abc.v1.jar");
+    assertThat(jarDeployer.getDeployedJars()).containsOnlyKeys("abc");
+    assertThat(jarDeployer.getDeployedJars().get("abc")).isEqualTo(deployed);
+    assertThat(getVersion("jddunit.function.Abc")).isEqualTo("version1");
 
-    byte[] firstJarBytes = createJarWithClass("ClassA");
-    File jarFile1 = writeJarBytes(firstJarBytes);
-
-    // First deploy of the JAR file
-    DeployedJar firstDeployedJar = jarDeployer.deployWithoutRegistering(jarName, jarFile1);
-
-    assertThat(firstDeployedJar.getFile()).exists().hasBinaryContent(firstJarBytes);
-    assertThat(firstDeployedJar.getFile().getName()).contains(".v1.").doesNotContain(".v2.");
-
-    // Now deploy an updated JAR file and make sure that the next version of the JAR file
-    // was created
-    byte[] secondJarBytes = createJarWithClass("ClassB");
-    File jarFile2 = writeJarBytes(secondJarBytes);
-
-    DeployedJar secondDeployedJar = jarDeployer.deployWithoutRegistering(jarName, jarFile2);
-    File secondDeployedJarFile = new File(secondDeployedJar.getFileCanonicalPath());
-
-    assertThat(secondDeployedJarFile).exists().hasBinaryContent(secondJarBytes);
-    assertThat(secondDeployedJarFile.getName()).contains(".v2.").doesNotContain(".v1.");
-
-    File[] sortedOldJars = jarDeployer.findSortedOldVersionsOfJar(jarName);
-    assertThat(sortedOldJars).hasSize(2);
-    assertThat(sortedOldJars[0].getName()).contains(".v2.");
-    assertThat(sortedOldJars[1].getName()).contains(".v1.");
-    assertThat(jarDeployer.findDistinctDeployedJarsOnDisk()).hasSize(1);
+    // deploy 2nd version of abc.jar
+    deployed = jarDeployer.deploy(plainJarVersion2);
+    assertThat(deployed.getFile()).hasName("abc.v2.jar");
+    assertThat(deployed.getArtifactId()).isEqualTo("abc");
+    assertThat(deployedDir.list()).containsExactlyInAnyOrder("abc.v1.jar", "abc.v2.jar");
+    assertThat(jarDeployer.getDeployedJars()).containsOnlyKeys("abc");
+    assertThat(jarDeployer.getDeployedJars().get("abc")).isEqualTo(deployed);
+    assertThat(getVersion("jddunit.function.Abc")).isEqualTo("version2");
   }
 
   @Test
-  public void testDeployToInvalidDirectory() throws Exception {
-    final File alternateDir = new File(temporaryFolder.getRoot(), "JarDeployerDUnit");
-    alternateDir.delete();
+  public void deployABC_mixed() throws Exception {
+    // deploy abc.jar
+    jarDeployer.deploy(plainJarVersion1);
 
-    final JarDeployer jarDeployer = new JarDeployer(alternateDir);
-    final byte[] jarBytes = this.classBuilder.createJarFromName("JarDeployerDUnitDTID");
-    File jarFile = writeJarBytes(jarBytes);
-
-    // Test to verify that deployment fails if the directory doesn't exist.
-    assertThatThrownBy(() -> {
-      jarDeployer.deployWithoutRegistering("JarDeployerIntegrationTest.jar", jarFile);
-    }).isInstanceOf(IOException.class).hasMessageContaining("Unable to write to deploy directory:");
+    // deploy abc-1.0.jar
+    DeployedJar deployed = jarDeployer.deploy(plainJarVersion1b);
+    assertThat(deployed.getFile()).hasName("abc-1.0.v2.jar");
+    assertThat(deployed.getArtifactId()).isEqualTo("abc");
+    assertThat(deployedDir.list()).containsExactlyInAnyOrder("abc.v1.jar", "abc-1.0.v2.jar");
+    assertThat(jarDeployer.getDeployedJars()).containsOnlyKeys("abc");
+    assertThat(jarDeployer.getDeployedJars().get("abc")).isEqualTo(deployed);
+    assertThat(getVersion("jddunit.function.Abc")).isEqualTo("version1b");
   }
 
   @Test
-  public void testVersionNumberCreation() throws Exception {
-    File versionedName = jarDeployer.getNextVersionedJarFile("myJar.jar");
-    assertThat(versionedName.getName()).isEqualTo("myJar.v1.jar");
+  public void deployDEF() throws Exception {
+    // deploy first version of def.jar
+    DeployedJar deployed = jarDeployer.deploy(semanticJarVersion1);
+    assertThat(deployed.getFile()).hasName("def-1.0.v1.jar");
+    assertThat(deployed.getArtifactId()).isEqualTo("def");
+    assertThat(deployedDir.list()).containsExactly("def-1.0.v1.jar");
+    assertThat(jarDeployer.getDeployedJars()).containsOnlyKeys("def");
+    assertThat(jarDeployer.getDeployedJars().get("def")).isEqualTo(deployed);
+    assertThat(getVersion("jddunit.function.Def")).isEqualTo("version1");
 
-    byte[] jarBytes = this.classBuilder.createJarFromName("ClassA");
-    File jarFile = writeJarBytes(jarBytes);
-    File deployedJarFile = jarDeployer.deployWithoutRegistering("myJar.jar", jarFile).getFile();
-
-    assertThat(deployedJarFile.getName()).isEqualTo("myJar.v1.jar");
-
-    File secondDeployedJarFile =
-        jarDeployer.deployWithoutRegistering("myJar.jar", deployedJarFile).getFile();
-
-    assertThat(secondDeployedJarFile.getName()).isEqualTo("myJar.v2.jar");
+    // deploy second version of def.jar
+    deployed = jarDeployer.deploy(semanticJarVersion2);
+    assertThat(deployed.getFile()).hasName("def-1.1.v2.jar");
+    assertThat(deployed.getArtifactId()).isEqualTo("def");
+    assertThat(deployedDir.list()).containsExactlyInAnyOrder("def-1.0.v1.jar", "def-1.1.v2.jar");
+    assertThat(jarDeployer.getDeployedJars()).containsOnlyKeys("def");
+    assertThat(jarDeployer.getDeployedJars().get("def")).isEqualTo(deployed);
+    assertThat(getVersion("jddunit.function.Def")).isEqualTo("version2");
   }
 
   @Test
-  public void testVersionNumberMatcher() throws IOException {
-    int version =
-        JarDeployer.extractVersionFromFilename(temporaryFolder.newFile("MyJar.v1.jar").getName());
+  public void deployDEF_mixed() throws Exception {
+    // deploy first version of def-1.0.jar
+    jarDeployer.deploy(semanticJarVersion1);
 
-    assertThat(version).isEqualTo(1);
+    // deploy second version of def-1.0.jar with a different content
+    DeployedJar deployed = jarDeployer.deploy(semanticJarVersion1b);
+    assertThat(deployed.getFile()).hasName("def-1.0.v2.jar");
+    assertThat(deployed.getArtifactId()).isEqualTo("def");
+    assertThat(deployedDir.list()).containsExactlyInAnyOrder("def-1.0.v1.jar", "def-1.0.v2.jar");
+    assertThat(getVersion("jddunit.function.Def")).isEqualTo("version1b");
+
+    // deploy def.jar
+    deployed = jarDeployer.deploy(semanticJarVersion1c);
+    assertThat(deployed.getFile()).hasName("def.v3.jar");
+    assertThat(deployed.getArtifactId()).isEqualTo("def");
+    assertThat(deployedDir.list()).containsExactlyInAnyOrder("def-1.0.v1.jar", "def-1.0.v2.jar",
+        "def.v3.jar");
+    assertThat(jarDeployer.getDeployedJars()).containsOnlyKeys("def");
+    assertThat(jarDeployer.getDeployedJars().get("def")).isEqualTo(deployed);
+    assertThat(getVersion("jddunit.function.Def")).isEqualTo("version1c");
   }
 
   @Test
-  public void testRenamingOfOldJarFiles() throws Exception {
-    File deployDir = jarDeployer.getDeployDirectory();
+  public void undeploy() throws Exception {
+    // deploy abc.jar
+    jarDeployer.deploy(plainJarVersion1);
+    // deploy def.jar
+    jarDeployer.deploy(semanticJarVersion1c);
+    // deploy def-1.0.jar
+    jarDeployer.deploy(semanticJarVersion1);
 
-    File jarAVersion1 = new File(deployDir, "vf.gf#myJarA.jar#1");
-    this.classBuilder.writeJarFromName("ClassA", jarAVersion1);
+    assertThatThrownBy(() -> jarDeployer.undeploy("def.jar"))
+        .isInstanceOf(IllegalArgumentException.class);
 
-    File jarAVersion2 = new File(deployDir, "vf.gf#myJarA.jar#2");
-    this.classBuilder.writeJarFromName("ClassA", jarAVersion2);
+    jarDeployer.undeploy("def-1.0.jar");
 
-    File jarBVersion2 = new File(deployDir, "vf.gf#myJarB.jar#2");
-    this.classBuilder.writeJarFromName("ClassB", jarBVersion2);
-
-    File jarBVersion3 = new File(deployDir, "vf.gf#myJarB.jar#3");
-    this.classBuilder.writeJarFromName("ClassB", jarBVersion3);
-
-    Set<File> deployedJarsBeforeRename = Stream
-        .of(jarAVersion1, jarAVersion2, jarBVersion2, jarBVersion3).collect(Collectors.toSet());
-
-    jarDeployer.renameJarsWithOldNamingConvention();
-
-    deployedJarsBeforeRename.forEach(oldJar -> assertThat(oldJar).doesNotExist());
-
-    File renamedJarAVersion1 = new File(deployDir, "myJarA.v1.jar");
-    File renamedJarAVersion2 = new File(deployDir, "myJarA.v2.jar");
-    File renamedJarBVersion2 = new File(deployDir, "myJarB.v2.jar");
-    File renamedJarBVersion3 = new File(deployDir, "myJarB.v3.jar");
-    Set<File> expectedJarsAfterRename = Stream
-        .of(renamedJarAVersion1, renamedJarAVersion2, renamedJarBVersion2, renamedJarBVersion3)
-        .collect(Collectors.toSet());
-
-    Set<File> actualJarsInDeployDir =
-        Stream.of(jarDeployer.getDeployDirectory().listFiles()).collect(Collectors.toSet());
-
-    assertThat(actualJarsInDeployDir).isEqualTo(expectedJarsAfterRename);
+    // do not verify this on window's machine since it can not remove a file that a process has
+    // open
+    if (!SystemUtils.isWindows()) {
+      assertThat(deployedDir.list()).containsExactly("abc.v1.jar");
+    }
+    assertThatThrownBy(() -> ClassPathLoader.getLatest().forName("jddunit.function.Def"))
+        .isInstanceOf(ClassNotFoundException.class);
   }
 
-  @Test
-  public void testOldJarNameMatcher() throws Exception {
-    File deployDir = jarDeployer.getDeployDirectory();
-
-    File jarAVersion1 = new File(deployDir, "vf.gf#myJarA.jar#1");
-    this.classBuilder.writeJarFromName("ClassA", jarAVersion1);
-
-    File jarAVersion2 = new File(deployDir, "vf.gf#myJarA.jar#2");
-    this.classBuilder.writeJarFromName("ClassA", jarAVersion2);
-
-    File jarBVersion2 = new File(deployDir, "vf.gf#myJarB.jar#2");
-    this.classBuilder.writeJarFromName("ClassB", jarBVersion2);
-
-    File jarBVersion3 = new File(deployDir, "vf.gf#myJarB.jar#3");
-    this.classBuilder.writeJarFromName("ClassB", jarBVersion3);
-
-    Set<File> jarsWithOldNamingConvention = Stream
-        .of(jarAVersion1, jarAVersion2, jarBVersion2, jarBVersion3).collect(Collectors.toSet());
-
-    jarsWithOldNamingConvention.forEach(
-        jarFile -> assertThat(jarDeployer.isOldNamingConvention(jarFile.getName())).isTrue());
-
-    Set<File> foundJarsWithOldNamingConvention = jarDeployer.findJarsWithOldNamingConvention();
-    assertThat(foundJarsWithOldNamingConvention).isEqualTo(jarsWithOldNamingConvention);
+  private String getVersion(String classname) throws Exception {
+    Class<?> def = ClassPathLoader.getLatest().forName(classname);
+    assertThat(def).isNotNull();
+    return (String) def.getMethod("getId").invoke(def.newInstance());
   }
 
-
-  @Test
-  public void testDeleteAllVersionsOfJar() throws Exception {
-    File deployDir = jarDeployer.getDeployDirectory();
-
-    File jarAVersion1 = new File(deployDir, "myJarA.v1.jar");
-    this.classBuilder.writeJarFromName("ClassA", jarAVersion1);
-
-    File jarAVersion2 = new File(deployDir, "myJarA.v2.jar");
-    this.classBuilder.writeJarFromName("ClassA", jarAVersion2);
-
-    File jarBVersion2 = new File(deployDir, "myJarB.v2.jar");
-    this.classBuilder.writeJarFromName("ClassB", jarBVersion2);
-
-    File jarBVersion3 = new File(deployDir, "myJarB.v3.jar");
-    this.classBuilder.writeJarFromName("ClassB", jarBVersion3);
-
-    jarDeployer.deleteAllVersionsOfJar("myJarA.jar");
-
-    assertThat(jarAVersion1).doesNotExist();
-    assertThat(jarAVersion2).doesNotExist();
-    assertThat(jarBVersion2).exists();
-    assertThat(jarBVersion3).exists();
+  private static String createClassContent(String version, String functionName) {
+    return "package jddunit.function;" + "import org.apache.geode.cache.execute.Function;"
+        + "import org.apache.geode.cache.execute.FunctionContext;" + "public class "
+        + functionName + " implements Function {" + "public boolean hasResult() {return true;}"
+        + "public String getId() {return \"" + version + "\";}"
+        + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\""
+        + version + "\");}}";
   }
-
-
-  @Test
-  public void testDeleteOtherVersionsOfJar() throws Exception {
-    File deployDir = jarDeployer.getDeployDirectory();
-
-    File jarAVersion1 = new File(deployDir, "myJarA.v1.jar");
-    this.classBuilder.writeJarFromName("ClassA", jarAVersion1);
-
-    File jarAVersion2 = new File(deployDir, "myJarA.v2.jar");
-    this.classBuilder.writeJarFromName("ClassA", jarAVersion2);
-
-    File jarBVersion2 = new File(deployDir, "myJarB.v2.jar");
-    this.classBuilder.writeJarFromName("ClassB", jarBVersion2);
-
-    File jarBVersion3 = new File(deployDir, "myJarB.v3.jar");
-    this.classBuilder.writeJarFromName("ClassB", jarBVersion3);
-
-    DeployedJar deployedJarBVersion3 = new DeployedJar(jarBVersion3, "myJarB.jar");
-    jarDeployer.deleteOtherVersionsOfJar(deployedJarBVersion3);
-
-    assertThat(jarAVersion1).exists();
-    assertThat(jarAVersion2).exists();
-    assertThat(jarBVersion2).doesNotExist();
-    assertThat(jarBVersion3).exists();
-
-    DeployedJar deployedJarAVersion1 = new DeployedJar(jarAVersion1, "myJarA.jar");
-    jarDeployer.deleteOtherVersionsOfJar(deployedJarAVersion1);
-
-    assertThat(jarAVersion1).exists();
-    assertThat(jarAVersion2).doesNotExist();
-    assertThat(jarBVersion2).doesNotExist();
-    assertThat(jarBVersion3).exists();
-  }
-
-  private File writeJarBytes(byte[] content) throws IOException {
-    File tempJar = temporaryFolder.newFile();
-    IOUtils.copy(new ByteArrayInputStream(content), new FileOutputStream(tempJar));
-    return tempJar;
-  }
-
 }

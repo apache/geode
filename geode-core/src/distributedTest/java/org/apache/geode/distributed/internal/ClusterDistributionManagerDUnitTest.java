@@ -60,10 +60,8 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
@@ -127,14 +125,14 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   @Test
   public void testConnectAfterBeingShunned() {
     InternalDistributedSystem system = getSystem();
-    Membership membership = MembershipManagerHelper.getMembership(system);
+    Distribution membership = MembershipManagerHelper.getDistribution(system);
     InternalDistributedMember memberBefore = membership.getLocalMember();
 
     // TODO GMS needs to have a system property allowing the bind-port to be set
     System.setProperty(GEMFIRE_PREFIX + "jg-bind-port", "" + memberBefore.getMembershipPort());
     system.disconnect();
     system = getSystem();
-    membership = MembershipManagerHelper.getMembership(system);
+    membership = MembershipManagerHelper.getDistribution(system);
     system.disconnect();
     InternalDistributedMember memberAfter = membership.getLocalMember();
 
@@ -151,8 +149,8 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   public void testSurpriseMemberHandling() throws Exception {
     System.setProperty(GEMFIRE_PREFIX + "surprise-member-timeout", "3000");
     InternalDistributedSystem system = getSystem();
-    GMSMembershipManager membershipManager =
-        (GMSMembershipManager) MembershipManagerHelper.getMembership(system);
+    Distribution membershipManager =
+        MembershipManagerHelper.getDistribution(system);
     assertThat(membershipManager.isCleanupTimerStarted()).isTrue();
 
     InternalDistributedMember member = new InternalDistributedMember(getIPLiteral(), 12345);
@@ -323,7 +321,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   public void testWaitForViewInstallation() {
     InternalDistributedSystem system = getSystem(new Properties());
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDM();
-    GMSMembershipManager membershipManager = (GMSMembershipManager) dm.getMembershipManager();
+    Distribution membershipManager = dm.getDistribution();
     GMSMembershipView view = membershipManager.getServices().getJoinLeave().getView();
 
     AtomicBoolean waitForViewInstallationDone = new AtomicBoolean();
@@ -339,7 +337,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
     pause(2000);
 
     GMSMembershipView newView = new GMSMembershipView(view, view.getViewId() + 1);
-    membershipManager.getGMSManager().installView(newView);
+    membershipManager.installView(newView);
 
     await()
         .untilAsserted(() -> assertThat(waitForViewInstallationDone.get()).isTrue());

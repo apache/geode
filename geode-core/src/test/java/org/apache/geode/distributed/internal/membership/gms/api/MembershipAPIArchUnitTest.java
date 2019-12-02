@@ -19,9 +19,11 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPac
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.type;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchUnitRunner;
+import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
@@ -29,14 +31,16 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
+import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms.api")
+@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms.api",
+    cacheMode = CacheMode.PER_CLASS,
+    importOptions = ImportOption.DoNotIncludeArchives.class)
 public class MembershipAPIArchUnitTest {
 
   @ArchTest
@@ -65,5 +69,8 @@ public class MembershipAPIArchUnitTest {
               .or(type(InternalDistributedMember[].class))
               .or(type(DistributionMessage.class))
               .or(type(ClusterDistributionManager.class))
-              .or(type(MembershipManager.class)));
+
+              // TODO: This is used by the GMSLocatorAdapter to reach into the locator
+              // part of the services
+              .or(type(Services.class)));
 }

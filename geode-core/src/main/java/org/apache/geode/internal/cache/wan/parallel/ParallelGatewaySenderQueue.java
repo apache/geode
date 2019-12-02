@@ -75,6 +75,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.partitioned.colocation.ColocationLoggerFactory;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
@@ -1797,7 +1798,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
               .setSnapshotInputStream(null).setImageTarget(null)
               .setIsUsedForParallelGatewaySenderQueue(true)
               .setParallelGatewaySender((AbstractGatewaySender) pgSender),
-          statisticsClock);
+          statisticsClock, ColocationLoggerFactory.create());
       this.sender = (AbstractGatewaySender) pgSender;
 
     }

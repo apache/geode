@@ -141,29 +141,29 @@ public class PRQueryWithIndexDistributedTest implements Serializable {
     }
   }
 
-  @SuppressWarnings("unused")
   private static class NotDeserializableAsset implements DataSerializable {
 
-    private int disallowedPid;
+    private int disallowedVmId;
 
+    @SuppressWarnings("unused")
     public NotDeserializableAsset() {
       // nothing
     }
 
-    public NotDeserializableAsset(final int disallowedPid) {
-      this.disallowedPid = disallowedPid;
+    public NotDeserializableAsset(final int disallowedVmId) {
+      this.disallowedVmId = disallowedVmId;
     }
 
     @Override
     public void toData(final DataOutput out) throws IOException {
-      out.writeInt(disallowedPid);
+      out.writeInt(disallowedVmId);
 
     }
 
     @Override
     public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
-      disallowedPid = in.readInt();
-      if (disallowedPid == get().getPid()) {
+      disallowedVmId = in.readInt();
+      if (disallowedVmId == get().getId()) {
         throw new IOException("Cannot deserialize");
       }
     }

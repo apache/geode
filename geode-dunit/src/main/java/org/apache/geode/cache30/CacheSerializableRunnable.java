@@ -17,6 +17,7 @@ package org.apache.geode.cache30;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
 
 /**
  * A helper class that provides the {@link SerializableRunnable} class, but uses a {@link #run2}
@@ -28,36 +29,33 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 public abstract class CacheSerializableRunnable extends SerializableRunnable {
 
   /**
-   * Creates a new <code>CacheSerializableRunnable</code> with the given name
+   * Creates a new {@code CacheSerializableRunnable}.
    */
+  public CacheSerializableRunnable() {
+    // super
+  }
+
+  /**
+   * Creates a new {@code CacheSerializableRunnable} with the given name.
+   *
+   * @deprecated Please pass name as the first argument to {@link VM} invoke or asyncInvoke.
+   */
+  @Deprecated
   public CacheSerializableRunnable(String name) {
     super(name);
   }
 
   /**
-   * Creates a new <code>CacheSerializableRunnable</code> with the given name
-   */
-  public CacheSerializableRunnable(String name, Object[] args) {
-    super(name);
-    this.args = args;
-  }
-
-  /**
    * Invokes the {@link #run2} method and will wrap any {@link CacheException} thrown by
-   * <code>run2</code> in a {@link CacheSerializableRunnableException}.
+   * {@code run2} in a {@link CacheSerializableRunnableException}.
    */
   @Override
   public void run() {
     try {
-      if (args == null) {
-        run2();
-      } else {
-        run3();
-      }
-
-    } catch (CacheException ex) {
-      String s = "While invoking \"" + this + "\"";
-      throw new CacheSerializableRunnableException(s, ex);
+      run2();
+    } catch (CacheException exception) {
+      String message = "While invoking \"" + this + "\"";
+      throw new CacheSerializableRunnableException(message, exception);
     }
   }
 
@@ -65,8 +63,6 @@ public abstract class CacheSerializableRunnable extends SerializableRunnable {
    * A {@link SerializableRunnable#run run} method that may throw a {@link CacheException}.
    */
   public abstract void run2() throws CacheException;
-
-  public void run3() throws CacheException {}
 
   /**
    * An exception that wraps a {@link CacheException}

@@ -14,12 +14,17 @@
  */
 package org.apache.geode.test.version;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class TestVersion implements Comparable {
+public class TestVersion implements Comparable, Serializable {
   private final int major;
   private final int minor;
   private final int patch;
+
+  public static TestVersion valueOf(final String versionString) {
+    return new TestVersion(versionString);
+  }
 
   public TestVersion(String versionString) {
     String[] split = versionString.split("\\.");
@@ -92,5 +97,25 @@ public class TestVersion implements Comparable {
 
   public int compareTo(int major, int minor, int patch) {
     return compareTo(new TestVersion(major, minor, patch));
+  }
+
+  public boolean lessThan(final TestVersion other) {
+    return compareTo(other) < 0;
+  }
+
+  public boolean equals(final TestVersion other) {
+    return compareTo(other) == 0;
+  }
+
+  public boolean greaterThan(final TestVersion other) {
+    return compareTo(other) > 0;
+  }
+
+  public boolean lessThanOrEqualTo(final TestVersion other) {
+    return !greaterThan(other);
+  }
+
+  public boolean greaterThanOrEqualTo(final TestVersion other) {
+    return !lessThan(other);
   }
 }

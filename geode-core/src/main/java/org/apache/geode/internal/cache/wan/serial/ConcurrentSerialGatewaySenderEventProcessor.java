@@ -183,14 +183,14 @@ public class ConcurrentSerialGatewaySenderEventProcessor
       this.ex = e;
     }
 
-    synchronized (this.runningStateLock) {
+    synchronized (this.getRunningStateLock()) {
       if (ex != null) {
         this.setException(ex);
         setIsStopped(true);
       } else {
         setIsStopped(false);
       }
-      this.runningStateLock.notifyAll();
+      this.getRunningStateLock().notifyAll();
     }
 
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
@@ -213,10 +213,10 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   private void waitForRunningStatus() {
     for (SerialGatewaySenderEventProcessor serialProcessor : this.processors) {
-      synchronized (serialProcessor.runningStateLock) {
+      synchronized (serialProcessor.getRunningStateLock()) {
         while (serialProcessor.getException() == null && serialProcessor.isStopped()) {
           try {
-            serialProcessor.runningStateLock.wait();
+            serialProcessor.getRunningStateLock().wait();
           } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
           }
@@ -383,7 +383,6 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   @Override
   protected void registerEventDroppedInPrimaryQueue(EntryEventImpl droppedEvent) {
-    this.getSender().setModifiedEventId(droppedEvent);
     // modified event again for concurrent SGSEP
     int index = Math.abs(getHashCode(((EntryEventImpl) droppedEvent)) % this.processors.size());
     setModifiedEventId(droppedEvent, index);

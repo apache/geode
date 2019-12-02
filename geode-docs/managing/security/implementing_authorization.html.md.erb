@@ -104,7 +104,7 @@ a Client-Server interaction.
 | Region.put(key)                    | DATA:WRITE:RegionName:Key           |
 | Region.replace                     | DATA:WRITE:RegionName:Key           |
 | queryService.newCq                 | DATA:READ:RegionName                |
-| CqQuery.stop                       | DATA:READ                           |
+| CqQuery.stop                       | DATA:MANAGE:QUERY                   |
 
 
 This table classifies the permissions assigned for `gfsh` operations.
@@ -113,6 +113,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 |----------------------------------------|----------------------------------|
 | alter async-event-queue                | CLUSTER:MANAGE:DEPLOY            |
 | alter disk-store                       | CLUSTER:MANAGE:DISK              |
+| alter query-service                    | CLUSTER:MANAGE                   |
 | alter region                           | DATA:MANAGE:RegionName           |
 | alter runtime                          | CLUSTER:MANAGE                   |
 | backup disk-store                      | DATA:READ and CLUSTER:WRITE:DISK |
@@ -140,6 +141,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | describe lucene index                  | CLUSTER:READ:LUCENE              |
 | describe member                        | CLUSTER:READ                     |
 | describe offline-disk-store            | CLUSTER:READ                     |
+| describe query-service                 | CLUSTER:READ                     |
 | describe region                        | CLUSTER:READ                     |
 | destroy async-event-queue              | CLUSTER:MANAGE                   |
 | destroy disk-store                     | CLUSTER:MANAGE:DISK              |
@@ -299,6 +301,5 @@ required of the entity that invokes an execution of the function.
 
 ### <a id="AuthorizeMethodsInQueries" class="no-quick-link"></a>Authorization of Methods Invoked from Queries
 
-Enabling the `SecurityManager` affects queries
-by restricting the methods that a running query may invoke.
-See [Method Invocations](../../developing/query_select/the_where_clause.html#the_where_clause__section_D2F8D17B52B04895B672E2FCD675A676) for details.
+Enabling the `SecurityManager` affects queries by restricting the methods that a running query may invoke.
+See [Method Invocations](../../developing/query_select/the_where_clause.html#the_where_clause__section_D2F8D17B52B04895B672E2FCD675A676) and [Method Invocation Authorizers](method_invocation_authorizers.html) for details.

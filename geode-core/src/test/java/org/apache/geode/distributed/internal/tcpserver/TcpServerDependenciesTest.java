@@ -16,20 +16,22 @@ package org.apache.geode.distributed.internal.tcpserver;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
-import static com.tngtech.archunit.core.domain.JavaClass.Predicates.type;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.junit.ArchUnitRunner;
+import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.DataSerializable;
 
 
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.tcpserver")
+@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.tcpserver",
+    cacheMode = CacheMode.PER_CLASS,
+    importOptions = ImportOption.DoNotIncludeArchives.class)
 public class TcpServerDependenciesTest {
 
   @ArchTest
@@ -45,8 +47,5 @@ public class TcpServerDependenciesTest {
               .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
-              .or(resideInAPackage("org.apache.geode.test.."))
-
-              // TODO - serialization related classes
-              .or(type(DataSerializable.class)));
+              .or(resideInAPackage("org.apache.geode.test..")));
 }

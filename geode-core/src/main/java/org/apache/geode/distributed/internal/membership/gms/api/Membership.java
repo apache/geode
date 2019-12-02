@@ -17,11 +17,15 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 import java.io.NotSerializableException;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
+import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
+import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 
 public interface Membership {
   /**
@@ -61,7 +65,8 @@ public interface Membership {
    *         distributed member
    * @since GemFire 5.1
    */
-  Map<String, Long> getMessageState(DistributedMember member, boolean includeMulticast);
+  Map<String, Long> getMessageState(DistributedMember member, boolean includeMulticast,
+      Map<String, Long> result);
 
   /**
    * Waits for the given communications to reach the associated state
@@ -96,4 +101,230 @@ public interface Membership {
    */
   boolean isShunned(DistributedMember m);
 
+  /**
+   * execute code with the membership view locked so that it doesn't change
+   */
+  <V> V doWithViewLocked(Supplier<V> function);
+
+  /**
+   * Sanity checking, esp. for elder processing. Does the existing member (still) exist in our view?
+   *
+   * @param m the member
+   * @return true if it still exists
+   */
+  boolean memberExists(DistributedMember m);
+
+  /**
+   * Is this manager still connected? If it has not been initialized, this method will return true;
+   * otherwise it indicates whether the connection is stil valid
+   *
+   * @return true if the manager is still connected.
+   */
+  boolean isConnected();
+
+  /**
+   * test method for simulating a sick/dead member
+   */
+  void beSick();
+
+  /**
+   * test method for simulating a sick/dead member
+   */
+  void playDead();
+
+  /**
+   * test method for simulating a sick/dead member
+   */
+  void beHealthy();
+
+  /**
+   * A test hook for healthiness tests
+   */
+  boolean isBeingSick();
+
+  /**
+   * Instructs this manager to shut down
+   *
+   * @param beforeJoined whether we've joined the cluster or not
+   */
+  void disconnect(boolean beforeJoined);
+
+  /**
+   * Instruct this manager to release resources
+   */
+  void shutdown();
+
+  /**
+   * Forcibly shut down the manager and inform its listeners of the failure
+   */
+  void uncleanShutdown(String reason, Exception e);
+
+  /**
+   * A shutdown message has been received from another member
+   */
+  void shutdownMessageReceived(DistributedMember id, String reason);
+
+  /**
+   * Stall the current thread until we are ready to accept view events
+   *
+   * @throws InterruptedException if the thread is interrupted while waiting
+   * @see #startEventProcessing()
+   */
+  void waitForEventProcessing() throws InterruptedException;
+
+  /**
+   * Commence delivering events to my listener.
+   *
+   * @see #waitForEventProcessing()
+   */
+  void startEventProcessing();
+
+  /**
+   * Indicates to the membership manager that the system is shutting down. Typically speaking, this
+   * means that new connection attempts are to be ignored and disconnect failures are to be (more)
+   * tolerated.
+   *
+   */
+  void setShutdown();
+
+  /**
+   * informs the membership manager that a reconnect has been completed
+   */
+  void setReconnectCompleted(boolean reconnectCompleted);
+
+  /**
+   * Determine whether GCS shutdown has commenced
+   *
+   * @return true if it is shutting down
+   */
+  boolean shutdownInProgress();
+
+  /**
+   * Returns true if remoteId is an existing member, otherwise waits till timeout. Returns false if
+   * remoteId is not confirmed to be a member.
+   *
+   * @return true if membership is confirmed, else timeout and false
+   */
+  boolean waitForNewMember(DistributedMember remoteId);
+
+  /**
+   * Release critical resources, avoiding any possibility of deadlock
+   *
+   * @see SystemFailure#emergencyClose()
+   */
+  void emergencyClose();
+
+  /**
+   * Notifies the manager that a member has contacted us who is not in the current membership view
+   *
+   */
+  void addSurpriseMemberForTesting(DistributedMember mbr, long birthTime);
+
+  /**
+   * Initiate SUSPECT processing for the given members. This may be done if the members have not
+   * been responsive. If they fail SUSPECT processing, they will be removed from membership.
+   */
+  void suspectMembers(Set<DistributedMember> members, String reason);
+
+  /**
+   * Initiate SUSPECT processing for the given member. This may be done if the member has not been
+   * responsive. If it fails SUSPECT processing, it will be removed from membership.
+   */
+  void suspectMember(DistributedMember member, String reason);
+
+  /**
+   * if the manager initiated shutdown, this will return the cause of abnormal termination of
+   * membership management in this member
+   *
+   * @return the exception causing shutdown
+   */
+  Throwable getShutdownCause();
+
+  /**
+   * register a test hook for membership events
+   *
+   * @see MembershipTestHook
+   */
+  void registerTestHook(MembershipTestHook mth);
+
+  /**
+   * remove a test hook previously registered with the manager
+   */
+  void unregisterTestHook(MembershipTestHook mth);
+
+  /**
+   * If this member is shunned, ensure that a warning is generated at least once.
+   *
+   * @param mbr the member that may be shunned
+   */
+  void warnShun(DistributedMember mbr);
+
+  boolean addSurpriseMember(DistributedMember mbr);
+
+  /**
+   * if a StartupMessage is going to reject a new member, this should be used to make sure we don't
+   * keep that member on as a "surprise member"
+   *
+   * @param mbr the failed member
+   * @param failureMessage the reason for the failure (e.g., license limitation)
+   */
+  void startupMessageFailed(DistributedMember mbr, String failureMessage);
+
+  /**
+   * @return true if multicast is disabled, or if multicast is enabled and seems to be working
+   */
+  boolean testMulticast();
+
+  /**
+   * Returns true if the member is a surprise member.
+   *
+   * @param m the member in question
+   * @return true if the member is a surprise member
+   */
+  boolean isSurpriseMember(DistributedMember m);
+
+  /**
+   * After a forced-disconnect this method should be used once before attempting to use
+   * quorumCheckForAutoReconnect().
+   *
+   * @return the quorum checker to be used in reconnecting the system
+   */
+  QuorumChecker getQuorumChecker();
+
+  /**
+   * return the coordinator for the view.
+   */
+  DistributedMember getCoordinator();
+
+  /**
+   * return a list of all members excluding those in the process of shutting down
+   */
+  Set<InternalDistributedMember> getMembersNotShuttingDown();
+
+  Services getServices();
+
+  /**
+   * Process a message and pass it on to the {@link MessageListener} that was configured
+   * in {@link MembershipBuilder#setMessageListener(MessageListener)}. This method
+   * takes care of queueing up the message during startup and filtering out messages
+   * from shunned members, before calling the message listener.
+   */
+  void processMessage(DistributionMessage msg);
+
+  void checkCancelled();
+
+  void waitIfPlayingDead();
+
+  boolean isJoining();
+
+  InternalDistributedMember[] getAllMembers();
+
+  /**
+   * TODO - this is very similar to {@link #memberExists(DistributedMember)}. However, this
+   * is looking at {@link GMSJoinLeave#getView()} rather than {@link Membership#getView()}.
+   * Should we remove this in favor of member exists?
+   */
+  boolean hasMember(InternalDistributedMember member);
+
+  void start();
 }

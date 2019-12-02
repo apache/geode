@@ -47,6 +47,7 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -1618,6 +1619,11 @@ public class InitialImageOperation {
       return false;
     }
 
+    @VisibleForTesting
+    public String getRegionPath() {
+      return regionPath;
+    }
+
     @Override
     protected void process(final ClusterDistributionManager dm) {
       final boolean isGiiDebugEnabled = logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERBOSE);
@@ -1707,7 +1713,7 @@ public class InitialImageOperation {
             // wait for the lost member to be gone from this VM's membership and all ops applied to
             // the cache
             try {
-              dm.getMembershipManager().waitForDeparture(this.lostMemberID);
+              dm.getDistribution().waitForDeparture(this.lostMemberID);
               RegionVersionHolder rvh =
                   rgn.getVersionVector().getHolderForMember(this.lostMemberVersionID);
               if (rvh != null) {

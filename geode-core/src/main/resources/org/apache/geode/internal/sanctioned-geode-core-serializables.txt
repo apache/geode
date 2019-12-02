@@ -224,6 +224,9 @@ org/apache/geode/cache/query/internal/parse/ASTUnsupported,true,-119230721804739
 org/apache/geode/cache/query/internal/parse/GemFireAST,true,779964802274305208
 org/apache/geode/cache/query/internal/utils/PDXUtils$1,false
 org/apache/geode/cache/query/internal/utils/PDXUtils$2,false
+org/apache/geode/cache/query/management/configuration/QueryConfigService,true,-6702354810758904467,methodAuthorizer:org/apache/geode/cache/query/management/configuration/QueryConfigService$MethodAuthorizer
+org/apache/geode/cache/query/management/configuration/QueryConfigService$MethodAuthorizer,true,5433617198900520954,className:java/lang/String,parameter:java/util/List
+org/apache/geode/cache/query/management/configuration/QueryConfigService$MethodAuthorizer$Parameter,true,-7316124128610501641,parameterValue:java/lang/String
 org/apache/geode/cache/snapshot/SnapshotOptions$SnapshotFormat,false
 org/apache/geode/cache/util/Gateway$OrderPolicy,false
 org/apache/geode/cache/wan/GatewaySender$OrderPolicy,false
@@ -473,6 +476,7 @@ org/apache/geode/management/internal/cli/domain/RegionDescription,true,646144927
 org/apache/geode/management/internal/cli/domain/RegionDescriptionPerMember,true,1,hostingMember:java/lang/String,isAccessor:boolean,name:java/lang/String,regionAttributesInfo:org/apache/geode/management/internal/cli/domain/RegionAttributesInfo,size:int
 org/apache/geode/management/internal/cli/domain/RegionInformation,true,1,dataPolicy:org/apache/geode/cache/DataPolicy,isRoot:boolean,name:java/lang/String,parentRegion:java/lang/String,path:java/lang/String,scope:org/apache/geode/cache/Scope,subRegionInformationSet:java/util/Set
 org/apache/geode/management/internal/cli/domain/StackTracesPerMember,true,1,memberNameOrId:java/lang/String,stackTraces:byte[],timestamp:java/time/Instant
+org/apache/geode/management/internal/cli/functions/AlterQueryServiceFunction,true,7155576168386556341
 org/apache/geode/management/internal/cli/functions/AlterRuntimeConfigFunction,true,1
 org/apache/geode/management/internal/cli/functions/AsyncEventQueueFunctionArgs,true,-6524494645663740872,asyncEventQueueId:java/lang/String,batchSize:int,batchTimeInterval:int,diskStoreName:java/lang/String,diskSynchronous:boolean,dispatcherThreads:int,enableBatchConflation:boolean,forwardExpirationDestroy:boolean,gatewayEventFilters:java/lang/String[],gatewaySubstitutionFilter:java/lang/String,isParallel:boolean,listenerClassName:java/lang/String,listenerProperties:java/util/Properties,maxQueueMemory:int,orderPolicy:java/lang/String,persistent:boolean
 org/apache/geode/management/internal/cli/functions/CacheRealizationFunction,false
@@ -491,6 +495,7 @@ org/apache/geode/management/internal/cli/functions/CreateRegionFunctionArgs,fals
 org/apache/geode/management/internal/cli/functions/DataCommandFunction,true,1,optimizeForWrite:boolean
 org/apache/geode/management/internal/cli/functions/DeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/DescribeDiskStoreFunction,false
+org/apache/geode/management/internal/cli/functions/DescribeQueryServiceFunction,true,8283480284191516847
 org/apache/geode/management/internal/cli/functions/DestroyAsyncEventQueueFunction,true,-7754359270344102817
 org/apache/geode/management/internal/cli/functions/DestroyAsyncEventQueueFunctionArgs,true,1755045410754561928,id:java/lang/String,ifExists:boolean
 org/apache/geode/management/internal/cli/functions/DestroyDiskStoreFunction,true,1

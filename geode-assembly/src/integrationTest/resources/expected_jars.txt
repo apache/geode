@@ -1,9 +1,10 @@
 HdrHistogram
 HikariCP
 LatencyUtils
+accessors-smart
 animal-sniffer-annotations
 antlr
-aopalliance
+asm
 byte-buddy
 checker-qual
 classgraph
@@ -55,6 +56,8 @@ jgroups
 jline
 jna
 jopt-simple
+json-path
+json-smart
 jsr
 listenablefuture
 log4j-api
@@ -94,7 +97,10 @@ spring-context
 spring-core
 spring-expression
 spring-hateoas
+spring-jcl
+spring-jdbc
 spring-ldap-core
+spring-orm
 spring-oxm
 spring-plugin-core
 spring-plugin-metadata
@@ -113,5 +119,6 @@ springfox-spring-web
 springfox-swagger
 springfox-swagger-common
 springfox-swagger-ui
+spring-jcl
 swagger-annotations
 swagger-models

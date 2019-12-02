@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -64,11 +63,11 @@ import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.FileUploader;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.functions.DownloadJarFunction;
 import org.apache.geode.management.internal.configuration.functions.GetClusterConfigurationFunction;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
+import org.apache.geode.management.internal.util.ManagementUtils;
 
 public class ClusterConfigurationLoader {
 
@@ -91,24 +90,23 @@ public class ClusterConfigurationLoader {
 
     logger.info("deploying jars received from cluster configuration");
     List<String> jarFileNames =
-        response.getJarNames().values().stream().flatMap(Set::stream).collect(Collectors.toList());
+        response.getJarNames().values().stream()
+            .flatMap(Set::stream)
+            .collect(Collectors.toList());
 
     if (jarFileNames != null && !jarFileNames.isEmpty()) {
       logger.info("Got response with jars: {}", jarFileNames.stream().collect(joining(",")));
       JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
       jarDeployer.suspendAll();
       try {
-        List<String> extraJarsOnServer =
-            jarDeployer.findDeployedJars().stream().map(DeployedJar::getJarName)
-                .filter(jarName -> !jarFileNames.contains(jarName)).collect(toList());
-
-        for (String extraJar : extraJarsOnServer) {
-          logger.info("Removing jar not present in cluster configuration: {}", extraJar);
-          jarDeployer.deleteAllVersionsOfJar(extraJar);
-        }
-
-        Map<String, File> stagedJarFiles =
+        Set<File> stagedJarFiles =
             getJarsFromLocator(response.getMember(), response.getJarNames());
+
+        for (File stagedJarFile : stagedJarFiles) {
+          logger.info("Removing old versions of {} in cluster configuration.",
+              stagedJarFile.getName());
+          jarDeployer.deleteAllVersionsOfJar(stagedJarFile.getName());
+        }
 
         List<DeployedJar> deployedJars = jarDeployer.deploy(stagedJarFiles);
 
@@ -120,7 +118,9 @@ public class ClusterConfigurationLoader {
     }
   }
 
-  private Map<String, File> getJarsFromLocator(DistributedMember locator,
+  // download the jars from the locator for the specific groups this server is on (the server
+  // might be on multiple groups.
+  private Set<File> getJarsFromLocator(DistributedMember locator,
       Map<String, Set<String>> jarNames) throws IOException {
     Map<String, File> results = new HashMap<>();
 
@@ -130,32 +130,40 @@ public class ClusterConfigurationLoader {
       }
     }
 
-    return results;
+    return new HashSet<>(results.values());
   }
 
-  public static File downloadJar(DistributedMember locator, String groupName, String jarName)
+  // the returned File will use use jarName as the fileName
+  public File downloadJar(DistributedMember locator, String groupName, String jarName)
+      throws IOException {
+    Path tempDir = FileUploader.createSecuredTempDirectory("deploy-");
+    Path tempJar = Paths.get(tempDir.toString(), jarName);
+
+    downloadTo(locator, groupName, jarName, tempJar);
+
+    return tempJar.toFile();
+  }
+
+  void downloadTo(DistributedMember locator, String groupName, String jarName, Path jarPath)
       throws IOException {
     ResultCollector<RemoteInputStream, List<RemoteInputStream>> rc =
-        (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) CliUtil.executeFunction(
-            new DownloadJarFunction(), new Object[] {groupName, jarName},
-            Collections.singleton(locator));
+        (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) ManagementUtils
+            .executeFunction(
+                new DownloadJarFunction(), new Object[] {groupName, jarName},
+                Collections.singleton(locator));
 
     List<RemoteInputStream> result = rc.getResult();
     if (result.get(0) instanceof Throwable) {
       throw new IllegalStateException(((Throwable) result.get(0)).getMessage());
     }
 
-    Path tempDir = FileUploader.createSecuredTempDirectory("deploy-");
-    Path tempJar = Paths.get(tempDir.toString(), jarName);
-    FileOutputStream fos = new FileOutputStream(tempJar.toString());
+    FileOutputStream fos = new FileOutputStream(jarPath.toString());
 
     InputStream jarStream = RemoteInputStreamClient.wrap(result.get(0));
     IOUtils.copyLarge(jarStream, fos);
 
     fos.close();
     jarStream.close();
-
-    return tempJar.toFile();
   }
 
   /***

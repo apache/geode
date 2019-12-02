@@ -32,7 +32,8 @@ class DUnitHost extends Host {
   DUnitHost(String hostName, ProcessManager processManager, VMEventNotifier vmEventNotifier)
       throws RemoteException {
     super(hostName, vmEventNotifier);
-    this.debuggingVM = new VM(this, -1, new RemoteDUnitVM(), null, null);
+    this.debuggingVM = new VM(this, VersionManager.CURRENT_VERSION, -1, new RemoteDUnitVM(), null,
+        null);
     this.processManager = processManager;
     this.vmEventNotifier = vmEventNotifier;
   }
@@ -42,7 +43,7 @@ class DUnitHost extends Host {
     for (int i = 0; i < numVMs; i++) {
       RemoteDUnitVMIF remote = processManager.getStub(i);
       ProcessHolder processHolder = processManager.getProcessHolder(i);
-      addVM(i, remote, processHolder, processManager);
+      addVM(i, VersionManager.CURRENT_VERSION, remote, processHolder, processManager);
     }
 
     if (launchLocator) {
@@ -82,8 +83,6 @@ class DUnitHost extends Host {
     if (n < getVMCount()) {
       VM current = super.getVM(n);
       if (!current.getVersion().equals(version)) {
-        System.out.println(
-            "Bouncing VM" + n + " from version " + current.getVersion() + " to " + version);
         current.bounce(version);
       }
       return current;
@@ -100,13 +99,15 @@ class DUnitHost extends Host {
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
 
         for (int i = oldVMCount; i < n; i++) {
-          addVM(i, processManager.getStub(i), processManager.getProcessHolder(i), processManager);
+          addVM(i, VersionManager.CURRENT_VERSION, processManager.getStub(i),
+              processManager.getProcessHolder(i), processManager);
         }
 
         // now create the one we really want
         processManager.launchVM(version, n, false);
         processManager.waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
-        addVM(n, processManager.getStub(n), processManager.getProcessHolder(n), processManager);
+        addVM(n, version, processManager.getStub(n), processManager.getProcessHolder(n),
+            processManager);
 
       } catch (IOException | InterruptedException | NotBoundException e) {
         throw new RuntimeException("Could not dynamically launch vm + " + n, e);
