@@ -22,12 +22,12 @@ limitations under the License.
 **Note:** This feature is experimental and is subject to change in future releases of <%=vars.product_name_long%>.
 
 The cluster management service enables you to change the configuration of
-the cluster (create/destroy regions, indices or gateway receivers/senders etc), and have these
+the cluster (for example, create/destroy regions, indexes, or gateway receivers/senders), and have these
 changes replicated on all the applicable servers and persisted in the cluster configuration service.
 
 With the cluster management service, you can:
 
-- Create regions/indices on the fly.
+- Create regions/indexes on the fly.
 
 - Persist the configuration and apply it to the cluster, so when a new node joins, it has the configuration, and when the server restarts, it has the configuration.
 
@@ -48,8 +48,8 @@ The cluster management service is available as a [REST API](#cms-reference) and 
 
 ## <a id='cms-reference'>Cluster Management Service REST API</a>
 
-The cluster management service REST API adheres to standard REST semantics, so users can use POST, PATCH, DELETE and GET to create,
-update, delete and read, respectively.
+The cluster management service REST API adheres to standard REST semantics, so users can use POST, PATCH, DELETE, and GET to create,
+update, delete, and read, respectively.
 
 This version of <%=vars.product_name%> uses the [1.11.0 Management REST API](https://cwiki.apache.org/confluence/display/GEODE/1.11.0+Management+REST+API+-+v1).
 As mentioned, the feature is experimental and still undergoing revision.
