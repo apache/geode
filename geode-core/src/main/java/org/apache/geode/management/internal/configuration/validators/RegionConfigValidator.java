@@ -100,53 +100,36 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
     }
 
     // validate eviction
-    Region.Eviction eviction = config.getEviction();
-    if (eviction != null) {
-      if (eviction.getType() != null) {
-        switch (eviction.getType()) {
-          case ENTRY_COUNT:
-            if (eviction.getMemorySizeMb() != null) {
-              throw new IllegalArgumentException(
-                  "MemorySizeMb must not be set for: " + eviction.getType());
-            }
-            if (eviction.getEntryCount() == null) {
-              throw new IllegalArgumentException(
-                  "EntryCount must be set for: " + eviction.getType());
-            }
-            if (eviction.getObjectSizer() != null) {
-              throw new IllegalArgumentException(
-                  "ObjectSizer must not be set for: " + eviction.getType());
-            }
-            break;
-          case MEMORY_SIZE:
-            if (eviction.getEntryCount() != null) {
-              throw new IllegalArgumentException(
-                  "EntryCount must not be set for: " + eviction.getType());
-            }
-            if (eviction.getMemorySizeMb() == null) {
-              throw new IllegalArgumentException(
-                  "MemorySizeMb must be set for: " + eviction.getType());
-            }
-            break;
-          case HEAP_PERCENTAGE:
-            if (eviction.getEntryCount() != null) {
-              throw new IllegalArgumentException(
-                  "EntryCount must not be set for: " + eviction.getType());
-            }
-            if (eviction.getMemorySizeMb() != null) {
-              throw new IllegalArgumentException(
-                  "MemorySizeMb must not be set for: " + eviction.getType());
-            }
-            break;
+    validateEviction(config.getEviction());
+  }
+
+  private void validateEviction(Region.Eviction eviction) {
+    if (eviction == null) {
+      return;
+    }
+
+    Region.EvictionType type = eviction.getType();
+    if (type == null) {
+      throw new IllegalArgumentException("Eviction type must be set.");
+    }
+
+    switch (type) {
+      case ENTRY_COUNT:
+        if (eviction.getEntryCount() == null) {
+          throw new IllegalArgumentException(
+              "EntryCount must be set for: " + type);
         }
-      } else {
-        if (eviction.getEntryCount() != null && eviction.getMemorySizeMb() != null) {
-          throw new IllegalArgumentException("EntryCount and MemorySizeMb must not both be set");
+        if (eviction.getObjectSizer() != null) {
+          throw new IllegalArgumentException(
+              "ObjectSizer must not be set for: " + type);
         }
-        if (eviction.getEntryCount() != null && eviction.getObjectSizer() != null) {
-          throw new IllegalArgumentException("ObjectSizer must not be set with EntryCount");
+        break;
+      case MEMORY_SIZE:
+        if (eviction.getMemorySizeMb() == null) {
+          throw new IllegalArgumentException(
+              "MemorySizeMb must be set for: " + type);
         }
-      }
+        break;
     }
   }
 

@@ -105,7 +105,6 @@ public class RegionTest {
         + "  \"name\": \"region1\",\n"
         + "  \"type\": \"PARTITION\",\n"
         + "  \"eviction\": {\n"
-        + "    \"type\": \"ENTRY_COUNT\",\n"
         + "    \"entryCount\": 100,\n"
         + "    \"action\": \"OVERFLOW_TO_DISK\"\n"
         + "  }\n"
@@ -125,9 +124,26 @@ public class RegionTest {
     assertThat(json2).contains("\"name\":\"region1\"");
     assertThat(json2).contains("\"type\":\"ENTRY_COUNT\"");
     assertThat(json2).contains("\"entryCount\":100");
+    assertThat(json2).doesNotContain("limit");
     assertThat(json2).contains("\"action\":\"OVERFLOW_TO_DISK\"");
-
     mapper.readValue(json2, Region.class);
+  }
+
+  @Test
+  public void readEviction() throws Exception {
+    String json = "{\"type\":\"ENTRY_COUNT\",\"action\":\"OVERFLOW_TO_DISK\",\"entryCount\":100}";
+    Region.Eviction eviction = mapper.readValue(json, Region.Eviction.class);
+    assertThat(eviction.getEntryCount()).isEqualTo(100);
+    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
+  }
+
+  @Test
+  public void heapIgnoreLimit() throws Exception {
+    Region.Eviction eviction =
+        new Region.Eviction(Region.EvictionType.HEAP_PERCENTAGE, null, 10, null);
+    assertThat(eviction.getType()).isEqualTo(Region.EvictionType.HEAP_PERCENTAGE);
+    assertThat(eviction.getEntryCount()).isNull();
+    assertThat(eviction.getMemorySizeMb()).isNull();
   }
 
   @Test

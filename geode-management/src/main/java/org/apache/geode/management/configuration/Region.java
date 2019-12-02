@@ -239,18 +239,15 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
   public static class Eviction implements Serializable {
     private EvictionType type;
     private EvictionAction action;
-    private Integer entryCount;
-    private Integer memorySizeMb;
+    private Integer limit;
     private String objectSizer;
 
     public Eviction() {}
 
-    public Eviction(EvictionType type, EvictionAction action, Integer entryCount,
-        Integer memorySizeMb, String objectSizer) {
+    public Eviction(EvictionType type, EvictionAction action, Integer limit, String objectSizer) {
       this.type = type;
       this.action = action;
-      this.entryCount = entryCount;
-      this.memorySizeMb = memorySizeMb;
+      this.limit = limit;
       this.objectSizer = objectSizer;
     }
 
@@ -271,19 +268,27 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
     }
 
     public Integer getEntryCount() {
-      return entryCount;
+      if (type == EvictionType.ENTRY_COUNT) {
+        return limit;
+      }
+      return null;
     }
 
     public void setEntryCount(Integer entryCount) {
-      this.entryCount = entryCount;
+      type = EvictionType.ENTRY_COUNT;
+      this.limit = entryCount;
     }
 
     public Integer getMemorySizeMb() {
-      return memorySizeMb;
+      if (type == EvictionType.MEMORY_SIZE) {
+        return limit;
+      }
+      return null;
     }
 
     public void setMemorySizeMb(Integer memorySizeMb) {
-      this.memorySizeMb = memorySizeMb;
+      type = EvictionType.MEMORY_SIZE;
+      this.limit = memorySizeMb;
     }
 
     public String getObjectSizer() {

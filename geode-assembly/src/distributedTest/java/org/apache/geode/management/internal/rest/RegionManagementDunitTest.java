@@ -289,7 +289,7 @@ public class RegionManagementDunitTest {
     region.setName(regionName);
     region.setType(RegionType.REPLICATE);
     region.setEviction(new Region.Eviction(Region.EvictionType.ENTRY_COUNT,
-        Region.EvictionAction.OVERFLOW_TO_DISK, 100, null, null));
+        Region.EvictionAction.OVERFLOW_TO_DISK, 100, null));
 
     assertManagementResult(cms.create(region)).isSuccessful();
 

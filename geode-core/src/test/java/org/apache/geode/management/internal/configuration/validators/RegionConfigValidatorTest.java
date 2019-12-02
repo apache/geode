@@ -201,7 +201,19 @@ public class RegionConfigValidatorTest {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
     config.setEviction(new Region.Eviction());
-    validator.validate(CacheElementOperation.CREATE, config);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Eviction type must be set.");
+  }
+
+  @Test
+  public void evictionTypeNotNull() {
+    config.setName("test");
+    config.setType(RegionType.REPLICATE);
+    config.setEviction(new Region.Eviction(null, null, 10, "ObjectSizer"));
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Eviction type must be set.");
   }
 
   @Test
@@ -209,35 +221,15 @@ public class RegionConfigValidatorTest {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
     config.setEviction(
-        new Region.Eviction(Region.EvictionType.HEAP_PERCENTAGE, null, null, null, null));
+        new Region.Eviction(Region.EvictionType.HEAP_PERCENTAGE, null, null, null));
     validator.validate(CacheElementOperation.CREATE, config);
-  }
-
-  @Test
-  public void evictionHeapSad() {
-    config.setName("test");
-    config.setType(RegionType.REPLICATE);
-    config.setEviction(
-        new Region.Eviction(Region.EvictionType.HEAP_PERCENTAGE, null, 10, null, null));
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("EntryCount must not be set for: HEAP_PERCENTAGE");
-
-    config.setEviction(
-        new Region.Eviction(Region.EvictionType.HEAP_PERCENTAGE, null, null, 10, null));
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("MemorySizeMb must not be set for: HEAP_PERCENTAGE");
   }
 
   @Test
   public void evictionEntryCountHappy() {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
-    config.setEviction(new Region.Eviction(Region.EvictionType.ENTRY_COUNT, null, 10, null, null));
-    validator.validate(CacheElementOperation.CREATE, config);
-
-    config.setEviction(new Region.Eviction(null, null, 10, null, null));
+    config.setEviction(new Region.Eviction(Region.EvictionType.ENTRY_COUNT, null, 10, null));
     validator.validate(CacheElementOperation.CREATE, config);
   }
 
@@ -246,7 +238,7 @@ public class RegionConfigValidatorTest {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
     config
-        .setEviction(new Region.Eviction(Region.EvictionType.ENTRY_COUNT, null, null, null, null));
+        .setEviction(new Region.Eviction(Region.EvictionType.ENTRY_COUNT, null, null, null));
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("EntryCount must be set for: ENTRY_COUNT");
@@ -256,10 +248,7 @@ public class RegionConfigValidatorTest {
   public void evictionMaxMemoryMbHappy() {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
-    config.setEviction(new Region.Eviction(Region.EvictionType.MEMORY_SIZE, null, null, 10, null));
-    validator.validate(CacheElementOperation.CREATE, config);
-
-    config.setEviction(new Region.Eviction(null, null, null, 10, null));
+    config.setEviction(new Region.Eviction(Region.EvictionType.MEMORY_SIZE, null, 10, null));
     validator.validate(CacheElementOperation.CREATE, config);
   }
 
@@ -268,7 +257,7 @@ public class RegionConfigValidatorTest {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
     config
-        .setEviction(new Region.Eviction(Region.EvictionType.MEMORY_SIZE, null, null, null, null));
+        .setEviction(new Region.Eviction(Region.EvictionType.MEMORY_SIZE, null, null, null));
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("MemorySizeMb must be set for: MEMORY_SIZE");
@@ -279,17 +268,10 @@ public class RegionConfigValidatorTest {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
     config.setEviction(
-        new Region.Eviction(Region.EvictionType.MEMORY_SIZE, null, null, 10, "ObjectSizer"));
+        new Region.Eviction(Region.EvictionType.MEMORY_SIZE, null, 10, "ObjectSizer"));
     validator.validate(CacheElementOperation.CREATE, config);
-
-    config.setEviction(new Region.Eviction(null, null, null, 10, "ObjectSizer"));
-    validator.validate(CacheElementOperation.CREATE, config);
-
     config.setEviction(
-        new Region.Eviction(Region.EvictionType.HEAP_PERCENTAGE, null, null, null, "ObjectSizer"));
-    validator.validate(CacheElementOperation.CREATE, config);
-
-    config.setEviction(new Region.Eviction(null, null, null, null, "ObjectSizer"));
+        new Region.Eviction(Region.EvictionType.HEAP_PERCENTAGE, null, null, "ObjectSizer"));
     validator.validate(CacheElementOperation.CREATE, config);
   }
 
@@ -298,33 +280,9 @@ public class RegionConfigValidatorTest {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
     config.setEviction(
-        new Region.Eviction(Region.EvictionType.ENTRY_COUNT, null, 10, null, "ObjectSizer"));
+        new Region.Eviction(Region.EvictionType.ENTRY_COUNT, null, 10, "ObjectSizer"));
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("ObjectSizer must not be set for: ENTRY_COUNT");
-    config.setEviction(new Region.Eviction(null, null, 10, null, "ObjectSizer"));
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("ObjectSizer must not be set with EntryCount");
-  }
-
-  @Test
-  public void conflictingSizeValues() {
-    config.setName("test");
-    config.setType(RegionType.REPLICATE);
-    config.setEviction(new Region.Eviction(Region.EvictionType.ENTRY_COUNT, null, 10, 10, null));
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("MemorySizeMb must not be set for: ENTRY_COUNT");
-
-    config.setEviction(new Region.Eviction(Region.EvictionType.MEMORY_SIZE, null, 10, 10, null));
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("EntryCount must not be set for: MEMORY_SIZE");
-
-    config.setEviction(new Region.Eviction(null, null, 10, 10, null));
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("EntryCount and MemorySizeMb must not both be set");
   }
 }

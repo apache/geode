@@ -171,7 +171,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
   Region.Eviction convertFrom(
       RegionAttributesType.EvictionAttributes.LruMemorySize evictionAttributes) {
     return new Region.Eviction(Region.EvictionType.MEMORY_SIZE,
-        getEvictionAction(evictionAttributes.getAction()), null,
+        getEvictionAction(evictionAttributes.getAction()),
         Integer.parseInt(evictionAttributes.getMaximum()), evictionAttributes.getClassName());
   }
 
@@ -179,13 +179,13 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
       RegionAttributesType.EvictionAttributes.LruEntryCount evictionAttributes) {
     return new Region.Eviction(Region.EvictionType.ENTRY_COUNT,
         getEvictionAction(evictionAttributes.getAction()),
-        Integer.parseInt(evictionAttributes.getMaximum()), null, null);
+        Integer.parseInt(evictionAttributes.getMaximum()), null);
   }
 
   Region.Eviction convertFrom(
       RegionAttributesType.EvictionAttributes.LruHeapPercentage evictionAttributes) {
     return new Region.Eviction(Region.EvictionType.HEAP_PERCENTAGE,
-        getEvictionAction(evictionAttributes.getAction()), null, null,
+        getEvictionAction(evictionAttributes.getAction()), null,
         evictionAttributes.getClassName());
   }
 
