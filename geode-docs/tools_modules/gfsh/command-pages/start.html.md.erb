@@ -112,22 +112,23 @@ Note: By default, gateway senders are configured to start automatically. Manual 
 **Syntax:**
 
 ``` pre
-start gateway-sender --id=value [--groups=value(,value)*] [--members=value(,value)*]
+start gateway-sender --id=value [--groups=value(,value)*] [--members=value(,value)*] [--cleanQueues(=value)]
 ```
 **Parameters, start gateway-sender**
 
-| Name                                           | Description                                               |
-|------------------------------------------------|-----------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-id</span>     | *Required.* ID of the GatewaySender.                      |
-| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to start the Gateway Sender. |
-| <span class="keyword parmname">\\-\\-members</span> | Member(s) on which to start the Gateway Sender                   |
-
+| Name                                           | Description                                               | Default  |
+|------------------------------------------------|-----------------------------------------------------------|          |
+| <span class="keyword parmname">\\-\\-id</span>     | *Required.* ID of the GatewaySender.                      |          |
+| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to start the Gateway Sender. |          |
+| <span class="keyword parmname">\\-\\-members</span> | Member(s) on which to start the Gateway Sender                   |          |
+| <span class="keyword parmname">\\-\\-cleanQueues</span> | Option to clean existing queue at start of the Gateway Sender.   | false   |
 **Example Commands:**
 
 ``` pre
 start gateway-sender --id=sender1-NY
 start gateway-sender --id=sender1-NY --members=server1
 start gateway-sender --id=sender1-NY --groups=MemberGroup1,MemberGroup2
+start gateway-sender --id=sender1-NY --cleanQueues
 ```
 
 **Sample Output:**
