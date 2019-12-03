@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTE
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
@@ -34,6 +33,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -41,12 +41,10 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -164,8 +162,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     locator.stop();
   }
 
-  private static int createServerWithLocator(String locString, int redundantCopies,
-      int totalNoofBuckets) {
+  private static int createServerWithLocator(String locString) {
 
     Properties props = new Properties();
     props.setProperty(LOCATORS, locString);
@@ -182,11 +179,11 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
       Assertions.fail("Failed to start server ", e);
     }
 
-    testRegion = createBasicPartitionedRegion(redundantCopies, totalNoofBuckets, -1, PR_NAME);
+    testRegion = createBasicPartitionedRegion(0, 8, -1);
 
-    customerRegion = createColocatedRegion(ORDER, redundantCopies, totalNoofBuckets, CUSTOMER);
+    customerRegion = createColocatedRegion(ORDER, 0, 8, CUSTOMER);
 
-    shipmentRegion = createColocatedRegion(SHIPMENT, redundantCopies, totalNoofBuckets, ORDER);
+    shipmentRegion = createColocatedRegion(SHIPMENT, 0, 8, ORDER);
 
     return server.getPort();
   }
@@ -422,8 +419,9 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     testRegion.get(1);
     testRegion.get(2);
     testRegion.get(3);
-    Wait.pause(5000);
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    await().atLeast(5000, TimeUnit.MILLISECONDS)
+        .until(() -> !cms.isRefreshMetadataTestOnly());
+
   }
 
   @Test
@@ -465,17 +463,17 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void test_SingleHopWithHAWithLocator() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    final String host0 = NetworkUtils.getServerHostName(member3.getHost());
+    final String host0 = NetworkUtils.getServerHostName();
     final String locator = host0 + "[" + port3 + "]";
     member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.startLocatorInVM(port3));
     try {
 
       member0
-          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator, 0, 8));
+          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator));
       member1
-          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator, 0, 8));
+          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator));
       member2
-          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator, 0, 8));
+          .invoke(() -> PartitionedRegionSingleHopDUnitTest.createServerWithLocator(locator));
 
       createClientWithLocator(host0, port3);
 
@@ -523,8 +521,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     testRegion.get(1);
     testRegion.get(2);
     testRegion.get(3);
-    Wait.pause(5000);
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    await().atLeast(5000, TimeUnit.MILLISECONDS).until(() -> !cms.isRefreshMetadataTestOnly());
     printMetadata();
 
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
@@ -532,8 +529,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     testRegion.get(1);
     testRegion.get(2);
     testRegion.get(3);
-    Wait.pause(5000);
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    await().atLeast(5000, TimeUnit.MILLISECONDS).until(() -> !cms.isRefreshMetadataTestOnly());
   }
 
   @Test
@@ -568,9 +564,9 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
     testRegion.put(3, "create3");
     final boolean metadataRefreshed_get4 = cms.isRefreshMetadataTestOnly();
-    Wait.pause(5000);
-    assertFalse(metadataRefreshed_get1 || metadataRefreshed_get2 || metadataRefreshed_get3
-        || metadataRefreshed_get4);
+    await().atLeast(5000, TimeUnit.MILLISECONDS).until(() -> !(metadataRefreshed_get1
+        || metadataRefreshed_get2 || metadataRefreshed_get3
+        || metadataRefreshed_get4));
 
     printMetadata();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
@@ -578,8 +574,9 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     testRegion.put(1, "create1");
     testRegion.put(2, "create2");
     testRegion.put(3, "create3");
-    Wait.pause(5000);
-    assertFalse(cms.isRefreshMetadataTestOnly());
+
+    await().atLeast(5000, TimeUnit.MILLISECONDS).until(() -> !cms.isRefreshMetadataTestOnly());
+
   }
 
   @Test
@@ -603,8 +600,8 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     testRegion.destroy(1);
     testRegion.destroy(2);
     testRegion.destroy(3);
-    Wait.pause(5000);
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    await().atLeast(5000, TimeUnit.MILLISECONDS).until(() -> !cms.isRefreshMetadataTestOnly());
+
   }
 
   @Test
@@ -644,7 +641,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testMetadataFetchOnlyThroughFunctions() throws Exception {
+  public void testMetadataFetchOnlyThroughFunctions() {
     // Workaround for 52004
     IgnoredException.addIgnoredException("InternalFunctionInvocationTargetException");
     Integer port0 =
@@ -667,16 +664,15 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
 
-    long start = System.currentTimeMillis();
-    do {
-      if ((prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() != 4)) {
+    await().pollDelay(1000, TimeUnit.MILLISECONDS).until(() -> {
+      if (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() != 4) {
         // waiting if there is another thread holding the lock
-        Thread.sleep(1000);
         cms.getClientPRMetadata((LocalRegion) testRegion);
+        return false;
       } else {
-        break;
+        return true;
       }
-    } while (System.currentTimeMillis() - start < 60000);
+    });
 
     await()
         .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == 4));
@@ -714,10 +710,10 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     Integer port3 = member3.invoke(() -> createServer(3, 4));
     createClient(port0, port1, port2, port3);
     put();
-    member0.invoke(() -> waitForLocalBucketsCreation(4));
-    member1.invoke(() -> waitForLocalBucketsCreation(4));
-    member2.invoke(() -> waitForLocalBucketsCreation(4));
-    member3.invoke(() -> waitForLocalBucketsCreation(4));
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
 
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion) testRegion);
@@ -746,10 +742,10 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     member0.invoke(() -> startServerOnPort(port0));
     member1.invoke(() -> startServerOnPort(port1));
     put();
-    member0.invoke(() -> waitForLocalBucketsCreation(4));
-    member1.invoke(() -> waitForLocalBucketsCreation(4));
-    member2.invoke(() -> waitForLocalBucketsCreation(4));
-    member3.invoke(() -> waitForLocalBucketsCreation(4));
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
 
     ((GemFireCacheImpl) cache).getClientMetadataService();
     await().alias("bucket copies are not created").until(() -> {
@@ -817,8 +813,8 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    member2.invoke(() -> waitForLocalBucketsCreation(4));
-    member3.invoke(() -> waitForLocalBucketsCreation(4));
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
 
     cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion) testRegion);
@@ -932,20 +928,20 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testClientMetadataForPersistentPrs() throws Exception {
     Integer port0 = member0
-        .invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer(3, 4));
+        .invoke(PartitionedRegionSingleHopDUnitTest::createPersistentPrsAndServer);
     Integer port1 = member1
-        .invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer(3, 4));
+        .invoke(PartitionedRegionSingleHopDUnitTest::createPersistentPrsAndServer);
     Integer port2 = member2
-        .invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer(3, 4));
+        .invoke(PartitionedRegionSingleHopDUnitTest::createPersistentPrsAndServer);
     Integer port3 = member3
-        .invoke(() -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServer(3, 4));
+        .invoke(PartitionedRegionSingleHopDUnitTest::createPersistentPrsAndServer);
 
     member3.invoke(PartitionedRegionSingleHopDUnitTest::putIntoPartitionedRegions);
 
-    member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
-    member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.waitForLocalBucketsCreation(4));
+    member0.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member1.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member2.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
+    member3.invoke(PartitionedRegionSingleHopDUnitTest::waitForLocalBucketsCreation);
 
     createClient(port0, port1, port2, port3);
     await().until(this::fetchAndValidateMetadata);
@@ -956,17 +952,17 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     member3.invoke(PartitionedRegionSingleHopDUnitTest::closeCacheAndDisconnect);
     Wait.pause(1000); // let client detect that servers are dead through ping
     AsyncInvocation m3 = member3.invokeAsync(
-        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(3, 4, port3));
+        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(port3));
     AsyncInvocation m2 = member2.invokeAsync(
-        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(3, 4, port2));
+        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(port2));
     AsyncInvocation m1 = member1.invokeAsync(
-        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(3, 4, port1));
+        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(port1));
     AsyncInvocation m0 = member0.invokeAsync(
-        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(3, 4, port0));
-    m3.join();
-    m2.join();
-    m1.join();
-    m0.join();
+        () -> PartitionedRegionSingleHopDUnitTest.createPersistentPrsAndServerOnPort(port0));
+    m3.get();
+    m2.get();
+    m1.get();
+    m0.get();
     fetchAndValidateMetadata();
   }
 
@@ -1026,13 +1022,13 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private static void waitForLocalBucketsCreation(final int numBuckets) {
+  private static void waitForLocalBucketsCreation() {
     final PartitionedRegion pr = (PartitionedRegion) testRegion;
 
     await().alias("bucket copies are not created, the total number of buckets expected are "
-        + numBuckets + " but the total num of buckets are "
+        + 4 + " but the total num of buckets are "
         + pr.getDataStore().getAllLocalBuckets().size())
-        .until(() -> pr.getDataStore().getAllLocalBuckets().size() == numBuckets);
+        .until(() -> pr.getDataStore().getAllLocalBuckets().size() == 4);
   }
 
   private void verifyDeadServer(Map<String, ClientPartitionAdvisor> regionMetaData, Region region,
@@ -1045,8 +1041,8 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
     for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
       List servers = (List) entry.getValue();
-      assertFalse(servers.contains(sl0));
-      assertFalse(servers.contains(sl1));
+      assertThat(servers.contains(sl0)).isFalse();
+      assertThat(servers.contains(sl1)).isFalse();
     }
   }
 
@@ -1074,7 +1070,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
   private static int createAccessorServer() {
     final int redundantCopies = 1;
-    final int totalNoofBuckets = 4;
+    final int totalNumberOfBuckets = 4;
     final int localMaxMemory = 0;
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
@@ -1088,49 +1084,53 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
       Assertions.fail("Failed to start server ", e);
     }
 
-    createBasicPartitionedRegion(redundantCopies, totalNoofBuckets, localMaxMemory, PR_NAME);
+    createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets, localMaxMemory);
 
     customerRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, CUSTOMER, null,
+        createColocatedPersistentRegionForTest(redundantCopies, totalNumberOfBuckets, CUSTOMER,
+            null,
             localMaxMemory);
 
     orderRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, ORDER, CUSTOMER,
+        createColocatedPersistentRegionForTest(redundantCopies, totalNumberOfBuckets, ORDER,
+            CUSTOMER,
             localMaxMemory);
 
     orderRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, SHIPMENT, ORDER,
+        createColocatedPersistentRegionForTest(redundantCopies, totalNumberOfBuckets, SHIPMENT,
+            ORDER,
             localMaxMemory);
 
-    replicatedRegion = cache.createRegion("rr", new AttributesFactory<>().create());
+    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
+    replicatedRegion = regionFactory.create("rr");
     return port;
   }
 
   private static <K, V> Region<K, V> createBasicPartitionedRegion(int redundantCopies,
-      int totalNoofBuckets,
-      int localMaxMemory,
-      final String regionName) {
+      int totalNumberOfBuckets,
+      int localMaxMemory) {
     PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumberOfBuckets)
         .setLocalMaxMemory(localMaxMemory);
     RegionFactory<K, V> regionFactory = cache.createRegionFactory();
 
     regionFactory.setPartitionAttributes(paf.create());
     regionFactory.setConcurrencyChecksEnabled(true);
 
-    Region<K, V> region = regionFactory.create(regionName);
+    Region<K, V> region = regionFactory.create(PartitionedRegionSingleHopDUnitTest.PR_NAME);
     assertThat(region).isNotNull();
     logger
-        .info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
+        .info("Partitioned Region " + PartitionedRegionSingleHopDUnitTest.PR_NAME
+            + " created Successfully :" + region.toString());
     return region;
   }
 
   private static <K, V> Region<K, V> createColocatedRegion(String regionName, int redundantCopies,
-      int totalNoofBuckets,
+      int totalNumberOfBuckets,
       String colocatedRegionName) {
 
     PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumberOfBuckets)
         .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
 
     if (colocatedRegionName != null) {
@@ -1146,7 +1146,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     return region;
   }
 
-  private static int createServer(int redundantCopies, int totalNoofBuckets) {
+  private static int createServer(int redundantCopies, int totalNumberOfBuckets) {
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
@@ -1159,41 +1159,41 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
       Assertions.fail("Failed to start server ", e);
     }
 
-    testRegion = createBasicPartitionedRegion(redundantCopies, totalNoofBuckets, -1, PR_NAME);
+    testRegion = createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets, -1);
 
     // creating colocated Regions
-    customerRegion = createColocatedRegion(CUSTOMER, redundantCopies, totalNoofBuckets, null);
+    customerRegion = createColocatedRegion(CUSTOMER, redundantCopies, totalNumberOfBuckets, null);
 
-    orderRegion = createColocatedRegion(ORDER, redundantCopies, totalNoofBuckets, CUSTOMER);
+    orderRegion = createColocatedRegion(ORDER, redundantCopies, totalNumberOfBuckets, CUSTOMER);
 
-    shipmentRegion = createColocatedRegion(ORDER, redundantCopies, totalNoofBuckets, CUSTOMER);
+    shipmentRegion = createColocatedRegion(ORDER, redundantCopies, totalNumberOfBuckets, CUSTOMER);
 
-    replicatedRegion = cache.createRegion("rr", new AttributesFactory<>().create());
+    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
+    replicatedRegion = regionFactory.create("rr");
 
     return port;
   }
 
-  private static int createPersistentPrsAndServer(int redundantCopies, int totalNoofBuckets) {
+  private static int createPersistentPrsAndServer() {
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
-    DiskStore disk = cache.findDiskStore("disk");
-    if (disk == null) {
-      disk = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
+    if (cache.findDiskStore("disk") == null) {
+      cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
     }
-    testRegion = createBasicPersistentPartitionRegion(redundantCopies, totalNoofBuckets, PR_NAME);
+    testRegion = createBasicPersistentPartitionRegion();
 
     // creating colocated Regions
 
     customerRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, CUSTOMER, null,
+        createColocatedPersistentRegionForTest(3, 4, CUSTOMER, null,
             -1);
 
     orderRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, ORDER, CUSTOMER,
+        createColocatedPersistentRegionForTest(3, 4, ORDER, CUSTOMER,
             -1);
 
     orderRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, SHIPMENT, ORDER,
+        createColocatedPersistentRegionForTest(3, 4, SHIPMENT, ORDER,
             -1);
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
@@ -1210,32 +1210,31 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     return port;
   }
 
-  private static <K, V> Region<K, V> createBasicPersistentPartitionRegion(int redundantCopies,
-      int totalNoofBuckets,
-      final String regionName) {
+  private static <K, V> Region<K, V> createBasicPersistentPartitionRegion() {
     PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets);
+    paf.setRedundantCopies(3).setTotalNumBuckets(4);
 
     RegionFactory<K, V> regionFactory = cache.createRegionFactory();
     regionFactory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
     regionFactory.setDiskStoreName("disk");
     regionFactory.setPartitionAttributes(paf.create());
 
-    Region<K, V> region = regionFactory.create(regionName);
+    Region<K, V> region = regionFactory.create(PartitionedRegionSingleHopDUnitTest.PR_NAME);
     assertThat(region).isNotNull();
     logger
-        .info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
+        .info("Partitioned Region " + PartitionedRegionSingleHopDUnitTest.PR_NAME
+            + " created Successfully :" + region.toString());
     return region;
   }
 
   private static <K, V> Region<K, V> createColocatedPersistentRegionForTest(int redundantCopies,
-      int totalNoofBuckets,
+      int totalNumberOfBuckets,
       final String regionName,
       String colocatedRegionName,
       int localMaxMemory) {
     PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
 
-    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumberOfBuckets)
         .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
 
     if (localMaxMemory > -1) {
@@ -1258,27 +1257,25 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     return region;
   }
 
-  private static int createPersistentPrsAndServerOnPort(int redundantCopies, int totalNoofBuckets,
-      int port) {
+  private static int createPersistentPrsAndServerOnPort(int port) {
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
-    DiskStore disk = cache.findDiskStore("disk");
-    if (disk == null) {
-      disk = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
+    if (cache.findDiskStore("disk") == null) {
+      cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
     }
-    testRegion = createBasicPersistentPartitionRegion(redundantCopies, totalNoofBuckets, PR_NAME);
+    testRegion = createBasicPersistentPartitionRegion();
 
     // creating colocated Regions
     customerRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, CUSTOMER, null,
+        createColocatedPersistentRegionForTest(3, 4, CUSTOMER, null,
             -1);
 
     orderRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, ORDER, CUSTOMER,
+        createColocatedPersistentRegionForTest(3, 4, ORDER, CUSTOMER,
             -1);
 
     orderRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, SHIPMENT, ORDER,
+        createColocatedPersistentRegionForTest(3, 4, SHIPMENT, ORDER,
             -1);
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
@@ -1309,22 +1306,25 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
   private static void createPeer() {
     int redundantCopies = 1;
-    int totalNoofBuckets = 4;
+    int totalNumberOfBuckets = 4;
     PartitionedRegionSingleHopDUnitTest test = new PartitionedRegionSingleHopDUnitTest();
     cache = test.getCache();
 
-    testRegion = createBasicPartitionedRegion(redundantCopies, totalNoofBuckets, -1, PR_NAME);
+    testRegion = createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets, -1);
 
     customerRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, CUSTOMER, null,
+        createColocatedPersistentRegionForTest(redundantCopies, totalNumberOfBuckets, CUSTOMER,
+            null,
             -1);
 
     orderRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, ORDER, CUSTOMER,
+        createColocatedPersistentRegionForTest(redundantCopies, totalNumberOfBuckets, ORDER,
+            CUSTOMER,
             -1);
 
     customerRegion =
-        createColocatedPersistentRegionForTest(redundantCopies, totalNoofBuckets, SHIPMENT, ORDER,
+        createColocatedPersistentRegionForTest(redundantCopies, totalNumberOfBuckets, SHIPMENT,
+            ORDER,
             -1);
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
@@ -1574,7 +1574,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
       for (int j = 1; j <= 10; j++) {
         int oid = (i * 10) + j;
         OrderId orderId = new OrderId(oid, custid);
-        Order order = new Order("OREDR" + oid);
+        Order order = new Order("ORDER" + oid);
         orderRegion.get(orderId, order);
         for (int k = 1; k <= 10; k++) {
           int sid = (oid * 10) + k;
@@ -1614,28 +1614,28 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
 
     testRegion.put(0, "update0");
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
     testRegion.put(1, "update1");
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
     testRegion.put(2, "update2");
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
     testRegion.put(3, "update3");
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
     testRegion.put(0, "update00");
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
     testRegion.put(1, "update11");
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
     testRegion.put(2, "update22");
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
 
     testRegion.put(3, "update33");
-    assertFalse(cms.isRefreshMetadataTestOnly());
+    assertThat(cms.isRefreshMetadataTestOnly()).isFalse();
   }
 
   private static void verifyEmptyMetadata() {

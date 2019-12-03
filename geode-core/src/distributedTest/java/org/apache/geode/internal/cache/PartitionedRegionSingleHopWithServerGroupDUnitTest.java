@@ -741,7 +741,10 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
     }
 
     PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(2).setLocalMaxMemory(localMaxMemory).setTotalNumBuckets(8);
+    int redundantCopies = 2;
+    int numBuckets = 8;
+    paf.setRedundantCopies(redundantCopies).setLocalMaxMemory(localMaxMemory).setTotalNumBuckets(
+        numBuckets);
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
     regionFactory.setPartitionAttributes(paf.create());
     PartitionedRegionSingleHopWithServerGroupDUnitTest.testRegion = regionFactory.create(PR_NAME);
@@ -751,38 +754,40 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
             .toString());
 
     // creating colocated Regions
-    paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(2).setLocalMaxMemory(localMaxMemory)
-        .setTotalNumBuckets(8)
-        .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
-    regionFactory = cache.createRegionFactory();
-    regionFactory.setPartitionAttributes(paf.create());
-    customerRegion = regionFactory.create(CUSTOMER);
-    assertThat(customerRegion).isNotNull();
-    logger.info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
+    customerRegion = createColocatedRegion(CUSTOMER, redundantCopies, numBuckets, -1, null);
+    orderRegion = createColocatedRegion(ORDER, redundantCopies, numBuckets, -1, CUSTOMER);
+    shipmentRegion = createColocatedRegion(SHIPMENT, redundantCopies, numBuckets, -1, ORDER);
 
-    paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(2).setLocalMaxMemory(localMaxMemory)
-        .setTotalNumBuckets(8).setColocatedWith(CUSTOMER)
-        .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
-    regionFactory = cache.createRegionFactory();
-    regionFactory.setPartitionAttributes(paf.create());
-    orderRegion = regionFactory.create(ORDER);
-    assertThat(orderRegion).isNotNull();
-    logger.info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
-
-
-    paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(2).setLocalMaxMemory(localMaxMemory)
-        .setTotalNumBuckets(8).setColocatedWith(ORDER)
-        .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
-    regionFactory = cache.createRegionFactory();
-    regionFactory.setPartitionAttributes(paf.create());
-    shipmentRegion = regionFactory.create(SHIPMENT);
-    assertThat(shipmentRegion).isNotNull();
-    logger.info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
     return port;
   }
+
+
+  private static <K, V> Region<K, V> createColocatedRegion(String regionName, int redundantCopies,
+      int totalNoofBuckets,
+      int localMaxMemory,
+      String colocatedRegionName) {
+
+    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
+        .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
+
+    if (colocatedRegionName != null) {
+      paf.setColocatedWith(colocatedRegionName);
+    }
+
+    if (localMaxMemory > -1) {
+      paf.setLocalMaxMemory(localMaxMemory);
+    }
+
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
+    regionFactory.setPartitionAttributes(paf.create());
+    regionFactory.setConcurrencyChecksEnabled(true);
+    Region<K, V> region = regionFactory.create(regionName);
+    assertThat(region).isNotNull();
+    logger.info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
+    return region;
+  }
+
 
   private static int createServerWithLocatorAndServerGroup2Regions(String locator,
       String group) {
@@ -815,52 +820,54 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
       fail("Failed to start server ", e);
     }
 
-    PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(2).setLocalMaxMemory(100).setTotalNumBuckets(8);
-    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
-    regionFactory.setPartitionAttributes(paf.create());
-    testRegion = regionFactory.create(PR_NAME);
-    assertThat(testRegion).isNotNull();
-    logger
-        .info("Partitioned Region " + PR_NAME + " created Successfully :" + testRegion.toString());
+    final int redundantCopies = 2;
+    final int localMaxMemory = 100;
+    final int totalnoofBuckets = 8;
+    testRegion =
+        createBasicPartitionedRegion(redundantCopies, totalnoofBuckets, localMaxMemory, PR_NAME);
 
     // creating colocated Regions
-    customerRegion = CreateColocatedRegion(CUSTOMER);
+    customerRegion =
+        createColocatedRegion(CUSTOMER, redundantCopies, localMaxMemory, totalnoofBuckets, null);
 
-    orderRegion = CreateColocatedRegion(ORDER);
+    orderRegion =
+        createColocatedRegion(ORDER, redundantCopies, localMaxMemory, totalnoofBuckets, null);
 
-    shipmentRegion = CreateColocatedRegion(SHIPMENT);
+    shipmentRegion =
+        createColocatedRegion(SHIPMENT, redundantCopies, localMaxMemory, totalnoofBuckets, null);
 
-    paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(2).setLocalMaxMemory(100).setTotalNumBuckets(8);
-    regionFactory = cache.createRegionFactory();
-    regionFactory.setPartitionAttributes(paf.create());
-    testRegion2 = regionFactory.create(PR_NAME2);
-    assertThat(testRegion2).isNotNull();
-    logger.info(
-        "Partitioned Region " + PR_NAME2 + " created Successfully :" + testRegion2.toString());
 
-    orderRegion2 = CreateColocatedRegion(CUSTOMER2);
+    testRegion2 =
+        createBasicPartitionedRegion(redundantCopies, totalnoofBuckets, localMaxMemory, PR_NAME2);
 
-    customerRegion2 = CreateColocatedRegion(ORDER2);
+    // creating colocated Regions
+    orderRegion2 =
+        createColocatedRegion(CUSTOMER2, redundantCopies, localMaxMemory, totalnoofBuckets, null);
 
-    shipmentRegion2 = CreateColocatedRegion(SHIPMENT2);
+    customerRegion2 =
+        createColocatedRegion(ORDER2, redundantCopies, localMaxMemory, totalnoofBuckets, null);
+
+    shipmentRegion2 =
+        createColocatedRegion(SHIPMENT2, redundantCopies, localMaxMemory, totalnoofBuckets, null);
 
     return port;
   }
 
-  private static <K, V> Region<K, V> CreateColocatedRegion(String regionName) {
-
+  private static <K, V> Region<K, V> createBasicPartitionedRegion(int redundantCopies,
+      int totalNoofBuckets,
+      int localMaxMemory,
+      final String regionName) {
     PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(2).setLocalMaxMemory(100).setTotalNumBuckets(8)
-        .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
-
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
+        .setLocalMaxMemory(localMaxMemory);
     RegionFactory<K, V> regionFactory = cache.createRegionFactory();
+
     regionFactory.setPartitionAttributes(paf.create());
 
     Region<K, V> region = regionFactory.create(regionName);
     assertThat(region).isNotNull();
-    logger.info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
+    logger
+        .info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
     return region;
   }
 
@@ -940,7 +947,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
     createColocatedRegionsInClientCacheWithDiffPool(p1.getName(), p2.getName(), p3.getName());
   }
 
-  private static <K, V> Region<K, V> CreateColocatedDistributedRegion(String poolName,
+  private static <K, V> Region<K, V> createColocatedDistributedRegion(String poolName,
       final String regionName) {
     RegionFactory<K, V> factory = cache.createRegionFactory();
     factory.setPoolName(poolName);
@@ -951,13 +958,13 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
   }
 
   private static void createRegionsInClientCache(String poolName) {
-    testRegion = CreateBaseDistributedRegion(poolName, PR_NAME);
+    testRegion = createBaseDistributedRegion(poolName, PR_NAME);
 
-    customerRegion = CreateColocatedDistributedRegion(poolName, CUSTOMER);
+    customerRegion = createColocatedDistributedRegion(poolName, CUSTOMER);
 
-    orderRegion = CreateColocatedDistributedRegion(poolName, ORDER);
+    orderRegion = createColocatedDistributedRegion(poolName, ORDER);
 
-    shipmentRegion = CreateColocatedDistributedRegion(poolName, SHIPMENT);
+    shipmentRegion = createColocatedDistributedRegion(poolName, SHIPMENT);
 
   }
 
@@ -965,29 +972,29 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
   private static void create2RegionsInClientCache(String poolName1, String poolName2) {
     createRegionsInClientCache(poolName1);
 
-    testRegion2 = CreateBaseDistributedRegion(poolName2, PR_NAME2);
+    testRegion2 = createBaseDistributedRegion(poolName2, PR_NAME2);
 
-    customerRegion2 = CreateColocatedDistributedRegion(poolName2, CUSTOMER2);
+    customerRegion2 = createColocatedDistributedRegion(poolName2, CUSTOMER2);
 
-    orderRegion2 = CreateColocatedDistributedRegion(poolName2, ORDER2);
+    orderRegion2 = createColocatedDistributedRegion(poolName2, ORDER2);
 
-    shipmentRegion2 = CreateColocatedDistributedRegion(poolName2, SHIPMENT2);
+    shipmentRegion2 = createColocatedDistributedRegion(poolName2, SHIPMENT2);
 
   }
 
   private static void createColocatedRegionsInClientCacheWithDiffPool(String poolName1,
       String poolName2, String poolName3) {
-    testRegion = CreateBaseDistributedRegion(poolName1, PR_NAME);
+    testRegion = createBaseDistributedRegion(poolName1, PR_NAME);
 
-    customerRegion = CreateColocatedDistributedRegion(poolName1, CUSTOMER);
+    customerRegion = createColocatedDistributedRegion(poolName1, CUSTOMER);
 
-    orderRegion = CreateColocatedDistributedRegion(poolName2, ORDER);
+    orderRegion = createColocatedDistributedRegion(poolName2, ORDER);
 
-    shipmentRegion = CreateColocatedDistributedRegion(poolName3, SHIPMENT);
+    shipmentRegion = createColocatedDistributedRegion(poolName3, SHIPMENT);
 
   }
 
-  private static <K, V> Region<K, V> CreateBaseDistributedRegion(String poolName1,
+  private static <K, V> Region<K, V> createBaseDistributedRegion(String poolName1,
       final String regionName) {
     RegionFactory<K, V> factory = cache.createRegionFactory();
     factory.setPoolName(poolName1);
