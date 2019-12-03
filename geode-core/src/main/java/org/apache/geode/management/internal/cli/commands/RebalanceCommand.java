@@ -101,7 +101,11 @@ public class RebalanceCommand extends GfshCommand {
     rsltList.add(6, String.valueOf(results.getPrimaryTransferTimeInMilliseconds()));
     rsltList.add(7, String.valueOf(results.getPrimaryTransfersCompleted()));
     rsltList.add(8, String.valueOf(results.getTimeInMilliseconds()));
-    rsltList.add(9, results.getRegionName());
+    String regionName = results.getRegionName();
+    if (!regionName.startsWith("/")) {
+      regionName = "/" + regionName;
+    }
+    rsltList.add(9, regionName);
 
     toCompositeResultData(result, rsltList, index, simulate, cache);
   }
