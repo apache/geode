@@ -32,10 +32,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -169,7 +167,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   private final LocatorMembershipListener locatorListener;
   private final AtomicBoolean shutdownHandled = new AtomicBoolean(false);
   private final LoggingSession loggingSession;
-  private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
   private final LocatorStats locatorStats;
   private final Path workingDirectory;
   private final MembershipLocator<InternalDistributedMember> membershipLocator;
@@ -1286,14 +1283,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   @Override
-  public void addLogConfigListener(LogConfigListener logConfigListener) {
-    logConfigListeners.add(logConfigListener);
-  }
+  public void addLogConfigListener(LogConfigListener logConfigListener) {}
 
   @Override
-  public void removeLogConfigListener(LogConfigListener logConfigListener) {
-    logConfigListeners.remove(logConfigListener);
-  }
+  public void removeLogConfigListener(LogConfigListener logConfigListener) {}
 
   public SharedConfigurationStatusResponse getSharedConfigurationStatus() {
     ExecutorService waitingPoolExecutor =
