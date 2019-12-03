@@ -143,7 +143,7 @@ public class IndexRepositoryImpl implements IndexRepository {
   @Override
   public void query(Query query, int limit, IndexResultCollector collector) throws IOException {
     long start = stats.startRepositoryQuery();
-    int totalHits = 0;
+    long totalHits = 0;
     IndexSearcher searcher = searcherManager.acquire();
     try {
       TopDocs docs = searcher.search(query, limit);

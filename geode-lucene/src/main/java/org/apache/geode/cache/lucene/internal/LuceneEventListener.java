@@ -32,10 +32,12 @@ import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -80,6 +82,15 @@ public class LuceneEventListener implements AsyncEventListener {
     // Try to get a PDX instance if possible, rather than a deserialized object
     Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
     cache.setPdxReadSerializedOverride(true);
+
+    boolean hasOldMember = cache.getMembers().stream()
+        .map(InternalDistributedMember.class::cast)
+        .map(InternalDistributedMember::getVersionObject)
+        .anyMatch(version -> version.compareTo(Version.GEODE_1_11_0) < 0);
+
+    if (hasOldMember) {
+      return false;
+    }
 
     Set<IndexRepository> affectedRepos = new HashSet<>();
 
