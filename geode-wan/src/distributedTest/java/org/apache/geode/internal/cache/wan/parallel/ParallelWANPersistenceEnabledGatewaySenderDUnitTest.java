@@ -884,6 +884,8 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * key as a String. Close the local site and rebuild the region and sender from disk store. Check
    * if the remote site receives all the events.
    */
+
+  @Ignore("NotSupported")
   @Test
   public void testPersistentPRWithPersistentGatewaySender_Restart_DoOps() {
     // create locator on local site
