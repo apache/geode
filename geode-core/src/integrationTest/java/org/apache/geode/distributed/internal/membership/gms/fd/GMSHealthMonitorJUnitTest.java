@@ -450,25 +450,6 @@ public class GMSHealthMonitorJUnitTest {
     Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsReceived() > 0);
   }
 
-  /***
-   * validates HealthMonitor.CheckIfAvailable api
-   */
-  @Test
-  public void testCheckIfAvailableNoHeartBeatDontRemoveMember() {
-    useGMSHealthMonitorTestClass = true;
-    simulateHeartbeatInGMSHealthMonitorTestClass = false;
-
-    installAView();
-
-    long startTime = System.currentTimeMillis();
-    boolean retVal = gmsHealthMonitor.checkIfAvailable(mockMembers.get(1), "Not responding", true);
-    long timeTaken = System.currentTimeMillis() - startTime;
-
-    assertFalse("CheckIfAvailable should have return false", retVal);
-    assertTrue("This should have taken member ping timeout 100ms but it took " + timeTaken,
-        timeTaken >= gmsHealthMonitor.memberTimeout);
-  }
-
   @Test
   public void testCheckIfAvailableWithSimulatedHeartBeat() {
     GMSMembershipView v = installAView();
