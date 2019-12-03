@@ -41,7 +41,7 @@
       <AppenderRef ref="SECURITYLOGWRITER"/>
     </Logger>
     <Logger name="org.jgroups" level="FATAL" additivity="true"/>
-    <Logger name="org.eclipse.jetty" level="FATAL" additivity="true"/>
+    <Logger name="org.eclipse.jetty" level="INFO" additivity="true"/>
     <Root level="INFO">
       <AppenderRef ref="STDOUT"/>
       <AppenderRef ref="LOGWRITER"/>
