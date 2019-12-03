@@ -32,8 +32,8 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -60,7 +60,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * </P>
  */
 public abstract class DistributionMessage
-    implements GMSMessage, Cloneable {
+    implements Message, Cloneable {
 
   /**
    * WARNING: setting this to true may break dunit tests.
@@ -211,7 +211,7 @@ public abstract class DistributionMessage
   }
 
   /**
-   * Sets the intended recipient of the message. If recipient is GMSMessage.ALL_RECIPIENTS
+   * Sets the intended recipient of the message. If recipient is Message.ALL_RECIPIENTS
    * then the
    * message will be sent to all distribution managers.
    */
@@ -251,7 +251,7 @@ public abstract class DistributionMessage
 
   /**
    * Sets the intended recipient of the message. If recipient set contains
-   * GMSMessage.ALL_RECIPIENTS
+   * Message.ALL_RECIPIENTS
    * then the message will be sent to all distribution managers.
    */
   @Override

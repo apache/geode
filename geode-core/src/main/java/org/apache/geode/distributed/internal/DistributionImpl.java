@@ -51,7 +51,6 @@ import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenti
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
@@ -59,6 +58,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilde
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
@@ -834,7 +834,7 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    public void messageReceived(GMSMessage msg) {
+    public void messageReceived(Message msg) {
       membership.processMessage(msg);
 
     }

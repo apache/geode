@@ -57,7 +57,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.jgroups.Address;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
-import org.jgroups.Message;
 import org.jgroups.conf.ClassConfigurator;
 import org.jgroups.protocols.UNICAST3;
 import org.jgroups.protocols.pbcast.NAKACK2;
@@ -80,9 +79,9 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
-import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
@@ -244,23 +243,23 @@ public class JGroupsMessengerJUnitTest {
   @Test
   public void normalMessagesUseFlowControl() throws Exception {
     initMocks(false);
-    Message jgmsg = new Message();
-    GMSMessage dmsg = mock(GMSMessage.class);
+    org.jgroups.Message jgmsg = new org.jgroups.Message();
+    Message dmsg = mock(Message.class);
     when(dmsg.isHighPriority()).thenReturn(false);
     messenger.setMessageFlags(dmsg, jgmsg);
     assertFalse("expected flow-control to be used: " + jgmsg,
-        jgmsg.isFlagSet(Message.Flag.NO_FC));
+        jgmsg.isFlagSet(org.jgroups.Message.Flag.NO_FC));
   }
 
   @Test
   public void highPriorityMessagesBypassFlowControl() throws Exception {
     initMocks(false);
-    Message jgmsg = new Message();
-    GMSMessage dmsg = mock(GMSMessage.class);
+    org.jgroups.Message jgmsg = new org.jgroups.Message();
+    Message dmsg = mock(Message.class);
     when(dmsg.isHighPriority()).thenReturn(true);
     messenger.setMessageFlags(dmsg, jgmsg);
     assertTrue("expected flow-control to not be used: " + jgmsg,
-        jgmsg.isFlagSet(Message.Flag.NO_FC));
+        jgmsg.isFlagSet(org.jgroups.Message.Flag.NO_FC));
   }
 
   @Test
@@ -321,7 +320,7 @@ public class JGroupsMessengerJUnitTest {
       initMocks(enableMcast);
       JChannel mockChannel = mock(JChannel.class);
       when(mockChannel.isConnected()).thenReturn(true);
-      doThrow(new RuntimeException()).when(mockChannel).send(any(Message.class));
+      doThrow(new RuntimeException()).when(mockChannel).send(any(org.jgroups.Message.class));
       JChannel realChannel = messenger.myChannel;
       messenger.myChannel = mockChannel;
       try {
@@ -336,7 +335,7 @@ public class JGroupsMessengerJUnitTest {
         } catch (DistributedSystemDisconnectedException e) {
           // success
         }
-        verify(mockChannel).send(isA(Message.class));
+        verify(mockChannel).send(isA(org.jgroups.Message.class));
       } finally {
         messenger.myChannel = realChannel;
       }
@@ -359,7 +358,7 @@ public class JGroupsMessengerJUnitTest {
         shutdownCause = new ForcedDisconnectException("");
         ex = new RuntimeException("", shutdownCause);
       }
-      doThrow(ex).when(mockChannel).send(any(Message.class));
+      doThrow(ex).when(mockChannel).send(any(org.jgroups.Message.class));
       JChannel realChannel = messenger.myChannel;
       messenger.myChannel = mockChannel;
 
@@ -384,7 +383,7 @@ public class JGroupsMessengerJUnitTest {
           assertTrue(cause != e);
           assertTrue(cause == shutdownCause);
         }
-        verify(mockChannel).send(isA(Message.class));
+        verify(mockChannel).send(isA(org.jgroups.Message.class));
       } finally {
         messenger.myChannel = realChannel;
       }
@@ -397,7 +396,7 @@ public class JGroupsMessengerJUnitTest {
       initMocks(false);
       JChannel mockChannel = mock(JChannel.class);
       when(mockChannel.isConnected()).thenReturn(false);
-      doThrow(new RuntimeException()).when(mockChannel).send(any(Message.class));
+      doThrow(new RuntimeException()).when(mockChannel).send(any(org.jgroups.Message.class));
       JChannel realChannel = messenger.myChannel;
       messenger.myChannel = mockChannel;
       try {
@@ -412,7 +411,7 @@ public class JGroupsMessengerJUnitTest {
         } catch (DistributedSystemDisconnectedException e) {
           // success
         }
-        verify(mockChannel, never()).send(isA(Message.class));
+        verify(mockChannel, never()).send(isA(org.jgroups.Message.class));
       } finally {
         messenger.myChannel = realChannel;
       }
@@ -442,7 +441,8 @@ public class JGroupsMessengerJUnitTest {
       verify(msg).toData(isA(DataOutput.class), any(SerializationContext.class));
       assertTrue("expected 1 message but found " + interceptor.collectedMessages,
           interceptor.collectedMessages.size() == 1);
-      assertTrue(interceptor.collectedMessages.get(0).isFlagSet(Message.Flag.NO_RELIABILITY));
+      assertTrue(
+          interceptor.collectedMessages.get(0).isFlagSet(org.jgroups.Message.Flag.NO_RELIABILITY));
     }
   }
 
@@ -470,8 +470,9 @@ public class JGroupsMessengerJUnitTest {
 
     JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, null, -1, 0);
 
-    Message jmsg = messenger.createJGMessage(msg, messenger.jgAddress, messenger.localAddress,
-        Version.getCurrentVersion().ordinal());
+    org.jgroups.Message jmsg =
+        messenger.createJGMessage(msg, messenger.jgAddress, messenger.localAddress,
+            Version.getCurrentVersion().ordinal());
     interceptor.up(new Event(Event.MSG, jmsg));
 
     verify(mh, times(1)).processMessage(any(JoinRequestMessage.class));
@@ -546,11 +547,11 @@ public class JGroupsMessengerJUnitTest {
           interceptor.unicastSentDataMessages == 2);
     }
 
-    List<Message> messages = new ArrayList<>(interceptor.collectedMessages);
+    List<org.jgroups.Message> messages = new ArrayList<>(interceptor.collectedMessages);
     UUID fakeMember = new UUID(50, 50);
     short unicastHeaderId = ClassConfigurator.getProtocolId(UNICAST3.class);
     int seqno = 1;
-    for (Message m : messages) {
+    for (org.jgroups.Message m : messages) {
       if (jgroupsWillUseMulticast) {
         m.setSrc(messenger.localAddress.getMemberData().getUUID());
       } else {
@@ -779,11 +780,11 @@ public class JGroupsMessengerJUnitTest {
     MemberIdentifier mbr = createAddress(8888);
     JGAddress addr = new JGAddress(mbr);
 
-    Message pingMessage = pinger.createPingMessage(null, addr);
+    org.jgroups.Message pingMessage = pinger.createPingMessage(null, addr);
     assertTrue(pinger.isPingMessage(pingMessage.getBuffer()));
     assertFalse(pinger.isPongMessage(pingMessage.getBuffer()));
 
-    Message pongMessage = pinger.createPongMessage(null, addr);
+    org.jgroups.Message pongMessage = pinger.createPongMessage(null, addr);
     assertTrue(pinger.isPongMessage(pongMessage.getBuffer()));
     assertFalse(pinger.isPingMessage(pongMessage.getBuffer()));
 
@@ -809,7 +810,7 @@ public class JGroupsMessengerJUnitTest {
     receiver.receive(pingMessage);
     assertEquals("expected 1 message but found " + interceptor.collectedMessages,
         interceptor.collectedMessages.size(), 1);
-    Message m = interceptor.collectedMessages.get(0);
+    org.jgroups.Message m = interceptor.collectedMessages.get(0);
     assertTrue(pinger.isPongMessage(m.getBuffer()));
   }
 
@@ -835,7 +836,7 @@ public class JGroupsMessengerJUnitTest {
     });
 
     // a zero-length message is ignored
-    Message msg = new Message(new JGAddress(messenger.getMemberID()));
+    org.jgroups.Message msg = new org.jgroups.Message(new JGAddress(messenger.getMemberID()));
     Object result = messenger.readJGMessage(msg);
     assertNull(result);
 
@@ -865,7 +866,7 @@ public class JGroupsMessengerJUnitTest {
         recipients.get(0), Version.getCurrentVersion().ordinal());
     when(manager.shutdownInProgress()).thenReturn(Boolean.TRUE);
     receiver.receive(msg);
-    verify(manager, never()).processMessage(isA(GMSMessage.class));
+    verify(manager, never()).processMessage(isA(Message.class));
     verify(services.getStatistics(), times(3)).startUDPDispatchRequest();
     verify(services.getStatistics(), times(3)).endUDPDispatchRequest(anyLong());
   }
@@ -992,7 +993,7 @@ public class JGroupsMessengerJUnitTest {
 
     DataInputStream dis = new DataInputStream(new ByteArrayInputStream(requestBytes));
 
-    GMSMessage distributionMessage =
+    Message distributionMessage =
         messenger.readEncryptedMessage(dis, version, otherMbrEncrptor);
 
     assertEquals(gfmsg, distributionMessage);
@@ -1035,7 +1036,7 @@ public class JGroupsMessengerJUnitTest {
 
     messenger.addRequestId(1, messenger.getMemberID());
 
-    GMSMessage distributionMessage =
+    Message distributionMessage =
         messenger.readEncryptedMessage(dis, version, otherMbrEncrptor);
 
     assertEquals(gfmsg, distributionMessage);
@@ -1070,7 +1071,7 @@ public class JGroupsMessengerJUnitTest {
 
     DataInputStream dis = new DataInputStream(new ByteArrayInputStream(requestBytes));
 
-    GMSMessage distributionMessage =
+    Message distributionMessage =
         messenger.readEncryptedMessage(dis, version, otherMbrEncrptor);
 
     assertEquals(gfmsg, distributionMessage);
@@ -1109,7 +1110,7 @@ public class JGroupsMessengerJUnitTest {
 
     messenger.addRequestId(1, messenger.getMemberID());
 
-    GMSMessage gfMessageAtOtherMbr =
+    Message gfMessageAtOtherMbr =
         messenger.readEncryptedMessage(dis, version, otherMbrEncrptor);
 
     assertEquals(gfmsg, gfMessageAtOtherMbr);

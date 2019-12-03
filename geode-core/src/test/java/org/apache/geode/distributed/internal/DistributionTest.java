@@ -43,8 +43,8 @@ import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
-import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.tcp.ConnectExceptions;
@@ -151,7 +151,7 @@ public class DistributionTest {
   public void testDirectChannelSendAllRecipients() throws Exception {
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     when(membership.getAllMembers()).thenReturn(mockMembers);
-    m.setRecipient(GMSMessage.ALL_RECIPIENTS);
+    m.setRecipient(Message.ALL_RECIPIENTS);
     assertTrue(m.forAll());
     Set<InternalDistributedMember> failures = distribution
         .directChannelSend(null, m);

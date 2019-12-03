@@ -18,8 +18,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 
 public interface Messenger extends Service {
@@ -32,19 +32,19 @@ public interface Messenger extends Service {
    * sends an asynchronous message when the membership view may not have been established. Returns
    * destinations that did not receive the message due to no longer being in the view
    */
-  Set<MemberIdentifier> send(GMSMessage m, GMSMembershipView alternateView);
+  Set<MemberIdentifier> send(Message m, GMSMembershipView alternateView);
 
   /**
    * sends an asynchronous message. Returns destinations that did not receive the message due to no
    * longer being in the view
    */
-  Set<MemberIdentifier> send(GMSMessage m);
+  Set<MemberIdentifier> send(Message m);
 
   /**
    * sends an asynchronous message. Returns destinations that did not receive the message due to no
    * longer being in the view. Does not guarantee delivery of the message (no retransmissions)
    */
-  Set<MemberIdentifier> sendUnreliably(GMSMessage m);
+  Set<MemberIdentifier> sendUnreliably(Message m);
 
   /**
    * returns the endpoint ID for this member

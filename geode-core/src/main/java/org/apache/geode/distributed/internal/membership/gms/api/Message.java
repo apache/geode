@@ -26,13 +26,13 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
  * cluster. Those messages must implement this interface and must be serializable
  * using DataSerializableFixedID from the geode-serialization module.
  * <p>
- * There are currently two implemementation hierarchies of GMSMessage.
+ * There are currently two implemementation hierarchies of Message.
  * One is AbstractGMSMessage, which is used in the membership-module for membership-
  * related messages. The other is DistributionMessage, which is the base class for
  * messages in geode-core and other higher-level modules.
  */
 
-public interface GMSMessage extends DataSerializableFixedID {
+public interface Message extends DataSerializableFixedID {
 
   /**
    * Indicates that a distribution message should be sent to all other distribution managers.

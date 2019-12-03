@@ -62,11 +62,11 @@ import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OSProcess;
@@ -1821,7 +1821,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * Process an incoming distribution message. This includes scheduling it correctly based on the
    * message's nioPriority (executor type)
    */
-  private void handleIncomingDMsg(GMSMessage message) {
+  private void handleIncomingDMsg(Message message) {
     stats.incReceivedMessages(1L);
     stats.incReceivedBytes(message.getBytesRead());
     stats.incMessageChannelTime(message.resetTimestamp());
@@ -1961,7 +1961,7 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    * @param message the message to send
    * @return list of recipients that did not receive the message because they left the view (null if
-   *         all received it or it was sent to {@link GMSMessage#ALL_RECIPIENTS}.
+   *         all received it or it was sent to {@link Message#ALL_RECIPIENTS}.
    * @throws NotSerializableException If <code>message</code> cannot be serialized
    */
   Set<InternalDistributedMember> sendOutgoing(DistributionMessage message)
@@ -2027,7 +2027,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   /**
    * @return list of recipients who did not receive the message because they left the view (null if
-   *         all received it or it was sent to {@link GMSMessage#ALL_RECIPIENTS}).
+   *         all received it or it was sent to {@link Message#ALL_RECIPIENTS}).
    * @throws NotSerializableException If content cannot be serialized
    */
   private Set<InternalDistributedMember> sendViaMembershipManager(
@@ -2036,7 +2036,7 @@ public class ClusterDistributionManager implements DistributionManager {
       throws NotSerializableException {
     if (distribution == null) {
       logger.warn("Attempting a send to a disconnected DistributionManager");
-      if (destinations.length == 1 && destinations[0] == GMSMessage.ALL_RECIPIENTS)
+      if (destinations.length == 1 && destinations[0] == Message.ALL_RECIPIENTS)
         return null;
       HashSet<InternalDistributedMember> result = new HashSet<>();
       Collections.addAll(result, destinations);
