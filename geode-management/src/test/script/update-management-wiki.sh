@@ -176,12 +176,12 @@ awk '
 ' |
 # combine duplicate model name+desc
 sed -e 's#pre;*">\([^<]*\)</code> - \1#pre">\1</code>#g' |
-# prepend /management to /v1 links
-sed -e "s#/management${URI_VERSION}#${URI_VERSION}#g" -e "s#${URI_VERSION}#/management${URI_VERSION}#g" |
+# prepend /management to /v1 and / links
+sed -e "s#/management${URI_VERSION}#${URI_VERSION}#g" -e "s#${URI_VERSION}#/management${URI_VERSION}#g" -e "s#GET /<#GET /management<#g" |
 # remove internal swagger endpoint id */*
 sed -e 's/ .<span class="nickname" style="font-weight:bold">[^<]*<.span>.//' |
 # remove Controller from endpoint categories
-sed -e 's/DocLinksController/Supported Versions/g' |
+sed -e 's/DocLinksController/Versions/g' |
 sed -e 's/PingManagementController/Ping/g' |
 sed -e 's/ManagementController/ Management/g' |
 sed -e 's/OperationController/ Operation/g' |
