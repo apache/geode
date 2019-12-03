@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-gradle.startParameter.showStacktrace = org.gradle.api.logging.configuration.ShowStacktrace.ALWAYS
-
 buildscript {
   repositories {
     maven { url "https://plugins.gradle.org/m2/" }
