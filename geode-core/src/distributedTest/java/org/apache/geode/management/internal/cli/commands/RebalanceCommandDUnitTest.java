@@ -36,6 +36,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -108,6 +109,19 @@ public class RebalanceCommandDUnitTest {
         server2.invoke(() -> getLocalDataSizeForRegion(SHARED_REGION_NAME));
     server1Region1InitialSize = server1.invoke(() -> getLocalDataSizeForRegion(REGION1_NAME));
     server2Region2InitialSize = server2.invoke(() -> getLocalDataSizeForRegion(REGION2_NAME));
+  }
+
+  @Test
+  public void testRegionNameInResultStartsWithSlash() {
+    final String REGION_NAME_WITH_SLASH = "/" + SHARED_REGION_NAME;
+    String command = "rebalance --include-region=" + "/" + SHARED_REGION_NAME;
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    ResultModel result = gfsh.getCommandResult().getResultData();
+
+    assertThat(result.getTableSections().size()).isEqualTo(1);
+    assertThat(result.getTableSections().get(0).getHeader().contains(REGION_NAME_WITH_SLASH))
+        .isTrue();
   }
 
   @Test
