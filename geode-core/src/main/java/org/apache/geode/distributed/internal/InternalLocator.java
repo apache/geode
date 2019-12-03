@@ -247,35 +247,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    * @param securityLogWriter the logWriter to be used for security related log messages
    * @param distributedSystemProperties optional properties to configure the distributed system
    *        (e.g., mcast addr/port, other locators)
-   * @param startDistributedSystem if true then this locator will also start its own ds
-   *
-   * @deprecated Please use
-   *             {@link #createLocator(int, LoggingSession, File, InternalLogWriter, InternalLogWriter, InetAddress, String, Properties, Path)}
-   *             instead.
-   */
-  @Deprecated
-  public static InternalLocator createLocator(int port, LoggingSession loggingSession, File logFile,
-      InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
-      String hostnameForClients, Properties distributedSystemProperties,
-      boolean startDistributedSystem) {
-    return createLocator(port, loggingSession, logFile, logWriter, securityLogWriter, bindAddress,
-        hostnameForClients, distributedSystemProperties,
-        Paths.get(System.getProperty("user.dir")));
-  }
-
-  /**
-   * Create a locator that listens on a given port. This locator will not have peer or server
-   * location services available until they are started by calling startServerLocation or
-   * startPeerLocation on the locator object.
-   *
-   * @param port the tcp/ip port to listen on
-   * @param loggingSession the LoggingSession to use, may be a NullLoggingSession which does
-   *        nothing
-   * @param logFile the file that log messages should be written to
-   * @param logWriter a log writer that should be used (logFile parameter is ignored)
-   * @param securityLogWriter the logWriter to be used for security related log messages
-   * @param distributedSystemProperties optional properties to configure the distributed system
-   *        (e.g., mcast addr/port, other locators)
    * @param workingDirectory the working directory to use for any files
    */
   public static InternalLocator createLocator(int port, LoggingSession loggingSession, File logFile,
@@ -584,14 +555,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     return locatorListener;
   }
 
-  /**
-   * @deprecated Please use {@link #getLocatorMembershipListener()} instead.
-   */
-  @Deprecated
-  public LocatorMembershipListener getlocatorMembershipListener() {
-    return getLocatorMembershipListener();
-  }
-
   private void startTcpServer() throws IOException {
     logger.info("Starting {}", this);
     membershipLocator.start();
@@ -660,20 +623,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    */
   public MembershipLocator getMembershipLocator() {
     return membershipLocator;
-  }
-
-  /**
-   * For backward-compatibility we retain this method
-   *
-   * @deprecated use a form of the method that does not have peerLocator/serverLocator parameters
-   */
-  @Deprecated
-  public static InternalLocator startLocator(int locatorPort, File logFile,
-      InternalLogWriter logWriter, InternalLogWriter securityLogWriter, InetAddress bindAddress,
-      Properties distributedSystemProperties, boolean peerLocator, boolean serverLocator,
-      String hostnameForClients, boolean b1) throws IOException {
-    return startLocator(locatorPort, logFile, logWriter, securityLogWriter, bindAddress, true,
-        distributedSystemProperties, hostnameForClients);
   }
 
   /**
