@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -579,10 +580,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    * Start peer location in this locator. If you plan on starting a distributed system later, this
    * method should be called first so that the distributed system can use this locator.
    *
-   * @return returns the port that the locator to which the locator is bound
    * @since GemFire 5.7
    */
-  int startPeerLocation() throws IOException {
+  void startPeerLocation() throws IOException {
     if (isPeerLocator()) {
       throw new IllegalStateException(
           String.format("Peer location is already running for %s", this));
@@ -595,8 +595,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
             .start();
     File productUseFile = workingDirectory.resolve("locator" + boundPort + "views.log").toFile();
     productUseLog = new ProductUseLog(productUseFile);
-
-    return boundPort;
   }
 
   private boolean shouldLocatorsBeCoordinators() {
