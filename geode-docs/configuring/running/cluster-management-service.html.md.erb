@@ -54,86 +54,20 @@ update, delete, and read, respectively.
 This version of <%=vars.product_name%> uses the [1.11.0 Management REST API](https://cwiki.apache.org/confluence/display/GEODE/1.11.0+Management+REST+API+-+v1).
 As mentioned, the feature is experimental and still undergoing revision.
 
-For a definitive description of the cluster management service for your version of <%=vars.product_name%>, you can query the API directly to describe itself.
-The API returns a JSON body that contains a message describing the result along with standard HTTP status codes:
+For a definitive description of the cluster management service for your version of <%=vars.product_name%>, you can use the Swagger™ framework.
+To use the Swagger UI to browse the cluster management service API:
 
-1. Invoke `gfsh` on your current version of <%=vars.product_name%> and issue the `start locator` to start a locator using the default settings.
-2. Quit `gfsh` to return to the command prompt.
-3. Use `curl` to send a message asking the locator to describe its Cluster Management REST API. The API returns its description in JSON format. Pipe the output through the `jq` JSON formatting utility for readable output.
-4. If you're finished, remember to use `gfsh` to stop the locator.
+1. Using `gfsh`, start a locator using the default settings.
+2. Open a browser and enter the following URL:
 
-For example:
-
-```console
-$ geode/bin/gfsh
-    _________________________     __
-   / _____/ ______/ ______/ /____/ /
-  / /  __/ /___  /_____  / _____  / 
- / /__/ / ____/  _____/ / /    / /  
-/______/_/      /______/_/    /_/    1.11.0
-
-Monitor and Manage Apache Geode
-gfsh>start locator
-Starting a Geode Locator in ...
-...........
-Locator in ... is currently online.
-...
-Cluster configuration service is up and running.
-
-gfsh>quit
-Exiting...
+```
+http://localhost:7070/management/docs
 ```
 
-With the default settings, this starts a locator that is accessible at `localhost:7070`. The message to send to the locator is simply the address of the top-level
-API docs. For Geode v1.11, this address is `curl localhost:7070/management/v1/api-docs`. Pipe the results through `jq` for readability:
+This produces a browsable description of the cluster management service API:
 
-``` console
-$ curl localhost:7070/management/v1/api-docs | jq
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100 23731  100 23731    0     0   109k      0 --:--:-- --:--:-- --:--:--  109k
-{
-  "swagger": "2.0",
-  "info": {
-    "description": "REST API to manage Geode. This is experimental. All request/response formats are subject to change.",
-    "version": "v1",
-    "title": "Apache Geode Management REST API",
-    "termsOfService": "http://www.apache.org/licenses/",
-    "contact": {
-      "name": "the Apache Geode Community",
-      "url": "http://geode.apache.org",
-      "email": "user@geode.apache.org"
-    },
-    "license": {
-      "name": "Apache License, version 2.0",
-      "url": "http://www.apache.org/licenses/"
-    },
-    "authTokenEnabled": "false"
-  },
-...
-    "RuntimeRegionInfo": {
-      "type": "object",
-      "properties": {
-        "entryCount": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "memberName": {
-          "type": "string"
-        }
-      },
-      "title": "RuntimeRegionInfo"
-    }
-  }
-}
-```
+<img src="../../images/swagger_cluster_mgmt.png" class="image" />
 
-Remember to stop the locator, if you're through with it:
-
-1. Start `gfsh`.
-2. Issue the `connect` command to reconnect to the locator.
-3. Issue the `shutdown --include-locators` command to stop the locator.
-4. Quit `gfsh`.
 
 ## <a id='cms-java-api'>Cluster Management Service Java API</a>
 
