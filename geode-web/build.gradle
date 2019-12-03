@@ -32,15 +32,11 @@ dependencies {
   //in particular should not be duplicated in the war.
   providedCompile(project(':geode-logging'))
   providedCompile(project(':geode-serialization'))
-  providedCompile(project(':geode-gfsh'))
-  providedCompile(project(path: ':geode-core')) {
-    //spring-web is excluded from the providedCompile configuration to ensure
-    //that it is included as part of the war. spring-web must be loaded with the war's
-    //classloader to interoperate correctly with it's optional dependencies that are included
-    //in this war, in particular commons-fileupload.
+  providedCompile(project(':geode-gfsh')) {
     exclude module: 'spring-web'
     exclude module: 'spring-core'
   }
+
   providedCompile(platform(project(':boms:geode-all-bom')))
   providedCompile('javax.servlet:javax.servlet-api')
   providedCompile('org.apache.logging.log4j:log4j-api')
