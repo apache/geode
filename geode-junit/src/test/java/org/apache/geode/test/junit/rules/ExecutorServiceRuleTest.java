@@ -125,7 +125,7 @@ public class ExecutorServiceRuleTest {
     public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
     @Before
-    public void setUpHasAsynchronousRule() {
+    public void setUpHasExecutorServiceRule() {
       executorService = executorServiceRule.getExecutorService();
     }
   }
