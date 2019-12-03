@@ -36,4 +36,4 @@ SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking
 
 INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
 
-time rsync -e "ssh ${SSH_OPTIONS}" -ah ${REPODIR} geode@${INSTANCE_IP_ADDRESS}:.
+time rsync -e "ssh ${SSH_OPTIONS}" -ah * geode@${INSTANCE_IP_ADDRESS}:.
