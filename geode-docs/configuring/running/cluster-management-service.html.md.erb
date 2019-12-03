@@ -1,0 +1,75 @@
+---
+title: Cluster Management Service
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+**Note:** This feature is experimental and is subject to change in future releases of <%=vars.product_name_long%>.
+
+The cluster management service enables you to change the configuration of
+the cluster (for example, create/destroy regions, indexes, or gateway receivers/senders), and have these
+changes replicated on all the applicable servers and persisted in the cluster configuration service.
+
+With the cluster management service, you can:
+
+- Create regions/indexes on the fly.
+
+- Persist the configuration and apply it to the cluster, so when a new node joins, it has the configuration, and when the server restarts, it has the configuration.
+
+- Obtain a consistent view of the current configuration
+
+- Apply a change to all elements of the cluster in the same way
+
+- Be able to change the configuration in one place
+
+- Obtain this configuration without being on the cluster
+
+- Invoke the configuration service from the server or from a client
+
+The cluster management service is documented in the Geode Wiki: [Cluster Management Service](https://cwiki.apache.org/confluence/display/GEODE/Cluster+Management+Service).
+The Wiki write-up offers separate choices for the cluster management service implementation on each Geode version that supports it.
+
+The cluster management service is available as a [REST API](#cms-reference) and as a [Java API](#cms-java-api).
+
+## <a id='cms-reference'>Cluster Management Service REST API</a>
+
+The cluster management service REST API adheres to standard REST semantics, so users can use POST, PATCH, DELETE, and GET to create,
+update, delete, and read, respectively.
+
+This version of <%=vars.product_name%> uses the [<%=vars.product_version%>.0 Management REST API](https://cwiki.apache.org/confluence/display/GEODE/<%=vars.product_version%>.0+Management+REST+API+-+v1).
+As mentioned, the feature is experimental and still undergoing revision.
+
+For a definitive description of the cluster management service for your version of <%=vars.product_name%>, you can use the Swagger™ framework.
+To use the Swagger UI to browse the cluster management service API:
+
+1. Using `gfsh`, start a locator using the default settings.
+2. Open a browser and enter the following URL:
+
+```
+http://localhost:7070/management/docs
+```
+
+This produces a browsable description of the cluster management service API:
+
+<img src="../../images/swagger_cluster_mgmt.png" class="image" />
+
+
+## <a id='cms-java-api'>Cluster Management Service Java API</a>
+
+The cluster management service is available to Java clients via a Java API. To enable the cluster management service Java API, include `geode-management.jar` in your client classpath.
+See the [Cluster Management Service Java Client topic on the Geode Wiki](https://cwiki.apache.org/confluence/display/GEODE/Cluster+Management+Service#ClusterManagementService-JavaClient) for more details.
