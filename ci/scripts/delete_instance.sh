@@ -39,3 +39,5 @@ set +e
 gcloud compute instances delete ${INSTANCE_NAME} \
   --zone=${ZONE} \
   --quiet
+  
+exit 0
