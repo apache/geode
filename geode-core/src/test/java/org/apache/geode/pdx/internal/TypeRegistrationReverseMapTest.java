@@ -20,11 +20,11 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.Test;
 
-public class TypeRegistryReverseMapTest {
+public class TypeRegistrationReverseMapTest {
 
   @Test
   public void saveCorrectlyAddsToReverseMaps() {
-    TypeRegistryReverseMap map = new TypeRegistryReverseMap();
+    TypeRegistrationReverseMap map = new TypeRegistrationReverseMap();
     assertThat(map.typeToIdSize()).isEqualTo(0);
     assertThat(map.enumToIdSize()).isEqualTo(0);
 
@@ -47,13 +47,13 @@ public class TypeRegistryReverseMapTest {
   }
 
 
-  void addEnumInfoToMap(TypeRegistryReverseMap map) {
+  void addEnumInfoToMap(TypeRegistrationReverseMap map) {
     EnumId enumId = mock(EnumId.class);
     EnumInfo enumInfo = mock(EnumInfo.class);
     map.save(enumId, enumInfo);
   }
 
-  void addPdxTypeToMap(TypeRegistryReverseMap map) {
+  void addPdxTypeToMap(TypeRegistrationReverseMap map) {
     Integer pdxId = map.typeToIdSize();
     PdxType pdxType = mock(PdxType.class);
     map.save(pdxId, pdxType);

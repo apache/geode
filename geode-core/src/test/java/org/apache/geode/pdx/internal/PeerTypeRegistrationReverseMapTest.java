@@ -23,7 +23,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 
-public class PeerTypeRegistrationReverseMapTest extends TypeRegistryReverseMapTest {
+public class PeerTypeRegistrationReverseMapTest extends TypeRegistrationReverseMapTest {
 
   @Test
   public void saveToPendingCorrectlyAddsOnlyToPendingMaps() {

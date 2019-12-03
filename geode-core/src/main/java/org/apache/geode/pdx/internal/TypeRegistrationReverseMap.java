@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-class TypeRegistryReverseMap {
+class TypeRegistrationReverseMap {
   /**
    * These maps allow revere look-ups of the idToType and idToEnum maps (or the idToType region
    * if the TypeRegistration containing them is a PeerTypeRegistration) without having to iterate
@@ -37,6 +37,12 @@ class TypeRegistryReverseMap {
     }
   }
 
+  void flushEnumCache() {
+    synchronized (enumToId) {
+      enumToId.keySet().forEach(EnumInfo::flushCache);
+    }
+  }
+
   void clear() {
     typeToId.clear();
     enumToId.clear();
@@ -50,11 +56,11 @@ class TypeRegistryReverseMap {
     return enumToId.size();
   }
 
-  Integer getIdFromReverseMap(PdxType newType) {
+  Integer getTypeId(PdxType newType) {
     return typeToId.get(newType);
   }
 
-  EnumId getIdFromReverseMap(EnumInfo newInfo) {
+  EnumId getEnumId(EnumInfo newInfo) {
     return enumToId.get(newInfo);
   }
 }

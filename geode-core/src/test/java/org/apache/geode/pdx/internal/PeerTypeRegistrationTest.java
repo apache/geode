@@ -197,6 +197,6 @@ public class PeerTypeRegistrationTest {
     PdxType newType = mock(PdxType.class);
     peerTypeRegistration.defineType(newType);
 
-    verify(peerTypeRegistration, times(0)).buildReverseMapsFromRegion();
+    verify(peerTypeRegistration, times(0)).buildLocalAndReverseMapsFromRegion();
   }
 }

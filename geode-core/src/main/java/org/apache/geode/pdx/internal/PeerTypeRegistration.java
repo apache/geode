@@ -88,7 +88,8 @@ public class PeerTypeRegistration implements TypeRegistration {
    */
   private Region<Object/* Integer or EnumCode */, Object/* PdxType or enum info */> idToType;
 
-  private PeerTypeRegistrationReverseMap reverseMap = new PeerTypeRegistrationReverseMap();
+  private final PeerTypeRegistrationLocalMap localMap = new PeerTypeRegistrationLocalMap();
+  private final PeerTypeRegistrationReverseMap reverseMap = new PeerTypeRegistrationReverseMap();
 
   private final Map<String, CopyOnWriteHashSet<PdxType>> classToType = new CopyOnWriteHashMap<>();
 
@@ -133,8 +134,8 @@ public class PeerTypeRegistration implements TypeRegistration {
     // Relevant during reconnect
     // TypeRegistry typeRegistry = cache.getPdxRegistry();
     // if (typeRegistry != null) {
-    // typeRegistry.flushCache();
-    // logger.debug("Flushing TypeRegistry");
+    flushCache();
+    logger.debug("Flushing TypeRegistry");
     // }
 
     InternalRegionFactory factory = cache.createInternalRegionFactory();
@@ -346,19 +347,19 @@ public class PeerTypeRegistration implements TypeRegistration {
   public int defineType(PdxType newType) {
     // statistics.typeDefined();
     verifyConfiguration();
-    Integer existingId = reverseMap.getIdFromReverseMap(newType);
+    Integer existingId = reverseMap.getTypeId(newType);
     if (existingId != null) {
       return existingId;
     }
     lock();
     try {
       if (shouldReload()) {
-        buildReverseMapsFromRegion();
+        buildLocalAndReverseMapsFromRegion();
       }
       reverseMap.flushPendingReverseMap();
 
       // double check if my PdxType is in the reverse map in case it was just flushed into it
-      existingId = reverseMap.getIdFromReverseMap(newType);
+      existingId = reverseMap.getTypeId(newType);
       if (existingId != null) {
         return existingId;
       }
@@ -369,8 +370,9 @@ public class PeerTypeRegistration implements TypeRegistration {
 
       return newType.getTypeId();
     } finally {
-      // flush the reverse map for the member that introduced this new PdxType
+      // flush the local and reverse maps for the member that introduced this new PdxType
       reverseMap.flushPendingReverseMap();
+      localMap.flushPendingLocalMap();
       unlock();
     }
   }
@@ -429,6 +431,10 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public PdxType getType(int typeId) {
+    PdxType existingType = localMap.getType(typeId);
+    if (existingType != null) {
+      return existingType;
+    }
     return getById(typeId);
   }
 
@@ -541,12 +547,13 @@ public class PeerTypeRegistration implements TypeRegistration {
    * region This is an expensive operation and should only be called during initialization. A cache
    * listener is used to keep the reverse maps up to date.
    */
-  void buildReverseMapsFromRegion() {
+  void buildLocalAndReverseMapsFromRegion() {
     int totalPdxTypeIdInDS = 0;
     int totalEnumIdInDS = 0;
     TXStateProxy currentState = suspendTX();
     try {
       reverseMap.clear();
+      localMap.clear();
       for (Map.Entry<Object, Object> entry : getIdToType().entrySet()) {
         Object k = entry.getKey();
         Object v = entry.getValue();
@@ -574,6 +581,7 @@ public class PeerTypeRegistration implements TypeRegistration {
           }
         }
         reverseMap.save(k, v);
+        localMap.save(k, v);
       }
     } finally {
       resumeTX(currentState);
@@ -637,19 +645,19 @@ public class PeerTypeRegistration implements TypeRegistration {
   public int defineEnum(final EnumInfo newInfo) {
     // statistics.enumDefined();
     verifyConfiguration();
-    EnumId existingId = reverseMap.getIdFromReverseMap(newInfo);
+    EnumId existingId = reverseMap.getEnumId(newInfo);
     if (existingId != null) {
       return existingId.intValue();
     }
     lock();
     try {
       if (shouldReload()) {
-        buildReverseMapsFromRegion();
+        buildLocalAndReverseMapsFromRegion();
       }
       reverseMap.flushPendingReverseMap();
 
       // double check if my Enum is in the reverse map in case it was just flushed into it
-      existingId = reverseMap.getIdFromReverseMap(newInfo);
+      existingId = reverseMap.getEnumId(newInfo);
       if (existingId != null) {
         return existingId.intValue();
       }
@@ -659,8 +667,9 @@ public class PeerTypeRegistration implements TypeRegistration {
 
       return id.intValue();
     } finally {
-      // flush the reverse map for the member that introduced this new enumInfo
+      // flush the local and reverse maps for the member that introduced this new enumInfo
       reverseMap.flushPendingReverseMap();
+      localMap.flushPendingLocalMap();
       unlock();
     }
   }
@@ -668,6 +677,10 @@ public class PeerTypeRegistration implements TypeRegistration {
   @Override
   public EnumInfo getEnumById(int id) {
     EnumId enumId = new EnumId(id);
+    EnumInfo existingEnum = localMap.getEnum(enumId);
+    if (existingEnum != null) {
+      return existingEnum;
+    }
     return getById(enumId);
   }
 
@@ -702,6 +715,7 @@ public class PeerTypeRegistration implements TypeRegistration {
    */
   private void updateLocalAndReverseMaps(Object key, Object value) {
     reverseMap.saveToPending(key, value);
+    localMap.saveToPending(key, value);
     if (value instanceof PdxType) {
       PdxType type = (PdxType) value;
       synchronized (classToType) {
@@ -790,7 +804,8 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public void flushCache() {
-    // Do nothing
+    localMap.flushEnumCache();
+    reverseMap.flushEnumCache();
   }
 
   @VisibleForTesting

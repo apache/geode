@@ -28,7 +28,7 @@ import org.apache.geode.cache.Region;
  * read the type/enum while holding the dlock, which means the type/enum was distributed to all
  * members.
  */
-class PeerTypeRegistrationReverseMap extends TypeRegistryReverseMap {
+class PeerTypeRegistrationReverseMap extends TypeRegistrationReverseMap {
   /**
    * When a new pdxType or a new enumInfo is added to idToType region, its
    * listener will add the new type to the pendingTypeToId first, to make sure
@@ -71,6 +71,14 @@ class PeerTypeRegistrationReverseMap extends TypeRegistryReverseMap {
     if (!pendingEnumToId.isEmpty()) {
       enumToId.putAll(pendingEnumToId);
       pendingEnumToId.clear();
+    }
+  }
+
+  @Override
+  void flushEnumCache() {
+    super.flushEnumCache();
+    synchronized (pendingEnumToId) {
+      pendingEnumToId.keySet().forEach(EnumInfo::flushCache);
     }
   }
 
