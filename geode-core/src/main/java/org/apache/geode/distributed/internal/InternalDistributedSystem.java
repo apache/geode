@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Array;
 import java.net.InetAddress;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -878,7 +879,8 @@ public class InternalDistributedSystem extends DistributedSystem
       startedLocator =
           InternalLocator.createLocator(locId.getPort(), NullLoggingSession.create(), null,
               logWriter, securityLogWriter, locId.getHost().getAddress(),
-              locId.getHostnameForClients(), originalConfig.toProperties(), false);
+              locId.getHostnameForClients(), originalConfig.toProperties(),
+              Paths.get(System.getProperty("user.dir")));
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       startedLocator.getConfig().setEnableClusterConfiguration(false);
