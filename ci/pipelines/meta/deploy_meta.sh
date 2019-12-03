@@ -112,7 +112,7 @@ YML
   if [[ ${UPSTREAM_FORK} != "apache" ]]; then
     fly -t ${FLY_TARGET} login -n ${CONCOURSE_TEAM}
   fi
-  
+
   fly -t ${FLY_TARGET} sync
   fly -t ${FLY_TARGET} set-pipeline \
     -p ${META_PIPELINE} \
