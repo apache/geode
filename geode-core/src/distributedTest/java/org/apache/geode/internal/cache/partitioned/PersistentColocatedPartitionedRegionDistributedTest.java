@@ -27,8 +27,8 @@ import static org.apache.geode.test.dunit.Disconnect.disconnectAllFromDS;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getLocators;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getController;
-import static org.apache.geode.test.dunit.VM.getCurrentVMNum;
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.apache.geode.test.dunit.VM.toArray;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -38,7 +38,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,6 +50,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -1811,8 +1812,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
   }
 
   private void validateColocationLogger_withChildRegionGenerations(int childPRGenerationsCount,
-      int expectedLogMessagesCount)
-      throws InterruptedException {
+      int expectedLogMessagesCount) {
     closeCache();
 
     try (SpyLogger spyLogger = new SpyLogger()) {
@@ -1852,18 +1852,11 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       for (String message : messageCaptor.getAllValues()) {
         assertThat(message).matches(PATTERN_FOR_MISSING_CHILD_LOG);
       }
-
-      // Another delay before exiting the thread to make sure that missing region logging
-      // doesn't continue after all regions are created (delay > logInterval)
-      Thread.sleep(2_000);
-
-      verifyNoMoreInteractions(spyLogger.logger());
     }
   }
 
   private void validateColocationLogger_withMultipleChildRegionGenerations(int childCount,
-      int expectedLogMessagesCount)
-      throws InterruptedException {
+      int expectedLogMessagesCount) {
     closeCache();
 
     try (SpyLogger spyLogger = new SpyLogger()) {
@@ -1900,12 +1893,6 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       verify(spyLogger.logger(),
           times(expectedLogMessagesCount))
               .accept(messageCaptor.capture());
-
-      // Another delay before exiting the thread to make sure that missing region logging
-      // doesn't continue after all regions are created (delay > logInterval)
-      Thread.sleep(2_000);
-
-      verifyNoMoreInteractions(spyLogger.logger());
     }
   }
 
@@ -1944,7 +1931,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
    * {@link SerializableCallable} to complete must have sufficient overhead in the wait for runtime
    * variations that exceed the minimum time to complete.
    */
-  private void validateColocationLogger_withChildRegionTree() throws InterruptedException {
+  private void validateColocationLogger_withChildRegionTree() {
     closeCache();
 
     try (SpyLogger spyLogger = new SpyLogger()) {
@@ -1979,12 +1966,6 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       for (String message : messages) {
         assertThat(message).matches(PATTERN_FOR_MISSING_CHILD_LOG);
       }
-
-      // Another delay before exiting the thread to make sure that missing region logging
-      // doesn't continue after all regions are created (delay > logInterval)
-      Thread.sleep(2_000);
-
-      verifyNoMoreInteractions(spyLogger.logger());
     }
   }
 
@@ -2112,9 +2093,9 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
   private File getDiskDir() {
     try {
-      File file = new File(temporaryFolder.getRoot(), diskStoreName1 + getCurrentVMNum());
+      File file = new File(temporaryFolder.getRoot(), diskStoreName1 + getVMId());
       if (!file.exists()) {
-        temporaryFolder.newFolder(diskStoreName1 + getCurrentVMNum());
+        temporaryFolder.newFolder(diskStoreName1 + getVMId());
       }
       return file.getAbsoluteFile();
     } catch (IOException e) {
@@ -2183,13 +2164,13 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     public ColocationLogger startColocationLogger(PartitionedRegion region) {
       Function<PartitionedRegion, Set<String>> allColocationRegionsProvider =
           pr -> getAllColocationRegions(pr).keySet();
-      Function<Runnable, Thread> threadProvider =
+      ExecutorService executorService = Executors.newSingleThreadExecutor(
           runnable -> new LoggingThread("ColocationLogger for " + region.getName(), false,
-              runnable);
+              runnable));
       Consumer<String> spyLogger = SpyLogger.spy();
       assertThat(spyLogger).isNotNull();
       return new SingleThreadColocationLogger(region, 1000, 1000, spyLogger,
-          allColocationRegionsProvider, threadProvider).start();
+          allColocationRegionsProvider, executorService).start();
     }
   }
 

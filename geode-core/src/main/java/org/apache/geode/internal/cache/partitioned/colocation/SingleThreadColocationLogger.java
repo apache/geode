@@ -15,11 +15,14 @@
 package org.apache.geode.internal.cache.partitioned.colocation;
 
 import static java.lang.System.lineSeparator;
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.geode.internal.cache.ColocationHelper.getAllColocationRegions;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -43,7 +46,7 @@ public class SingleThreadColocationLogger implements ColocationLogger {
   private static final Logger LOGGER = LogService.getLogger(ColocationLogger.class);
 
   private final List<String> missingChildren = new ArrayList<>();
-  private final AtomicReference<Thread> thread = new AtomicReference<>();
+  private final AtomicReference<Future<?>> completed = new AtomicReference<>();
   private final Object lock = new Object();
 
   private final PartitionedRegion region;
@@ -51,7 +54,7 @@ public class SingleThreadColocationLogger implements ColocationLogger {
   private final long intervalMillis;
   private final Consumer<String> logger;
   private final Function<PartitionedRegion, Set<String>> allColocationRegionsProvider;
-  private final Function<Runnable, Thread> threadProvider;
+  private final ExecutorService executorService;
 
   /**
    * @param region the region that owns this logger instance
@@ -59,30 +62,31 @@ public class SingleThreadColocationLogger implements ColocationLogger {
   SingleThreadColocationLogger(PartitionedRegion region, long delayMillis, long intervalMillis) {
     this(region, delayMillis, intervalMillis, LOGGER::warn,
         pr -> getAllColocationRegions(pr).keySet(),
-        runnable -> new LoggingThread("ColocationLogger for " + region.getName(), false, runnable));
+        newSingleThreadExecutor(
+            runnable -> new LoggingThread("ColocationLogger for " + region.getName(), false,
+                runnable)));
   }
 
   @VisibleForTesting
   public SingleThreadColocationLogger(PartitionedRegion region, long delayMillis,
       long intervalMillis, Consumer<String> logger,
       Function<PartitionedRegion, Set<String>> allColocationRegionsProvider,
-      Function<Runnable, Thread> threadProvider) {
+      ExecutorService executorService) {
     this.region = region;
     this.delayMillis = delayMillis;
     this.intervalMillis = intervalMillis;
     this.logger = logger;
     this.allColocationRegionsProvider = allColocationRegionsProvider;
-    this.threadProvider = threadProvider;
+    this.executorService = executorService;
   }
 
   @Override
   public ColocationLogger start() {
     synchronized (lock) {
-      if (thread.get() != null) {
+      if (completed.get() != null) {
         throw new IllegalStateException(this + " is already running");
       }
-      thread.set(threadProvider.apply(this::checkForMissingColocatedRegion));
-      thread.get().start();
+      completed.set(executorService.submit(checkForMissingColocatedRegionRunnable()));
       return this;
     }
   }
@@ -138,8 +142,17 @@ public class SingleThreadColocationLogger implements ColocationLogger {
   }
 
   @VisibleForTesting
-  public Thread getThread() {
-    return thread.get();
+  Future<?> getFuture() {
+    return completed.get();
+  }
+
+  @VisibleForTesting
+  List<String> getMissingChildren() {
+    return new ArrayList<>(missingChildren);
+  }
+
+  private Runnable checkForMissingColocatedRegionRunnable() {
+    return this::checkForMissingColocatedRegion;
   }
 
   private void checkForMissingColocatedRegion() {
