@@ -222,7 +222,8 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
 
 
   void putSerializableObjectAndVerifyLuceneQueryResult(VM putter, String regionName,
-      int expectedRegionSize, int start, int end, VM... vms) throws Exception {
+      int expectedRegionSize, int start, int end, VM... vms)
+      throws Exception {
     // do puts
     putSerializableObject(putter, regionName, start, end);
 
@@ -292,22 +293,26 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
   protected Collection executeLuceneQuery(Object luceneQuery)
       throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
     Collection results = null;
-    int retryCount = 10;
-    while (true) {
-      try {
-        results = (Collection) luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
-        break;
-      } catch (Exception ex) {
-        if (!ex.getCause().getMessage().contains("currently indexing")) {
-          throw ex;
-        }
-        if (--retryCount == 0) {
-          throw ex;
-        }
+    await().untilAsserted(() -> assertThat(isIndexingFinished(luceneQuery)).isTrue());
+    results = (Collection) luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
+
+    return results;
+  }
+
+  protected boolean isIndexingFinished(Object luceneQuery)
+      throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    boolean success;
+    try {
+      luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
+      success = true;
+    } catch (Exception ex) {
+      if (!ex.getCause().getMessage().contains("currently indexing")) {
+        throw ex;
+      } else {
+        success = false;
       }
     }
-    return results;
-
+    return success;
   }
 
   protected void verifyLuceneQueryResultInEachVM(String regionName, int expectedRegionSize,

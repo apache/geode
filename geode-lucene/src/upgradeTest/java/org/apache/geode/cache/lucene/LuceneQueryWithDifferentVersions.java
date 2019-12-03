@@ -15,6 +15,8 @@
 package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -27,12 +29,12 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 
-public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServersAreRolled
+public class LuceneQueryWithDifferentVersions
     extends LuceneSearchWithRollingUpgradeDUnit {
 
   // 2 locator, 2 servers
   @Test
-  public void luceneQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServersAreRolled()
+  public void luceneQueryCannotBeExecuted()
       throws Exception {
     final Host host = Host.getHost(0);
     VM locator1 = host.getVM(oldVersion, 0);
@@ -74,8 +76,9 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
       server2.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
 
       invokeRunnableInVMs(invokeCreateRegion(regionName, shortcut.name()), server1, server2);
-      int expectedRegionSize = 10;
-      putSerializableObject(server1, regionName, 0, 10);
+
+      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, 10, 0,
+          10, server1, server2);
       locator1 = rollLocatorToCurrent(locator1, hostName, locatorPorts[0], getTestMethodName(),
           locatorString);
 
@@ -84,24 +87,17 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
 
       server1 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server1, regionType, null,
           shortcut.name(), regionName, locatorPorts, reindex);
-      expectedRegionSize += 10;
-      putSerializableObject(server2, regionName, 15, 25);
-      expectedRegionSize += 5;
-      putSerializableObject(server1, regionName, 20, 30);
 
-      server2 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server2, regionType, null,
-          shortcut.name(), regionName, locatorPorts, reindex);
-      expectedRegionSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 25,
-          35, server1, server2);
-      expectedRegionSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 30,
-          40, server1, server2);
+      Throwable thrown = catchThrowable(() -> {
+        putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, 20, 15,
+            25, server2);
+      });
+
+      assertThat(thrown.getCause()).isInstanceOf(AssertionError.class);
 
     } finally {
       invokeRunnableInVMs(true, invokeStopLocator(), locator1, locator2);
       invokeRunnableInVMs(true, invokeCloseCache(), server1, server2);
     }
   }
-
 }

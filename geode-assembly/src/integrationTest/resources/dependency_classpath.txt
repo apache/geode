@@ -80,11 +80,11 @@ jetty-util-9.4.21.v20190926.jar
 log4j-slf4j-impl-2.12.1.jar
 log4j-core-2.12.1.jar
 log4j-jul-2.12.1.jar
-lucene-analyzers-phonetic-6.6.6.jar
-lucene-analyzers-common-6.6.6.jar
-lucene-queryparser-6.6.6.jar
-lucene-core-6.6.6.jar
-lucene-queries-6.6.6.jar
+lucene-analyzers-phonetic-7.1.0.jar
+lucene-analyzers-common-7.1.0.jar
+lucene-queryparser-7.1.0.jar
+lucene-core-7.1.0.jar
+lucene-queries-7.1.0.jar
 protobuf-java-3.10.0.jar
 geo-0.7.1.jar
 netty-all-4.1.45.Final.jar

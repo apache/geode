@@ -36,6 +36,7 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -81,6 +82,9 @@ public class LuceneEventListener implements AsyncEventListener {
     Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
     cache.setPdxReadSerializedOverride(true);
 
+    if (cache.hasMemberOlderThan(Version.CURRENT)) {
+      return false;
+    }
     Set<IndexRepository> affectedRepos = new HashSet<>();
 
     try {

@@ -1032,11 +1032,11 @@ lib/log4j-core-2.12.1.jar
 lib/log4j-jcl-2.12.1.jar
 lib/log4j-jul-2.12.1.jar
 lib/log4j-slf4j-impl-2.12.1.jar
-lib/lucene-analyzers-common-6.6.6.jar
-lib/lucene-analyzers-phonetic-6.6.6.jar
-lib/lucene-core-6.6.6.jar
-lib/lucene-queries-6.6.6.jar
-lib/lucene-queryparser-6.6.6.jar
+lib/lucene-analyzers-common-7.1.0.jar
+lib/lucene-analyzers-phonetic-7.1.0.jar
+lib/lucene-core-7.1.0.jar
+lib/lucene-queries-7.1.0.jar
+lib/lucene-queryparser-7.1.0.jar
 lib/micrometer-core-1.2.1.jar
 lib/mx4j-3.0.2.jar
 lib/mx4j-remote-3.0.2.jar
