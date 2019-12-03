@@ -16,9 +16,7 @@
 package org.apache.geode.management.internal.rest.controllers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -33,13 +31,34 @@ public class DocLinksController {
 
   @ApiOperation("get documentation-links")
   @GetMapping("/")
-  public ResponseEntity<Object> getDocumentationLinks(HttpServletRequest request) {
-    Map<String, Object> docMap = new HashMap<>();
+  public ResponseEntity<DocLinks> getDocumentationLinks(HttpServletRequest request) {
+    DocLinks docLinks = new DocLinks();
     String baseURL = request.getRequestURL().toString();
     List<String> uriList = new ArrayList<>();
     uriList.add(baseURL + "v1/api-docs");
-    docMap.put("latest", uriList.get(0));
-    docMap.put("supported", uriList);
-    return new ResponseEntity<>(docMap, HttpStatus.OK);
+    docLinks.setLatest(uriList.get(0));
+    docLinks.setSupported(uriList);
+    return new ResponseEntity<>(docLinks, HttpStatus.OK);
+  }
+
+  public static class DocLinks {
+    private String latest;
+    private List<String> supported;
+
+    public String getLatest() {
+      return latest;
+    }
+
+    public void setLatest(String latest) {
+      this.latest = latest;
+    }
+
+    public List<String> getSupported() {
+      return supported;
+    }
+
+    public void setSupported(List<String> supported) {
+      this.supported = supported;
+    }
   }
 }
