@@ -32,7 +32,6 @@ dependencies {
   api('junit:junit') {
     exclude module: 'hamcrest-core'
   }
-  api("org.junit.jupiter:junit-jupiter-api")
   api('org.assertj:assertj-core')
   api('org.mockito:mockito-core')
 
@@ -61,6 +60,11 @@ dependencies {
   testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   testRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
 
+  api("org.junit.jupiter:junit-jupiter-api")
+  runtimeOnly("org.junit.jupiter:junit-jupiter-engine")
+  runtimeOnly("org.junit.vintage:junit-vintage-engine")
+  testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+  testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
   integrationTestRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
   integrationTestRuntimeOnly("org.junit.vintage:junit-vintage-engine")
 }
@@ -68,14 +72,14 @@ dependencies {
 test {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
-  useJUnitPlatform {
-    includeEngines 'junit-jupiter', 'junit-vintage'
-  }
 }
 
 integrationTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
+}
+
+tasks.withType(Test) {
   useJUnitPlatform {
     includeEngines 'junit-jupiter', 'junit-vintage'
   }
