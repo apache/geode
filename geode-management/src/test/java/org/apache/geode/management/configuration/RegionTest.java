@@ -131,10 +131,22 @@ public class RegionTest {
 
   @Test
   public void readEviction() throws Exception {
-    String json = "{\"type\":\"ENTRY_COUNT\",\"action\":\"OVERFLOW_TO_DISK\",\"entryCount\":100}";
+    String json = "{\"action\":\"OVERFLOW_TO_DISK\",\"entryCount\":100}";
     Region.Eviction eviction = mapper.readValue(json, Region.Eviction.class);
     assertThat(eviction.getEntryCount()).isEqualTo(100);
     assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
+
+    String json2 = "{\"action\":\"OVERFLOW_TO_DISK\",\"entryCount\":100,\"memorySizeMb\":200}";
+    assertThatThrownBy(() -> mapper.readValue(json2, Region.Eviction.class))
+        .hasMessageContaining("Type conflict");
+
+    String json3 = "{\"entryCount\":100,\"type\":\"HEAP_PERCENTAGE\"}";
+    assertThatThrownBy(() -> mapper.readValue(json3, Region.Eviction.class))
+        .hasMessageContaining("Type conflict");
+
+    String json4 = "{\"entryCount\":100,\"entryCount\":\"200\"}";
+    eviction = mapper.readValue(json4, Region.Eviction.class);
+    assertThat(eviction.getEntryCount()).isEqualTo(200);
   }
 
   @Test

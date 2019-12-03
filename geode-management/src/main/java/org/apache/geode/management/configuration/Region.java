@@ -256,6 +256,9 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
     }
 
     public void setType(EvictionType type) {
+      if (this.type != null && this.type != type) {
+        throw new IllegalArgumentException("Type conflict. Type is already set to " + this.type);
+      }
       this.type = type;
     }
 
@@ -275,6 +278,9 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
     }
 
     public void setEntryCount(Integer entryCount) {
+      if (type != null && type != EvictionType.ENTRY_COUNT) {
+        throw new IllegalArgumentException("Type conflict. Type is already set to " + type);
+      }
       type = EvictionType.ENTRY_COUNT;
       this.limit = entryCount;
     }
@@ -287,6 +293,9 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
     }
 
     public void setMemorySizeMb(Integer memorySizeMb) {
+      if (type != null && type != EvictionType.MEMORY_SIZE) {
+        throw new IllegalArgumentException("Type conflict. type is already set to " + type);
+      }
       type = EvictionType.MEMORY_SIZE;
       this.limit = memorySizeMb;
     }
