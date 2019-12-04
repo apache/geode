@@ -617,7 +617,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Function<Object, SystemTimer> systemTimerFactory;
   private final ReplyProcessor21Factory replyProcessor21Factory;
 
-  // KIRK: -----------------------------------------------------------------------------------------
+  // -----------------------------------------------------------------------------------------
 
   /**
    * Used by unit tests to force cache creation to use a test generated cache.xml
@@ -649,6 +649,50 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final boolean DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE = Boolean
       .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+
+  private final ConcurrentMap<String, DiskStoreImpl> diskStores = new ConcurrentHashMap<>();
+
+  private final ConcurrentMap<String, DiskStoreImpl> regionOwnedDiskStores =
+      new ConcurrentHashMap<>();
+
+  // TODO: remove static from defaultDiskStoreName and move methods to InternalCache
+  @MakeNotStatic
+  private static String defaultDiskStoreName = DiskStoreFactory.DEFAULT_DISK_STORE_NAME;
+
+  /**
+   * GuardedBy {@link #ccpTimerMutex}
+   *
+   * @see CacheClientProxy
+   */
+  private SystemTimer ccpTimer;
+
+  /**
+   * @see #ccpTimer
+   */
+  private final Object ccpTimerMutex = new Object();
+
+  static final int PURGE_INTERVAL = 1000;
+
+  private int cancelCount = 0;
+
+  private final ExpirationScheduler expirationScheduler;
+
+  private static final ThreadLocal<GemFireCacheImpl> xmlCache = new ThreadLocal<>();
+
+  // TODO make this a simple int guarded by riWaiters and get rid of the double-check
+  private final AtomicInteger registerInterestsInProgress = new AtomicInteger();
+
+  private final List<SimpleWaiter> riWaiters = new ArrayList<>();
+
+  // never changes but is currently only initialized in constructor by unit tests
+  private TypeRegistry pdxRegistry;
+
+  private Declarable initializer;
+
+  private Properties initializerProps;
+
+  private final InternalCacheForClientAccess cacheForClients =
+      new InternalCacheForClientAccess(this);
 
   // KIRK: -----------------------------------------------------------------------------------------
 
@@ -2476,11 +2520,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private final ConcurrentMap<String, DiskStoreImpl> diskStores = new ConcurrentHashMap<>();
-
-  private final ConcurrentMap<String, DiskStoreImpl> regionOwnedDiskStores =
-      new ConcurrentHashMap<>();
-
   @Override
   public void addDiskStore(DiskStoreImpl dsi) {
     diskStores.put(dsi.getName(), dsi);
@@ -2535,10 +2574,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public static String getDefaultDiskStoreName() {
     return defaultDiskStoreName;
   }
-
-  // TODO: remove static from defaultDiskStoreName and move methods to InternalCache
-  @MakeNotStatic
-  private static String defaultDiskStoreName = DiskStoreFactory.DEFAULT_DISK_STORE_NAME;
 
   @Override
   public DiskStoreImpl getOrCreateDefaultDiskStore() {
@@ -3698,18 +3733,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * GuardedBy {@link #ccpTimerMutex}
-   *
-   * @see CacheClientProxy
-   */
-  private SystemTimer ccpTimer;
-
-  /**
-   * @see #ccpTimer
-   */
-  private final Object ccpTimerMutex = new Object();
-
-  /**
    * Get cache-wide CacheClientProxy SystemTimer
    *
    * @return the timer, lazily created
@@ -3735,10 +3758,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.ccpTimer = ccpTimer;
   }
 
-  static final int PURGE_INTERVAL = 1000;
-
-  private int cancelCount = 0;
-
   /**
    * Does a periodic purge of the CCPTimer to prevent a large number of cancelled tasks from
    * building up in it. See GEODE-2485.
@@ -3755,8 +3774,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
   }
-
-  private final ExpirationScheduler expirationScheduler;
 
   /**
    * Get cache-wide ExpirationScheduler
@@ -4289,8 +4306,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return Collections.unmodifiableMap(uncheckedCast(namedRegionAttributes));
   }
 
-  private static final ThreadLocal<GemFireCacheImpl> xmlCache = new ThreadLocal<>();
-
   @Override
   public void loadCacheXml(InputStream is)
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
@@ -4404,14 +4419,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public BackupService getBackupService() {
     return backupService;
   }
-
-  // TODO make this a simple int guarded by riWaiters and get rid of the double-check
-  private final AtomicInteger registerInterestsInProgress = new AtomicInteger();
-
-  private final List<SimpleWaiter> riWaiters = new ArrayList<>();
-
-  // never changes but is currently only initialized in constructor by unit tests
-  private TypeRegistry pdxRegistry;
 
   /**
    * update stats for completion of a registerInterest operation
@@ -5190,10 +5197,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private Declarable initializer;
-
-  private Properties initializerProps;
-
   @Override
   public Declarable getInitializer() {
     return initializer;
@@ -5339,9 +5342,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private final InternalCacheForClientAccess cacheForClients =
-      new InternalCacheForClientAccess(this);
-
+KIRK
   @Override
   public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
     return cacheForClients;
