@@ -288,8 +288,10 @@ public class RegionManagementDunitTest {
     String regionName = "createRegionWithEviction";
     region.setName(regionName);
     region.setType(RegionType.REPLICATE);
-    region.setEviction(new Region.Eviction(Region.EvictionType.ENTRY_COUNT,
-        Region.EvictionAction.OVERFLOW_TO_DISK, 100, null));
+    Region.Eviction eviction = new Region.Eviction();
+    eviction.setAction(Region.EvictionAction.OVERFLOW_TO_DISK);
+    eviction.setEntryCount(100);
+    region.setEviction(eviction);
 
     assertManagementResult(cms.create(region)).isSuccessful();
 
@@ -321,10 +323,10 @@ public class RegionManagementDunitTest {
     });
 
     Region regionResult = cms.get(region).getConfigResult();
-    Region.Eviction eviction = regionResult.getEviction();
-    assertThat(eviction).isNotNull();
-    assertThat(eviction.getType()).isEqualTo(Region.EvictionType.ENTRY_COUNT);
-    assertThat(eviction.getEntryCount()).isEqualTo(100);
-    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
+    Region.Eviction eviction2 = regionResult.getEviction();
+    assertThat(eviction2).isNotNull();
+    assertThat(eviction2.getType()).isEqualTo(Region.EvictionType.ENTRY_COUNT);
+    assertThat(eviction2.getEntryCount()).isEqualTo(100);
+    assertThat(eviction2.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
   }
 }

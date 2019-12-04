@@ -170,23 +170,28 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
 
   Region.Eviction convertFrom(
       RegionAttributesType.EvictionAttributes.LruMemorySize evictionAttributes) {
-    return new Region.Eviction(Region.EvictionType.MEMORY_SIZE,
-        getEvictionAction(evictionAttributes.getAction()),
-        Integer.parseInt(evictionAttributes.getMaximum()), evictionAttributes.getClassName());
+    Region.Eviction eviction = new Region.Eviction();
+    eviction.setAction(getEvictionAction(evictionAttributes.getAction()));
+    eviction.setMemorySizeMb(Integer.parseInt(evictionAttributes.getMaximum()));
+    eviction.setObjectSizer(evictionAttributes.getClassName());
+    return eviction;
   }
 
   Region.Eviction convertFrom(
       RegionAttributesType.EvictionAttributes.LruEntryCount evictionAttributes) {
-    return new Region.Eviction(Region.EvictionType.ENTRY_COUNT,
-        getEvictionAction(evictionAttributes.getAction()),
-        Integer.parseInt(evictionAttributes.getMaximum()), null);
+    Region.Eviction eviction = new Region.Eviction();
+    eviction.setAction(getEvictionAction(evictionAttributes.getAction()));
+    eviction.setEntryCount(Integer.parseInt(evictionAttributes.getMaximum()));
+    return eviction;
   }
 
   Region.Eviction convertFrom(
       RegionAttributesType.EvictionAttributes.LruHeapPercentage evictionAttributes) {
-    return new Region.Eviction(Region.EvictionType.HEAP_PERCENTAGE,
-        getEvictionAction(evictionAttributes.getAction()), null,
-        evictionAttributes.getClassName());
+    Region.Eviction eviction = new Region.Eviction();
+    eviction.setAction(getEvictionAction(evictionAttributes.getAction()));
+    eviction.setObjectSizer(evictionAttributes.getClassName());
+    eviction.setType(Region.EvictionType.HEAP_PERCENTAGE);
+    return eviction;
   }
 
   RegionAttributesType.ExpirationAttributesType convertFrom(Region.Expiration expiration) {

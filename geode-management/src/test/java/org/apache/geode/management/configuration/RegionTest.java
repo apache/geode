@@ -151,8 +151,8 @@ public class RegionTest {
 
   @Test
   public void heapIgnoreLimit() throws Exception {
-    Region.Eviction eviction =
-        new Region.Eviction(Region.EvictionType.HEAP_PERCENTAGE, null, 10, null);
+    Region.Eviction eviction = new Region.Eviction();
+    eviction.setType(Region.EvictionType.HEAP_PERCENTAGE);
     assertThat(eviction.getType()).isEqualTo(Region.EvictionType.HEAP_PERCENTAGE);
     assertThat(eviction.getEntryCount()).isNull();
     assertThat(eviction.getMemorySizeMb()).isNull();

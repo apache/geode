@@ -244,17 +244,18 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
 
     public Eviction() {}
 
-    public Eviction(EvictionType type, EvictionAction action, Integer limit, String objectSizer) {
-      this.type = type;
-      this.action = action;
-      this.limit = limit;
-      this.objectSizer = objectSizer;
-    }
-
     public EvictionType getType() {
       return type;
     }
 
+    /**
+     * once a type is set, it can not be changed to another value.
+     *
+     * @param type eviction type
+     * @throws IllegalArgumentException if type is already set to another value. this is to
+     *         prevent users from trying to send in conflicting attributes in json
+     *         format such as {entryCount:10,type:HEAP_PERCENTAGE}
+     */
     public void setType(EvictionType type) {
       if (this.type != null && this.type != type) {
         throw new IllegalArgumentException("Type conflict. Type is already set to " + this.type);
@@ -277,6 +278,14 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
       return null;
     }
 
+    /**
+     * this sets the entry count and the eviction type to ENTRY_COUNT
+     *
+     * @param entryCount the entry count
+     * @throws IllegalArgumentException if type is already set to another value. This is to prevent
+     *         users from trying to send conflicting json attributes
+     *         such as {type:HEAP_PERCENTAGE,entryCount:10}
+     */
     public void setEntryCount(Integer entryCount) {
       if (type != null && type != EvictionType.ENTRY_COUNT) {
         throw new IllegalArgumentException("Type conflict. Type is already set to " + type);
@@ -292,6 +301,14 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
       return null;
     }
 
+    /**
+     * this sets the memory size in megabytes and the eviction type to MEMORY_SIZE
+     *
+     * @param memorySizeMb the memory size in megabytes
+     * @throws IllegalArgumentException if type is already set to other values. This is to prevent
+     *         users from trying to send conflicting json attributes
+     *         such as {type:HEAP_PERCENTAGE,memorySizeMb:100}
+     */
     public void setMemorySizeMb(Integer memorySizeMb) {
       if (type != null && type != EvictionType.MEMORY_SIZE) {
         throw new IllegalArgumentException("Type conflict. type is already set to " + type);
