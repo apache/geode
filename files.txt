@@ -1,6 +1,0 @@
-	geode-core/src/integrationTest/java/org/apache/geode/distributed/internal/membership/gms/fd/TestImpl.java
-	geode-core/src/integrationTest/java/org/apache/geode/distributed/internal/membership/gms/fd/VirtualTime.java
-	geode-core/src/integrationTest/java/org/apache/geode/distributed/internal/membership/gms/fd/VirtualTimeTest.java
-	geode-core/src/main/java/org/apache/geode/distributed/internal/membership/gms/fd/NanoTime.java
-	geode-core/src/main/java/org/apache/geode/distributed/internal/membership/gms/fd/ProductionImpl.java
-	geode-core/src/main/java/org/apache/geode/distributed/internal/membership/gms/fd/ScheduledTask.java
