@@ -19,6 +19,16 @@ benchmarks:
   baseline_branch: develop/highwater
   baseline_version: ''
   benchmark_branch: develop
+  flavors:
+  - title: '_base'
+    flag: ''
+    options: ''
+  - title: '_with_ssl'
+    flag: '-PwithSsl'
+    options: '--tests=*GetBenchmark --tests=*PutBenchmark'
+  - title: '_with_security_manager'
+    flag: '-PwithSecurityManager'
+    options: '--tests=Partitioned*'
 
 build_test:
   ARTIFACT_SLUG: build
