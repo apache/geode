@@ -754,18 +754,22 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
             .toString());
 
     // creating colocated Regions
-    customerRegion = createColocatedRegion(CUSTOMER, redundantCopies, numBuckets, -1, null);
-    orderRegion = createColocatedRegion(ORDER, redundantCopies, numBuckets, -1, CUSTOMER);
-    shipmentRegion = createColocatedRegion(SHIPMENT, redundantCopies, numBuckets, -1, ORDER);
+    customerRegion = createColocatedRegion(CUSTOMER, null, redundantCopies, numBuckets,
+        localMaxMemory);
+    orderRegion = createColocatedRegion(ORDER, CUSTOMER, redundantCopies, numBuckets,
+        localMaxMemory);
+    shipmentRegion = createColocatedRegion(SHIPMENT, ORDER, redundantCopies, numBuckets,
+        localMaxMemory);
 
     return port;
   }
 
 
-  private static <K, V> Region<K, V> createColocatedRegion(String regionName, int redundantCopies,
-      int totalNoofBuckets,
-      int localMaxMemory,
-      String colocatedRegionName) {
+  private static <K, V> Region<K, V> createColocatedRegion(String regionName,
+                                                           String colocatedRegionName,
+                                                           int redundantCopies,
+                                                           int totalNoofBuckets,
+                                                           int localMaxMemory) {
 
     PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
@@ -828,13 +832,13 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
 
     // creating colocated Regions
     customerRegion =
-        createColocatedRegion(CUSTOMER, redundantCopies, localMaxMemory, totalnoofBuckets, null);
+        createColocatedRegion(CUSTOMER, null, redundantCopies, localMaxMemory, totalnoofBuckets);
 
     orderRegion =
-        createColocatedRegion(ORDER, redundantCopies, localMaxMemory, totalnoofBuckets, null);
+        createColocatedRegion(ORDER, null, redundantCopies, localMaxMemory, totalnoofBuckets);
 
     shipmentRegion =
-        createColocatedRegion(SHIPMENT, redundantCopies, localMaxMemory, totalnoofBuckets, null);
+        createColocatedRegion(SHIPMENT, null, redundantCopies, localMaxMemory, totalnoofBuckets);
 
 
     testRegion2 =
@@ -842,13 +846,13 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
 
     // creating colocated Regions
     orderRegion2 =
-        createColocatedRegion(CUSTOMER2, redundantCopies, localMaxMemory, totalnoofBuckets, null);
+        createColocatedRegion(CUSTOMER2, null, redundantCopies, localMaxMemory, totalnoofBuckets);
 
     customerRegion2 =
-        createColocatedRegion(ORDER2, redundantCopies, localMaxMemory, totalnoofBuckets, null);
+        createColocatedRegion(ORDER2, null, redundantCopies, localMaxMemory, totalnoofBuckets);
 
     shipmentRegion2 =
-        createColocatedRegion(SHIPMENT2, redundantCopies, localMaxMemory, totalnoofBuckets, null);
+        createColocatedRegion(SHIPMENT2, null, redundantCopies, localMaxMemory, totalnoofBuckets);
 
     return port;
   }
