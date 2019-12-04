@@ -96,6 +96,8 @@ public abstract class DistributionMessage
   @MakeImmutable
   private static final List<MemberIdentifier> ALL_RECIPIENTS_LIST =
       Collections.singletonList(null);
+  public static final InternalDistributedMember[] ALL_RECIPIENTS_ARRAY =
+      {null};
 
   //////////////////// Instance Fields ////////////////////
 
@@ -299,11 +301,11 @@ public abstract class DistributionMessage
    */
   public InternalDistributedMember[] getRecipientsArray() {
     if (this.multicast) {
-      return new InternalDistributedMember[] {ALL_RECIPIENTS};
+      return ALL_RECIPIENTS_ARRAY;
     } else if (this.recipients != null) {
       return this.recipients;
     } else {
-      return new InternalDistributedMember[] {ALL_RECIPIENTS};
+      return ALL_RECIPIENTS_ARRAY;
     }
   }
 
@@ -316,11 +318,7 @@ public abstract class DistributionMessage
   }
 
   public String getRecipientsDescription() {
-    if (this.recipients == null) {
-      return "recipients: ALL";
-    } else if (this.multicast) {
-      return "recipients: multicast";
-    } else if (this.recipients.length > 0 && this.recipients[0] == ALL_RECIPIENTS) {
+    if (forAll()) {
       return "recipients: ALL";
     } else {
       StringBuffer sb = new StringBuffer(100);

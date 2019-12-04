@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
@@ -38,7 +37,7 @@ public interface Message extends DataSerializableFixedID {
    * Indicates that a distribution message should be sent to all other distribution managers.
    */
   @Immutable
-  InternalDistributedMember ALL_RECIPIENTS = null;
+  MemberIdentifier ALL_RECIPIENTS = null;
 
   /**
    * Establishes the destination of a message

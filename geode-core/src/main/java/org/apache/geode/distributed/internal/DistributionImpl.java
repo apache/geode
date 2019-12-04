@@ -63,7 +63,6 @@ import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -842,7 +841,7 @@ public class DistributionImpl implements Distribution {
   }
 
   /** this is a fake message class that is used to flush the serial execution queue */
-  static class FlushingMessage extends AbstractGMSMessage {
+  static class FlushingMessage extends DistributionMessage {
     final boolean[] done;
 
     FlushingMessage(boolean[] done) {
@@ -859,6 +858,16 @@ public class DistributionImpl implements Distribution {
     @Override
     public int getDSFID() {
       return 0;
+    }
+
+    @Override
+    public int getProcessorType() {
+      return 0;
+    }
+
+    @Override
+    protected void process(ClusterDistributionManager dm) {
+
     }
 
     @Override

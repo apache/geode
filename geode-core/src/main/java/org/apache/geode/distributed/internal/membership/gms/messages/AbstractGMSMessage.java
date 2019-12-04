@@ -19,13 +19,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 
 public abstract class AbstractGMSMessage implements Message {
-  @Immutable
-  public static final MemberIdentifier ALL_RECIPIENTS = null;
   private List<MemberIdentifier> recipients;
   private MemberIdentifier sender;
 
