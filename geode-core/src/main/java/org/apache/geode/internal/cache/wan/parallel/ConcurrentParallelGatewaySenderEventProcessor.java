@@ -125,6 +125,12 @@ public class ConcurrentParallelGatewaySenderEventProcessor
   }
 
   @Override
+  public int eventQueueSize() {
+    ConcurrentParallelGatewaySenderQueue queue = (ConcurrentParallelGatewaySenderQueue) getQueue();
+    return queue == null ? 0 : queue.localSize();
+  }
+
+  @Override
   public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
       throws IOException, CacheException {
     Region region = event.getRegion();

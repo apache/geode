@@ -260,15 +260,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   }
 
   public int eventQueueSize() {
-    if (queue == null) {
-      return 0;
-    }
-
-    // This should be local size instead of pr size
-    if (this.queue instanceof ConcurrentParallelGatewaySenderQueue) {
-      return ((ConcurrentParallelGatewaySenderQueue) queue).localSize();
-    }
-    return this.queue.size();
+    return getQueue() == null ? 0 : getQueue().size();
   }
 
   public int secondaryEventQueueSize() {
