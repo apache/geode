@@ -310,21 +310,20 @@ public class JTAUtils {
 
     String sql = "select * from " + tableName;
 
-    Connection conn = ds.getConnection();
-    Statement sm = conn.createStatement();
-    ResultSet rs = sm.executeQuery(sql);
-    while (rs.next()) {
-      System.out.println("id:" + rs.getString(1));
-      System.out.println("name:" + rs.getString(2));
-      id_str = rs.getString(1);
-      if (id_str.equals(pattern)) {
-        found = true;
-        break;
-      } else
-        continue;
+    try (Connection conn = ds.getConnection();
+        Statement sm = conn.createStatement();
+        ResultSet rs = sm.executeQuery(sql)) {
+      while (rs.next()) {
+        System.out.println("id:" + rs.getString(1));
+        System.out.println("name:" + rs.getString(2));
+        id_str = rs.getString(1);
+        if (id_str.equals(pattern)) {
+          found = true;
+          break;
+        }
+      }
     }
-    rs.close();
-    conn.close();
+
     return found;
   }
 
