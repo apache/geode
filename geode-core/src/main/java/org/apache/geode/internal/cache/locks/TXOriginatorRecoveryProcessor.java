@@ -201,13 +201,8 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
-      buff.append("TXOriginatorRecoveryMessage (txLockId='");
-      buff.append(this.txLockId);
-      buff.append("'; processorId=");
-      buff.append(this.processorId);
-      buff.append(")");
-      return buff.toString();
+      return "TXOriginatorRecoveryMessage (txLockId='" + this.txLockId + "'; processorId="
+          + this.processorId + ")";
     }
   }
 
