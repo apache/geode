@@ -33,7 +33,6 @@ dependencies {
     integrationTestCompile('org.powermock:powermock-module-junit4')
     integrationTestCompile('org.powermock:powermock-api-mockito2')
     testCompile(project(':geode-junit'))
-    testImplementation('com.tngtech.archunit:archunit-junit4')
 
     integrationTestCompile(project(':geode-dunit'))
     integrationTestRuntime('org.apache.derby:derby')
