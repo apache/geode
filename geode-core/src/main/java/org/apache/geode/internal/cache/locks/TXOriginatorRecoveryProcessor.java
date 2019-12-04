@@ -70,7 +70,6 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
     }
 
     // keep waiting even if interrupted
-    // for() loop removed for bug 36983 - you can't loop on waitForReplies()
     dm.getCancelCriterion().checkCancelInProgress(null);
     try {
       processor.waitForRepliesUninterruptibly();
@@ -78,11 +77,10 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
       e.handleCause();
     }
 
-    // release txLockId...
     if (logger.isDebugEnabled()) {
       logger.debug("TXOriginatorRecoveryProcessor releasing: {}", txLockId);
     }
-    // dtls.release(txLockId);
+
     try {
       grantor.releaseLockBatch(txLockId, originator);
     } catch (InterruptedException e) {
