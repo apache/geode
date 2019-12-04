@@ -110,7 +110,7 @@ public class PartitionedRegionAsSubregionDUnitTest extends CacheTestCase {
   private void createPartitionedSubregion(final VM vm) {
     vm.invoke(() -> {
       Cache cache = getCache();
-      Region<?, ?> parentRegion =
+      Region<Integer, Integer> parentRegion =
           cache.getRegion(SEPARATOR + PARENT_REGION_NAME + SEPARATOR + CHILD_REGION_NAME);
 
       RegionFactory<Integer, Integer> regionFactory =
@@ -152,10 +152,10 @@ public class PartitionedRegionAsSubregionDUnitTest extends CacheTestCase {
           + CHILD_REGION_NAME + SEPARATOR + PARTITIONED_REGION_NAME);
       assertThat(region).isNull();
 
-      Region<?, ?> parentRegion = cache.getRegion(SEPARATOR + PARENT_REGION_NAME);
+      Region<Integer, Integer> parentRegion = cache.getRegion(SEPARATOR + PARENT_REGION_NAME);
 
       // TODO:
-      Region<?, ?> childRegion =
+      Region<Integer, Integer> childRegion =
           parentRegion.createSubregion(CHILD_REGION_NAME, parentRegion.getAttributes());
 
       RegionFactory<Integer, Integer> regionFactory =
@@ -192,7 +192,7 @@ public class PartitionedRegionAsSubregionDUnitTest extends CacheTestCase {
   private void destroyChildRegion(final VM vm) {
     vm.invoke(() -> {
       Cache cache = getCache();
-      Region<?, ?> region = cache.getRegion(PARENT_REGION_NAME + SEPARATOR + CHILD_REGION_NAME);
+      Region<Object,Object> region = cache.getRegion(PARENT_REGION_NAME + SEPARATOR + CHILD_REGION_NAME);
       region.destroyRegion();
     });
   }
@@ -200,7 +200,7 @@ public class PartitionedRegionAsSubregionDUnitTest extends CacheTestCase {
   private void localDestroyChildRegion(final VM vm) {
     vm.invoke(() -> {
       Cache cache = getCache();
-      Region<?, ?> region = cache.getRegion(PARENT_REGION_NAME + SEPARATOR + CHILD_REGION_NAME);
+      Region<Object,Object> region = cache.getRegion(PARENT_REGION_NAME + SEPARATOR + CHILD_REGION_NAME);
       region.localDestroyRegion();
     });
   }
@@ -208,7 +208,7 @@ public class PartitionedRegionAsSubregionDUnitTest extends CacheTestCase {
   private void closeChildRegion(final VM vm) {
     vm.invoke(() -> {
       Cache cache = getCache();
-      Region<?, ?> region = cache.getRegion(PARENT_REGION_NAME + SEPARATOR + CHILD_REGION_NAME);
+      Region<Object,Object> region = cache.getRegion(PARENT_REGION_NAME + SEPARATOR + CHILD_REGION_NAME);
       region.close();
     });
   }
@@ -216,8 +216,8 @@ public class PartitionedRegionAsSubregionDUnitTest extends CacheTestCase {
   private void createChildRegion(final VM vm) {
     vm.invoke(() -> {
       Cache cache = getCache();
-      RegionFactory<?, ?> regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
-      Region<?, ?> parentRegion = cache.getRegion(PARENT_REGION_NAME);
+      RegionFactory<Object,Object> regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+      Region<Object,Object> parentRegion = cache.getRegion(PARENT_REGION_NAME);
       regionFactory.createSubregion(parentRegion, CHILD_REGION_NAME);
     });
   }
@@ -225,7 +225,7 @@ public class PartitionedRegionAsSubregionDUnitTest extends CacheTestCase {
   private void createParentRegion(final VM vm) {
     vm.invoke(() -> {
       Cache cache = getCache();
-      RegionFactory<?, ?> regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+      RegionFactory<Object,Object> regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
       regionFactory.create(PARENT_REGION_NAME);
     });
   }

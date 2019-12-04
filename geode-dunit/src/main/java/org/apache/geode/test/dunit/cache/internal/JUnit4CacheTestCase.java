@@ -377,38 +377,33 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     }
   }
 
-  /**
-   * Returns a region with the given name and attributes.
-   */
-  public final <K, V> Region<K, V> createRegion(final String name,
-      final RegionAttributes<K, V> attributes)
-      throws CacheException {
-    return createRegion(name, "root", attributes);
-  }
-
-  private <K, V> RegionFactory<K, V> configRootRegionFactory(RegionFactory<K, V> regionFactory) {
+  private <K, V> AttributesFactory<K, V> getRootAttributesFactory(
+      RegionAttributes<K, V> regionAttributes) {
+    AttributesFactory<K, V> attributesFactory = new AttributesFactory<>(regionAttributes);
     ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
 
-    regionFactory.setCacheLoader(null);
-    regionFactory.setCacheWriter(null);
-    regionFactory.setPoolName(null);
-    regionFactory.setRegionTimeToLive(expiration);
-    regionFactory.setEntryTimeToLive(expiration);
-    regionFactory.setRegionIdleTimeout(expiration);
-    regionFactory.setEntryIdleTimeout(expiration);
-    return regionFactory;
+    attributesFactory.setCacheLoader(null);
+    attributesFactory.setCacheWriter(null);
+    attributesFactory.setPoolName(null);
+    attributesFactory.setRegionTimeToLive(expiration);
+    attributesFactory.setEntryTimeToLive(expiration);
+    attributesFactory.setRegionIdleTimeout(expiration);
+    attributesFactory.setEntryIdleTimeout(expiration);
+    return attributesFactory;
   }
 
-  private <K, V> RegionFactory<K, V> getRootRegionRegionFactory(RegionFactory<K, V> regionFactory) {
+  private <K, V> RegionFactory<K, V> getRootRegionFactory(RegionFactory<K, V> regionFactory) {
     RegionFactory<K, V> regionFactory1 = getCache().createRegionFactory(regionFactory);
-    return configRootRegionFactory(regionFactory1);
-  }
+    ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
 
-
-  private <K, V> RegionFactory<K, V> getRootRegionRegionFactory(
-      RegionAttributes<K, V> regionAttributes) {
-    RegionFactory<K, V> regionFactory1 = getCache().createRegionFactory(regionAttributes);
-    return configRootRegionFactory(regionFactory1);
+    regionFactory1.setCacheLoader(null);
+    regionFactory1.setCacheWriter(null);
+    regionFactory1.setPoolName(null);
+    regionFactory1.setRegionTimeToLive(expiration);
+    regionFactory1.setEntryTimeToLive(expiration);
+    regionFactory1.setRegionIdleTimeout(expiration);
+    regionFactory1.setEntryIdleTimeout(expiration);
+    return regionFactory1;
   }
 
   public final <K, V> Region<K, V> createPartitionedRegion(final String rootName,
@@ -416,20 +411,24 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     Region<K, V> root = getRootRegion(rootName);
     if (root == null) {
       // don't put listeners on root region
-      AttributesFactory<K, V> attributesFactory = new AttributesFactory<>(attributes);
-      ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
-
-      attributesFactory.setCacheLoader(null);
-      attributesFactory.setCacheWriter(null);
-      attributesFactory.setPoolName(null);
+      AttributesFactory<K,V> attributesFactory = getRootAttributesFactory(attributes);
       attributesFactory.setDataPolicy(DataPolicy.PARTITION);
-      attributesFactory.setRegionTimeToLive(expiration);
-      attributesFactory.setEntryTimeToLive(expiration);
-      attributesFactory.setRegionIdleTimeout(expiration);
-      attributesFactory.setEntryIdleTimeout(expiration);
 
       RegionAttributes<K, V> rootAttrs = attributesFactory.create();
       root = createRootRegion(rootName, rootAttrs);
+    }
+    return root;
+  }
+
+  public final <K, V> Region<K, V> createPartitionedRegion(final String rootName,
+                                                           final RegionFactory<K, V> regionFactory) throws CacheException {
+    Region<K, V> root = getRootRegion(rootName);
+    if (root == null) {
+      // don't put listeners on root region
+      RegionFactory<K,V> regionFactory1 = getRootRegionFactory(regionFactory);
+      regionFactory1.setDataPolicy(DataPolicy.PARTITION);
+
+      root = regionFactory1.create(rootName);
     }
     return root;
   }
@@ -440,17 +439,8 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
     if (root == null) {
       // don't put listeners on root region
-      AttributesFactory<K, V> attributesFactory = new AttributesFactory<>(attributes);
-      ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
-
-      attributesFactory.setCacheLoader(null);
-      attributesFactory.setCacheWriter(null);
-      attributesFactory.setPoolName(null);
+      AttributesFactory<K,V> attributesFactory = getRootAttributesFactory(attributes);
       attributesFactory.setPartitionAttributes(null);
-      attributesFactory.setRegionTimeToLive(expiration);
-      attributesFactory.setEntryTimeToLive(expiration);
-      attributesFactory.setRegionIdleTimeout(expiration);
-      attributesFactory.setEntryIdleTimeout(expiration);
 
       RegionAttributes<K, V> rootAttrs = attributesFactory.create();
       root = createRootRegion(rootName, rootAttrs);
@@ -458,22 +448,28 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return root.createSubregion(name, attributes);
   }
 
-
   public final <K, V> Region<K, V> createRegion(final String name, final String rootName,
-      final RegionFactory<K, V> regionFactory) throws CacheException {
-    Region<K, V> root = createRootRegion(rootName, regionFactory);
+                                                final RegionFactory<K, V> regionFactory)
+      throws CacheException {
+
+    Region<K, V> root = getRootRegion(rootName);
+    if (root == null) {
+      RegionFactory<K, V> regionFactoryRoot = getRootRegionFactory(regionFactory);
+      regionFactoryRoot.setPartitionAttributes(null);
+      root = regionFactoryRoot.create(rootName);
+    }
     return regionFactory.createSubregion(root, name);
   }
 
-  public final <K, V> Region<K, V> createRootRegion(final String rootName,
-      final RegionFactory<K, V> regionFactory) throws CacheException {
-    Region<K, V> root = getRootRegion(rootName);
-    if (root == null) {
-      RegionFactory<K, V> regionFactoryRoot = getRootRegionRegionFactory(regionFactory);
-      regionFactory.setPartitionAttributes(null);
-      root = regionFactoryRoot.create(rootName);
-    }
-    return root;
+
+
+  /**
+   * Returns a region with the given name and attributes.
+   */
+  public final <K, V> Region<K, V> createRegion(final String name,
+                                                final RegionAttributes<K, V> attributes)
+      throws CacheException {
+    return createRegion(name, RootRegionName, attributes);
   }
 
   public final <K, V> Region<K, V> createRegion(final String name,
@@ -495,15 +491,21 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return createRootRegion(RootRegionName, attributes);
   }
 
-  protected final <K, V> Region<K, V> createRootRegion(final RegionFactory<K, V> regionFactory)
+  public final <K, V> Region<K, V> createRootRegion(final RegionFactory<K, V> regionFactory)
       throws RegionExistsException, TimeoutException {
-    return createRootRegion(RootRegionName, regionFactory);
+    return regionFactory.create(RootRegionName);
   }
 
   public final <K, V> Region<K, V> createRootRegion(final String rootName,
       final RegionAttributes<K, V> attributes)
       throws RegionExistsException, TimeoutException {
     return getCache().createRegion(rootName, attributes);
+  }
+
+  public final <K, V> Region<K, V> createRootRegion(final String rootName,
+                                                    final RegionFactory<K, V> regionFactory)
+      throws RegionExistsException, TimeoutException {
+    return regionFactory.create(rootName);
   }
 
   protected final <K, V> Region<K, V> createExpiryRootRegion(final String rootName,
