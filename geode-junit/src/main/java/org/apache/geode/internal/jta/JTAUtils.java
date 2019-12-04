@@ -109,24 +109,16 @@ public class JTAUtils {
   /**
    * Parses a <code>command</code> and places each of its tokens in a <code>List</code>.
    */
-  public boolean parseCommand(String command, List list) {
-    // String strTemp = command;
-    boolean done = false;
-    boolean success = false;
-    int space = -1;
-    do {
-      space = command.indexOf(' ');
-      if (space < 0) {
-        done = true;
-        list.add(command);
-        break;
-      }
+  public List<String> parseCommand(String command) {
+    int space;
+    List<String> list = new LinkedList<>();
+    while ((space = command.indexOf(' ')) > 0) {
       String str = command.substring(0, space);
       list.add(str);
-      command = command.substring(space + 1, command.length());
-      success = true;
-    } while (!done);
-    return success;
+      command = command.substring(space + 1);
+    }
+    list.add(command);
+    return list;
   }
 
   /**
@@ -158,17 +150,15 @@ public class JTAUtils {
    */
   public void put(String command, String val) throws Exception {
     try {
-      LinkedList list = new LinkedList();
-      // syntax of put from CacheRunner cli help-- prabir
       command = "put " + command + " " + val;
-      parseCommand(command, list);
+      List<String> list = parseCommand(command);
       if (list.size() < 3) {
         System.out.println("Error:put requires a name and a value");
       } else {
-        String name = (String) list.get(1);
-        String value = (String) list.get(2);
+        String name = list.get(1);
+        String value = list.get(2);
         if (list.size() > 3) {
-          String objectType = (String) list.get(3);
+          String objectType = list.get(3);
           if (objectType.equalsIgnoreCase("int")) {
             this.currRegion.put(name, Integer.valueOf(value));
           } else if (objectType.equalsIgnoreCase("str")) {
