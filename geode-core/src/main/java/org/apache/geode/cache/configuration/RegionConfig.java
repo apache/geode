@@ -641,25 +641,20 @@ public class RegionConfig implements Identifiable<String>, Serializable {
     /**
      * Sets the value of the type property. Also sets the keyIndex property to true if the type
      * being set is "key".
-     *
-     * allowed object is
-     * {@link String }
-     *
-     * @deprecated Index should only be a "key" or "range" type which is set using
-     *             {@link #setKeyIndex(Boolean)}
+     * @throws IllegalArgumentException if type is unknown
      */
-    public void setType(String value) {
-      if ("range".equalsIgnoreCase(value) || "hash".equalsIgnoreCase(value)) {
-        this.type = value.toLowerCase();
+    public void setType(String type) {
+      if ("range".equalsIgnoreCase(type) || "hash".equalsIgnoreCase(type)) {
+        this.type = type.toLowerCase();
         setKeyIndex(false);
       }
       // we need to avoid setting the "type" to key since by xsd definition, it should only contain
       // "hash" and "range" value.
-      else if ("key".equalsIgnoreCase(value)) {
+      else if ("key".equalsIgnoreCase(type)) {
         this.type = null;
         setKeyIndex(true);
       } else {
-        throw new IllegalArgumentException("Invalid index type " + value);
+        throw new IllegalArgumentException("Invalid index type " + type);
       }
     }
 

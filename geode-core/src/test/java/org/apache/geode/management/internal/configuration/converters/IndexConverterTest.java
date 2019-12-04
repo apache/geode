@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.configuration.converters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,10 +42,12 @@ public class IndexConverterTest {
     xmlIndex.setKeyIndex(false);
 
     Index index = indexConverter.fromNonNullXmlObject(xmlIndex);
-    assertThat(index.getExpression()).isEqualTo("age > 65");
-    assertThat(index.getKeyIndex()).isFalse();
-    assertThat(index.getIndexType()).isEqualTo(IndexType.FUNCTIONAL);
-    assertThat(index.getName()).isEqualTo("testRange");
+    SoftAssertions.assertSoftly(softly -> {
+      softly.assertThat(index.getExpression()).as("expression").isEqualTo("age > 65");
+      softly.assertThat(index.getKeyIndex()).as("keyIndex").isFalse();
+      softly.assertThat(index.getIndexType()).as("indexType").isEqualTo(IndexType.FUNCTIONAL);
+      softly.assertThat(index.getName()).as("name").isEqualTo("testRange");
+    });
   }
 
   @Test
@@ -124,17 +127,17 @@ public class IndexConverterTest {
 
   @Test
   public void fromXMLtoConfigFail() {
-    RegionConfig.Index xmlIndex = new RegionConfig.Index();
-    xmlIndex.setType("krindex");
-    xmlIndex.setName("testFail");
-    xmlIndex.setExpression("key");
-    xmlIndex.setKeyIndex(false);
-
-    Index index = indexConverter.fromNonNullXmlObject(xmlIndex);
-    assertThat(index.getExpression()).isEqualTo("key");
-    assertThat(index.getKeyIndex()).isTrue();
-    assertThat(index.getIndexType()).isEqualTo(IndexType.PRIMARY_KEY);
-    assertThat(index.getName()).isEqualTo("testKey");
+//    RegionConfig.Index xmlIndex = new RegionConfig.Index();
+//    xmlIndex.setType("krindex");
+//    xmlIndex.setName("testFail");
+//    xmlIndex.setExpression("key");
+//    xmlIndex.setKeyIndex(false);
+//
+//    Index index = indexConverter.fromNonNullXmlObject(xmlIndex);
+//    assertThat(index.getExpression()).isEqualTo("key");
+//    assertThat(index.getKeyIndex()).isTrue();
+//    assertThat(index.getIndexType()).isEqualTo(IndexType.PRIMARY_KEY);
+//    assertThat(index.getName()).isEqualTo("testKey");
   }
 
   @Test

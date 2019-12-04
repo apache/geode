@@ -15,11 +15,31 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+import static org.apache.geode.management.configuration.IndexType.*;
+import static org.apache.geode.management.configuration.IndexType.FUNCTIONAL;
+
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
 
 public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.Index> {
+  private static Map<String, IndexType> xmlNameToIndexType = new HashMap<>();
+  private static Map<IndexType, String> indexTypeToXmlName = new EnumMap<>(IndexType.class);
+
+  static {
+    xmlNameToIndexType.put("RANGE", FUNCTIONAL);
+    xmlNameToIndexType.put("HASH", HASH_DEPRECATED);
+    xmlNameToIndexType.put("KEY", PRIMARY_KEY);
+
+    indexTypeToXmlName.put(FUNCTIONAL, "RANGE");
+    indexTypeToXmlName.put(HASH_DEPRECATED, "HASH");
+    indexTypeToXmlName.put(PRIMARY_KEY, "KEY");
+  }
+
   @Override
   protected Index fromNonNullXmlObject(RegionConfig.Index xmlObject) {
     Index index = new Index();
@@ -30,18 +50,10 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
 
     if (xmlObject.getType() != null) {
       String type = xmlObject.getType().toUpperCase();
-      switch (type) {
-        case "RANGE":
-          index.setIndexType(IndexType.FUNCTIONAL);
-          break;
-        case "HASH":
-          index.setIndexType(IndexType.HASH_DEPRECATED);
-          break;
-        case "KEY":
-          index.setIndexType(IndexType.PRIMARY_KEY);
-          break;
-        default:
-          throw new IllegalArgumentException("Unexpected index type provided: " + type);
+      if (xmlNameToIndexType.containsKey(type)) {
+        index.setIndexType(xmlNameToIndexType.get(type));
+      } else {
+        throw new IllegalArgumentException("Unexpected index type provided: " + type);
       }
     }
 
@@ -57,21 +69,11 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
     index.setKeyIndex(configObject.getKeyIndex());
 
     if (configObject.getIndexType() != null) {
-      switch (configObject.getIndexType()) {
-        case FUNCTIONAL:
-          index.setType("RANGE");
-          break;
-        case PRIMARY_KEY:
-          index.setType("KEY");
-          break;
-        case HASH_DEPRECATED:
-          index.setType("HASH");
-          break;
-        default:
-          throw new IllegalArgumentException("Unexpected index type provided: " + configObject.getIndexType());
-      }
+      index.setType(indexTypeToXmlName.get(configObject.getIndexType()));
+    } else {
+      throw new IllegalArgumentException(
+          "Unexpected index type provided: " + configObject.getIndexType());
     }
-
     return index;
   }
 }
