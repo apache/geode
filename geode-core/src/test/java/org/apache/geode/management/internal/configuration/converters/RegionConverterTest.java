@@ -22,7 +22,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
-import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -30,13 +29,10 @@ import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
-import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.config.JAXBService;
-import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 
@@ -53,7 +49,7 @@ public class RegionConverterTest {
   }
 
   @Test
-  public void fromXmlWithNameType() {
+  public void fromXmlWithNameType() throws Exception {
     config.setName("test");
     config.setRegionAttributes(converter.createRegionAttributesByType("REPLICATE"));
 
@@ -63,7 +59,7 @@ public class RegionConverterTest {
   }
 
   @Test
-  public void fromXmlWithAll() {
+  public void fromXmlWithAll() throws Exception {
     config.setName("test");
     config.setRegionAttributes(converter.createRegionAttributesByType("PARTITION"));
 
@@ -89,21 +85,21 @@ public class RegionConverterTest {
   }
 
   @Test
-  public void fromXmlWithLocalType() {
+  public void fromXmlWithLocalType() throws Exception {
     config.setName("test");
     config.setRegionAttributes(converter.createRegionAttributesByType("LOCAL"));
     assertThat(converter.fromXmlObject(config).getType()).isEqualTo(RegionType.LEGACY);
   }
 
   @Test
-  public void fromXmlWithNullType() {
+  public void fromXmlWithNullType() throws Exception {
     config.setName("test");
     config.setType((String) null);
     assertThat(converter.fromXmlObject(config).getType()).isEqualTo(RegionType.LEGACY);
   }
 
   @Test
-  public void fromConfig() {
+  public void fromConfig() throws Exception {
     region.setName("test");
     region.setType(RegionType.PARTITION);
     region.setValueConstraint("foo");
@@ -143,7 +139,7 @@ public class RegionConverterTest {
   }
 
   @Test
-  public void getRegionType() {
+  public void getRegionType() throws Exception {
     assertThat(converter.getRegionType("ABC", null))
         .isEqualTo(RegionType.LEGACY);
 
@@ -194,7 +190,7 @@ public class RegionConverterTest {
   }
 
   @Test
-  public void fromXmlWithPartitionRedundantType() {
+  public void fromXmlWithPartitionRedundantType() throws Exception {
     config.setName("test");
     config.setType("PARTITION_REDUNDANT");
     RegionAttributesType attributesType = new RegionAttributesType();
@@ -207,7 +203,7 @@ public class RegionConverterTest {
   }
 
   @Test
-  public void fromXmlWithPartitionRedundantPersistentType() {
+  public void fromXmlWithPartitionRedundantPersistentType() throws Exception {
     config.setName("test");
     config.setType("PARTITION_REDUNDANT_PERSISTENT");
     RegionAttributesType attributesType = new RegionAttributesType();
@@ -220,7 +216,7 @@ public class RegionConverterTest {
   }
 
   @Test
-  public void fromXmlWithPartitionProxyRedundantType() {
+  public void fromXmlWithPartitionProxyRedundantType() throws Exception {
     config.setName("test");
     config.setType("PARTITION_PROXY_REDUNDANT");
     RegionAttributesType attributesType = new RegionAttributesType();
@@ -234,13 +230,13 @@ public class RegionConverterTest {
   }
 
   @Test
-  public void createRegionAttributesByInvalidType() {
+  public void createRegionAttributesByInvalidType() throws Exception {
     assertThatThrownBy(() -> converter.createRegionAttributesByType("abc"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  public void convertRegionExpirationFromXml() {
+  public void convertRegionExpirationFromXml() throws Exception {
     config.setType("REPLICATE");
     config.setName("test");
     RegionAttributesType attributes = new RegionAttributesType();
@@ -273,7 +269,7 @@ public class RegionConverterTest {
   }
 
   @Test
-  public void convertRegionExpirationFromConfig() {
+  public void convertRegionExpirationFromConfig() throws Exception {
     region.setName("test");
     region.setType(RegionType.REPLICATE);
     region.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, 100, null);
@@ -291,7 +287,7 @@ public class RegionConverterTest {
   }
 
   @Test
-  public void convertExpirationFromConfig() {
+  public void convertExpirationFromConfig() throws Exception {
     Region.Expiration expiration = new Region.Expiration();
     expiration.setTimeInSeconds(2);
     RegionAttributesType.ExpirationAttributesType expirationAttributes =
@@ -310,7 +306,7 @@ public class RegionConverterTest {
   }
 
   @Test
-  public void convertExpirationFromXml() {
+  public void convertExpirationFromXml() throws Exception {
     RegionAttributesType.ExpirationAttributesType xmlConfig =
         new RegionAttributesType.ExpirationAttributesType();
     Region.Expiration expiration =
@@ -334,161 +330,4 @@ public class RegionConverterTest {
     assertThat(expiration.getAction()).isEqualTo(Region.ExpirationAction.LEGACY);
     assertThat(expiration.getTimeInSeconds()).isEqualTo(1000);
   }
-
-  @Test
-  public void convertRegionEvictionFromConfigDefaultHeap() {
-    region.setName("test");
-    region.setType(RegionType.REPLICATE);
-    Region.Eviction eviction = new Region.Eviction();
-    region.setEviction(eviction);
-
-    RegionConfig regionConfig = converter.fromConfigObject(region);
-    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
-    assertThat(regionAttributes.getEvictionAttributes()).isNotNull();
-    assertThat(regionAttributes.getEvictionAttributes().getLruHeapPercentage()).isNotNull();
-    assertThat(regionAttributes.getEvictionAttributes().getLruHeapPercentage().getAction())
-        .isEqualTo(
-            EnumActionDestroyOverflow.LOCAL_DESTROY);
-    assertThat(regionAttributes.getEvictionAttributes().getLruHeapPercentage().getClassName())
-        .isNull();
-  }
-
-  @Test
-  public void convertRegionEvictionFromConfigMemorySize() {
-    region.setName("test");
-    region.setType(RegionType.REPLICATE);
-    Region.Eviction eviction = new Region.Eviction();
-    eviction.setMemorySizeMb(10);
-    eviction.setAction(Region.EvictionAction.OVERFLOW_TO_DISK);
-    Properties properties = new Properties();
-    properties.setProperty("key", "value");
-    eviction.setObjectSizer(new ClassName("ObjectSizer", properties));
-    region.setEviction(eviction);
-
-    RegionConfig regionConfig = converter.fromConfigObject(region);
-    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
-    assertThat(regionAttributes.getEvictionAttributes()).isNotNull();
-    assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize()).isNotNull();
-    assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize().getAction()).isEqualTo(
-        EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-    assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize().getMaximum())
-        .isEqualTo("10");
-    assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize().getClassName())
-        .isEqualTo("ObjectSizer");
-    assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize().getParameters())
-        .containsExactly(new ParameterType("key", "value"));
-
-  }
-
-  @Test
-  public void convertRegionEvictionFromConfigEntryCount() {
-    region.setName("test");
-    region.setType(RegionType.REPLICATE);
-    Region.Eviction eviction = new Region.Eviction();
-    eviction.setEntryCount(10);
-    eviction.setAction(Region.EvictionAction.LOCAL_DESTROY);
-    region.setEviction(eviction);
-
-    RegionConfig regionConfig = converter.fromConfigObject(region);
-    RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
-    assertThat(regionAttributes.getEvictionAttributes()).isNotNull();
-    assertThat(regionAttributes.getEvictionAttributes().getLruEntryCount()).isNotNull();
-    assertThat(regionAttributes.getEvictionAttributes().getLruEntryCount().getAction()).isEqualTo(
-        EnumActionDestroyOverflow.LOCAL_DESTROY);
-    assertThat(regionAttributes.getEvictionAttributes().getLruEntryCount().getMaximum())
-        .isEqualTo("10");
-  }
-
-  @Test
-  public void convertRegionEvictionFromXMLMemorySize() {
-    config.setType("REPLICATE");
-    config.setName("test");
-    RegionAttributesType attributes = new RegionAttributesType();
-
-    RegionAttributesType.EvictionAttributes.LruMemorySize evictionXmlConfig =
-        new RegionAttributesType.EvictionAttributes.LruMemorySize();
-    evictionXmlConfig.setMaximum("100");
-    evictionXmlConfig.setAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-    evictionXmlConfig.setClassName("ObjectSizer");
-    Properties properties = new Properties();
-    properties.setProperty("key", "value");
-    evictionXmlConfig.setParameters(properties);
-
-    RegionAttributesType.EvictionAttributes evictionAttributes =
-        new RegionAttributesType.EvictionAttributes();
-    evictionAttributes.setLruMemorySize(evictionXmlConfig);
-    attributes.setEvictionAttributes(evictionAttributes);
-    config.setRegionAttributes(attributes);
-
-    Region region = converter.fromXmlObject(config);
-    Region.Eviction eviction = region.getEviction();
-    assertThat(eviction.getType()).isEqualTo(Region.EvictionType.MEMORY_SIZE);
-    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
-    assertThat(eviction.getMemorySizeMb()).isEqualTo(100);
-    assertThat(eviction.getObjectSizer().getClassName()).isEqualTo("ObjectSizer");
-    assertThat(eviction.getObjectSizer().getInitProperties()).containsEntry("key", "value");
-    assertThat(eviction.getEntryCount()).isNull();
-
-    evictionXmlConfig.setAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
-    eviction = converter.convertFrom(evictionXmlConfig);
-    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.LOCAL_DESTROY);
-  }
-
-  @Test
-  public void convertRegionEvicionFromXMLEntrySize() {
-    config.setType("REPLICATE");
-    config.setName("test");
-    RegionAttributesType attributes = new RegionAttributesType();
-
-    RegionAttributesType.EvictionAttributes.LruEntryCount evictionXmlConfig =
-        new RegionAttributesType.EvictionAttributes.LruEntryCount();
-    evictionXmlConfig.setMaximum("100");
-    evictionXmlConfig.setAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-
-    RegionAttributesType.EvictionAttributes evictionAttributes =
-        new RegionAttributesType.EvictionAttributes();
-    evictionAttributes.setLruEntryCount(evictionXmlConfig);
-    attributes.setEvictionAttributes(evictionAttributes);
-    config.setRegionAttributes(attributes);
-
-    Region region = converter.fromXmlObject(config);
-    Region.Eviction eviction = region.getEviction();
-    assertThat(eviction.getType()).isEqualTo(Region.EvictionType.ENTRY_COUNT);
-    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
-    assertThat(eviction.getEntryCount()).isEqualTo(100);
-    assertThat(eviction.getMemorySizeMb()).isNull();
-
-    evictionXmlConfig.setAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
-    eviction = converter.convertFrom(evictionXmlConfig);
-    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.LOCAL_DESTROY);
-  }
-
-  @Test
-  public void convertRegionEvictionFromXMLHeapSize() {
-    config.setType("REPLICATE");
-    config.setName("test");
-    RegionAttributesType attributes = new RegionAttributesType();
-
-    RegionAttributesType.EvictionAttributes.LruHeapPercentage evictionXmlConfig =
-        new RegionAttributesType.EvictionAttributes.LruHeapPercentage();
-    evictionXmlConfig.setAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-
-    RegionAttributesType.EvictionAttributes evictionAttributes =
-        new RegionAttributesType.EvictionAttributes();
-    evictionAttributes.setLruHeapPercentage(evictionXmlConfig);
-    attributes.setEvictionAttributes(evictionAttributes);
-    config.setRegionAttributes(attributes);
-
-    Region region = converter.fromXmlObject(config);
-    Region.Eviction eviction = region.getEviction();
-    assertThat(eviction.getType()).isEqualTo(Region.EvictionType.HEAP_PERCENTAGE);
-    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
-    assertThat(eviction.getMemorySizeMb()).isNull();
-    assertThat(eviction.getEntryCount()).isNull();
-
-    evictionXmlConfig.setAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
-    eviction = converter.convertFrom(evictionXmlConfig);
-    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.LOCAL_DESTROY);
-  }
-
 }

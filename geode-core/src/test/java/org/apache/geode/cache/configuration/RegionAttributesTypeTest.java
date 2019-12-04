@@ -108,20 +108,19 @@ public class RegionAttributesTypeTest {
 
   @Test
   public void generateEvictionAttributes() {
-    EvictionAttributes evictionAttributes =
-        EvictionAttributes.generate(null, null, null, (String) null);
+    EvictionAttributes evictionAttributes = EvictionAttributes.generate(null, null, null, null);
     assertThat(evictionAttributes).isNull();
 
-    assertThatThrownBy(() -> EvictionAttributes.generate(null, 8, null, (String) null))
+    assertThatThrownBy(() -> EvictionAttributes.generate(null, 8, null, null))
         .isInstanceOf(IllegalArgumentException.class);
 
-    evictionAttributes = EvictionAttributes.generate("local-destroy", null, null, (String) null);
+    evictionAttributes = EvictionAttributes.generate("local-destroy", null, null, null);
     assertThat(evictionAttributes.getLruHeapPercentage().getAction().value())
         .isEqualTo("local-destroy");
     assertThat(evictionAttributes.getLruMemorySize()).isNull();
     assertThat(evictionAttributes.getLruEntryCount()).isNull();
 
-    evictionAttributes = EvictionAttributes.generate("local-destroy", 10, null, (String) null);
+    evictionAttributes = EvictionAttributes.generate("local-destroy", 10, null, null);
     assertThat(evictionAttributes.getLruHeapPercentage()).isNull();
     assertThat(evictionAttributes.getLruMemorySize().getMaximum()).isEqualTo("10");
     assertThat(evictionAttributes.getLruMemorySize().getAction().value())
@@ -129,14 +128,14 @@ public class RegionAttributesTypeTest {
     assertThat(evictionAttributes.getLruEntryCount()).isNull();
 
     // maxEntryCount is ignored when maxMemory is specified
-    evictionAttributes = EvictionAttributes.generate("local-destroy", 10, 20, (String) null);
+    evictionAttributes = EvictionAttributes.generate("local-destroy", 10, 20, null);
     assertThat(evictionAttributes.getLruHeapPercentage()).isNull();
     assertThat(evictionAttributes.getLruMemorySize().getMaximum()).isEqualTo("10");
     assertThat(evictionAttributes.getLruMemorySize().getAction().value())
         .isEqualTo("local-destroy");
     assertThat(evictionAttributes.getLruEntryCount()).isNull();
 
-    evictionAttributes = EvictionAttributes.generate("local-destroy", null, 20, (String) null);
+    evictionAttributes = EvictionAttributes.generate("local-destroy", null, 20, null);
     assertThat(evictionAttributes.getLruHeapPercentage()).isNull();
     assertThat(evictionAttributes.getLruMemorySize()).isNull();
     assertThat(evictionAttributes.getLruEntryCount().getMaximum()).isEqualTo("20");
