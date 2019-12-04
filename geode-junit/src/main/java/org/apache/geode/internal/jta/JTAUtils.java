@@ -283,16 +283,15 @@ public class JTAUtils {
 
     String sql = "select * from " + tableName;
 
-    Connection conn = ds.getConnection();
-    Statement sm = conn.createStatement();
-    ResultSet rs = sm.executeQuery(sql);
     int counter = 0;
-    while (rs.next()) {
-      counter++;
-      // System.out.println("id "+rs.getString(1)+ " name "+rs.getString(2));
+    try (Connection conn = ds.getConnection();
+        Statement sm = conn.createStatement();
+        ResultSet rs = sm.executeQuery(sql)) {
+      while (rs.next()) {
+        counter++;
+        // System.out.println("id "+rs.getString(1)+ " name "+rs.getString(2));
+      }
     }
-    rs.close();
-    conn.close();
 
     return counter;
   }
