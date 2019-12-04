@@ -21,7 +21,6 @@ import java.util.function.Supplier;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
@@ -47,13 +46,13 @@ public interface Membership {
    *        <em>null</em> as a single element broadcasts to all members of the system.
    * @param content the message to send
    * @return list of members who did not receive the message. If
-   *         {@link DistributionMessage#ALL_RECIPIENTS} is given as thelist of recipients, this
+   *         {@link Message#ALL_RECIPIENTS} is given as thelist of recipients, this
    *         return list is null (empty). Otherwise, this list is all of those recipients that did
    *         not receive the message because they departed the distributed system.
    * @throws NotSerializableException If content cannot be serialized
    */
   Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
-      DistributionMessage content)
+      Message content)
       throws NotSerializableException;
 
   /**
@@ -309,7 +308,7 @@ public interface Membership {
    * takes care of queueing up the message during startup and filtering out messages
    * from shunned members, before calling the message listener.
    */
-  void processMessage(DistributionMessage msg);
+  void processMessage(Message msg);
 
   void checkCancelled();
 

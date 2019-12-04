@@ -1076,7 +1076,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
               putMsg.setSendDelta(false);
               if (logger.isDebugEnabled()) {
                 logger.debug("Sending full object({}) to {}", putMsg,
-                    Arrays.toString(putMsg.getRecipients()));
+                    Arrays.toString(putMsg.getRecipientsArray()));
               }
               dm.putOutgoing(putMsg);
 

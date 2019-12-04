@@ -22,4 +22,9 @@ public abstract class HighPriorityDistributionMessage extends DistributionMessag
     return OperationExecutors.HIGH_PRIORITY_EXECUTOR;
   }
 
+  @Override
+  public boolean isHighPriority() {
+    return true;
+  }
+
 }

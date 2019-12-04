@@ -143,7 +143,7 @@ public class CompactRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return "Compact request sent to " + Arrays.toString(this.getRecipients()) + " from "
+    return "Compact request sent to " + Arrays.toString(this.getRecipientsArray()) + " from "
         + this.getSender() + " for " + this.diskStoreName;
   }
 

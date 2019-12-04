@@ -721,7 +721,7 @@ public class StateFlushOperation {
         sb.append(" from ");
         sb.append(super.getSender());
       }
-      if (getRecipients().length > 0) {
+      if (getRecipientsArray().length > 0) {
         String recip = getRecipientsDescription();
         sb.append(" to ");
         sb.append(recip);

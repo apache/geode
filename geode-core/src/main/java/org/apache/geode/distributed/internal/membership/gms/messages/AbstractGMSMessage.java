@@ -14,17 +14,15 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 
-public abstract class AbstractGMSMessage implements DataSerializableFixedID, GMSMessage {
-  @Immutable
-  public static final MemberIdentifier ALL_RECIPIENTS = null;
+public abstract class AbstractGMSMessage implements Message {
   private List<MemberIdentifier> recipients;
   private MemberIdentifier sender;
 
@@ -44,8 +42,12 @@ public abstract class AbstractGMSMessage implements DataSerializableFixedID, GMS
   }
 
   @Override
-  public void setRecipients(List<MemberIdentifier> recipients) {
-    this.recipients = recipients;
+  public void setRecipients(Collection recipients) {
+    if (recipients instanceof List) {
+      this.recipients = (List) recipients;
+    } else {
+      this.recipients = new ArrayList<>(recipients);
+    }
   }
 
   @Override
@@ -84,12 +86,17 @@ public abstract class AbstractGMSMessage implements DataSerializableFixedID, GMS
   }
 
   @Override
-  public void resetTimestamp() {
-    // no-op
+  public long resetTimestamp() {
+    return 0;
+  }
+
+  @Override
+  public int getBytesRead() {
+    return 0;
   }
 
   @Override
   public void setBytesRead(int amount) {
-    // no-op
+    // no-op in GMS messages
   }
 }

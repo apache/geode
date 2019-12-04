@@ -53,11 +53,9 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.StartupMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMessageAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -65,11 +63,10 @@ import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.tcp.MemberShunnedException;
@@ -133,7 +130,7 @@ public class GMSMembership implements Membership {
 
     // Miscellaneous state depending on the kind of event
     InternalDistributedMember member;
-    DistributionMessage dmsg;
+    Message dmsg;
     MembershipView gmsView;
 
     @Override
@@ -201,7 +198,7 @@ public class GMSMembership implements Membership {
      *
      * @param d the message
      */
-    StartupEvent(DistributionMessage d) {
+    StartupEvent(Message d) {
       this.kind = MESSAGE;
       this.dmsg = d;
     }
@@ -894,7 +891,7 @@ public class GMSMembership implements Membership {
    *
    * @param msg the message to process
    */
-  protected void handleOrDeferMessage(DistributionMessage msg) {
+  protected void handleOrDeferMessage(Message msg) {
     if (!processingEvents) {
       synchronized (startupLock) {
         if (!startupMessagesDrained) {
@@ -933,8 +930,8 @@ public class GMSMembership implements Membership {
    *
    * @param msg the message
    */
-  private void dispatchMessage(DistributionMessage msg) {
-    InternalDistributedMember m = msg.getSender();
+  private void dispatchMessage(Message msg) {
+    InternalDistributedMember m = (InternalDistributedMember) msg.getSender();
     boolean shunned = false;
 
     // If this member is shunned or new, grab the latestViewWriteLock: update the appropriate data
@@ -981,8 +978,8 @@ public class GMSMembership implements Membership {
    *
    * @param msg the message holding the sender ID
    */
-  public void replacePartialIdentifierInMessage(DistributionMessage msg) {
-    InternalDistributedMember sender = msg.getSender();
+  public void replacePartialIdentifierInMessage(Message msg) {
+    InternalDistributedMember sender = (InternalDistributedMember) msg.getSender();
     MemberIdentifier oldID = sender;
     MemberIdentifier newID = this.services.getJoinLeave().getMemberID(oldID);
     if (newID != null && newID != oldID) {
@@ -1083,7 +1080,7 @@ public class GMSMembership implements Membership {
 
     if (o.isDistributionMessage()) { // normal message
       try {
-        o.dmsg.setSender(latestView.getCanonicalID(o.dmsg.getSender()));
+        o.dmsg.setSender(latestView.getCanonicalID((InternalDistributedMember) o.dmsg.getSender()));
         dispatchMessage(o.dmsg);
       } catch (MemberShunnedException e) {
         // message from non-member - ignore
@@ -1249,7 +1246,7 @@ public class GMSMembership implements Membership {
   }
 
   @Override
-  public void processMessage(final DistributionMessage msg) {
+  public void processMessage(final Message msg) {
     // notify failure detection that we've had contact from a member
     services.getHealthMonitor().contactedBy(msg.getSender());
     handleOrDeferMessage(msg);
@@ -1492,10 +1489,10 @@ public class GMSMembership implements Membership {
 
   @Override
   public Set<InternalDistributedMember> send(final InternalDistributedMember[] destinations,
-      final DistributionMessage content)
+      final Message content)
       throws NotSerializableException {
     checkAddressesForUUIDs(destinations);
-    Set<MemberIdentifier> failures = services.getMessenger().send(new GMSMessageAdapter(content));
+    Set<MemberIdentifier> failures = services.getMessenger().send(content);
     if (failures == null || failures.size() == 0) {
       return Collections.emptySet();
     }
@@ -2181,16 +2178,14 @@ public class GMSMembership implements Membership {
     }
 
     @Override
-    public void processMessage(GMSMessage msg) {
-      DistributionMessage distributionMessage =
-          (DistributionMessage) ((GMSMessageAdapter) msg).getGeodeMessage();
+    public void processMessage(Message msg) {
       // UDP messages received from surprise members will have partial IDs.
       // Attempt to replace these with full IDs from the Membership's view.
-      if (distributionMessage.getSender().isPartial()) {
-        replacePartialIdentifierInMessage(distributionMessage);
+      if (((InternalDistributedMember) msg.getSender()).isPartial()) {
+        replacePartialIdentifierInMessage(msg);
       }
 
-      handleOrDeferMessage(distributionMessage);
+      handleOrDeferMessage(msg);
     }
 
     @Override
@@ -2214,24 +2209,6 @@ public class GMSMembership implements Membership {
     public boolean isShutdownStarted() {
       return shutdownInProgress || (dm != null && dm.isCloseInProgress());
     }
-
-    @Override
-    public GMSMessage wrapMessage(Object receivedMessage) {
-      if (receivedMessage instanceof GMSMessage) {
-        return (GMSMessage) receivedMessage;
-      }
-      // Geode's DistributionMessage class isn't known by GMS classes
-      return new GMSMessageAdapter((DistributionMessage) receivedMessage);
-    }
-
-    @Override
-    public DataSerializableFixedID unwrapMessage(GMSMessage messageToSend) {
-      if (messageToSend instanceof GMSMessageAdapter) {
-        return ((GMSMessageAdapter) messageToSend).getGeodeMessage();
-      }
-      return (DataSerializableFixedID) messageToSend;
-    }
-
   }
 
 }
