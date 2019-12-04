@@ -102,7 +102,7 @@ public class StartGatewaySenderCommand extends SingleGfshCommand {
                 CliStrings.GATEWAY_SENDER_0_IS_ALREADY_STARTED_ON_MEMBER_1, id, member.getId()));
           } else {
             if (cleanQueues) {
-              bean.startWithClean();
+              bean.startWithCleanQueue();
             } else {
               bean.start();
             }

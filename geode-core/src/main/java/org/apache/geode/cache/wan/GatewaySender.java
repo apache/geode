@@ -186,7 +186,7 @@ public interface GatewaySender {
    * running,
    * its configuration cannot be changed.
    */
-  void startWithClean();
+  void startWithCleanQueue();
 
   /**
    * Stops this GatewaySender. The scope of this operation is the VM on which it is invoked. In case

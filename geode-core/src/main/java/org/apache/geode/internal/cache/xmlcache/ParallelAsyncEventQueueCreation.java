@@ -46,7 +46,7 @@ public class ParallelAsyncEventQueueCreation extends AbstractGatewaySender
   public void start() {}
 
   @Override
-  public void startWithClean() {}
+  public void startWithCleanQueue() {}
 
   @Override
   public void stop() {}
