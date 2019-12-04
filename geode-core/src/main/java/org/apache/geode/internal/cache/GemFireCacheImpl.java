@@ -1569,56 +1569,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return new DiskStoreFactoryImpl(this, attrs);
   }
 
-  class Stopper extends CancelCriterion {
-
-    @Override
-    public String cancelInProgress() {
-      String reason = getDistributedSystem().getCancelCriterion().cancelInProgress();
-      if (reason != null) {
-        return reason;
-      }
-      if (disconnectCause != null) {
-        return disconnectCause.getMessage();
-      }
-      if (isClosing) {
-        return "The cache is closed."; // this + ": closed";
-      }
-      return null;
-    }
-
-    @Override
-    public RuntimeException generateCancelledException(Throwable throwable) {
-      String reason = cancelInProgress();
-      if (reason == null) {
-        return null;
-      }
-      RuntimeException result =
-          getDistributedSystem().getCancelCriterion().generateCancelledException(throwable);
-      if (result != null) {
-        return result;
-      }
-      if (disconnectCause == null) {
-        // No root cause, specify the one given and be done with it.
-        return new CacheClosedException(reason, throwable);
-      }
-
-      if (throwable == null) {
-        // Caller did not specify any root cause, so just use our own.
-        return new CacheClosedException(reason, disconnectCause);
-      }
-
-      // Attempt to stick rootCause at tail end of the exception chain.
-      try {
-        ThrowableUtils.setRootCause(throwable, disconnectCause);
-        return new CacheClosedException(reason, throwable);
-      } catch (IllegalStateException ignore) {
-        // Bug 39496 (JRockit related) Give up. The following
-        // error is not entirely sane but gives the correct general picture.
-        return new CacheClosedException(reason, disconnectCause);
-      }
-    }
-  }
-
   private final Stopper stopper = new Stopper();
 
   @Override
@@ -4586,43 +4536,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return queryMonitor;
   }
 
-  /**
-   * Simple class to allow waiters for register interest. Has at most one thread that ever calls
-   * wait.
-   *
-   * @since GemFire 5.7
-   */
-  private class SimpleWaiter {
-    private boolean notified;
-
-    SimpleWaiter() {}
-
-    void doWait() {
-      synchronized (this) {
-        while (!notified) {
-          getCancelCriterion().checkCancelInProgress(null);
-          boolean interrupted = Thread.interrupted();
-          try {
-            wait(1000);
-          } catch (InterruptedException ignore) {
-            interrupted = true;
-          } finally {
-            if (interrupted) {
-              Thread.currentThread().interrupt();
-            }
-          }
-        }
-      }
-    }
-
-    void doNotify() {
-      synchronized (this) {
-        notified = true;
-        notifyAll();
-      }
-    }
-  }
-
   private void sendAddCacheServerProfileMessage() {
     Set<InternalDistributedMember> otherMembers = dm.getOtherDistributionManagerIds();
     AddCacheServerProfileMessage message = new AddCacheServerProfileMessage();
@@ -5454,6 +5367,93 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @VisibleForTesting
   void setDisconnectCause(Throwable disconnectCause) {
     this.disconnectCause = disconnectCause;
+  }
+
+  class Stopper extends CancelCriterion {
+
+    @Override
+    public String cancelInProgress() {
+      String reason = getDistributedSystem().getCancelCriterion().cancelInProgress();
+      if (reason != null) {
+        return reason;
+      }
+      if (disconnectCause != null) {
+        return disconnectCause.getMessage();
+      }
+      if (isClosing) {
+        return "The cache is closed."; // this + ": closed";
+      }
+      return null;
+    }
+
+    @Override
+    public RuntimeException generateCancelledException(Throwable throwable) {
+      String reason = cancelInProgress();
+      if (reason == null) {
+        return null;
+      }
+      RuntimeException result =
+          getDistributedSystem().getCancelCriterion().generateCancelledException(throwable);
+      if (result != null) {
+        return result;
+      }
+      if (disconnectCause == null) {
+        // No root cause, specify the one given and be done with it.
+        return new CacheClosedException(reason, throwable);
+      }
+
+      if (throwable == null) {
+        // Caller did not specify any root cause, so just use our own.
+        return new CacheClosedException(reason, disconnectCause);
+      }
+
+      // Attempt to stick rootCause at tail end of the exception chain.
+      try {
+        ThrowableUtils.setRootCause(throwable, disconnectCause);
+        return new CacheClosedException(reason, throwable);
+      } catch (IllegalStateException ignore) {
+        // Bug 39496 (JRockit related) Give up. The following
+        // error is not entirely sane but gives the correct general picture.
+        return new CacheClosedException(reason, disconnectCause);
+      }
+    }
+  }
+
+  /**
+   * Simple class to allow waiters for register interest. Has at most one thread that ever calls
+   * wait.
+   *
+   * @since GemFire 5.7
+   */
+  private class SimpleWaiter {
+    private boolean notified;
+
+    SimpleWaiter() {}
+
+    void doWait() {
+      synchronized (this) {
+        while (!notified) {
+          getCancelCriterion().checkCancelInProgress(null);
+          boolean interrupted = Thread.interrupted();
+          try {
+            wait(1000);
+          } catch (InterruptedException ignore) {
+            interrupted = true;
+          } finally {
+            if (interrupted) {
+              Thread.currentThread().interrupt();
+            }
+          }
+        }
+      }
+    }
+
+    void doNotify() {
+      synchronized (this) {
+        notified = true;
+        notifyAll();
+      }
+    }
   }
 
   interface TXManagerImplFactory {
