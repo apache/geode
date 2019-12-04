@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS
+
 plugins {
   id 'me.champeau.gradle.jmh' version '0.4.8'
 }
