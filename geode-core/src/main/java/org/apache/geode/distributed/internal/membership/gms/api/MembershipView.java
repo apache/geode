@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,9 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.UnmodifiableException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
 /**
  * The MembershipView class represents a membership view. Note that this class is not synchronized,
@@ -123,7 +121,7 @@ public class MembershipView<ID extends MemberIdentifier> {
 
   public void add(ID mbr) {
     if (unmodifiable) {
-      throw new UnmodifiableException("this membership view is not modifiable");
+      throw new IllegalStateException("this membership view is not modifiable");
     }
     this.hashedMembers.add(mbr);
     this.members.add(mbr);
@@ -131,7 +129,7 @@ public class MembershipView<ID extends MemberIdentifier> {
 
   public boolean remove(ID mbr) {
     if (unmodifiable) {
-      throw new UnmodifiableException("this membership view is not modifiable");
+      throw new IllegalStateException("this membership view is not modifiable");
     }
     this.hashedMembers.remove(mbr);
     return this.members.remove(mbr);
@@ -139,7 +137,7 @@ public class MembershipView<ID extends MemberIdentifier> {
 
   public void removeAll(Collection<ID> ids) {
     if (unmodifiable) {
-      throw new UnmodifiableException("this membership view is not modifiable");
+      throw new IllegalStateException("this membership view is not modifiable");
     }
     this.hashedMembers.removeAll(ids);
     ids.forEach(this::remove);

@@ -40,7 +40,7 @@ public class MembershipBuilderImpl implements MembershipBuilder {
   private Authenticator authenticator;
   private MembershipConfig membershipConfig;
   private DSFIDSerializer serializer;
-  private MemberIdentifierFactory memberFactory = new MemberIdentifierFactoryImpl();
+  private MemberIdentifierFactory memberFactory;
   private LifecycleListener lifecycleListener;
 
   public MembershipBuilderImpl() {}

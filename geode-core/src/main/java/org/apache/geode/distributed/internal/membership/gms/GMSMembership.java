@@ -53,7 +53,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.StartupMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -61,6 +60,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
@@ -2182,7 +2182,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     public void processMessage(Message msg) {
       // UDP messages received from surprise members will have partial IDs.
       // Attempt to replace these with full IDs from the Membership's view.
-      if (((InternalDistributedMember) msg.getSender()).isPartial()) {
+      if (msg.getSender().isPartial()) {
         replacePartialIdentifierInMessage(msg);
       }
 

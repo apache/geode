@@ -56,7 +56,6 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership.StartupEvent;
@@ -66,6 +65,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListene
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;

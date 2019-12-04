@@ -17,8 +17,6 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.membership.MembershipView;
-
 public interface MembershipListener<ID extends MemberIdentifier> {
 
   /** this method is invoked when the processing of a new view is completed */

@@ -27,7 +27,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier
 public class MemberIdentifierFactoryImpl implements MemberIdentifierFactory {
   @Immutable
   private static final Comparator<MemberIdentifier> idComparator =
-      (o1, o2) -> ((InternalDistributedMember) o1).compareTo((InternalDistributedMember) o2);
+      Comparator.comparing(o -> ((InternalDistributedMember) o));
 
   @Override
   public MemberIdentifier create(MemberData memberInfo) {

@@ -23,10 +23,10 @@ import java.util.function.Supplier;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 
 public interface Distribution {

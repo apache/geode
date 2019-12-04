@@ -60,6 +60,7 @@ import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenti
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -280,6 +281,7 @@ public class MembershipJUnitTest {
             .setConfig(new ServiceConfig(transport, config))
             .setSerializer(serializer)
             .setLifecycleListener(lifeCycleListener)
+            .setMemberIDFactory(new MemberIdentifierFactoryImpl())
             .setLocatorClient(new TcpClient(
                 asTcpSocketCreator(
                     SocketCreatorFactory

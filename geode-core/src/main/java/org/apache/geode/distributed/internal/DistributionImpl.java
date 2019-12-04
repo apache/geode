@@ -44,7 +44,6 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.direct.ShunnedMemberException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
@@ -58,6 +57,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilde
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;

@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 
