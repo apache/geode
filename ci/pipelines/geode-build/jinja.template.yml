@@ -581,6 +581,7 @@ jobs:
       {%- do deep_merge(parameters, java_test_version.override[test.name]) %}
     {%- endif %}
 - name: {{test.name}}Test{{java_test_version.name}}
+  max_in_flight: {{parameters.MAX_IN_FLIGHT}}
   public: true
   plan:
   - do:
@@ -630,7 +631,6 @@ jobs:
           attempts: 10
         - task: execute_tests-{{java_test_version.name}}
           image: alpine-tools-image
-          max_in_flight: {{parameters.MAX_IN_FLIGHT}}
           config:
             platform: linux
             params:
