@@ -47,36 +47,9 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>org.springframework.shell</groupId>
-      <artifactId>spring-shell</artifactId>
+      <groupId>org.apache.geode</groupId>
+      <artifactId>geode-gfsh</artifactId>
       <scope>compile</scope>
-      <exclusions>
-        <exclusion>
-          <artifactId>cglib</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>asm</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>spring-aop</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>guava</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>aopalliance</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>spring-context-support</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-      </exclusions>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.lucene</groupId>

@@ -12,31 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
 
-import java.util.Arrays;
+package org.apache.geode.cache.internal;
 
-public enum ExitCode {
+import java.util.List;
+import java.util.Map;
 
-  // JVM_TERMINATED_EXIT(99) exists for coverage of Spring's ExitShellRequest values in fromSpring.
-  DEPENDENCY_GRAPH_FAILURE(-1), NORMAL(0), FATAL(1), INSTALL_FAILURE(2), JVM_TERMINATED_EXIT(99);
+import org.apache.geode.internal.cache.CacheService;
 
-  private final int shellReturnValue;
+public interface CommandProcessor extends CacheService {
 
-  ExitCode(final int shellReturnValue) {
-    this.shellReturnValue = shellReturnValue;
-  }
-
-  public int getValue() {
-    return shellReturnValue;
-  }
-
-  public void doSystemExit() {
-    System.exit(this.shellReturnValue);
-  }
-
-  public static ExitCode fromValue(int i) {
-    return Arrays.stream(ExitCode.values()).filter(c -> c.getValue() == i).findFirst().orElseThrow(
-        () -> new IllegalArgumentException("No ExitCode exists with shell exit value: " + i));
-  }
+  /**
+   *
+   * @return A json string representing the command result
+   */
+  String executeCommandReturningJson(String commandString, Map<String, String> environment,
+      List<String> stagedFilePaths);
 }
