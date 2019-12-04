@@ -98,6 +98,11 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
   }
 
   @Override
+  public boolean containsRegionContentChange() {
+    return true;
+  }
+
+  @Override
   public Set relayToListeners(Set cacheOpRecipients, Set adjunctRecipients,
       FilterRoutingInfo filterRoutingInfo, EntryEventImpl event, PartitionedRegion r,
       DirectReplyProcessor p) {
