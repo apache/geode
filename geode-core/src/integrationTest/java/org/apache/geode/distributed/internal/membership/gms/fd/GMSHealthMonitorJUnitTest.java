@@ -450,25 +450,6 @@ public class GMSHealthMonitorJUnitTest {
     Assert.assertTrue(gmsHealthMonitor.getStats().getSuspectsReceived() > 0);
   }
 
-  /***
-   * validates HealthMonitor.CheckIfAvailable api
-   */
-  @Test
-  public void testCheckIfAvailableNoHeartBeatDontRemoveMember() {
-    useGMSHealthMonitorTestClass = true;
-    simulateHeartbeatInGMSHealthMonitorTestClass = false;
-
-    installAView();
-
-    long startTime = System.currentTimeMillis();
-    boolean retVal = gmsHealthMonitor.checkIfAvailable(mockMembers.get(1), "Not responding", true);
-    long timeTaken = System.currentTimeMillis() - startTime;
-
-    assertFalse("CheckIfAvailable should have return false", retVal);
-    assertTrue("This should have taken member ping timeout 100ms but it took " + timeTaken,
-        timeTaken >= gmsHealthMonitor.memberTimeout);
-  }
-
   @Test
   public void testCheckIfAvailableWithSimulatedHeartBeat() {
     GMSMembershipView v = installAView();
@@ -744,7 +725,48 @@ public class GMSHealthMonitorJUnitTest {
     verify(joinLeave).remove(isA(MemberIdentifier.class), isA(String.class));
   }
 
+  /*
+   * The next two tests are like the previous two except the next two do not set up failure
+   * detection ports.
+   */
 
+  @Test
+  public void testFailedCheckIfAvailableWithoutFailureDetectionPortDoesNotRemoveMember() {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
+    final long checkRequestsSentBefore = services.getStatistics().getUdpFinalCheckRequestsSent();
+
+    GMSMembershipView v = installAView();
+
+    MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", false);
+    assertFalse(available);
+    verify(joinLeave, never()).remove(isA(MemberIdentifier.class), isA(String.class));
+    assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
+
+    final long checkRequestsSentAfter = services.getStatistics().getUdpFinalCheckRequestsSent();
+    assertThat(checkRequestsSentAfter).isGreaterThan(checkRequestsSentBefore);
+  }
+
+  @Test
+  public void testFailedCheckIfAvailableWithoutFailureDetectionPortRemovesMember() {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
+    final long checkRequestsSentBefore = services.getStatistics().getUdpFinalCheckRequestsSent();
+
+    GMSMembershipView v = installAView();
+
+    MemberIdentifier memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
+
+    assertFalse(available);
+    verify(joinLeave).remove(isA(MemberIdentifier.class), isA(String.class));
+
+    final long checkRequestsSentAfter = services.getStatistics().getUdpFinalCheckRequestsSent();
+    assertThat(checkRequestsSentAfter).isGreaterThan(checkRequestsSentBefore);
+  }
 
   @Test
   public void testShutdown() {

@@ -558,9 +558,6 @@ public interface DMStats extends MembershipStatistics {
 
   long getHeartbeatsReceived();
 
-
-  long getUdpFinalCheckRequestsSent();
-
   long getUdpFinalCheckResponsesReceived();
 
 }
