@@ -210,18 +210,6 @@ public class RegionConfigValidatorTest {
   }
 
   @Test
-  public void evictionTypeNotNull() {
-    config.setName("test");
-    config.setType(RegionType.REPLICATE);
-    eviction.setEntryCount(10);
-    eviction.setObjectSizer(new ClassName("ObjectSizer"));
-    config.setEviction(eviction);
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Eviction type must be set.");
-  }
-
-  @Test
   public void evictionHeapHappy() {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
