@@ -43,6 +43,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.internal.QueryConfigurationService;
 import org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl;
