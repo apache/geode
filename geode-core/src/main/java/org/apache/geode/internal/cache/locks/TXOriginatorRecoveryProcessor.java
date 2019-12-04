@@ -191,7 +191,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.txLockId = (TXLockId) DataSerializer.readObject(in);
+      this.txLockId = DataSerializer.readObject(in);
       this.processorId = in.readInt();
     }
 
