@@ -57,7 +57,7 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
   }
 
   @Override
-  public void startWithClean() {
+  public void startWithCleanQueue() {
     this.start(true);
   }
 
