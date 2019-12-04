@@ -65,7 +65,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
   }
 
   @Override
-  public void startWithClean() {
+  public void startWithCleanQueue() {
     this.start(true);
   }
 

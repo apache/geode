@@ -209,8 +209,8 @@ public class GatewaySenderMBeanBridge {
     sender.start();
   }
 
-  public void startWithClean() {
-    sender.startWithClean();
+  public void startWithCleanQueue() {
+    sender.startWithCleanQueue();
   }
 
 
