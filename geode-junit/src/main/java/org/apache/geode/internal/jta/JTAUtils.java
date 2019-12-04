@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,8 +41,6 @@ public class JTAUtils {
 
   public Region currRegion;
   public Cache cache;
-  /** This is used to store each Regions original attributes for reset purposes */
-  private HashMap regionDefaultAttrMap = new HashMap();
 
   public JTAUtils(Cache cache, Region region) {
     this.cache = cache;
@@ -78,7 +75,6 @@ public class JTAUtils {
       String name = command;
       AttributesFactory fac = new AttributesFactory(this.currRegion.getAttributes());
       Region nr = this.currRegion.createSubregion(name, fac.create());
-      regionDefaultAttrMap.put(nr.getFullPath(), fac.create());
     } catch (Exception e) {
       // fail (" unable to make region..." + e.getMessage ());
       throw new Exception(" failed in mkrgn " + command);
