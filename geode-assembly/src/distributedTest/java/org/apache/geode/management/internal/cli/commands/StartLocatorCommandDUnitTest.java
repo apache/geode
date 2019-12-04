@@ -14,16 +14,16 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__CONNECT;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__DIR;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__HOSTNAME_FOR_CLIENTS;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__LOCATORS;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__MEMBER_NAME;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__PORT;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__PROPERTIES;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__SECURITY_PROPERTIES;
+import static org.apache.geode.management.internal.i18n.CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__CONNECT;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__DIR;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__HOSTNAME_FOR_CLIENTS;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__LOCATORS;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__MEMBER_NAME;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__PORT;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__PROPERTIES;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__SECURITY_PROPERTIES;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;

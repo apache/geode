@@ -51,6 +51,7 @@ dependencies {
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   compile(project(':geode-core'))
+  compile(project(':geode-gfsh'))
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

@@ -32,6 +32,7 @@ def dependentProjectNames = [
   ':geode-serialization',
   ':geode-core',
   ':geode-cq',
+  ':geode-gfsh',
   ':geode-log4j',
   ':geode-logging',
   ':geode-lucene',
@@ -162,6 +163,7 @@ dependencies {
   geodeArchives project(':geode-connectors')
   geodeArchives project(':geode-core')
   geodeArchives project(':geode-cq')
+  geodeArchives project(':geode-gfsh')
   geodeArchives project(':geode-log4j')
   geodeArchives project(':geode-logging')
   geodeArchives project(':geode-lucene')
@@ -187,6 +189,7 @@ dependencies {
   javadocOnly project(':geode-experimental-driver')
 
   testCompile(project(':geode-core'))
+  testCompile(project(':geode-gfsh'))
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }

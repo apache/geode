@@ -28,7 +28,7 @@ import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.OSMetrics;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.util.ManagementUtils;
 
 /**
  * This MBean is a gateway to cache and a member
@@ -437,7 +437,7 @@ public class MemberMBean extends NotificationBroadcasterSupport implements Membe
     File tempDir = FileUtils.getTempDirectory();
     List<String> filePaths = null;
     try {
-      filePaths = CliUtil.bytesToFiles(binaryData, tempDir.getAbsolutePath());
+      filePaths = ManagementUtils.bytesToFiles(binaryData, tempDir.getAbsolutePath());
       return bridge.processCommand(commandString, env, filePaths);
     } catch (IOException e) {
       throw new RuntimeException(e.getMessage(), e);
