@@ -15,8 +15,6 @@
  * limitations under the License.
  */
 
-gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS
-
 plugins {
   id 'me.champeau.gradle.jmh' version '0.4.8'
 }
@@ -26,6 +24,8 @@ apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply plugin: 'antlr'
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/pmd.gradle"
+
+gradle.startParameter.showStacktrace = ShowStacktrace.ALWAYS
 
 sourceSets {
   jca {
