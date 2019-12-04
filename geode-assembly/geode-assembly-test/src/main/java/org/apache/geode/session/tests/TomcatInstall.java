@@ -170,6 +170,7 @@ public class TomcatInstall extends ContainerInstall {
         className += "PeerToPeer";
         break;
       case CLIENT_SERVER:
+      case CACHING_CLIENT_SERVER:
         className += "ClientServer";
         break;
       default:
