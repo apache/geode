@@ -1259,7 +1259,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public int getUpTime() {
+  public long getUpTime() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 

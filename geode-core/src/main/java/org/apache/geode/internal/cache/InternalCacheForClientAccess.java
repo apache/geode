@@ -1027,7 +1027,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public int getUpTime() {
+  public long getUpTime() {
     return delegate.getUpTime();
   }
 

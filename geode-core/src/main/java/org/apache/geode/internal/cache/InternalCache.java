@@ -267,7 +267,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   List<Properties> getDeclarableProperties(final String className);
 
-  int getUpTime();
+  long getUpTime();
 
   Set<Region<?, ?>> rootRegions(boolean includePRAdminRegions);
 
