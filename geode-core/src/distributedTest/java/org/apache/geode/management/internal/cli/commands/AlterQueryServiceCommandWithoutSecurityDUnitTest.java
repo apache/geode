@@ -14,8 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.AUTHORIZER_NAME;
 import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.COMMAND_NAME;
-import static org.apache.geode.management.internal.cli.commands.AlterQueryServiceCommand.METHOD_AUTHORIZER_NAME;
 import static org.apache.geode.management.internal.cli.functions.AlterQueryServiceFunction.SECURITY_NOT_ENABLED_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,34 +37,21 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class AlterQueryServiceCommandWithoutSecurityDUnitTest {
-  private final int serversToStart = 2;
-
-  @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule();
+  private static MemberVM locator;
+  private static List<MemberVM> servers = new ArrayList<>();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static MemberVM locator;
-  private static List<MemberVM> servers = new ArrayList<>();
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule();
 
   @Before
   public void setUp() throws Exception {
     locator = cluster.startLocatorVM(0);
-    IntStream.range(0, serversToStart).forEach(
-        i -> servers.add(i, cluster.startServerVM(i + 1, locator.getPort())));
+    IntStream.range(0, 2)
+        .forEach(i -> servers.add(i, cluster.startServerVM(i + 1, locator.getPort())));
     gfsh.connectAndVerify(locator);
-  }
-
-  @Test
-  public void alterQueryServiceCommandDoesNotUpdateMethodAuthorizerWhenSecurityIsNotEnabled() {
-    verifyNoOpAuthorizer();
-
-    String authorizerName = UnrestrictedMethodAuthorizer.class.getName();
-    gfsh.executeAndAssertThat(COMMAND_NAME + " --" + METHOD_AUTHORIZER_NAME + "=" + authorizerName)
-        .statusIsError().containsOutput(SECURITY_NOT_ENABLED_MESSAGE);
-
-    verifyNoOpAuthorizer();
   }
 
   private void verifyNoOpAuthorizer() {
@@ -76,4 +63,13 @@ public class AlterQueryServiceCommandWithoutSecurityDUnitTest {
     }));
   }
 
+  @Test
+  public void alterQueryServiceCommandDoesNotUpdateMethodAuthorizerWhenSecurityIsNotEnabled() {
+    verifyNoOpAuthorizer();
+    String authorizerName = UnrestrictedMethodAuthorizer.class.getName();
+
+    gfsh.executeAndAssertThat(COMMAND_NAME + " --" + AUTHORIZER_NAME + "=" + authorizerName)
+        .statusIsError().containsOutput(SECURITY_NOT_ENABLED_MESSAGE);
+    verifyNoOpAuthorizer();
+  }
 }
