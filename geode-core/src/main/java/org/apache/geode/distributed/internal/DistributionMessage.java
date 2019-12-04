@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -89,14 +88,13 @@ public abstract class DistributionMessage
   /** the unreserved flags start for child classes */
   protected static final short UNRESERVED_FLAGS_START = (HAS_PROCESSOR_TYPE << 1);
 
-  @MakeImmutable
-  private static final InternalDistributedMember[] EMPTY_RECIPIENTS_ARRAY =
+  private final InternalDistributedMember[] EMPTY_RECIPIENTS_ARRAY =
       new InternalDistributedMember[0];
 
-  @MakeImmutable
-  private static final List<MemberIdentifier> ALL_RECIPIENTS_LIST =
+  private final List<MemberIdentifier> ALL_RECIPIENTS_LIST =
       Collections.singletonList(null);
-  public static final InternalDistributedMember[] ALL_RECIPIENTS_ARRAY =
+
+  private final InternalDistributedMember[] ALL_RECIPIENTS_ARRAY =
       {null};
 
   //////////////////// Instance Fields ////////////////////
@@ -281,7 +279,7 @@ public abstract class DistributionMessage
   public List<MemberIdentifier> getRecipients() {
     InternalDistributedMember[] recipients = getRecipientsArray();
     if (recipients == null
-        || recipients.length == 1 && recipients[0] == DistributionMessage.ALL_RECIPIENTS) {
+        || recipients.length == 1 && recipients[0] == ALL_RECIPIENTS) {
       return ALL_RECIPIENTS_LIST;
     }
     return Arrays.asList(recipients);
@@ -300,13 +298,10 @@ public abstract class DistributionMessage
    * not been set null is returned.
    */
   public InternalDistributedMember[] getRecipientsArray() {
-    if (this.multicast) {
-      return ALL_RECIPIENTS_ARRAY;
-    } else if (this.recipients != null) {
-      return this.recipients;
-    } else {
+    if (this.multicast || this.recipients == null) {
       return ALL_RECIPIENTS_ARRAY;
     }
+    return this.recipients;
   }
 
   /**
