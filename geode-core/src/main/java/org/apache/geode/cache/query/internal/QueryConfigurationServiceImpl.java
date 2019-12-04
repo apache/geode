@@ -126,6 +126,17 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
     updateMethodAuthorizer(cache, forceUpdate, creation.getClassName(), creation.getParameters());
   }
 
+  private boolean isSecurityDisabled(InternalCache cache) {
+    return !cache.getSecurityService().isIntegratedSecurity();
+  }
+
+  private void invalidateContinuousQueryCache(CqService cqService) {
+    cqService.getAllCqs().forEach(cqQuery -> {
+      ServerCQ serverCQ = (ServerCQ) cqQuery;
+      serverCQ.invalidateCqResultKeys();
+    });
+  }
+
   @Override
   public void updateMethodAuthorizer(Cache cache, boolean forceUpdate, String className,
       Set<String> parameters) throws QueryConfigurationServiceException {
@@ -150,7 +161,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
       } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
         this.authorizer = new RegExMethodAuthorizer(cache, parameters);
       } else {
-        Class userClass = ClassPathLoader.getLatest().forName(className);
+        Class<?> userClass = ClassPathLoader.getLatest().forName(className);
         if (!Arrays.asList(userClass.getInterfaces()).contains(MethodInvocationAuthorizer.class)) {
           throw new QueryConfigurationServiceException(
               String.format(INTERFACE_NOT_IMPLEMENTED_MESSAGE, userClass.getName(),
@@ -163,18 +174,10 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
         this.authorizer = tmpAuthorizer;
       }
 
-      // Invalidate cached CQ results, if any.
-      cqService.getAllCqs().forEach(cqQuery -> {
-        ServerCQ serverCQ = (ServerCQ) cqQuery;
-        serverCQ.invalidateCqResultKeys();
-      });
+      invalidateContinuousQueryCache(cqService);
     } catch (Exception e) {
       throw new QueryConfigurationServiceException(UPDATE_ERROR_MESSAGE, e);
     }
-  }
-
-  private boolean isSecurityDisabled(InternalCache cache) {
-    return !cache.getSecurityService().isIntegratedSecurity();
   }
 
   private static class NoOpAuthorizer implements MethodInvocationAuthorizer {
