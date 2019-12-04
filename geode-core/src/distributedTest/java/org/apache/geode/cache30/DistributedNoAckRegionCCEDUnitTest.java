@@ -278,42 +278,53 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     VM vm1 = VM.getVM(1);
     VM vm2 = VM.getVM(2);
 
+    assertThat(vm0).isNotNull();
+    assertThat(vm1).isNotNull();
+    assertThat(vm2).isNotNull();
     // create an empty region in vm0 and replicated regions in VM 1 and 3,
     // then perform concurrent ops
     // on the same key while creating the region in VM2. Afterward make
     // sure that all three regions are consistent
 
     final String name = this.getUniqueName() + "-CC";
-    SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
-      @Override
-      public void run() {
-        try {
-          final RegionFactory f;
-          int vmNumber = VM.getCurrentVMNum();
-          switch (vmNumber) {
-            case 0:
-              f = getCache().createRegionFactory(
-                  getRegionAttributes(RegionShortcut.REPLICATE_PROXY.toString()));
-              break;
-            case 1:
-              f = getCache()
-                  .createRegionFactory(getRegionAttributes(RegionShortcut.REPLICATE.toString()));
-              f.setDataPolicy(DataPolicy.NORMAL);
-              break;
-            default:
-              f = getCache().createRegionFactory(getRegionAttributes());
-              break;
-          }
-          CCRegion = (LocalRegion) f.create(name);
-        } catch (CacheException ex) {
-          fail("While creating region", ex);
-        }
-      }
-    };
 
-    vm0.invoke(createRegion); // empty
-    vm1.invoke(createRegion); // normal
-    vm2.invoke(createRegion); // replicate
+    assertThat(vm0.invoke("Create Region", () -> {
+      try {
+        final RegionFactory f = getCache().createRegionFactory(
+            getRegionAttributes(RegionShortcut.REPLICATE_PROXY.toString()));
+
+        CCRegion = (LocalRegion) f.create(name);
+        assertThat(CCRegion).isNotNull();
+      } catch (CacheException ex) {
+        fail("While creating region", ex);
+      }
+      return true;
+    })).isTrue(); // empty
+
+    assertThat(vm1.invoke("Create Region", () -> {
+      try {
+        final RegionFactory f = getCache()
+            .createRegionFactory(getRegionAttributes(RegionShortcut.REPLICATE.toString()));
+        f.setDataPolicy(DataPolicy.NORMAL);
+
+        CCRegion = (LocalRegion) f.create(name);
+        assertThat(CCRegion).isNotNull();
+      } catch (CacheException ex) {
+        fail("While creating region", ex);
+      }
+      return true;
+    })).isTrue(); // normal
+
+    assertThat(vm2.invoke("Create Region", () -> {
+      try {
+        final RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
+        CCRegion = (LocalRegion) f.create(name);
+        assertThat(CCRegion).isNotNull();
+      } catch (CacheException ex) {
+        fail("While creating region", ex);
+      }
+      return true;
+    })).isTrue(); // replicate
 
     // case 1: entry already invalid on vm2 (replicate) is invalidated by vm0 (empty)
     final String invalidationKey = "invalidationKey";

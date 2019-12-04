@@ -8499,57 +8499,52 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     VM vm1 = VM.getVM(1);
 
     final String regionName = getUniqueName() + "CCRegion";
-    SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
-      @Override
-      public void run() {
-        try {
-          final RegionFactory<?, ?> f;
-          if (VM.getCurrentVMNum() == 0) {
-            f = getCache()
-                .createRegionFactory(getRegionAttributes(RegionShortcut.LOCAL.toString()));
-            f.setScope(getRegionAttributes().getScope());
-          } else {
-            f = getCache().createRegionFactory(getRegionAttributes());
-          }
-          CCRegion = (LocalRegion) f.create(regionName);
-        } catch (CacheException ex) {
-          fail("While creating region", ex);
-        }
-      }
-    };
 
-    vm0.invoke(createRegion);
-    vm1.invoke(createRegion);
-    vm1.invoke("Populate region and perform some ops", new SerializableRunnable() {
-      @Override
-      public void run() {
-        for (int i = 0; i < 100; i++) {
-          CCRegion.put("cckey" + i, i);
-        }
-        for (int i = 0; i < 100; i++) {
-          CCRegion.put("cckey" + i, i + 1);
-        }
+    vm0.invoke("Create Region", () -> {
+      try {
+        final RegionFactory<?, ?> f = getCache()
+            .createRegionFactory(getRegionAttributes(RegionShortcut.LOCAL.toString()));
+        f.setScope(getRegionAttributes().getScope());
+
+        CCRegion = (LocalRegion) f.create(regionName);
+      } catch (CacheException ex) {
+        fail("While creating region", ex);
+      }
+    });
+    vm1.invoke("Create Region", () -> {
+
+      try {
+        final RegionFactory<?, ?> f = getCache().createRegionFactory(getRegionAttributes());
+        CCRegion = (LocalRegion) f.create(regionName);
+      } catch (CacheException ex) {
+        fail("While creating region", ex);
       }
     });
 
-    vm0.invoke("Perform getAll", new SerializableRunnable() {
-      @Override
-      public void run() {
-        List<String> keys = new LinkedList<>();
-        for (int i = 0; i < 100; i++) {
-          keys.add("cckey" + i);
-        }
-        @SuppressWarnings("unchecked")
-        Map<String, Object> result = (Map<String, Object>) CCRegion.getAll(keys);
-        assertThat(keys.size()).isEqualTo(result.size());
-        LocalRegion r = CCRegion;
-        for (int i = 0; i < 100; i++) {
-          RegionEntry entry = r.getRegionEntry("cckey" + i);
-          int stamp = entry.getVersionStamp().getEntryVersion();
-          logger.info("checking key cckey" + i + " having version " + stamp + " entry=" + entry);
-          assertThat(stamp).isEqualTo(2);
-          assertThat(i + 1).isEqualTo(result.get("cckey" + i));
-        }
+    vm1.invoke("Populate region and perform some ops", () -> {
+      for (int i = 0; i < 100; i++) {
+        CCRegion.put("cckey" + i, i);
+      }
+      for (int i = 0; i < 100; i++) {
+        CCRegion.put("cckey" + i, i + 1);
+      }
+    });
+
+    vm0.invoke("Perform getAll", () -> {
+      List<String> keys = new LinkedList<>();
+      for (int i = 0; i < 100; i++) {
+        keys.add("cckey" + i);
+      }
+      @SuppressWarnings("unchecked")
+      Map<String, Object> result = (Map<String, Object>) CCRegion.getAll(keys);
+      assertThat(keys.size()).isEqualTo(result.size());
+      LocalRegion r = CCRegion;
+      for (int i = 0; i < 100; i++) {
+        RegionEntry entry = r.getRegionEntry("cckey" + i);
+        int stamp = entry.getVersionStamp().getEntryVersion();
+        logger.info("checking key cckey" + i + " having version " + stamp + " entry=" + entry);
+        assertThat(stamp).isEqualTo(2);
+        assertThat(i + 1).isEqualTo(result.get("cckey" + i));
       }
     });
   }
@@ -8594,7 +8589,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    */
   private static byte[] getCCRegionVersionVector() throws Exception {
     Object id = getMemberId();
-    int vm = VM.getCurrentVMNum();
+    int vm = VM.getVMId();
     logger.info(
         "vm" + vm + " with id " + id + " copying " + CCRegion.getVersionVector().fullToString());
     RegionVersionVector vector = CCRegion.getVersionVector().getCloneForTransmission();

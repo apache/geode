@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
 import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 
@@ -72,7 +73,7 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
    * This test method invokes methods doing size validation on PRs.
    */
   @Test
-  public void testSize() {
+  public void testSize() throws Exception {
     // Create PRs with dataStore on 3 VMs
     vm0.invoke(() -> createPartitionedRegion(200));
     vm1.invoke(() -> createPartitionedRegion(200));
@@ -104,12 +105,11 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
    * TRAC #39868: PartitionMemberDetails.getSize() reports negative PR sizes when redundancy is 0
    */
   @Test
-  public void testBug39868() {
+  public void testBug39868() throws Exception {
     vm0.invoke(() -> createPartitionedRegion(200));
 
     vm0.invoke(() -> {
-      Region<Integer, byte[]> region =
-          getCache().getRegion(PartitionedRegionSizeDUnitTest.REGION_NAME);
+      Region<Integer, byte[]> region = getRegion(REGION_NAME);
       for (int i = 0; i < 100; i++) {
         region.put(i * TOTAL_NUMBER_OF_BUCKETS, new byte[100]);
       }
@@ -118,28 +118,26 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
     vm1.invoke(() -> createPartitionedRegion(200));
 
     vm0.invoke(() -> {
-      Region<Integer, byte[]> region =
-          getCache().getRegion(PartitionedRegionSizeDUnitTest.REGION_NAME);
+      Region<Integer, byte[]> region = getRegion(REGION_NAME);
       for (int i = 0; i < 100; i++) {
         region.destroy(i * TOTAL_NUMBER_OF_BUCKETS);
       }
     });
 
     vm1.invoke(() -> {
-      PartitionedRegion partitionedRegion = getPartitionedRegion();
+      PartitionedRegion partitionedRegion = getPartitionedRegion(REGION_NAME);
       long bytes = partitionedRegion.getDataStore().currentAllocatedMemory();
-      await().until(() -> bytes == 0);
+      assertThat(bytes).isEqualTo(0);
     });
   }
 
   @Test
-  public void testByteSize() {
+  public void testByteSize() throws Exception {
     vm0.invoke(() -> createPartitionedRegion(200));
     vm1.invoke(() -> createPartitionedRegion(200));
 
     long bucketSizeWithOneEntry = vm0.invoke(() -> {
-      Region<Integer, byte[]> region =
-          getCache().getRegion(PartitionedRegionSizeDUnitTest.REGION_NAME);
+      Region<Integer, byte[]> region = getRegion(REGION_NAME);
       region.put(0, new byte[100]);
 
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
@@ -181,25 +179,24 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
     });
 
     vm1.invoke(() -> {
-      PartitionedRegion partitionedRegion = getPartitionedRegion();
-      long bucketSize = partitionedRegion.getDataStore().getBucketSize(0);
-      await().until(() -> bucketSize == 50 * bucketSizeWithOneEntry);
+      PartitionedRegion partitionedRegion = getPartitionedRegion(REGION_NAME);
+      await().until(
+          () -> partitionedRegion.getDataStore().getBucketSize(0) == 50 * bucketSizeWithOneEntry);
     });
 
     vm1.invoke(() -> {
-      PartitionedRegion partitionedRegion = getPartitionedRegion();
+      PartitionedRegion partitionedRegion = getPartitionedRegion(REGION_NAME);
       PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
       await().until(() -> dataStore.currentAllocatedMemory() == 50 * bucketSizeWithOneEntry);
     });
   }
 
   @Test
-  public void testByteSizeWithEviction() {
+  public void testByteSizeWithEviction() throws Exception {
     vm0.invoke(this::createPartitionedRegionWithOverflow);
 
     long bucketSizeWithOneEntry = vm0.invoke(() -> {
-      Region<Integer, byte[]> region =
-          getCache().getRegion(PartitionedRegionSizeDUnitTest.REGION_NAME);
+      Region<Integer, byte[]> region = getRegion(REGION_NAME);
       region.put(0, new byte[100]);
 
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
@@ -214,13 +211,11 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
     });
 
     vm0.invoke(() -> {
-      Region<Integer, byte[]> region =
-          getCache().getRegion(PartitionedRegionSizeDUnitTest.REGION_NAME);
+      Region<Integer, byte[]> region = getRegion(REGION_NAME);
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
       PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
 
       // there should only be 2 items in memory
-
       await().until(() -> dataStore.currentAllocatedMemory() == 2 * bucketSizeWithOneEntry);
 
       // fault something else into memory and check again.
@@ -264,8 +259,11 @@ public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
     regionFactory.create(REGION_NAME);
   }
 
+  private <K, V> Region<K, V> getRegion(String regionName) {
+    return getCache().getRegion(regionName);
+  }
 
-  private PartitionedRegion getPartitionedRegion() {
-    return (PartitionedRegion) getCache().getRegion(PartitionedRegionSizeDUnitTest.REGION_NAME);
+  private PartitionedRegion getPartitionedRegion(String regionName) {
+    return (PartitionedRegion) getCache().getRegion(regionName);
   }
 }

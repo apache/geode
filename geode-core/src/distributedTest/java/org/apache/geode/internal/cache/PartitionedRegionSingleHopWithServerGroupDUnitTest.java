@@ -31,9 +31,6 @@ import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -62,11 +59,11 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
+public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
   private static final String PR_NAME = "single_hop_pr";
   private static final String PR_NAME2 = "single_hop_pr_2";
@@ -96,11 +93,8 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
   private static Cache cache = null;
   private static Locator locator = null;
 
-  @Rule
-  public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
-
-  @Before
-  public final void postSetUp() {
+  @Override
+  public final void postSetUp() throws Exception {
 
     member0 = VM.getVM(0);
     member1 = VM.getVM(1);
@@ -109,7 +103,8 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
     IgnoredException.addIgnoredException("java.net.SocketException");
   }
 
-  private void preTearDownCacheTestCase() {
+  @Override
+  public final void preTearDownCacheTestCase() throws Exception {
     // close the clients first
     member0
         .invoke(PartitionedRegionSingleHopWithServerGroupDUnitTest::closeCacheAndDisconnect);
@@ -122,9 +117,8 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
     closeCacheAndDisconnect();
   }
 
-  @After
-  public final void postTearDownCacheTestCase() {
-    preTearDownCacheTestCase();
+  @Override
+  public final void postTearDownCacheTestCase() throws Exception {
     try {
       member0 = null;
       member1 = null;
@@ -766,10 +760,10 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest {
 
 
   private static <K, V> Region<K, V> createColocatedRegion(String regionName,
-                                                           String colocatedRegionName,
-                                                           int redundantCopies,
-                                                           int totalNoofBuckets,
-                                                           int localMaxMemory) {
+      String colocatedRegionName,
+      int redundantCopies,
+      int totalNoofBuckets,
+      int localMaxMemory) {
 
     PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)

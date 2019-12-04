@@ -110,7 +110,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   private static final int LOCAL_MAX_MEMORY_DEFAULT = -1;
 
   @Override
-  public final void postSetUp() {
+  public final void postSetUp() throws Exception {
     IgnoredException.addIgnoredException("Connection refused");
 
     member0 = VM.getVM(0);
@@ -120,7 +120,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Override
-  public final void postTearDownCacheTestCase() {
+  public final void postTearDownCacheTestCase() throws Exception {
     try {
       closeCacheAndDisconnect();
 
@@ -134,20 +134,20 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private static void closeCacheAndDisconnect() {
+  public static void closeCacheAndDisconnect() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
     }
   }
 
-  private static void stopServer() {
+  public static void stopServer() {
     for (CacheServer cacheServer : cache.getCacheServers()) {
       cacheServer.stop();
     }
   }
 
-  private static void startLocatorInVM(final int locatorPort) {
+  public static void startLocatorInVM(final int locatorPort) {
 
     File logFile = new File("locator-" + locatorPort + ".log");
 
@@ -161,7 +161,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private static void stopLocator() {
+  public static void stopLocator() {
     locator.stop();
   }
 
@@ -175,7 +175,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
 
     CacheServer server = cache.addCacheServer();
     final int redundantCopies = 0;
-    server.setPort(redundantCopies);
+    server.setPort(0);
     server.setHostnameForClients("localhost");
     try {
       server.start();

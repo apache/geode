@@ -2907,6 +2907,22 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       }
       return null;
     }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
+     */
+    @Override
+    public void init(Properties props) {}
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.apache.geode.cache.CacheCallback#close()
+     */
+    @Override
+    public void close() {}
   }
 
   /**
