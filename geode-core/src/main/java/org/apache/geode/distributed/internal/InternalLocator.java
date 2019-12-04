@@ -996,7 +996,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     if (internalCache != null && !stoppedForReconnect && !forcedDisconnect) {
       logger.info("Closing locator's cache");
       try {
-        internalCache.close();
+        internalCache.close("Normal disconnect", null, false, false, true);
       } catch (RuntimeException ex) {
         logger.info("Could not close locator's cache because: {}", ex.getMessage(), ex);
       }
