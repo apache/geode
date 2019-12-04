@@ -31,6 +31,8 @@ import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 
 public class RegionConverter extends ConfigurationConverter<Region, RegionConfig> {
+  private final ClassNameConverter classNameConverter = new ClassNameConverter();
+
   @Override
   protected Region fromNonNullXmlObject(RegionConfig xmlObject) {
     Region region = new Region();
@@ -173,7 +175,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     Region.Eviction eviction = new Region.Eviction();
     eviction.setAction(getEvictionAction(evictionAttributes.getAction()));
     eviction.setMemorySizeMb(Integer.parseInt(evictionAttributes.getMaximum()));
-    eviction.setObjectSizer(evictionAttributes.getClassName());
+    eviction.setObjectSizer(classNameConverter.fromXmlObject(evictionAttributes));
     return eviction;
   }
 
@@ -189,7 +191,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
       RegionAttributesType.EvictionAttributes.LruHeapPercentage evictionAttributes) {
     Region.Eviction eviction = new Region.Eviction();
     eviction.setAction(getEvictionAction(evictionAttributes.getAction()));
-    eviction.setObjectSizer(evictionAttributes.getClassName());
+    eviction.setObjectSizer(classNameConverter.fromXmlObject(evictionAttributes));
     eviction.setType(Region.EvictionType.HEAP_PERCENTAGE);
     return eviction;
   }

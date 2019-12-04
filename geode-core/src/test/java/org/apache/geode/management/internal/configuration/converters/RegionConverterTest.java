@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -30,10 +31,12 @@ import org.junit.Test;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
+import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 
@@ -357,7 +360,9 @@ public class RegionConverterTest {
     Region.Eviction eviction = new Region.Eviction();
     eviction.setMemorySizeMb(10);
     eviction.setAction(Region.EvictionAction.OVERFLOW_TO_DISK);
-    eviction.setObjectSizer("ObjectSizer");
+    Properties properties = new Properties();
+    properties.setProperty("key", "value");
+    eviction.setObjectSizer(new ClassName("ObjectSizer", properties));
     region.setEviction(eviction);
 
     RegionConfig regionConfig = converter.fromConfigObject(region);
@@ -370,6 +375,9 @@ public class RegionConverterTest {
         .isEqualTo("10");
     assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize().getClassName())
         .isEqualTo("ObjectSizer");
+    assertThat(regionAttributes.getEvictionAttributes().getLruMemorySize().getParameters())
+        .containsExactly(new ParameterType("key", "value"));
+
   }
 
   @Test
@@ -402,6 +410,9 @@ public class RegionConverterTest {
     evictionXmlConfig.setMaximum("100");
     evictionXmlConfig.setAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
     evictionXmlConfig.setClassName("ObjectSizer");
+    Properties properties = new Properties();
+    properties.setProperty("key", "value");
+    evictionXmlConfig.setParameters(properties);
 
     RegionAttributesType.EvictionAttributes evictionAttributes =
         new RegionAttributesType.EvictionAttributes();
@@ -414,7 +425,8 @@ public class RegionConverterTest {
     assertThat(eviction.getType()).isEqualTo(Region.EvictionType.MEMORY_SIZE);
     assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
     assertThat(eviction.getMemorySizeMb()).isEqualTo(100);
-    assertThat(eviction.getObjectSizer()).isEqualTo("ObjectSizer");
+    assertThat(eviction.getObjectSizer().getClassName()).isEqualTo("ObjectSizer");
+    assertThat(eviction.getObjectSizer().getInitProperties()).containsEntry("key", "value");
     assertThat(eviction.getEntryCount()).isNull();
 
     evictionXmlConfig.setAction(EnumActionDestroyOverflow.LOCAL_DESTROY);

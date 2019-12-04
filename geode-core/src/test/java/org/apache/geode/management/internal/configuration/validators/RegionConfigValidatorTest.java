@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -213,7 +214,7 @@ public class RegionConfigValidatorTest {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
     eviction.setEntryCount(10);
-    eviction.setObjectSizer("ObjectSizer");
+    eviction.setObjectSizer(new ClassName("ObjectSizer"));
     config.setEviction(eviction);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class)
@@ -273,14 +274,14 @@ public class RegionConfigValidatorTest {
   public void objectSizerProvidedHappy() {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
-    eviction.setObjectSizer("ObjectSizer");
+    eviction.setObjectSizer(new ClassName("ObjectSizer"));
     eviction.setMemorySizeMb(10);
     config.setEviction(eviction);
     validator.validate(CacheElementOperation.CREATE, config);
 
     eviction = new Region.Eviction();
     config.setEviction(eviction);
-    eviction.setObjectSizer("ObjectSizer");
+    eviction.setObjectSizer(new ClassName("ObjectSizer"));
     eviction.setType(Region.EvictionType.HEAP_PERCENTAGE);
     validator.validate(CacheElementOperation.CREATE, config);
   }
@@ -291,7 +292,7 @@ public class RegionConfigValidatorTest {
     config.setType(RegionType.REPLICATE);
     config.setEviction(eviction);
     eviction.setEntryCount(10);
-    eviction.setObjectSizer("ObjectSizer");
+    eviction.setObjectSizer(new ClassName("ObjectSizer"));
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("ObjectSizer must not be set for: ENTRY_COUNT");

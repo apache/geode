@@ -240,7 +240,7 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
     private EvictionType type;
     private EvictionAction action;
     private Integer limit;
-    private String objectSizer;
+    private ClassName objectSizer;
 
     public Eviction() {}
 
@@ -317,11 +317,11 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
       this.limit = memorySizeMb;
     }
 
-    public String getObjectSizer() {
+    public ClassName getObjectSizer() {
       return objectSizer;
     }
 
-    public void setObjectSizer(String objectSizer) {
+    public void setObjectSizer(ClassName objectSizer) {
       this.objectSizer = objectSizer;
     }
   }
