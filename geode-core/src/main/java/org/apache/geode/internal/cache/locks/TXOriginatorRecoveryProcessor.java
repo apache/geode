@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache.locks;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -57,9 +56,6 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
     msg.processorId = processor.getProcessorId();
     msg.txLockId = txLockId;
 
-    // send msg to all members EXCEPT this member...
-    Set recipients = new HashSet(members);
-    recipients.remove(dm.getId());
     msg.setRecipients(members);
     if (logger.isDebugEnabled()) {
       logger.debug("Sending TXOriginatorRecoveryMessage: {}", msg);
