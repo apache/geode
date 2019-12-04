@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.configuration.converters;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.configuration.Index;
+import org.apache.geode.management.configuration.IndexType;
 
 public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.Index> {
   @Override
@@ -26,6 +27,18 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
     index.setExpression(xmlObject.getExpression());
     index.setRegionPath(xmlObject.getFromClause());
     index.setKeyIndex(xmlObject.isKeyIndex());
+
+    if (xmlObject.getType() != null) {
+      switch(xmlObject.getType().toUpperCase()) {
+        case "RANGE":
+          index.setIndexType(IndexType.FUNCTIONAL);
+        case "HASH":
+          index.setIndexType(IndexType.HASH_DEPRECATED);
+        case "KEY":
+          index.setIndexType(IndexType.PRIMARY_KEY);
+      }
+    }
+
     return index;
   }
 
@@ -36,6 +49,18 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
     index.setFromClause(configObject.getRegionPath());
     index.setExpression(configObject.getExpression());
     index.setKeyIndex(configObject.getKeyIndex());
+
+    if (configObject.getIndexType() != null) {
+      switch(configObject.getIndexType()) {
+        case FUNCTIONAL:
+          index.setType("RANGE");
+        case PRIMARY_KEY:
+          index.setType("KEY");
+        case HASH_DEPRECATED:
+          index.setType("HASH");
+      }
+    }
+
     return index;
   }
 }

@@ -27,6 +27,7 @@ public class Index extends GroupableConfiguration<RuntimeInfo> {
   private String expression;
   private String regionPath;
   private Boolean keyIndex;
+  private IndexType indexType;
 
   public String getName() {
     return name;
@@ -68,6 +69,14 @@ public class Index extends GroupableConfiguration<RuntimeInfo> {
 
   public void setKeyIndex(Boolean keyIndex) {
     this.keyIndex = keyIndex;
+  }
+
+  public IndexType getIndexType() {
+    return indexType;
+  }
+
+  public void setIndexType(IndexType indexType) {
+    this.indexType = indexType;
   }
 
   /**
