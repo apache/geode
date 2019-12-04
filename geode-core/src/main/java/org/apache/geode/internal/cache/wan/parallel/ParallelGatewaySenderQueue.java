@@ -534,7 +534,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           addOverflowStatisticsToMBean(cache, prQ);
 
           // Wait for buckets to be recovered.
-          prQ.shadowPRWaitForBucketRecovery();
+          if (sender.isPersistenceEnabled()) {
+            prQ.shadowPRWaitForBucketRecovery();
+          }
 
         } catch (IOException | ClassNotFoundException veryUnLikely) {
           logger.fatal("Unexpected Exception during init of " +
