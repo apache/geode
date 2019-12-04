@@ -617,8 +617,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Function<Object, SystemTimer> systemTimerFactory;
   private final ReplyProcessor21Factory replyProcessor21Factory;
 
-  // -----------------------------------------------------------------------------------------
-
   /**
    * Used by unit tests to force cache creation to use a test generated cache.xml
    */
@@ -693,8 +691,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final InternalCacheForClientAccess cacheForClients =
       new InternalCacheForClientAccess(this);
-
-  // KIRK: -----------------------------------------------------------------------------------------
 
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
@@ -5342,7 +5338,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-KIRK
   @Override
   public InternalCacheForClientAccess getCacheForProcessingClientRequests() {
     return cacheForClients;
