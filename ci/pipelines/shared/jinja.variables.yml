@@ -37,6 +37,7 @@ build_test:
   DUNIT_PARALLEL_FORKS: '4'
   EXECUTE_TEST_TIMEOUT: 20m
   GRADLE_TASK: build
+  MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   RAM: '16'
@@ -82,6 +83,7 @@ tests:
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 30m
   GRADLE_TASK: test
+  MAX_IN_FLIGHT: 1
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'true'
   PLATFORM: linux
@@ -93,6 +95,7 @@ tests:
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 1h30m
   GRADLE_TASK: acceptanceTest
+  MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: linux
@@ -104,6 +107,7 @@ tests:
   DUNIT_PARALLEL_FORKS: '24'
   EXECUTE_TEST_TIMEOUT: 3h00m
   GRADLE_TASK: distributedTest
+  MAX_IN_FLIGHT: 3
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
   RAM: '250'
@@ -114,6 +118,7 @@ tests:
   DUNIT_PARALLEL_FORKS: '48'
   EXECUTE_TEST_TIMEOUT: 40m
   GRADLE_TASK: integrationTest
+  MAX_IN_FLIGHT: 1
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
   RAM: '90'
@@ -124,6 +129,7 @@ tests:
   DUNIT_PARALLEL_FORKS: '48'
   EXECUTE_TEST_TIMEOUT: 1h
   GRADLE_TASK: upgradeTest
+  MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
   RAM: '210'
@@ -144,6 +150,7 @@ tests:
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: :geode-assembly:acceptanceTest
+  MAX_IN_FLIGHT: 3
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
@@ -155,6 +162,7 @@ tests:
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: distributedTest
   GRADLE_TASK_OPTIONS: -PtestCategory=org.apache.geode.test.junit.categories.GfshTest
+  MAX_IN_FLIGHT: 5
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
@@ -166,6 +174,7 @@ tests:
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: integrationTest
   GRADLE_TASK_OPTIONS: -x geode-core:integrationTest
+  MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
@@ -176,6 +185,7 @@ tests:
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: geode-core:integrationTest
+  MAX_IN_FLIGHT: 6
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
   PLATFORM: windows
@@ -186,6 +196,7 @@ tests:
   DUNIT_PARALLEL_FORKS: '0'
   EXECUTE_TEST_TIMEOUT: 6h
   GRADLE_TASK: test
+  MAX_IN_FLIGHT: 1
   PARALLEL_DUNIT: 'false'
   PLATFORM: windows
   RAM: '64'

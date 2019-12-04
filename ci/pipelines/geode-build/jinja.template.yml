@@ -226,7 +226,7 @@ jobs:
 {% endfor %}
 - name: {{build_test.name}}
   public: true
-  serial: true
+  max_in_flight: {{build_test.MAX_IN_FLIGHT}}
   plan:
   - aggregate:
     - get: geode-ci
@@ -630,6 +630,7 @@ jobs:
           attempts: 10
         - task: execute_tests-{{java_test_version.name}}
           image: alpine-tools-image
+          max_in_flight: {{parameters.MAX_IN_FLIGHT}}
           config:
             platform: linux
             params:
