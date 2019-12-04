@@ -445,7 +445,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Set<PartitionedRegion> partitionedRegions = new HashSet<>();
 
   /**
-   * Fix for 42051 This is a map of regions that are in the process of being destroyed. We could
+   * This is a map of regions that are in the process of being destroyed. We could
    * potentially leave the regions in the pathToRegion map, but that would entail too many changes
    * at this point in the release. We need to know which regions are being destroyed so that a
    * profile exchange can get the persistent id of the destroying region and know not to persist
@@ -694,7 +694,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       new InternalCacheForClientAccess(this);
 
   static {
-    // this works around jdk bug 6427854, reported in ticket #44434
+    // this works around jdk bug 6427854
     String propertyName = "sun.nio.ch.bugLevel";
     String value = System.getProperty(propertyName);
     if (value == null) {
@@ -1386,13 +1386,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       initializeDeclarativeCache();
       completedCacheXml = true;
     } catch (RuntimeException e) {
-      logger.error("Cache initialization for {} failed because: {}", this, e); // fix GEODE-3038
+      logger.error("Cache initialization for {} failed because: {}", this, e);
       throw e;
     } finally {
       if (!completedCacheXml) {
         // so initializeDeclarativeCache threw an exception
         try {
-          close(); // fix for bug 34041
+          close();
         } catch (Throwable ignore) {
           // I don't want init to throw an exception that came from the close.
           // I want it to throw the original exception that came from initializeDeclarativeCache.
@@ -1712,7 +1712,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       return;
     }
 
-    // leave the PdxSerializer set if we have one to prevent 43412
+    // leave the PdxSerializer set if we have one
 
     // Shut down messaging first
     InternalDistributedSystem ids = cache.system;
@@ -1793,12 +1793,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
               "unexpected exception");
         }
 
-        // bug 44031 requires multithread shutDownAll should be grouped
-        // by root region. However, shutDownAllDuringRecovery.conf test revealed that
-        // we have to close colocated child regions first.
-        // Now check all the PR, if anyone has colocate-with attribute, sort all the
-        // PRs by colocation relationship and close them sequentially, otherwise still
-        // group them by root region.
+        // multithread shutDownAll should be grouped by root region. However, we have to close
+        // colocated child regions first. Now check all the PR, if anyone has colocate-with
+        // attribute, sort all the PRs by colocation relationship and close them sequentially,
+        // otherwise still group them by root region.
+
         SortedMap<String, Map<String, PartitionedRegion>> prTrees = getPRTrees();
         if (prTrees.size() > 1 && shutdownAllPoolSize != 1) {
           ExecutorService es = getShutdownAllExecutorService(prTrees.size());
@@ -3050,7 +3049,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           // didn't
           // find a region, i.e. the new region is about to be created
 
-          if (!isReInitCreate) { // fix bug 33523
+          if (!isReInitCreate) {
             String fullPath = Region.SEPARATOR + name;
             future = reinitializingRegions.get(fullPath);
           }
@@ -3119,8 +3118,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       } finally {
         if (!success) {
           try {
-            // do this before removing the region from
-            // the root set to fix bug 41982.
+            // do this before removing the region from the root set
             region.cleanupFailedInitialization();
           } catch (VirtualMachineError e) {
             SystemFailure.initiateFailure(e);
@@ -3129,7 +3127,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             SystemFailure.checkFailure();
             stopper.checkCancelInProgress(t);
 
-            // bug #44672 - log the failure but don't override the original exception
+            // log the failure but don't override the original exception
             logger.warn(String.format("Initialization failed for Region %s",
                 region.getFullPath()),
                 t);
@@ -3149,7 +3147,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       region.postCreateRegion();
     } catch (RegionExistsException ex) {
-      // outside of sync make sure region is initialized to fix bug 37563
+      // outside of sync make sure region is initialized
       InternalRegion internalRegion = (InternalRegion) ex.getRegion();
       internalRegion.waitOnInitialization(); // don't give out ref until initialized
       throw ex;
@@ -3299,7 +3297,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public InternalRegion getRegionByPath(String path) {
-    validatePath(path); // fix for bug 34892
+    validatePath(path);
 
     // do this before checking the pathToRegion map
     InternalRegion result = getReinitializingRegion(path);
@@ -3756,7 +3754,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * Does a periodic purge of the CCPTimer to prevent a large number of cancelled tasks from
-   * building up in it. See GEODE-2485.
+   * building up in it.
    */
   @Override
   public void purgeCCPTimer() {
@@ -5409,8 +5407,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         ThrowableUtils.setRootCause(throwable, disconnectCause);
         return new CacheClosedException(reason, throwable);
       } catch (IllegalStateException ignore) {
-        // Bug 39496 (JRockit related) Give up. The following
-        // error is not entirely sane but gives the correct general picture.
+        // Give up. The following error is not entirely sane but gives the correct general picture.
         return new CacheClosedException(reason, disconnectCause);
       }
     }
