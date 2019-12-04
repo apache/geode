@@ -57,10 +57,6 @@ public class JTAUtils {
     return endTime;
   }
 
-  public static long elapsedTime(long endTime, long beginTime) {
-    return endTime - beginTime;
-  }
-
   static long getCurrentTimeMillis() {
     return System.currentTimeMillis();
   }
@@ -199,20 +195,6 @@ public class JTAUtils {
       System.out.print("     " + key + " -> " + value);
     }
     return value;
-  }
-
-  /**
-   * Returns a constant width space to stdout This method is used to print test pass/fail msg after
-   * a constant width from the test execution stage
-   */
-
-  public static String repeatChar(char character, int repeatCount) {
-
-    StringBuffer stringBuffer = new StringBuffer(repeatCount);
-    for (int i = 1; i <= repeatCount; i++) {
-      stringBuffer.append(character);
-    }
-    return stringBuffer.toString();
   }
 
   /**
