@@ -29,13 +29,19 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
     index.setKeyIndex(xmlObject.isKeyIndex());
 
     if (xmlObject.getType() != null) {
-      switch(xmlObject.getType().toUpperCase()) {
+      String type = xmlObject.getType().toUpperCase();
+      switch (type) {
         case "RANGE":
           index.setIndexType(IndexType.FUNCTIONAL);
+          break;
         case "HASH":
           index.setIndexType(IndexType.HASH_DEPRECATED);
+          break;
         case "KEY":
           index.setIndexType(IndexType.PRIMARY_KEY);
+          break;
+        default:
+          throw new IllegalArgumentException("Unexpected index type provided: " + type);
       }
     }
 
@@ -51,13 +57,18 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
     index.setKeyIndex(configObject.getKeyIndex());
 
     if (configObject.getIndexType() != null) {
-      switch(configObject.getIndexType()) {
+      switch (configObject.getIndexType()) {
         case FUNCTIONAL:
           index.setType("RANGE");
+          break;
         case PRIMARY_KEY:
           index.setType("KEY");
+          break;
         case HASH_DEPRECATED:
           index.setType("HASH");
+          break;
+        default:
+          throw new IllegalArgumentException("Unexpected index type provided: " + configObject.getIndexType());
       }
     }
 

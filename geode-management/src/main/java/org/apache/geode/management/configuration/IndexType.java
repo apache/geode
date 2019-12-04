@@ -17,6 +17,7 @@ package org.apache.geode.management.configuration;
 
 /**
  * Public ENUM to indicate type of Index on a Geode {@link Region} used by the Management API.
+ *
  * @see Index
  *
  * @since Geode 1.12
@@ -39,7 +40,7 @@ public enum IndexType {
 
   public static IndexType valueOfSynonym(String name) {
     name = name.toUpperCase();
-    switch(name) {
+    switch (name) {
       case "KEY":
         return valueOf("PRIMARY_KEY");
       case "RANGE":
