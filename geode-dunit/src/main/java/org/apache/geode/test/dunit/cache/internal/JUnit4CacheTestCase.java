@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
@@ -208,7 +209,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return getCache(client, null);
   }
 
-  private InternalCache getCache(final boolean client, final CacheFactory factory) {
+  public final InternalCache getCache(final boolean client, final CacheFactory factory) {
     synchronized (JUnit4CacheTestCase.class) {
       InternalCache gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
@@ -415,9 +416,20 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     Region<K, V> root = getRootRegion(rootName);
     if (root == null) {
       // don't put listeners on root region
-      RegionFactory<K, V> regionFactoryRoot = getRootRegionRegionFactory(attributes);
-      regionFactoryRoot.setDataPolicy(DataPolicy.PARTITION);
-      root = regionFactoryRoot.create(rootName);
+      AttributesFactory<K, V> attributesFactory = new AttributesFactory<>(attributes);
+      ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
+
+      attributesFactory.setCacheLoader(null);
+      attributesFactory.setCacheWriter(null);
+      attributesFactory.setPoolName(null);
+      attributesFactory.setDataPolicy(DataPolicy.PARTITION);
+      attributesFactory.setRegionTimeToLive(expiration);
+      attributesFactory.setEntryTimeToLive(expiration);
+      attributesFactory.setRegionIdleTimeout(expiration);
+      attributesFactory.setEntryIdleTimeout(expiration);
+
+      RegionAttributes<K, V> rootAttrs = attributesFactory.create();
+      root = createRootRegion(rootName, rootAttrs);
     }
     return root;
   }
@@ -428,9 +440,20 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
     if (root == null) {
       // don't put listeners on root region
-      RegionFactory<K, V> regionFactoryRoot = getRootRegionRegionFactory(attributes);
-      regionFactoryRoot.setPartitionAttributes(null);
-      root = regionFactoryRoot.create(rootName);
+      AttributesFactory<K, V> attributesFactory = new AttributesFactory<>(attributes);
+      ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
+
+      attributesFactory.setCacheLoader(null);
+      attributesFactory.setCacheWriter(null);
+      attributesFactory.setPoolName(null);
+      attributesFactory.setPartitionAttributes(null);
+      attributesFactory.setRegionTimeToLive(expiration);
+      attributesFactory.setEntryTimeToLive(expiration);
+      attributesFactory.setRegionIdleTimeout(expiration);
+      attributesFactory.setEntryIdleTimeout(expiration);
+
+      RegionAttributes<K, V> rootAttrs = attributesFactory.create();
+      root = createRootRegion(rootName, rootAttrs);
     }
     return root.createSubregion(name, attributes);
   }

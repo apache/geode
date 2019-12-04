@@ -184,13 +184,17 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     }
 
     final int totalNumberOfBuckets = 8;
-    testRegion = createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
+    testRegion = createBasicPartitionedRegion(redundantCopies, totalNumberOfBuckets,
+        LOCAL_MAX_MEMORY_DEFAULT);
 
-    customerRegion = createColocatedRegion(CUSTOMER, null, redundantCopies, totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
+    customerRegion = createColocatedRegion(CUSTOMER, null, redundantCopies, totalNumberOfBuckets,
+        LOCAL_MAX_MEMORY_DEFAULT);
 
-    orderRegion = createColocatedRegion(ORDER, CUSTOMER, redundantCopies, totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
+    orderRegion = createColocatedRegion(ORDER, CUSTOMER, redundantCopies, totalNumberOfBuckets,
+        LOCAL_MAX_MEMORY_DEFAULT);
 
-    shipmentRegion = createColocatedRegion(SHIPMENT, ORDER, redundantCopies, totalNumberOfBuckets, LOCAL_MAX_MEMORY_DEFAULT);
+    shipmentRegion = createColocatedRegion(SHIPMENT, ORDER, redundantCopies, totalNumberOfBuckets,
+        LOCAL_MAX_MEMORY_DEFAULT);
 
     return server.getPort();
   }
@@ -621,13 +625,17 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     final int redundantCopies = 3;
     final int totalNumberOfBuckets = 4;
     Integer port0 =
-        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies, totalNumberOfBuckets));
+        member0.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     Integer port1 =
-        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies, totalNumberOfBuckets));
+        member1.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     Integer port2 =
-        member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies, totalNumberOfBuckets));
+        member2.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     Integer port3 =
-        member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies, totalNumberOfBuckets));
+        member3.invoke(() -> PartitionedRegionSingleHopDUnitTest.createServer(redundantCopies,
+            totalNumberOfBuckets));
     createClient(port0, port1, port2, port3);
     putIntoPartitionedRegions();
     getFromPartitionedRegions();
@@ -695,8 +703,8 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     });
 
     await()
-        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size()
-            == totalNumberOfBuckets));
+        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY()
+            .size() == totalNumberOfBuckets));
   }
 
   @Test
@@ -726,8 +734,8 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     final ClientPartitionAdvisor prMetaData = regionMetaData.get(testRegion.getFullPath());
 
     await()
-        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size()
-            == totalNumberOfBuckets));
+        .until(() -> (prMetaData.getBucketServerLocationsMap_TEST_ONLY()
+            .size() == totalNumberOfBuckets));
   }
 
   @Test
@@ -1067,7 +1075,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void verifyDeadServer(Map<String, ClientPartitionAdvisor> regionMetaData, Region region,
-                                int port0, int port1) {
+      int port0, int port1) {
 
     ServerLocation sl0 = new ServerLocation("localhost", port0);
     ServerLocation sl1 = new ServerLocation("localhost", port1);
@@ -1140,8 +1148,8 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static <K, V> Region<K, V> createBasicPartitionedRegion(int redundantCopies,
-                                                                  int totalNumberOfBuckets,
-                                                                  int localMaxMemory) {
+      int totalNumberOfBuckets,
+      int localMaxMemory) {
     PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumberOfBuckets);
 
@@ -1163,10 +1171,10 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static <K, V> Region<K, V> createColocatedRegion(String regionName,
-                                                           String colocatedRegionName,
-                                                           int redundantCopies,
-                                                           int totalNumberOfBuckets,
-                                                           int localMaxMemory) {
+      String colocatedRegionName,
+      int redundantCopies,
+      int totalNumberOfBuckets,
+      int localMaxMemory) {
 
     PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumberOfBuckets)
@@ -1277,10 +1285,10 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static <K, V> Region<K, V> createColocatedPersistentRegionForTest(final String regionName,
-                                                                            String colocatedRegionName,
-                                                                            int redundantCopies,
-                                                                            int totalNumberOfBuckets,
-                                                                            int localMaxMemory) {
+      String colocatedRegionName,
+      int redundantCopies,
+      int totalNumberOfBuckets,
+      int localMaxMemory) {
 
     PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
 
@@ -1543,8 +1551,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
   }
 
   static class MyFunctionAdapter extends FunctionAdapter implements DataSerializable {
-    public MyFunctionAdapter() {
-    }
+    public MyFunctionAdapter() {}
 
     @Override
     public String getId() {
@@ -1580,8 +1587,7 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-    }
+    public void toData(DataOutput out) throws IOException {}
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -1740,8 +1746,7 @@ class Customer implements DataSerializable { // TODO: move this to be an inner c
 
   String address;
 
-  public Customer() {
-  }
+  public Customer() {}
 
   public Customer(String name, String address) {
     this.name = name;
@@ -1790,8 +1795,7 @@ class Customer implements DataSerializable { // TODO: move this to be an inner c
 class Order implements DataSerializable {
   String orderName;
 
-  public Order() {
-  }
+  public Order() {}
 
   public Order(String orderName) {
     this.orderName = orderName;
@@ -1838,8 +1842,7 @@ class Order implements DataSerializable {
 class Shipment implements DataSerializable {
   String shipmentName;
 
-  public Shipment() {
-  }
+  public Shipment() {}
 
   public Shipment(String shipmentName) {
     this.shipmentName = shipmentName;
