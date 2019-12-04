@@ -62,7 +62,7 @@ public class RebalanceOperationController extends AbstractManagementController {
 
   @ApiOperation(value = "check rebalance")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
-  @GetMapping(REBALANCE_ENDPOINT + "/{id}")
+  @GetMapping(REBALANCE_ENDPOINT + "/{id:.+}")
   public ResponseEntity<ClusterManagementOperationStatusResult<RebalanceResult>> checkRebalanceStatus(
       @PathVariable String id) {
     ClusterManagementOperationStatusResult<RebalanceResult> result =

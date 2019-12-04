@@ -49,7 +49,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 @RestController("regionManagement")
 @RequestMapping(URI_VERSION)
 public class RegionManagementController extends AbstractManagementController {
-  private static final String INDEXES = "/indexes";
+  public static final String INDEXES = "/indexes";
 
   @ApiOperation(value = "create region")
   @ApiResponses({
@@ -89,7 +89,7 @@ public class RegionManagementController extends AbstractManagementController {
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result | .runtimeInfo[] + .configuration | {name:.name,type:.type,entryCount:.entryCount}")})})
-  @GetMapping(REGION_CONFIG_ENDPOINT + "/{id}")
+  @GetMapping(REGION_CONFIG_ENDPOINT + "/{id:.+}")
   public ClusterManagementGetResult<Region, RuntimeRegionInfo> getRegion(
       @PathVariable(name = "id") String id) {
     securityService.authorize(Resource.CLUSTER, Operation.READ, id);
@@ -100,7 +100,7 @@ public class RegionManagementController extends AbstractManagementController {
 
   @ApiOperation(value = "delete region")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
-  @DeleteMapping(REGION_CONFIG_ENDPOINT + "/{id}")
+  @DeleteMapping(REGION_CONFIG_ENDPOINT + "/{id:.+}")
   public ClusterManagementResult deleteRegion(
       @PathVariable(name = "id") String id,
       @RequestParam(required = false) String group) {
@@ -149,7 +149,7 @@ public class RegionManagementController extends AbstractManagementController {
       extensions = {@Extension(properties = {
           @ExtensionProperty(name = "jqFilter",
               value = ".result | .configuration | {name:.name,expression:.expression}")})})
-  @GetMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{id}")
+  @GetMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{id:.+}")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementGetResult<Index, RuntimeInfo> getIndex(
       @PathVariable String regionName,
