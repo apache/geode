@@ -617,6 +617,41 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Function<Object, SystemTimer> systemTimerFactory;
   private final ReplyProcessor21Factory replyProcessor21Factory;
 
+  // KIRK: -----------------------------------------------------------------------------------------
+
+  /**
+   * Used by unit tests to force cache creation to use a test generated cache.xml
+   */
+  @MutableForTesting
+  public static File testCacheXml = null;
+
+  private final Stopper stopper = new Stopper();
+
+  /**
+   * Set to true during a cache close if user requested durable subscriptions to be kept.
+   *
+   * @since GemFire 5.7
+   */
+  private boolean keepAlive;
+
+  /**
+   * break any potential circularity in {@link #loadEmergencyClasses()}
+   */
+  @MakeNotStatic
+  private static volatile boolean emergencyClassesLoaded = false;
+
+  /**
+   * Number of threads used to close PRs in shutdownAll. By default is the number of PRs in the
+   * cache
+   */
+  private static final int shutdownAllPoolSize =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "SHUTDOWN_ALL_POOL_SIZE", -1);
+
+  private final boolean DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE = Boolean
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+
+  // KIRK: -----------------------------------------------------------------------------------------
+
   static {
     // this works around jdk bug 6427854, reported in ticket #44434
     String propertyName = "sun.nio.ch.bugLevel";
@@ -1207,12 +1242,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Used by unit tests to force cache creation to use a test generated cache.xml
-   */
-  @MutableForTesting
-  public static File testCacheXml = null;
-
-  /**
    * @return true if cache is created using a ClientCacheFactory
    * @see #hasPool()
    */
@@ -1569,8 +1598,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return new DiskStoreFactoryImpl(this, attrs);
   }
 
-  private final Stopper stopper = new Stopper();
-
   @Override
   public CancelCriterion getCancelCriterion() {
     return stopper;
@@ -1609,13 +1636,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Set to true during a cache close if user requested durable subscriptions to be kept.
-   *
-   * @since GemFire 5.7
-   */
-  private boolean keepAlive;
-
-  /**
    * Returns true if durable subscriptions (registrations and queries) should be preserved.
    *
    * @since GemFire 5.7
@@ -1624,12 +1644,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public boolean keepDurableSubscriptionsAlive() {
     return keepAlive;
   }
-
-  /**
-   * break any potential circularity in {@link #loadEmergencyClasses()}
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded = false;
 
   /**
    * Ensure that all the necessary classes for closing the cache are loaded
@@ -1702,13 +1716,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public boolean isCacheAtShutdownAll() {
     return isShutDownAll.get();
   }
-
-  /**
-   * Number of threads used to close PRs in shutdownAll. By default is the number of PRs in the
-   * cache
-   */
-  private static final int shutdownAllPoolSize =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "SHUTDOWN_ALL_POOL_SIZE", -1);
 
   private void shutdownSubTreeGracefully(Map<String, PartitionedRegion> prSubMap) {
     for (final PartitionedRegion pr : prSubMap.values()) {
@@ -2078,9 +2085,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     return clientMetadataService;
   }
-
-  private final boolean DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE = Boolean
-      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
 
   @Override
   public void close(String reason, Throwable systemFailureCause, boolean keepAlive,
