@@ -83,6 +83,11 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
   }
 
   @Override
+  public boolean containsRegionContentChange() {
+    return true;
+  }
+
+  @Override
   public boolean supportsDirectAck() {
     return true;
   }

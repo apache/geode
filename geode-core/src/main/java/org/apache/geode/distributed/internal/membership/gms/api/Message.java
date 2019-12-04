@@ -115,4 +115,6 @@ public interface Message extends DataSerializableFixedID {
    * communications transport when receiving a message.
    */
   int getBytesRead();
+
+  boolean containsRegionContentChange();
 }

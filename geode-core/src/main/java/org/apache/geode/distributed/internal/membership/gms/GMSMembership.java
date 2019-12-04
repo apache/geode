@@ -892,6 +892,9 @@ public class GMSMembership implements Membership {
    * @param msg the message to process
    */
   protected void handleOrDeferMessage(Message msg) {
+    if (msg.containsRegionContentChange() && (beingSick || playingDead)) {
+      return;
+    }
     if (!processingEvents) {
       synchronized (startupLock) {
         if (!startupMessagesDrained) {
@@ -930,7 +933,7 @@ public class GMSMembership implements Membership {
    *
    * @param msg the message
    */
-  private void dispatchMessage(Message msg) {
+  protected void dispatchMessage(Message msg) {
     InternalDistributedMember m = (InternalDistributedMember) msg.getSender();
     boolean shunned = false;
 
@@ -1839,8 +1842,8 @@ public class GMSMembership implements Membership {
     }
   }
 
-  private boolean beingSick;
-  private boolean playingDead;
+  private volatile boolean beingSick;
+  private volatile boolean playingDead;
 
   /**
    * Test hook - be a sick member

@@ -96,6 +96,11 @@ public abstract class AbstractGMSMessage implements Message {
   }
 
   @Override
+  public boolean containsRegionContentChange() {
+    return false;
+  }
+
+  @Override
   public void setBytesRead(int amount) {
     // no-op in GMS messages
   }
