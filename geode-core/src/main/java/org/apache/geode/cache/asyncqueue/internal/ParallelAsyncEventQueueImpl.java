@@ -63,7 +63,7 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
   }
 
   @Override
-  public void startWithClean() {
+  public void startWithCleanQueue() {
     this.start(true);
   }
 

@@ -56,7 +56,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
   }
 
   @Override
-  public void startWithClean() {
+  public void startWithCleanQueue() {
     this.start(true);
   }
 
