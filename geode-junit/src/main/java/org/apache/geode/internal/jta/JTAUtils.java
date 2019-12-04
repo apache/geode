@@ -232,9 +232,6 @@ public class JTAUtils {
   public String parseGetValue(String str) {
 
     String returnVal = null;
-    if (str == null) {
-      // returnVal = str; (redundant assignment)
-    }
     if (str.indexOf(':') != -1) {
       String tokens[] = str.split(":");
       returnVal = tokens[1].trim();
