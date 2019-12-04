@@ -1467,15 +1467,15 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     InternalResourceManager.setResourceObserver(observer);
 
-    RegionFactory<Object,Object> regionFactory = getCache().createRegionFactory(REPLICATE);
+    RegionFactory<Object, Object> regionFactory = getCache().createRegionFactory(REPLICATE);
 
-    Region<Object,Object> parentRegion1 = regionFactory.create(parentRegion1Name);
-    Region<Object,Object> parentRegion2 = regionFactory.create(parentRegion2Name);
+    Region<Object, Object> parentRegion1 = regionFactory.create(parentRegion1Name);
+    Region<Object, Object> parentRegion2 = regionFactory.create(parentRegion2Name);
 
     PartitionAttributesFactory<?, ?> partitionAttributesFactory = new PartitionAttributesFactory();
     partitionAttributesFactory.setRedundantCopies(1);
 
-    RegionFactory<Object,Object> regionFactoryPR =
+    RegionFactory<Object, Object> regionFactoryPR =
         getCache().createRegionFactory(PARTITION_PERSISTENT);
     regionFactoryPR.setPartitionAttributes(partitionAttributesFactory.create());
 
