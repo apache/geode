@@ -161,51 +161,8 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
          * org.apache.geode.internal.cache.locks.TXLockServiceTest should be expanded upon also...
          */
       } catch (RuntimeException t) {
-        logger.warn("[processTXOriginatorRecoveryMessage] throwable:",
-            t);
-        // if (replyException == null) (can only be null)
-        {
-          replyException = new ReplyException(t);
-        }
-        // else {
-        // log.warning(LocalizedStrings.TXOriginatorRecoveryProcessor_MORE_THAN_ONE_EXCEPTION_THROWN_IN__0,
-        // this, t);
-        // }
-        // }
-        // catch (VirtualMachineError err) {
-        // SystemFailure.initiateFailure(err);
-        // // If this ever returns, rethrow the error. We're poisoned
-        // // now, so don't let this thread continue.
-        // throw err;
-        // }
-        // catch (Throwable t) {
-        // // Whenever you catch Error or Throwable, you must also
-        // // catch VirtualMachineError (see above). However, there is
-        // // _still_ a possibility that you are dealing with a cascading
-        // // error condition, so you also need to check to see if the JVM
-        // // is still usable:
-        // SystemFailure.checkFailure();
-        // if (replyException == null) {
-        // replyException = new ReplyException(t);
-        // }
-        // }
-        // catch (VirtualMachineError err) {
-        // SystemFailure.initiateFailure(err);
-        // // If this ever returns, rethrow the error. We're poisoned
-        // // now, so don't let this thread continue.
-        // throw err;
-        // }
-        // catch (Throwable t) {
-        // // Whenever you catch Error or Throwable, you must also
-        // // catch VirtualMachineError (see above). However, there is
-        // // _still_ a possibility that you are dealing with a cascading
-        // // error condition, so you also need to check to see if the JVM
-        // // is still usable:
-        // SystemFailure.checkFailure();
-        // if (replyException == null) {
-        // replyException = new ReplyException(t);
-        // }
-        // }
+        logger.warn("[processTXOriginatorRecoveryMessage] throwable:", t);
+        replyException = new ReplyException(t);
       } finally {
         TXOriginatorRecoveryReplyMessage replyMsg = new TXOriginatorRecoveryReplyMessage();
         replyMsg.txLockId = txLockId;
