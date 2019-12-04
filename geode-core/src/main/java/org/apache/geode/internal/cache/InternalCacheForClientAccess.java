@@ -1020,9 +1020,8 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public void close(String reason, Throwable systemFailureCause, boolean keepAlive,
-      boolean keepDS) {
-    delegate.close(reason, systemFailureCause, keepAlive, keepDS);
+  public void close(String reason, Throwable systemFailureCause, boolean keepAlive, boolean keepDS, boolean skipAwait) {
+    delegate.close(reason, systemFailureCause, keepAlive, keepDS, skipAwait);
   }
 
   @Override

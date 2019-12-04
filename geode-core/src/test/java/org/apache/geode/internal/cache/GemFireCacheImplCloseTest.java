@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,6 +25,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Properties;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -48,6 +52,7 @@ import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.util.concurrent.MeteredCountDownLatch;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -171,6 +176,43 @@ public class GemFireCacheImplCloseTest {
         .doesNotThrowAnyException();
 
     verify(internalDistributedSystem).disconnect();
+  }
+
+  @Test
+  public void close_blocksUntilFirstCallToCloseCompletes() throws Exception {
+    MeteredCountDownLatch go = new MeteredCountDownLatch(1);
+    AtomicLong winner = new AtomicLong();
+
+    Future<Long> close1 = executorServiceRule.submit(() -> {
+      synchronized (GemFireCacheImpl.class) {
+        long threadId = Thread.currentThread().getId();
+        go.await(TIMEOUT_MILLIS, MILLISECONDS);
+        gemFireCacheImpl.close();
+        winner.compareAndSet(0, threadId);
+        return threadId;
+      }
+    });
+
+    await().until(() -> go.getWaitCount() == 1);
+
+    Future<Long> close2 = executorServiceRule.submit(() -> {
+      long threadId = Thread.currentThread().getId();
+      go.await(TIMEOUT_MILLIS, MILLISECONDS);
+      gemFireCacheImpl.close();
+      winner.compareAndSet(0, threadId);
+      return threadId;
+    });
+
+    await().until(() -> go.getWaitCount() == 2);
+
+    go.countDown();
+
+    long threadId1 = close1.get();
+    long threadId2 = close2.get();
+
+    assertThat(winner.get())
+        .as("ThreadId1=" + threadId1 + " and threadId2=" + threadId2)
+        .isEqualTo(threadId1);
   }
 
   @SuppressWarnings({"SameParameterValue", "LambdaParameterHidesMemberVariable",

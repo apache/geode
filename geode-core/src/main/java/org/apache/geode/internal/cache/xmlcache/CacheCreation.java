@@ -1254,7 +1254,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void close(final String reason, final Throwable systemFailureCause,
-      final boolean keepAlive, final boolean keepDS) {
+                    final boolean keepAlive, final boolean keepDS, boolean skipAwait) {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 

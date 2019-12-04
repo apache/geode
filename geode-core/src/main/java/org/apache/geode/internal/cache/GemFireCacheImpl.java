@@ -623,6 +623,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private volatile boolean isClosing;
 
+  private final CountDownLatch isClosedLatch = new CountDownLatch(1);
+
   /**
    * Set of all gateway senders. It may be fetched safely (for enumeration), but updates must by
    * synchronized via {@link #allGatewaySendersLock}
@@ -1785,7 +1787,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           }
         }
 
-        close("Shut down all members", null, false, true);
+        close("Shut down all members", null, false, true, false);
       } finally {
         shutDownAllFinished.countDown();
       }
@@ -1943,17 +1945,17 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void close(String reason, boolean keepAlive, boolean keepDS) {
-    close(reason, null, keepAlive, keepDS);
+    close(reason, null, keepAlive, keepDS, false);
   }
 
   @Override
   public void close(boolean keepAlive) {
-    close("Normal disconnect", null, keepAlive, false);
+    close("Normal disconnect", null, keepAlive, false, false);
   }
 
   @Override
   public void close(String reason, Throwable optionalCause) {
-    close(reason, optionalCause, false, false);
+    close(reason, optionalCause, false, false, false);
   }
 
   @Override
@@ -2079,10 +2081,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void close(String reason, Throwable systemFailureCause, boolean keepAlive,
-      boolean keepDS) {
+                    boolean keepDS, boolean skipAwait) {
     securityService.close();
 
     if (isClosed()) {
+      if (!skipAwait) {
+        awaitIsClosedLatch();
+      }
       return;
     }
 
@@ -2105,6 +2110,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       // ALL CODE FOR CLOSE SHOULD NOW BE UNDER STATIC SYNCHRONIZATION OF GemFireCacheImpl.class
       // static synchronization is necessary due to static resources
       if (isClosed()) {
+        if (!skipAwait) {
+          awaitIsClosedLatch();
+        }
         return;
       }
 
@@ -2383,6 +2391,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       SequenceLoggerImpl.signalCacheClose();
       SystemFailure.signalCacheClose();
+
+      isClosedLatch.countDown();
+    }
+  }
+
+  private void awaitIsClosedLatch() {
+    try {
+      isClosedLatch.await();
+    } catch (InterruptedException ignore) {
+      // ignored
     }
   }
 
