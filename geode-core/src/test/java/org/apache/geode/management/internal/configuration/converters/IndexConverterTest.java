@@ -34,6 +34,42 @@ public class IndexConverterTest {
   }
 
   @Test
+  public void fromXMLtoConfigCopySimpleProperties() {
+    RegionConfig.Index xmlIndex = new RegionConfig.Index();
+    String theName = "some name";
+    xmlIndex.setName(theName);
+    String theExpression = "some expression";
+    xmlIndex.setExpression(theExpression);
+    String theFromClause = "some clause";
+    xmlIndex.setFromClause(theFromClause);
+
+    Index index = indexConverter.fromNonNullXmlObject(xmlIndex);
+    SoftAssertions.assertSoftly(softly -> {
+      softly.assertThat(index.getExpression()).as("expression").isEqualTo(theExpression);
+      softly.assertThat(index.getName()).as("name").isEqualTo(theName);
+      softly.assertThat(index.getRegionPath()).as("regionPath").isEqualTo(theFromClause);
+    });
+  }
+
+  @Test
+  public void fromConfigtoXMLCopySimpleProperties() {
+    Index index = new Index();
+    String theExpression = "some expression";
+    index.setExpression(theExpression);
+    String theName = "some name";
+    index.setName(theName);
+    String theRegionPath = "some region path";
+    index.setRegionPath(theRegionPath);
+
+    RegionConfig.Index xmlIndex = indexConverter.fromNonNullConfigObject(index);
+    SoftAssertions.assertSoftly(softly -> {
+      softly.assertThat(xmlIndex.getExpression()).isEqualTo(theExpression);
+      softly.assertThat(xmlIndex.getName()).isEqualTo(theName);
+      softly.assertThat(xmlIndex.getFromClause()).isEqualTo(theRegionPath);
+    });
+  }
+
+  @Test
   public void fromXMLRangetoConfigOkay() {
     RegionConfig.Index xmlIndex = new RegionConfig.Index();
     xmlIndex.setType("range");

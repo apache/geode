@@ -70,10 +70,8 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
 
     if (configObject.getIndexType() != null) {
       index.setType(indexTypeToXmlName.get(configObject.getIndexType()));
-    } else {
-      throw new IllegalArgumentException(
-          "Unexpected index type provided: " + configObject.getIndexType());
     }
+
     return index;
   }
 }
