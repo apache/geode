@@ -351,7 +351,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
    *
    * @param mapOfNewDeclarableProps Map of the declarable properties to add
    */
-  void addDeclarableProperties(final Map<Declarable, Properties> mapOfNewDeclarableProps);
+  void addDeclarableProperties(Map<Declarable, Properties> mapOfNewDeclarableProps);
 
   void setInitializer(Declarable initializer, Properties initializerProps);
 
@@ -422,7 +422,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
    * @param className Class name of the declarable
    * @return List of all instances of properties found for the given declarable
    */
-  List<Properties> getDeclarableProperties(final String className);
+  List<Properties> getDeclarableProperties(String className);
 
   /**
    * Return the number of seconds that have elapsed since the Cache was created.
@@ -490,7 +490,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
    * @param declarable The declarable
    * @return Properties found for the given declarable
    */
-  Properties getDeclarableProperties(final Declarable declarable);
+  Properties getDeclarableProperties(Declarable declarable);
 
   void setRESTServiceRunning(boolean isRESTServiceRunning);
 
