@@ -54,7 +54,7 @@ public abstract class CacheConfigurationManager<T extends AbstractConfiguration>
 
   public abstract List<T> list(T filterConfig, CacheConfig existing);
 
-  public abstract T get(String id, CacheConfig existing);
+  public abstract T get(T config, CacheConfig existing);
 
   /**
    * @param incoming the one that's about to be persisted

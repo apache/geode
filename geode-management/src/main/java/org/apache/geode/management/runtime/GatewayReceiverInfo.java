@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.runtime;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import org.apache.geode.annotations.Experimental;
 
 @Experimental
@@ -72,5 +75,36 @@ public class GatewayReceiverInfo extends RuntimeInfo {
 
   public void setConnectedSenders(String[] connectedSenders) {
     this.connectedSenders = connectedSenders;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof GatewayReceiverInfo)) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    GatewayReceiverInfo that = (GatewayReceiverInfo) o;
+    return isRunning() == that.isRunning() &&
+        getPort() == that.getPort() &&
+        getSenderCount() == that.getSenderCount() &&
+        Objects.equals(getHostnameForSenders(), that.getHostnameForSenders()) &&
+        Objects.equals(getBindAddress(), that.getBindAddress()) &&
+        Arrays.equals(getConnectedSenders(), that.getConnectedSenders());
+  }
+
+  @Override
+  public int hashCode() {
+    int result =
+        Objects
+            .hash(super.hashCode(), isRunning(), getPort(), getHostnameForSenders(),
+                getBindAddress(),
+                getSenderCount());
+    result = 31 * result + Arrays.hashCode(getConnectedSenders());
+    return result;
   }
 }

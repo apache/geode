@@ -16,6 +16,7 @@
 package org.apache.geode.management.runtime;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.JsonSerializable;
@@ -30,5 +31,22 @@ public abstract class RuntimeInfo implements Serializable, JsonSerializable {
 
   public String getMemberName() {
     return memberName;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RuntimeInfo)) {
+      return false;
+    }
+    RuntimeInfo that = (RuntimeInfo) o;
+    return Objects.equals(getMemberName(), that.getMemberName());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getMemberName());
   }
 }

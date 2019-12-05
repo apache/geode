@@ -66,8 +66,8 @@ public class RegionConfigManager extends CacheConfigurationManager<Region> {
   }
 
   @Override
-  public Region get(String id, CacheConfig existing) {
-    return converter.fromXmlObject(Identifiable.find(existing.getRegions(), id));
+  public Region get(Region config, CacheConfig existing) {
+    return converter.fromXmlObject(Identifiable.find(existing.getRegions(), config.getId()));
   }
 
   @Override

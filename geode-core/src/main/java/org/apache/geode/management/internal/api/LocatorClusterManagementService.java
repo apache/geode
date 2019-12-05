@@ -79,6 +79,7 @@ import org.apache.geode.management.internal.configuration.mutators.RegionConfigM
 import org.apache.geode.management.internal.configuration.validators.CommonConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.GatewayReceiverConfigValidator;
+import org.apache.geode.management.internal.configuration.validators.IndexValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.PdxValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
@@ -116,6 +117,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     validators.put(Region.class, new RegionConfigValidator(cache));
     validators.put(GatewayReceiver.class, new GatewayReceiverConfigValidator());
     validators.put(Pdx.class, new PdxValidator());
+    validators.put(Index.class, new IndexValidator());
   }
 
   @VisibleForTesting
@@ -224,7 +226,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     String[] groupsWithThisElement =
-        memberValidator.findGroupsWithThisElement(config.getId(), configurationManager);
+        memberValidator.findGroupsWithThisElement(config, configurationManager);
     if (groupsWithThisElement.length == 0) {
       raise(StatusCode.ENTITY_NOT_FOUND,
           config.getClass().getSimpleName() + " '" + config.getId() + "' does not exist.");

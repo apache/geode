@@ -15,46 +15,18 @@
 
 package org.apache.geode.management.runtime;
 
-
-import java.util.Objects;
-
-public class DeploymentInfo extends RuntimeInfo {
-  private String jarLocation;
-  private String timeDeployed;
-
-  public String getJarLocation() {
-    return jarLocation;
-  }
-
-  public void setTimeDeployed(String timeDeployed) {
-    this.timeDeployed = timeDeployed;
-  }
-
-  public String getTimeDeployed() {
-    return timeDeployed;
-  }
-
-  public void setJarLocation(String jarLocation) {
-    this.jarLocation = jarLocation;
-  }
-
+public class IndexInfo extends RuntimeInfo {
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof DeploymentInfo)) {
+    if (o instanceof IndexInfo) {
+      return super.equals(o);
+    } else {
       return false;
     }
-    if (!super.equals(o)) {
-      return false;
-    }
-    DeploymentInfo that = (DeploymentInfo) o;
-    return Objects.equals(getJarLocation(), that.getJarLocation());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), getJarLocation());
+    return super.hashCode();
   }
 }

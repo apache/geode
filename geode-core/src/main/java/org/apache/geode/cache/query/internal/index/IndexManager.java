@@ -121,8 +121,6 @@ public class IndexManager {
   @MutableForTesting
   public static boolean IS_TEST_EXPANSION = false;
 
-
-
   /**
    * System property to maintain the ReverseMap to take care in-place modification of the objects by
    * the application. In case of in-place modification the EntryEvent will not have the old-value,

@@ -780,6 +780,7 @@ javadoc/org/apache/geode/management/package-tree.html
 javadoc/org/apache/geode/management/runtime/CacheServerInfo.html
 javadoc/org/apache/geode/management/runtime/DeploymentInfo.html
 javadoc/org/apache/geode/management/runtime/GatewayReceiverInfo.html
+javadoc/org/apache/geode/management/runtime/IndexInfo.html
 javadoc/org/apache/geode/management/runtime/MemberInformation.html
 javadoc/org/apache/geode/management/runtime/OperationResult.html
 javadoc/org/apache/geode/management/runtime/PdxInfo.html
