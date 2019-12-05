@@ -371,16 +371,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       new CopyOnWriteArraySet<>();
 
   /**
-   * Property set to true if resource manager heap percentage is set and query monitor is required
-   */
-  @MakeNotStatic
-  private static boolean queryMonitorRequiredForResourceManager;
-
-  /**
    * Break any potential circularity in {@link #loadEmergencyClasses()}.
    */
   @MakeNotStatic
   private static volatile boolean emergencyClassesLoaded;
+
+  /**
+   * Property set to true if resource manager heap percentage is set and query monitor is required
+   */
+  @MakeNotStatic
+  private static boolean queryMonitorRequiredForResourceManager;
 
   /**
    * TODO: remove static from defaultDiskStoreName and move methods to InternalCache
@@ -393,8 +393,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private final boolean queryMonitorDisabledForLowMem = Boolean
       .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY");
-
-  private volatile ConfigurationResponse configurationResponse;
 
   private final InternalDistributedSystem system;
 
@@ -409,16 +407,42 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final PoolFactory poolFactory;
 
+  private volatile ConfigurationResponse configurationResponse;
+
+  private volatile boolean isInitialized;
+
+  private volatile boolean isClosing;
+
+  /**
+   * Set of all gateway senders. It may be fetched safely (for enumeration), but updates must by
+   * synchronized via {@link #allGatewaySendersLock}
+   */
+  private volatile Set<GatewaySender> allGatewaySenders = Collections.emptySet();
+
+  /**
+   * Copy on Read feature for all read operations.
+   */
+  private volatile boolean copyOnRead = DEFAULT_COPY_ON_READ;
+
+  /**
+   * Reason this cache was forced to close due to a forced-disconnect or system failure.
+   */
+  private volatile Throwable disconnectCause;
+
+  /**
+   * DistributedLockService for GatewaySenders. Remains null until the first GatewaySender is
+   * created. Destroyed by GemFireCache when closing the cache. Guarded by gatewayLockServiceLock.
+   */
+  private volatile DistributedLockService gatewayLockService;
+
+  private volatile QueryMonitor queryMonitor;
+
   /**
    * Not final to allow cache.xml parsing to set it.
    */
   private Pool defaultPool;
 
   private final ConcurrentMap<String, InternalRegion> pathToRegion = new ConcurrentHashMap<>();
-
-  private volatile boolean isInitialized;
-
-  private volatile boolean isClosing;
 
   /**
    * Amount of time (in seconds) to wait for a distributed lock
@@ -464,12 +488,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Controls updates to the list of all gateway senders {@link #allGatewaySenders}.
    */
   private final Object allGatewaySendersLock = new Object();
-
-  /**
-   * Set of all gateway senders. It may be fetched safely (for enumeration), but updates must by
-   * synchronized via {@link #allGatewaySendersLock}
-   */
-  private volatile Set<GatewaySender> allGatewaySenders = Collections.emptySet();
 
   /**
    * List of all async event queues added to the cache. CopyOnWriteArrayList is used to allow
@@ -525,11 +543,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private boolean isRESTServiceRunning;
 
   /**
-   * Copy on Read feature for all read operations.
-   */
-  private volatile boolean copyOnRead = DEFAULT_COPY_ON_READ;
-
-  /**
    * Named region attributes registered with this cache.
    */
   private final Map<String, RegionAttributes<?, ?>> namedRegionAttributes =
@@ -539,11 +552,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * True if this cache was forced to close due to a forced-disconnect.
    */
   private boolean forcedDisconnect;
-
-  /**
-   * Reason this cache was forced to close due to a forced-disconnect or system failure.
-   */
-  private volatile Throwable disconnectCause;
 
   /**
    * Context where this cache was created for debugging.
@@ -570,12 +578,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Object prLockServiceLock = new Object();
 
   /**
-   * DistributedLockService for GatewaySenders. Remains null until the first GatewaySender is
-   * created. Destroyed by GemFireCache when closing the cache. Guarded by gatewayLockServiceLock.
-   */
-  private volatile DistributedLockService gatewayLockService;
-
-  /**
    * Synchronization mutex for gatewayLockService.
    */
   private final Object gatewayLockServiceLock = new Object();
@@ -593,8 +595,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Object offHeapEvictorLock = new Object();
 
   private ResourceEventsListener resourceEventsListener;
-
-  private volatile QueryMonitor queryMonitor;
 
   private final Object queryMonitorLock = new Object();
 
