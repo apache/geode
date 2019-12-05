@@ -1650,6 +1650,10 @@ public class CliStrings {
   public static final String LIST_FUNCTION__NO_FUNCTIONS_FOUND_ERROR_MESSAGE = "No Functions Found";
 
   public static final String LIST_GATEWAY = "list gateways";
+  public static final String LIST_GATEWAY__SENDERS_ONLY = "senders";
+  public static final String LIST_GATEWAY__SENDERS_ONLY__HELP = "Display only gateway senders.";
+  public static final String LIST_GATEWAY__RECEIVERS_ONLY = "receivers";
+  public static final String LIST_GATEWAY__RECEIVERS_ONLY__HELP = "Display only gateway receivers.";
   public static final String LIST_GATEWAY__HELP =
       "Display the Gateway Senders and Receivers for a member or members.";
   public static final String LIST_GATEWAY__GROUP__HELP =

@@ -369,4 +369,87 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
         .hasRowSize(1)
         .hasColumn("Sender Count").containsExactly("0");
   }
+
+  @Test
+  public void testListGatewaySenderOnly() {
+    setupClusters();
+
+    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SENDERS_ONLY;
+    CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert
+        .hasTableSection("gatewaySenders").hasRowSize(4)
+        .hasColumns().contains("GatewaySender Id", "Member");
+    commandAssert.hasNoSection("gatewayReceivers");
+  }
+
+  @Test
+  public void testListGatewayReceiversOnly() {
+    setupClusters();
+
+    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__RECEIVERS_ONLY;
+    CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert.hasNoSection("gatewaySenders");
+    commandAssert.hasTableSection("gatewayReceivers")
+        .hasRowSize(1).hasColumns().contains("Port", "Member");
+  }
+
+  @Test
+  public void testListGatewaySenderOnlyAndGatewayReceiverOnly() {
+    setupClusters();
+
+    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SENDERS_ONLY + " --"
+        + CliStrings.LIST_GATEWAY__RECEIVERS_ONLY;
+    CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
+    commandAssert
+        .hasTableSection("gatewaySenders").hasRowSize(4)
+        .hasColumns().contains("GatewaySender Id", "Member");
+    commandAssert.hasTableSection("gatewayReceivers")
+        .hasRowSize(1).hasColumns().contains("Port", "Member");
+  }
+
+  void setupClusters() {
+    Integer lnPort = locatorSite1.getPort();
+    Integer nyPort = locatorSite2.getPort();
+
+    // setup servers in Site #1 (London)
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
+
+    // servers in Site 2 (New York)
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
+    server5 = clusterStartupRule.startServerVM(7, nyPort);
+
+    server4.invoke(() -> createAndStartReceiver(nyPort));
+
+    server1.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
+    server1.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
+
+    server2.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
+    server2.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
+
+    server3.invoke(() -> createAndStartReceiver(lnPort));
+
+    server5.invoke(() -> createSender("ln_Serial", 1, false, 100, 400, false, false, null, false));
+    server5.invoke(() -> createSender("ln_Parallel", 1, true, 100, 400, false, false, null, false));
+
+    locatorSite2.invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server4.getVM()), true));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server1.getVM()),
+        "ln_Parallel", true, false));
+
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Serial", true, false));
+    locatorSite1.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server2.getVM()),
+        "ln_Parallel", true, false));
+
+    locatorSite1.invoke(() -> validateGatewayReceiverMXBeanProxy(getMember(server3.getVM()), true));
+
+    locatorSite2.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server5.getVM()),
+        "ln_Serial", true, false));
+    locatorSite2.invoke(() -> validateGatewaySenderMXBeanProxy(getMember(server5.getVM()),
+        "ln_Parallel", true, false));
+  }
 }
