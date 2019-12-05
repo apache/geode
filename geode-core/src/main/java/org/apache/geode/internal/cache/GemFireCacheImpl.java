@@ -709,6 +709,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final InternalCacheForClientAccess cacheForClients =
       new InternalCacheForClientAccess(this);
 
+  private List<File> backupFiles = Collections.emptyList();
+
   static {
     // this works around jdk bug 6427854
     String propertyName = "sun.nio.ch.bugLevel";
@@ -756,29 +758,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           + "increase the available memory if needed";
     }
     throw new IllegalStateException(message);
-  }
-
-  /**
-   * This is for debugging cache-open issues such as {@link CacheExistsException}.
-   */
-  @Override
-  public String toString() {
-    final StringBuilder sb = new StringBuilder();
-    sb.append("GemFireCache[");
-    sb.append("id = ").append(System.identityHashCode(this));
-    sb.append("; isClosing = ").append(isClosing);
-    sb.append("; isShutDownAll = ").append(isCacheAtShutdownAll());
-    sb.append("; created = ").append(creationDate);
-    sb.append("; server = ").append(isServer);
-    sb.append("; copyOnRead = ").append(copyOnRead);
-    sb.append("; lockLease = ").append(lockLease);
-    sb.append("; lockTimeout = ").append(lockTimeout);
-    if (creationStack != null) {
-      sb.append(lineSeparator()).append("Creation context:").append(lineSeparator());
-      sb.append(getStackTrace(creationStack));
-    }
-    sb.append("]");
-    return sb.toString();
   }
 
   /**
@@ -1092,6 +1071,29 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     clientMetadataService = clientMetadataServiceFactory.apply(this);
+  }
+
+  /**
+   * This is for debugging cache-open issues such as {@link CacheExistsException}.
+   */
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder();
+    sb.append("GemFireCache[");
+    sb.append("id = ").append(System.identityHashCode(this));
+    sb.append("; isClosing = ").append(isClosing);
+    sb.append("; isShutDownAll = ").append(isCacheAtShutdownAll());
+    sb.append("; created = ").append(creationDate);
+    sb.append("; server = ").append(isServer);
+    sb.append("; copyOnRead = ").append(copyOnRead);
+    sb.append("; lockLease = ").append(lockLease);
+    sb.append("; lockTimeout = ").append(lockTimeout);
+    if (creationStack != null) {
+      sb.append(lineSeparator()).append("Creation context:").append(lineSeparator());
+      sb.append(getStackTrace(creationStack));
+    }
+    sb.append("]");
+    return sb.toString();
   }
 
   @Override
@@ -4376,8 +4378,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
     PoolManagerImpl.readyForEvents(system, false);
   }
-
-  private List<File> backupFiles = Collections.emptyList();
 
   @Override
   public ResourceManager getResourceManager() {
