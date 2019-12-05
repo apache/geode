@@ -117,8 +117,4 @@ public interface MemberIdentifier extends DataSerializableFixedID {
    */
   void setVmKind(int dmType);
 
-  /**
-   * Set the membership data packed for this identifier
-   */
-  void setMemberData(MemberData data);
 }
