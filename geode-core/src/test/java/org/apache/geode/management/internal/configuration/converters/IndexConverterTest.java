@@ -52,48 +52,52 @@ public class IndexConverterTest {
   public void fromNonNullConfigObject_mapsFunctionalIndexTypeToRangeIndexType() {
     Index index = new Index();
     index.setIndexType(FUNCTIONAL);
-    index.setKeyIndex(false);
 
     RegionConfig.Index regionConfigIndex = indexConverter.fromNonNullConfigObject(index);
 
-    assertThat(regionConfigIndex.getType())
-        .as("type")
-        .isEqualTo("range");
-    assertThat(regionConfigIndex.isKeyIndex())
-        .as("is key index")
-        .isFalse();
+    assertSoftly(softly -> {
+      softly.assertThat(regionConfigIndex.getType())
+          .as("type")
+          .isEqualTo("range");
+      softly.assertThat(regionConfigIndex.isKeyIndex())
+          .as("is key index")
+          .isFalse();
+    });
   }
 
   @Test
   public void fromNonNullConfigObject_mapsPrimaryKeyIndexTypeToKeyIndexType() {
     Index index = new Index();
     index.setIndexType(PRIMARY_KEY);
-    index.setKeyIndex(true);
 
     RegionConfig.Index regionConfigIndex = indexConverter.fromNonNullConfigObject(index);
 
-    assertThat(regionConfigIndex.getType())
-        .as("type")
-        .isEqualTo("key");
-    assertThat(regionConfigIndex.isKeyIndex())
-        .as("is key index")
-        .isTrue();
+    assertSoftly(softly -> {
+      softly.assertThat(regionConfigIndex.getType())
+          .as("type")
+          .isEqualTo("key");
+      softly.assertThat(regionConfigIndex.isKeyIndex())
+          .as("is key index")
+          .isTrue();
+    });
+
   }
 
   @Test
   public void fromNonNullConfigObject_mapsHashDeprecatedIndexTypeToHashIndexType() {
     Index index = new Index();
     index.setIndexType(HASH_DEPRECATED);
-    index.setKeyIndex(false);
 
     RegionConfig.Index regionConfigIndex = indexConverter.fromNonNullConfigObject(index);
 
-    assertThat(regionConfigIndex.getType())
-        .as("type")
-        .isEqualTo("hash");
-    assertThat(regionConfigIndex.isKeyIndex())
-        .as("is key index")
-        .isFalse();
+    assertSoftly(softly -> {
+      softly.assertThat(regionConfigIndex.getType())
+          .as("type")
+          .isEqualTo("hash");
+      softly.assertThat(regionConfigIndex.isKeyIndex())
+          .as("is key index")
+          .isFalse();
+    });
   }
 
   @Test
@@ -122,14 +126,9 @@ public class IndexConverterTest {
 
     Index index = indexConverter.fromNonNullXmlObject(regionConfigIndex);
 
-    assertSoftly(softly -> {
-      softly.assertThat(index.getIndexType())
-          .as("type")
-          .isEqualTo(HASH_DEPRECATED);
-      softly.assertThat(index.getKeyIndex())
-          .as("is key index")
-          .isFalse();
-    });
+    assertThat(index.getIndexType())
+        .as("type")
+        .isEqualTo(HASH_DEPRECATED);
   }
 
   @Test
@@ -139,14 +138,9 @@ public class IndexConverterTest {
 
     Index index = indexConverter.fromNonNullXmlObject(regionConfigIndex);
 
-    assertSoftly(softly -> {
-      softly.assertThat(index.getIndexType())
-          .as("type")
-          .isEqualTo(FUNCTIONAL);
-      softly.assertThat(index.getKeyIndex())
-          .as("is key index")
-          .isFalse();
-    });
+    assertThat(index.getIndexType())
+        .as("type")
+        .isEqualTo(FUNCTIONAL);
   }
 
   @Test
@@ -156,13 +150,8 @@ public class IndexConverterTest {
 
     Index index = indexConverter.fromNonNullXmlObject(regionConfigIndex);
 
-    assertSoftly(softly -> {
-      softly.assertThat(index.getIndexType())
-          .as("type")
-          .isEqualTo(PRIMARY_KEY);
-      softly.assertThat(index.getKeyIndex())
-          .as("is key index")
-          .isTrue();
-    });
+    assertThat(index.getIndexType())
+        .as("type")
+        .isEqualTo(PRIMARY_KEY);
   }
 }

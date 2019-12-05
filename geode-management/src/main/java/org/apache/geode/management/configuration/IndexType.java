@@ -37,4 +37,19 @@ public enum IndexType {
   public String getName() {
     return this.name;
   }
+
+  public static IndexType valueOfSynonym(String name) {
+    name = name.toUpperCase();
+
+    switch (name) {
+      case "KEY":
+        return valueOf("PRIMARY_KEY");
+      case "RANGE":
+        return valueOf("FUNCTIONAL");
+      case "HASH":
+        return valueOf("HASH_DEPRECATED");
+    }
+
+    throw new IllegalArgumentException("Unknown IndexType: " + name);
+  }
 }
