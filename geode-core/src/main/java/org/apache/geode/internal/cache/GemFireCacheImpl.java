@@ -407,36 +407,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final PoolFactory poolFactory;
 
-  private volatile ConfigurationResponse configurationResponse;
-
-  private volatile boolean isInitialized;
-
-  private volatile boolean isClosing;
-
-  /**
-   * Set of all gateway senders. It may be fetched safely (for enumeration), but updates must by
-   * synchronized via {@link #allGatewaySendersLock}
-   */
-  private volatile Set<GatewaySender> allGatewaySenders = Collections.emptySet();
-
-  /**
-   * Copy on Read feature for all read operations.
-   */
-  private volatile boolean copyOnRead = DEFAULT_COPY_ON_READ;
-
-  /**
-   * Reason this cache was forced to close due to a forced-disconnect or system failure.
-   */
-  private volatile Throwable disconnectCause;
-
-  /**
-   * DistributedLockService for GatewaySenders. Remains null until the first GatewaySender is
-   * created. Destroyed by GemFireCache when closing the cache. Guarded by gatewayLockServiceLock.
-   */
-  private volatile DistributedLockService gatewayLockService;
-
-  private volatile QueryMonitor queryMonitor;
-
   private final ConcurrentMap<String, InternalRegion> pathToRegion = new ConcurrentHashMap<>();
 
   private final CachePerfStats cachePerfStats;
@@ -630,6 +600,36 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final InternalCacheForClientAccess cacheForClients =
       new InternalCacheForClientAccess(this);
+
+  private volatile ConfigurationResponse configurationResponse;
+
+  private volatile boolean isInitialized;
+
+  private volatile boolean isClosing;
+
+  /**
+   * Set of all gateway senders. It may be fetched safely (for enumeration), but updates must by
+   * synchronized via {@link #allGatewaySendersLock}
+   */
+  private volatile Set<GatewaySender> allGatewaySenders = Collections.emptySet();
+
+  /**
+   * Copy on Read feature for all read operations.
+   */
+  private volatile boolean copyOnRead = DEFAULT_COPY_ON_READ;
+
+  /**
+   * Reason this cache was forced to close due to a forced-disconnect or system failure.
+   */
+  private volatile Throwable disconnectCause;
+
+  /**
+   * DistributedLockService for GatewaySenders. Remains null until the first GatewaySender is
+   * created. Destroyed by GemFireCache when closing the cache. Guarded by gatewayLockServiceLock.
+   */
+  private volatile DistributedLockService gatewayLockService;
+
+  private volatile QueryMonitor queryMonitor;
 
   /**
    * Not final to allow cache.xml parsing to set it.
