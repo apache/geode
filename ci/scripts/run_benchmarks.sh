@@ -44,12 +44,43 @@ popd
 pushd geode-benchmarks/infrastructure/scripts/aws/
 ./launch_cluster.sh -t ${CLUSTER_TAG} -c ${CLUSTER_COUNT} --ci
 
-if [ -z "${BASELINE_VERSION}" ]; then
-  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -B ${BASELINE_BRANCH} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci','benchmark_branch':'${BENCHMARK_BRANCH}','baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
-else
-  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -V ${BASELINE_VERSION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci','benchmark_branch':'${BENCHMARK_BRANCH}','baseline_version':'${BASELINE_VERSION}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
-fi
+# test retry loop - Check if any tests have failed. If so, overwrite the TEST_OPTIONS with only the
+# failed tests. Test failures only result in an exit code of 1 when on the last iteration of loop.
+for i in {1..5}
+do
+  input="/tmp/build/eeb5231a/results/failedTests"
+  if [[ -f ${input} ]]; then
+    unset TEST_OPTIONS
+    TEST_OPTIONS=""
+    while IFS= read -r line; do
+      test=" --tests $line"
+      TEST_OPTIONS=${TEST_OPTIONS}${test}
+    done < ${input}
 
+    rm ${input}
+  fi
 
+  if [[ ${i} != 5 ]]; then
+    set +e
+  fi
+
+  if [ -z "${BASELINE_VERSION}" ]; then
+    ./run_on_cluster.sh -t testGets -- pkill -9 java
+    ./run_on_cluster.sh -t testGets -- rm /home/geode/locator10334view.dat;
+    ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -B ${BASELINE_BRANCH} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci','benchmark_branch':'${BENCHMARK_BRANCH}','baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
+  else
+    ./run_on_cluster.sh -t testGets -- pkill -9 java
+    ./run_on_cluster.sh -t testGets -- rm /home/geode/locator10334view.dat;
+    ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -V ${BASELINE_VERSION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci','benchmark_branch':'${BENCHMARK_BRANCH}','baseline_version':'${BASELINE_VERSION}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
+  fi
+
+  if [[ $? -eq 0 ]]; then
+    break;
+  fi
+
+  if [[ i != 5 ]]; then
+    set -e
+  fi
+done
 
 popd
