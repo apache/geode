@@ -33,6 +33,7 @@ import static org.apache.geode.distributed.internal.ClusterDistributionManager.L
 import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance;
+import static org.apache.geode.internal.cache.ColocationHelper.getColocatedChildRegions;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.asDistributedMemberSet;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.createMapArray;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.uncheckedCast;
@@ -83,7 +84,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1763,7 +1763,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         // attribute, sort all the PRs by colocation relationship and close them sequentially,
         // otherwise still group them by root region.
 
-        SortedMap<String, Map<String, PartitionedRegion>> prTrees = getPRTrees();
+        Map<String, Map<String, PartitionedRegion>> prTrees = getPRTrees();
         if (prTrees.size() > 1 && shutdownAllPoolSize != 1) {
           ExecutorService es = getShutdownAllExecutorService(prTrees.size());
           for (final Map<String, PartitionedRegion> prSubMap : prTrees.values()) {
@@ -3857,19 +3857,19 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private SortedMap<String, Map<String, PartitionedRegion>> getPRTrees() {
+  private Map<String, Map<String, PartitionedRegion>> getPRTrees() {
     // prTree will save a sublist of PRs who are under the same root
-    SortedMap<String, PartitionedRegion> prMap = getPartitionedRegionMap();
+    Map<String, PartitionedRegion> prMap = getPartitionedRegionMap();
     boolean hasColocatedRegion = false;
     for (PartitionedRegion pr : prMap.values()) {
-      List<PartitionedRegion> childList = ColocationHelper.getColocatedChildRegions(pr);
+      List<PartitionedRegion> childList = getColocatedChildRegions(pr);
       if (childList != null && !childList.isEmpty()) {
         hasColocatedRegion = true;
         break;
       }
     }
 
-    TreeMap<String, Map<String, PartitionedRegion>> prTrees = new TreeMap<>();
+    Map<String, Map<String, PartitionedRegion>> prTrees = new TreeMap<>();
     if (hasColocatedRegion) {
       Map<String, PartitionedRegion> orderedPrMap = orderByColocation(prMap);
       prTrees.put("ROOT", orderedPrMap);
@@ -3885,8 +3885,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return prTrees;
   }
 
-  private SortedMap<String, PartitionedRegion> getPartitionedRegionMap() {
-    SortedMap<String, PartitionedRegion> prMap = new TreeMap<>();
+  private Map<String, PartitionedRegion> getPartitionedRegionMap() {
+    Map<String, PartitionedRegion> prMap = new TreeMap<>();
     for (Entry<String, InternalRegion> entry : pathToRegion.entrySet()) {
       String regionName = entry.getKey();
       InternalRegion region = entry.getValue();
@@ -3911,16 +3911,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   private Map<String, PartitionedRegion> orderByColocation(Map<String, PartitionedRegion> prMap) {
-    LinkedHashMap<String, PartitionedRegion> orderedPrMap = new LinkedHashMap<>();
+    Map<String, PartitionedRegion> orderedPrMap = new LinkedHashMap<>();
     for (PartitionedRegion pr : prMap.values()) {
       addColocatedChildRecursively(orderedPrMap, pr);
     }
     return orderedPrMap;
   }
 
-  private void addColocatedChildRecursively(LinkedHashMap<String, PartitionedRegion> prMap,
+  private void addColocatedChildRecursively(Map<String, PartitionedRegion> prMap,
       PartitionedRegion pr) {
-    for (PartitionedRegion colocatedRegion : ColocationHelper.getColocatedChildRegions(pr)) {
+    for (PartitionedRegion colocatedRegion : getColocatedChildRegions(pr)) {
       addColocatedChildRecursively(prMap, colocatedRegion);
     }
     prMap.put(pr.getFullPath(), pr);
