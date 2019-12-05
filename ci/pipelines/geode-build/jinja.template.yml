@@ -226,7 +226,7 @@ jobs:
 {% endfor %}
 - name: {{build_test.name}}
   public: true
-  serial: true
+  max_in_flight: {{build_test.MAX_IN_FLIGHT}}
   plan:
   - aggregate:
     - get: geode-ci
@@ -261,7 +261,7 @@ jobs:
           path: new
         - name: instance-data
       timeout: 15m
-      attempts: 10
+      attempts: 2
   - aggregate:
     - put: geode-build-version
       params:
@@ -528,7 +528,7 @@ jobs:
       - name: attempts-log
         path: new
     timeout: 15m
-    attempts: 10
+    attempts: 2
   - task: rsync_code_up
     image: alpine-tools-image
     config:
@@ -581,6 +581,7 @@ jobs:
       {%- do deep_merge(parameters, java_test_version.override[test.name]) %}
     {%- endif %}
 - name: {{test.name}}Test{{java_test_version.name}}
+  max_in_flight: {{parameters.MAX_IN_FLIGHT}}
   public: true
   plan:
   - do:
@@ -614,7 +615,7 @@ jobs:
             - name: attempts-log
               path: new
           timeout: 15m
-          attempts: 10
+          attempts: 2
         - task: rsync_code_up-{{java_test_version.name}}
           image: alpine-tools-image
           config:
@@ -627,7 +628,7 @@ jobs:
             - name: instance-data-{{java_test_version.name}}
               path: instance-data
           timeout: 15m
-          attempts: 10
+          attempts: 2
         - task: execute_tests-{{java_test_version.name}}
           image: alpine-tools-image
           config:
@@ -665,7 +666,7 @@ jobs:
               - name: geode-results-{{java_test_version.name}}
                 path: geode-results
             timeout: 15m
-            attempts: 10
+            attempts: 2
           ensure:
             do:
             - aggregate:
