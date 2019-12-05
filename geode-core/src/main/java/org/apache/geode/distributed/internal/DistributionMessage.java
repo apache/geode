@@ -686,6 +686,7 @@ public abstract class DistributionMessage
    * does this message carry state that will alter the content of one or more cache regions? This is
    * used to track the flight of content changes through communication channels
    */
+  @Override
   public boolean containsRegionContentChange() {
     return false;
   }
