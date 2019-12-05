@@ -132,11 +132,11 @@ public class PeerTypeRegistration implements TypeRegistration {
   @Override
   public void initialize() {
     // Relevant during reconnect
-    // TypeRegistry typeRegistry = cache.getPdxRegistry();
-    // if (typeRegistry != null) {
-    flushCache();
-    logger.debug("Flushing TypeRegistry");
-    // }
+    TypeRegistry typeRegistry = cache.getPdxRegistry();
+    if (typeRegistry != null) {
+      typeRegistry.flushCache();
+      logger.debug("Flushing TypeRegistry");
+    }
 
     InternalRegionFactory factory = cache.createInternalRegionFactory();
 
