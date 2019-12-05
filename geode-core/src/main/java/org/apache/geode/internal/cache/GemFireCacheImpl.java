@@ -264,7 +264,6 @@ import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
-// TODO: somebody Come up with more reasonable values for {@link #DEFAULT_LOCK_TIMEOUT}, etc.
 /**
  * GemFire's implementation of a distributed {@link Cache}.
  */
@@ -296,17 +295,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.defaultSearchTimeout", 300);
 
   /**
-   * The {@code CacheLifecycleListener} s that have been registered in this VM
-   */
-  @MakeNotStatic
-  private static final Set<CacheLifecycleListener> cacheLifecycleListeners =
-      new CopyOnWriteArraySet<>();
-
-  /**
    * Name of the default pool.
    */
   public static final String DEFAULT_POOL_NAME = "DEFAULT";
 
+  @VisibleForTesting
+  static final int EVENT_THREAD_LIMIT =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.EVENT_THREAD_LIMIT", 16);
+
+  @VisibleForTesting
+  static final int PURGE_INTERVAL = 1000;
 
   /**
    * The number of threads that the QueryMonitor will use to mark queries as cancelled (see
@@ -314,6 +312,45 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * efficient, so we don't foresee needing to raise this above 1.
    */
   private static final int QUERY_MONITOR_THREAD_POOL_SIZE = 1;
+
+  private static final int EVENT_QUEUE_LIMIT =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.EVENT_QUEUE_LIMIT", 4096);
+
+  private static final int FIVE_HOURS_MILLIS = 5 * 60 * 60 * 1000;
+
+  private static final Pattern DOUBLE_BACKSLASH = Pattern.compile("\\\\");
+
+  /**
+   * Enables {@link #creationStack} when CacheExistsException issues arise in debugging
+   */
+  private static final boolean DEBUG_CREATION_STACK = false;
+
+  private static final boolean XML_PARAMETERIZATION_ENABLED =
+      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "xml.parameterization.disabled");
+
+  /**
+   * Number of threads used to close PRs in shutdownAll. By default is the number of PRs in the
+   * cache.
+   */
+  private static final int shutdownAllPoolSize =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "SHUTDOWN_ALL_POOL_SIZE", -1);
+
+  private static final ThreadLocal<GemFireCacheImpl> xmlCache = new ThreadLocal<>();
+
+  /**
+   * System property to limit the max query-execution time. By default its turned off (-1), the time
+   * is set in milliseconds.
+   */
+  @MutableForTesting
+  public static int MAX_QUERY_EXECUTION_TIME =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.MAX_QUERY_EXECUTION_TIME", -1);
+
+  /**
+   * Used by unit tests to force cache creation to use a test generated cache.xml
+   */
+  @MutableForTesting
+  @VisibleForTesting
+  public static File testCacheXml;
 
   /**
    * If true then when a delta is applied the size of the entry value will be recalculated. If false
@@ -326,26 +363,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   static boolean DELTAS_RECALCULATE_SIZE =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DELTAS_RECALCULATE_SIZE");
 
-  private static final int EVENT_QUEUE_LIMIT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.EVENT_QUEUE_LIMIT", 4096);
-
-  @VisibleForTesting
-  static final int EVENT_THREAD_LIMIT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.EVENT_THREAD_LIMIT", 16);
-
   /**
-   * System property to limit the max query-execution time. By default its turned off (-1), the time
-   * is set in milliseconds.
+   * The {@code CacheLifecycleListener} s that have been registered in this VM
    */
-  @MutableForTesting
-  public static int MAX_QUERY_EXECUTION_TIME =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.MAX_QUERY_EXECUTION_TIME", -1);
-
-  /**
-   * System property to disable query monitor even if resource manager is in use
-   */
-  private final boolean queryMonitorDisabledForLowMem = Boolean
-      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY");
+  @MakeNotStatic
+  private static final Set<CacheLifecycleListener> cacheLifecycleListeners =
+      new CopyOnWriteArraySet<>();
 
   /**
    * Property set to true if resource manager heap percentage is set and query monitor is required
@@ -354,11 +377,22 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private static boolean queryMonitorRequiredForResourceManager;
 
   /**
-   * Time in milliseconds TODO
+   * Break any potential circularity in {@link #loadEmergencyClasses()}.
    */
-  private static final int FIVE_HOURS = 5 * 60 * 60 * 1000;
+  @MakeNotStatic
+  private static volatile boolean emergencyClassesLoaded;
 
-  private static final Pattern DOUBLE_BACKSLASH = Pattern.compile("\\\\");
+  /**
+   * TODO: remove static from defaultDiskStoreName and move methods to InternalCache
+   */
+  @MakeNotStatic
+  private static String defaultDiskStoreName = DiskStoreFactory.DEFAULT_DISK_STORE_NAME;
+
+  /**
+   * System property to disable query monitor even if resource manager is in use
+   */
+  private final boolean queryMonitorDisabledForLowMem = Boolean
+      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY");
 
   private volatile ConfigurationResponse configurationResponse;
 
@@ -560,11 +594,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private ResourceEventsListener resourceEventsListener;
 
-  /**
-   * Enables {@link #creationStack} when CacheExistsException issues arise in debugging
-   */
-  private static final boolean DEBUG_CREATION_STACK = false;
-
   private volatile QueryMonitor queryMonitor;
 
   private final Object queryMonitorLock = new Object();
@@ -596,9 +625,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Resolves ${} type property strings.
    */
   private final PropertyResolver resolver;
-
-  private static final boolean XML_PARAMETERIZATION_ENABLED =
-      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "xml.parameterization.disabled");
 
   /**
    * @since GemFire 8.1
@@ -635,13 +661,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Function<Object, SystemTimer> systemTimerFactory;
   private final ReplyProcessor21Factory replyProcessor21Factory;
 
-  /**
-   * Used by unit tests to force cache creation to use a test generated cache.xml
-   */
-  @MutableForTesting
-  @VisibleForTesting
-  public static File testCacheXml;
-
   private final Stopper stopper = new Stopper();
 
   /**
@@ -651,19 +670,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private boolean keepAlive;
 
-  /**
-   * Break any potential circularity in {@link #loadEmergencyClasses()}.
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded;
-
-  /**
-   * Number of threads used to close PRs in shutdownAll. By default is the number of PRs in the
-   * cache.
-   */
-  private static final int shutdownAllPoolSize =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "SHUTDOWN_ALL_POOL_SIZE", -1);
-
   private final boolean disableDisconnectDsOnCacheClose = Boolean
       .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
 
@@ -671,10 +677,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final ConcurrentMap<String, DiskStoreImpl> regionOwnedDiskStores =
       new ConcurrentHashMap<>();
-
-  // TODO: remove static from defaultDiskStoreName and move methods to InternalCache
-  @MakeNotStatic
-  private static String defaultDiskStoreName = DiskStoreFactory.DEFAULT_DISK_STORE_NAME;
 
   /**
    * Timer for {@link CacheClientProxy}. Guarded by {@link #ccpTimerMutex}.
@@ -686,16 +688,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private final Object ccpTimerMutex = new Object();
 
-  @VisibleForTesting
-  static final int PURGE_INTERVAL = 1000;
-
   private int cancelCount;
 
   private final ExpirationScheduler expirationScheduler;
 
-  private static final ThreadLocal<GemFireCacheImpl> xmlCache = new ThreadLocal<>();
-
-  // TODO make this a simple int guarded by riWaiters and get rid of the double-check
+  /**
+   * TODO make this a simple int guarded by riWaiters and get rid of the double-check
+   */
   private final AtomicInteger registerInterestsInProgress = new AtomicInteger();
 
   private final List<SimpleWaiter> riWaiters = new ArrayList<>();
@@ -4262,7 +4261,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             // memory usage
 
             // If no max execution time has been set, then we will default to five hours
-            maxTime = FIVE_HOURS;
+            maxTime = FIVE_HOURS_MILLIS;
           }
 
           queryMonitor =
