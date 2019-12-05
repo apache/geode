@@ -1790,7 +1790,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   private ExecutorService getShutdownAllExecutorService(int size) {
-    return LoggingExecutors.newFixedThreadPool("ShutdownAll-", true, shutdownAllPoolSize == -1 ? size : shutdownAllPoolSize);
+    return LoggingExecutors.newFixedThreadPool("ShutdownAll-", true,
+        shutdownAllPoolSize == -1 ? size : shutdownAllPoolSize);
   }
 
   private void shutDownOnePRGracefully(PartitionedRegion partitionedRegion) {
@@ -1826,7 +1827,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             }
           }
           if (logger.isDebugEnabled()) {
-            logger.debug("shutDownAll: All buckets for PR {} are locked.", partitionedRegion.getName());
+            logger.debug("shutDownAll: All buckets for PR {} are locked.",
+                partitionedRegion.getName());
           }
 
           // send lock profile update to other members
@@ -3011,7 +3013,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             stopper.checkCancelInProgress(t);
 
             // log the failure but don't override the original exception
-            logger.warn(String.format("Initialization failed for Region %s", region.getFullPath()), t);
+            logger.warn(String.format("Initialization failed for Region %s", region.getFullPath()),
+                t);
 
           } finally {
             // clean up if initialize fails for any reason
@@ -4166,15 +4169,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       // just get out, all of the SimpleWaiters will die of their own accord
       return;
     }
+
     int numInProgress = registerInterestsInProgress.decrementAndGet();
     if (logger.isDebugEnabled()) {
       logger.debug("registerInterestCompleted: new value = {}", numInProgress);
     }
     if (numInProgress == 0) {
       synchronized (riWaiters) {
-        // TODO: get rid of double-check
         numInProgress = registerInterestsInProgress.get();
-        if (numInProgress == 0) { // all clear
+        if (numInProgress == 0) {
           if (logger.isDebugEnabled()) {
             logger.debug("registerInterestCompleted: Signalling end of register-interest");
           }
@@ -4214,7 +4217,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           simpleWaiter = new SimpleWaiter();
           riWaiters.add(simpleWaiter);
         }
-      } // synchronized
+      }
       if (simpleWaiter != null) {
         simpleWaiter.doWait();
       }
@@ -4279,6 +4282,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     Set<InternalDistributedMember> otherMembers = dm.getOtherDistributionManagerIds();
     AddCacheServerProfileMessage message = new AddCacheServerProfileMessage();
     message.operateOnLocalCache(this);
+
     if (!otherMembers.isEmpty()) {
       if (logger.isDebugEnabled()) {
         logger.debug("Sending add cache server profile message to other members.");
@@ -4745,12 +4749,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public boolean getPdxReadSerializedByAnyGemFireServices() {
     TypeRegistry pdxRegistry = getPdxRegistry();
-    boolean pdxReadSerializedOverriden = false;
+    boolean pdxReadSerializedOverridden = false;
     if (pdxRegistry != null) {
-      pdxReadSerializedOverriden = pdxRegistry.getPdxReadSerializedOverride();
+      pdxReadSerializedOverridden = pdxRegistry.getPdxReadSerializedOverride();
     }
 
-    return (getPdxReadSerialized() || pdxReadSerializedOverriden)
+    return (getPdxReadSerialized() || pdxReadSerializedOverridden)
         && PdxInstanceImpl.getPdxReadSerialized();
   }
 
@@ -5112,6 +5116,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * @since GemFire 5.7
    */
   private class SimpleWaiter {
+
     private boolean notified;
 
     private SimpleWaiter() {
