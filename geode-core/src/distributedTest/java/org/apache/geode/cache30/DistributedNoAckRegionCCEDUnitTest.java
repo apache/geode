@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -37,6 +38,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -47,7 +49,7 @@ import org.apache.geode.test.dunit.Wait;
 
 
 public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDUnitTest {
-
+  static final Logger logger = LogService.getLogger();
   static volatile boolean ListenerBlocking;
 
   @Override
@@ -94,6 +96,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
   @Override
   @Test
   public void testEntryTtlLocalDestroy() {
+    logger.info("Pointless log statement to force stressnewtest");
     // replicates don't allow local destroy
   }
 
