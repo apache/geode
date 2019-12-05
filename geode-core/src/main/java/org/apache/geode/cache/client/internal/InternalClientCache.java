@@ -29,7 +29,6 @@ public interface InternalClientCache extends ClientCache {
 
   /**
    * @return true if cache is created using a ClientCacheFactory
-   * @see #hasPool()
    */
   boolean isClient();
 

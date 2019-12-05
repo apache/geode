@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.client.ClientCache;
@@ -31,11 +32,13 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.i18n.LogWriterI18n;
 
 /**
  * Caches are obtained from the {@link CacheFactory#create()} method. See {@link CacheFactory} for
  * common usage patterns for creating the cache instance.
+ *
  * <p>
  * When a cache is created a {@link DistributedSystem} is also created. This system tells the cache
  * where to find other caches on the network and how to communicate with them. The system can also
@@ -43,10 +46,12 @@ import org.apache.geode.i18n.LogWriterI18n;
  * property which will cause this cache to be initialized with the contents of that file. The
  * contents must comply with the {@code "doc-files/cache8_0.dtd"} file and the top level element
  * must be a {@code cache} element.
+ *
  * <p>
  * When a cache will no longer be used it should be {@link #close() closed}. Once it
  * {@link #isClosed is closed} any attempt to use it or any {@link Region} obtained from it will
  * cause a {@link CacheClosedException} to be thrown.
+ *
  * <p>
  * A cache can have multiple root regions, each with a different name.
  *
@@ -54,6 +59,7 @@ import org.apache.geode.i18n.LogWriterI18n;
  */
 @SuppressWarnings("deprecation")
 public interface Cache extends GemFireCache {
+
   /**
    * Terminates this object cache and releases all the resources. Calls {@link Region#close} on each
    * region in the cache. After this cache is closed, any further method call on this cache or any
@@ -74,8 +80,7 @@ public interface Cache extends GemFireCache {
    * @param aRegionAttributes the attributes of the root region
    * @return the region object
    * @throws RegionExistsException if a region is already in this cache
-   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock
-   *         for Scope.GLOBAL
+   * @throws LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws CacheClosedException if the cache is closed
    * @throws IllegalStateException If the supplied RegionAttributes violate the
@@ -94,8 +99,7 @@ public interface Cache extends GemFireCache {
    * @param aRegionAttributes the attributes of the root region
    * @return the region object
    * @throws RegionExistsException if a region is already in this cache
-   * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock
-   *         for Scope.GLOBAL
+   * @throws LeaseExpiredException if lease expired on distributed lock for Scope.GLOBAL
    * @throws TimeoutException if timed out getting distributed lock for Scope.GLOBAL
    * @throws CacheClosedException if the cache is closed
    * @throws IllegalStateException If the supplied RegionAttributes violate the
@@ -213,7 +217,7 @@ public interface Cache extends GemFireCache {
   void setLockLease(int seconds);
 
   /**
-   * Gets the number of seconds a cache {@link org.apache.geode.cache.Region#get(Object) get}
+   * Gets the number of seconds a cache {@link Region#get(Object) get}
    * operation can spend searching for a value before it times out. The search includes any time
    * spent loading the object. When the search times out it causes the get to fail by throwing an
    * exception. This method does not throw {@code CacheClosedException} if the cache is closed.
@@ -230,11 +234,12 @@ public interface Cache extends GemFireCache {
   /**
    * Creates a new cache server, with the default configuration, that will allow clients to access
    * this cache.
+   *
    * <p>
    * For the default configuration see the constants in
-   * {@link org.apache.geode.cache.server.CacheServer}.
+   * {@link CacheServer}.
    *
-   * @see org.apache.geode.cache.server.CacheServer
+   * @see CacheServer
    *
    * @since GemFire 5.7
    */
@@ -273,7 +278,7 @@ public interface Cache extends GemFireCache {
   /**
    * Sets whether or not this {@code Cache} resides in a long-running "cache server" VM. A cache
    * server may be an application VM or may be a stand-along VM launched using
-   * {@linkplain org.apache.geode.admin.AdminDistributedSystem#addCacheServer administration API} or
+   * {@linkplain AdminDistributedSystem#addCacheServer administration API} or
    * the {@code cacheserver} command line utility.
    *
    * @since GemFire 4.0

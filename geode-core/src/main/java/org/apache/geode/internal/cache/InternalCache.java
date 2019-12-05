@@ -177,7 +177,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
    * Notification adds to the messaging a PR must do on each put/destroy/invalidate operation and
    * should be kept to a minimum
    *
-   * @param region the partitioned region
+   * @param r the partitioned region
    * @return true if the region should deliver all of its events to this cache
    */
   boolean requiresNotificationFromPR(PartitionedRegion r);

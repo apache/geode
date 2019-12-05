@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache;
 
 import java.util.Properties;
@@ -32,6 +31,7 @@ import org.apache.geode.pdx.PdxInstanceFactory;
  * using {@link #getQueryService}. The service should be {@link #close closed} to free up resources
  * once it is no longer needed. Once it {@link #isClosed is closed} any attempt to use it or any
  * {@link Region regions} obtained from it will cause a {@link CacheClosedException} to be thrown.
+ *
  * <p>
  * Instances of the interface are created using one of the following methods:
  * <ul>
@@ -40,7 +40,6 @@ import org.apache.geode.pdx.PdxInstanceFactory;
  * <li>{@link ClientCache#createAuthenticatedView(Properties)} creates a client multiuser
  * authenticated cache view.
  * </ul>
- * <p>
  *
  * @since GemFire 6.5
  */
@@ -79,7 +78,7 @@ public interface RegionService extends AutoCloseable {
    *        PdxInstance and {@link PdxInstanceFactory#neverDeserialize()} will be automatically
    *        called on the returned factory.
    * @return the factory
-   * @throws IllegalArgumentException if className is <code>null</code>.
+   * @throws IllegalArgumentException if className is {@code null}.
    * @since GemFire 6.6.2
    */
   PdxInstanceFactory createPdxInstanceFactory(String className);
@@ -91,7 +90,7 @@ public interface RegionService extends AutoCloseable {
    * @param enumName the name of the enum constant
    * @param enumOrdinal the ordinal value of the enum constant
    * @return a PdxInstance that represents the enum value
-   * @throws IllegalArgumentException if className or enumName are <code>null</code>.
+   * @throws IllegalArgumentException if className or enumName are {@code null}.
    * @since GemFire 6.6.2
    */
   PdxInstance createPdxEnum(String className, String enumName, int enumOrdinal);
@@ -125,7 +124,7 @@ public interface RegionService extends AutoCloseable {
   /**
    * Indicates if this region service has been closed. After a new service is created, this method
    * returns false; After close is called on this service, this method returns true. This method
-   * does not throw <code>CacheClosedException</code> if the service is closed.
+   * does not throw {@code CacheClosedException} if the service is closed.
    *
    * @return true, if this service has just been created or has started to close; false, otherwise
    */

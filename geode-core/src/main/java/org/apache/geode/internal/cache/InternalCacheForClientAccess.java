@@ -106,6 +106,8 @@ import org.apache.geode.security.NotAuthorizedException;
  * This class delegates all methods to the InternalCache instance
  * it wraps. Any regions returned will be checked and if they are
  * internal an exception is thrown if they are.
+ *
+ * <p>
  * Note: an instance of this class should be used by servers that
  * process requests from clients that contains region names to prevent
  * the client from directly accessing internal regions.
@@ -132,8 +134,8 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @SuppressWarnings("unchecked")
-  private void checkSetOfRegions(@SuppressWarnings("rawtypes") Set regions) {
-    for (InternalRegion r : (Set<InternalRegion>) regions) {
+  private void checkSetOfRegions(Set regions) {
+    for (Region r : (Set<Region>) regions) {
       checkForInternalRegion(r);
     }
   }
@@ -249,9 +251,8 @@ public class InternalCacheForClientAccess implements InternalCache {
     Cache reconnectedCache = delegate.getReconnectedCache();
     if (reconnectedCache != null) {
       return new InternalCacheForClientAccess((InternalCache) reconnectedCache);
-    } else {
-      return null;
     }
+    return null;
   }
 
   @Override
