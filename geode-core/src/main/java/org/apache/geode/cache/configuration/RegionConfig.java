@@ -640,7 +640,8 @@ public class RegionConfig implements Identifiable<String>, Serializable {
 
     /**
      * Sets the value of the type property. Also sets the keyIndex property to true if the type
-     * being set is "key".
+     * being set is {@code "key"}.
+     *
      * @throws IllegalArgumentException if type is unknown
      */
     public void setType(String type) {

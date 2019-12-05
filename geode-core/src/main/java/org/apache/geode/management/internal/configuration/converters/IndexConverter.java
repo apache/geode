@@ -15,45 +15,47 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
-import static org.apache.geode.management.configuration.IndexType.*;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.geode.management.configuration.IndexType.FUNCTIONAL;
+import static org.apache.geode.management.configuration.IndexType.HASH_DEPRECATED;
+import static org.apache.geode.management.configuration.IndexType.PRIMARY_KEY;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
 
 public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.Index> {
-  private static Map<String, IndexType> xmlNameToIndexType = new HashMap<>();
-  private static Map<IndexType, String> indexTypeToXmlName = new EnumMap<>(IndexType.class);
+  private static final Map<IndexType, String> INDEX_TYPE_TO_XML_NAME =
+      new EnumMap<>(IndexType.class);
+  private static final Map<String, IndexType> XML_NAME_TO_INDEX_TYPE;
 
   static {
-    xmlNameToIndexType.put("RANGE", FUNCTIONAL);
-    xmlNameToIndexType.put("HASH", HASH_DEPRECATED);
-    xmlNameToIndexType.put("KEY", PRIMARY_KEY);
+    INDEX_TYPE_TO_XML_NAME.put(FUNCTIONAL, "RANGE");
+    INDEX_TYPE_TO_XML_NAME.put(HASH_DEPRECATED, "HASH");
+    INDEX_TYPE_TO_XML_NAME.put(PRIMARY_KEY, "KEY");
 
-    indexTypeToXmlName.put(FUNCTIONAL, "RANGE");
-    indexTypeToXmlName.put(HASH_DEPRECATED, "HASH");
-    indexTypeToXmlName.put(PRIMARY_KEY, "KEY");
+    XML_NAME_TO_INDEX_TYPE = INDEX_TYPE_TO_XML_NAME.entrySet().stream()
+        .collect(toMap(Entry::getValue, Entry::getKey));
   }
 
   @Override
-  protected Index fromNonNullXmlObject(RegionConfig.Index xmlObject) {
+  protected Index fromNonNullXmlObject(RegionConfig.Index regionConfigIndex) {
     Index index = new Index();
-    index.setName(xmlObject.getName());
-    index.setExpression(xmlObject.getExpression());
-    index.setRegionPath(xmlObject.getFromClause());
-    index.setKeyIndex(xmlObject.isKeyIndex());
+    index.setName(regionConfigIndex.getName());
+    index.setExpression(regionConfigIndex.getExpression());
+    index.setRegionPath(regionConfigIndex.getFromClause());
+    index.setKeyIndex(regionConfigIndex.isKeyIndex());
 
-    if (xmlObject.getType() != null) {
-      String type = xmlObject.getType().toUpperCase();
-      if (xmlNameToIndexType.containsKey(type)) {
-        index.setIndexType(xmlNameToIndexType.get(type));
+    if (regionConfigIndex.getType() != null) {
+      String typeName = regionConfigIndex.getType().toUpperCase();
+      if (XML_NAME_TO_INDEX_TYPE.containsKey(typeName)) {
+        index.setIndexType(XML_NAME_TO_INDEX_TYPE.get(typeName));
       } else {
-        throw new IllegalArgumentException("Unexpected index type provided: " + type);
+        throw new IllegalArgumentException("Unexpected index type provided: " + typeName);
       }
     }
 
@@ -61,17 +63,17 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
   }
 
   @Override
-  protected RegionConfig.Index fromNonNullConfigObject(Index configObject) {
-    RegionConfig.Index index = new RegionConfig.Index();
-    index.setName(configObject.getName());
-    index.setFromClause(configObject.getRegionPath());
-    index.setExpression(configObject.getExpression());
-    index.setKeyIndex(configObject.getKeyIndex());
+  protected RegionConfig.Index fromNonNullConfigObject(Index index) {
+    RegionConfig.Index regionConfigIndex = new RegionConfig.Index();
+    regionConfigIndex.setName(index.getName());
+    regionConfigIndex.setFromClause(index.getRegionPath());
+    regionConfigIndex.setExpression(index.getExpression());
+    regionConfigIndex.setKeyIndex(index.getKeyIndex());
 
-    if (configObject.getIndexType() != null) {
-      index.setType(indexTypeToXmlName.get(configObject.getIndexType()));
+    if (index.getIndexType() != null) {
+      regionConfigIndex.setType(INDEX_TYPE_TO_XML_NAME.get(index.getIndexType()));
     }
 
-    return index;
+    return regionConfigIndex;
   }
 }

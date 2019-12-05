@@ -15,170 +15,154 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+import static org.apache.geode.management.configuration.IndexType.FUNCTIONAL;
+import static org.apache.geode.management.configuration.IndexType.HASH_DEPRECATED;
+import static org.apache.geode.management.configuration.IndexType.PRIMARY_KEY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-import org.assertj.core.api.SoftAssertions;
-import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.configuration.Index;
-import org.apache.geode.management.configuration.IndexType;
 
 public class IndexConverterTest {
-  private IndexConverter indexConverter;
-
-  @Before
-  public void init() {
-    indexConverter = new IndexConverter();
-  }
+  private IndexConverter indexConverter = new IndexConverter();
 
   @Test
-  public void fromXMLtoConfigCopySimpleProperties() {
-    RegionConfig.Index xmlIndex = new RegionConfig.Index();
-    String theName = "some name";
-    xmlIndex.setName(theName);
-    String theExpression = "some expression";
-    xmlIndex.setExpression(theExpression);
-    String theFromClause = "some clause";
-    xmlIndex.setFromClause(theFromClause);
-
-    Index index = indexConverter.fromNonNullXmlObject(xmlIndex);
-    SoftAssertions.assertSoftly(softly -> {
-      softly.assertThat(index.getExpression()).as("expression").isEqualTo(theExpression);
-      softly.assertThat(index.getName()).as("name").isEqualTo(theName);
-      softly.assertThat(index.getRegionPath()).as("regionPath").isEqualTo(theFromClause);
-    });
-  }
-
-  @Test
-  public void fromConfigtoXMLCopySimpleProperties() {
+  public void fromNonNullConfigObject_copiesSimpleProperties() {
     Index index = new Index();
-    String theExpression = "some expression";
-    index.setExpression(theExpression);
-    String theName = "some name";
-    index.setName(theName);
-    String theRegionPath = "some region path";
-    index.setRegionPath(theRegionPath);
+    index.setExpression("index expression");
+    index.setName("index name");
+    index.setRegionPath("index region path");
 
-    RegionConfig.Index xmlIndex = indexConverter.fromNonNullConfigObject(index);
-    SoftAssertions.assertSoftly(softly -> {
-      softly.assertThat(xmlIndex.getExpression()).isEqualTo(theExpression);
-      softly.assertThat(xmlIndex.getName()).isEqualTo(theName);
-      softly.assertThat(xmlIndex.getFromClause()).isEqualTo(theRegionPath);
+    RegionConfig.Index regionConfigIndex = indexConverter.fromNonNullConfigObject(index);
+
+    assertSoftly(softly -> {
+      softly.assertThat(regionConfigIndex.getExpression())
+          .isEqualTo(index.getExpression());
+      softly.assertThat(regionConfigIndex.getName())
+          .isEqualTo(index.getName());
+      softly.assertThat(regionConfigIndex.getFromClause())
+          .isEqualTo(index.getRegionPath());
     });
   }
 
   @Test
-  public void fromXMLRangetoConfigOkay() {
-    RegionConfig.Index xmlIndex = new RegionConfig.Index();
-    xmlIndex.setType("range");
-    xmlIndex.setName("testRange");
-    xmlIndex.setExpression("age > 65");
-    xmlIndex.setKeyIndex(false);
-
-    Index index = indexConverter.fromNonNullXmlObject(xmlIndex);
-    SoftAssertions.assertSoftly(softly -> {
-      softly.assertThat(index.getExpression()).as("expression").isEqualTo("age > 65");
-      softly.assertThat(index.getKeyIndex()).as("keyIndex").isFalse();
-      softly.assertThat(index.getIndexType()).as("indexType").isEqualTo(IndexType.FUNCTIONAL);
-      softly.assertThat(index.getName()).as("name").isEqualTo("testRange");
-    });
-  }
-
-  @Test
-  public void fromXMLHashtoConfigOkay() {
-    RegionConfig.Index xmlIndex = new RegionConfig.Index();
-    xmlIndex.setType("hash");
-    xmlIndex.setName("testHash");
-    xmlIndex.setExpression("age > 65");
-    xmlIndex.setKeyIndex(false);
-
-    Index index = indexConverter.fromNonNullXmlObject(xmlIndex);
-    assertThat(index.getExpression()).isEqualTo("age > 65");
-    assertThat(index.getKeyIndex()).isFalse();
-    assertThat(index.getIndexType()).isEqualTo(IndexType.HASH_DEPRECATED);
-    assertThat(index.getName()).isEqualTo("testHash");
-  }
-
-  @Test
-  public void fromXMLKeytoConfigOkay() {
-    RegionConfig.Index xmlIndex = new RegionConfig.Index();
-    xmlIndex.setType("key");
-    xmlIndex.setName("testKey");
-    xmlIndex.setExpression("key");
-    xmlIndex.setKeyIndex(true);
-
-    Index index = indexConverter.fromNonNullXmlObject(xmlIndex);
-    assertThat(index.getExpression()).isEqualTo("key");
-    assertThat(index.getKeyIndex()).isTrue();
-    assertThat(index.getIndexType()).isEqualTo(IndexType.PRIMARY_KEY);
-    assertThat(index.getName()).isEqualTo("testKey");
-  }
-
-  @Test
-  public void fromConfigRangetoXMLOkay() {
+  public void fromNonNullConfigObject_mapsFunctionalIndexTypeToRangeIndexType() {
     Index index = new Index();
-    index.setIndexType(IndexType.FUNCTIONAL);
-    index.setExpression("age < 65");
+    index.setIndexType(FUNCTIONAL);
     index.setKeyIndex(false);
-    index.setName("testRange");
 
-    RegionConfig.Index xmlIndex = indexConverter.fromNonNullConfigObject(index);
-    assertThat(xmlIndex.getExpression()).isEqualTo("age < 65");
-    assertThat(xmlIndex.getName()).isEqualTo("testRange");
-    assertThat(xmlIndex.getType()).isEqualTo("range");
-    assertThat(xmlIndex.isKeyIndex()).isFalse();
+    RegionConfig.Index regionConfigIndex = indexConverter.fromNonNullConfigObject(index);
+
+    assertThat(regionConfigIndex.getType())
+        .as("type")
+        .isEqualTo("range");
+    assertThat(regionConfigIndex.isKeyIndex())
+        .as("is key index")
+        .isFalse();
   }
 
   @Test
-  public void fromConfigKeytoXMLOkay() {
+  public void fromNonNullConfigObject_mapsPrimaryKeyIndexTypeToKeyIndexType() {
     Index index = new Index();
-    index.setIndexType(IndexType.PRIMARY_KEY);
-    index.setExpression("key");
+    index.setIndexType(PRIMARY_KEY);
     index.setKeyIndex(true);
-    index.setName("testKey");
 
-    RegionConfig.Index xmlIndex = indexConverter.fromNonNullConfigObject(index);
-    assertThat(xmlIndex.getExpression()).isEqualTo("key");
-    assertThat(xmlIndex.getName()).isEqualTo("testKey");
-    assertThat(xmlIndex.getType()).isEqualTo("key");
-    assertThat(xmlIndex.isKeyIndex()).isTrue();
+    RegionConfig.Index regionConfigIndex = indexConverter.fromNonNullConfigObject(index);
+
+    assertThat(regionConfigIndex.getType())
+        .as("type")
+        .isEqualTo("key");
+    assertThat(regionConfigIndex.isKeyIndex())
+        .as("is key index")
+        .isTrue();
   }
 
   @Test
-  public void fromConfigHashtoXMLOkay() {
+  public void fromNonNullConfigObject_mapsHashDeprecatedIndexTypeToHashIndexType() {
     Index index = new Index();
-    index.setIndexType(IndexType.HASH_DEPRECATED);
-    index.setExpression("key");
+    index.setIndexType(HASH_DEPRECATED);
     index.setKeyIndex(false);
-    index.setName("testHash");
 
-    RegionConfig.Index xmlIndex = indexConverter.fromNonNullConfigObject(index);
-    assertThat(xmlIndex.getExpression()).isEqualTo("key");
-    assertThat(xmlIndex.getName()).isEqualTo("testHash");
-    assertThat(xmlIndex.getType()).isEqualTo("hash");
-    assertThat(xmlIndex.isKeyIndex()).isFalse();
+    RegionConfig.Index regionConfigIndex = indexConverter.fromNonNullConfigObject(index);
+
+    assertThat(regionConfigIndex.getType())
+        .as("type")
+        .isEqualTo("hash");
+    assertThat(regionConfigIndex.isKeyIndex())
+        .as("is key index")
+        .isFalse();
   }
 
   @Test
-  public void fromXMLtoConfigFail() {
-//    RegionConfig.Index xmlIndex = new RegionConfig.Index();
-//    xmlIndex.setType("krindex");
-//    xmlIndex.setName("testFail");
-//    xmlIndex.setExpression("key");
-//    xmlIndex.setKeyIndex(false);
-//
-//    Index index = indexConverter.fromNonNullXmlObject(xmlIndex);
-//    assertThat(index.getExpression()).isEqualTo("key");
-//    assertThat(index.getKeyIndex()).isTrue();
-//    assertThat(index.getIndexType()).isEqualTo(IndexType.PRIMARY_KEY);
-//    assertThat(index.getName()).isEqualTo("testKey");
+  public void fromNonNullXmlObject_copiesSimpleProperties() {
+    RegionConfig.Index regionConfigIndex = new RegionConfig.Index();
+    regionConfigIndex.setName("region config index name");
+    regionConfigIndex.setExpression("region config index expression");
+    regionConfigIndex.setFromClause("region config index from clause");
+
+    Index index = indexConverter.fromNonNullXmlObject(regionConfigIndex);
+
+    assertSoftly(softly -> {
+      softly.assertThat(index.getExpression())
+          .isEqualTo(regionConfigIndex.getExpression());
+      softly.assertThat(index.getName())
+          .isEqualTo(regionConfigIndex.getName());
+      softly.assertThat(index.getRegionPath())
+          .isEqualTo(regionConfigIndex.getFromClause());
+    });
   }
 
   @Test
-  public void fromConfigtoXMLFail() {
+  public void fromNonNullXmlObject_mapsHashIndexTypeToHashDeprecatedIndexType() {
+    RegionConfig.Index regionConfigIndex = new RegionConfig.Index();
+    regionConfigIndex.setType("hash");
 
+    Index index = indexConverter.fromNonNullXmlObject(regionConfigIndex);
+
+    assertSoftly(softly -> {
+      softly.assertThat(index.getIndexType())
+          .as("type")
+          .isEqualTo(HASH_DEPRECATED);
+      softly.assertThat(index.getKeyIndex())
+          .as("is key index")
+          .isFalse();
+    });
   }
 
+  @Test
+  public void fromNonNullXmlObject_mapsRangeIndexTypeToFunctionalIndexType() {
+    RegionConfig.Index regionConfigIndex = new RegionConfig.Index();
+    regionConfigIndex.setType("range");
+
+    Index index = indexConverter.fromNonNullXmlObject(regionConfigIndex);
+
+    assertSoftly(softly -> {
+      softly.assertThat(index.getIndexType())
+          .as("type")
+          .isEqualTo(FUNCTIONAL);
+      softly.assertThat(index.getKeyIndex())
+          .as("is key index")
+          .isFalse();
+    });
+  }
+
+  @Test
+  public void fromNonNullXmlObject_mapsKeyIndexTypeToPrimaryKeyIndexType() {
+    RegionConfig.Index regionConfigIndex = new RegionConfig.Index();
+    regionConfigIndex.setType("key");
+
+    Index index = indexConverter.fromNonNullXmlObject(regionConfigIndex);
+
+    assertSoftly(softly -> {
+      softly.assertThat(index.getIndexType())
+          .as("type")
+          .isEqualTo(PRIMARY_KEY);
+      softly.assertThat(index.getKeyIndex())
+          .as("is key index")
+          .isTrue();
+    });
+  }
 }
