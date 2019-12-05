@@ -437,27 +437,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private volatile QueryMonitor queryMonitor;
 
-  /**
-   * Not final to allow cache.xml parsing to set it.
-   */
-  private Pool defaultPool;
-
   private final ConcurrentMap<String, InternalRegion> pathToRegion = new ConcurrentHashMap<>();
-
-  /**
-   * Amount of time (in seconds) to wait for a distributed lock
-   */
-  private int lockTimeout = DEFAULT_LOCK_TIMEOUT;
-
-  /**
-   * Amount of time a lease of a distributed lock lasts
-   */
-  private int lockLease = DEFAULT_LOCK_LEASE;
-
-  /**
-   * Amount of time to wait for a {@code netSearch} to complete
-   */
-  private int searchTimeout = DEFAULT_SEARCH_TIMEOUT;
 
   private final CachePerfStats cachePerfStats;
 
@@ -524,23 +504,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Object allGatewayHubsLock = new Object();
 
   /**
-   * Conflict resolver for WAN, if any. Guarded by {@link #allGatewayHubsLock}.
-   */
-  private GatewayConflictResolver gatewayConflictResolver;
-
-  /**
-   * True if this is a server cache.
-   */
-  private boolean isServer;
-
-  /**
    * Transaction manager for this cache.
    */
   private final TXManagerImpl transactionManager;
-
-  private RestAgent restAgent;
-
-  private boolean isRESTServiceRunning;
 
   /**
    * Named region attributes registered with this cache.
@@ -549,28 +515,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       Collections.synchronizedMap(new HashMap<>());
 
   /**
-   * True if this cache was forced to close due to a forced-disconnect.
-   */
-  private boolean forcedDisconnect;
-
-  /**
-   * Context where this cache was created for debugging.
-   */
-  private Exception creationStack;
-
-  /**
    * System timer task for cleaning up old bridge thread event entries.
    */
   private final EventTrackerExpiryTask recordedEventSweeper;
 
   private final TombstoneService tombstoneService;
-
-  /**
-   * DistributedLockService for PartitionedRegions. Remains null until the first PartitionedRegion
-   * is created. Destroyed by GemFireCache when closing the cache. Protected by synchronization on
-   * prLockService. Guarded by prLockServiceLock.
-   */
-  private DistributedLockService prLockService;
 
   /**
    * Synchronization mutex for prLockService.
@@ -586,15 +535,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final BackupService backupService;
 
-  private HeapEvictor heapEvictor;
-
-  private OffHeapEvictor offHeapEvictor;
-
   private final Object heapEvictorLock = new Object();
 
   private final Object offHeapEvictorLock = new Object();
-
-  private ResourceEventsListener resourceEventsListener;
 
   private final Object queryMonitorLock = new Object();
 
@@ -663,13 +606,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final Stopper stopper = new Stopper();
 
-  /**
-   * Set to true during a cache close if user requested durable subscriptions to be kept.
-   *
-   * @since GemFire 5.7
-   */
-  private boolean keepAlive;
-
   private final boolean disableDisconnectDsOnCacheClose = Boolean
       .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
 
@@ -679,16 +615,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       new ConcurrentHashMap<>();
 
   /**
-   * Timer for {@link CacheClientProxy}. Guarded by {@link #ccpTimerMutex}.
-   */
-  private SystemTimer ccpTimer;
-
-  /**
    * Synchronization mutex for {@link #ccpTimer}.
    */
   private final Object ccpTimerMutex = new Object();
-
-  private int cancelCount;
 
   private final ExpirationScheduler expirationScheduler;
 
@@ -699,6 +628,80 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final List<SimpleWaiter> riWaiters = new ArrayList<>();
 
+  private final InternalCacheForClientAccess cacheForClients =
+      new InternalCacheForClientAccess(this);
+
+  /**
+   * Not final to allow cache.xml parsing to set it.
+   */
+  private Pool defaultPool;
+
+  /**
+   * Amount of time (in seconds) to wait for a distributed lock
+   */
+  private int lockTimeout = DEFAULT_LOCK_TIMEOUT;
+
+  /**
+   * Amount of time a lease of a distributed lock lasts
+   */
+  private int lockLease = DEFAULT_LOCK_LEASE;
+
+  /**
+   * Amount of time to wait for a {@code netSearch} to complete
+   */
+  private int searchTimeout = DEFAULT_SEARCH_TIMEOUT;
+
+  /**
+   * Conflict resolver for WAN, if any. Guarded by {@link #allGatewayHubsLock}.
+   */
+  private GatewayConflictResolver gatewayConflictResolver;
+
+  /**
+   * True if this is a server cache.
+   */
+  private boolean isServer;
+
+  private RestAgent restAgent;
+
+  private boolean isRESTServiceRunning;
+
+  /**
+   * True if this cache was forced to close due to a forced-disconnect.
+   */
+  private boolean forcedDisconnect;
+
+  /**
+   * Context where this cache was created for debugging.
+   */
+  private Exception creationStack;
+
+  /**
+   * DistributedLockService for PartitionedRegions. Remains null until the first PartitionedRegion
+   * is created. Destroyed by GemFireCache when closing the cache. Protected by synchronization on
+   * prLockService. Guarded by prLockServiceLock.
+   */
+  private DistributedLockService prLockService;
+
+  private HeapEvictor heapEvictor;
+
+  private OffHeapEvictor offHeapEvictor;
+
+  private ResourceEventsListener resourceEventsListener;
+
+  /**
+   * Set to true during a cache close if user requested durable subscriptions to be kept.
+   *
+   * @since GemFire 5.7
+   */
+  private boolean keepAlive;
+
+  /**
+   * Timer for {@link CacheClientProxy}. Guarded by {@link #ccpTimerMutex}.
+   */
+  private SystemTimer ccpTimer;
+
+  private int cancelCount;
+
   /**
    * Some tests pass value in via constructor. Product code sets value after construction.
    */
@@ -707,9 +710,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private Declarable initializer;
 
   private Properties initializerProps;
-
-  private final InternalCacheForClientAccess cacheForClients =
-      new InternalCacheForClientAccess(this);
 
   private List<File> backupFiles = Collections.emptyList();
 
