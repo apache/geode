@@ -380,12 +380,6 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
-        <groupId>org.fusesource.jansi</groupId>
-        <artifactId>jansi</artifactId>
-        <version>1.17.1</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
         <groupId>org.httpunit</groupId>
         <artifactId>httpunit</artifactId>
         <version>1.7.3</version>

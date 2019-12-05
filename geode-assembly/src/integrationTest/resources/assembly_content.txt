@@ -618,11 +618,11 @@ javadoc/org/apache/geode/examples/SimpleSecurityManager.html
 javadoc/org/apache/geode/examples/package-frame.html
 javadoc/org/apache/geode/examples/package-summary.html
 javadoc/org/apache/geode/examples/package-tree.html
+javadoc/org/apache/geode/examples/security/ExampleAnnotationBasedMethodInvocationAuthorizer.html
 javadoc/org/apache/geode/examples/security/ExamplePostProcessor.html
 javadoc/org/apache/geode/examples/security/ExampleSecurityManager.Role.html
 javadoc/org/apache/geode/examples/security/ExampleSecurityManager.User.html
 javadoc/org/apache/geode/examples/security/ExampleSecurityManager.html
-javadoc/org/apache/geode/examples/security/ExampleAnnotationBasedMethodInvocationAuthorizer.html
 javadoc/org/apache/geode/examples/security/package-frame.html
 javadoc/org/apache/geode/examples/security/package-summary.html
 javadoc/org/apache/geode/examples/security/package-tree.html
@@ -992,7 +992,6 @@ lib/istack-commons-runtime-2.2.jar
 lib/jackson-annotations-2.10.0.jar
 lib/jackson-core-2.10.0.jar
 lib/jackson-databind-2.10.0.jar
-lib/jansi-1.17.1.jar
 lib/javax.activation-1.2.0.jar
 lib/javax.activation-api-1.2.0.jar
 lib/javax.mail-api-1.6.2.jar

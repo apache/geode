@@ -203,7 +203,6 @@ public class MemberMBeanBridge {
     config = system.getConfig();
     try {
       commandProcessor = cache.getService(CommandProcessor.class);
-      commandProcessor.init(cache);
     } catch (Exception e) {
       commandServiceInitError = e.getMessage();
       logger.info(LogMarker.CONFIG_MARKER, "Command processor could not be initialized. {}",

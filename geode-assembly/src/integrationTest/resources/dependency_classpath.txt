@@ -51,7 +51,6 @@ javax.servlet-api-3.1.0.jar
 jna-4.1.0.jar
 jopt-simple-5.0.4.jar
 httpcore-4.4.10.jar
-jansi-1.17.1.jar
 snappy-0.4.jar
 jgroups-3.6.14.Final.jar
 shiro-cache-1.4.0.jar
