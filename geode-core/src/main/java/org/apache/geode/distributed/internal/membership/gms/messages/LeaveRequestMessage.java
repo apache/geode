@@ -25,19 +25,20 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
-public class LeaveRequestMessage extends AbstractGMSMessage implements HasMemberID {
-  private MemberIdentifier memberID;
+public class LeaveRequestMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID>
+    implements HasMemberID<ID> {
+  private ID memberID;
   private String reason;
 
-  public LeaveRequestMessage(List<MemberIdentifier> coords,
-      MemberIdentifier id, String reason) {
+  public LeaveRequestMessage(List<ID> coords,
+      ID id, String reason) {
     super();
     setRecipients(coords);
     this.memberID = id;
     this.reason = reason;
   }
 
-  public LeaveRequestMessage(MemberIdentifier coord, MemberIdentifier id,
+  public LeaveRequestMessage(ID coord, ID id,
       String reason) {
     super();
     setRecipient(coord);
@@ -55,7 +56,7 @@ public class LeaveRequestMessage extends AbstractGMSMessage implements HasMember
   }
 
   @Override
-  public MemberIdentifier getMemberID() {
+  public ID getMemberID() {
     return memberID;
   }
 

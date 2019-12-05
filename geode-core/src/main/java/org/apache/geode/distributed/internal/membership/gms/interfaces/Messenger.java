@@ -26,25 +26,25 @@ public interface Messenger<ID extends MemberIdentifier> extends Service<ID> {
   /**
    * adds a handler for the given class/interface of messages
    */
-  <T> void addHandler(Class<T> c, MessageHandler<T> h);
+  <T extends Message<ID>> void addHandler(Class<T> c, MessageHandler<T> h);
 
   /**
    * sends an asynchronous message when the membership view may not have been established. Returns
    * destinations that did not receive the message due to no longer being in the view
    */
-  Set<ID> send(Message m, GMSMembershipView alternateView);
+  Set<ID> send(Message<ID> m, GMSMembershipView<ID> alternateView);
 
   /**
    * sends an asynchronous message. Returns destinations that did not receive the message due to no
    * longer being in the view
    */
-  Set<ID> send(Message m);
+  Set<ID> send(Message<ID> m);
 
   /**
    * sends an asynchronous message. Returns destinations that did not receive the message due to no
    * longer being in the view. Does not guarantee delivery of the message (no retransmissions)
    */
-  Set<ID> sendUnreliably(Message m);
+  Set<ID> sendUnreliably(Message<ID> m);
 
   /**
    * returns the endpoint ID for this member
@@ -59,7 +59,7 @@ public interface Messenger<ID extends MemberIdentifier> extends Service<ID> {
   /**
    * retrieves the quorum checker that is used during auto-reconnect attempts
    */
-  GMSQuorumChecker getQuorumChecker();
+  GMSQuorumChecker<ID> getQuorumChecker();
 
   /**
    * test whether multicast is not only turned on but is working

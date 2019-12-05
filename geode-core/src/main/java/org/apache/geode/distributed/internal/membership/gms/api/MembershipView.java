@@ -109,7 +109,7 @@ public class MembershipView<ID extends MemberIdentifier> {
   /**
    * return members that are i this view but not the given old view
    */
-  public List<ID> getNewMembers(MembershipView olderView) {
+  public List<ID> getNewMembers(MembershipView<ID> olderView) {
     List<ID> result = new ArrayList<>(members);
     result.removeAll(olderView.getMembers());
     return result;
@@ -243,7 +243,7 @@ public class MembershipView<ID extends MemberIdentifier> {
       return true;
     }
     if (other instanceof MembershipView) {
-      return this.members.equals(((MembershipView) other).getMembers());
+      return this.members.equals(((MembershipView<ID>) other).getMembers());
     }
     return false;
   }

@@ -2815,22 +2815,19 @@ public class ClusterDistributionManager implements DistributionManager {
     return stopper;
   }
 
-  static class ClusterDistributionManagerIDFactory implements MemberIdentifierFactory {
+  static class ClusterDistributionManagerIDFactory
+      implements MemberIdentifierFactory<InternalDistributedMember> {
     @Immutable
-    private static final Comparator<MemberIdentifier> idComparator = new Comparator() {
-      @Override
-      public int compare(Object o1, Object o2) {
-        return ((DistributedMember) o1).compareTo((DistributedMember) o2);
-      }
-    };
+    private static final Comparator<InternalDistributedMember> idComparator =
+        InternalDistributedMember::compareTo;
 
     @Override
-    public MemberIdentifier create(MemberData memberInfo) {
+    public InternalDistributedMember create(MemberData memberInfo) {
       return new InternalDistributedMember(memberInfo);
     }
 
     @Override
-    public Comparator<MemberIdentifier> getComparator() {
+    public Comparator<InternalDistributedMember> getComparator() {
       return idComparator;
     }
   }

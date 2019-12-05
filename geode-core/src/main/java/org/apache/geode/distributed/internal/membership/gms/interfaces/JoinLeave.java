@@ -33,13 +33,13 @@ public interface JoinLeave<ID extends MemberIdentifier> extends Service<ID> {
   /**
    * force another member out of the system
    */
-  void remove(MemberIdentifier m, String reason);
+  void remove(ID m, String reason);
 
   /**
    * Invoked by the Manager, this notifies the HealthMonitor that a ShutdownMessage has been
    * received from the given member
    */
-  void memberShutdown(MemberIdentifier mbr, String reason);
+  void memberShutdown(ID mbr, String reason);
 
   /**
    * returns the local address
@@ -49,24 +49,24 @@ public interface JoinLeave<ID extends MemberIdentifier> extends Service<ID> {
   /**
    * Get canonical "GMSMember" from current view or prepared view.
    */
-  MemberIdentifier getMemberID(MemberIdentifier m);
+  ID getMemberID(ID m);
 
   /**
    * returns the current membership view
    */
-  GMSMembershipView getView();
+  GMSMembershipView<ID> getView();
 
 
   /**
    * returns the last known view prior to close - for reconnecting
    */
-  GMSMembershipView getPreviousView();
+  GMSMembershipView<ID> getPreviousView();
 
   /**
    * check to see if a member is already in the process of leaving or being removed (in the next
    * view)
    */
-  boolean isMemberLeaving(MemberIdentifier mbr);
+  boolean isMemberLeaving(ID mbr);
 
   /**
    * test hook

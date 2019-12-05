@@ -29,7 +29,7 @@ public interface Membership<ID extends MemberIdentifier> {
    *
    * @return list of members
    */
-  MembershipView getView();
+  MembershipView<ID> getView();
 
   /**
    * Return a {@link ID} representing the current system
@@ -48,8 +48,7 @@ public interface Membership<ID extends MemberIdentifier> {
    *         not receive the message because they departed the distributed system.
    * @throws NotSerializableException If content cannot be serialized
    */
-  Set<ID> send(ID[] destinations,
-      Message content)
+  Set<ID> send(ID[] destinations, Message<ID> content)
       throws NotSerializableException;
 
   /**
@@ -305,7 +304,7 @@ public interface Membership<ID extends MemberIdentifier> {
    * takes care of queueing up the message during startup and filtering out messages
    * from shunned members, before calling the message listener.
    */
-  void processMessage(Message msg);
+  void processMessage(Message<ID> msg);
 
   void checkCancelled();
 

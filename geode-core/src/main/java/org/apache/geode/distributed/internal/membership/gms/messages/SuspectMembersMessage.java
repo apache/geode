@@ -27,9 +27,9 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
 public class SuspectMembersMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
-  final List<SuspectRequest> suspectRequests;
+  final List<SuspectRequest<ID>> suspectRequests;
 
-  public SuspectMembersMessage(List<ID> recipients, List<SuspectRequest> s) {
+  public SuspectMembersMessage(List<ID> recipients, List<SuspectRequest<ID>> s) {
     super();
     setRecipients(recipients);
     this.suspectRequests = s;
@@ -37,7 +37,7 @@ public class SuspectMembersMessage<ID extends MemberIdentifier> extends Abstract
 
   public SuspectMembersMessage() {
     // no-arg constructor for serialization
-    suspectRequests = new ArrayList<SuspectRequest>();
+    suspectRequests = new ArrayList<>();
   }
 
   @Override
@@ -45,7 +45,7 @@ public class SuspectMembersMessage<ID extends MemberIdentifier> extends Abstract
     return SUSPECT_MEMBERS_MESSAGE;
   }
 
-  public List<SuspectRequest> getMembers() {
+  public List<SuspectRequest<ID>> getMembers() {
     return suspectRequests;
   }
 
@@ -64,7 +64,7 @@ public class SuspectMembersMessage<ID extends MemberIdentifier> extends Abstract
       SerializationContext context) throws IOException {
     if (suspectRequests != null) {
       out.writeInt(suspectRequests.size());
-      for (SuspectRequest sr : suspectRequests) {
+      for (SuspectRequest<ID> sr : suspectRequests) {
         context.getSerializer().writeObject(sr.getSuspectMember(), out);
         StaticSerialization.writeString(sr.getReason(), out);
       }
@@ -78,7 +78,7 @@ public class SuspectMembersMessage<ID extends MemberIdentifier> extends Abstract
       DeserializationContext context) throws IOException, ClassNotFoundException {
     int size = in.readInt();
     for (int i = 0; i < size; i++) {
-      SuspectRequest sr = new SuspectRequest(
+      SuspectRequest<ID> sr = new SuspectRequest<>(
           context.getDeserializer().readObject(in), StaticSerialization.readString(in));
       suspectRequests.add(sr);
     }

@@ -47,7 +47,7 @@ public interface Message<ID extends MemberIdentifier> extends DataSerializableFi
   /**
    * Establishes one or more destinations of a message
    */
-  void setRecipients(Collection recipients);
+  void setRecipients(Collection<ID> recipients);
 
   /**
    * is this a high priority message that should be sent out-of-band?

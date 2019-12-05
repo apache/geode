@@ -272,7 +272,7 @@ public class MembershipJUnitTest {
     });
     LifecycleListener lifeCycleListener = mock(LifecycleListener.class);
     final Membership m1 =
-        MembershipBuilder.newMembershipBuilder()
+        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
             .setAuthenticator(new GMSAuthenticator(config.getSecurityProps(), securityService,
                 mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()))
             .setStatistics(stats1)

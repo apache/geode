@@ -166,7 +166,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
     }
   }
 
-  public void setPublicKeys(GMSMembershipView otherView) {
+  public void setPublicKeys(GMSMembershipView<ID> otherView) {
     if (otherView.publicKeys != null) {
       this.publicKeys.putAll(otherView.publicKeys);
     }
@@ -237,7 +237,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
     }
   }
 
-  public Object get(int i) {
+  public ID get(int i) {
     return this.members.get(i);
   }
 
@@ -256,7 +256,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
   /**
    * return members that are i this view but not the given old view
    */
-  public List<ID> getNewMembers(GMSMembershipView olderView) {
+  public List<ID> getNewMembers(GMSMembershipView<ID> olderView) {
     List<ID> result = new ArrayList<>(members);
     result.removeAll(olderView.getMembers());
     return result;
@@ -389,7 +389,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
   /* NetView implementation method */
 
   public List<ID> getGMSMembers() {
-    return (List<ID>) (List<?>) Collections.unmodifiableList(this.members);
+    return Collections.unmodifiableList(this.members);
   }
 
 
@@ -482,7 +482,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
    * returns the members of this views crashedMembers collection that were members of the given
    * view. Admin-only members are not counted
    */
-  public Set<ID> getActualCrashedMembers(GMSMembershipView oldView) {
+  public Set<ID> getActualCrashedMembers(GMSMembershipView<ID> oldView) {
     Set<ID> result = new HashSet<>(this.crashedMembers.size());
     result.addAll(this.crashedMembers.stream()
         .filter(mbr -> (mbr.getVmKind() != ID.ADMIN_ONLY_DM_TYPE))
@@ -589,7 +589,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
       return true;
     }
     if (other instanceof GMSMembershipView) {
-      return this.members.equals(((GMSMembershipView) other).getGMSMembers());
+      return this.members.equals(((GMSMembershipView<ID>) other).getGMSMembers());
     }
     return false;
   }
@@ -623,7 +623,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
     shutdownMembers = GMSUtil.readHashSetOfMemberIDs(in, context);
     crashedMembers = GMSUtil.readHashSetOfMemberIDs(in, context);
     failureDetectionPorts = StaticSerialization.readIntArray(in);
-    Map pubkeys = StaticSerialization.readHashMap(in, context);
+    Map<ID, Object> pubkeys = StaticSerialization.readHashMap(in, context);
     if (pubkeys != null) {
       publicKeys.putAll(pubkeys);
     }

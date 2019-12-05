@@ -42,9 +42,9 @@ public abstract class AbstractGMSMessage<ID extends MemberIdentifier> implements
   }
 
   @Override
-  public void setRecipients(Collection recipients) {
+  public void setRecipients(Collection<ID> recipients) {
     if (recipients instanceof List) {
-      this.recipients = (List) recipients;
+      this.recipients = (List<ID>) recipients;
     } else {
       this.recipients = new ArrayList<>(recipients);
     }

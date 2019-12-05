@@ -23,19 +23,19 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
-public class HeartbeatRequestMessage extends AbstractGMSMessage {
+public class HeartbeatRequestMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
   int requestId;
-  MemberIdentifier target;
+  ID target;
 
-  public HeartbeatRequestMessage(MemberIdentifier neighbour, int id) {
+  public HeartbeatRequestMessage(ID neighbour, int id) {
     requestId = id;
     this.target = neighbour;
   }
 
   public HeartbeatRequestMessage() {}
 
-  public MemberIdentifier getTarget() {
+  public ID getTarget() {
     return target;
   }
 

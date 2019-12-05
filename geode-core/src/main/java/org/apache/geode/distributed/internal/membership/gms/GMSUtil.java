@@ -226,7 +226,7 @@ public class GMSUtil {
     }
     StaticSerialization.writeArrayLength(size, out);
     if (size > 0) {
-      for (MemberIdentifier member : set) {
+      for (ID member : set) {
         context.getSerializer().writeObject(member, out);
       }
     }

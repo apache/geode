@@ -37,12 +37,13 @@ import org.apache.geode.internal.serialization.SerializationContext;
 
 public class LocalViewMessage extends SerialDistributionMessage {
 
-  private GMSMembership manager;
+  private GMSMembership<InternalDistributedMember> manager;
   private long viewId;
-  private MembershipView view;
+  private MembershipView<InternalDistributedMember> view;
 
-  public LocalViewMessage(InternalDistributedMember addr, long viewId, MembershipView view,
-      GMSMembership manager) {
+  public LocalViewMessage(InternalDistributedMember addr, long viewId,
+      MembershipView<InternalDistributedMember> view,
+      GMSMembership<InternalDistributedMember> manager) {
     super();
     this.sender = addr;
     this.viewId = viewId;

@@ -25,6 +25,6 @@ public interface NetLocator extends RestartableTcpHandler {
    *
    * @return true if the membership manager was accepted
    */
-  boolean setServices(Services pservices);
+  boolean setServices(Services<InternalDistributedMember> pservices);
 
 }

@@ -126,7 +126,7 @@ public class JoinRequestMessage<ID extends MemberIdentifier> extends AbstractGMS
       return false;
     if (getClass() != obj.getClass())
       return false;
-    JoinRequestMessage other = (JoinRequestMessage) obj;
+    JoinRequestMessage<ID> other = (JoinRequestMessage<ID>) obj;
     if (credentials == null) {
       if (other.credentials != null)
         return false;

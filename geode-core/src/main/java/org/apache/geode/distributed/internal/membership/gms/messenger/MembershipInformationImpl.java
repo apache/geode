@@ -27,13 +27,14 @@ import org.apache.geode.distributed.internal.membership.gms.api.MembershipInform
  * Class MembershipInformation is used to pass membership data from a GMS that was
  * kicked out of the cluster to a new one during auto-reconnect operations.
  */
-public class MembershipInformationImpl implements MembershipInformation {
+public class MembershipInformationImpl<ID extends MemberIdentifier>
+    implements MembershipInformation {
   private final JChannel channel;
-  private final Set<MemberIdentifier> membershipIdentifiers;
+  private final Set<ID> membershipIdentifiers;
   private final Queue<Message> queuedMessages;
 
   protected MembershipInformationImpl(JChannel channel,
-      Set<MemberIdentifier> oldMembershipIdentifiers,
+      Set<ID> oldMembershipIdentifiers,
       Queue<Message> queuedMessages) {
 
     this.channel = channel;
@@ -45,7 +46,7 @@ public class MembershipInformationImpl implements MembershipInformation {
     return channel;
   }
 
-  public Set<MemberIdentifier> getMembershipIdentifiers() {
+  public Set<ID> getMembershipIdentifiers() {
     return membershipIdentifiers;
   }
 

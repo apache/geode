@@ -16,8 +16,8 @@ package org.apache.geode.distributed.internal.membership.gms.messages;
 
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
-public interface HasMemberID {
+public interface HasMemberID<ID extends MemberIdentifier> {
 
-  MemberIdentifier getMemberID();
+  ID getMemberID();
 
 }

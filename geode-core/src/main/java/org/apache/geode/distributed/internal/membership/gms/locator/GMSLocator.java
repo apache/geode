@@ -65,22 +65,22 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
   private final String locatorString;
   private final List<HostAddress> locators;
   private final LocatorStats locatorStats;
-  private final Set<MemberIdentifier> registrants = new HashSet<>();
+  private final Set<ID> registrants = new HashSet<>();
   private final Map<GMSMemberWrapper, byte[]> publicKeys =
       new ConcurrentHashMap<>();
   private final Path workingDirectory;
 
   private volatile boolean isCoordinator;
 
-  private Services services;
-  private MemberIdentifier localAddress;
+  private Services<ID> services;
+  private ID localAddress;
 
   /**
    * The current membership view, or one recovered from disk. This is a copy-on-write variable.
    */
-  private GMSMembershipView view;
+  private GMSMembershipView<ID> view;
 
-  private GMSMembershipView recoveredView;
+  private GMSMembershipView<ID> recoveredView;
 
   private File viewFile;
   private final TcpClient locatorClient;
@@ -111,7 +111,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     this.locatorClient = locatorClient;
   }
 
-  public synchronized boolean setServices(Services pservices) {
+  public synchronized boolean setServices(Services<ID> pservices) {
     if (services == null || services.isStopped()) {
       services = pservices;
       localAddress = services.getMessenger().getMemberID();
@@ -119,7 +119,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
       logger.info("Peer locator is connecting to local membership services with ID {}",
           localAddress);
       services.setLocator(this);
-      GMSMembershipView newView = services.getJoinLeave().getView();
+      GMSMembershipView<ID> newView = services.getJoinLeave().getView();
       if (newView != null) {
         view = newView;
         recoveredView = null;
@@ -170,7 +170,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
   }
 
   @Override
-  public void installView(GMSMembershipView view) {
+  public void installView(GMSMembershipView<ID> view) {
     synchronized (registrants) {
       registrants.clear();
     }
@@ -201,10 +201,10 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     Object response = null;
     if (request instanceof GetViewRequest) {
       if (view != null) {
-        response = new GetViewResponse(view);
+        response = new GetViewResponse<>(view);
       }
     } else if (request instanceof FindCoordinatorRequest) {
-      response = processFindCoordinatorRequest((FindCoordinatorRequest) request);
+      response = processFindCoordinatorRequest((FindCoordinatorRequest<ID>) request);
     }
     if (logger.isDebugEnabled()) {
       logger.debug("Peer locator returning {}", response);
@@ -212,10 +212,10 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     return response;
   }
 
-  private FindCoordinatorResponse processFindCoordinatorRequest(
-      FindCoordinatorRequest findRequest) {
+  private FindCoordinatorResponse<ID> processFindCoordinatorRequest(
+      FindCoordinatorRequest<ID> findRequest) {
     if (!findRequest.getDHAlgo().equals(securityUDPDHAlgo)) {
-      return new FindCoordinatorResponse(
+      return new FindCoordinatorResponse<>(
           "Rejecting findCoordinatorRequest, as member not configured same udp security("
               + findRequest.getDHAlgo() + " )as locator (" + securityUDPDHAlgo + ")");
     }
@@ -263,10 +263,11 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     if (responseView != null) {
       // if the ID of the requester matches an entry in the membership view then remove
       // that entry - it's obviously an old member since the ID has been reused
-      MemberIdentifier requestingMemberID = findRequest.getMemberID();
-      for (MemberIdentifier id : responseView.getMembers()) {
+      ID requestingMemberID = findRequest.getMemberID();
+      for (ID id : responseView.getMembers()) {
         if (requestingMemberID.getMemberData().compareTo(id.getMemberData(), false) == 0) {
-          GMSMembershipView newView = new GMSMembershipView(responseView, responseView.getViewId());
+          GMSMembershipView<ID> newView =
+              new GMSMembershipView<>(responseView, responseView.getViewId());
           newView.remove(id);
           responseView = newView;
           break;
@@ -277,8 +278,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
         // ignore the requests rejectedCoordinators if the view has changed
         coordinator = responseView.getCoordinator(Collections.emptyList());
       } else {
-        coordinator = responseView.getCoordinator(
-            (Collection<ID>) findRequest.getRejectedCoordinators());
+        coordinator = responseView.getCoordinator(findRequest.getRejectedCoordinators());
       }
       logger.info("Peer locator: coordinator from view is {}", coordinator);
       fromView = true;
@@ -286,19 +286,19 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
 
     if (coordinator == null) {
       // find the "oldest" registrant
-      Collection<MemberIdentifier> rejections = findRequest.getRejectedCoordinators();
+      Collection<ID> rejections = findRequest.getRejectedCoordinators();
       if (rejections == null) {
         rejections = Collections.emptyList();
       }
 
       synchronized (registrants) {
-        coordinator = (ID) services.getJoinLeave().getMemberID();
-        for (MemberIdentifier mbr : registrants) {
+        coordinator = services.getJoinLeave().getMemberID();
+        for (ID mbr : registrants) {
           if (mbr != coordinator && (coordinator == null || Objects.compare(mbr, coordinator,
               services.getMemberFactory().getComparator()) < 0)) {
             if (!rejections.contains(mbr) && (mbr.preferredForCoordinator()
                 || !mbr.getMemberData().isNetworkPartitionDetectionEnabled())) {
-              coordinator = (ID) mbr;
+              coordinator = mbr;
             }
           }
         }
@@ -308,7 +308,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
 
     synchronized (registrants) {
       if (isCoordinator) {
-        coordinator = (ID) localAddress;
+        coordinator = localAddress;
         if (responseView != null && localAddress != null
             && !localAddress.equals(responseView.getCoordinator())) {
           responseView = null;
@@ -324,13 +324,13 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
         coordinatorPublicKey = services.getMessenger().getPublicKey(coordinator);
       }
 
-      return new FindCoordinatorResponse(coordinator, localAddress, fromView, responseView,
+      return new FindCoordinatorResponse<ID>(coordinator, localAddress, fromView, responseView,
           new HashSet<>(registrants), networkPartitionDetectionEnabled, usePreferredCoordinators,
           coordinatorPublicKey);
     }
   }
 
-  private void saveView(GMSMembershipView view) {
+  private void saveView(GMSMembershipView<ID> view) {
     if (viewFile == null) {
       return;
     }
@@ -371,7 +371,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
   }
 
   @VisibleForTesting
-  public List<MemberIdentifier> getMembers() {
+  public List<ID> getMembers() {
     if (view != null) {
       return new ArrayList<>(view.getMembers());
     }
@@ -402,7 +402,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
       Object response = locatorClient.requestToServer(other.getAddress(), other.getPort(),
           new GetViewRequest(), 20000, true);
       if (response instanceof GetViewResponse) {
-        view = ((GetViewResponse) response).getView();
+        view = ((GetViewResponse<ID>) response).getView();
         logger.info("Peer locator recovered initial membership of {}", view);
         return true;
       }
@@ -443,14 +443,14 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
 
       // TBD - services isn't available when we recover from disk so this will throw an NPE
       // recoveredView = (GMSMembershipView) services.getSerializer().readDSFID(input);
-      recoveredView = (GMSMembershipView) InternalDataSerializer.readObject(input);
+      recoveredView = InternalDataSerializer.readObject(input);
 
       // this is not a valid view so it shouldn't have a usable Id
       recoveredView.setViewId(-1);
-      List<MemberIdentifier> members = new ArrayList<>(recoveredView.getMembers());
+      List<ID> members = new ArrayList<>(recoveredView.getMembers());
       // Remove locators from the view. Since we couldn't recover from an existing
       // locator we know that all of the locators in the view are defunct
-      for (MemberIdentifier member : members) {
+      for (ID member : members) {
         if (member.getVmKind() == MemberIdentifier.LOCATOR_DM_TYPE) {
           recoveredView.remove(member);
         }

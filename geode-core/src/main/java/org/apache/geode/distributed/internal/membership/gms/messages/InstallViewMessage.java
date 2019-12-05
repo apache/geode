@@ -36,13 +36,13 @@ public class InstallViewMessage<ID extends MemberIdentifier> extends AbstractGMS
   private messageType kind;
   private int previousViewId;
 
-  public InstallViewMessage(GMSMembershipView view, Object credentials, boolean preparing) {
+  public InstallViewMessage(GMSMembershipView<ID> view, Object credentials, boolean preparing) {
     this.view = view;
     this.kind = preparing ? messageType.PREPARE : messageType.INSTALL;
     this.credentials = credentials;
   }
 
-  public InstallViewMessage(GMSMembershipView view, Object credentials, int previousViewId,
+  public InstallViewMessage(GMSMembershipView<ID> view, Object credentials, int previousViewId,
       boolean preparing) {
     this.view = view;
     this.kind = preparing ? messageType.PREPARE : messageType.INSTALL;
@@ -58,7 +58,7 @@ public class InstallViewMessage<ID extends MemberIdentifier> extends AbstractGMS
     return kind == messageType.SYNC;
   }
 
-  public GMSMembershipView getView() {
+  public GMSMembershipView<ID> getView() {
     return view;
   }
 
@@ -94,7 +94,7 @@ public class InstallViewMessage<ID extends MemberIdentifier> extends AbstractGMS
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.previousViewId = in.readInt();
     this.kind = messageType.values()[in.readInt()];
-    this.view = (GMSMembershipView) context.getDeserializer().readObject(in);
+    this.view = context.getDeserializer().readObject(in);
     this.credentials = context.getDeserializer().readObject(in);
   }
 
@@ -118,7 +118,7 @@ public class InstallViewMessage<ID extends MemberIdentifier> extends AbstractGMS
       return false;
     if (getClass() != obj.getClass())
       return false;
-    InstallViewMessage other = (InstallViewMessage) obj;
+    InstallViewMessage<ID> other = (InstallViewMessage<ID>) obj;
     if (credentials == null) {
       if (other.credentials != null)
         return false;

@@ -94,7 +94,7 @@ public interface Distribution {
   void addSurpriseMemberForTesting(DistributedMember mbr,
       long birthTime);
 
-  void suspectMembers(Set<DistributedMember> members,
+  void suspectMembers(Set<InternalDistributedMember> members,
       String reason);
 
   void suspectMember(DistributedMember member,

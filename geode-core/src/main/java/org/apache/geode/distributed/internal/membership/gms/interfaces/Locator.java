@@ -25,7 +25,7 @@ public interface Locator<ID extends MemberIdentifier> {
   /**
    * called when a new view is installed by Membership
    */
-  void installView(GMSMembershipView v);
+  void installView(GMSMembershipView<ID> v);
 
   /**
    * informs the locator that this process is becoming the membership coordinator

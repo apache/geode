@@ -108,8 +108,8 @@ public class DistributionImpl implements Distribution {
 
   public DistributionImpl(final ClusterDistributionManager clusterDistributionManager,
       final RemoteTransportConfig transport, final InternalDistributedSystem system,
-      final MembershipListener listener,
-      final MessageListener messageListener) {
+      final MembershipListener<InternalDistributedMember> listener,
+      final MessageListener<InternalDistributedMember> messageListener) {
     this.clusterDistributionManager = clusterDistributionManager;
     this.transportConfig = transport;
     this.tcpDisabled = transportConfig.isTcpDisabled();
@@ -123,7 +123,7 @@ public class DistributionImpl implements Distribution {
     }
 
     memberTimeout = system.getConfig().getMemberTimeout();
-    membership = MembershipBuilder.newMembershipBuilder()
+    membership = MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
         .setAuthenticator(
             new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
                 system.getSecurityLogWriter(), system.getInternalLogWriter()))
@@ -157,7 +157,7 @@ public class DistributionImpl implements Distribution {
     GMSHealthMonitor.loadEmergencyClasses();
   }
 
-  public static void connectLocatorToServices(Services services) {
+  public static void connectLocatorToServices(Services<InternalDistributedMember> services) {
     // see if a locator was started and put it in GMS Services
     InternalLocator l = (InternalLocator) Locator.getLocator();
     if (l != null && l.getLocatorHandler() != null) {
@@ -176,7 +176,7 @@ public class DistributionImpl implements Distribution {
   @VisibleForTesting
   DistributionImpl(final ClusterDistributionManager clusterDistributionManager,
       final RemoteTransportConfig transport, final InternalDistributedSystem system,
-      Membership membership) {
+      Membership<InternalDistributedMember> membership) {
     this.clusterDistributionManager = clusterDistributionManager;
     this.transportConfig = transport;
     this.tcpDisabled = transportConfig.isTcpDisabled();
@@ -194,8 +194,8 @@ public class DistributionImpl implements Distribution {
   static DistributionImpl createDistribution(
       ClusterDistributionManager clusterDistributionManager, RemoteTransportConfig transport,
       InternalDistributedSystem system,
-      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener listener,
-      MessageListener messageListener) {
+      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener<InternalDistributedMember> listener,
+      MessageListener<InternalDistributedMember> messageListener) {
 
     DistributionImpl distribution =
         new DistributionImpl(clusterDistributionManager, transport, system, listener,
@@ -206,7 +206,7 @@ public class DistributionImpl implements Distribution {
 
 
   @Override
-  public MembershipView getView() {
+  public MembershipView<InternalDistributedMember> getView() {
     return membership.getView();
   }
 
@@ -340,11 +340,11 @@ public class DistributionImpl implements Distribution {
 
 
       // Iterate through members and causes in tandem :-(
-      Iterator it_mem = members.iterator();
-      Iterator it_causes = ex.getCauses().iterator();
+      Iterator<InternalDistributedMember> it_mem = members.iterator();
+      Iterator<Throwable> it_causes = ex.getCauses().iterator();
       while (it_mem.hasNext()) {
-        InternalDistributedMember member = (InternalDistributedMember) it_mem.next();
-        Throwable th = (Throwable) it_causes.next();
+        InternalDistributedMember member = it_mem.next();
+        Throwable th = it_causes.next();
 
         if (!membership.hasMember(member) || (th instanceof ShunnedMemberException)) {
           continue;
@@ -509,9 +509,9 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public void suspectMembers(Set<DistributedMember> members,
+  public void suspectMembers(Set<InternalDistributedMember> members,
       String reason) {
-    membership.suspectMembers((Set) members, reason);
+    membership.suspectMembers(members, reason);
   }
 
   @Override

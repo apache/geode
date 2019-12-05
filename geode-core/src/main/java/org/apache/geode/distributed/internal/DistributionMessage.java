@@ -31,7 +31,6 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.EventID;
@@ -59,7 +58,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * </P>
  */
 public abstract class DistributionMessage
-    implements Message, Cloneable {
+    implements Message<InternalDistributedMember>, Cloneable {
 
   /**
    * WARNING: setting this to true may break dunit tests.
@@ -91,11 +90,13 @@ public abstract class DistributionMessage
   private final InternalDistributedMember[] EMPTY_RECIPIENTS_ARRAY =
       new InternalDistributedMember[0];
 
-  private final List<MemberIdentifier> ALL_RECIPIENTS_LIST =
+  private final List<InternalDistributedMember> ALL_RECIPIENTS_LIST =
       Collections.singletonList(null);
 
   private final InternalDistributedMember[] ALL_RECIPIENTS_ARRAY =
       {null};
+
+  protected static final InternalDistributedMember ALL_RECIPIENTS = null;
 
   //////////////////// Instance Fields ////////////////////
 
@@ -261,11 +262,6 @@ public abstract class DistributionMessage
   }
 
   @Override
-  public void setRecipient(MemberIdentifier recipient) {
-    this.recipients = new InternalDistributedMember[] {(InternalDistributedMember) recipient};
-  }
-
-  @Override
   public void registerProcessor() {
     // override if direct-ack is supported
   }
@@ -276,7 +272,7 @@ public abstract class DistributionMessage
   }
 
   @Override
-  public List<MemberIdentifier> getRecipients() {
+  public List<InternalDistributedMember> getRecipients() {
     InternalDistributedMember[] recipients = getRecipientsArray();
     if (recipients == null
         || recipients.length == 1 && recipients[0] == ALL_RECIPIENTS) {
@@ -342,8 +338,8 @@ public abstract class DistributionMessage
    * <B>received</B> by a <code>DistributionManager</code>.
    */
   @Override
-  public void setSender(MemberIdentifier _sender) {
-    this.sender = (InternalDistributedMember) _sender;
+  public void setSender(InternalDistributedMember _sender) {
+    this.sender = _sender;
   }
 
   /**
