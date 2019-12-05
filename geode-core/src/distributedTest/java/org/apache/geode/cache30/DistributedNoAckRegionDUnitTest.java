@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import java.util.Arrays;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -34,6 +35,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.StateFlushOperation;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -53,6 +55,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
  */
 
 public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
+  protected static final Logger logger = LogService.getLogger();
 
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
@@ -93,6 +96,7 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
+    logger.info("Pointless log statement to force stressnewtest");
 
 
     // Scope.GLOBAL is illegal if there is any other cache in the

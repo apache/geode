@@ -130,7 +130,7 @@ import org.apache.geode.test.dunit.internal.DUnitLauncher;
  * Abstract superclass of {@link Region} tests that involve more than one VM.
  */
 public abstract class MultiVMRegionTestCase extends RegionTestCase {
-  private static final Logger logger = LogService.getLogger();
+  protected static final Logger logger = LogService.getLogger();
   private static final long POLL_INTERVAL_MILLIS = 50;
 
   private static final int PUT_RANGE_1_START = 1;

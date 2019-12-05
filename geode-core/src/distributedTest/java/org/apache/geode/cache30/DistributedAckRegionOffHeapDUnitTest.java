@@ -18,9 +18,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMO
 
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 
@@ -32,6 +35,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 
 @SuppressWarnings({"deprecation", "serial"})
 public class DistributedAckRegionOffHeapDUnitTest extends DistributedAckRegionDUnitTest {
+  static final Logger logger = LogService.getLogger();
 
   @Override
   public final void preTearDownAssertions() throws Exception {
@@ -46,6 +50,7 @@ public class DistributedAckRegionOffHeapDUnitTest extends DistributedAckRegionDU
     };
     Invoke.invokeInEveryVM(checkOrphans);
     checkOrphans.run();
+    logger.info("Pointless log message");
   }
 
   @Override

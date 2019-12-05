@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
@@ -33,6 +34,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.cache.xmlcache.XmlParser;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.IgnoredException;
 
 /**
@@ -44,6 +46,7 @@ import org.apache.geode.test.dunit.IgnoredException;
 
 @SuppressWarnings("serial")
 public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
+  protected static final Logger logger = LogService.getLogger();
 
   @Override
   protected String getGemFireVersion() {
@@ -52,6 +55,8 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
 
   @Override
   protected boolean getUseSchema() {
+
+    logger.info("Pointless log statement to force stressnewtest");
     return true;
   }
 

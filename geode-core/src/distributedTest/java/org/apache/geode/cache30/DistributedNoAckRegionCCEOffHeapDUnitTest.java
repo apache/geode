@@ -46,6 +46,7 @@ public class DistributedNoAckRegionCCEOffHeapDUnitTest extends DistributedNoAckR
 
     Invoke.invokeInEveryVM(checkOrphans);
     checkOrphans.run();
+    logger.info("Pointless log message");
   }
 
   @Override

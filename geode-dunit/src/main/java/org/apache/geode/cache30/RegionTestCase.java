@@ -50,6 +50,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import org.apache.geode.LogWriter;
@@ -100,12 +101,16 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
  * @since GemFire 3.0
  */
 public abstract class RegionTestCase extends JUnit4CacheTestCase {
+  protected static final Logger logger = LogService.getLogger();
+
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     postTearDownRegionTestCase();
   }
 
-  protected void postTearDownRegionTestCase() throws Exception {}
+  protected void postTearDownRegionTestCase() throws Exception {
+    logger.info("Pointless log message");
+  }
 
   /**
    * Returns a region with the given name and the attributes for this test.

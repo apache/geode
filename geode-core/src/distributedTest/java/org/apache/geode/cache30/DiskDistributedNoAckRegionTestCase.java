@@ -14,17 +14,22 @@
  */
 package org.apache.geode.cache30;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import org.apache.geode.cache.CacheException;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public abstract class DiskDistributedNoAckRegionTestCase extends DistributedNoAckRegionDUnitTest {
+
+  protected static final Logger logger = LogService.getLogger();
 
   protected DiskRegionTestImpl regionTestImpl;
 
   @Override
   public final void postSetUp() throws Exception {
     this.regionTestImpl = new DiskRegionTestImpl(this);
+    logger.info("Pointless log message");
   }
 
   @Test

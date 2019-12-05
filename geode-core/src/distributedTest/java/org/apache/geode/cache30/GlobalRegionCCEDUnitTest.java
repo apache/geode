@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -36,6 +37,7 @@ import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TombstoneService;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -47,6 +49,7 @@ import org.apache.geode.test.dunit.VM;
  */
 
 public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
+  protected static final Logger logger = LogService.getLogger();
 
   @Override
   protected boolean supportsTransactions() {
@@ -79,6 +82,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
   protected RegionAttributes getRegionAttributes(String type) {
     RegionAttributes ra = getCache().getRegionAttributes(type);
     if (ra == null) {
+      logger.info("Pointless log message");
       throw new IllegalStateException("The region shortcut " + type + " has been removed.");
     }
     AttributesFactory factory = new AttributesFactory(ra);
