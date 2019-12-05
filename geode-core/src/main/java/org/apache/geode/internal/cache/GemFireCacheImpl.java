@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance;
 
 import java.io.BufferedReader;
@@ -26,9 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StringBufferInputStream;
 import java.io.StringWriter;
@@ -270,7 +269,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     DistributionAdvisee {
   private static final Logger logger = LogService.getLogger();
 
-  /** The default number of seconds to wait for a distributed lock */
+  /**
+   * The default number of seconds to wait for a distributed lock
+   */
   public static final int DEFAULT_LOCK_TIMEOUT =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.defaultLockTimeout", 60);
 
@@ -280,11 +281,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public static final int DEFAULT_LOCK_LEASE =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.defaultLockLease", 120);
 
-  /** The default "copy on read" attribute value */
+  /**
+   * The default "copy on read" attribute value
+   */
   public static final boolean DEFAULT_COPY_ON_READ = false;
 
   /**
-   * getcachefor
    * The default amount of time to wait for a {@code netSearch} to complete
    */
   public static final int DEFAULT_SEARCH_TIMEOUT =
@@ -304,9 +306,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
 
   /**
-   * The number of threads that the QueryMonitor will use to mark queries as cancelled
-   * (see QueryMonitor class for reasons why a query might be cancelled).
-   * That processing is very efficient, so we don't foresee needing to raise this above 1.
+   * The number of threads that the QueryMonitor will use to mark queries as cancelled (see
+   * QueryMonitor class for reasons why a query might be cancelled). That processing is very
+   * efficient, so we don't foresee needing to raise this above 1.
    */
   private static final int QUERY_MONITOR_THREAD_POOL_SIZE = 1;
 
@@ -314,8 +316,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * If true then when a delta is applied the size of the entry value will be recalculated. If false
    * (the default) then the size of the entry value is unchanged by a delta application. Not a final
    * so that tests can change this value.
-   *
-   * TODO: move or static or encapsulate with interface methods
    *
    * @since GemFire h****** 6.1.2.9
    */
@@ -349,7 +349,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @MakeNotStatic
   private static boolean queryMonitorRequiredForResourceManager;
 
-  /** time in milliseconds */
+  /**
+   * Time in milliseconds TODO
+   */
   private static final int FIVE_HOURS = 5 * 60 * 60 * 1000;
 
   private static final Pattern DOUBLE_BACKSLASH = Pattern.compile("\\\\");
@@ -370,7 +372,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final PoolFactory poolFactory;
 
   /**
-   * It is not final to allow cache.xml parsing to set it.
+   * Not final to allow cache.xml parsing to set it.
    */
   private Pool defaultPool;
 
@@ -380,29 +382,40 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private volatile boolean isClosing;
 
-  /** Amount of time (in seconds) to wait for a distributed lock */
+  /**
+   * Amount of time (in seconds) to wait for a distributed lock
+   */
   private int lockTimeout = DEFAULT_LOCK_TIMEOUT;
 
-  /** Amount of time a lease of a distributed lock lasts */
+  /**
+   * Amount of time a lease of a distributed lock lasts
+   */
   private int lockLease = DEFAULT_LOCK_LEASE;
 
-  /** Amount of time to wait for a {@code netSearch} to complete */
+  /**
+   * Amount of time to wait for a {@code netSearch} to complete
+   */
   private int searchTimeout = DEFAULT_SEARCH_TIMEOUT;
 
   private final CachePerfStats cachePerfStats;
 
-  /** Date on which this instances was created */
+  /**
+   * Date on which this instances was created
+   */
   private final Date creationDate;
 
-  /** thread pool for event dispatching */
+  /**
+   * Thread pool for event dispatching
+   */
   private final ExecutorService eventThreadPool;
 
   /**
-   * the list of all cache servers. CopyOnWriteArrayList is used to allow concurrent add, remove and
+   * List of all cache servers. CopyOnWriteArrayList is used to allow concurrent add, remove and
    * retrieval operations. It is assumed that the traversal operations on cache servers list vastly
    * outnumber the mutative operations such as add, remove.
    */
   private final List<InternalCacheServer> allCacheServers = new CopyOnWriteArrayList<>();
+
   /**
    * Unmodifiable view of "allCacheServers".
    */
@@ -410,26 +423,24 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       Collections.unmodifiableList(allCacheServers);
 
   /**
-   * Controls updates to the list of all gateway senders
-   *
-   * @see #allGatewaySenders
+   * Controls updates to the list of all gateway senders {@link #allGatewaySenders}.
    */
   private final Object allGatewaySendersLock = new Object();
 
   /**
-   * the set of all gateway senders. It may be fetched safely (for enumeration), but updates must by
+   * Set of all gateway senders. It may be fetched safely (for enumeration), but updates must by
    * synchronized via {@link #allGatewaySendersLock}
    */
   private volatile Set<GatewaySender> allGatewaySenders = Collections.emptySet();
 
   /**
-   * The list of all async event queues added to the cache. CopyOnWriteArrayList is used to allow
+   * List of all async event queues added to the cache. CopyOnWriteArrayList is used to allow
    * concurrent add, remove and retrieval operations.
    */
   private final Set<AsyncEventQueue> allVisibleAsyncEventQueues = new CopyOnWriteArraySet<>();
 
   /**
-   * The list of all async event queues added to the cache. CopyOnWriteArrayList is used to allow
+   * List of all async event queues added to the cache. CopyOnWriteArrayList is used to allow
    * concurrent add, remove and retrieval operations.
    */
   private final Set<AsyncEventQueue> allAsyncEventQueues = new CopyOnWriteArraySet<>();
@@ -445,11 +456,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Set<PartitionedRegion> partitionedRegions = new HashSet<>();
 
   /**
-   * This is a map of regions that are in the process of being destroyed. We could
-   * potentially leave the regions in the pathToRegion map, but that would entail too many changes
-   * at this point in the release. We need to know which regions are being destroyed so that a
-   * profile exchange can get the persistent id of the destroying region and know not to persist
-   * that ID if it receives it as part of the persistent view.
+   * Map of regions that are in the process of being destroyed. We could potentially leave the
+   * regions in the pathToRegion map, but that would entail too many changes at this point in the
+   * release. We need to know which regions are being destroyed so that a profile exchange can get
+   * the persistent id of the destroying region and know not to persist that ID if it receives it as
+   * part of the persistent view.
    */
   private final ConcurrentMap<String, DistributedRegion> regionsInDestroy =
       new ConcurrentHashMap<>();
@@ -457,46 +468,52 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private final Object allGatewayHubsLock = new Object();
 
   /**
-   * conflict resolver for WAN, if any
-   *
-   * GuardedBy {@link #allGatewayHubsLock}
+   * Conflict resolver for WAN, if any. Guarded by {@link #allGatewayHubsLock}.
    */
   private GatewayConflictResolver gatewayConflictResolver;
 
-  /** Is this is "server" cache? */
+  /**
+   * True if this is a server cache.
+   */
   private boolean isServer;
 
-  /** transaction manager for this cache */
+  /**
+   * Transaction manager for this cache.
+   */
   private final TXManagerImpl transactionManager;
 
   private RestAgent restAgent;
 
   private boolean isRESTServiceRunning;
 
-  /** Copy on Read feature for all read operations e.g. get */
+  /**
+   * Copy on Read feature for all read operations.
+   */
   private volatile boolean copyOnRead = DEFAULT_COPY_ON_READ;
 
-  /** The named region attributes registered with this cache. */
+  /**
+   * Named region attributes registered with this cache.
+   */
   private final Map<String, RegionAttributes<?, ?>> namedRegionAttributes =
       Collections.synchronizedMap(new HashMap<>());
 
   /**
-   * if this cache was forced to close due to a forced-disconnect, we retain a
-   * ForcedDisconnectException that can be used as the cause
+   * True if this cache was forced to close due to a forced-disconnect.
    */
   private boolean forcedDisconnect;
 
   /**
-   * if this cache was forced to close due to a forced-disconnect or system failure, this keeps
-   * track of the reason
+   * Reason this cache was forced to close due to a forced-disconnect or system failure.
    */
   private volatile Throwable disconnectCause;
 
-  /** context where this cache was created -- for debugging, really... */
+  /**
+   * Context where this cache was created for debugging.
+   */
   private Exception creationStack;
 
   /**
-   * a system timer task for cleaning up old bridge thread event entries
+   * System timer task for cleaning up old bridge thread event entries.
    */
   private final EventTrackerExpiryTask recordedEventSweeper;
 
@@ -505,27 +522,23 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * DistributedLockService for PartitionedRegions. Remains null until the first PartitionedRegion
    * is created. Destroyed by GemFireCache when closing the cache. Protected by synchronization on
-   * this GemFireCache.
-   *
-   * GuardedBy prLockServiceLock
+   * prLockService. Guarded by prLockServiceLock.
    */
   private DistributedLockService prLockService;
 
   /**
-   * lock used to access prLockService
+   * Synchronization mutex for prLockService.
    */
   private final Object prLockServiceLock = new Object();
 
   /**
    * DistributedLockService for GatewaySenders. Remains null until the first GatewaySender is
-   * created. Destroyed by GemFireCache when closing the cache.
-   *
-   * GuardedBy gatewayLockServiceLock
+   * created. Destroyed by GemFireCache when closing the cache. Guarded by gatewayLockServiceLock.
    */
   private volatile DistributedLockService gatewayLockService;
 
   /**
-   * Lock used to access gatewayLockService
+   * Synchronization mutex for gatewayLockService.
    */
   private final Object gatewayLockServiceLock = new Object();
 
@@ -544,9 +557,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private ResourceEventsListener resourceEventsListener;
 
   /**
-   * Enabled when CacheExistsException issues arise in debugging
-   *
-   * @see #creationStack
+   * Enables {@link #creationStack} when CacheExistsException issues arise in debugging
    */
   private static final boolean DEBUG_CREATION_STACK = false;
 
@@ -577,15 +588,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private final Map<Declarable, Properties> declarablePropertiesMap = new ConcurrentHashMap<>();
 
-  /** {@link PropertyResolver} to resolve ${} type property strings */
+  /**
+   * Resolves ${} type property strings.
+   */
   private final PropertyResolver resolver;
 
   private static final boolean XML_PARAMETERIZATION_ENABLED =
       !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "xml.parameterization.disabled");
 
   /**
-   * {@link ExtensionPoint} support.
-   *
    * @since GemFire 8.1
    */
   private final ExtensionPoint<Cache> extensionPoint = new SimpleExtensionPoint<>(this, this);
@@ -605,7 +616,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final StatisticsClock statisticsClock;
 
-  /** Map of Futures used to track Regions that are being reinitialized */
+  /**
+   * Map of futures used to track regions that are being reinitialized.
+   */
   private final ConcurrentMap<String, FutureResult<InternalRegion>> reinitializingRegions =
       new ConcurrentHashMap<>();
 
@@ -634,14 +647,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private boolean keepAlive;
 
   /**
-   * break any potential circularity in {@link #loadEmergencyClasses()}
+   * Break any potential circularity in {@link #loadEmergencyClasses()}.
    */
   @MakeNotStatic
   private static volatile boolean emergencyClassesLoaded;
 
   /**
    * Number of threads used to close PRs in shutdownAll. By default is the number of PRs in the
-   * cache
+   * cache.
    */
   private static final int shutdownAllPoolSize =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "SHUTDOWN_ALL_POOL_SIZE", -1);
@@ -659,14 +672,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private static String defaultDiskStoreName = DiskStoreFactory.DEFAULT_DISK_STORE_NAME;
 
   /**
-   * GuardedBy {@link #ccpTimerMutex}
-   *
-   * @see CacheClientProxy
+   * Timer for {@link CacheClientProxy}. Guarded by {@link #ccpTimerMutex}.
    */
   private SystemTimer ccpTimer;
 
   /**
-   * @see #ccpTimer
+   * Synchronization mutex for {@link #ccpTimer}.
    */
   private final Object ccpTimerMutex = new Object();
 
@@ -683,7 +694,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final List<SimpleWaiter> riWaiters = new ArrayList<>();
 
-  // never changes but is currently only initialized in constructor by unit tests
+  /**
+   * Some tests pass value in via constructor. Product code sets value after construction.
+   */
   private TypeRegistry pdxRegistry;
 
   private Declarable initializer;
@@ -733,7 +746,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     int lastError = Native.getLastError();
     String message = "mlockall failed: " + lastError;
-    if (lastError == 1 || lastError == 12) { // EPERM || ENOMEM
+    if (lastError == 1 || lastError == 12) {
+      // if EPERM || ENOMEM
       message = "Unable to lock memory due to insufficient free space or privileges.  "
           + "Please check the RLIMIT_MEMLOCK soft resource limit (ulimit -l) and "
           + "increase the available memory if needed";
@@ -742,7 +756,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * This is for debugging cache-open issues (esp. {@link CacheExistsException})
+   * This is for debugging cache-open issues such as {@link CacheExistsException}.
    */
   @Override
   public String toString() {
@@ -757,23 +771,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     sb.append("; lockLease = ").append(lockLease);
     sb.append("; lockTimeout = ").append(lockTimeout);
     if (creationStack != null) {
-      // TODO: eliminate anonymous inner class and maybe move this to ExceptionUtils
       sb.append(lineSeparator()).append("Creation context:").append(lineSeparator());
-      OutputStream os = new OutputStream() {
-        @Override
-        public void write(int i) {
-          sb.append((char) i);
-        }
-      };
-      PrintStream ps = new PrintStream(os);
-      creationStack.printStackTrace(ps);
+      sb.append(getStackTrace(creationStack));
     }
     sb.append("]");
     return sb.toString();
   }
 
   /**
-   * Returns the last created instance of GemFireCache
+   * Returns the last created instance of GemFireCache.
    *
    * @deprecated use DM.getCache instead
    */
@@ -823,7 +829,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * @param reason the reason an existing cache is being requested.
    * @return the existing cache
    * @throws CacheClosedException if an existing cache can not be found.
-   * @deprecated use DM.getExistingCache instead.
+   * @deprecated Please use {@link DistributionManager#getExistingCache()} instead.
    */
   @Deprecated
   public static GemFireCacheImpl getExisting(String reason) {
@@ -835,10 +841,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Pdx is allowed to obtain the cache even while it is being closed
+   * Returns instance to pdx even while it is being closed.
    *
-   * @deprecated Rather than fishing for a cache with this static method, use a cache that is passed
-   *             in to your method.
+   * @deprecated Please use a cache that is passed to your method instead.
    */
   @Deprecated
   public static GemFireCacheImpl getForPdx(String reason) {
@@ -859,6 +864,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Creates a new instance of GemFireCache and populates it according to the {@code cache.xml}, if
    * appropriate.
    *
+   * <p>
    * Currently only unit tests set the typeRegistry parameter to a non-null value
    */
   GemFireCacheImpl(boolean isClient, PoolFactory poolFactory,
@@ -948,12 +954,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.systemTimerFactory = systemTimerFactory;
     this.replyProcessor21Factory = replyProcessor21Factory;
 
-    // Synchronized to prevent a new cache from being created
-    // before an old one has finished closing
+    // Synchronized to prevent a new cache from being created before an old one finishes closing
     synchronized (GemFireCacheImpl.class) {
 
-      // start JTA transaction manager within this synchronized block
-      // to prevent race with cache close.
+      // start JTA transaction manager within synchronization to prevent race with cache close
       jndiTransactionMapper.accept(internalDistributedSystem);
       system = internalDistributedSystem;
       dm = system.getDistributionManager();
@@ -961,8 +965,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       if (!isClient) {
         configurationResponse = requestSharedConfiguration();
 
-        // apply the cluster's properties configuration and initialize security using that
-        // configuration
+        // apply the cluster's properties config and initialize security using that config
         ccLoader.applyClusterPropertiesConfiguration(configurationResponse,
             system.getConfig());
 
@@ -976,9 +979,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       DistributionConfig systemConfig = internalDistributedSystem.getConfig();
       if (!this.isClient && isPoolManagerEmpty.get()) {
-        // We only support management on members of a distributed system
-        // Should do this: if (!getSystem().isLoner()) {
-        // but it causes quickstart.CqClientTest to hang
+        // only support management on members of a distributed system
         boolean disableJmx = systemConfig.getDisableJmx();
         if (disableJmx) {
           logger.info("Running with JMX disabled.");
@@ -1039,9 +1040,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       getInternalResourceManager().addResourceListener(ResourceType.HEAP_MEMORY, getHeapEvictor());
 
-      /*
-       * Only bother creating an off-heap evictor if we have off-heap memory enabled.
-       */
+      // Only bother creating an off-heap evictor if we have off-heap memory enabled.
       if (null != getOffHeapStore()) {
         getInternalResourceManager().addResourceListener(ResourceType.OFFHEAP_MEMORY,
             getOffHeapEvictor());
@@ -1055,9 +1054,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       typeRegistryOpen.accept(null);
 
       if (!isClient()) {
-        // Initialize the QRM thread frequency to default (1 second )to prevent spill
-        // over from previous Cache , as the interval is stored in a static
-        // volatile field.
+        // Initialize the QRM thread frequency to default (1 second )to prevent spill over from
+        // previous Cache, as the interval is stored in a static volatile field.
         haRegionQueueSetMessageSyncInterval.accept(HARegionQueue.DEFAULT_MESSAGE_SYNC_INTERVAL);
       }
       functionServiceRegisterFunction.accept(new PRContainsValueFunction());
@@ -1088,7 +1086,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       addRegionEntrySynchronizationListener(gatewaySenderQueueEntrySynchronizationListener.get());
       backupService = backupServiceFactory.apply(this);
-    } // synchronized
+    }
 
     clientMetadataService = clientMetadataServiceFactory.apply(this);
   }
@@ -1104,7 +1102,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return system.getMeterRegistry();
   }
 
-  /** generate XML for the cache before shutting down due to forced disconnect */
+  /**
+   * Generate XML for the cache before shutting down due to forced disconnect.
+   */
   @Override
   public void saveCacheXmlForReconnect() {
     // there are two versions of this method so it can be unit-tested
@@ -1153,7 +1153,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Initialize the EventTracker's timer task. This is stored for tracking and shutdown purposes
+   * Initialize the EventTracker's timer task for tracking and shutdown purposes.
    */
   private EventTrackerExpiryTask createEventTrackerExpiryTask() {
     long lifetimeInMillis =
@@ -1180,8 +1180,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Used by Hydra tests to get handle of Rest Agent
-   *
+   * Used by tests to get handle of Rest Agent.
    */
   @Override
   public RestAgent getRestAgent() {
@@ -1189,8 +1188,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Request the shared configuration from the locator(s) which have the Cluster config service
-   * running
+   * Request the cluster configuration from the locator(s) if cluster config service is running.
    */
   ConfigurationResponse requestSharedConfiguration() {
     final DistributionConfig config = system.getConfig();
@@ -1263,9 +1261,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * When called, clusterProps and serverProps and key could not be null
+   * Arguments must not be null.
    */
   static boolean isMisConfigured(Properties clusterProps, Properties serverProps, String key) {
+    requireNonNull(clusterProps);
+    requireNonNull(serverProps);
+    requireNonNull(key);
+
     String clusterPropValue = clusterProps.getProperty(key);
     String serverPropValue = serverProps.getProperty(key);
 
@@ -1358,14 +1360,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     // Register function that we need to execute to fetch available REST service endpoints in DS
     functionServiceRegisterFunction.accept(new FindRestEnabledServersFunction());
 
-    // moved this after initializeDeclarativeCache because in the future
-    // distributed system creation will not happen until we have read
-    // cache.xml file.
-    // For now this needs to happen before cache.xml otherwise
-    // we will not be ready for all the events that cache.xml
-    // processing can deliver (region creation, etc.).
-    // This call may need to be moved inside initializeDeclarativeCache.
-    jmxAdvisor.initializationGate(); // Entry to GemFire Management service
+    // Entry to GemFire Management service
+    jmxAdvisor.initializationGate();
 
     initializeServices();
 
@@ -1418,8 +1414,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Initialize any services that provided as extensions to the cache using the service loader
-   * mechanism.
+   * Initialize any services provided as extensions to the cache using service loader.
    */
   private void initializeServices() {
     ServiceLoader<CacheService> loader = ServiceLoader.load(CacheService.class);
@@ -1510,7 +1505,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Initializes the contents of this {@code Cache} according to the declarative caching XML file
+   * Initialize the contents of this {@code Cache} according to the declarative caching XML file
    * specified by the given {@code DistributedSystem}. Note that this operation cannot be performed
    * in the constructor because creating regions in the cache, etc. uses the cache itself (which
    * isn't initialized until the constructor returns).
@@ -1524,7 +1519,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * @throws RegionExistsException If the declarative caching XML file describes a region that
    *         already exists (including the root region).
    * @throws GatewayException If a {@code GatewayException} is thrown while initializing the cache.
-   *
    * @see #loadCacheXml
    */
   private void initializeDeclarativeCache()
@@ -1534,7 +1528,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (url == null && cacheXmlDescription == null) {
       initializePdxRegistry();
       readyDynamicRegionFactory();
-      return; // nothing needs to be done
+      // nothing needs to be done
+      return;
     }
 
     InputStream stream = null;
@@ -1604,8 +1599,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Call to make this vm's dynamic region factory ready. Public so it can be called from
-   * CacheCreation during xml processing
+   * Make the dynamic region factory ready. Public so it can be called from CacheCreation during xml
+   * processing.
    */
   @Override
   public void readyDynamicRegionFactory() {
@@ -1619,7 +1614,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * create diskStore factory with default attributes
+   * Create disk store factory with default attributes.
    *
    * @since GemFire prPersistSprint2
    */
@@ -1629,7 +1624,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * create diskStore factory with predefined attributes
+   * Create disk store factory with predefined attributes.
    *
    * @since GemFire prPersistSprint2
    */
@@ -1643,19 +1638,25 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return stopper;
   }
 
-  /** return true if the cache was closed due to being shunned by other members */
+  /**
+   * True if the cache was closed due to being shunned by other members.
+   */
   @Override
   public boolean forcedDisconnect() {
     return forcedDisconnect || system.forcedDisconnect();
   }
 
-  /** return a CacheClosedException with the given reason */
+  /**
+   * Creates a CacheClosedException with the given reason.
+   */
   @Override
   public CacheClosedException getCacheClosedException(String reason) {
     return getCacheClosedException(reason, null);
   }
 
-  /** return a CacheClosedException with the given reason and cause */
+  /**
+   * Creaets a CacheClosedException with the given reason and cause.
+   */
   @Override
   public CacheClosedException getCacheClosedException(String reason, Throwable cause) {
     CacheClosedException result;
@@ -1669,14 +1670,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return result;
   }
 
-  /** if the cache was forcibly closed this exception will reflect the cause */
+  /**
+   * Get cause for forcibly closing cache.
+   */
   @Override
   public Throwable getDisconnectCause() {
     return disconnectCause;
   }
 
   /**
-   * Returns true if durable subscriptions (registrations and queries) should be preserved.
+   * True if durable subscriptions (registrations and queries) should be preserved.
    *
    * @since GemFire 5.7
    */
@@ -1686,7 +1689,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Ensure that all the necessary classes for closing the cache are loaded
+   * Ensure that all the necessary classes for closing the cache are loaded.
    *
    * @see SystemFailure#loadEmergencyClasses()
    */
@@ -1858,8 +1861,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             }
             bucket.getBucketAdvisor().tryLockIfPrimary();
 
-            // get map <InternalDistributedMember, persistentID> for this bucket's
-            // remote members
+            // get map <InternalDistributedMember, persistentID> for this bucket's remote members
             bucketMaps[bucket.getId()] =
                 bucket.getBucketAdvisor().adviseInitializedPersistentMembers();
             if (logger.isDebugEnabled()) {
@@ -1898,9 +1900,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             }
           } // async write
 
-          // persist other members to OFFLINE_EQUAL for each bucket region
-          // iterate through all the bucketMaps and exclude the items whose
-          // idm is no longer online
+          // persist other members to OFFLINE_EQUAL for each bucket region iterate through all the
+          // bucketMaps and exclude the items whose idm is no longer online
           Set<InternalDistributedMember> membersToPersistOfflineEqual =
               partitionedRegion.getRegionAdvisor().adviseDataStore();
           for (Entry e : bucketEntries) {
@@ -1930,10 +1931,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             logger.debug("shutDownAll: PR {}: all offline_equal profiles received.",
                 partitionedRegion.getName());
           }
-        } // dataStore
+        }
 
-        // after done all steps for buckets, close partitionedRegion
-        // close accessor directly
+        // after done all steps for buckets, close partitionedRegion close accessor directly
         RegionEventImpl event = new RegionEventImpl(partitionedRegion, Operation.REGION_CLOSE, null,
             false, getMyId(), true);
         try {
@@ -1950,7 +1950,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
               "TimeoutException should not be thrown in localDestroyRegion",
               e);
         }
-      } // synchronized
+      }
     } catch (CacheClosedException cce) {
       logger.debug("Encounter CacheClosedException when shutDownAll is closing PR: {}:{}",
           partitionedRegion.getFullPath(), cce.getMessage());
@@ -2014,15 +2014,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       stopper.checkCancelInProgress(null);
       if (prLockService == null) {
         try {
-          prLockService =
-              DLockService.create(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME,
-                  getInternalDistributedSystem(), true /* distributed */,
-                  true /* destroyOnDisconnect */, true /* automateFreeResources */);
+          prLockService = DLockService.create(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME,
+              getInternalDistributedSystem(), true, true, true);
         } catch (IllegalArgumentException e) {
           prLockService = DistributedLockService
               .getServiceNamed(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
           if (prLockService == null) {
-            throw e; // PARTITION_LOCK_SERVICE_NAME must be illegal!
+            // PARTITION_LOCK_SERVICE_NAME must be illegal!
+            throw e;
           }
         }
       }
@@ -2043,13 +2042,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (gatewayLockService == null) {
           try {
             gatewayLockService = DLockService.create(AbstractGatewaySender.LOCK_SERVICE_NAME,
-                getInternalDistributedSystem(), true /* distributed */,
-                true /* destroyOnDisconnect */, true /* automateFreeResources */);
+                getInternalDistributedSystem(), true, true, true);
           } catch (IllegalArgumentException e) {
             gatewayLockService =
                 DistributedLockService.getServiceNamed(AbstractGatewaySender.LOCK_SERVICE_NAME);
             if (gatewayLockService == null) {
-              throw e; // AbstractGatewaySender.LOCK_SERVICE_NAME must be illegal!
+              // AbstractGatewaySender.LOCK_SERVICE_NAME must be illegal!
+              throw e;
             }
           }
         }
@@ -2104,12 +2103,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /** Used by test to inject an evictor */
+  /**
+   * Used by test to inject an evictor.
+   */
   void setOffHeapEvictor(OffHeapEvictor evictor) {
     offHeapEvictor = evictor;
   }
 
-  /** Used by test to inject an evictor */
+  /**
+   * Used by test to inject an evictor.
+   */
   void setHeapEvictor(HeapEvictor evictor) {
     heapEvictor = evictor;
   }
@@ -2135,7 +2138,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       return;
     }
 
-    if (!keepDS && systemFailureCause == null // normal cache close
+    if (!keepDS && systemFailureCause == null
         && (isReconnecting() || system.getReconnectedSystem() != null)) {
       logger.debug(
           "Cache is shutting down distributed system connection.  "
@@ -2158,10 +2161,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         return;
       }
 
-      /*
-       * First close the ManagementService as it uses a lot of infra which will be closed by
-       * cache.close()
-       */
+      // First close the ManagementService
       system.handleResourceEvent(ResourceEvent.CACHE_REMOVE, this);
       if (resourceEventsListener != null) {
         system.removeResourceListener(resourceEventsListener);
@@ -2230,18 +2230,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           eventThreadPool.shutdown();
         }
 
-        /*
-         * IMPORTANT: any operation during shut down that can time out (create a CancelException)
-         * must be inside of this try block. If all else fails, we *must* ensure that the cache gets
-         * closed!
-         */
+        // IMPORTANT: any operation during shut down that can time out (create a CancelException)
+        // must be inside of this try block. If all else fails, we *must* ensure that the cache gets
+        // closed!
         try {
           stopServers();
 
           stopServices();
 
-          // no need to track PR instances since we won't create any more
-          // cacheServers or gatewayHubs
+          // no need to track PR instances
           if (isDebugEnabled) {
             logger.debug("{}: clearing partitioned regions...", this);
           }
@@ -2277,7 +2274,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
                 prRoot = lr;
               } else {
                 if (lr.getName().contains(ParallelGatewaySenderQueue.QSTRING)) {
-                  continue; // this region will be closed internally by parent region
+                  // this region will be closed internally by parent region
+                  continue;
                 }
                 if (isDebugEnabled) {
                   logger.debug("{}: closing region {}...", this, lr.getFullPath());
@@ -2291,7 +2289,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
                   }
                 }
               }
-            } // for
+            }
 
             try {
               if (isDebugEnabled) {
@@ -2347,10 +2345,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             distributionManager = system.getDistributionManager();
             distributionManager.removeMembershipListener(transactionManager);
           } catch (CancelException ignore) {
-            // distributionManager = null;
+            // ignored
           }
 
-          if (distributionManager != null) { // Send CacheClosedMessage (and NOTHING ELSE) here
+          if (distributionManager != null) {
+            // Send CacheClosedMessage (and NOTHING ELSE) here
             if (isDebugEnabled) {
               logger.debug("{}: sending CloseCache to peers...", this);
             }
@@ -2364,14 +2363,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             try {
               processor.waitForReplies();
             } catch (InterruptedException ignore) {
-              // Thread.currentThread().interrupt(); // TODO ??? should we reset this bit later?
+              // TODO: reset interrupt flag later?
               // Keep going, make best effort to shut down.
             } catch (ReplyException ignore) {
               // keep going
             }
-            // set closed state after telling others and getting responses
-            // to avoid complications with others still in the process of
-            // sending messages
+            // set closed state after telling others and getting responses to avoid complications
+            // with others still in the process of sending messages
           }
           // NO MORE Distributed Messaging AFTER THIS POINT!!!!
 
@@ -2441,7 +2439,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       SequenceLoggerImpl.signalCacheClose();
       SystemFailure.signalCacheClose();
-    } // static synchronization on GemFireCache.class
+    }
   }
 
   private void stopServices() {
@@ -2528,7 +2526,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public void removeDiskStore(DiskStoreImpl diskStore) {
     diskStores.remove(diskStore.getName());
     regionOwnedDiskStores.remove(diskStore.getName());
-    // Added for M&M
     if (!diskStore.getOwnedByRegion()) {
       system.handleResourceEvent(ResourceEvent.DISKSTORE_REMOVE, diskStore);
     }
@@ -2552,7 +2549,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           logger.debug("closing {}", dsi);
         }
         dsi.close();
-        // Added for M&M
         system.handleResourceEvent(ResourceEvent.DISKSTORE_REMOVE, dsi);
       } catch (RuntimeException e) {
         logger.fatal("Cache close caught an exception during disk store close", e);
@@ -2587,7 +2583,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Returns the DiskStore by name
+   * Find the named disk store.
    *
    * @since GemFire prPersistSprint2
    */
@@ -2600,7 +2596,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Returns the DiskStore list
+   * Return list of all disk stores.
    *
    * @since GemFire prPersistSprint2
    */
@@ -2685,9 +2681,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
 
-    // Reset the unique id counter for durable clients.
-    // If a durable client stops/starts its cache, it needs
-    // to maintain the same unique id.
+    // Reset the unique id counter for durable clients. If a durable client stops/starts its cache,
+    // it needs to maintain the same unique id.
     ClientProxyMembershipID.resetUniqueIdCounter();
   }
 
@@ -2702,7 +2697,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Returns the member id of my distributed system
+   * Return the member id of the local distributed system connection.
    *
    * @since GemFire 5.0
    */
@@ -2791,7 +2786,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * get the threadId/sequenceId sweeper task for this cache
+   * Return the threadId/sequenceId sweeper task for this cache.
    *
    * @return the sweeper task
    */
@@ -2811,7 +2806,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Get the list of all instances of properties for Declarables with the given class name.
+   * Return the list of all instances of properties for Declarables with the given class name.
    *
    * @param className Class name of the declarable
    * @return List of all instances of properties found for the given declarable
@@ -2841,7 +2836,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Returns the number of seconds that have elapsed since the Cache was created.
+   * Return the number of seconds that have elapsed since the Cache was created.
    *
    * @since GemFire 3.5
    */
@@ -2908,7 +2903,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Used to set the default pool on a new GemFireCache.
+   * Set the default pool on a new GemFireCache.
    */
   @Override
   public synchronized void determineDefaultPool() {
@@ -2937,8 +2932,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     } else {
       addLocalHostAsServer(defaultPoolFactory);
 
-      // look for a pool that already exists that is compatible with
-      // our PoolFactory.
+      // look for a pool that already exists that is compatible with our PoolFactory.
       // If we don't find one we will create a new one that meets our needs.
       Map<String, Pool> pools = PoolManager.getAll();
       for (Pool p : pools.values()) {
@@ -2996,7 +2990,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
       return createVMRegion(name, attrs, ira);
     } catch (IOException | ClassNotFoundException e) {
-      // only if loading snapshot, not here
       throw new InternalGemFireError(
           "unexpected exception", e);
     }
@@ -3045,9 +3038,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           if (region != null) {
             throw new RegionExistsException(region);
           }
-          // check for case where a root region is being reinitialized and we
-          // didn't
-          // find a region, i.e. the new region is about to be created
+          // check for case where a root region is being reinitialized
+          // and we didn't find a region, i.e. the new region is about to be created
 
           if (!isReInitCreate) {
             String fullPath = Region.SEPARATOR + name;
@@ -3080,10 +3072,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             }
             break;
           }
-        } // synchronized
+        }
 
         boolean interrupted = Thread.interrupted();
-        try { // future != null
+        try {
           throw new RegionExistsException(future.get());
         } catch (InterruptedException ignore) {
           interrupted = true;
@@ -3091,7 +3083,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           throw new Error("unexpected exception",
               e);
         } catch (CancellationException e) {
-          // future was cancelled
           if (logger.isTraceEnabled()) {
             logger.trace("future cancelled", e);
           }
@@ -3100,7 +3091,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             Thread.currentThread().interrupt();
           }
         }
-      } // for
+      }
 
       boolean success = false;
       try {
@@ -3140,9 +3131,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
               if (rootRegion == region) {
                 rootRegions.remove(name);
               }
-            } // synchronized
+            }
           }
-        } // success
+        }
       }
 
       region.postCreateRegion();
@@ -3155,7 +3146,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     invokeRegionAfter(region);
 
-    // Added for M&M . Putting the callback here to avoid creating RegionMBean in case of Exception
+    // Putting the callback here to avoid creating RegionMBean in case of Exception
     if (!region.isInternalRegion()) {
       system.handleResourceEvent(ResourceEvent.REGION_CREATE, region);
     }
@@ -3206,7 +3197,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * returns a set of all current regions in the cache, including buckets
+   * Return a set of all current regions in the cache, including buckets.
    *
    * @since GemFire 6.0
    */
@@ -3242,7 +3233,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       for (Object region : rootRegions.values()) {
         InternalRegion internalRegion = (InternalRegion) region;
         if (internalRegion.isInternalRegion()) {
-          continue; // Skip internal regions
+          // Skip internal regions
+          continue;
         }
         result.add(internalRegion);
         result.addAll(internalRegion.basicSubregions(true));
@@ -3312,9 +3304,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     InternalRegion result = getRegionByPath(path);
     if (result == null) {
       stopper.checkCancelInProgress(null);
+
+      // go through initialization latches
       final InitializationLevel oldLevel =
-          LocalRegion.setThreadInitLevelRequirement(InitializationLevel.ANY_INIT); // go through
-      // initialization latches
+          LocalRegion.setThreadInitLevelRequirement(InitializationLevel.ANY_INIT);
       try {
         String[] pathParts = parsePath(path);
         InternalRegion rootRegion;
@@ -3377,7 +3370,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return rootRegion.getSubregion(pathParts[1], returnDestroyedRegion);
   }
 
-  /** Return true if this region is initializing */
+  /**
+   * Return true if the named global region is initializing.
+   */
   @Override
   public boolean isGlobalRegionInitializing(String fullPath) {
     stopper.checkCancelInProgress(null);
@@ -3391,7 +3386,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /** Return true if this region is initializing */
+  /**
+   * Return true if the region is initializing.
+   */
   private boolean isGlobalRegionInitializing(InternalRegion region) {
     boolean result = region != null && region.getScope().isGlobal() && !region.isInitialized();
     if (result) {
@@ -3421,7 +3418,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (region.isSecret() || region.isUsedForMetaRegion()
             || !includePRAdminRegions && (region.isUsedForPartitionedRegionAdmin()
                 || region.isUsedForPartitionedRegionBucket())) {
-          continue; // Skip administrative PartitionedRegions
+          // Skip administrative PartitionedRegions
+          continue;
         }
         regions.add(region);
       }
@@ -3438,7 +3436,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Called by notifier when a client goes away
+   * Called by the {@link CacheClientNotifier} when a client goes away.
    *
    * @since GemFire 5.7
    */
@@ -3558,7 +3556,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     Object old = reinitializingRegions.putIfAbsent(fullPath, new FutureResult<>(stopper));
     if (old != null) {
       throw new IllegalStateException(
-          String.format("Found an existing reinitalizing region named %s",
+          String.format("Found an existing reinitializing region named %s",
               fullPath));
     }
   }
@@ -3592,7 +3590,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Returns true if get should give a copy; false if a reference.
+   * Return true if get operations should return a copy; false if a reference to the value should be
+   * returned.
    *
    * @since GemFire 4.0
    */
@@ -3602,8 +3601,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Implementation of {@link Cache#setCopyOnRead}
-   *
    * @since GemFire 4.0
    */
   @Override
@@ -3612,8 +3609,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Implementation of {@link Cache#getCopyOnRead}
-   *
    * @since GemFire 4.0
    */
   @Override
@@ -3622,9 +3617,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Remove the specified root region
+   * Remove the specified root region.
    *
    * @param rootRgn the region to be removed
+   *
    * @return true if root region was removed, false if not found
    */
   @Override
@@ -3664,7 +3660,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Makes note of a {@code CacheLifecycleListener}
+   * Add the {@code CacheLifecycleListener}.
    */
   public static void addCacheLifecycleListener(CacheLifecycleListener listener) {
     synchronized (GemFireCacheImpl.class) {
@@ -3673,9 +3669,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Removes a {@code CacheLifecycleListener}
+   * Remove the {@code CacheLifecycleListener}.
    *
-   * @return Whether or not the listener was removed
+   * @return true if the listener was removed
    */
   public static boolean removeCacheLifecycleListener(CacheLifecycleListener listener) {
     synchronized (GemFireCacheImpl.class) {
@@ -3714,10 +3710,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Creates the single instance of the Transaction Manager for this cache. Returns the existing one
-   * upon request.
-   *
-   * @return the CacheTransactionManager instance.
+   * Get the Transaction Manager for this cache.
    *
    * @since GemFire 4.0
    */
@@ -3727,7 +3720,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Get cache-wide CacheClientProxy SystemTimer
+   * Get the CacheClientProxy SystemTimer for this cache.
    *
    * @return the timer, lazily created
    */
@@ -3739,7 +3732,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
       ccpTimer = systemTimerFactory.apply(getDistributedSystem());
       if (isClosing) {
-        ccpTimer.cancel(); // poison it, don't throw.
+        // poison it, don't throw.
+        ccpTimer.cancel();
       }
       return ccpTimer;
     }
@@ -3753,8 +3747,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Does a periodic purge of the CCPTimer to prevent a large number of cancelled tasks from
-   * building up in it.
+   * Purge the CCPTimer to prevent a large number of cancelled tasks from building up in it.
    */
   @Override
   public void purgeCCPTimer() {
@@ -3770,7 +3763,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Get cache-wide ExpirationScheduler
+   * Get the ExpirationScheduler for this cache.
    *
    * @return the scheduler, lazily created
    */
@@ -3785,8 +3778,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Returns the {@code Executor} (thread pool) that is used to execute cache event listeners.
-   * Returns {@code null} if no pool exists.
+   * Return the {@code Executor} (thread pool) that is used to execute cache event listeners or
+   * {@code null} if no pool exists.
    *
    * @since GemFire 3.5
    */
@@ -3934,9 +3927,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Returns List of GatewaySender (excluding the senders for internal use)
-   *
-   * @return List List of GatewaySender objects
+   * Return a list of GatewaySenders (excluding the senders for internal use).
    */
   @Override
   public Set<GatewaySender> getGatewaySenders() {
@@ -3950,9 +3941,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Returns List of all GatewaySenders (including the senders for internal use)
-   *
-   * @return List List of GatewaySender objects
+   * Return a list of all GatewaySenders (including the senders for internal use).
    */
   @Override
   public Set<GatewaySender> getAllGatewaySenders() {
@@ -4013,7 +4002,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     system.handleResourceEvent(ResourceEvent.ASYNCEVENTQUEUE_REMOVE, asyncQueue);
   }
 
-  /** get the conflict resolver for WAN */
   @Override
   public GatewayConflictResolver getGatewayConflictResolver() {
     synchronized (allGatewayHubsLock) {
@@ -4021,7 +4009,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /** set the conflict resolver for WAN */
   @Override
   public void setGatewayConflictResolver(GatewayConflictResolver resolver) {
     synchronized (allGatewayHubsLock) {
@@ -4047,7 +4034,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * add a partitioned region to the set of tracked partitioned regions. This is used to notify the
+   * Add the partitioned region to the set of tracked partitioned regions. Used to notify the
    * regions when this cache requires, or does not require notification of all region/entry events.
    */
   @Override
@@ -4066,7 +4053,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Returns a set of all current partitioned regions for test hook.
+   * Return a set of all current partitioned regions for test hook.
    */
   @Override
   public Set<PartitionedRegion> getPartitionedRegions() {
@@ -4113,8 +4100,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       if (!(region instanceof PartitionedRegion)) {
         continue;
       }
-      // Do a getRegion to ensure that we wait for the partitioned region
-      // to finish initialization
+      // call getRegion to ensure that we wait for the partitioned region to finish initialization
       try {
         Region pr = getRegion(regionName);
         if (pr instanceof PartitionedRegion) {
@@ -4146,7 +4132,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * check to see if any cache components require notification from a partitioned region.
+   * Check to see if any cache components require notification from a partitioned region.
    * Notification adds to the messaging a PR must do on each put/destroy/invalidate operation and
    * should be kept to a minimum
    *
@@ -4190,9 +4176,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * remove a partitioned region from the set of tracked instances.
-   *
-   * @see #addPartitionedRegion(PartitionedRegion)
+   * Remove the partitioned region from the set of tracked instances.
    */
   @Override
   public void removePartitionedRegion(PartitionedRegion region) {
@@ -4264,7 +4248,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * return the cq/interest information for a given region name, creating one if it doesn't exist
+   * Return the cq/interest information for a named region, creating one if it doesn't exist.
    */
   @Override
   public FilterProfile getFilterProfile(String regionName) {
@@ -4324,14 +4308,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           stringWriter.write(buffer, 0, numChars);
         }
 
-        /*
-         * Now replace all replaceable system properties here using {@code PropertyResolver}
-         */
+        // Now replace all replaceable system properties here using {@code PropertyResolver}
         String replacedXmlString = resolver.processUnresolvableString(stringWriter.toString());
-        /*
-         * Turn the string back into the default encoding so that the XML parser can work correctly
-         * in the presence of an "encoding" attribute in the XML prolog.
-         */
+
+        // Turn the string back into the default encoding so that the XML parser can work correctly
+        // in the presence of an "encoding" attribute in the XML prolog.
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         writer = new OutputStreamWriter(baos, StandardCharsets.ISO_8859_1);
         writer.write(replacedXmlString);
@@ -4415,13 +4396,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * update stats for completion of a registerInterest operation
+   * Update stats for completion of a registerInterest operation.
    */
   @Override
   public void registerInterestCompleted() {
     // Don't do a cancellation check, it's just a moot point, that's all
     if (isClosing) {
-      return; // just get out, all of the SimpleWaiters will die of their own accord
+      // just get out, all of the SimpleWaiters will die of their own accord
+      return;
     }
     int numInProgress = registerInterestsInProgress.decrementAndGet();
     if (logger.isDebugEnabled()) {
@@ -4439,8 +4421,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             sw.doNotify();
           }
           riWaiters.clear();
-        } // all clear
-      } // synchronized
+        }
+      }
     }
   }
 
@@ -4458,9 +4440,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   @Override
   public void waitForRegisterInterestsInProgress() {
-    // In *this* particular context, let the caller know that
-    // its cache has been cancelled. doWait below would do that as
-    // well, so this is just an early out.
+    // In *this* particular context, let the caller know that its cache has been cancelled.
+    // doWait below would do that as well, so this is just an early out.
     getCancelCriterion().checkCancelInProgress(null);
 
     int count = registerInterestsInProgress.get();
@@ -4495,7 +4476,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Returns the QueryMonitor instance based on system property MAX_QUERY_EXECUTION_TIME.
+   * Return the QueryMonitor for this cache based on system property MAX_QUERY_EXECUTION_TIME.
    *
    * @since GemFire 6.0
    */
@@ -4522,6 +4503,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           if (monitorRequired && maxTime < 0) {
             // this means that the resource manager is being used and we need to monitor query
             // memory usage
+
             // If no max execution time has been set, then we will default to five hours
             maxTime = FIVE_HOURS;
           }
@@ -4569,7 +4551,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     RemoveCacheServerProfileMessage message = new RemoveCacheServerProfileMessage();
     message.operateOnLocalCache(this);
 
-    // Remove this while loop when we release GEODE 2.0
     // This block prevents sending a message to old members that do not know about
     // the RemoveCacheServerProfileMessage
     otherMembers.removeIf(member -> Version.GEODE_1_5_0.compareTo(member.getVersionObject()) > 0);
@@ -5028,7 +5009,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Returns true if any of the GemFire services prefers PdxInstance. And application has not
+   * Return true if any of the GemFire services prefer PdxInstance and an application has not
    * requested getObject() on the PdxInstance.
    */
   @Override
@@ -5347,12 +5328,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Feature factories may use this supplier to acquire the {@code StatisticsClock} which is
-   * created by the Cache as configured by {@link DistributionConfig#getEnableTimeStatistics()}.
-   *
-   * <p>
    * Please pass the {@code StatisticsClock} through constructors where possible instead of
    * accessing it from this supplier.
+   * <p>
+   * Various factories may use this supplier to acquire the {@code StatisticsClock} which is
+   * created by the Cache as configured by {@link DistributionConfig#getEnableTimeStatistics()}.
+   *
    */
   @Override
   public StatisticsClock getStatisticsClock() {
@@ -5376,7 +5357,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         return disconnectCause.getMessage();
       }
       if (isClosing) {
-        return "The cache is closed."; // this + ": closed";
+        return "The cache is closed.";
       }
       return null;
     }
@@ -5414,8 +5395,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /**
-   * Simple class to allow waiters for register interest. Has at most one thread that ever calls
-   * wait.
+   * Support for waiters of register interest. Only one thread at most ever calls wait.
    *
    * @since GemFire 5.7
    */
