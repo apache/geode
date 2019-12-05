@@ -191,7 +191,6 @@ import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.internal.cache.execute.util.FindRestEnabledServersFunction;
-import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
@@ -1107,9 +1106,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return system.getMeterRegistry();
   }
 
-  /**
-   * Generate XML for the cache before shutting down due to forced disconnect.
-   */
   @Override
   public void saveCacheXmlForReconnect() {
     // there are two versions of this method so it can be unit-tested
@@ -1184,10 +1180,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.isRESTServiceRunning = isRESTServiceRunning;
   }
 
-  /**
-   * Used by tests to get handle of Rest Agent.
-   */
   @Override
+  @VisibleForTesting
   public RestAgent getRestAgent() {
     return restAgent;
   }
@@ -1292,21 +1286,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return !clusterPropValue.equals(serverPropValue);
   }
 
-  /**
-   * @return true if cache is created using a ClientCacheFactory
-   * @see #hasPool()
-   */
   @Override
   public boolean isClient() {
     return isClient;
   }
 
-  /**
-   * Method to check for GemFire client. In addition to checking for ClientCacheFactory, this method
-   * checks for any defined pools.
-   *
-   * @return true if the cache has pools declared
-   */
   @Override
   public boolean hasPool() {
     return isClient || !getAllPools().isEmpty();
@@ -1323,9 +1307,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return pools;
   }
 
-  /**
-   * May return null (even on a client).
-   */
   @Override
   public synchronized Pool getDefaultPool() {
     if (defaultPool == null) {
@@ -1334,10 +1315,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return defaultPool;
   }
 
-  /**
-   * Perform initialization, solve the early escaped reference problem by putting publishing
-   * references to this instance in this method (vs. the constructor).
-   */
   @Override
   public void initialize() {
     for (CacheLifecycleListener listener : cacheLifecycleListeners) {
@@ -1606,10 +1583,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /**
-   * Make the dynamic region factory ready. Public so it can be called from CacheCreation during xml
-   * processing.
-   */
   @Override
   public void readyDynamicRegionFactory() {
     try {
@@ -1621,21 +1594,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /**
-   * Create disk store factory with default attributes.
-   *
-   * @since GemFire prPersistSprint2
-   */
   @Override
   public DiskStoreFactory createDiskStoreFactory() {
     return new DiskStoreFactoryImpl(this);
   }
 
-  /**
-   * Create disk store factory with predefined attributes.
-   *
-   * @since GemFire prPersistSprint2
-   */
   @Override
   public DiskStoreFactory createDiskStoreFactory(DiskStoreAttributes attrs) {
     return new DiskStoreFactoryImpl(this, attrs);
@@ -1646,25 +1609,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return stopper;
   }
 
-  /**
-   * True if the cache was closed due to being shunned by other members.
-   */
   @Override
   public boolean forcedDisconnect() {
     return forcedDisconnect || system.forcedDisconnect();
   }
 
-  /**
-   * Creates a CacheClosedException with the given reason.
-   */
   @Override
   public CacheClosedException getCacheClosedException(String reason) {
     return getCacheClosedException(reason, null);
   }
 
-  /**
-   * Creaets a CacheClosedException with the given reason and cause.
-   */
   @Override
   public CacheClosedException getCacheClosedException(String reason, Throwable cause) {
     CacheClosedException result;
@@ -1678,19 +1632,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return result;
   }
 
-  /**
-   * Get cause for forcibly closing cache.
-   */
   @Override
+  @VisibleForTesting
   public Throwable getDisconnectCause() {
     return disconnectCause;
   }
 
-  /**
-   * True if durable subscriptions (registrations and queries) should be preserved.
-   *
-   * @since GemFire 5.7
-   */
   @Override
   public boolean keepDurableSubscriptionsAlive() {
     return keepAlive;
@@ -2015,12 +1962,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     close(reason, optionalCause, false, false);
   }
 
-  /**
-   * Gets or lazily creates the PartitionedRegion distributed lock service. This call will
-   * synchronize on this GemFireCache.
-   *
-   * @return the PartitionedRegion distributed lock service
-   */
   @Override
   public DistributedLockService getPartitionedRegionLockService() {
     synchronized (prLockServiceLock) {
@@ -2042,11 +1983,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /**
-   * Gets or lazily creates the GatewaySender distributed lock service.
-   *
-   * @return the GatewaySender distributed lock service
-   */
   @Override
   public DistributedLockService getGatewaySenderLockService() {
     if (gatewayLockService == null) {
@@ -2097,6 +2033,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
+  @VisibleForTesting
   public HeapEvictor getHeapEvictor() {
     synchronized (heapEvictorLock) {
       stopper.checkCancelInProgress(null);
@@ -2108,6 +2045,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
+  @VisibleForTesting
   public OffHeapEvictor getOffHeapEvictor() {
     synchronized (offHeapEvictorLock) {
       stopper.checkCancelInProgress(null);
@@ -2557,6 +2495,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
+  @VisibleForTesting
   public void closeDiskStores() {
     Iterator<DiskStoreImpl> it = diskStores.values().iterator();
     while (it.hasNext()) {
@@ -2600,11 +2539,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return result;
   }
 
-  /**
-   * Find the named disk store.
-   *
-   * @since GemFire prPersistSprint2
-   */
   @Override
   public DiskStore findDiskStore(String name) {
     if (name == null) {
@@ -2613,11 +2547,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return diskStores.get(name);
   }
 
-  /**
-   * Return list of all disk stores.
-   *
-   * @since GemFire prPersistSprint2
-   */
   @Override
   public Collection<DiskStore> listDiskStores() {
     return Collections.unmodifiableCollection(diskStores.values());
@@ -2714,11 +2643,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return system;
   }
 
-  /**
-   * Return the member id of the local distributed system connection.
-   *
-   * @since GemFire 5.0
-   */
   @Override
   public InternalDistributedMember getMyId() {
     return system.getDistributedMember();
@@ -2803,11 +2727,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return system.getSecurityInternalLogWriter();
   }
 
-  /**
-   * Return the threadId/sequenceId sweeper task for this cache.
-   *
-   * @return the sweeper task
-   */
   @Override
   public EventTrackerExpiryTask getEventTrackerTask() {
     return recordedEventSweeper;
@@ -2823,12 +2742,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return system.getName();
   }
 
-  /**
-   * Return the list of all instances of properties for Declarables with the given class name.
-   *
-   * @param className Class name of the declarable
-   * @return List of all instances of properties found for the given declarable
-   */
   @Override
   public List<Properties> getDeclarableProperties(final String className) {
     List<Properties> propertiesList = new ArrayList<>();
@@ -2842,34 +2755,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return propertiesList;
   }
 
-  /**
-   * Get the properties for the given declarable.
-   *
-   * @param declarable The declarable
-   * @return Properties found for the given declarable
-   */
   @Override
   public Properties getDeclarableProperties(final Declarable declarable) {
     return declarablePropertiesMap.get(declarable);
   }
 
-  /**
-   * Return the number of seconds that have elapsed since the Cache was created.
-   *
-   * @since GemFire 3.5
-   */
   @Override
   public long getUpTime() {
     return (System.currentTimeMillis() - creationDate.getTime()) / 1000;
   }
 
-  /**
-   * All entry and region operations should be using this time rather than
-   * System.currentTimeMillis(). Specially all version stamps/tags must be populated with this
-   * timestamp.
-   *
-   * @return distributed cache time.
-   */
   @Override
   public long cacheTimeMillis() {
     if (system != null) {
@@ -2923,8 +2818,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Set the default pool on a new GemFireCache.
    */
-  @Override
-  public synchronized void determineDefaultPool() {
+  private synchronized void determineDefaultPool() {
     if (!isClient()) {
       throw new UnsupportedOperationException("determineDefaultPool requires a client cache");
     }
@@ -2975,12 +2869,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     defaultPool = pool;
   }
 
-  /**
-   * Determine whether the specified pool factory matches the pool factory used by this cache.
-   *
-   * @param poolFactory Prospective pool factory.
-   * @throws IllegalStateException When the specified pool factory does not match.
-   */
   @Override
   public void validatePoolFactory(PoolFactory poolFactory) {
     // If the specified pool factory is null, by definition there is no pool factory to validate.
@@ -3214,11 +3102,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return getRegion(path, false);
   }
 
-  /**
-   * Return a set of all current regions in the cache, including buckets.
-   *
-   * @since GemFire 6.0
-   */
   @Override
   public Set<InternalRegion> getAllRegions() {
     Set<InternalRegion> result = new HashSet<>();
@@ -3347,9 +3230,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return result;
   }
 
-  /**
-   * @param returnDestroyedRegion if true, okay to return a destroyed region
-   */
   @Override
   public Region getRegion(String path, boolean returnDestroyedRegion) {
     stopper.checkCancelInProgress(null);
@@ -3388,9 +3268,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return rootRegion.getSubregion(pathParts[1], returnDestroyedRegion);
   }
 
-  /**
-   * Return true if the named global region is initializing.
-   */
   @Override
   public boolean isGlobalRegionInitializing(String fullPath) {
     stopper.checkCancelInProgress(null);
@@ -3453,11 +3330,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return Collections.unmodifiableSet(regions);
   }
 
-  /**
-   * Called by the {@link CacheClientNotifier} when a client goes away.
-   *
-   * @since GemFire 5.7
-   */
   @Override
   public void cleanupForClient(CacheClientNotifier ccn, ClientProxyMembershipID client) {
     try {
@@ -3533,11 +3405,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     HARegionQueue.setMessageSyncInterval(seconds);
   }
 
-  /**
-   * Get a reference to a Region that is reinitializing, or null if that Region is not
-   * reinitializing or this thread is interrupted. If a reinitializing region is found, then this
-   * method blocks until reinitialization is complete and then returns the region.
-   */
   @Override
   public InternalRegion getReinitializingRegion(String fullPath) {
     Future<InternalRegion> future = reinitializingRegions.get(fullPath);
@@ -3563,12 +3430,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /**
-   * Register the specified region name as reinitializing, creating and adding a Future for it to
-   * the map.
-   *
-   * @throws IllegalStateException if there is already a region by that name registered.
-   */
   @Override
   public void regionReinitializing(String fullPath) {
     Object old = reinitializingRegions.putIfAbsent(fullPath, new FutureResult<>(stopper));
@@ -3579,11 +3440,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /**
-   * Set the reinitialized region and unregister it as reinitializing.
-   *
-   * @throws IllegalStateException if there is no region by that name registered as reinitializing.
-   */
   @Override
   public void regionReinitialized(Region region) {
     String regionName = region.getFullPath();
@@ -3597,50 +3453,26 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     unregisterReinitializingRegion(regionName);
   }
 
-  /**
-   * Clear a reinitializing region, e.g. reinitialization failed.
-   *
-   * @throws IllegalStateException if cannot find reinitializing region registered by that name.
-   */
   @Override
   public void unregisterReinitializingRegion(String fullPath) {
     reinitializingRegions.remove(fullPath);
   }
 
-  /**
-   * Return true if get operations should return a copy; false if a reference to the value should be
-   * returned.
-   *
-   * @since GemFire 4.0
-   */
   @Override
   public boolean isCopyOnRead() {
     return copyOnRead;
   }
 
-  /**
-   * @since GemFire 4.0
-   */
   @Override
   public void setCopyOnRead(boolean copyOnRead) {
     this.copyOnRead = copyOnRead;
   }
 
-  /**
-   * @since GemFire 4.0
-   */
   @Override
   public boolean getCopyOnRead() {
     return copyOnRead;
   }
 
-  /**
-   * Remove the specified root region.
-   *
-   * @param rootRgn the region to be removed
-   *
-   * @return true if root region was removed, false if not found
-   */
   @Override
   public boolean removeRoot(InternalRegion rootRgn) {
     synchronized (rootRegions) {
@@ -3727,21 +3559,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return Collections.unmodifiableCollection(services.values());
   }
 
-  /**
-   * Get the Transaction Manager for this cache.
-   *
-   * @since GemFire 4.0
-   */
   @Override
   public CacheTransactionManager getCacheTransactionManager() {
     return transactionManager;
   }
 
-  /**
-   * Get the CacheClientProxy SystemTimer for this cache.
-   *
-   * @return the timer, lazily created
-   */
   @Override
   public SystemTimer getCCPTimer() {
     synchronized (ccpTimerMutex) {
@@ -3765,9 +3587,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.ccpTimer = ccpTimer;
   }
 
-  /**
-   * Purge the CCPTimer to prevent a large number of cancelled tasks from building up in it.
-   */
   @Override
   public void purgeCCPTimer() {
     synchronized (ccpTimerMutex) {
@@ -3781,11 +3600,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /**
-   * Get the ExpirationScheduler for this cache.
-   *
-   * @return the scheduler, lazily created
-   */
   @Override
   public ExpirationScheduler getExpirationScheduler() {
     return expirationScheduler;
@@ -3796,12 +3610,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return transactionManager;
   }
 
-  /**
-   * Return the {@code Executor} (thread pool) that is used to execute cache event listeners or
-   * {@code null} if no pool exists.
-   *
-   * @since GemFire 3.5
-   */
   @Override
   public Executor getEventThreadPool() {
     return eventThreadPool;
@@ -3821,6 +3629,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
+  @VisibleForTesting
   public boolean removeCacheServer(CacheServer cacheServer) {
     boolean removed = allCacheServers.remove(cacheServer);
     sendRemoveCacheServerProfileMessage();
@@ -3945,9 +3754,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     system.handleResourceEvent(ResourceEvent.ASYNCEVENTQUEUE_CREATE, asyncQueue);
   }
 
-  /**
-   * Return a list of GatewaySenders (excluding the senders for internal use).
-   */
   @Override
   public Set<GatewaySender> getGatewaySenders() {
     Set<GatewaySender> senders = new HashSet<>();
@@ -3959,9 +3765,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return senders;
   }
 
-  /**
-   * Return a list of all GatewaySenders (including the senders for internal use).
-   */
   @Override
   public Set<GatewaySender> getAllGatewaySenders() {
     return allGatewaySenders;
@@ -3992,6 +3795,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
+  @VisibleForTesting
   public Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly) {
     return visibleOnly ? allVisibleAsyncEventQueues : allAsyncEventQueues;
   }
@@ -4052,10 +3856,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return Collections.unmodifiableList(allServers);
   }
 
-  /**
-   * Add the partitioned region to the set of tracked partitioned regions. Used to notify the
-   * regions when this cache requires, or does not require notification of all region/entry events.
-   */
   @Override
   public void addPartitionedRegion(PartitionedRegion region) {
     synchronized (partitionedRegions) {
@@ -4071,9 +3871,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /**
-   * Return a set of all current partitioned regions for test hook.
-   */
   @Override
   public Set<PartitionedRegion> getPartitionedRegions() {
     synchronized (partitionedRegions) {
@@ -4150,14 +3947,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     prMap.put(pr.getFullPath(), pr);
   }
 
-  /**
-   * Check to see if any cache components require notification from a partitioned region.
-   * Notification adds to the messaging a PR must do on each put/destroy/invalidate operation and
-   * should be kept to a minimum
-   *
-   * @param region the partitioned region
-   * @return true if the region should deliver all of its events to this cache
-   */
   @Override
   public boolean requiresNotificationFromPR(PartitionedRegion region) {
     boolean hasSerialSenders = hasSerialSenders(region);
@@ -4194,9 +3983,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return hasSenders;
   }
 
-  /**
-   * Remove the partitioned region from the set of tracked instances.
-   */
   @Override
   public void removePartitionedRegion(PartitionedRegion region) {
     synchronized (partitionedRegions) {
@@ -4248,27 +4034,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return new DefaultQueryService(this);
   }
 
-  /**
-   * @return Context jndi context associated with the Cache.
-   * @since GemFire 4.0
-   */
   @Override
   public Context getJNDIContext() {
     return JNDIInvoker.getJNDIContext();
   }
 
-  /**
-   * @return JTA TransactionManager associated with the Cache.
-   * @since GemFire 4.0
-   */
   @Override
   public TransactionManager getJTATransactionManager() {
     return JNDIInvoker.getTransactionManager();
   }
 
-  /**
-   * Return the cq/interest information for a named region, creating one if it doesn't exist.
-   */
   @Override
   public FilterProfile getFilterProfile(String regionName) {
     InternalRegion r = (InternalRegion) getRegion(regionName, true);
@@ -4412,9 +4187,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return backupService;
   }
 
-  /**
-   * Update stats for completion of a registerInterest operation.
-   */
   @Override
   public void registerInterestCompleted() {
     // Don't do a cancellation check, it's just a moot point, that's all
@@ -4452,9 +4224,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  /**
-   * Blocks until no register interests are in progress.
-   */
   @Override
   public void waitForRegisterInterestsInProgress() {
     // In *this* particular context, let the caller know that its cache has been cancelled.
@@ -4491,11 +4260,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return queryMonitorDisabledForLowMem;
   }
 
-  /**
-   * Return the QueryMonitor for this cache based on system property MAX_QUERY_EXECUTION_TIME.
-   *
-   * @since GemFire 6.0
-   */
   @Override
   public QueryMonitor getQueryMonitor() {
     // Check to see if monitor is required if ResourceManager critical heap percentage is set
@@ -4594,45 +4358,30 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return transactionManager;
   }
 
-  /**
-   * @since GemFire 6.5
-   */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortcut) {
     throwIfClient();
     return new RegionFactoryImpl<>(this, shortcut);
   }
 
-  /**
-   * @since GemFire 6.5
-   */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory() {
     throwIfClient();
     return new RegionFactoryImpl<>(this);
   }
 
-  /**
-   * @since GemFire 6.5
-   */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(String regionAttributesId) {
     throwIfClient();
     return new RegionFactoryImpl<>(this, regionAttributesId);
   }
 
-  /**
-   * @since GemFire 6.5
-   */
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes) {
     throwIfClient();
     return new RegionFactoryImpl<>(this, regionAttributes);
   }
 
-  /**
-   * @since GemFire 6.5
-   */
   @Override
   public <K, V> ClientRegionFactory<K, V> createClientRegionFactory(ClientRegionShortcut shortcut) {
     return new ClientRegionFactoryImpl<>(this, shortcut);
@@ -4643,9 +4392,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return new ClientRegionFactoryImpl<>(this, regionAttributesId);
   }
 
-  /**
-   * @since GemFire 6.5
-   */
   @Override
   public QueryService getQueryService(String poolName) {
     Pool pool = PoolManager.find(poolName);
@@ -5024,10 +4770,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return cacheConfig.pdxIgnoreUnreadFields;
   }
 
-  /**
-   * Return true if any of the GemFire services prefer PdxInstance and an application has not
-   * requested getObject() on the PdxInstance.
-   */
   @Override
   public boolean getPdxReadSerializedByAnyGemFireServices() {
     TypeRegistry pdxRegistry = getPdxRegistry();
@@ -5134,6 +4876,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
+  @VisibleForTesting
   public void setReadSerializedForTest(boolean value) {
     cacheConfig.setPdxReadSerialized(value);
   }
@@ -5144,12 +4887,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     basicSetPdxSerializer(this.cacheConfig.getPdxSerializer());
   }
 
-  /**
-   * Add to the map of declarable properties. Any properties that exactly match existing properties
-   * for a class in the list will be discarded (no duplicate Properties allowed).
-   *
-   * @param mapOfNewDeclarableProps Map of the declarable properties to add
-   */
   @Override
   public void addDeclarableProperties(final Map<Declarable, Properties> mapOfNewDeclarableProps) {
     synchronized (declarablePropertiesMap) {
@@ -5243,10 +4980,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return diskMonitor;
   }
 
-  /**
-   * @see Extensible#getExtensionPoint()
-   * @since GemFire 8.1
-   */
   @Override
   public ExtensionPoint<Cache> getExtensionPoint() {
     return extensionPoint;
@@ -5342,14 +5075,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return null;
   }
 
-  /**
-   * Please pass the {@code StatisticsClock} through constructors where possible instead of
-   * accessing it from this supplier.
-   * <p>
-   * Various factories may use this supplier to acquire the {@code StatisticsClock} which is
-   * created by the Cache as configured by {@link DistributionConfig#getEnableTimeStatistics()}.
-   *
-   */
   @Override
   public StatisticsClock getStatisticsClock() {
     return statisticsClock;

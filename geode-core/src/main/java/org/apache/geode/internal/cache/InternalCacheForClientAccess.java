@@ -36,6 +36,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -82,6 +83,8 @@ import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
+import org.apache.geode.internal.cache.eviction.HeapEvictor;
+import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -946,16 +949,12 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public void determineDefaultPool() {
-    delegate.determineDefaultPool();
-  }
-
-  @Override
   public BackupService getBackupService() {
     return delegate.getBackupService();
   }
 
   @Override
+  @VisibleForTesting
   public Throwable getDisconnectCause() {
     return delegate.getDisconnectCause();
   }
@@ -1102,6 +1101,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public RestAgent getRestAgent() {
     return delegate.getRestAgent();
   }
@@ -1137,6 +1137,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public boolean removeCacheServer(CacheServer cacheServer) {
     return delegate.removeCacheServer(cacheServer);
   }
@@ -1147,6 +1148,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public void setReadSerializedForTest(boolean value) {
     delegate.setReadSerializedForTest(value);
   }
@@ -1195,7 +1197,7 @@ public class InternalCacheForClientAccess implements InternalCache {
 
   @Override
   public InternalQueryService getQueryService() {
-    return delegate.getQueryService();
+    return (InternalQueryService) delegate.getQueryService();
   }
 
   @Override
@@ -1204,11 +1206,13 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly) {
     return delegate.getAsyncEventQueues(visibleOnly);
   }
 
   @Override
+  @VisibleForTesting
   public void closeDiskStores() {
     delegate.closeDiskStores();
   }
@@ -1251,6 +1255,18 @@ public class InternalCacheForClientAccess implements InternalCache {
   @Override
   public void saveCacheXmlForReconnect() {
     delegate.saveCacheXmlForReconnect();
+  }
+
+  @Override
+  @VisibleForTesting
+  public HeapEvictor getHeapEvictor() {
+    return delegate.getHeapEvictor();
+  }
+
+  @Override
+  @VisibleForTesting
+  public OffHeapEvictor getOffHeapEvictor() {
+    return delegate.getOffHeapEvictor();
   }
 
   @Override
