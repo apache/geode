@@ -29,6 +29,7 @@ import javax.transaction.TransactionManager;
 
 import io.micrometer.core.instrument.MeterRegistry;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Declarable;
@@ -59,6 +60,8 @@ import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
+import org.apache.geode.internal.cache.eviction.HeapEvictor;
+import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -329,6 +332,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
    *
    * @deprecated tests using this method should be refactored to not require it
    */
+  @VisibleForTesting
   void setReadSerializedForTest(boolean value);
 
   /**
@@ -387,4 +391,10 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
   MeterRegistry getMeterRegistry();
 
   void saveCacheXmlForReconnect();
+
+  @VisibleForTesting
+  HeapEvictor getHeapEvictor();
+
+  @VisibleForTesting
+  OffHeapEvictor getOffHeapEvictor();
 }

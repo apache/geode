@@ -326,6 +326,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private static final int EVENT_QUEUE_LIMIT =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.EVENT_QUEUE_LIMIT", 4096);
 
+  @VisibleForTesting
   static final int EVENT_THREAD_LIMIT =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.EVENT_THREAD_LIMIT", 16);
 
@@ -635,6 +636,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * Used by unit tests to force cache creation to use a test generated cache.xml
    */
   @MutableForTesting
+  @VisibleForTesting
   public static File testCacheXml;
 
   private final Stopper stopper = new Stopper();
@@ -681,6 +683,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private final Object ccpTimerMutex = new Object();
 
+  @VisibleForTesting
   static final int PURGE_INTERVAL = 1000;
 
   private int cancelCount;
@@ -1190,6 +1193,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Request the cluster configuration from the locator(s) if cluster config service is running.
    */
+  @VisibleForTesting
   ConfigurationResponse requestSharedConfiguration() {
     final DistributionConfig config = system.getConfig();
 
@@ -1263,6 +1267,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Arguments must not be null.
    */
+  @VisibleForTesting
   static boolean isMisConfigured(Properties clusterProps, Properties serverProps, String key) {
     requireNonNull(clusterProps);
     requireNonNull(serverProps);
@@ -1404,6 +1409,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     isInitialized = true;
   }
 
+  @VisibleForTesting
   void applyJarAndXmlFromClusterConfig() {
     if (configurationResponse == null) {
       // Deploy all the jars from the deploy working dir.
@@ -1847,8 +1853,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (partitionedRegion.isDataStore() && partitionedRegion.getDataStore() != null
             && partitionedRegion.getDataPolicy() == DataPolicy.PERSISTENT_PARTITION) {
           int numBuckets = partitionedRegion.getTotalNumberOfBuckets();
-          @SuppressWarnings("unchecked")
-          Map<InternalDistributedMember, PersistentMemberID>[] bucketMaps = new Map[numBuckets];
+          Map<InternalDistributedMember, PersistentMemberID>[] bucketMaps =
+              createMapArray(numBuckets);
           PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
 
           // lock all the primary buckets
@@ -1967,6 +1973,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  @SuppressWarnings("unchecked")
+  private Map<InternalDistributedMember, PersistentMemberID>[] createMapArray(int size) {
+    return new Map[size];
+  }
+
   private static Map<InternalDistributedMember, PersistentMemberID> getSubMapForLiveMembers(
       Set<InternalDistributedMember> membersToPersistOfflineEqual,
       Map<InternalDistributedMember, PersistentMemberID> bucketMap) {
@@ -2083,6 +2094,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  @Override
   public HeapEvictor getHeapEvictor() {
     synchronized (heapEvictorLock) {
       stopper.checkCancelInProgress(null);
@@ -2093,6 +2105,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  @Override
   public OffHeapEvictor getOffHeapEvictor() {
     synchronized (offHeapEvictorLock) {
       stopper.checkCancelInProgress(null);
@@ -2106,6 +2119,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Used by test to inject an evictor.
    */
+  @VisibleForTesting
   void setOffHeapEvictor(OffHeapEvictor evictor) {
     offHeapEvictor = evictor;
   }
@@ -2113,6 +2127,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Used by test to inject an evictor.
    */
+  @VisibleForTesting
   void setHeapEvictor(HeapEvictor evictor) {
     heapEvictor = evictor;
   }
@@ -2560,6 +2575,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * Used by unit tests to allow them to change the default disk store name.
    */
+  @VisibleForTesting
   public static void setDefaultDiskStoreName(String dsName) {
     defaultDiskStoreName = dsName;
   }
@@ -3191,8 +3207,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public Region getRegion(String path) {
+    // TODO: fixup return type
     return getRegion(path, false);
   }
 
@@ -3742,6 +3758,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   /**
    * For use by unit tests to inject a mocked ccpTimer
    */
+  @VisibleForTesting
   void setCCPTimer(SystemTimer ccpTimer) {
     this.ccpTimer = ccpTimer;
   }
@@ -4448,7 +4465,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (count > 0) {
       SimpleWaiter simpleWaiter = null;
       synchronized (riWaiters) {
-        // TODO double-check
         count = registerInterestsInProgress.get();
         if (count > 0) {
           if (logger.isDebugEnabled()) {
@@ -5094,7 +5110,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return txEntryStateFactory;
   }
 
-  // test hook
+  @VisibleForTesting
   public void setPdxSerializer(PdxSerializer serializer) {
     cacheConfig.setPdxSerializer(serializer);
     basicSetPdxSerializer(serializer);
@@ -5117,7 +5133,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     setPdxReadSerializedOverride(value);
   }
 
-  // test hook
   @Override
   public void setReadSerializedForTest(boolean value) {
     cacheConfig.setPdxReadSerialized(value);
@@ -5345,7 +5360,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     this.disconnectCause = disconnectCause;
   }
 
-  class Stopper extends CancelCriterion {
+  private class Stopper extends CancelCriterion {
 
     @Override
     public String cancelInProgress() {
@@ -5433,32 +5448,38 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @FunctionalInterface
+  @VisibleForTesting
   interface TXManagerImplFactory {
     TXManagerImpl create(CachePerfStats cachePerfStats, InternalCache cache,
         StatisticsClock statisticsClock);
   }
 
   @FunctionalInterface
+  @VisibleForTesting
   interface InternalSecurityServiceFactory {
     SecurityService create(Properties properties, CacheConfig cacheConfig);
   }
 
   @FunctionalInterface
+  @VisibleForTesting
   interface CachePerfStatsFactory {
     CachePerfStats create(StatisticsFactory factory, StatisticsClock clock);
   }
 
   @FunctionalInterface
+  @VisibleForTesting
   interface TypeRegistryFactory {
     TypeRegistry create(InternalCache cache, boolean disableTypeRegistry);
   }
 
   @FunctionalInterface
+  @VisibleForTesting
   interface HeapEvictorFactory {
     HeapEvictor create(InternalCache cache, StatisticsClock statisticsClock);
   }
 
   @FunctionalInterface
+  @VisibleForTesting
   interface ReplyProcessor21Factory {
     ReplyProcessor21 create(InternalDistributedSystem system,
         Collection<InternalDistributedMember> initMembers);
