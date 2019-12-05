@@ -878,7 +878,7 @@ public class GMSJoinLeave implements JoinLeave {
 
   boolean isShuttingDown() {
     return services.getCancelCriterion().isCancelInProgress()
-        || services.getManager().shutdownInProgress() || services.getManager().isShutdownStarted();
+        || services.getManager().shutdownInProgress();
   }
 
   boolean prepareView(GMSMembershipView view, List<MemberIdentifier> newMembers)

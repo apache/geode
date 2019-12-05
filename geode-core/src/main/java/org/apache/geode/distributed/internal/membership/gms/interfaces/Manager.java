@@ -57,12 +57,6 @@ public interface Manager extends Service, MessageHandler<Message> {
   boolean shutdownInProgress();
 
   /**
-   * Returns true if a distributed system close is started. And shutdown msg has not sent yet,its in
-   * progress.
-   */
-  boolean isShutdownStarted();
-
-  /**
    * Indicate whether we are attempting a reconnect
    */
   boolean isReconnectingDS();

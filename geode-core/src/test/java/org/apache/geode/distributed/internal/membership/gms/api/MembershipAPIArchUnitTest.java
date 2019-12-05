@@ -28,7 +28,6 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
@@ -63,10 +62,8 @@ public class MembershipAPIArchUnitTest {
               // TODO to be extracted as Interfaces
               .or(type(InternalDistributedMember.class))
               .or(type(MembershipView.class))
-              .or(type(MemberIdentifier.class))
               .or(type(DistributedMember.class))
               .or(type(InternalDistributedMember[].class))
-              .or(type(ClusterDistributionManager.class))
 
               // TODO: This is used by the GMSLocatorAdapter to reach into the locator
               // part of the services

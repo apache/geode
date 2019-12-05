@@ -1089,6 +1089,7 @@ public class ClusterDistributionManager implements DistributionManager {
         return;
       }
       closeInProgress = true;
+      this.distribution.setShutdown();
     } // synchronized
 
     // [bruce] log shutdown at info level and with ID to balance the
