@@ -31,6 +31,8 @@ import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 
 public class RegionConverter extends ConfigurationConverter<Region, RegionConfig> {
+  private final ClassNameConverter classNameConverter = new ClassNameConverter();
+
   @Override
   protected Region fromNonNullXmlObject(RegionConfig xmlObject) {
     Region region = new Region();
@@ -74,6 +76,20 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
       if (!expirations.isEmpty()) {
         region.setExpirations(expirations);
       }
+
+      if (regionAttributes.getEvictionAttributes() != null) {
+        RegionAttributesType.EvictionAttributes evictionAttributes =
+            regionAttributes.getEvictionAttributes();
+        if (evictionAttributes.getLruMemorySize() != null) {
+          region.setEviction(convertFrom(evictionAttributes.getLruMemorySize()));
+        }
+        if (evictionAttributes.getLruEntryCount() != null) {
+          region.setEviction(convertFrom(evictionAttributes.getLruEntryCount()));
+        }
+        if (evictionAttributes.getLruHeapPercentage() != null) {
+          region.setEviction(convertFrom(evictionAttributes.getLruHeapPercentage()));
+        }
+      }
     }
 
     return region;
@@ -93,7 +109,6 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     attributesType.setDiskStoreName(configObject.getDiskStoreName());
     attributesType.setKeyConstraint(configObject.getKeyConstraint());
     attributesType.setValueConstraint(configObject.getValueConstraint());
-    region.setRegionAttributes(attributesType);
 
     if (configObject.getRedundantCopies() != null) {
       RegionAttributesType.PartitionAttributes partitionAttributes =
@@ -115,7 +130,70 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
         }
       }
     }
+
+    if (configObject.getEviction() != null) {
+      attributesType.setEvictionAttributes(convertFrom(configObject.getEviction()));
+    }
+
+    region.setRegionAttributes(attributesType);
     return region;
+  }
+
+  private RegionAttributesType.EvictionAttributes convertFrom(Region.Eviction eviction) {
+    return RegionAttributesType.EvictionAttributes.generate(getEvictionActionString(eviction),
+        eviction.getMemorySizeMb(), eviction.getEntryCount(), eviction.getObjectSizer());
+  }
+
+  private String getEvictionActionString(Region.Eviction eviction) {
+    if (eviction.getAction() == null) {
+      return "local-destroy";
+    } else {
+      switch (eviction.getAction()) {
+        case LOCAL_DESTROY:
+          return "local-destroy";
+        case OVERFLOW_TO_DISK:
+          return "overflow-to-disk";
+        default:
+          throw new IllegalStateException("Unhandled eviction action: " + eviction.getAction());
+      }
+    }
+  }
+
+  private Region.EvictionAction getEvictionAction(EnumActionDestroyOverflow evictionAction) {
+    switch (evictionAction) {
+      case LOCAL_DESTROY:
+        return Region.EvictionAction.LOCAL_DESTROY;
+      case OVERFLOW_TO_DISK:
+        return Region.EvictionAction.OVERFLOW_TO_DISK;
+      default:
+        throw new IllegalStateException("Unhandled eviction action xml: " + evictionAction);
+    }
+  }
+
+  Region.Eviction convertFrom(
+      RegionAttributesType.EvictionAttributes.LruMemorySize evictionAttributes) {
+    Region.Eviction eviction = new Region.Eviction();
+    eviction.setAction(getEvictionAction(evictionAttributes.getAction()));
+    eviction.setMemorySizeMb(Integer.parseInt(evictionAttributes.getMaximum()));
+    eviction.setObjectSizer(classNameConverter.fromXmlObject(evictionAttributes));
+    return eviction;
+  }
+
+  Region.Eviction convertFrom(
+      RegionAttributesType.EvictionAttributes.LruEntryCount evictionAttributes) {
+    Region.Eviction eviction = new Region.Eviction();
+    eviction.setAction(getEvictionAction(evictionAttributes.getAction()));
+    eviction.setEntryCount(Integer.parseInt(evictionAttributes.getMaximum()));
+    return eviction;
+  }
+
+  Region.Eviction convertFrom(
+      RegionAttributesType.EvictionAttributes.LruHeapPercentage evictionAttributes) {
+    Region.Eviction eviction = new Region.Eviction();
+    eviction.setAction(getEvictionAction(evictionAttributes.getAction()));
+    eviction.setObjectSizer(classNameConverter.fromXmlObject(evictionAttributes));
+    eviction.setType(Region.EvictionType.HEAP_PERCENTAGE);
+    return eviction;
   }
 
   RegionAttributesType.ExpirationAttributesType convertFrom(Region.Expiration expiration) {

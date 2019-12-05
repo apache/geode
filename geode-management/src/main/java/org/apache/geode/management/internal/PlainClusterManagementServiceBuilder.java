@@ -30,12 +30,14 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriTemplateHandler;
 
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class PlainClusterManagementServiceBuilder implements
     ClusterManagementServiceBuilder.PlainBuilder {
@@ -122,8 +124,18 @@ public class PlainClusterManagementServiceBuilder implements
     clientBuilder.setSSLHostnameVerifier(hostnameVerifier);
 
     requestFactory.setHttpClient(clientBuilder.build());
-
     restTemplate.setRequestFactory(requestFactory);
+
+    // configure our own ObjectMapper
+    MappingJackson2HttpMessageConverter messageConverter =
+        new MappingJackson2HttpMessageConverter();
+    messageConverter.setPrettyPrint(false);
+    // the client should use a mapper that would ignore unknown properties in case the server
+    // is a newer version than the client
+    messageConverter.setObjectMapper(GeodeJsonMapper.getMapperIgnoringUnknownProperties());
+    restTemplate.getMessageConverters().removeIf(
+        m -> m.getClass().getName().equals(MappingJackson2HttpMessageConverter.class.getName()));
+    restTemplate.getMessageConverters().add(messageConverter);
 
     return new ClientClusterManagementService(restTemplate);
   }

@@ -2060,7 +2060,7 @@ public class RegionAttributesType implements Serializable {
 
     public static EvictionAttributes generate(String evictionAction,
         Integer maxMemory, Integer maxEntryCount,
-        String objectSizer) {
+        ClassName objectSizer) {
       if (evictionAction == null && maxMemory == null && maxEntryCount == null
           && objectSizer == null) {
         return null;
@@ -2074,13 +2074,19 @@ public class RegionAttributesType implements Serializable {
         LruHeapPercentage heapPercentage =
             new LruHeapPercentage();
         heapPercentage.setAction(action);
-        heapPercentage.setClassName(objectSizer);
+        if (objectSizer != null) {
+          heapPercentage.setClassName(objectSizer.getClassName());
+          heapPercentage.setParameters(objectSizer.getInitProperties());
+        }
         evictionAttributes.setLruHeapPercentage(heapPercentage);
       } else if (maxMemory != null) {
         LruMemorySize memorySize =
             new LruMemorySize();
         memorySize.setAction(action);
-        memorySize.setClassName(objectSizer);
+        if (objectSizer != null) {
+          memorySize.setClassName(objectSizer.getClassName());
+          memorySize.setParameters(objectSizer.getInitProperties());
+        }
         memorySize.setMaximum(maxMemory.toString());
         evictionAttributes.setLruMemorySize(memorySize);
       } else {
@@ -2091,6 +2097,15 @@ public class RegionAttributesType implements Serializable {
         evictionAttributes.setLruEntryCount(entryCount);
       }
       return evictionAttributes;
+    }
+
+    public static EvictionAttributes generate(String evictionAction,
+        Integer maxMemory, Integer maxEntryCount,
+        String objectSizer) {
+      if (objectSizer == null) {
+        return generate(evictionAction, maxMemory, maxEntryCount, (ClassName) null);
+      }
+      return generate(evictionAction, maxMemory, maxEntryCount, new ClassName(objectSizer));
     }
 
     /**

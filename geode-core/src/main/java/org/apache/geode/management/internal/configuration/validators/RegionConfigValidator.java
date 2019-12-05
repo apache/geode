@@ -98,6 +98,39 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
         existingTypes.add(expiration.getType());
       }
     }
+
+    // validate eviction
+    validateEviction(config.getEviction());
+  }
+
+  private void validateEviction(Region.Eviction eviction) {
+    if (eviction == null) {
+      return;
+    }
+
+    Region.EvictionType type = eviction.getType();
+    if (type == null) {
+      throw new IllegalArgumentException("Eviction type must be set.");
+    }
+
+    switch (type) {
+      case ENTRY_COUNT:
+        if (eviction.getEntryCount() == null) {
+          throw new IllegalArgumentException(
+              "EntryCount must be set for: " + type);
+        }
+        if (eviction.getObjectSizer() != null) {
+          throw new IllegalArgumentException(
+              "ObjectSizer must not be set for: " + type);
+        }
+        break;
+      case MEMORY_SIZE:
+        if (eviction.getMemorySizeMb() == null) {
+          throw new IllegalArgumentException(
+              "MemorySizeMb must be set for: " + type);
+        }
+        break;
+    }
   }
 
   private void validate(Region.Expiration expiration) {

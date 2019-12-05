@@ -30,6 +30,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -40,6 +41,7 @@ public class RegionConfigValidatorTest {
   private RegionConfigValidator validator;
   private Region config;
   private SecurityService securityService;
+  private Region.Eviction eviction;
 
   @Before
   public void before() throws Exception {
@@ -48,6 +50,7 @@ public class RegionConfigValidatorTest {
     when(cache.getSecurityService()).thenReturn(securityService);
     validator = new RegionConfigValidator(cache);
     config = new Region();
+    eviction = new Region.Eviction();
   }
 
   @Test
@@ -102,7 +105,7 @@ public class RegionConfigValidatorTest {
   }
 
   @Test
-  public void invalidType() throws Exception {
+  public void invalidType() {
     config.setName("test");
     config.setType(RegionType.LEGACY);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
@@ -114,7 +117,7 @@ public class RegionConfigValidatorTest {
 
 
   @Test
-  public void invalidRedundancy() throws Exception {
+  public void invalidRedundancy() {
     config.setRedundantCopies(-1);
     config.setType(RegionType.PARTITION);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
@@ -132,7 +135,7 @@ public class RegionConfigValidatorTest {
   }
 
   @Test
-  public void replicateWithRedundancy() throws Exception {
+  public void replicateWithRedundancy() {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
     config.setRedundantCopies(2);
@@ -144,7 +147,7 @@ public class RegionConfigValidatorTest {
   }
 
   @Test
-  public void validateExpiration() throws Exception {
+  public void validateExpiration() {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
     config.addExpiry(null, null, null);
@@ -194,5 +197,92 @@ public class RegionConfigValidatorTest {
     config.addExpiry(Region.ExpirationType.ENTRY_IDLE_TIME, 100, null);
     config.addExpiry(Region.ExpirationType.ENTRY_TIME_TO_LIVE, 200, null);
     validator.validate(CacheElementOperation.CREATE, config);
+  }
+
+  @Test
+  public void evictionEmptyHappy() {
+    config.setName("test");
+    config.setType(RegionType.REPLICATE);
+    config.setEviction(eviction);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Eviction type must be set.");
+  }
+
+  @Test
+  public void evictionHeapHappy() {
+    config.setName("test");
+    config.setType(RegionType.REPLICATE);
+    eviction.setType(Region.EvictionType.HEAP_PERCENTAGE);
+    config.setEviction(eviction);
+    validator.validate(CacheElementOperation.CREATE, config);
+  }
+
+  @Test
+  public void evictionEntryCountHappy() {
+    config.setName("test");
+    config.setType(RegionType.REPLICATE);
+    config.setEviction(eviction);
+    eviction.setEntryCount(10);
+    validator.validate(CacheElementOperation.CREATE, config);
+  }
+
+  @Test
+  public void evictionEntryCountMissingCount() {
+    config.setName("test");
+    config.setType(RegionType.REPLICATE);
+    config.setEviction(eviction);
+    eviction.setEntryCount(null);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("EntryCount must be set for: ENTRY_COUNT");
+  }
+
+  @Test
+  public void evictionMaxMemoryMbHappy() {
+    config.setName("test");
+    config.setType(RegionType.REPLICATE);
+    config.setEviction(eviction);
+    eviction.setMemorySizeMb(10);
+    validator.validate(CacheElementOperation.CREATE, config);
+  }
+
+  @Test
+  public void evictionMaxMemoryMbMissingMemorySize() {
+    config.setName("test");
+    config.setType(RegionType.REPLICATE);
+    config.setEviction(eviction);
+    eviction.setMemorySizeMb(null);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("MemorySizeMb must be set for: MEMORY_SIZE");
+  }
+
+  @Test
+  public void objectSizerProvidedHappy() {
+    config.setName("test");
+    config.setType(RegionType.REPLICATE);
+    eviction.setObjectSizer(new ClassName("ObjectSizer"));
+    eviction.setMemorySizeMb(10);
+    config.setEviction(eviction);
+    validator.validate(CacheElementOperation.CREATE, config);
+
+    eviction = new Region.Eviction();
+    config.setEviction(eviction);
+    eviction.setObjectSizer(new ClassName("ObjectSizer"));
+    eviction.setType(Region.EvictionType.HEAP_PERCENTAGE);
+    validator.validate(CacheElementOperation.CREATE, config);
+  }
+
+  @Test
+  public void objectSizerProvidedSad() {
+    config.setName("test");
+    config.setType(RegionType.REPLICATE);
+    config.setEviction(eviction);
+    eviction.setEntryCount(10);
+    eviction.setObjectSizer(new ClassName("ObjectSizer"));
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("ObjectSizer must not be set for: ENTRY_COUNT");
   }
 }

@@ -15,6 +15,8 @@
 
 package org.apache.geode.util.internal;
 
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -33,6 +35,15 @@ public class GeodeJsonMapper {
     ObjectMapper mapper = new ObjectMapper();
     mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
     mapper.configure(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL, true);
+    mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+    return mapper;
+  }
+
+  public static ObjectMapper getMapperIgnoringUnknownProperties() {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+    mapper.configure(MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL, true);
+    mapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
     mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
     return mapper;
   }
