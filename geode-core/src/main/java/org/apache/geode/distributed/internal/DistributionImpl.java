@@ -699,6 +699,11 @@ public class DistributionImpl implements Distribution {
     forceUseUDPMessaging.set(Boolean.FALSE);
   }
 
+  @Override
+  public void setCloseInProgress() {
+    membership.setCloseInProgress();
+  }
+
   private boolean isForceUDPCommunications() {
     return forceUseUDPMessaging.get();
   }

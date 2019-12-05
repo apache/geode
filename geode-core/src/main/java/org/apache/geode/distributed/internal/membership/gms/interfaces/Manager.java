@@ -66,4 +66,9 @@ public interface Manager extends Service, MessageHandler<Message> {
    */
   Services getServices();
 
+  /**
+   * Returns true if we've been informed that this node has started to close or has
+   * progressed past close (sending ShutdownMessages, etc) to shutting down membership services
+   */
+  boolean isCloseInProgress();
 }

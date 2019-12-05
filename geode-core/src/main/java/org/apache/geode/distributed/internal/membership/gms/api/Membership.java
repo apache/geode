@@ -326,4 +326,6 @@ public interface Membership {
   boolean hasMember(InternalDistributedMember member);
 
   void start();
+
+  void setCloseInProgress();
 }

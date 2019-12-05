@@ -101,6 +101,8 @@ public class GMSMembership implements Membership {
 
   private LifecycleListener lifecycleListener;
 
+  private volatile boolean isCloseInProgress;
+
   /**
    * Trick class to make the startup synch more visible in stack traces
    *
@@ -1749,7 +1751,6 @@ public class GMSMembership implements Membership {
     return shutdownInProgress;
   }
 
-
   // TODO GEODE-1752 rewrite this to get rid of the latches, which are currently a memory leak
   @Override
   public boolean waitForNewMember(DistributedMember remoteId) {
@@ -1949,6 +1950,11 @@ public class GMSMembership implements Membership {
       Services.getLogger().error("Unexpected problem starting up membership services", e);
       throw new SystemConnectException("Problem starting up membership services", e);
     }
+  }
+
+  @Override
+  public void setCloseInProgress() {
+    isCloseInProgress = true;
   }
 
 
@@ -2192,6 +2198,12 @@ public class GMSMembership implements Membership {
     public boolean shutdownInProgress() {
       return shutdownInProgress;
     }
+
+    @Override
+    public boolean isCloseInProgress() {
+      return shutdownInProgress || isCloseInProgress;
+    }
+
 
     @Override
     public boolean isReconnectingDS() {
