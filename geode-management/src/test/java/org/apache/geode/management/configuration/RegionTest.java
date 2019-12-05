@@ -30,7 +30,7 @@ public class RegionTest {
   private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Before
-  public void before() {
+  public void before() throws Exception {
     regionConfig = new Region();
   }
 
@@ -62,100 +62,6 @@ public class RegionTest {
     assertThat(json2).contains("\"name\":\"test\"");
 
     mapper.readValue(json2, Region.class);
-  }
-
-  @Test
-  public void correctJsonWithExpiriations() throws Exception {
-    String expireJson = "{\n"
-        + "  \"name\": \"region1\",\n"
-        + "  \"type\": \"PARTITION\",\n"
-        + "  \"expirations\": [\n"
-        + "    {\n"
-        + "      \"type\": \"ENTRY_IDLE_TIME\",\n"
-        + "      \"timeInSeconds\": 3600,\n"
-        + "      \"action\": \"DESTROY\"\n"
-        + "    }\n"
-        + "  ]\n"
-        + "}\n";
-    regionConfig = mapper.readValue(expireJson, Region.class);
-    assertThat(regionConfig.getName()).isEqualTo("region1");
-    assertThat(regionConfig.getType()).isEqualTo(RegionType.PARTITION);
-    assertThat(regionConfig.getExpirations()).isNotNull();
-    assertThat(regionConfig.getExpirations().size()).isEqualTo(1);
-
-    Region.Expiration expiration = regionConfig.getExpirations().get(0);
-    assertThat(expiration.getType()).isEqualTo(Region.ExpirationType.ENTRY_IDLE_TIME);
-    assertThat(expiration.getTimeInSeconds()).isEqualTo(3600);
-    assertThat(expiration.getAction()).isEqualTo(Region.ExpirationAction.DESTROY);
-
-    String json2 = mapper.writeValueAsString(regionConfig);
-    System.out.println(json2);
-    assertThat(json2).contains("\"type\":\"PARTITION\"");
-    assertThat(json2).contains("\"name\":\"region1\"");
-    assertThat(json2).contains("\"type\":\"ENTRY_IDLE_TIME\"");
-    assertThat(json2).contains("\"timeInSeconds\":3600");
-    assertThat(json2).contains("\"action\":\"DESTROY\"");
-
-    mapper.readValue(json2, Region.class);
-  }
-
-  @Test
-  public void correctJsonWithEviction() throws Exception {
-    String evictJson = "{\n"
-        + "  \"name\": \"region1\",\n"
-        + "  \"type\": \"PARTITION\",\n"
-        + "  \"eviction\": {\n"
-        + "    \"entryCount\": 100,\n"
-        + "    \"action\": \"OVERFLOW_TO_DISK\"\n"
-        + "  }\n"
-        + "}\n";
-    regionConfig = mapper.readValue(evictJson, Region.class);
-    assertThat(regionConfig.getName()).isEqualTo("region1");
-    assertThat(regionConfig.getType()).isEqualTo(RegionType.PARTITION);
-    assertThat(regionConfig.getEviction()).isNotNull();
-    assertThat(regionConfig.getEviction().getType()).isEqualTo(Region.EvictionType.ENTRY_COUNT);
-    assertThat(regionConfig.getEviction().getAction())
-        .isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
-    assertThat(regionConfig.getEviction().getEntryCount()).isEqualTo(100);
-
-    String json2 = mapper.writeValueAsString(regionConfig);
-    System.out.println(json2);
-    assertThat(json2).contains("\"type\":\"PARTITION\"");
-    assertThat(json2).contains("\"name\":\"region1\"");
-    assertThat(json2).contains("\"type\":\"ENTRY_COUNT\"");
-    assertThat(json2).contains("\"entryCount\":100");
-    assertThat(json2).doesNotContain("limit");
-    assertThat(json2).contains("\"action\":\"OVERFLOW_TO_DISK\"");
-    mapper.readValue(json2, Region.class);
-  }
-
-  @Test
-  public void readEviction() throws Exception {
-    String json = "{\"action\":\"OVERFLOW_TO_DISK\",\"entryCount\":100}";
-    Region.Eviction eviction = mapper.readValue(json, Region.Eviction.class);
-    assertThat(eviction.getEntryCount()).isEqualTo(100);
-    assertThat(eviction.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
-
-    String json2 = "{\"action\":\"OVERFLOW_TO_DISK\",\"entryCount\":100,\"memorySizeMb\":200}";
-    assertThatThrownBy(() -> mapper.readValue(json2, Region.Eviction.class))
-        .hasMessageContaining("Type conflict");
-
-    String json3 = "{\"entryCount\":100,\"type\":\"HEAP_PERCENTAGE\"}";
-    assertThatThrownBy(() -> mapper.readValue(json3, Region.Eviction.class))
-        .hasMessageContaining("Type conflict");
-
-    String json4 = "{\"entryCount\":100,\"entryCount\":\"200\"}";
-    eviction = mapper.readValue(json4, Region.Eviction.class);
-    assertThat(eviction.getEntryCount()).isEqualTo(200);
-  }
-
-  @Test
-  public void heapIgnoreLimit() throws Exception {
-    Region.Eviction eviction = new Region.Eviction();
-    eviction.setType(Region.EvictionType.HEAP_PERCENTAGE);
-    assertThat(eviction.getType()).isEqualTo(Region.EvictionType.HEAP_PERCENTAGE);
-    assertThat(eviction.getEntryCount()).isNull();
-    assertThat(eviction.getMemorySizeMb()).isNull();
   }
 
   @Test

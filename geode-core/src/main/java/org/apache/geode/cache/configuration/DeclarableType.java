@@ -85,7 +85,11 @@ public class DeclarableType extends ClassNameType implements Serializable {
     }
 
     this.className = className;
-    setParameters(properties);
+
+    if (properties != null) {
+      parameters = properties.stringPropertyNames().stream()
+          .map(k -> new ParameterType(k, properties.getProperty(k))).collect(Collectors.toList());
+    }
   }
 
   /**
@@ -112,16 +116,6 @@ public class DeclarableType extends ClassNameType implements Serializable {
       parameters = new ArrayList<>();
     }
     return this.parameters;
-  }
-
-  public void setParameters(Properties properties) {
-    if (properties == null) {
-      this.parameters = null;
-      return;
-    }
-
-    parameters = properties.stringPropertyNames().stream()
-        .map(k -> new ParameterType(k, properties.getProperty(k))).collect(Collectors.toList());
   }
 
   @Override

@@ -27,13 +27,9 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
@@ -280,53 +276,5 @@ public class RegionManagementDunitTest {
     assertThat(expirations.get(1).getTimeInSeconds()).isEqualTo(20000);
     assertThat(expirations.get(1).getAction()).isEqualTo(Region.ExpirationAction.INVALIDATE);
     assertThat(expirations.get(1).getType()).isEqualTo(Region.ExpirationType.ENTRY_TIME_TO_LIVE);
-  }
-
-  @Test
-  public void createRegionWithEviction() {
-    Region region = new Region();
-    String regionName = "createRegionWithEviction";
-    region.setName(regionName);
-    region.setType(RegionType.REPLICATE);
-    Region.Eviction eviction = new Region.Eviction();
-    eviction.setAction(Region.EvictionAction.OVERFLOW_TO_DISK);
-    eviction.setEntryCount(100);
-    region.setEviction(eviction);
-
-    assertManagementResult(cms.create(region)).isSuccessful();
-
-    locator.invoke(() -> {
-      CacheConfig cacheConfig =
-          ClusterStartupRule.getLocator().getConfigurationPersistenceService()
-              .getCacheConfig("cluster");
-      RegionConfig regionConfig = find(cacheConfig.getRegions(), regionName);
-      RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
-      RegionAttributesType.EvictionAttributes evictionAttributes =
-          regionAttributes.getEvictionAttributes();
-      assertThat(evictionAttributes).isNotNull();
-      assertThat(evictionAttributes.getLruEntryCount()).isNotNull();
-      assertThat(evictionAttributes.getLruEntryCount().getAction()).isEqualTo(
-          EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-      assertThat(evictionAttributes.getLruEntryCount().getMaximum()).isEqualTo("100");
-    });
-
-    server1.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      org.apache.geode.cache.Region actualRegion = cache.getRegion(regionName);
-      RegionAttributes attributes = actualRegion.getAttributes();
-      EvictionAttributes evictionAttributes = attributes.getEvictionAttributes();
-      assertThat(evictionAttributes).isNotNull();
-      assertThat(evictionAttributes.getAlgorithm()).isEqualTo(EvictionAlgorithm.LRU_ENTRY);
-      assertThat(evictionAttributes.getAction()).isEqualTo(EvictionAction.OVERFLOW_TO_DISK);
-      assertThat(evictionAttributes.getMaximum()).isEqualTo(100);
-
-    });
-
-    Region regionResult = cms.get(region).getConfigResult();
-    Region.Eviction eviction2 = regionResult.getEviction();
-    assertThat(eviction2).isNotNull();
-    assertThat(eviction2.getType()).isEqualTo(Region.EvictionType.ENTRY_COUNT);
-    assertThat(eviction2.getEntryCount()).isEqualTo(100);
-    assertThat(eviction2.getAction()).isEqualTo(Region.EvictionAction.OVERFLOW_TO_DISK);
   }
 }

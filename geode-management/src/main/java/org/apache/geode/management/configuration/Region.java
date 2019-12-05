@@ -43,8 +43,6 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
   private Integer redundantCopies;
 
   private List<Expiration> expirations;
-  private Eviction eviction;
-
 
   public Region() {}
 
@@ -146,14 +144,6 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
     this.expirations = expirations.stream().filter(Objects::nonNull).collect(Collectors.toList());
   }
 
-  public Eviction getEviction() {
-    return eviction;
-  }
-
-  public void setEviction(Eviction eviction) {
-    this.eviction = eviction;
-  }
-
   public void addExpiry(ExpirationType type, Integer timeout, ExpirationAction action) {
     if (expirations == null) {
       expirations = new ArrayList<>();
@@ -183,13 +173,12 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
     LEGACY
   }
 
-
   public static class Expiration implements Serializable {
     private ExpirationType type;
     private Integer timeInSeconds;
     private ExpirationAction action;
 
-    public Expiration() {}
+    public Expiration() {};
 
     public Expiration(ExpirationType type, Integer timeInSeconds, ExpirationAction action) {
       setType(type);
@@ -222,107 +211,6 @@ public class Region extends GroupableConfiguration<RuntimeRegionInfo> {
 
     public void setAction(ExpirationAction action) {
       this.action = action;
-    }
-  }
-
-  public enum EvictionType {
-    ENTRY_COUNT,
-    MEMORY_SIZE,
-    HEAP_PERCENTAGE
-  }
-
-  public enum EvictionAction {
-    LOCAL_DESTROY,
-    OVERFLOW_TO_DISK
-  }
-
-  public static class Eviction implements Serializable {
-    private EvictionType type;
-    private EvictionAction action;
-    private Integer limit;
-    private ClassName objectSizer;
-
-    public Eviction() {}
-
-    public EvictionType getType() {
-      return type;
-    }
-
-    /**
-     * once a type is set, it can not be changed to another value.
-     *
-     * @param type eviction type
-     * @throws IllegalArgumentException if type is already set to another value. this is to
-     *         prevent users from trying to send in conflicting attributes in json
-     *         format such as {entryCount:10,type:HEAP_PERCENTAGE}
-     */
-    public void setType(EvictionType type) {
-      if (this.type != null && this.type != type) {
-        throw new IllegalArgumentException("Type conflict. Type is already set to " + this.type);
-      }
-      this.type = type;
-    }
-
-    public EvictionAction getAction() {
-      return action;
-    }
-
-    public void setAction(EvictionAction action) {
-      this.action = action;
-    }
-
-    public Integer getEntryCount() {
-      if (type == EvictionType.ENTRY_COUNT) {
-        return limit;
-      }
-      return null;
-    }
-
-    /**
-     * this sets the entry count and the eviction type to ENTRY_COUNT
-     *
-     * @param entryCount the entry count
-     * @throws IllegalArgumentException if type is already set to another value. This is to prevent
-     *         users from trying to send conflicting json attributes
-     *         such as {type:HEAP_PERCENTAGE,entryCount:10}
-     */
-    public void setEntryCount(Integer entryCount) {
-      if (type != null && type != EvictionType.ENTRY_COUNT) {
-        throw new IllegalArgumentException("Type conflict. Type is already set to " + type);
-      }
-      type = EvictionType.ENTRY_COUNT;
-      this.limit = entryCount;
-    }
-
-    public Integer getMemorySizeMb() {
-      if (type == EvictionType.MEMORY_SIZE) {
-        return limit;
-      }
-      return null;
-    }
-
-    /**
-     * this sets the memory size in megabytes and the eviction type to MEMORY_SIZE
-     *
-     * @param memorySizeMb the memory size in megabytes
-     * @throws IllegalArgumentException if type is already set to other values. This is to prevent
-     *         users from trying to send conflicting json attributes
-     *         such as {type:HEAP_PERCENTAGE,memorySizeMb:100}
-     */
-    public void setMemorySizeMb(Integer memorySizeMb) {
-      if (type != null && type != EvictionType.MEMORY_SIZE) {
-        throw new IllegalArgumentException("Type conflict. type is already set to " + type);
-      }
-      type = EvictionType.MEMORY_SIZE;
-      this.limit = memorySizeMb;
-    }
-
-    public ClassName getObjectSizer() {
-      return objectSizer;
-    }
-
-    public void setObjectSizer(ClassName objectSizer) {
-      this.objectSizer = objectSizer;
     }
   }
 }
