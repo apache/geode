@@ -18,6 +18,11 @@ import static java.lang.System.lineSeparator;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance;
+import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.asDistributedMemberSet;
+import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.createMapArray;
+import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.uncheckedCast;
+import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.uncheckedRegion;
+import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.uncheckedRegionAttributes;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -263,7 +268,6 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 /**
  * GemFire's implementation of a distributed {@link Cache}.
  */
-@SuppressWarnings("deprecation")
 public class GemFireCacheImpl implements InternalCache, InternalClientCache, HasCachePerfStats,
     DistributionAdvisee {
   private static final Logger logger = LogService.getLogger();
@@ -1922,11 +1926,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  @SuppressWarnings("unchecked")
-  private Map<InternalDistributedMember, PersistentMemberID>[] createMapArray(int size) {
-    return new Map[size];
-  }
-
   private static Map<InternalDistributedMember, PersistentMemberID> getSubMapForLiveMembers(
       Set<InternalDistributedMember> membersToPersistOfflineEqual,
       Map<InternalDistributedMember, PersistentMemberID> bucketMap) {
@@ -2659,12 +2658,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return asDistributedMemberSet(dm.getAdminMemberSet());
   }
 
-  @SuppressWarnings("unchecked")
-  private Set<DistributedMember> asDistributedMemberSet(
-      Set<InternalDistributedMember> internalDistributedMembers) {
-    return (Set) internalDistributedMembers;
-  }
-
   @Override
   public Set<DistributedMember> getMembers(Region region) {
     if (region instanceof DistributedRegion) {
@@ -2901,11 +2894,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  @SuppressWarnings("unchecked")
-  private static <K, V> Region<K, V> uncheckedRegion(Region region) {
-    return region;
-  }
-
   @Override
   public <K, V> Region<K, V> createVMRegion(String name, RegionAttributes<K, V> p_attrs,
       InternalRegionArguments internalRegionArgs)
@@ -3058,11 +3046,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     return uncheckedRegion(region);
-  }
-
-  @SuppressWarnings("unchecked")
-  private static <K, V> RegionAttributes<K, V> uncheckedRegionAttributes(RegionAttributes region) {
-    return region;
   }
 
   @Override
@@ -4053,15 +4036,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return null;
   }
 
-  @SuppressWarnings("unchecked")
-  private static <K, V> Map<String, RegionAttributes<K, V>> uncheckedCast(
-      Map<String, RegionAttributes<?, ?>> namedRegionAttributes) {
-    return (Map) namedRegionAttributes;
-  }
-
   @Override
   public <K, V> RegionAttributes<K, V> getRegionAttributes(String id) {
-    return GemFireCacheImpl.<K, V>uncheckedCast(namedRegionAttributes).get(id);
+    return GemFireCacheImpl.UncheckedUtils.<K, V>uncheckedCast(namedRegionAttributes).get(id);
   }
 
   @Override
@@ -5169,6 +5146,32 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         notified = true;
         notifyAll();
       }
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  static class UncheckedUtils {
+
+    static Map<InternalDistributedMember, PersistentMemberID>[] createMapArray(int size) {
+      return new Map[size];
+    }
+
+    static Set<DistributedMember> asDistributedMemberSet(
+        Set<InternalDistributedMember> internalDistributedMembers) {
+      return (Set) internalDistributedMembers;
+    }
+
+    static <K, V> Region<K, V> uncheckedRegion(Region region) {
+      return region;
+    }
+
+    static <K, V> RegionAttributes<K, V> uncheckedRegionAttributes(RegionAttributes region) {
+      return region;
+    }
+
+    static <K, V> Map<String, RegionAttributes<K, V>> uncheckedCast(
+        Map<String, RegionAttributes<?, ?>> namedRegionAttributes) {
+      return (Map) namedRegionAttributes;
     }
   }
 
