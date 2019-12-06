@@ -440,5 +440,4 @@ public interface Cache extends GemFireCache {
    * Returns the new Cache if there was an auto-reconnect and the cache was recreated.
    */
   Cache getReconnectedCache();
-
 }

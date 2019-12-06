@@ -2708,11 +2708,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return system.getSecurityInternalLogWriter();
   }
 
+  @Deprecated
   @Override
   public InternalLogWriter getInternalLogWriter() {
     return system.getInternalLogWriter();
   }
 
+  @Deprecated
   @Override
   public InternalLogWriter getSecurityInternalLogWriter() {
     return system.getSecurityInternalLogWriter();
@@ -4866,6 +4868,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     setPdxReadSerializedOverride(value);
   }
 
+  @Deprecated
   @Override
   @VisibleForTesting
   public void setReadSerializedForTest(boolean value) {
