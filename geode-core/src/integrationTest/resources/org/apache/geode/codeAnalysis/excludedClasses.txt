@@ -67,9 +67,9 @@ org/apache/geode/logging/internal/spi/LogWriterLevel
 org/apache/geode/management/api/ClusterManagementException
 org/apache/geode/management/api/ClusterManagementRealizationException
 org/apache/geode/management/internal/cli/commands/ShowMetricsCommand$Category
-org/apache/geode/management/internal/cli/exceptions/UserErrorException
-org/apache/geode/management/internal/cli/json/AbstractJSONFormatter$PreventReserializationModule
-org/apache/geode/management/internal/cli/json/QueryResultFormatter$TypeSerializationEnforcerModule
+org/apache/geode/management/internal/exceptions/UserErrorException
+org/apache/geode/management/internal/json/AbstractJSONFormatter$PreventReserializationModule
+org/apache/geode/management/internal/json/QueryResultFormatter$TypeSerializationEnforcerModule
 org/apache/geode/management/internal/operation/OperationHistoryManager$OperationInstance
 org/apache/geode/security/ResourcePermission
 org/apache/geode/security/ResourcePermission$Operation

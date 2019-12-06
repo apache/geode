@@ -25,6 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,6 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -213,10 +213,14 @@ public class SerialGatewaySenderEventProcessorJUnitTest {
   }
 
   @Test
-  public void validateUnProcessedEventsList() {
+  public void validateUnProcessedEventsList() throws NoSuchFieldException, IllegalAccessException {
+
+    Field field = processor.getClass().getSuperclass().getDeclaredField("unprocessedEvents");
+
+    field.setAccessible(true);
+
     Map<EventID, AbstractGatewaySender.EventWrapper> unprocessedEvents =
-        (Map<EventID, AbstractGatewaySender.EventWrapper>) ReflectionTestUtils.getField(processor,
-            "unprocessedEvents");
+        (Map<EventID, AbstractGatewaySender.EventWrapper>) field.get(processor);
 
     long complexThreadId1 = ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(0, 1, 1);
     long complexThreadId3 = ThreadIdentifier.createFakeThreadIDForParallelGSPrimaryBucket(0, 3, 3);

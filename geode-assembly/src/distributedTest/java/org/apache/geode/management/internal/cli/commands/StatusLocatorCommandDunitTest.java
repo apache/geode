@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.STATUS_LOCATOR;
+import static org.apache.geode.management.internal.i18n.CliStrings.STATUS_LOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 

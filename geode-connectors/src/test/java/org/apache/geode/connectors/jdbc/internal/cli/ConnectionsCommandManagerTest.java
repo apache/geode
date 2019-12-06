@@ -29,7 +29,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.commands.VersionCommand;
-import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
+import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
 
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions

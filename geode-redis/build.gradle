@@ -27,6 +27,7 @@ dependencies {
   compile('com.github.davidmoten:geo')
   compile('io.netty:netty-all')
   compile('org.apache.logging.log4j:log4j-api')
+  compile(project(':geode-gfsh'))
   distributedTestCompile(project(':geode-dunit'))
   integrationTestCompile('redis.clients:jedis')
   distributedTestCompile('redis.clients:jedis')

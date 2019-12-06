@@ -44,7 +44,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.management.internal.cli.util.JsonUtil;
+import org.apache.geode.management.internal.util.JsonUtil;
 
 /**
  * Unit tests for {@link AbstractLauncher.ServiceState}. Tests marshalling of ServiceState to and

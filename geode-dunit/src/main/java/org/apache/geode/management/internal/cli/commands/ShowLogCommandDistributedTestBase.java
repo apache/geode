@@ -33,7 +33,7 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -144,9 +144,11 @@ public class ShowLogCommandDistributedTestBase implements Serializable {
   protected static boolean allMembersAreConnected() {
     return locator.getVM().invoke(() -> {
       DistributedMember server1 =
-          CliUtil.getDistributedMemberByNameOrId(SERVER1_NAME, ClusterStartupRule.getCache());
+          ManagementUtils.getDistributedMemberByNameOrId(SERVER1_NAME,
+              ClusterStartupRule.getCache());
       DistributedMember server2 =
-          CliUtil.getDistributedMemberByNameOrId(SERVER2_NAME, ClusterStartupRule.getCache());
+          ManagementUtils.getDistributedMemberByNameOrId(SERVER2_NAME,
+              ClusterStartupRule.getCache());
 
       ShowLogCommand showLogCommand = new ShowLogCommand();
       showLogCommand.setCache(ClusterStartupRule.getCache());

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.operation;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,9 +38,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
-import org.apache.geode.management.internal.cli.functions.RebalanceFunction;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.exceptions.NoMembersException;
+import org.apache.geode.management.internal.functions.RebalanceFunction;
+import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.management.internal.util.ManagementUtils;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceRegionResult;
@@ -105,7 +106,7 @@ public class RebalanceOperationPerformer {
       DistributedMember member = getAssociatedMembers(regionName, (InternalCache) cache);
 
       if (member == null) {
-        throw new NoMembersException(CliStrings.format(
+        throw new NoMembersException(MessageFormat.format(
             CliStrings.REBALANCE__MSG__NO_ASSOCIATED_DISTRIBUTED_MEMBER, regionName));
       }
 
@@ -296,14 +297,14 @@ public class RebalanceOperationPerformer {
       for (Object object : resultList) {
         if (object instanceof Exception) {
           errors.add(
-              CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()) + ": " +
+              MessageFormat.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()) + ": " +
                   ((Exception) object).getMessage());
 
           toContinueForOtherMembers = true;
           break;
         } else if (object instanceof Throwable) {
           errors.add(
-              CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()) + ": " +
+              MessageFormat.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()) + ": " +
                   ((Throwable) object).getMessage());
 
           toContinueForOtherMembers = true;
@@ -384,7 +385,7 @@ public class RebalanceOperationPerformer {
               } else {
                 if (i == memberPR.dsMemberList.size() - 1) {
                   errors.add(
-                      CliStrings.format(
+                      MessageFormat.format(
                           CliStrings.REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1,
                           memberPR.region, listOfAllMembers(memberPR.dsMemberList)) + ", " +
                           CliStrings.REBALANCE__MSG__MEMBERS_MIGHT_BE_DEPARTED);
@@ -395,7 +396,7 @@ public class RebalanceOperationPerformer {
             } catch (Exception ex) {
               if (i == memberPR.dsMemberList.size() - 1) {
                 errors.add(
-                    CliStrings.format(
+                    MessageFormat.format(
                         CliStrings.REBALANCE__MSG__NO_EXECUTION_FOR_REGION_0_ON_MEMBERS_1,
                         memberPR.region, listOfAllMembers(memberPR.dsMemberList)) + ", " +
                         CliStrings.REBALANCE__MSG__REASON + ex.getMessage());
