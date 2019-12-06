@@ -28,14 +28,14 @@ public enum IndexType {
   HASH_DEPRECATED("HASH"),
   PRIMARY_KEY("KEY");
 
-  private String name;
+  private String synonym;
 
   IndexType(String name) {
-    this.name = name;
+    this.synonym = name;
   }
 
-  public String getName() {
-    return this.name;
+  public String getSynonym() {
+    return this.synonym;
   }
 
   public static IndexType valueOfSynonym(String name) {
@@ -43,11 +43,11 @@ public enum IndexType {
 
     switch (name) {
       case "KEY":
-        return valueOf("PRIMARY_KEY");
+        return PRIMARY_KEY;
       case "RANGE":
-        return valueOf("FUNCTIONAL");
+        return FUNCTIONAL;
       case "HASH":
-        return valueOf("HASH_DEPRECATED");
+        return HASH_DEPRECATED;
     }
 
     throw new IllegalArgumentException("Unknown IndexType: " + name);

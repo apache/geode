@@ -45,7 +45,7 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
     regionConfigIndex.setExpression(index.getExpression());
 
     if (index.getIndexType() != null) {
-      regionConfigIndex.setType(index.getIndexType().getName());
+      regionConfigIndex.setType(index.getIndexType().getSynonym());
     }
 
     return regionConfigIndex;
