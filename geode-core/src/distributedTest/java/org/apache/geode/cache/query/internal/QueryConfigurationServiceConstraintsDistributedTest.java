@@ -77,6 +77,9 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   private static final int UPDATE_KEY = ENTRIES - 3;
   private static final int REPLACE_KEY = ENTRIES - 4;
   private static final int INVALIDATE_KEY = ENTRIES - 5;
+  private static final String ID_INDEX_IDENTIFIER = "IdIndex";
+  private static final String NAME_INDEX_IDENTIFIER = "NameIndex";
+  private static final QueryObject TEST_VALUE = new QueryObject(999, "name_999");
   private File logFile;
   protected MemberVM server;
   protected ClientVM client;
@@ -130,11 +133,12 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
         .withProperty("log-file", logFile.getAbsolutePath()));
 
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
       internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(
           internalCache, false, TestMethodAuthorizer.class.getName(),
-          Stream.of("getId", "getName").collect(Collectors.toSet()));
+          Stream.of(QueryObject.GET_ID_METHOD, QueryObject.GET_NAME_METHOD)
+              .collect(Collectors.toSet()));
     });
 
     client = cluster.startClientVM(2, ccf -> ccf
@@ -150,8 +154,8 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
 
   private void createAndPopulateRegion(String regionName, RegionShortcut shortcut) {
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
       Region<Integer, QueryObject> region =
           internalCache.<Integer, QueryObject>createRegionFactory(shortcut).create(regionName);
       IntStream.range(0, ENTRIES).forEach(id -> region.put(id, new QueryObject(id, "name_" + id)));
@@ -160,20 +164,20 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   }
 
   private ThrowableAssert.ThrowingCallable getRegionOperation(Operation operation,
-      Region<Integer, QueryObject> region, QueryObject testValue) {
+      Region<Integer, QueryObject> region) {
     switch (operation) {
       case PUT:
-        return () -> region.put(PUT_KEY, testValue);
+        return () -> region.put(PUT_KEY, TEST_VALUE);
       case CREATE:
-        return () -> region.create(CREATE_KEY, testValue);
+        return () -> region.create(CREATE_KEY, TEST_VALUE);
       case REMOVE:
         return () -> region.remove(REMOVE_KEY);
       case DESTROY:
         return () -> region.destroy(DESTROY_KEY);
       case UPDATE:
-        return () -> region.put(UPDATE_KEY, testValue);
+        return () -> region.put(UPDATE_KEY, TEST_VALUE);
       case REPLACE:
-        return () -> region.replace(REPLACE_KEY, testValue);
+        return () -> region.replace(REPLACE_KEY, TEST_VALUE);
       case INVALIDATE:
         return () -> region.invalidate(INVALIDATE_KEY);
       default:
@@ -182,15 +186,15 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
     }
   }
 
-  private void assertRegionOperationResult(Operation operation, Region<Integer, QueryObject> region,
-      QueryObject testValue) {
+  private void assertRegionOperationResult(Operation operation,
+      Region<Integer, QueryObject> region) {
     // Assert operation result.
     switch (operation) {
       case PUT:
-        assertThat(region.get(PUT_KEY)).isEqualTo(testValue);
+        assertThat(region.get(PUT_KEY)).isEqualTo(TEST_VALUE);
         break;
       case CREATE:
-        assertThat(region.get(CREATE_KEY)).isEqualTo(testValue);
+        assertThat(region.get(CREATE_KEY)).isEqualTo(TEST_VALUE);
         break;
       case REMOVE:
         assertThat(region.get(REMOVE_KEY)).isNull();
@@ -199,10 +203,10 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
         assertThat(region.get(DESTROY_KEY)).isNull();
         break;
       case UPDATE:
-        assertThat(region.get(UPDATE_KEY)).isEqualTo(testValue);
+        assertThat(region.get(UPDATE_KEY)).isEqualTo(TEST_VALUE);
         break;
       case REPLACE:
-        assertThat(region.get(REPLACE_KEY)).isEqualTo(testValue);
+        assertThat(region.get(REPLACE_KEY)).isEqualTo(TEST_VALUE);
         break;
       case INVALIDATE:
         assertThat(region.get(INVALIDATE_KEY)).isNull();
@@ -210,8 +214,7 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
     }
   }
 
-  private void executeOperationFromClient(String regionName, Operation operation,
-      QueryObject testValue) {
+  private void executeOperationFromClient(String regionName, Operation operation) {
     client.invoke(() -> {
       assertThat(ClusterStartupRule.getClientCache()).isNotNull();
       ClientCache clientCache = ClusterStartupRule.getClientCache();
@@ -220,7 +223,7 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
               .create(regionName);
 
       ThrowableAssert.ThrowingCallable operationCallable =
-          getRegionOperation(operation, region, testValue);
+          getRegionOperation(operation, region);
       assertThatCode(operationCallable).doesNotThrowAnyException();
     });
   }
@@ -228,7 +231,7 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   /**
    * The test registers a {@link QueryObserver} that changes the installed
    * {@link MethodInvocationAuthorizer} to the default one (denies everything) as soon as the query
-   * starts, and makes sure the query succeeds (it is no affected by the authorizer change).
+   * starts, and makes sure the query succeeds (it is not affected by the authorizer change).
    * The query is executed from the client.
    */
   @Test
@@ -238,7 +241,8 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       RegionShortcut regionShortcut) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "<TRACE> SELECT object.getName() FROM /" + regionName + " object";
+    String queryString =
+        "<TRACE> SELECT object." + QueryObject.GET_NAME_METHOD + " FROM /" + regionName + " object";
 
     // Set test query observer.
     server.invoke(() -> {
@@ -266,14 +270,15 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       assertThatThrownBy(newQuery::execute)
           .isInstanceOf(ServerOperationException.class)
           .hasCauseInstanceOf(NotAuthorizedException.class)
-          .hasStackTraceContaining(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "getName");
+          .hasStackTraceContaining(
+              RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + QueryObject.GET_NAME_METHOD);
     });
   }
 
   /**
    * The test registers a {@link QueryObserver} that changes the installed
    * {@link MethodInvocationAuthorizer} to the default one (denies everything) as soon as the query
-   * starts, and makes sure the query succeeds (it is no affected by the authorizer change).
+   * starts, and makes sure the query succeeds (it is not affected by the authorizer change).
    * The query is executed from the server.
    */
   @Test
@@ -283,12 +288,13 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       RegionShortcut regionShortcut) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "<TRACE> SELECT object.getName() FROM /" + regionName + " object";
+    String queryString =
+        "<TRACE> SELECT object." + QueryObject.GET_NAME_METHOD + " FROM /" + regionName + " object";
 
     server.invoke(() -> {
       // Set test query observer.
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
       TestQueryObserver queryObserver =
           new TestQueryObserver(RestrictedMethodAuthorizer.class.getName(), Collections.emptySet());
       QueryObserverHolder.setInstance(queryObserver);
@@ -305,14 +311,14 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       Query newQuery = internalCache.getQueryService().newQuery(queryString);
       assertThatThrownBy(newQuery::execute)
           .isInstanceOf(NotAuthorizedException.class)
-          .hasMessage(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "getName");
+          .hasMessage(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + QueryObject.GET_NAME_METHOD);
     });
   }
 
   /**
    * The test creates an index with a method invocation as part of the expression, changes
-   * the {@link MethodInvocationAuthorizer} to a custom one that still allows the methods part of
-   * the index expression and executes a region operation from the client that would cause an
+   * the {@link MethodInvocationAuthorizer} to a custom one that still allows the method that is
+   * invoked by the index and executes a region operation from the client that would cause an
    * index mapping removal/addition.
    * The operation should succeed, the index should still be valid and no errors should be logged.
    */
@@ -323,36 +329,38 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       RegionShortcut regionShortcut, Operation operation) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    QueryObject testValue = new QueryObject(999, "name_999");
 
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
 
       // Index is valid.
       QueryService queryService = internalCache.getQueryService();
-      queryService.createIndex("NameIndex", "e.getName()", "/" + regionName + " e");
-      Index index = queryService.getIndex(internalCache.getRegion(regionName), "NameIndex");
+      queryService.createIndex(NAME_INDEX_IDENTIFIER, "e." + QueryObject.GET_NAME_METHOD,
+          "/" + regionName + " e");
+      Index index =
+          queryService.getIndex(internalCache.getRegion(regionName), NAME_INDEX_IDENTIFIER);
       assertThat(index.isValid()).isTrue();
 
       // Change the authorizer (still allow 'getName' to be executed)
       internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(
           internalCache, false, TestMethodAuthorizer.class.getName(),
-          Stream.of("getName").collect(Collectors.toSet()));
+          Stream.of(QueryObject.GET_NAME_METHOD).collect(Collectors.toSet()));
     });
 
     // Execute operation on client side.
-    executeOperationFromClient(regionName, operation, testValue);
+    executeOperationFromClient(regionName, operation);
 
     // Assert that operation succeeded and that index is still valid.
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
       QueryService queryService = internalCache.getQueryService();
       Region<Integer, QueryObject> region = internalCache.getRegion(regionName);
-      Index indexInvalid = queryService.getIndex(internalCache.getRegion(regionName), "NameIndex");
+      Index indexInvalid =
+          queryService.getIndex(internalCache.getRegion(regionName), NAME_INDEX_IDENTIFIER);
       assertThat(indexInvalid.isValid()).isTrue();
-      assertRegionOperationResult(operation, region, testValue);
+      assertRegionOperationResult(operation, region);
     });
 
     // No errors logged on server side.
@@ -376,31 +384,33 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
     createAndPopulateRegion(regionName, regionShortcut);
 
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
       Region<Integer, QueryObject> region = internalCache.getRegion(regionName);
 
       // Index is valid.
       QueryService queryService = internalCache.getQueryService();
-      queryService.createIndex("NameIndex", "e.getName()", "/" + regionName + " e");
-      Index index = queryService.getIndex(internalCache.getRegion(regionName), "NameIndex");
+      queryService.createIndex(NAME_INDEX_IDENTIFIER, "e." + QueryObject.GET_NAME_METHOD,
+          "/" + regionName + " e");
+      Index index =
+          queryService.getIndex(internalCache.getRegion(regionName), NAME_INDEX_IDENTIFIER);
       assertThat(index.isValid()).isTrue();
 
       // Operation to invoke.
-      QueryObject testValue = new QueryObject(999, "name_999");
       ThrowableAssert.ThrowingCallable operationCallable =
-          getRegionOperation(operation, region, testValue);
+          getRegionOperation(operation, region);
 
       // Change the authorizer (still allow 'getName' to be executed)
       internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(
           internalCache, false, TestMethodAuthorizer.class.getName(),
-          Stream.of("getName").collect(Collectors.toSet()));
+          Stream.of(QueryObject.GET_NAME_METHOD).collect(Collectors.toSet()));
 
       // Execute operation, assert operation result, index is valid and no exceptions logged.
       assertThatCode(operationCallable).doesNotThrowAnyException();
-      Index indexInvalid = queryService.getIndex(internalCache.getRegion(regionName), "NameIndex");
+      Index indexInvalid =
+          queryService.getIndex(internalCache.getRegion(regionName), NAME_INDEX_IDENTIFIER);
       assertThat(indexInvalid.isValid()).isTrue();
-      assertRegionOperationResult(operation, region, testValue);
+      assertRegionOperationResult(operation, region);
     });
 
     // No errors logged on server side.
@@ -422,16 +432,16 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       RegionShortcut regionShortcut, Operation operation) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    QueryObject testValue = new QueryObject(888, "name_888");
 
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
 
       // Index is valid.
       QueryService queryService = internalCache.getQueryService();
-      queryService.createIndex("IdIndex", "e.getId()", "/" + regionName + " e");
-      Index index = queryService.getIndex(internalCache.getRegion(regionName), "IdIndex");
+      queryService.createIndex(ID_INDEX_IDENTIFIER, "e." + QueryObject.GET_ID_METHOD,
+          "/" + regionName + " e");
+      Index index = queryService.getIndex(internalCache.getRegion(regionName), ID_INDEX_IDENTIFIER);
       assertThat(index.isValid()).isTrue();
 
       // Change the authorizer (deny everything not allowed by default).
@@ -440,22 +450,23 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
     });
 
     // Execute operation on client side.
-    executeOperationFromClient(regionName, operation, testValue);
+    executeOperationFromClient(regionName, operation);
 
     // Assert that operation succeeded but index is marked as invalid.
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
       QueryService queryService = internalCache.getQueryService();
       Region<Integer, QueryObject> region = internalCache.getRegion(regionName);
-      Index indexInvalid = queryService.getIndex(internalCache.getRegion(regionName), "IdIndex");
+      Index indexInvalid =
+          queryService.getIndex(internalCache.getRegion(regionName), ID_INDEX_IDENTIFIER);
       assertThat(indexInvalid.isValid()).isFalse();
-      assertRegionOperationResult(operation, region, testValue);
+      assertRegionOperationResult(operation, region);
     });
 
     // Assert index modification failure was logged.
     LogFileAssert.assertThat(logFile)
-        .contains(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "getId");
+        .contains(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + QueryObject.GET_ID_METHOD);
   }
 
 
@@ -475,20 +486,20 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
     createAndPopulateRegion(regionName, regionShortcut);
 
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
       Region<Integer, QueryObject> region = internalCache.getRegion(regionName);
 
       // Index is valid.
       QueryService queryService = internalCache.getQueryService();
-      queryService.createIndex("IdIndex", "e.getId()", "/" + regionName + " e");
-      Index index = queryService.getIndex(internalCache.getRegion(regionName), "IdIndex");
+      queryService.createIndex(ID_INDEX_IDENTIFIER, "e." + QueryObject.GET_ID_METHOD,
+          "/" + regionName + " e");
+      Index index = queryService.getIndex(internalCache.getRegion(regionName), ID_INDEX_IDENTIFIER);
       assertThat(index.isValid()).isTrue();
 
       // Operation to invoke.
-      QueryObject testValue = new QueryObject(999, "name_999");
       ThrowableAssert.ThrowingCallable operationCallable =
-          getRegionOperation(operation, region, testValue);
+          getRegionOperation(operation, region);
 
       // Change the authorizer (deny everything not allowed by default).
       internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(
@@ -497,16 +508,17 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       // Execute operation, should succeed but index modification should fail, marking it as
       // invalid.
       assertThatCode(operationCallable).doesNotThrowAnyException();
-      Index indexInvalid = queryService.getIndex(internalCache.getRegion(regionName), "IdIndex");
+      Index indexInvalid =
+          queryService.getIndex(internalCache.getRegion(regionName), ID_INDEX_IDENTIFIER);
       assertThat(indexInvalid.isValid()).isFalse();
 
       // Assert operation result.
-      assertRegionOperationResult(operation, region, testValue);
+      assertRegionOperationResult(operation, region);
     });
 
     // Assert index modification failure was logged.
     LogFileAssert.assertThat(logFile)
-        .contains(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + "getId");
+        .contains(RestrictedMethodAuthorizer.UNAUTHORIZED_STRING + QueryObject.GET_ID_METHOD);
   }
 
   public enum Operation {
@@ -514,6 +526,9 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   }
 
   private static class QueryObject implements Serializable {
+    static final String GET_ID_METHOD = "getId";
+    static final String GET_NAME_METHOD = "getName";
+
     private final int id;
     private final String name;
 

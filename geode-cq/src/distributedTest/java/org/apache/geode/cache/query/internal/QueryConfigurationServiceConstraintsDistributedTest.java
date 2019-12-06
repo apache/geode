@@ -71,6 +71,7 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   private static final int UPDATE_KEY = ENTRIES - 3;
   private static final int REPLACE_KEY = ENTRIES - 4;
   private static final int INVALIDATE_KEY = ENTRIES - 5;
+  private static final QueryObject TEST_VALUE = new QueryObject(999, "name_999");
   private File logFile;
   protected MemberVM server;
   protected ClientVM client;
@@ -131,11 +132,12 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
         .withProperty("log-file", logFile.getAbsolutePath()));
 
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
       internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(
           internalCache, true, TestMethodAuthorizer.class.getName(),
-          Stream.of("getId", "getName").collect(Collectors.toSet()));
+          Stream.of(QueryObject.GET_ID_METHOD, QueryObject.GET_NAME_METHOD)
+              .collect(Collectors.toSet()));
     });
 
     client = cluster.startClientVM(2, ccf -> ccf
@@ -147,8 +149,8 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
 
   private void createAndPopulateRegion(String regionName, RegionShortcut shortcut) {
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
       Region<Integer, QueryObject> region =
           internalCache.<Integer, QueryObject>createRegionFactory(shortcut).create(regionName);
       IntStream.range(0, ENTRIES).forEach(id -> region.put(id, new QueryObject(id, "name_" + id)));
@@ -157,20 +159,20 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   }
 
   private ThrowableAssert.ThrowingCallable getRegionOperation(Operation operation,
-      Region<Integer, QueryObject> region, QueryObject testValue) {
+      Region<Integer, QueryObject> region) {
     switch (operation) {
       case PUT:
-        return () -> region.put(PUT_KEY, testValue);
+        return () -> region.put(PUT_KEY, TEST_VALUE);
       case CREATE:
-        return () -> region.create(CREATE_KEY, testValue);
+        return () -> region.create(CREATE_KEY, TEST_VALUE);
       case REMOVE:
         return () -> region.remove(REMOVE_KEY);
       case DESTROY:
         return () -> region.destroy(DESTROY_KEY);
       case UPDATE:
-        return () -> region.put(UPDATE_KEY, testValue);
+        return () -> region.put(UPDATE_KEY, TEST_VALUE);
       case REPLACE:
-        return () -> region.replace(REPLACE_KEY, testValue);
+        return () -> region.replace(REPLACE_KEY, TEST_VALUE);
       case INVALIDATE:
         return () -> region.invalidate(INVALIDATE_KEY);
       default:
@@ -181,28 +183,28 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
 
   private void executeOperationsAndAssertResults(String regionName, Operation operation) {
     // Execute operation that would cause the CQ to process the event.
-    QueryObject testValue = new QueryObject(999, "name_999");
-    assertThat(ClusterStartupRule.getCache()).isNotNull();
-    Region<Integer, QueryObject> region = ClusterStartupRule.getCache().getRegion(regionName);
+    InternalCache internalCache = ClusterStartupRule.getCache();
+    assertThat(internalCache).isNotNull();
+    Region<Integer, QueryObject> region = internalCache.getRegion(regionName);
 
     // The initial operation should fail, every later one should fail as well.
     ThrowableAssert.ThrowingCallable operationCallable =
-        getRegionOperation(operation, region, testValue);
+        getRegionOperation(operation, region);
     assertThatCode(operationCallable).doesNotThrowAnyException();
 
     // Execute all operations after the initial one.
     Arrays.stream(Operation.values())
         .filter(op -> !operation.equals(op))
-        .forEach(op -> assertThatCode(getRegionOperation(op, region, testValue))
+        .forEach(op -> assertThatCode(getRegionOperation(op, region))
             .doesNotThrowAnyException());
 
     // Assert results from operations.
-    assertThat(region.get(PUT_KEY)).isEqualTo(testValue);
-    assertThat(region.get(CREATE_KEY)).isEqualTo(testValue);
+    assertThat(region.get(PUT_KEY)).isEqualTo(TEST_VALUE);
+    assertThat(region.get(CREATE_KEY)).isEqualTo(TEST_VALUE);
     assertThat(region.get(REMOVE_KEY)).isNull();
     assertThat(region.get(DESTROY_KEY)).isNull();
-    assertThat(region.get(UPDATE_KEY)).isEqualTo(testValue);
-    assertThat(region.get(REPLACE_KEY)).isEqualTo(testValue);
+    assertThat(region.get(UPDATE_KEY)).isEqualTo(TEST_VALUE);
+    assertThat(region.get(REPLACE_KEY)).isEqualTo(TEST_VALUE);
     assertThat(region.get(INVALIDATE_KEY)).isNull();
   }
 
@@ -237,18 +239,19 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       RegionShortcut regionShortcut, Operation operation, boolean executeWithInitialResults) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT * FROM /" + regionName + " object WHERE object.getId > -1";
+    String queryString = "SELECT * FROM /" + regionName + " object WHERE object."
+        + QueryObject.GET_ID_METHOD + " > -1";
     createClientCq(queryString, executeWithInitialResults);
 
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
       assertThat(internalCache.getCqService().getAllCqs().size()).isEqualTo(1);
 
       // Change the authorizer (still allow 'getId' to be executed)
       internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(
           internalCache, true, TestMethodAuthorizer.class.getName(),
-          Stream.of("getId").collect(Collectors.toSet()));
+          Stream.of(QueryObject.GET_ID_METHOD).collect(Collectors.toSet()));
 
       // Execute operations that would cause the CQ to process the event.
       executeOperationsAndAssertResults(regionName, operation);
@@ -281,12 +284,13 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
       RegionShortcut regionShortcut, Operation operation, boolean executeWithInitialResults) {
     String regionName = testName.getMethodName();
     createAndPopulateRegion(regionName, regionShortcut);
-    String queryString = "SELECT * FROM /" + regionName + " object WHERE object.getId > -1";
+    String queryString = "SELECT * FROM /" + regionName + " object WHERE object."
+        + QueryObject.GET_ID_METHOD + " > -1";
     createClientCq(queryString, executeWithInitialResults);
 
     server.invoke(() -> {
-      assertThat(ClusterStartupRule.getCache()).isNotNull();
       InternalCache internalCache = ClusterStartupRule.getCache();
+      assertThat(internalCache).isNotNull();
       assertThat(internalCache.getCqService().getAllCqs().size()).isEqualTo(1);
 
       // Change the authorizer (deny everything not allowed by default).
@@ -315,6 +319,9 @@ public class QueryConfigurationServiceConstraintsDistributedTest implements Seri
   }
 
   private static class QueryObject implements Serializable {
+    static final String GET_ID_METHOD = "getId";
+    static final String GET_NAME_METHOD = "getName";
+
     private final int id;
     private final String name;
 
