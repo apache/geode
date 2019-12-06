@@ -2256,7 +2256,7 @@ public class CliStrings {
   public static final String START_GATEWAYSENDER__MEMBER__HELP =
       "Name/Id of the member on which to start the Gateway Sender.";
 
-  public static final String START_GATEWAYSENDER__CLEAN_QUEUE = "cleanQueues";
+  public static final String START_GATEWAYSENDER__CLEAN_QUEUE = "clean-queues";
   public static final String START_GATEWAYSENDER__CLEAN_QUEUE__HELP =
       "Option to clean existing queue at start of the Gateway Sender.";
 
