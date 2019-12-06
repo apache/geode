@@ -16,8 +16,8 @@
 package org.apache.geode.management.internal.configuration.converters;
 
 import static org.apache.geode.management.configuration.IndexType.FUNCTIONAL;
-import static org.apache.geode.management.configuration.IndexType.HASH_DEPRECATED;
-import static org.apache.geode.management.configuration.IndexType.PRIMARY_KEY;
+import static org.apache.geode.management.configuration.IndexType.HASH_LEGACY;
+import static org.apache.geode.management.configuration.IndexType.KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
@@ -68,7 +68,7 @@ public class IndexConverterTest {
   @Test
   public void fromNonNullConfigObject_mapsPrimaryKeyIndexTypeToKeyIndexType() {
     Index index = new Index();
-    index.setIndexType(PRIMARY_KEY);
+    index.setIndexType(KEY);
 
     RegionConfig.Index regionConfigIndex = indexConverter.fromNonNullConfigObject(index);
 
@@ -86,7 +86,7 @@ public class IndexConverterTest {
   @Test
   public void fromNonNullConfigObject_mapsHashDeprecatedIndexTypeToHashIndexType() {
     Index index = new Index();
-    index.setIndexType(HASH_DEPRECATED);
+    index.setIndexType(HASH_LEGACY);
 
     RegionConfig.Index regionConfigIndex = indexConverter.fromNonNullConfigObject(index);
 
@@ -128,7 +128,7 @@ public class IndexConverterTest {
 
     assertThat(index.getIndexType())
         .as("type")
-        .isEqualTo(HASH_DEPRECATED);
+        .isEqualTo(HASH_LEGACY);
   }
 
   @Test
@@ -152,6 +152,6 @@ public class IndexConverterTest {
 
     assertThat(index.getIndexType())
         .as("type")
-        .isEqualTo(PRIMARY_KEY);
+        .isEqualTo(KEY);
   }
 }

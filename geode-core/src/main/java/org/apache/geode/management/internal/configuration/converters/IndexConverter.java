@@ -23,6 +23,20 @@ import org.apache.geode.management.configuration.IndexType;
 
 public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.Index> {
 
+  /**
+   * based on the cache.xsd, index type can have only two values "range", "hash"
+   * <attribute name="type" default="range">
+   * <simpleType>
+   * <restriction base="{http://www.w3.org/2001/XMLSchema}string">
+   * <enumeration value="range"/>
+   * <enumeration value="hash"/>
+   * </restriction>
+   * </simpleType>
+   * </attribute>
+   */
+  private static final String HASH = "hash";
+  private static final String RANGE = "range";
+
   @Override
   protected Index fromNonNullXmlObject(RegionConfig.Index regionConfigIndex) {
     Index index = new Index();
@@ -30,8 +44,15 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
     index.setExpression(regionConfigIndex.getExpression());
     index.setRegionPath(regionConfigIndex.getFromClause());
 
-    if (regionConfigIndex.getType() != null) {
-      index.setIndexType(IndexType.valueOfSynonym(regionConfigIndex.getType()));
+    Boolean keyIndex = regionConfigIndex.isKeyIndex();
+    if (keyIndex != null && keyIndex) {
+      index.setIndexType(IndexType.KEY);
+    } else if (HASH.equalsIgnoreCase(regionConfigIndex.getType())) {
+      index.setIndexType(IndexType.HASH_LEGACY);
+    }
+    // functional is the default type
+    else {
+      index.setIndexType(IndexType.FUNCTIONAL);
     }
 
     return index;
@@ -44,8 +65,12 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
     regionConfigIndex.setFromClause(index.getRegionPath());
     regionConfigIndex.setExpression(index.getExpression());
 
-    if (index.getIndexType() != null) {
-      regionConfigIndex.setType(index.getIndexType().getSynonym());
+    if (index.getIndexType() == IndexType.KEY) {
+      regionConfigIndex.setKeyIndex(true);
+    } else if (index.getIndexType() == IndexType.HASH_LEGACY) {
+      regionConfigIndex.setType(HASH);
+    } else {
+      regionConfigIndex.setType(RANGE);
     }
 
     return regionConfigIndex;

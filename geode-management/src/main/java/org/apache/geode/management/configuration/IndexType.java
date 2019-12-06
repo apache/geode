@@ -23,33 +23,9 @@ package org.apache.geode.management.configuration;
  * @since Geode 1.12
  */
 public enum IndexType {
-  FUNCTIONAL("RANGE"),
+  KEY,
+  FUNCTIONAL,
+  // this is used to represent deprecated index types not supported by the management API.
   @Deprecated
-  HASH_DEPRECATED("HASH"),
-  PRIMARY_KEY("KEY");
-
-  private String synonym;
-
-  IndexType(String name) {
-    this.synonym = name;
-  }
-
-  public String getSynonym() {
-    return this.synonym;
-  }
-
-  public static IndexType valueOfSynonym(String name) {
-    name = name.toUpperCase();
-
-    switch (name) {
-      case "KEY":
-        return PRIMARY_KEY;
-      case "RANGE":
-        return FUNCTIONAL;
-      case "HASH":
-        return HASH_DEPRECATED;
-    }
-
-    throw new IllegalArgumentException("Unknown IndexType: " + name);
-  }
+  HASH_LEGACY;
 }
