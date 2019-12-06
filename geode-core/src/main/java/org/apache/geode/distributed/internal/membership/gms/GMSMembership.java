@@ -41,15 +41,11 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.StartupMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
@@ -65,11 +61,9 @@ import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.tcp.MemberShunnedException;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
-import org.apache.geode.security.GemFireSecurityException;
 
 public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID> {
   private static final Logger logger = Services.getLogger();
@@ -580,7 +574,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * Joins the distributed system
    *
    * @throws GemFireConfigException - configuration error
-   * @throws SystemConnectException - problem joining
    */
   private void join() {
     services.setShutdownCause(null);
@@ -603,16 +596,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         latestView = new MembershipView<>(initialView, initialView.getViewId());
         latestView.makeUnmodifiable();
         listener.viewInstalled(latestView);
-
-      } catch (RuntimeException ex) {
-        throw ex;
-      } catch (Exception ex) {
-        if (ex.getCause() != null && ex.getCause().getCause() instanceof SystemConnectException) {
-          throw (SystemConnectException) (ex.getCause().getCause());
-        }
-        throw new DistributionException(
-            "An Exception was thrown while attempting to join the distributed system.",
-            ex);
       } finally {
         this.isJoining = false;
       }
@@ -1093,11 +1076,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       processView(o.gmsView.getViewId(), o.gmsView);
     } else if (o.isSurpriseConnect()) { // connect
       processSurpriseConnect(o.member);
+    } else {
+      throw new IllegalArgumentException("unknown startup event: " + o);
     }
-
-    else // sanity
-      throw new InternalGemFireError(
-          String.format("unknown startup event: %s", o));
   }
 
   /**
@@ -1370,7 +1351,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         Throwable cause = services.getShutdownCause();
         // If ForcedDisconnectException occurred then report it as actual
         // problem.
-        if (cause instanceof ForcedDisconnectException) {
+        if (cause instanceof MemberDisconnectedException) {
           problem = cause;
         } else {
           Throwable ne = problem;
@@ -1940,18 +1921,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
   @Override
   public void start() {
-    try {
-      services.start();
-    } catch (ConnectionException e) {
-      throw new DistributionException(
-          "Unable to create membership manager",
-          e);
-    } catch (GemFireConfigException | SystemConnectException | GemFireSecurityException e) {
-      throw e;
-    } catch (RuntimeException e) {
-      Services.getLogger().error("Unexpected problem starting up membership services", e);
-      throw new SystemConnectException("Problem starting up membership services", e);
-    }
+    services.start();
   }
 
   @Override
@@ -2108,7 +2078,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
       setShutdown();
 
-      final Exception shutdownCause = new ForcedDisconnectException(reason);
+      final Exception shutdownCause = new MemberDisconnectedException(reason);
 
       // cache the exception so it can be appended to ShutdownExceptions
       services.setShutdownCause(shutdownCause);
@@ -2123,7 +2093,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       if (this.isReconnectingDS()) {
         logger.info("Reconnecting system failed to connect");
         uncleanShutdown(reason,
-            new ForcedDisconnectException("reconnecting system failed to connect"));
+            new MemberDisconnectedException("reconnecting system failed to connect"));
         return;
       }
 
@@ -2173,8 +2143,8 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
           listener.quorumLost(
               gmsMemberCollectionToIDSet(failures),
               remaining);
-        } catch (CancelException e) {
-          // safe to ignore - a forced disconnect probably occurred
+        } catch (Exception e) {
+          logger.info("Quorum-loss listener threw an exception", e);
         }
       }
     }

@@ -67,7 +67,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.ForcedDisconnectException;
-import org.apache.geode.GemFireIOException;
 import org.apache.geode.SerializationException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -77,6 +76,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
+import org.apache.geode.distributed.internal.membership.gms.MembershipIOException;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -289,14 +289,14 @@ public class JGroupsMessengerJUnitTest {
       when(msg.getDSFID()).thenReturn((int) DataSerializableFixedID.HEARTBEAT_RESPONSE);
 
       // for code coverage we need to test with both a SerializationException and
-      // an IOException. The former is wrapped in a GemfireIOException while the
+      // an IOException. The former is wrapped in a MembershipIOException while the
       // latter is not
       doThrow(new SerializationException("")).when(msg).toData(any(DataOutput.class),
           any(SerializationContext.class));
       try {
         messenger.send(msg);
         fail("expected a failure");
-      } catch (GemFireIOException e) {
+      } catch (MembershipIOException e) {
         // success
       }
       if (enableMcast) {
@@ -307,7 +307,7 @@ public class JGroupsMessengerJUnitTest {
       try {
         messenger.send(msg);
         fail("expected a failure");
-      } catch (GemFireIOException e) {
+      } catch (MembershipIOException e) {
         // success
       }
     }
@@ -432,7 +432,7 @@ public class JGroupsMessengerJUnitTest {
       interceptor.collectMessages = true;
       try {
         messenger.sendUnreliably(msg);
-      } catch (GemFireIOException e) {
+      } catch (MembershipIOException e) {
         fail("expected success");
       }
       if (enableMcast) {
@@ -943,8 +943,8 @@ public class JGroupsMessengerJUnitTest {
       MemberIdentifier mbr = createAddress(1234);
       messenger.scheduledMcastSeqnos.put(mbr, new JGroupsMessenger.MessageTracker(30));
       messenger.waitForMessageState(mbr, state);
-      fail("expected a GemFireIOException to be thrown");
-    } catch (GemFireIOException e) {
+      fail("expected a MembershipIOException to be thrown");
+    } catch (MembershipIOException e) {
       // pass
     }
   }

@@ -34,6 +34,9 @@ import java.util.function.Supplier;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.Immutable;
@@ -49,6 +52,7 @@ import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -72,8 +76,10 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectExceptions;
+import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.security.GemFireSecurityException;
 
 public class DistributionImpl implements Distribution {
   private static final Logger logger = Services.getLogger();
@@ -176,7 +182,18 @@ public class DistributionImpl implements Distribution {
 
   @Override
   public void start() {
-    membership.start();
+    try {
+      membership.start();
+    } catch (ConnectionException e) {
+      throw new DistributionException(
+          "Unable to create membership manager",
+          e);
+    } catch (GemFireConfigException | SystemConnectException | GemFireSecurityException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      Services.getLogger().error("Unexpected problem starting up membership services", e);
+      throw new SystemConnectException("Problem starting up membership services", e);
+    }
   }
 
   @VisibleForTesting
@@ -899,7 +916,15 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    public boolean disconnect(Exception exception) {
+    public boolean disconnect(Exception cause) {
+      Exception exception = cause;
+      // translate into a ForcedDisconnectException if necessary
+      if (cause instanceof MemberDisconnectedException) {
+        exception = new ForcedDisconnectException(cause.getMessage());
+        if (cause.getCause() != null) {
+          exception.initCause(cause.getCause());
+        }
+      }
       return distribution.disconnectDirectChannel(exception);
     }
 

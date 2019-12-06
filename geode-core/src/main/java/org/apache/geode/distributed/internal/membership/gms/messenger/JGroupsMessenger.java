@@ -66,11 +66,7 @@ import org.jgroups.stack.IpAddress;
 import org.jgroups.util.Digest;
 import org.jgroups.util.UUID;
 
-import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.annotations.internal.MutableForTesting;
@@ -79,6 +75,9 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.InternalMembershipException;
+import org.apache.geode.distributed.internal.membership.gms.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.gms.MembershipIOException;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -101,6 +100,7 @@ import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.tcp.MemberShunnedException;
+
 
 @SuppressWarnings("StatementWithEmptyBody")
 public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<ID> {
@@ -186,7 +186,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       receiver.setAccessible(true);
       receiver.set(channel, r);
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new InternalGemFireException("unable to establish a JGroups receiver", e);
+      throw new InternalMembershipException("unable to establish a JGroups receiver", e);
     }
   }
 
@@ -523,7 +523,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         ipaddr = (IpAddress) getAddress.invoke(udp, new Object[0]);
         this.jgAddress = new JGAddress(logicalAddress, ipaddr);
       } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-        throw new InternalGemFireError(
+        throw new InternalMembershipException(
             "Unable to configure JGroups channel for membership communications", e);
       }
     }
@@ -641,7 +641,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
             Long.toString((warnTime - startTime) / 1000L), sender, received, seqno);
       }
       if (now >= quitTime) {
-        throw new GemFireIOException("Multicast operations from " + sender
+        throw new InterruptedException("Multicast operations from " + sender
             + " did not distribute within " + (now - startTime) + " milliseconds");
       }
       Thread.sleep(50);
@@ -712,7 +712,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       } catch (Exception e) {
         logger.debug("caught unexpected exception", e);
         Throwable cause = e.getCause();
-        if (cause instanceof ForcedDisconnectException) {
+        if (cause instanceof MemberDisconnectedException) {
           problem = (Exception) cause;
         } else {
           problem = e;
@@ -721,7 +721,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
           Throwable shutdownCause = services.getShutdownCause();
           // If ForcedDisconnectException occurred then report it as actual
           // problem.
-          if (shutdownCause instanceof ForcedDisconnectException) {
+          if (shutdownCause instanceof MemberDisconnectedException) {
             problem = (Exception) shutdownCause;
           } else {
             Throwable ne = problem;
@@ -798,7 +798,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
           if (cause != null) {
             // If ForcedDisconnectException occurred then report it as actual
             // problem.
-            if (cause instanceof ForcedDisconnectException) {
+            if (cause instanceof MemberDisconnectedException) {
               problem = (Exception) cause;
             } else {
               Throwable ne = problem;
@@ -867,19 +867,19 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
       msg.setBuffer(out_stream.toByteArray());
       services.getStatistics().endMsgSerialization(start);
-    } catch (IOException | GemFireIOException ex) {
+    } catch (IOException | MembershipIOException ex) {
       logger.warn("Error serializing message", ex);
-      if (ex instanceof GemFireIOException) {
-        throw (GemFireIOException) ex;
+      if (ex instanceof MembershipIOException) {
+        throw (MembershipIOException) ex;
       } else {
-        GemFireIOException ioe = new GemFireIOException("Error serializing message");
+        MembershipIOException ioe = new MembershipIOException("Error serializing message");
         ioe.initCause(ex);
         throw ioe;
       }
     } catch (Exception ex) {
       logger.warn("Error serializing message", ex);
-      GemFireIOException ioe = new GemFireIOException("Error serializing message");
-      ioe.initCause(ex.getCause());
+      MembershipIOException ioe =
+          new MembershipIOException("Error serializing message", ex.getCause());
       throw ioe;
     }
     return msg;

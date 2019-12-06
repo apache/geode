@@ -37,12 +37,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.InternalMembershipException;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
@@ -160,7 +160,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     return viewFile;
   }
 
-  public void init(String persistentFileIdentifier) throws InternalGemFireException {
+  public void init(String persistentFileIdentifier) {
     if (viewFile == null) {
       viewFile =
           workingDirectory.resolve("locator" + persistentFileIdentifier + "view.dat").toFile();
@@ -382,7 +382,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     }
   }
 
-  private void recover() throws InternalGemFireException {
+  private void recover() {
     if (!recoverFromOtherLocators()) {
       recoverFromFile(viewFile);
     }
@@ -416,7 +416,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     return false;
   }
 
-  boolean recoverFromFile(File file) throws InternalGemFireException {
+  boolean recoverFromFile(File file) {
     if (!file.exists()) {
       logger.info("recovery file not found: {}", file.getAbsolutePath());
       return false;
@@ -469,7 +469,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
         logger.warn("Peer locator was unable to recover from or delete {}", file);
         viewFile = null;
       }
-      throw new InternalGemFireException(message, e);
+      throw new InternalMembershipException(message, e);
     }
   }
 }

@@ -37,7 +37,6 @@ import java.util.Timer;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -366,7 +365,7 @@ public class Services<ID extends MemberIdentifier> {
   }
 
   public boolean isShutdownDueToForcedDisconnect() {
-    return this.shutdownCause instanceof ForcedDisconnectException;
+    return this.shutdownCause instanceof MemberDisconnectedException;
   }
 
   public boolean isAutoReconnectEnabled() {

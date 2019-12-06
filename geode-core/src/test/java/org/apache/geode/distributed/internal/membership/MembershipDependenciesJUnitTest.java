@@ -30,10 +30,13 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.GemFireException;
-import org.apache.geode.InternalGemFireError;
+import org.apache.geode.CancelException;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.internal.ClassPathLoader;
@@ -42,7 +45,10 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.tcp.MemberShunnedException;
 import org.apache.geode.internal.util.JavaWorkarounds;
+import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.security.GemFireSecurityException;
 
 @RunWith(ArchUnitRunner.class)
 @AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..",
@@ -112,8 +118,14 @@ public class MembershipDependenciesJUnitTest {
               .or(type(LocatorStats.class))
 
               // TODO: Figure out what to do with exceptions
-              .or(assignableTo(GemFireException.class))
-              .or(type(InternalGemFireError.class))
+              .or(type(AuthenticationRequiredException.class))
+              .or(type(CancelException.class))
+              .or(type(DistributionException.class))
+              .or(type(DistributedSystemDisconnectedException.class))
+              .or(type(GemFireSecurityException.class))
+              .or(type(GemFireConfigException.class))
+              .or(type(MemberShunnedException.class))
+              .or(type(SystemConnectException.class))
 
               // TODO: Serialization needs to become its own module
               .or(type(InternalDataSerializer.class)) // still used by GMSLocator
