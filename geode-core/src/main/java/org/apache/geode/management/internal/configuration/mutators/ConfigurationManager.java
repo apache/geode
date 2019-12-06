@@ -18,10 +18,19 @@ package org.apache.geode.management.internal.configuration.mutators;
 
 import java.util.List;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 
+/**
+ * Defines the behavior to mutate a configuration change into a pre-existing cache config
+ */
+@Experimental
 public interface ConfigurationManager<T extends AbstractConfiguration> {
+
+  /**
+   * specify how to add the config to the existing group of cluster configuration
+   */
   boolean add(InternalConfigurationPersistenceService service, T config, String groupName);
 
   boolean delete(InternalConfigurationPersistenceService service, T config, String groupName);

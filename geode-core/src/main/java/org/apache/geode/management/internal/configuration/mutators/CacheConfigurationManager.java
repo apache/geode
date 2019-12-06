@@ -19,6 +19,7 @@ package org.apache.geode.management.internal.configuration.mutators;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
 
 import org.apache.logging.log4j.Logger;
 
@@ -29,10 +30,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 
 /**
- * Defines the behavior to mutate a configuration change into a pre-existing cache config from a
- * locator
- * {@link org.apache.geode.distributed.ConfigurationPersistenceService}. Created with an object of
- * type {@link CacheElement}, which represents the configuration change.
+ * Defines the behavior to mutate a configuration change into a pre-existing cache config
  */
 @Experimental
 public abstract class CacheConfigurationManager<T extends AbstractConfiguration>
@@ -66,10 +64,34 @@ public abstract class CacheConfigurationManager<T extends AbstractConfiguration>
 
   public final boolean add(InternalConfigurationPersistenceService service, T config,
       String groupName) {
+    return updateCacheConfig(service, config, groupName, this::add);
+  }
+
+  public final boolean delete(InternalConfigurationPersistenceService service, T config,
+      String groupName) {
+    return updateCacheConfig(service, config, groupName, this::delete);
+  }
+
+  public final boolean update(InternalConfigurationPersistenceService service, T config,
+      String groupName) {
+    return updateCacheConfig(service, config, groupName, this::update);
+  }
+
+  public final List<T> list(InternalConfigurationPersistenceService service, T filterConfig,
+      String groupName) {
+    CacheConfig currentPersistedConfig =
+        service.getCacheConfig(
+            AbstractConfiguration.isCluster(groupName) ? AbstractConfiguration.CLUSTER : groupName,
+            true);
+    return list(filterConfig, currentPersistedConfig);
+  }
+
+  boolean updateCacheConfig(InternalConfigurationPersistenceService service, T config,
+      String groupName, BiConsumer<T, CacheConfig> consumer) {
     AtomicBoolean success = new AtomicBoolean(true);
     service.updateCacheConfig(groupName, cacheConfigForGroup -> {
       try {
-        add(config, cacheConfigForGroup);
+        consumer.accept(config, cacheConfigForGroup);
       } catch (Exception e) {
         String message = "Failed to update cluster configuration for " + groupName + ".";
         logger.error(message, e);
@@ -82,46 +104,4 @@ public abstract class CacheConfigurationManager<T extends AbstractConfiguration>
     return success.get();
   }
 
-  public final boolean delete(InternalConfigurationPersistenceService service, T config,
-      String groupName) {
-    AtomicBoolean success = new AtomicBoolean(true);
-    service.updateCacheConfig(groupName, cacheConfigForGroup -> {
-      try {
-        delete(config, cacheConfigForGroup);
-      } catch (Exception e) {
-        String message = "Failed to update cluster configuration for " + groupName + ".";
-        logger.error(message, e);
-        success.set(false);
-        return null;
-      }
-      return cacheConfigForGroup;
-    });
-    return success.get();
-  }
-
-  public final boolean update(InternalConfigurationPersistenceService service, T config,
-      String groupName) {
-    AtomicBoolean success = new AtomicBoolean(true);
-    service.updateCacheConfig(groupName, cacheConfigForGroup -> {
-      try {
-        update(config, cacheConfigForGroup);
-      } catch (Exception e) {
-        String message = "Failed to update cluster configuration for " + groupName + ".";
-        logger.error(message, e);
-        success.set(false);
-        return null;
-      }
-      return cacheConfigForGroup;
-    });
-    return success.get();
-  }
-
-  public final List<T> list(InternalConfigurationPersistenceService service, T filterConfig,
-      String groupName) {
-    CacheConfig currentPersistedConfig =
-        service.getCacheConfig(
-            AbstractConfiguration.isCluster(groupName) ? AbstractConfiguration.CLUSTER : groupName,
-            true);
-    return list(filterConfig, currentPersistedConfig);
-  }
 }
