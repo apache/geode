@@ -95,7 +95,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
   }
 
   protected GemFireCacheImpl getCache() {
-    return (GemFireCacheImpl) CacheFactory.getAnyInstance();
+    return (GemFireCacheImpl) region.getDistributionManager().getCache();
   }
 
   private void initializeEntriesToSynchronize(
@@ -163,8 +163,8 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
       }
     }
 
-    private Cache getCache() {
-      return CacheFactory.getAnyInstance();
+    Cache getCache() {
+      return dmgr.getCache();
     }
   }
 

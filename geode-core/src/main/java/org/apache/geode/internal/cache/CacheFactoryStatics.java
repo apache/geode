@@ -81,15 +81,13 @@ public class CacheFactoryStatics {
    *         {@link Cache#isClosed closed}
    */
   public static Cache getAnyInstance() {
-    synchronized (InternalCacheBuilder.class) {
-      InternalCache instance = GemFireCacheImpl.getInstance();
-      if (instance == null) {
-        throw new CacheClosedException(
-            "A cache has not yet been created.");
-      } else {
-        instance.getCancelCriterion().checkCancelInProgress(null);
-        return instance;
-      }
+    InternalCache instance = GemFireCacheImpl.getInstance();
+    if (instance == null) {
+      throw new CacheClosedException(
+          "A cache has not yet been created.");
+    } else {
+      instance.getCancelCriterion().checkCancelInProgress(null);
+      return instance;
     }
   }
 
