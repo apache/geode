@@ -55,7 +55,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
-import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
@@ -83,7 +82,6 @@ public class GMSMembershipJUnitTest {
   private Services services;
   private MembershipConfig mockConfig;
   private DistributionConfig distConfig;
-  private Properties distProperties;
   private Authenticator authenticator;
   private HealthMonitor healthMonitor;
   private InternalDistributedMember myMemberId;
@@ -94,7 +92,6 @@ public class GMSMembershipJUnitTest {
   private MembershipListener listener;
   private GMSMembership manager;
   private List<InternalDistributedMember> members;
-  private DirectChannel dc;
   private MessageListener messageListener;
   private LifecycleListener directChannelCallback;
 
@@ -111,7 +108,6 @@ public class GMSMembershipJUnitTest {
     nonDefault.put(MEMBER_TIMEOUT, "2000");
     nonDefault.put(LOCATORS, "localhost[10344]");
     distConfig = new DistributionConfigImpl(nonDefault);
-    distProperties = nonDefault;
     RemoteTransportConfig tconfig =
         new RemoteTransportConfig(distConfig, ClusterDistributionManager.NORMAL_DM_TYPE);
 
@@ -158,7 +154,7 @@ public class GMSMembershipJUnitTest {
     listener = mock(MembershipListener.class);
     messageListener = mock(MessageListener.class);
     directChannelCallback = mock(LifecycleListener.class);
-    manager = new GMSMembership(listener, messageListener, null, directChannelCallback);
+    manager = new GMSMembership(listener, messageListener, directChannelCallback);
     manager.getGMSManager().init(services);
     when(services.getManager()).thenReturn(manager.getGMSManager());
   }

@@ -35,7 +35,6 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
@@ -157,8 +156,6 @@ public class MembershipDependenciesJUnitTest {
               .or(type(DistributedMember.class))
               .or(type(MembershipView.class))
               .or(type(LocalViewMessage.class))
-
-              .or(type(ClusterDistributionManager.class))
 
   );
 }

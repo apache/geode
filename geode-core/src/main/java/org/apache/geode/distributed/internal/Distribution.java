@@ -160,4 +160,10 @@ public interface Distribution {
   void forceUDPMessagingForCurrentThread();
 
   void releaseUDPMessagingForCurrentThread();
+
+  /**
+   * When the ClusterDistributionManager initiates normal shutdown it should invoke this
+   * method so that services will know how to react.
+   */
+  void setCloseInProgress();
 }

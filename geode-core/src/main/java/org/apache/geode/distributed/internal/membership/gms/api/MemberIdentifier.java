@@ -116,4 +116,5 @@ public interface MemberIdentifier extends DataSerializableFixedID {
    * Set the type of node
    */
   void setVmKind(int dmType);
+
 }

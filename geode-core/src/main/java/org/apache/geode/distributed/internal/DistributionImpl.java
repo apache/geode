@@ -123,8 +123,7 @@ public class DistributionImpl implements Distribution {
     }
 
     memberTimeout = system.getConfig().getMemberTimeout();
-    membership = MembershipBuilder.newMembershipBuilder(
-        clusterDistributionManager)
+    membership = MembershipBuilder.newMembershipBuilder()
         .setAuthenticator(
             new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
                 system.getSecurityLogWriter(), system.getInternalLogWriter()))
@@ -698,6 +697,11 @@ public class DistributionImpl implements Distribution {
    */
   public void releaseUDPMessagingForCurrentThread() {
     forceUseUDPMessaging.set(Boolean.FALSE);
+  }
+
+  @Override
+  public void setCloseInProgress() {
+    membership.setCloseInProgress();
   }
 
   private boolean isForceUDPCommunications() {

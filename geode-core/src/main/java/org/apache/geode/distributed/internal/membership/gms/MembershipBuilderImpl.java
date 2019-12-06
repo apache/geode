@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal.membership.gms;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
@@ -39,15 +38,12 @@ public class MembershipBuilderImpl implements MembershipBuilder {
   private MessageListener messageListener;
   private MembershipStatistics statistics;
   private Authenticator authenticator;
-  private ClusterDistributionManager dm;
   private MembershipConfig membershipConfig;
   private DSFIDSerializer serializer;
   private MemberIdentifierFactory memberFactory = new MemberIdentifierFactoryImpl();
   private LifecycleListener lifecycleListener;
 
-  public MembershipBuilderImpl(ClusterDistributionManager dm) {
-    this.dm = dm;
-  }
+  public MembershipBuilderImpl() {}
 
   @Override
   public MembershipBuilder setAuthenticator(Authenticator authenticator) {
@@ -107,7 +103,7 @@ public class MembershipBuilderImpl implements MembershipBuilder {
   @Override
   public Membership create() {
     GMSMembership gmsMembership =
-        new GMSMembership(membershipListener, messageListener, dm, lifecycleListener);
+        new GMSMembership(membershipListener, messageListener, lifecycleListener);
     Services services =
         new Services(gmsMembership.getGMSManager(), statistics, authenticator,
             membershipConfig, serializer, memberFactory, locatorClient);

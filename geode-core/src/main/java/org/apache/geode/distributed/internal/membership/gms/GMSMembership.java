@@ -48,9 +48,7 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.StartupMessage;
@@ -76,7 +74,6 @@ import org.apache.geode.security.GemFireSecurityException;
 
 public class GMSMembership implements Membership {
   private static final Logger logger = Services.getLogger();
-  private final ClusterDistributionManager dm;
 
   /** product version to use for multicast serialization */
   private volatile boolean disableMulticastForRollingUpgrade;
@@ -103,6 +100,8 @@ public class GMSMembership implements Membership {
 
 
   private LifecycleListener lifecycleListener;
+
+  private volatile boolean isCloseInProgress;
 
   /**
    * Trick class to make the startup synch more visible in stack traces
@@ -682,12 +681,11 @@ public class GMSMembership implements Membership {
 
 
   public GMSMembership(MembershipListener listener, MessageListener messageListener,
-      ClusterDistributionManager dm, LifecycleListener lifecycleListener) {
+      LifecycleListener lifecycleListener) {
     this.lifecycleListener = lifecycleListener;
     this.listener = listener;
     this.messageListener = messageListener;
     this.gmsManager = new ManagerImpl();
-    this.dm = dm;
   }
 
   public Manager getGMSManager() {
@@ -853,10 +851,6 @@ public class GMSMembership implements Membership {
 
   /** starts periodic task to perform cleanup chores such as expire surprise members */
   private void startCleanupTimer() {
-    if (dm == null) {
-      return;
-    }
-    DistributedSystem ds = dm.getSystem();
     this.cleanupTimer =
         LoggingExecutors.newScheduledThreadPool("GMSMembership.cleanupTimer", 1, false);
 
@@ -989,8 +983,10 @@ public class GMSMembership implements Membership {
       sender.setMemberData(newID.getMemberData());
       sender.setIsPartial(false);
     } else {
-      // the DM's view also has surprise members, so let's check it as well
-      sender = dm.getCanonicalId(sender);
+      MembershipView currentView = latestView;
+      if (currentView != null) {
+        sender = currentView.getCanonicalID(sender);
+      }
     }
     if (!sender.isPartial()) {
       msg.setSender(sender);
@@ -1752,11 +1748,8 @@ public class GMSMembership implements Membership {
 
   @Override
   public boolean shutdownInProgress() {
-    // Impossible condition (bug36329): make sure that we check DM's
-    // view of shutdown here
-    return shutdownInProgress || (dm != null && dm.shutdownInProgress());
+    return shutdownInProgress;
   }
-
 
   // TODO GEODE-1752 rewrite this to get rid of the latches, which are currently a memory leak
   @Override
@@ -1957,6 +1950,11 @@ public class GMSMembership implements Membership {
       Services.getLogger().error("Unexpected problem starting up membership services", e);
       throw new SystemConnectException("Problem starting up membership services", e);
     }
+  }
+
+  @Override
+  public void setCloseInProgress() {
+    isCloseInProgress = true;
   }
 
 
@@ -2198,20 +2196,20 @@ public class GMSMembership implements Membership {
 
     @Override
     public boolean shutdownInProgress() {
-      // Impossible condition (bug36329): make sure that we check DM's
-      // view of shutdown here
-      return shutdownInProgress || (dm != null && dm.shutdownInProgress());
+      return shutdownInProgress;
     }
+
+    @Override
+    public boolean isCloseInProgress() {
+      return shutdownInProgress || isCloseInProgress;
+    }
+
 
     @Override
     public boolean isReconnectingDS() {
       return wasReconnectingSystem && !reconnectCompleted;
     }
 
-    @Override
-    public boolean isShutdownStarted() {
-      return shutdownInProgress || (dm != null && dm.isCloseInProgress());
-    }
   }
 
 }
