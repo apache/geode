@@ -32,7 +32,7 @@
     {
       "type": "googlecompute",
       "project_id": "{{user `gcp_project`}}",
-      "source_image_family": "ubuntu-minimal-1804-lts",
+      "source_image_family": "{{ user `base_family`}}",
       "ssh_username": "packer",
       "zone": "us-central1-f",
       "image_family": "{{user `pipeline_prefix`}}geode-builder",

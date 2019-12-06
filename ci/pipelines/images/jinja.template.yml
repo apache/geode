@@ -19,6 +19,12 @@
 
 ---
 
+resource_types:
+- name: gci
+  type: registry-image
+  source:
+    repository: smgoller/gci-resource
+
 resources:
 - name: build-concourse-dockerfile
   type: git
@@ -34,6 +40,22 @@ resources:
     username: ((docker-username))
     password: ((docker-password))
     repository: gcr.io/((gcp-project))/((pipeline-prefix))concourse
+
+- name: windows-base-family
+  type: gci
+  check_every: 24h
+  source:
+    key: ((concourse-gcp-key))
+    family_project: windows-cloud
+    family: ((windows-base-family))
+
+- name: linux-base-family
+  type: gci
+  check_every: 24h
+  source:
+    key: ((concourse-gcp-key))
+    family_project: ubuntu-os-cloud
+    family: ((linux-base-family))
 
 - name: openjdk8-docker-image
   type: docker-image
@@ -172,6 +194,9 @@ jobs:
     - get: google-geode-builder
       trigger: true
     - get: alpine-tools-docker-image
+      passed: [build-alpine-tools-docker-image]
+    - get: linux-base-family
+      trigger: true
   - task: build-image
     timeout: 1h
     image: alpine-tools-docker-image
@@ -187,6 +212,7 @@ jobs:
         GCP_PROJECT: ((gcp-project))
         CONCOURSE_GCP_KEY: "((concourse-gcp-key))"
         JAVA_BUILD_VERSION: 8
+        BASE_FAMILY: ((linux-base-family))
       run:
         path: google-geode-builder/ci/images/google-geode-builder/build_image.sh
 
@@ -200,6 +226,8 @@ jobs:
     - get: alpine-tools-docker-image
       passed:
       - build-alpine-tools-docker-image
+    - get: windows-base-family
+      trigger: true
   - task: build-image
     timeout: 3h
     attempts: 3
@@ -216,6 +244,7 @@ jobs:
         GCP_PROJECT: ((gcp-project))
         CONCOURSE_GCP_KEY: "((concourse-gcp-key))"
         JAVA_BUILD_VERSION: 8
+        BASE_FAMILY: ((windows-base-family))
       run:
         path: google-windows-geode-builder/ci/images/google-windows-geode-builder/build_image.sh
 
