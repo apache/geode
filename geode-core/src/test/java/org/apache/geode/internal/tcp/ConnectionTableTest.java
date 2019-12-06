@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.tcp;
 
 import static org.junit.Assert.assertEquals;
@@ -34,9 +33,9 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-
-@Category({MembershipTest.class})
+@Category(MembershipTest.class)
 public class ConnectionTableTest {
+
   private ConnectionTable connectionTable;
   private Socket socket;
   private PeerConnectionFactory factory;
@@ -71,8 +70,8 @@ public class ConnectionTableTest {
   @Test
   public void testConnectionsClosedDuringCreateAreNotAddedAsReceivers() throws Exception {
     when(connection.isReceiverStopped()).thenReturn(false);
-    when(connection.isSocketClosed()).thenReturn(true); // Pretend this closed as soon at it was
-                                                        // created
+    // Pretend this closed as soon at it was created
+    when(connection.isSocketClosed()).thenReturn(true);
 
     connectionTable.acceptConnection(socket, factory);
     assertEquals(0, connectionTable.getNumberOfReceivers());
@@ -80,9 +79,11 @@ public class ConnectionTableTest {
 
   @Test
   public void testThreadStoppedNotAddedAsReceivers() throws Exception {
-    when(connection.isSocketClosed()).thenReturn(false); // connection is not closed
+    // connection is not closed
+    when(connection.isSocketClosed()).thenReturn(false);
 
-    when(connection.isReceiverStopped()).thenReturn(true);// but receiver is stopped
+    // but receiver is stopped
+    when(connection.isReceiverStopped()).thenReturn(true);
 
     connectionTable.acceptConnection(socket, factory);
     assertEquals(0, connectionTable.getNumberOfReceivers());
@@ -90,19 +91,20 @@ public class ConnectionTableTest {
 
   @Test
   public void testSocketNotClosedAddedAsReceivers() throws Exception {
-    when(connection.isSocketClosed()).thenReturn(false);// connection is not closed
+    // connection is not closed
+    when(connection.isSocketClosed()).thenReturn(false);
 
     connectionTable.acceptConnection(socket, factory);
     assertEquals(1, connectionTable.getNumberOfReceivers());
   }
 
   @Test
-  public void testThreadOwnedSocketsAreRemoved() throws Exception {
+  public void testThreadOwnedSocketsAreRemoved() {
     Boolean wantsResources = ConnectionTable.getThreadOwnsResourcesRegistration();
     ConnectionTable.threadWantsOwnResources();
     try {
       Map<DistributedMember, Connection> threadConnectionMap = new HashMap<>();
-      connectionTable.threadOrderedConnMap.set(threadConnectionMap);
+      ConnectionTable.threadOrderedConnMap.set(threadConnectionMap);
       ConnectionTable.releaseThreadsSockets();
       assertEquals(0, threadConnectionMap.size());
     } finally {
