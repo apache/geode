@@ -16,6 +16,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.util.UncheckedUtils.uncheckedRegion;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -157,10 +159,10 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public Region getRegion(String path, boolean returnDestroyedRegion) {
+  public <K, V> Region<K, V> getRegion(String path, boolean returnDestroyedRegion) {
     Region result = delegate.getRegion(path, returnDestroyedRegion);
     checkForInternalRegion(result);
-    return result;
+    return uncheckedRegion(result);
   }
 
   @Override
@@ -171,8 +173,15 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public InternalRegion getRegionByPath(String path) {
-    InternalRegion result = delegate.getRegionByPath(path);
+  public <K, V> Region<K, V> getRegionByPath(String path) {
+    InternalRegion result = delegate.getInternalRegionByPath(path);
+    checkForInternalRegion(result);
+    return uncheckedRegion(result);
+  }
+
+  @Override
+  public InternalRegion getInternalRegionByPath(String path) {
+    InternalRegion result = delegate.getInternalRegionByPath(path);
     checkForInternalRegion(result);
     return result;
   }
@@ -1197,8 +1206,13 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public InternalQueryService getQueryService() {
-    return (InternalQueryService) delegate.getQueryService();
+  public QueryService getQueryService() {
+    return delegate.getQueryService();
+  }
+
+  @Override
+  public InternalQueryService getInternalQueryService() {
+    return delegate.getInternalQueryService();
   }
 
   @Override

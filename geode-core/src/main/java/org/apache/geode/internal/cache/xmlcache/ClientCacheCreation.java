@@ -104,16 +104,6 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
-  @Override
-  public QueryService getLocalQueryService() {
-    throw new UnsupportedOperationException("Should not be invoked");
-  }
-
-  @Override
-  public void determineDefaultPool() {
-    throw new UnsupportedOperationException("Should not be invoked");
-  }
-
   /**
    * @since GemFire 6.5
    */

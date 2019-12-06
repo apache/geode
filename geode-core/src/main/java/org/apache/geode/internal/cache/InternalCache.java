@@ -42,6 +42,7 @@ import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.wan.GatewayReceiver;
@@ -130,7 +131,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
   /**
    * @param returnDestroyedRegion if true, okay to return a destroyed region
    */
-  Region getRegion(String path, boolean returnDestroyedRegion);
+  <K, V> Region<K, V> getRegion(String path, boolean returnDestroyedRegion);
 
   MemoryAllocator getOffHeapStore();
 
@@ -162,7 +163,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
    *
    * @throws IllegalStateException if there is no region by that name registered as reinitializing.
    */
-  void regionReinitialized(Region region);
+  void regionReinitialized(Region<?, ?> region);
 
   void setRegionByPath(String path, InternalRegion r);
 
@@ -304,7 +305,9 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
 
   List<File> getBackupFiles();
 
-  InternalRegion getRegionByPath(String path);
+  <K, V> Region<K, V> getRegionByPath(String path);
+
+  InternalRegion getInternalRegionByPath(String path);
 
   /**
    * @return true if cache is created using a ClientCacheFactory
@@ -471,6 +474,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
   @Deprecated
   InternalLogWriter getInternalLogWriter();
 
+  @Deprecated
   InternalLogWriter getSecurityInternalLogWriter();
 
   Set<InternalRegion> getApplicationRegions();
@@ -566,4 +570,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
    * Generate XML for the cache before shutting down due to forced disconnect.
    */
   void saveCacheXmlForReconnect();
+
+  InternalQueryService getInternalQueryService();
 }

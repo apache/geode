@@ -37,7 +37,6 @@ import static org.apache.geode.internal.cache.ColocationHelper.getColocatedChild
 import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.asDistributedMemberSet;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.createMapArray;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.uncheckedCast;
-import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.uncheckedRegion;
 import static org.apache.geode.internal.cache.GemFireCacheImpl.UncheckedUtils.uncheckedRegionAttributes;
 import static org.apache.geode.internal.cache.LocalRegion.setThreadInitLevelRequirement;
 import static org.apache.geode.internal.cache.PartitionedRegion.DISK_STORE_FLUSHED;
@@ -46,6 +45,7 @@ import static org.apache.geode.internal.cache.PartitionedRegion.PRIMARY_BUCKETS_
 import static org.apache.geode.internal.cache.PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME;
 import static org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType.HEAP_MEMORY;
 import static org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType.OFFHEAP_MEMORY;
+import static org.apache.geode.internal.cache.util.UncheckedUtils.uncheckedRegion;
 import static org.apache.geode.internal.logging.CoreLoggingExecutors.newThreadPoolWithFixedFeed;
 import static org.apache.geode.internal.tcp.ConnectionTable.threadWantsSharedResources;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newFixedThreadPool;
@@ -285,7 +285,14 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 /**
  * GemFire's implementation of a distributed {@link Cache}.
  */
-@SuppressWarnings({"TypeMayBeWeakened", "ThisEscapedInObjectConstruction"})
+@SuppressWarnings({"TypeMayBeWeakened", "ThisEscapedInObjectConstruction", "OverlyComplexMethod",
+    "NonConstantFieldWithUpperCaseName", "StaticNonFinalField",
+    "StaticVariableMayNotBeInitialized", "UseOfObsoleteDateTimeApi", "DeprecatedIsStillUsed",
+    "SynchronizeOnThis", "deprecation", "StaticVariableUsedBeforeInitialization",
+    "NestedTryStatement", "ThrowInsideCatchBlockWhichIgnoresCaughtException", "OverlyNestedMethod",
+    "OverlyCoupledMethod", "ConstantConditions", "ThrowCaughtLocally", "ThrowFromFinallyBlock",
+    "SuspiciousMethodCalls", "AssignmentOrReturnOfFieldWithMutableType", "DoubleCheckedLocking",
+    "NonPrivateFieldAccessedInSynchronizedContext"})
 public class GemFireCacheImpl implements InternalCache, InternalClientCache, HasCachePerfStats,
     DistributionAdvisee {
   private static final Logger logger = LogService.getLogger();
@@ -3077,8 +3084,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public Region getRegion(String path) {
-    // TODO: fixup return type
+  public <K, V> Region<K, V> getRegion(String path) {
     return getRegion(path, false);
   }
 
@@ -3086,7 +3092,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public Set<InternalRegion> getAllRegions() {
     Set<InternalRegion> result = new HashSet<>();
     synchronized (rootRegions) {
-      for (Region region : rootRegions.values()) {
+      for (Region<?, ?> region : rootRegions.values()) {
         if (region instanceof PartitionedRegion) {
           PartitionedRegion partitionedRegion = (PartitionedRegion) region;
           PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
@@ -3166,7 +3172,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public InternalRegion getRegionByPath(String path) {
+  public <K, V> Region<K, V> getRegionByPath(String path) {
+    return uncheckedRegion(getInternalRegionByPath(path));
+  }
+
+  @Override
+  public InternalRegion getInternalRegionByPath(String path) {
     validatePath(path);
 
     // do this before checking the pathToRegion map
@@ -3179,7 +3190,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public InternalRegion getRegionByPathForProcessing(String path) {
-    InternalRegion result = getRegionByPath(path);
+    Region<?, ?> result = getRegionByPath(path);
     if (result == null) {
       stopper.checkCancelInProgress(null);
 
@@ -3198,19 +3209,19 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           logger.debug("GemFireCache.getRegion, calling getSubregion on rootRegion({}): {}",
               pathParts[0], pathParts[1]);
         }
-        result = (InternalRegion) rootRegion.getSubregion(pathParts[1], true);
+        result = rootRegion.getSubregion(pathParts[1], true);
       } finally {
         setThreadInitLevelRequirement(oldLevel);
       }
     }
-    return result;
+    return (InternalRegion) result;
   }
 
   @Override
-  public Region getRegion(String path, boolean returnDestroyedRegion) {
+  public <K, V> Region<K, V> getRegion(String path, boolean returnDestroyedRegion) {
     stopper.checkCancelInProgress(null);
 
-    InternalRegion result = getRegionByPath(path);
+    InternalRegion result = getInternalRegionByPath(path);
 
     // Do not waitOnInitialization() for PR
     if (result != null) {
@@ -3219,7 +3230,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         stopper.checkCancelInProgress(null);
         return null;
       }
-      return result;
+      return uncheckedRegion(result);
     }
 
     String[] pathParts = parsePath(path);
@@ -3243,7 +3254,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       logger.debug("GemFireCache.getRegion, calling getSubregion on rootRegion({}): {}",
           pathParts[0], pathParts[1]);
     }
-    return rootRegion.getSubregion(pathParts[1], returnDestroyedRegion);
+    return uncheckedRegion(rootRegion.getSubregion(pathParts[1], returnDestroyedRegion));
   }
 
   @Override
@@ -3420,7 +3431,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public void regionReinitialized(Region region) {
+  public void regionReinitialized(Region<?, ?> region) {
     String regionName = region.getFullPath();
     FutureResult<InternalRegion> future = reinitializingRegions.get(regionName);
     if (future == null) {
@@ -3648,7 +3659,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     if (!sender.isParallel()) {
-      Region dynamicMetaRegion = getRegion(DynamicRegionFactory.DYNAMIC_REGION_LIST_NAME);
+      Region<?, ?> dynamicMetaRegion = getRegion(DynamicRegionFactory.DYNAMIC_REGION_LIST_NAME);
       if (dynamicMetaRegion == null) {
         if (logger.isDebugEnabled()) {
           logger.debug(" The dynamic region is null. ");
@@ -3897,7 +3908,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
       // call getRegion to ensure that we wait for the partitioned region to finish initialization
       try {
-        Region pr = getRegion(regionName);
+        Region<?, ?> pr = getRegion(regionName);
         if (pr instanceof PartitionedRegion) {
           prMap.put(regionName, (PartitionedRegion) pr);
         }
@@ -3990,16 +4001,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public InternalQueryService getQueryService() {
+  public QueryService getQueryService() {
     if (!isClient()) {
-      return (InternalQueryService) getLocalQueryService();
+      return getLocalQueryService();
     }
     Pool defaultPool = getDefaultPool();
     if (defaultPool == null) {
       throw new IllegalStateException(
           "Client cache does not have a default pool. Use getQueryService(String poolName) instead.");
     }
-    return (InternalQueryService) defaultPool.getQueryService();
+    return defaultPool.getQueryService();
+  }
+
+  @Override
+  public InternalQueryService getInternalQueryService() {
+    return (InternalQueryService) getQueryService();
   }
 
   @Override
@@ -5119,10 +5135,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     private boolean notified;
 
-    private SimpleWaiter() {
-      // nothing
-    }
-
     private void doWait() {
       synchronized (this) {
         while (!notified) {
@@ -5159,10 +5171,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     static Set<DistributedMember> asDistributedMemberSet(
         Set<InternalDistributedMember> internalDistributedMembers) {
       return (Set) internalDistributedMembers;
-    }
-
-    static <K, V> Region<K, V> uncheckedRegion(Region region) {
-      return region;
     }
 
     static <K, V> RegionAttributes<K, V> uncheckedRegionAttributes(RegionAttributes region) {

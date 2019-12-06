@@ -724,7 +724,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
               Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + Region.SEPARATOR
                   + prQ.getBucketName(bucketId);
 
-          brq = (AbstractBucketRegionQueue) prQ.getCache().getRegionByPath(bucketFullPath);
+          brq = (AbstractBucketRegionQueue) prQ.getCache().getInternalRegionByPath(bucketFullPath);
           if (isDebugEnabled) {
             logger.debug(
                 "ParallelGatewaySenderOrderedQueue : The bucket in the cache is bucketRegionName : {} bucket : {}",
@@ -773,7 +773,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
               }
 
               synchronized (tempQueue) {
-                brq = (AbstractBucketRegionQueue) prQ.getCache().getRegionByPath(bucketFullPath);
+                brq = (AbstractBucketRegionQueue) prQ.getCache()
+                    .getInternalRegionByPath(bucketFullPath);
                 if (brq != null) {
                   brq.getInitializationLock().readLock().lock();
                   try {

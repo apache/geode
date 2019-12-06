@@ -42,7 +42,7 @@ public class RequestFilterInfoMessageTest {
     region = mock(LocalRegion.class);
 
     when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegionByPath(path)).thenReturn(region);
+    when(cache.getInternalRegionByPath(path)).thenReturn(region);
   }
 
   @Test
@@ -58,6 +58,6 @@ public class RequestFilterInfoMessageTest {
     message.regionPath = path;
     message.process(dm);
     verify(dm, times(1)).getCache();
-    verify(cache, times(1)).getRegionByPath(path);
+    verify(cache, times(1)).getInternalRegionByPath(path);
   }
 }

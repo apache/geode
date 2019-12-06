@@ -105,7 +105,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
                   Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + Region.SEPARATOR
                       + region.getBucketName((Integer) bId);
               AbstractBucketRegionQueue brq =
-                  (AbstractBucketRegionQueue) cache.getRegionByPath(bucketFullPath);
+                  (AbstractBucketRegionQueue) cache.getInternalRegionByPath(bucketFullPath);
               if (isDebugEnabled) {
                 logger.debug(
                     "ParallelQueueRemovalMessage : The bucket in the cache is bucketRegionName : {} bucket: {}",

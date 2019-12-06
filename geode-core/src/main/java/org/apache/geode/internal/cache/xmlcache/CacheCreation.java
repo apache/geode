@@ -1078,7 +1078,12 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public InternalQueryService getQueryService() {
+  public QueryService getQueryService() {
+    return queryService;
+  }
+
+  @Override
+  public InternalQueryService getInternalQueryService() {
     return queryService;
   }
 
@@ -1634,7 +1639,12 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public LocalRegion getRegionByPath(final String path) {
+  public <K, V> Region<K, V> getRegionByPath(String path) {
+    return null;
+  }
+
+  @Override
+  public InternalRegion getInternalRegionByPath(String path) {
     return null;
   }
 
