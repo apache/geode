@@ -534,7 +534,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           addOverflowStatisticsToMBean(cache, prQ);
 
           // Wait for buckets to be recovered.
-          if (sender.isPersistenceEnabled()) {
+          if (sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)
+              || sender.isPersistenceEnabled()) {
             prQ.shadowPRWaitForBucketRecovery();
           }
 
