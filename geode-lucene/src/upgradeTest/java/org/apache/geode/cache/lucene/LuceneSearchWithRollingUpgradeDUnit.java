@@ -144,16 +144,13 @@ public abstract class LuceneSearchWithRollingUpgradeDUnit
 
       server1 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server1, regionType,
           testingDirs[0], shortcutName, regionName, locatorPorts, reindex);
-      System.out.println("server1 rolled");
       verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, expectedQueryResultSize,
           server1);
       expectedRegionSize += 5;
-      System.out.println("first put");
       putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize,
           expectedQueryResultSize, 5,
           15, server2, server3);
       expectedRegionSize += 5;
-      System.out.println("second put");
       putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize,
           expectedQueryResultSize, 10,
           20, server1, server3);
