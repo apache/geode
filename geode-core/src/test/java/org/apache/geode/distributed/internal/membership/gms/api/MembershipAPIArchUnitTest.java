@@ -32,7 +32,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 
 @RunWith(ArchUnitRunner.class)
@@ -63,9 +62,5 @@ public class MembershipAPIArchUnitTest {
               .or(type(InternalDistributedMember.class))
               .or(type(MembershipView.class))
               .or(type(DistributedMember.class))
-              .or(type(InternalDistributedMember[].class))
-
-              // TODO: This is used by the GMSLocatorAdapter to reach into the locator
-              // part of the services
-              .or(type(Services.class)));
+              .or(type(InternalDistributedMember[].class)));
 }

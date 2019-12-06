@@ -25,7 +25,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 
@@ -123,8 +123,6 @@ public interface Distribution {
 
   Set<InternalDistributedMember> getMembersNotShuttingDown();
 
-  Services getServices();
-
   // TODO - this method is only used by tests
   @VisibleForTesting
   void forceDisconnect(String reason);
@@ -166,4 +164,7 @@ public interface Distribution {
    * method so that services will know how to react.
    */
   void setCloseInProgress();
+
+  Membership getMembership();
+
 }

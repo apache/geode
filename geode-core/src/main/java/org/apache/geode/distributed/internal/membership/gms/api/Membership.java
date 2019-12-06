@@ -23,7 +23,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 
 public interface Membership {
@@ -299,8 +298,6 @@ public interface Membership {
    * return a list of all members excluding those in the process of shutting down
    */
   Set<InternalDistributedMember> getMembersNotShuttingDown();
-
-  Services getServices();
 
   /**
    * Process a message and pass it on to the {@link MessageListener} that was configured

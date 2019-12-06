@@ -15,7 +15,7 @@
 package org.apache.geode.distributed.internal.membership;
 
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
-import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 
 public interface NetLocator extends RestartableTcpHandler {
 
@@ -25,6 +25,6 @@ public interface NetLocator extends RestartableTcpHandler {
    *
    * @return true if the membership manager was accepted
    */
-  boolean setServices(Services pservices);
+  boolean setMembership(Membership membership);
 
 }
