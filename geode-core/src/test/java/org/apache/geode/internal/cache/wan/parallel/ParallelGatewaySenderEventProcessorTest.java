@@ -39,6 +39,7 @@ public class ParallelGatewaySenderEventProcessorTest {
   public void setup() {
     when(sender.getCache()).thenReturn(mock(InternalCache.class));
     when(sender.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(sender.getId()).thenReturn("");
   }
 
   @Test
