@@ -91,7 +91,7 @@ public class MembershipManagerHelper {
    */
   public static void addSurpriseMember(DistributedSystem sys, DistributedMember mbr,
       long birthTime) {
-    getDistribution(sys).addSurpriseMemberForTesting(mbr, birthTime);
+    getDistribution(sys).addSurpriseMemberForTesting((InternalDistributedMember) mbr, birthTime);
   }
 
   /**

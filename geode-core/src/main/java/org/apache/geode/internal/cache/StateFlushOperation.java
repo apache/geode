@@ -487,7 +487,7 @@ public class StateFlushOperation {
     public void fromData(DataInput din,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(din, context);
-      relayRecipient = (DistributedMember) DataSerializer.readObject(din);
+      relayRecipient = DataSerializer.readObject(din);
       processorId = din.readInt();
       processorType = din.readInt();
       allRegions = din.readBoolean();

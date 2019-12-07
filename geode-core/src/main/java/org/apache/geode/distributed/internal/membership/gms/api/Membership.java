@@ -296,7 +296,7 @@ public interface Membership<ID extends MemberIdentifier> {
    */
   Set<ID> getMembersNotShuttingDown();
 
-  Services getServices();
+  Services<ID> getServices();
 
   /**
    * Process a message and pass it on to the {@link MessageListener} that was configured

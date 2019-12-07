@@ -39,7 +39,6 @@ import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -767,17 +766,6 @@ public class ConnectionTable {
     synchronized (this.receivers) {
       this.receivers.remove(con);
     }
-  }
-
-  /**
-   * Return true if our owner already knows that this endpoint is departing
-   */
-  protected boolean isEndpointShuttingDown(DistributedMember id) {
-    return giveUpOnMember(owner.getDM().getDistribution(), id);
-  }
-
-  protected boolean giveUpOnMember(Distribution mgr, DistributedMember remoteAddr) {
-    return !mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress();
   }
 
   /** remove an endpoint and notify the membership manager of the departure */

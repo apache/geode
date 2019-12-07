@@ -32,7 +32,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.TransactionInDoubtException;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -109,7 +108,7 @@ public class CommitCommandTest {
         clientMessage, serverConnection, txMgr, wasInProgress, txProxy);
 
     verify(txMgr, atLeastOnce()).commit();
-    verify(distribution, times(1)).waitForDeparture(isA(DistributedMember.class),
+    verify(distribution, times(1)).waitForDeparture(isA(InternalDistributedMember.class),
         anyLong());
   }
 }

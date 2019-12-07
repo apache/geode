@@ -384,7 +384,7 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public void waitForMessageState(DistributedMember member,
+  public void waitForMessageState(InternalDistributedMember member,
       Map<String, Long> state) throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException();
@@ -392,30 +392,23 @@ public class DistributionImpl implements Distribution {
     if (dc != null) {
       dc.waitForChannelState(member, state);
     }
-    membership.waitForMessageState((InternalDistributedMember) member, state);
+    membership.waitForMessageState(member, state);
 
 
     if (mcastEnabled && !tcpDisabled) {
       // GEODE-2865: wait for scheduled multicast messages to be applied to the cache
-      waitForSerialMessageProcessing((InternalDistributedMember) member);
+      waitForSerialMessageProcessing(member);
     }
   }
 
   @Override
-  public boolean requestMemberRemoval(DistributedMember member,
-      String reason) {
-    return membership.requestMemberRemoval((InternalDistributedMember) member, reason);
+  public boolean requestMemberRemoval(InternalDistributedMember member, String reason) {
+    return membership.requestMemberRemoval(member, reason);
   }
 
   @Override
-  public boolean verifyMember(DistributedMember mbr,
-      String reason) {
-    return membership.verifyMember((InternalDistributedMember) mbr, reason);
-  }
-
-  @Override
-  public boolean isShunned(DistributedMember m) {
-    return membership.isShunned((InternalDistributedMember) m);
+  public boolean verifyMember(InternalDistributedMember mbr, String reason) {
+    return membership.verifyMember(mbr, reason);
   }
 
   @Override
@@ -424,8 +417,8 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public boolean memberExists(DistributedMember m) {
-    return membership.memberExists((InternalDistributedMember) m);
+  public boolean memberExists(InternalDistributedMember m) {
+    return membership.memberExists(m);
   }
 
   @Override
@@ -464,9 +457,9 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public void shutdownMessageReceived(DistributedMember id,
+  public void shutdownMessageReceived(InternalDistributedMember id,
       String reason) {
-    membership.shutdownMessageReceived((InternalDistributedMember) id, reason);
+    membership.shutdownMessageReceived(id, reason);
   }
 
   @Override
@@ -503,9 +496,9 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public void addSurpriseMemberForTesting(DistributedMember mbr,
+  public void addSurpriseMemberForTesting(InternalDistributedMember mbr,
       long birthTime) {
-    membership.addSurpriseMemberForTesting((InternalDistributedMember) mbr, birthTime);
+    membership.addSurpriseMemberForTesting(mbr, birthTime);
   }
 
   @Override
@@ -515,9 +508,9 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public void suspectMember(DistributedMember member,
+  public void suspectMember(InternalDistributedMember member,
       String reason) {
-    membership.suspectMember((InternalDistributedMember) member, reason);
+    membership.suspectMember(member, reason);
   }
 
   @Override
@@ -538,14 +531,14 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public boolean addSurpriseMember(DistributedMember mbr) {
-    return membership.addSurpriseMember((InternalDistributedMember) mbr);
+  public boolean addSurpriseMember(InternalDistributedMember mbr) {
+    return membership.addSurpriseMember(mbr);
   }
 
   @Override
-  public void startupMessageFailed(DistributedMember mbr,
+  public void startupMessageFailed(InternalDistributedMember mbr,
       String failureMessage) {
-    membership.startupMessageFailed((InternalDistributedMember) mbr, failureMessage);
+    membership.startupMessageFailed(mbr, failureMessage);
   }
 
   @Override
@@ -554,8 +547,8 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public boolean isSurpriseMember(DistributedMember m) {
-    return membership.isSurpriseMember((InternalDistributedMember) m);
+  public boolean isSurpriseMember(InternalDistributedMember m) {
+    return membership.isSurpriseMember(m);
   }
 
   @Override
@@ -718,7 +711,7 @@ public class DistributionImpl implements Distribution {
    * @throws TimeoutException if we wait too long for the member to go away
    */
   @Override
-  public boolean waitForDeparture(DistributedMember mbr)
+  public boolean waitForDeparture(InternalDistributedMember mbr)
       throws TimeoutException, InterruptedException {
     return waitForDeparture(mbr, memberTimeout * 4);
   }
@@ -734,14 +727,14 @@ public class DistributionImpl implements Distribution {
    * @throws TimeoutException if we wait too long for the member to go away
    */
   @Override
-  public boolean waitForDeparture(DistributedMember mbr, long timeoutMs)
+  public boolean waitForDeparture(InternalDistributedMember mbr, long timeoutMs)
       throws TimeoutException, InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException();
     boolean result = false;
     // TODO - Move the bulk of this method to the adapter.
     DirectChannel dc = directChannel;
-    InternalDistributedMember idm = (InternalDistributedMember) mbr;
+    InternalDistributedMember idm = mbr;
     long pauseTime = (timeoutMs < 4000) ? 100 : timeoutMs / 40;
     boolean wait;
     int numWaits = 0;
@@ -821,7 +814,7 @@ public class DistributionImpl implements Distribution {
    *
    *
    */
-  class MyDCReceiver implements MessageListener {
+  class MyDCReceiver implements MessageListener<InternalDistributedMember> {
 
     /**
      * Don't provide events until the caller has told us we are ready.
@@ -837,7 +830,7 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    public void messageReceived(Message msg) {
+    public void messageReceived(Message<InternalDistributedMember> msg) {
       membership.processMessage(msg);
 
     }
@@ -891,11 +884,11 @@ public class DistributionImpl implements Distribution {
     }
   }
 
-  public static class LifecycleListenerImpl
+  private static class LifecycleListenerImpl
       implements LifecycleListener<InternalDistributedMember> {
     private DistributionImpl distribution;
 
-    public LifecycleListenerImpl(final DistributionImpl distribution) {
+    LifecycleListenerImpl(final DistributionImpl distribution) {
       this.distribution = distribution;
     }
 
