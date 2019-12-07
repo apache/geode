@@ -46,6 +46,7 @@ import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.CopyOnWriteHashSet;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
@@ -134,7 +135,8 @@ public class PeerTypeRegistration implements TypeRegistration {
     // Relevant during reconnect
     TypeRegistry typeRegistry = cache.getPdxRegistry();
     if (typeRegistry != null) {
-      typeRegistry.flushCache();
+      InternalDataSerializer.flushClassCache();
+      this.flushCache();
       logger.debug("Flushing TypeRegistry");
     }
 
