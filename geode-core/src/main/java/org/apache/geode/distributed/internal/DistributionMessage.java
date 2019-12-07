@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
@@ -96,6 +97,7 @@ public abstract class DistributionMessage
   private final InternalDistributedMember[] ALL_RECIPIENTS_ARRAY =
       {null};
 
+  @Immutable
   protected static final InternalDistributedMember ALL_RECIPIENTS = null;
 
   //////////////////// Instance Fields ////////////////////
