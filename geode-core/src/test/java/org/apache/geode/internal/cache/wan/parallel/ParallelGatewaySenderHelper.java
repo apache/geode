@@ -77,6 +77,7 @@ public class ParallelGatewaySenderHelper {
     when(sender.getCache()).thenReturn(cache);
     CancelCriterion cancelCriterion = mock(CancelCriterion.class);
     when(sender.getCancelCriterion()).thenReturn(cancelCriterion);
+    when(sender.getId()).thenReturn("");
     return sender;
   }
 
