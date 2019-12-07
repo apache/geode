@@ -17,7 +17,6 @@ package org.apache.geode.distributed;
 import java.util.List;
 import java.util.Set;
 
-
 /**
  * This is the fundamental representation of a member in a GemFire distributed system. A process
  * becomes a member by calling {@link DistributedSystem#connect}.

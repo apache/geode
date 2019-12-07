@@ -573,7 +573,7 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public Services getServices() {
+  public Services<InternalDistributedMember> getServices() {
     return membership.getServices();
   }
 

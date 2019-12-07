@@ -23,8 +23,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -46,10 +48,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
@@ -309,5 +313,21 @@ public class GMSMembershipJUnitTest {
     }
   }
 
+  @Test
+  public void noDispatchWhenSick() {
+    final DistributionMessage msg = mock(DistributionMessage.class);
+    when(msg.containsRegionContentChange()).thenReturn(true);
+
+    final GMSMembership spy = Mockito.spy(manager);
+
+    spy.beSick();
+    spy.getGMSManager().start();
+    spy.getGMSManager().started();
+
+    spy.handleOrDeferMessage(msg);
+
+    verify(spy, never()).dispatchMessage(any(DistributionMessage.class));
+    assertThat(spy.getStartupEvents()).isEmpty();
+  }
 
 }

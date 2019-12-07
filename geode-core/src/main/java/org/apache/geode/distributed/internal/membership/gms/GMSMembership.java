@@ -929,7 +929,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    *
    * @param msg the message
    */
-  private void dispatchMessage(Message<ID> msg) {
+  protected void dispatchMessage(Message<ID> msg) {
     ID m = msg.getSender();
     boolean shunned = false;
 

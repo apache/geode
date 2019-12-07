@@ -33,7 +33,7 @@ import org.apache.geode.internal.cache.PoolManagerImpl;
  * @since GemFire 5.7
  *
  */
-public class PoolManager {
+public final class PoolManager {
 
   private PoolManager() {
     // no instances allowed!
