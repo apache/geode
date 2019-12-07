@@ -67,6 +67,7 @@ public class ParallelGatewaySenderQueueJUnitTest {
     when(sender.getCache()).thenReturn(cache);
     when(sender.getMaximumQueueMemory()).thenReturn(100);
     when(sender.getLifeCycleLock()).thenReturn(new ReentrantReadWriteLock());
+    when(sender.getId()).thenReturn("");
     metaRegionFactory = mock(MetaRegionFactory.class);
     queue = new ParallelGatewaySenderQueue(sender, Collections.emptySet(), 0, 1, metaRegionFactory,
         false);
