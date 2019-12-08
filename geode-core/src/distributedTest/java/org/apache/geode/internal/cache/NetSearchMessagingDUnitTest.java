@@ -213,7 +213,7 @@ public class NetSearchMessagingDUnitTest implements Serializable {
     assertThat(evicted).isTrue();
     vm2.invoke("verify other entries are not evicted", () -> {
       LocalRegion region = (LocalRegion) getCache().getRegion(regionName);
-      String[] keys = new String[]{"b", "c", "d", "e", "f"};
+      String[] keys = new String[] {"b", "c", "d", "e", "f"};
       for (String key : keys) {
         RegionEntry re = region.getRegionEntry(key);
         Object o = re.getValueInVM(region);
@@ -347,7 +347,7 @@ public class NetSearchMessagingDUnitTest implements Serializable {
       DistributionMessageObserver observer = new DistributionMessageObserver() {
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
-                                         DistributionMessage message) {
+            DistributionMessage message) {
           if (message instanceof NetSearchRequestMessage) {
             DistributionMessageObserver.setInstance(null);
             disconnectFromDS();
