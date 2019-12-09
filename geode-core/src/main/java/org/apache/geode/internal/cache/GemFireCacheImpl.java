@@ -3303,8 +3303,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (region.isSecret()
             || region.isUsedForMetaRegion()
             || !includePRAdminRegions
-                && (region.isUsedForPartitionedRegionAdmin()
-                    || region.isUsedForPartitionedRegionBucket())) {
+            && (region.isUsedForPartitionedRegionAdmin()
+                || region.isUsedForPartitionedRegionBucket())) {
           // Skip administrative PartitionedRegions
           continue;
         }
