@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
-import static org.apache.geode.management.configuration.IndexType.FUNCTIONAL;
+import static org.apache.geode.management.configuration.IndexType.RANGE;
 import static org.apache.geode.management.configuration.IndexType.HASH_LEGACY;
 import static org.apache.geode.management.configuration.IndexType.KEY;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +51,7 @@ public class IndexConverterTest {
   @Test
   public void fromNonNullConfigObject_mapsFunctionalIndexTypeToRangeIndexType() {
     Index index = new Index();
-    index.setIndexType(FUNCTIONAL);
+    index.setIndexType(RANGE);
 
     RegionConfig.Index regionConfigIndex = indexConverter.fromNonNullConfigObject(index);
 
@@ -140,7 +140,7 @@ public class IndexConverterTest {
 
     assertThat(index.getIndexType())
         .as("type")
-        .isEqualTo(FUNCTIONAL);
+        .isEqualTo(RANGE);
   }
 
   @Test

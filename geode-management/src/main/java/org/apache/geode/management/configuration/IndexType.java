@@ -24,7 +24,7 @@ package org.apache.geode.management.configuration;
  */
 public enum IndexType {
   KEY,
-  FUNCTIONAL,
+  RANGE,
   // this is used to represent deprecated index types not supported by the management API.
   @Deprecated
   HASH_LEGACY;

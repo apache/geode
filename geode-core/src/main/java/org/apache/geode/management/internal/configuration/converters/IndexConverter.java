@@ -52,7 +52,7 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
     }
     // functional is the default type
     else {
-      index.setIndexType(IndexType.FUNCTIONAL);
+      index.setIndexType(IndexType.RANGE);
     }
 
     return index;
