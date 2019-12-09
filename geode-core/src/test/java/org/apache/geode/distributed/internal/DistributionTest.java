@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.distributed.internal.DistributionImpl.EMPTY_MEMBER_ARRAY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -149,7 +150,7 @@ public class DistributionTest {
   @Test
   public void testDirectChannelSendAllRecipients() throws Exception {
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
-    when(membership.getAllMembers(new InternalDistributedMember[0])).thenReturn(mockMembers);
+    when(membership.getAllMembers(EMPTY_MEMBER_ARRAY)).thenReturn(mockMembers);
     m.setRecipient(DistributionMessage.ALL_RECIPIENTS);
     assertTrue(m.forAll());
     Set<InternalDistributedMember> failures = distribution

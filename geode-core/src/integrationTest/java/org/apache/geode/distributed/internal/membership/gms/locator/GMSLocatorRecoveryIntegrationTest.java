@@ -52,11 +52,9 @@ import org.apache.geode.distributed.internal.DistributionImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -81,7 +79,6 @@ public class GMSLocatorRecoveryIntegrationTest {
 
   private File stateFile;
   private GMSLocator gmsLocator;
-  private Membership<InternalDistributedMember> membership;
   private Locator locator;
   private DSFIDSerializer serializer;
   private Distribution distribution;

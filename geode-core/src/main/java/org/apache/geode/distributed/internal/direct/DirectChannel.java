@@ -111,7 +111,8 @@ public class DirectChannel {
     return conduit.getCancelCriterion();
   }
 
-  public DirectChannel(Membership mgr, MessageListener listener,
+  public DirectChannel(Membership<InternalDistributedMember> mgr,
+      MessageListener<InternalDistributedMember> listener,
       ClusterDistributionManager dm)
       throws ConnectionException {
     this.receiver = listener;

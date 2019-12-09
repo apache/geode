@@ -77,6 +77,8 @@ import org.apache.geode.logging.internal.executors.LoggingThread;
 
 public class DistributionImpl implements Distribution {
   private static final Logger logger = Services.getLogger();
+  public static final InternalDistributedMember[] EMPTY_MEMBER_ARRAY =
+      new InternalDistributedMember[0];
   /**
    * @see SystemFailure#loadEmergencyClasses() /** break any potential circularity in
    *      {@link #loadEmergencyClasses()}
@@ -194,7 +196,7 @@ public class DistributionImpl implements Distribution {
   static DistributionImpl createDistribution(
       ClusterDistributionManager clusterDistributionManager, RemoteTransportConfig transport,
       InternalDistributedSystem system,
-      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener<InternalDistributedMember> listener,
+      MembershipListener<InternalDistributedMember> listener,
       MessageListener<InternalDistributedMember> messageListener) {
 
     DistributionImpl distribution =
@@ -300,7 +302,7 @@ public class DistributionImpl implements Distribution {
     InternalDistributedMember[] keys;
     if (content.forAll()) {
       allDestinations = true;
-      keys = membership.getAllMembers(new InternalDistributedMember[0]);
+      keys = membership.getAllMembers(EMPTY_MEMBER_ARRAY);
     } else {
       allDestinations = false;
       keys = destinations;
