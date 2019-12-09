@@ -2163,7 +2163,8 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModificaiton)
+      throws TimeoutException, CacheWriterException {
     final long startTime = prStats.getTime();
     boolean result = false;
     final DistributedPutAllOperation putAllOp_save = event.setPutAllOperation(null);

@@ -334,7 +334,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   @Override
   public boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwConcurrentModificaiton)
+      throws TimeoutException, CacheWriterException {
     final boolean isTraceEnabled = logger.isTraceEnabled();
 
     Lock dlock = null;
@@ -383,7 +384,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           }
         }
         return super.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-            lastModified, overwriteDestroyed);
+            lastModified, overwriteDestroyed, invokeCallbacks, throwConcurrentModificaiton);
       } else {
         if (event.getDeltaBytes() != null && event.getRawNewValue() == null) {
           // This means that this event has delta bytes but no full value.

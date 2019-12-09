@@ -100,6 +100,15 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
     // Cleanup is called next
   }
 
+  @Override
+  public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) {
+    return this.putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
+        overwriteDestroyed, true,
+        false);
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -109,7 +118,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+      boolean overwriteDestroyed, boolean invokeCallbacks, boolean throwsConcurrentModification) {
     if (logger.isDebugEnabled()) {
       // [DISTTX] TODO Remove throwable
       logger.debug(
@@ -119,7 +128,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
     }
 
     boolean returnValue = super.putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue,
-        lastModified, overwriteDestroyed);
+        lastModified, overwriteDestroyed, invokeCallbacks, throwsConcurrentModification);
 
     // putAll event is already added in postPutAll, don't add individual events
     // from the putAll operation again

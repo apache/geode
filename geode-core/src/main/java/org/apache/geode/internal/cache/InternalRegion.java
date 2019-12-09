@@ -384,6 +384,11 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
       boolean requireOldValue, long lastModified, boolean overwriteDestroyed);
 
+  boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld, Object expectedOldValue,
+      boolean requireOldValue, long lastModified, boolean overwriteDestroyed,
+      boolean invokeCallbacks,
+      boolean throwsConcurrentModification);
+
   long postPutAllSend(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts);
 
   void postPutAllFireEvents(DistributedPutAllOperation putallOp,
