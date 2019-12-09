@@ -591,7 +591,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       new ConcurrentHashMap<>();
 
   private final HeapEvictorFactory heapEvictorFactory;
-  private final Consumer<Void> typeRegistryClose;
+  private final Runnable typeRegistryClose;
   private final Function<InternalCache, String> typeRegistryGetPdxDiskStoreName;
   private final Consumer<PdxSerializer> typeRegistrySetPdxSerializer;
   private final TypeRegistryFactory typeRegistryFactory;
@@ -897,9 +897,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         InternalResourceManager::createResourceManager,
         DistributionAdvisor::createSerialNumber,
         HeapEvictor::new,
-        VOID -> TypeRegistry.init(),
-        VOID -> TypeRegistry.open(),
-        VOID -> TypeRegistry.close(),
+        TypeRegistry::init,
+        TypeRegistry::open,
+        TypeRegistry::close,
         TypeRegistry::getPdxDiskStoreName,
         TypeRegistry::setPdxSerializer,
         TypeRegistry::new,
@@ -937,9 +937,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       Function<InternalCache, InternalResourceManager> internalResourceManagerFactory,
       Supplier<Integer> serialNumberSupplier,
       HeapEvictorFactory heapEvictorFactory,
-      Consumer<Void> typeRegistryInit,
-      Consumer<Void> typeRegistryOpen,
-      Consumer<Void> typeRegistryClose,
+      Runnable typeRegistryInit,
+      Runnable typeRegistryOpen,
+      Runnable typeRegistryClose,
       Function<InternalCache, String> typeRegistryGetPdxDiskStoreName,
       Consumer<PdxSerializer> typeRegistrySetPdxSerializer,
       TypeRegistryFactory typeRegistryFactory,
@@ -1061,9 +1061,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       recordedEventSweeper = createEventTrackerExpiryTask();
       tombstoneService = tombstoneServiceFactory.apply(this);
 
-      typeRegistryInit.accept(null);
+      typeRegistryInit.run();
       basicSetPdxSerializer(this.cacheConfig.getPdxSerializer());
-      typeRegistryOpen.accept(null);
+      typeRegistryOpen.run();
 
       if (!isClient()) {
         // Initialize the QRM thread frequency to default (1 second )to prevent spill over from
@@ -2383,7 +2383,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         }
       }
 
-      typeRegistryClose.accept(null);
+      typeRegistryClose.run();
       typeRegistrySetPdxSerializer.accept(null);
 
       for (CacheLifecycleListener listener : cacheLifecycleListeners) {
