@@ -486,19 +486,19 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
   }
 
   void releaseOffHeapRefIfRegionBeingClosedOrDestroyed(RegionEntryContext context, Object ref) {
-//    if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
-//      ((Releasable) this).release();
-//    }
-     try {
-     Thread.sleep(200);
-     if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
-     ((Releasable) this).release();
-     logger.info("JASON race condition???", new Exception());
-     }
-     } catch (InterruptedException e) {
-logger.info("JASON woo interrupted", e);
-     e.printStackTrace();
-     }
+    // if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
+    // ((Releasable) this).release();
+    // }
+    try {
+      Thread.sleep(200);
+      if (isOffHeapReference(ref) && isThisRegionBeingClosedOrDestroyed(context)) {
+        ((Releasable) this).release();
+        logger.info("JASON race condition???", new Exception());
+      }
+    } catch (InterruptedException e) {
+      logger.info("JASON woo interrupted", e);
+      e.printStackTrace();
+    }
 
   }
 
@@ -693,7 +693,7 @@ logger.info("JASON woo interrupted", e);
             Versionable nv = (Versionable) newValueToWrite;
             Versionable ov = (Versionable) oldValue;
             putValue = nv.isNewerThan(ov);
-            logger.info("JASON putValue is :" + putValue + " for value: "+ newValue);
+            logger.info("JASON putValue is :" + putValue + " for value: " + newValue);
 
           }
         }
