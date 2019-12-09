@@ -37,4 +37,4 @@ echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 
 gcloud compute instances delete ${INSTANCE_NAME} \
   --zone=${ZONE} \
-  --quiet
+  --quiet || true
