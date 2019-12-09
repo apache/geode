@@ -16,7 +16,7 @@
 package org.apache.geode.management.internal.configuration.converters;
 
 import static org.apache.geode.management.configuration.IndexType.RANGE;
-import static org.apache.geode.management.configuration.IndexType.HASH_LEGACY;
+import static org.apache.geode.management.configuration.IndexType.HASH_DEPRECATED;
 import static org.apache.geode.management.configuration.IndexType.KEY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -86,7 +86,7 @@ public class IndexConverterTest {
   @Test
   public void fromNonNullConfigObject_mapsHashDeprecatedIndexTypeToHashIndexType() {
     Index index = new Index();
-    index.setIndexType(HASH_LEGACY);
+    index.setIndexType(HASH_DEPRECATED);
 
     RegionConfig.Index regionConfigIndex = indexConverter.fromNonNullConfigObject(index);
 
@@ -128,7 +128,7 @@ public class IndexConverterTest {
 
     assertThat(index.getIndexType())
         .as("type")
-        .isEqualTo(HASH_LEGACY);
+        .isEqualTo(HASH_DEPRECATED);
   }
 
   @Test
