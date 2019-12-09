@@ -26,6 +26,7 @@ import java.io.Externalizable;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
@@ -88,7 +89,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
   private File expectedDataSerializablesFile;
   private String expectedSerializablesFileName =
       "sanctioned-" + getModuleName() + "-serializables.txt";
-  private File expectedSerializablesFile;
+  private InputStream expectedSerializablesInputStream;
 
   private List<ClassAndMethodDetails> expectedDataSerializables;
   private List<ClassAndVariableDetails> expectedSerializables;
@@ -105,12 +106,11 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
   }
 
   public void loadExpectedSerializables() throws Exception {
-    this.expectedSerializablesFile =
-        getResourceAsFile(getModuleClass(), expectedSerializablesFileName);
-    assertThat(this.expectedSerializablesFile).exists().canRead();
+    this.expectedSerializablesInputStream =
+        getResourceAsStream(getModuleClass(), expectedSerializablesFileName);
 
     this.expectedSerializables =
-        CompiledClassUtils.loadClassesAndVariables(this.expectedSerializablesFile);
+        CompiledClassUtils.loadClassesAndVariables(this.expectedSerializablesInputStream);
   }
 
   public void findClasses() throws Exception {
@@ -197,7 +197,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
       System.out.println(diff);
       fail(diff + FAIL_MESSAGE, getSrcPathFor(getResourceAsFile(EXCLUDED_CLASSES_TXT)),
           actualSerializablesFile.getAbsolutePath(),
-          getSrcPathFor(this.expectedSerializablesFile, "main"));
+          this.expectedSerializablesFileName);
     }
   }
 
@@ -433,7 +433,7 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
     String ideaBuildDirName = Paths.get(getModuleName(), "out", "production", "classes").toString();
     System.out.println("ideaBuildDirName is " + ideaBuildDirName);
     String ideaFQCNBuildDirName = Paths.get("out", "production",
-        "org.apache.geode." + getModuleName() + ".main").toString();
+        "geode." + getModuleName() + ".main").toString();
     System.out.println("idea build path with full package names is " + ideaFQCNBuildDirName);
     String buildDir = null;
 
@@ -577,11 +577,18 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
     return file;
   }
 
+  /**
+   * Use this method to get a resource stored in the test's resource directory
+   */
   private File getResourceAsFile(String resourceName) {
-    return getResourceAsFile(getClass(), resourceName);
+    return new File(getClass().getResource(resourceName).getFile());
   }
 
-  private File getResourceAsFile(Class associatedClass, String resourceName) {
-    return new File(associatedClass.getResource(resourceName).getFile());
+  /**
+   * Use this method to get a resource that might be in a JAR file
+   */
+  private InputStream getResourceAsStream(Class associatedClass, String resourceName)
+      throws IOException {
+    return associatedClass.getResource(resourceName).openStream();
   }
 }

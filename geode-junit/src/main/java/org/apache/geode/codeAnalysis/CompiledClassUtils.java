@@ -21,6 +21,8 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -292,11 +294,10 @@ public class CompiledClassUtils {
     out.close();
   }
 
-  public static List<ClassAndVariableDetails> loadClassesAndVariables(File file)
+  public static List<ClassAndVariableDetails> loadClassesAndVariables(InputStream stream)
       throws IOException {
-    List<ClassAndVariableDetails> result = new LinkedList<ClassAndVariableDetails>();
-    FileReader fr = new FileReader(file);
-    BufferedReader in = new BufferedReader(fr);
+    List<ClassAndVariableDetails> result = new LinkedList<>();
+    BufferedReader in = new BufferedReader(new InputStreamReader(stream));
     String line;
     while ((line = in.readLine()) != null) {
       line = line.trim();
@@ -306,7 +307,7 @@ public class CompiledClassUtils {
         result.add(new ClassAndVariableDetails(line));
       }
     }
-    fr.close();
+    stream.close();
     return result;
   }
 
