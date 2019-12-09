@@ -290,7 +290,7 @@ public class MembershipJUnitTest {
                 InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
             .create();
     doAnswer(invocation -> {
-      DistributionImpl.connectLocatorToServices(m1.getServices());
+      DistributionImpl.connectLocatorToServices(m1);
       return null;
     }).when(lifeCycleListener).started();
     m1.start();

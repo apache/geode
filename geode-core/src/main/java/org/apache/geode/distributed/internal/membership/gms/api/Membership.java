@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 
 public interface Membership<ID extends MemberIdentifier> {
@@ -295,8 +294,6 @@ public interface Membership<ID extends MemberIdentifier> {
    * return a list of all members excluding those in the process of shutting down
    */
   Set<ID> getMembersNotShuttingDown();
-
-  Services<ID> getServices();
 
   /**
    * Process a message and pass it on to the {@link MessageListener} that was configured

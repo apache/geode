@@ -15,30 +15,24 @@
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import java.util.Queue;
-import java.util.Set;
 
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipInformation;
 
 /**
  * Class MembershipInformation is used to pass membership data from a GMS that was
  * kicked out of the cluster to a new one during auto-reconnect operations.
  */
-public class MembershipInformationImpl<ID extends MemberIdentifier>
-    implements MembershipInformation {
+public class MembershipInformationImpl implements MembershipInformation {
   private final JChannel channel;
-  private final Set<ID> membershipIdentifiers;
   private final Queue<Message> queuedMessages;
 
   protected MembershipInformationImpl(JChannel channel,
-      Set<ID> oldMembershipIdentifiers,
       Queue<Message> queuedMessages) {
 
     this.channel = channel;
-    this.membershipIdentifiers = oldMembershipIdentifiers;
     this.queuedMessages = queuedMessages;
   }
 
@@ -46,11 +40,7 @@ public class MembershipInformationImpl<ID extends MemberIdentifier>
     return channel;
   }
 
-  public Set<ID> getMembershipIdentifiers() {
-    return membershipIdentifiers;
-  }
-
-  public Queue<Message> getQueuedMessages() {
+  Queue<Message> getQueuedMessages() {
     return this.queuedMessages;
   }
 }

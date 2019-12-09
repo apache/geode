@@ -55,15 +55,12 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
   private final JChannel channel;
   private JGAddress myAddress;
   private final long partitionThreshold;
-  private Set<ID> oldMemberIdentifiers;
   private ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
 
-  public GMSQuorumChecker(GMSMembershipView<ID> jgView, int partitionThreshold, JChannel channel,
-      Set<ID> oldMemberIdentifiers) {
+  public GMSQuorumChecker(GMSMembershipView<ID> jgView, int partitionThreshold, JChannel channel) {
     this.lastView = jgView;
     this.partitionThreshold = partitionThreshold;
     this.channel = channel;
-    this.oldMemberIdentifiers = oldMemberIdentifiers;
   }
 
   public void initialize() {
@@ -115,7 +112,7 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
 
 
   public MembershipInformation getMembershipInfo() {
-    return new MembershipInformationImpl<>(channel, oldMemberIdentifiers, messageQueue);
+    return new MembershipInformationImpl(channel, messageQueue);
   }
 
   private boolean calculateQuorum() {

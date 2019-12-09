@@ -12,19 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership;
 
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+package org.apache.geode.management.configuration;
 
-public interface NetLocator extends RestartableTcpHandler {
-
-  /**
-   * This must be called after booting the membership manager so that the locator can use its
-   * services
-   *
-   * @return true if the membership manager was accepted
-   */
-  boolean setMembership(Membership<InternalDistributedMember> membership);
-
+/**
+ * Public ENUM to indicate type of Index on a Geode {@link Region} used by the Management API.
+ *
+ * @see Index
+ *
+ * @since Geode 1.12
+ */
+public enum IndexType {
+  KEY,
+  FUNCTIONAL,
+  // this is used to represent deprecated index types not supported by the management API.
+  @Deprecated
+  HASH_LEGACY;
 }

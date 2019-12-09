@@ -1244,7 +1244,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     return address;
   }
 
-  @Override
   public Services<ID> getServices() {
     return services;
   }

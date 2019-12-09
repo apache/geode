@@ -29,7 +29,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 
 @RunWith(ArchUnitRunner.class)
@@ -54,9 +53,5 @@ public class MembershipAPIArchUnitTest {
 
               // allowed
               .or(type(MembershipBuilderImpl.class))
-              .or(type(MemberDataBuilderImpl.class))
-
-              // TODO: This is used by the GMSLocatorAdapter to reach into the locator
-              // part of the services
-              .or(type(Services.class)));
+              .or(type(MemberDataBuilderImpl.class)));
 }

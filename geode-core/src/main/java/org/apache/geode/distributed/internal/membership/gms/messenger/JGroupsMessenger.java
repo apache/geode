@@ -165,12 +165,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   private GMSEncrypt<ID> encrypt;
 
   /**
-   * Member identifiers already used, either in this JGroupsMessenger instance
-   * or in a past one & retained through an auto-reconnect.
-   */
-  private Set<ID> usedMemberIdentifiers = new HashSet<>();
-
-  /**
    * During reconnect a QuorumChecker holds the JGroups channel and responds to Ping
    * and Pong messages but also queues any messages it doesn't recognize. These need
    * to be delivered to handlers after membership services have been rebuilt.
@@ -329,9 +323,8 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       Object oldDSMembershipInfo = services.getConfig().getOldDSMembershipInfo();
       if (oldDSMembershipInfo != null) {
         logger.debug("Reusing JGroups channel from previous system", properties);
-        MembershipInformationImpl<ID> oldInfo = (MembershipInformationImpl<ID>) oldDSMembershipInfo;
+        MembershipInformationImpl oldInfo = (MembershipInformationImpl) oldDSMembershipInfo;
         myChannel = oldInfo.getChannel();
-        usedMemberIdentifiers = oldInfo.getMembershipIdentifiers();
         queuedMessagesFromReconnect = oldInfo.getQueuedMessages();
 
         // scrub the old channel
@@ -398,11 +391,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
   }
 
-  @Override
-  public boolean isOldMembershipIdentifier(ID id) {
-    return usedMemberIdentifiers.contains(id);
-  }
-
   /**
    * JGroups picks an IPv6 address if preferIPv4Stack is false or not set and preferIPv6Addresses is
    * not set or is true. We want it to use an IPv4 address for a dual-IP stack so that both IPv4 and
@@ -433,10 +421,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
   @Override
   public void stop() {
-    if (localAddress != null && localAddress.getVmViewId() >= 0) {
-      // keep track of old addresses that were used to successfully join the cluster
-      usedMemberIdentifiers.add(localAddress);
-    }
     if (this.myChannel != null) {
       if ((services.isShutdownDueToForcedDisconnect() && services.isAutoReconnectEnabled())
           || services.getManager().isReconnectingDS()) {
@@ -1226,10 +1210,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   @Override
   public void emergencyClose() {
     this.view = null;
-    if (localAddress.getVmViewId() >= 0) {
-      // keep track of old addresses that were used to successfully join the cluster
-      usedMemberIdentifiers.add(localAddress);
-    }
     if (this.myChannel != null) {
       if ((services.isShutdownDueToForcedDisconnect() && services.isAutoReconnectEnabled())
           || services.getManager().isReconnectingDS()) {
@@ -1252,8 +1232,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       }
     }
     GMSQuorumChecker<ID> qc =
-        new GMSQuorumChecker<ID>(view, services.getConfig().getLossThreshold(), this.myChannel,
-            usedMemberIdentifiers);
+        new GMSQuorumChecker<>(view, services.getConfig().getLossThreshold(), this.myChannel);
     qc.initialize();
     return qc;
   }

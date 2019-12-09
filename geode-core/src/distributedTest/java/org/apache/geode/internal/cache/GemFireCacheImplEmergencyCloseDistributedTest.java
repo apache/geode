@@ -14,36 +14,46 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
-public class GemfireCacheImplDUnitTest {
+public class GemFireCacheImplEmergencyCloseDistributedTest {
+
+  private VM vm;
 
   @Rule
-  public DistributedRule distributedRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule(1);
 
-  @Test
-  public void inAbsenceOfGatewayReceiverServerEmergencyCloseWillCloseCache() {
-
-    VM node = VM.getVM(0);
-
-    node.invoke(() -> {
-      GemFireCacheImpl gemFireCacheImpl = (GemFireCacheImpl) new CacheFactory().create();
-
-      gemFireCacheImpl.emergencyClose();
-
-      assertThat(gemFireCacheImpl.isClosed()).isTrue();
-    });
-
-    // This is to close the resources that are left over after
-    // GemfireCacheImpl.emergencyClose().
-    node.bounceForcibly();
+  @Before
+  public void setUp() {
+    vm = getVM(0);
   }
 
+  @After
+  public void tearDown() {
+    // This is to close the resources that are left over after emergencyClose().
+    vm.bounceForcibly();
+  }
+
+  @Test
+  public void emergencyClose_closesCache() {
+    vm.invoke(() -> {
+      Cache cache = new CacheFactory().create();
+
+      GemFireCacheImpl.emergencyClose();
+
+      assertThat(cache.isClosed())
+          .isTrue();
+    });
+  }
 }

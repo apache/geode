@@ -44,7 +44,6 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.direct.ShunnedMemberException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
@@ -159,15 +158,17 @@ public class DistributionImpl implements Distribution {
     GMSHealthMonitor.loadEmergencyClasses();
   }
 
-  public static void connectLocatorToServices(Services<InternalDistributedMember> services) {
+  public static void connectLocatorToServices(Membership<InternalDistributedMember> membership) {
     // see if a locator was started and put it in GMS Services
     InternalLocator l = (InternalLocator) Locator.getLocator();
     if (l != null && l.getLocatorHandler() != null) {
-      if (l.getLocatorHandler().setServices(services)) {
-        services
-            .setLocator(((GMSLocatorAdapter) l.getLocatorHandler()).getGMSLocator());
-      }
+      l.getLocatorHandler().setMembership(membership);
     }
+  }
+
+  @Override
+  public Membership getMembership() {
+    return membership;
   }
 
   @Override
@@ -567,11 +568,6 @@ public class DistributionImpl implements Distribution {
     return membership.getMembersNotShuttingDown();
   }
 
-  @Override
-  public Services<InternalDistributedMember> getServices() {
-    return membership.getServices();
-  }
-
   // TODO - this method is only used by tests
   @Override
   @VisibleForTesting
@@ -916,7 +912,7 @@ public class DistributionImpl implements Distribution {
 
     @Override
     public void started() {
-      connectLocatorToServices(distribution.getServices());
+      connectLocatorToServices(distribution.getMembership());
     }
 
     @Override

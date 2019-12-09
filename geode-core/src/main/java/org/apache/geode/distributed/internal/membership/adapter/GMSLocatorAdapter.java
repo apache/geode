@@ -22,13 +22,14 @@ import java.nio.file.Path;
 
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetLocator;
-import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -89,8 +90,9 @@ public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
   @Override
   public void restarting(DistributedSystem ds, GemFireCache cache,
       InternalConfigurationPersistenceService sharedConfig) {
-    gmsLocator.setServices(
-        ((InternalDistributedSystem) ds).getDM().getDistribution().getServices());
+    InternalDistributedSystem ids = (InternalDistributedSystem) ds;
+    Distribution distribution = ids.getDM().getDistribution();
+    gmsLocator.setMembership(distribution.getMembership());
   }
 
   @Override
@@ -99,8 +101,8 @@ public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
   }
 
   @Override
-  public boolean setServices(Services<InternalDistributedMember> pservices) {
-    return gmsLocator.setServices(pservices);
+  public boolean setMembership(Membership<InternalDistributedMember> membership) {
+    return gmsLocator.setMembership(membership);
   }
 
   public Locator getGMSLocator() {

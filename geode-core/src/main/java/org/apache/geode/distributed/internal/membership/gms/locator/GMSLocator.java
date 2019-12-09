@@ -40,10 +40,12 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.LocatorStats;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSMemberWrapper;
@@ -111,9 +113,9 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     this.locatorClient = locatorClient;
   }
 
-  public synchronized boolean setServices(Services<ID> pservices) {
+  public synchronized boolean setMembership(Membership<ID> membership) {
     if (services == null || services.isStopped()) {
-      services = pservices;
+      services = ((GMSMembership<ID>) membership).getServices();
       localAddress = services.getMessenger().getMemberID();
       Objects.requireNonNull(localAddress, "member address should have been established");
       logger.info("Peer locator is connecting to local membership services with ID {}",

@@ -52,11 +52,6 @@ public interface Messenger<ID extends MemberIdentifier> extends Service<ID> {
   ID getMemberID();
 
   /**
-   * check to see if a member ID has already been used
-   */
-  boolean isOldMembershipIdentifier(ID id);
-
-  /**
    * retrieves the quorum checker that is used during auto-reconnect attempts
    */
   GMSQuorumChecker<ID> getQuorumChecker();
