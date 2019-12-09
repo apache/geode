@@ -15,27 +15,64 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+
+
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.configuration.Index;
+import org.apache.geode.management.configuration.IndexType;
 
 public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.Index> {
+
+  /**
+   * based on the cache.xsd, index type can have only two values "range", "hash"
+   * <attribute name="type" default="range">
+   * <simpleType>
+   * <restriction base="{http://www.w3.org/2001/XMLSchema}string">
+   * <enumeration value="range"/>
+   * <enumeration value="hash"/>
+   * </restriction>
+   * </simpleType>
+   * </attribute>
+   */
+  private static final String HASH = "hash";
+  private static final String RANGE = "range";
+
   @Override
-  protected Index fromNonNullXmlObject(RegionConfig.Index xmlObject) {
+  protected Index fromNonNullXmlObject(RegionConfig.Index regionConfigIndex) {
     Index index = new Index();
-    index.setName(xmlObject.getName());
-    index.setExpression(xmlObject.getExpression());
-    index.setRegionPath(xmlObject.getFromClause());
-    index.setKeyIndex(xmlObject.isKeyIndex());
+    index.setName(regionConfigIndex.getName());
+    index.setExpression(regionConfigIndex.getExpression());
+    index.setRegionPath(regionConfigIndex.getFromClause());
+
+    Boolean keyIndex = regionConfigIndex.isKeyIndex();
+    if (keyIndex != null && keyIndex) {
+      index.setIndexType(IndexType.KEY);
+    } else if (HASH.equalsIgnoreCase(regionConfigIndex.getType())) {
+      index.setIndexType(IndexType.HASH_LEGACY);
+    }
+    // functional is the default type
+    else {
+      index.setIndexType(IndexType.FUNCTIONAL);
+    }
+
     return index;
   }
 
   @Override
-  protected RegionConfig.Index fromNonNullConfigObject(Index configObject) {
-    RegionConfig.Index index = new RegionConfig.Index();
-    index.setName(configObject.getName());
-    index.setFromClause(configObject.getRegionPath());
-    index.setExpression(configObject.getExpression());
-    index.setKeyIndex(configObject.getKeyIndex());
-    return index;
+  protected RegionConfig.Index fromNonNullConfigObject(Index index) {
+    RegionConfig.Index regionConfigIndex = new RegionConfig.Index();
+    regionConfigIndex.setName(index.getName());
+    regionConfigIndex.setFromClause(index.getRegionPath());
+    regionConfigIndex.setExpression(index.getExpression());
+
+    if (index.getIndexType() == IndexType.KEY) {
+      regionConfigIndex.setKeyIndex(true);
+    } else if (index.getIndexType() == IndexType.HASH_LEGACY) {
+      regionConfigIndex.setType(HASH);
+    } else {
+      regionConfigIndex.setType(RANGE);
+    }
+
+    return regionConfigIndex;
   }
 }
