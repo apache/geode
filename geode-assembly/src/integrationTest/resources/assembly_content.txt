@@ -740,9 +740,11 @@ javadoc/org/apache/geode/management/client/package-tree.html
 javadoc/org/apache/geode/management/configuration/AbstractConfiguration.html
 javadoc/org/apache/geode/management/configuration/AutoSerializer.html
 javadoc/org/apache/geode/management/configuration/ClassName.html
+javadoc/org/apache/geode/management/configuration/Deployment.html
 javadoc/org/apache/geode/management/configuration/GatewayReceiver.html
 javadoc/org/apache/geode/management/configuration/GroupableConfiguration.html
 javadoc/org/apache/geode/management/configuration/Index.html
+javadoc/org/apache/geode/management/configuration/IndexType.html
 javadoc/org/apache/geode/management/configuration/Links.html
 javadoc/org/apache/geode/management/configuration/Member.html
 javadoc/org/apache/geode/management/configuration/Pdx.html
@@ -776,6 +778,7 @@ javadoc/org/apache/geode/management/package-frame.html
 javadoc/org/apache/geode/management/package-summary.html
 javadoc/org/apache/geode/management/package-tree.html
 javadoc/org/apache/geode/management/runtime/CacheServerInfo.html
+javadoc/org/apache/geode/management/runtime/DeploymentInfo.html
 javadoc/org/apache/geode/management/runtime/GatewayReceiverInfo.html
 javadoc/org/apache/geode/management/runtime/MemberInformation.html
 javadoc/org/apache/geode/management/runtime/OperationResult.html
