@@ -93,14 +93,10 @@ public class RollingUpgradeQueryReturnsCorrectResultAfterTwoLocatorsWithTwoServe
       server2 = rollServerToCurrentCreateLuceneIndexAndCreateRegion(server2, regionType, null,
           shortcut.name(), regionName, locatorPorts, reindex);
       expectedRegionSize += 5;
-      int expectedQueryResultSize = expectedRegionSize;
-      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize,
-          expectedQueryResultSize, 25,
+      putSerializableObjectAndVerifyLuceneQueryResult(server2, regionName, expectedRegionSize, 25,
           35, server1, server2);
       expectedRegionSize += 5;
-      expectedQueryResultSize += 5;
-      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize,
-          expectedQueryResultSize, 30,
+      putSerializableObjectAndVerifyLuceneQueryResult(server1, regionName, expectedRegionSize, 30,
           40, server1, server2);
 
     } finally {

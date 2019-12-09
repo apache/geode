@@ -221,13 +221,13 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
 
 
   void putSerializableObjectAndVerifyLuceneQueryResult(VM putter, String regionName,
-      int expectedRegionSize, int expectedQueryResultSize, int start, int end, VM... vms)
+      int expectedRegionSize, int start, int end, VM... vms)
       throws Exception {
     // do puts
     putSerializableObject(putter, regionName, start, end);
 
     // verify present in others
-    verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, expectedQueryResultSize, vms);
+    verifyLuceneQueryResultInEachVM(regionName, expectedRegionSize, vms);
   }
 
   void putSerializableObject(VM putter, String regionName, int start, int end)
@@ -311,11 +311,10 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
   }
 
   protected void verifyLuceneQueryResultInEachVM(String regionName, int expectedRegionSize,
-      int expectedQueryResultSize,
       VM... vms) {
     for (VM vm : vms) {
       vm.invoke(() -> waitForRegionToHaveExpectedSize(regionName, expectedRegionSize));
-      vm.invoke(() -> verifyLuceneQueryResults(regionName, expectedQueryResultSize));
+      vm.invoke(() -> verifyLuceneQueryResults(regionName, expectedRegionSize));
     }
 
   }

@@ -86,7 +86,7 @@ public class LuceneEventListener implements AsyncEventListener {
     boolean hasOldMember = cache.getMembers().stream()
         .map(InternalDistributedMember.class::cast)
         .map(InternalDistributedMember::getVersionObject)
-        .anyMatch(version -> version.compareTo(Version.GEODE_1_11_0) < 0);
+        .anyMatch(version -> version.compareTo(Version.CURRENT) < 0);
 
     if (hasOldMember) {
       return false;

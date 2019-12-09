@@ -32,12 +32,14 @@ import org.apache.geode.cache.lucene.internal.partition.BucketTargetingMap;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
 import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionRegionConfig;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class IndexRepositoryFactory {
@@ -82,6 +84,7 @@ public class IndexRepositoryFactory {
     BucketRegion fileAndChunkBucket = getMatchingBucket(fileRegion, bucketId);
     BucketRegion dataBucket = getMatchingBucket(userRegion, bucketId);
     boolean success = false;
+
     if (fileAndChunkBucket == null) {
       if (oldRepository != null) {
         oldRepository.cleanup();
@@ -102,6 +105,19 @@ public class IndexRepositoryFactory {
     if (oldRepository != null) {
       oldRepository.cleanup();
     }
+
+    boolean hasOldMember = false;
+    if (userRegion.getCache() != null) {
+      hasOldMember = userRegion.getCache().getMembers().stream()
+          .map(InternalDistributedMember.class::cast)
+          .map(InternalDistributedMember::getVersionObject)
+          .anyMatch(version -> version.compareTo(Version.CURRENT) < 0);
+    }
+
+    if (hasOldMember) {
+      return null;
+    }
+
     DistributedLockService lockService = getLockService();
     String lockName = getLockName(fileAndChunkBucket);
     while (!lockService.lock(lockName, 100, -1)) {
