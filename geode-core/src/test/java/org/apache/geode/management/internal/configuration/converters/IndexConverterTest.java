@@ -15,9 +15,9 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
-import static org.apache.geode.management.configuration.IndexType.RANGE;
 import static org.apache.geode.management.configuration.IndexType.HASH_DEPRECATED;
 import static org.apache.geode.management.configuration.IndexType.KEY;
+import static org.apache.geode.management.configuration.IndexType.RANGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
