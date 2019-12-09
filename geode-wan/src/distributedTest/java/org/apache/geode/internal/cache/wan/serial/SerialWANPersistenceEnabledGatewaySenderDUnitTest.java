@@ -508,4 +508,144 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
 
   }
+
+  /**
+   * Enable persistence for GatewaySender, stop the sender and restart it. Check if the remote site
+   * receives all the event.
+   */
+  @Test
+  public void testReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart_Sender() {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    String firstDStore = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+        false, 100, 10, false, true, null, null, true));
+    String secondDStore = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+        false, 100, 10, false, true, null, null, true));
+
+    LogWriterUtils.getLogWriter().info("The first ds is " + firstDStore);
+    LogWriterUtils.getLogWriter().info("The first ds is " + secondDStore);
+
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm3.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+
+    startSenderInVMs("ln", vm4, vm5);
+
+    vm4.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
+        isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
+        isOffHeap()));
+    vm6.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
+        isOffHeap()));
+    vm7.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
+        isOffHeap()));
+
+    vm4.invoke(() -> WANTestBase.pauseSender("ln"));
+    vm5.invoke(() -> WANTestBase.pauseSender("ln"));
+
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+
+    LogWriterUtils.getLogWriter().info("Completed puts in the region");
+
+    vm4.invoke(() -> WANTestBase.stopSender("ln"));
+    vm5.invoke(() -> WANTestBase.stopSender("ln"));
+
+
+    LogWriterUtils.getLogWriter().info("Stopped all the senders. ");
+
+    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 4");
+
+    vm5.invoke(() -> WANTestBase.startSender("ln"));
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 5");
+    try {
+      inv1.join();
+    } catch (InterruptedException e) {
+      fail("Got interrupted exception while waiting for startSender to finish.");
+    }
+
+    Wait.pause(5000);
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+
+  }
+
+
+  /**
+   * Enable persistence for GatewaySender, stop the sender and start it with clean-queues option.
+   * Check if the remote site receives all the event.
+   */
+  @Test
+  public void testReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart_Sender_Clean() {
+    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(nyPort, vm2, vm3);
+    createReceiverInVMs(vm2, vm3);
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    String firstDStore = (String) vm4.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+        false, 100, 10, false, true, null, null, true));
+    String secondDStore = (String) vm5.invoke(() -> WANTestBase.createSenderWithDiskStore("ln", 2,
+        false, 100, 10, false, true, null, null, true));
+
+    LogWriterUtils.getLogWriter().info("The first ds is " + firstDStore);
+    LogWriterUtils.getLogWriter().info("The first ds is " + secondDStore);
+
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm3.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+
+    startSenderInVMs("ln", vm4, vm5);
+
+    vm4.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
+        isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
+        isOffHeap()));
+    vm6.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
+        isOffHeap()));
+    vm7.invoke(() -> WANTestBase.createPersistentReplicatedRegion(getTestMethodName() + "_RR", "ln",
+        isOffHeap()));
+
+    vm4.invoke(() -> WANTestBase.pauseSender("ln"));
+    vm5.invoke(() -> WANTestBase.pauseSender("ln"));
+
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+
+    LogWriterUtils.getLogWriter().info("Completed puts in the region");
+
+    vm4.invoke(() -> WANTestBase.stopSender("ln"));
+    vm5.invoke(() -> WANTestBase.stopSender("ln"));
+
+
+    LogWriterUtils.getLogWriter().info("Stopped all the senders. ");
+
+    AsyncInvocation inv1 = vm4.invokeAsync(() -> WANTestBase.startSenderwithCleanQueues("ln"));
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 4");
+
+    vm5.invoke(() -> WANTestBase.startSenderwithCleanQueues("ln"));
+    LogWriterUtils.getLogWriter().info("Started the sender in vm 5");
+    try {
+      inv1.join();
+    } catch (InterruptedException e) {
+      fail("Got interrupted exception while waiting for startSender to finish.");
+    }
+
+    Wait.pause(5000);
+
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
+
+  }
+
 }
