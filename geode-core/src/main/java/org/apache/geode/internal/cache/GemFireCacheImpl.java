@@ -285,14 +285,6 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 /**
  * GemFire's implementation of a distributed {@link Cache}.
  */
-@SuppressWarnings({"TypeMayBeWeakened", "ThisEscapedInObjectConstruction", "OverlyComplexMethod",
-    "NonConstantFieldWithUpperCaseName", "StaticNonFinalField",
-    "StaticVariableMayNotBeInitialized", "UseOfObsoleteDateTimeApi", "DeprecatedIsStillUsed",
-    "SynchronizeOnThis", "deprecation", "StaticVariableUsedBeforeInitialization",
-    "NestedTryStatement", "ThrowInsideCatchBlockWhichIgnoresCaughtException", "OverlyNestedMethod",
-    "OverlyCoupledMethod", "ConstantConditions", "ThrowCaughtLocally", "ThrowFromFinallyBlock",
-    "SuspiciousMethodCalls", "AssignmentOrReturnOfFieldWithMutableType", "DoubleCheckedLocking",
-    "NonPrivateFieldAccessedInSynchronizedContext"})
 public class GemFireCacheImpl implements InternalCache, InternalClientCache, HasCachePerfStats,
     DistributionAdvisee {
   private static final Logger logger = LogService.getLogger();
@@ -3303,8 +3295,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (region.isSecret()
             || region.isUsedForMetaRegion()
             || !includePRAdminRegions
-            && (region.isUsedForPartitionedRegionAdmin()
-                || region.isUsedForPartitionedRegionBucket())) {
+                && (region.isUsedForPartitionedRegionAdmin()
+                    || region.isUsedForPartitionedRegionBucket())) {
           // Skip administrative PartitionedRegions
           continue;
         }
