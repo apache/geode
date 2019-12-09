@@ -945,8 +945,11 @@ public class InitialImageOperation {
                     record = (tmpValue != Token.TOMBSTONE);
                   }
                   if (record) {
+                    logger.info("JASON initial image put for : " + tmpValue);
                     this.entries.initialImagePut(entry.key, lastModified, tmpValue, wasRecovered,
                         true, tag, sender, this.isSynchronizing);
+                    logger.info("JASON initial image put complete for : " + tmpValue);
+
                     if (this.isSynchronizing) {
                       entriesToSynchronize.add(entry);
                     }

@@ -662,6 +662,7 @@ logger.info("JASON woo interrupted", e);
     // note that the caller has already write synced this RegionEntry
     boolean result = false;
 
+    logger.info("JASON initial image init:" + newValue);
     // if it has been destroyed then don't do anything
     Token vTok = getValueAsToken();
     if (acceptedVersionTag || create || (vTok != Token.DESTROYED || vTok != Token.TOMBSTONE)) {
@@ -670,6 +671,7 @@ logger.info("JASON woo interrupted", e);
       // OFFHEAP noop
       boolean putValue = acceptedVersionTag || create || (newValueToWrite != Token.LOCAL_INVALID
           && (wasRecovered || (vTok == Token.LOCAL_INVALID)));
+      logger.info("JASON initial image init token isn't DESTROYED OR TOMBSTONE :" + newValue);
 
       if (region.isUsedForPartitionedRegionAdmin()
           && newValueToWrite instanceof CachedDeserializable) {
@@ -685,10 +687,14 @@ logger.info("JASON woo interrupted", e);
           // BUGFIX for 35029. If oldValue is null the newValue should be put.
           if (oldValue == null) {
             putValue = true;
+            logger.info("JASON oldValue was null for value: " + newValue);
+
           } else if (oldValue instanceof Versionable) {
             Versionable nv = (Versionable) newValueToWrite;
             Versionable ov = (Versionable) oldValue;
             putValue = nv.isNewerThan(ov);
+            logger.info("JASON putValue is :" + putValue + " for value: "+ newValue);
+
           }
         }
       }
@@ -731,8 +737,12 @@ logger.info("JASON woo interrupted", e);
             }
           }
         }
+        logger.info("JASON initial image init setting value complete:" + newValue);
+
         setValue(region, this.prepareValueForCache(region, newValueToWrite, false));
         result = true;
+        logger.info("JASON initial image init set value complete:" + newValue);
+
 
         if (newValueToWrite != Token.TOMBSTONE) {
           if (create) {
