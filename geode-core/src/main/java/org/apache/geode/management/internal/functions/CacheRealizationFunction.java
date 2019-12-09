@@ -30,12 +30,14 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;
+import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
+import org.apache.geode.management.internal.configuration.realizers.DeploymentRealizer;
 import org.apache.geode.management.internal.configuration.realizers.GatewayReceiverRealizer;
 import org.apache.geode.management.internal.configuration.realizers.MemberRealizer;
 import org.apache.geode.management.internal.configuration.realizers.PdxRealizer;
@@ -52,6 +54,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
     realizers.put(GatewayReceiver.class, new GatewayReceiverRealizer());
     realizers.put(Member.class, new MemberRealizer());
     realizers.put(Pdx.class, new PdxRealizer());
+    realizers.put(Deployment.class, new DeploymentRealizer());
   }
 
   @Override

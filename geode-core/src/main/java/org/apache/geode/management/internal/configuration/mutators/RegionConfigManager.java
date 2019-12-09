@@ -31,7 +31,7 @@ import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.configuration.converters.RegionConverter;
 
-public class RegionConfigManager implements ConfigurationManager<Region> {
+public class RegionConfigManager extends CacheConfigurationManager<Region> {
 
   private final RegionConverter converter = new RegionConverter();
 
