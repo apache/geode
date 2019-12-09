@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
@@ -76,6 +77,8 @@ import org.apache.geode.logging.internal.executors.LoggingThread;
 
 public class DistributionImpl implements Distribution {
   private static final Logger logger = Services.getLogger();
+
+  @Immutable
   public static final InternalDistributedMember[] EMPTY_MEMBER_ARRAY =
       new InternalDistributedMember[0];
   /**
@@ -167,7 +170,7 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public Membership getMembership() {
+  public Membership<InternalDistributedMember> getMembership() {
     return membership;
   }
 
