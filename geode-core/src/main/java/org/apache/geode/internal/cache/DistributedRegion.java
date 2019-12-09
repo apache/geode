@@ -2214,12 +2214,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     cacheProfile.hasCacheListener = hasListener();
     Assert.assertTrue(scope.isDistributed());
     cacheProfile.scope = scope;
-
-    boolean newInRecovery = getImageState().getInRecovery();
-    if (cacheProfile.getInRecovery() != newInRecovery) {
-      distAdvisor.incInRecoveryVersion();
-    }
-    cacheProfile.setInRecovery(newInRecovery);
+    cacheProfile.inRecovery = getImageState().getInRecovery();
     cacheProfile.isPersistent = getDataPolicy().withPersistence();
     cacheProfile.setSubscriptionAttributes(getSubscriptionAttributes());
 
