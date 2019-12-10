@@ -15,7 +15,11 @@
 
 package org.apache.geode.management.internal.configuration.realizers;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
@@ -27,6 +31,11 @@ import org.apache.geode.management.runtime.DeploymentInfo;
 public class DeploymentRealizer extends ReadOnlyConfigurationRealizer<Deployment, DeploymentInfo> {
 
   static final String JAR_NOT_DEPLOYED = "Jar file not deployed on the server.";
+  private static SimpleDateFormat formatter;
+  static {
+    formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
+  }
 
   @Override
   public DeploymentInfo get(Deployment config, InternalCache cache) {
@@ -35,7 +44,9 @@ public class DeploymentRealizer extends ReadOnlyConfigurationRealizer<Deployment
     String artifactId = JarDeployer.getArtifactId(config.getJarFileName());
     DeployedJar deployedJar = deployedJars.get(artifactId);
     if (deployedJar != null) {
-      info.setJarLocation(deployedJar.getFile().getAbsolutePath());
+      File file = deployedJar.getFile();
+      info.setTimeDeployed(formatter.format(new Date(file.lastModified())));
+      info.setJarLocation(file.getAbsolutePath());
     } else {
       info.setJarLocation(JAR_NOT_DEPLOYED);
     }
@@ -46,4 +57,5 @@ public class DeploymentRealizer extends ReadOnlyConfigurationRealizer<Deployment
     JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
     return jarDeployer.getDeployedJars();
   }
+
 }

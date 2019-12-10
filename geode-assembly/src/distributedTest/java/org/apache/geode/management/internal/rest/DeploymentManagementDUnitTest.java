@@ -17,8 +17,10 @@ package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementGetResultAssert.assertManagementGetResult;
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.junit.BeforeClass;
@@ -118,8 +120,10 @@ public class DeploymentManagementDUnitTest {
         assertManagementListResult(list).isSuccessful();
     resultAssert.hasConfigurations().extracting(Deployment::getJarFileName)
         .containsExactlyInAnyOrder("cluster.jar");
-    resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
+    List<DeploymentInfo> runtimeResult = resultAssert.getActual().getRuntimeResult();
+    assertThat(runtimeResult).extracting(DeploymentInfo::getJarLocation).extracting(
         FilenameUtils::getName).containsExactlyInAnyOrder("cluster.v1.jar", "cluster.v1.jar");
+    assertThat(runtimeResult.get(0).getTimeDeployed()).isNotNull();
   }
 
   @Test
