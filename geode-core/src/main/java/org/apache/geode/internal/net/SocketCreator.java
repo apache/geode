@@ -1078,15 +1078,15 @@ public class SocketCreator {
       SSLParameters modifiedParams =
           checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
 
-      String sysId = "";
+      String serverSSLNameExtension = "";
       InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
       if (system != null) {
-        sysId = system.getConfig().getClientHelloExtension();
+        serverSSLNameExtension = system.getConfig().getSSLServerNameExtension();
       }
 
-      if (sysId != "") {
+      if (serverSSLNameExtension != "") {
         List<SNIServerName> serverNames = new ArrayList<>(1);
-        SNIHostName serverName = new SNIHostName(sysId);
+        SNIHostName serverName = new SNIHostName(serverSSLNameExtension);
         serverNames.add(serverName);
         modifiedParams.setServerNames(serverNames);
       }

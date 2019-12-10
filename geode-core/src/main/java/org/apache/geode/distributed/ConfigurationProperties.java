@@ -146,16 +146,6 @@ public interface ConfigurationProperties {
   String CACHE_XML_FILE = "cache-xml-file";
 
   /**
-   * The static String definition of the <i>"client-hello-extension"</i> property <a
-   * name="client-hello-extension"/a>
-   * </p>
-   * <U>Description</U>: This property specifies if extension will be added to Client-Hello message
-   * </p>
-   * <U>Default</U>: ""
-   */
-  String CLIENT_HELLO_EXTENSION = "client-hello-extension";
-
-  /**
    * The static String definition of the <i>"cluster-configuration-dir"</i> property <a
    * name="cluster-configuration-dir"/a>
    * </p>
@@ -1592,6 +1582,15 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.0
    */
   String SSL_SERVER_ALIAS = "ssl-server-alias";
+  /**
+   * The static String definition of the <i>"ssl-server-name-extension"</i> property <a
+   * name="ssl-server-name-extension"/a>
+   * </p>
+   * <U>Description</U>: This property specifies if extension will be added to Client-Hello message
+   * </p>
+   * <U>Default</U>: ""
+   */
+  String SSL_SERVER_NAME_EXTENSION = "ssl-server-name-extension";
   /**
    * The static String definition of the <i>"server-ssl-ciphers"</i> property <a
    * name="server-ssl-ciphers"/a>

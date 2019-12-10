@@ -23,7 +23,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_MAX_QUE
 import static org.apache.geode.distributed.ConfigurationProperties.ASYNC_QUEUE_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.CLIENT_HELLO_EXTENSION;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
@@ -162,6 +161,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_LOCATOR_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_NAME_EXTENSION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
@@ -933,10 +933,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "The file whose contents is used, by default, to initialize a cache if one is created.  Defaults to %s.",
         DEFAULT_CACHE_XML_FILE));
 
-    m.put(CLIENT_HELLO_EXTENSION, String.format(
-        "Determines what extension (if any) will be added to Client-Hello message. Defaults to %s",
-        DEFAULT_CLIENT_HELLO_EXTENSION));
-
     m.put(DISABLE_TCP, String.format(
         "Determines whether TCP/IP communications will be disabled, forcing use of datagrams between members of the distributed system. Defaults to %s",
         Boolean.FALSE));
@@ -1470,6 +1466,11 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SSL_KEYSTORE_TYPE,
         "For Java keystore file format, this property has the value jks (or JKS).");
     m.put(SSL_KEYSTORE_PASSWORD, "Password to access the private key from the keystore.");
+
+    m.put(SSL_SERVER_NAME_EXTENSION, String.format(
+        "Determines what extension (if any) will be added to Client-Hello message. Defaults to %s",
+        DEFAULT_SSL_SERVER_NAME_EXTENSION));
+
     m.put(SSL_TRUSTSTORE,
         "Location of the Java keystore file containing the collection of trusted certificates.");
     m.put(SSL_TRUSTSTORE_PASSWORD, "Password to unlock the truststore.");

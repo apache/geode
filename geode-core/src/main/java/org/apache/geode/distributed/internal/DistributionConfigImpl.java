@@ -662,9 +662,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private int threadMonitorTimeLimit = DEFAULT_THREAD_MONITOR_TIME_LIMIT;
 
   /**
-   * "client-hello-extension" with value
+   * "ssl-server-name-extension" with value
    */
-  private String clientHelloExtension = DEFAULT_CLIENT_HELLO_EXTENSION;
+  private String serverSSLNameExtension = DEFAULT_SSL_SERVER_NAME_EXTENSION;
 
   /**
    * Create a new <code>DistributionConfigImpl</code> from the contents of another
@@ -734,8 +734,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     durableClientId = other.getDurableClientId();
     durableClientTimeout = other.getDurableClientTimeout();
 
-    clientHelloExtension = other.getClientHelloExtension();
-
     enableNetworkPartitionDetection = other.getEnableNetworkPartitionDetection();
     disableAutoReconnect = other.getDisableAutoReconnect();
 
@@ -803,6 +801,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     serverSSLKeyStore = other.getServerSSLKeyStore();
     serverSSLKeyStoreType = other.getServerSSLKeyStoreType();
     serverSSLKeyStorePassword = other.getServerSSLKeyStorePassword();
+
+    serverSSLNameExtension = other.getSSLServerNameExtension();
+
     serverSSLTrustStore = other.getServerSSLTrustStore();
     serverSSLTrustStorePassword = other.getServerSSLTrustStorePassword();
     serverSslProperties = other.getServerSSLProperties();
@@ -3227,7 +3228,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(mcastFlowControl, that.mcastFlowControl)
         .append(membershipPortRange, that.membershipPortRange)
         .append(clientConflation, that.clientConflation)
-        .append(clientHelloExtension, that.clientHelloExtension)
         .append(durableClientId, that.durableClientId)
         .append(securityClientAuthInit, that.securityClientAuthInit)
         .append(securityClientAuthenticator, that.securityClientAuthenticator)
@@ -3266,6 +3266,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(serverSSLKeyStore, that.serverSSLKeyStore)
         .append(serverSSLKeyStoreType, that.serverSSLKeyStoreType)
         .append(serverSSLKeyStorePassword, that.serverSSLKeyStorePassword)
+        .append(serverSSLNameExtension, that.serverSSLNameExtension)
         .append(serverSSLTrustStore, that.serverSSLTrustStore)
         .append(serverSSLTrustStorePassword, that.serverSSLTrustStorePassword)
         .append(serverSSLAlias, that.serverSSLAlias)
@@ -3326,8 +3327,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(enableTimeStatistics).append(memberTimeout).append(membershipPortRange)
         .append(maxWaitTimeForReconnect).append(maxNumReconnectTries)
         .append(asyncDistributionTimeout).append(asyncQueueTimeout).append(asyncMaxQueueSize)
-        .append(clientConflation).append(clientHelloExtension).append(durableClientId)
-        .append(durableClientTimeout)
+        .append(clientConflation).append(durableClientId).append(durableClientTimeout)
         .append(securityClientAuthInit).append(securityClientAuthenticator).append(securityManager)
         .append(postProcessor).append(securityClientDHAlgo).append(securityPeerAuthInit)
         .append(securityPeerAuthenticator).append(securityClientAccessor)
@@ -3352,7 +3352,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(jmxManagerSSLTrustStorePassword).append(jmxManagerSSLAlias).append(serverSSLEnabled)
         .append(serverSslRequireAuthentication).append(serverSslProtocols).append(serverSslCiphers)
         .append(serverSslProperties).append(serverSSLKeyStore).append(serverSSLKeyStoreType)
-        .append(serverSSLKeyStorePassword).append(serverSSLTrustStore)
+        .append(serverSSLKeyStorePassword).append(serverSSLNameExtension)
+        .append(serverSSLTrustStore)
         .append(serverSSLTrustStorePassword).append(serverSSLAlias).append(gatewaySSLEnabled)
         .append(gatewaySslRequireAuthentication).append(gatewaySslProtocols)
         .append(gatewaySslCiphers).append(gatewaySslProperties).append(gatewaySSLKeyStore)
@@ -3899,12 +3900,12 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
-  public String getClientHelloExtension() {
-    return clientHelloExtension;
+  public String getSSLServerNameExtension() {
+    return serverSSLNameExtension;
   }
 
   @Override
-  public void setClientHelloExtension(String newValue) {
-    clientHelloExtension = newValue;
+  public void setSSLServerNameExtension(String newValue) {
+    serverSSLNameExtension = newValue;
   }
 }

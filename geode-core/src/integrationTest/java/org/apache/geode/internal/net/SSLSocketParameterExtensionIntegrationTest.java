@@ -15,12 +15,12 @@
 package org.apache.geode.internal.net;
 
 
-import static org.apache.geode.distributed.ConfigurationProperties.CLIENT_HELLO_EXTENSION;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_NAME_EXTENSION;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.CLUSTER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -109,7 +109,7 @@ public class SSLSocketParameterExtensionIntegrationTest {
     properties.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
     properties.setProperty(CLUSTER_SSL_CIPHERS, "any");
     properties.setProperty(CLUSTER_SSL_PROTOCOLS, "TLSv1.2");
-    properties.setProperty(CLIENT_HELLO_EXTENSION, "11");
+    properties.setProperty(SSL_SERVER_NAME_EXTENSION, "11");
 
     this.distributionConfig = new DistributionConfigImpl(properties);
 
