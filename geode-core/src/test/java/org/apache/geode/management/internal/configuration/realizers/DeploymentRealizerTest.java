@@ -22,6 +22,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,7 +60,7 @@ public class DeploymentRealizerTest {
     when(deployedJar.getFile()).thenReturn(new File("/test/a.jar"));
     deployed.put("a", deployedJar);
     DeploymentInfo deploymentInfo = realizer.get(deployment, null);
-    assertThat(deploymentInfo.getJarLocation())
-        .endsWith(File.separator + "test" + File.separator + "a.jar");
+    assertThat(Paths.get(deploymentInfo.getJarLocation()).toUri())
+        .isEqualTo(Paths.get("/test/a.jar").toUri());
   }
 }
