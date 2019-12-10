@@ -21,10 +21,12 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.runtime.DeploymentInfo;
@@ -47,5 +49,17 @@ public class DeploymentManagementController extends AbstractManagementController
       deployment.setGroup(group);
     }
     return clusterManagementService.list(deployment);
+  }
+
+  @ApiOperation(value = "get deployed")
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
+  @GetMapping(Deployment.DEPLOYMENT_ENDPOINT + "/{id:.+}")
+  public ClusterManagementGetResult<Deployment, DeploymentInfo> getDeployed(
+      @PathVariable(name = "id") String id) {
+    Deployment deployment = new Deployment();
+    if (StringUtils.isNotBlank(id)) {
+      deployment.setJarFileName(id);
+    }
+    return clusterManagementService.get(deployment);
   }
 }
