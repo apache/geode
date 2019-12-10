@@ -27,9 +27,6 @@ import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -54,13 +51,7 @@ public class MembershipAPIArchUnitTest {
               // TODO: replace this with a rule allowing dependencies on geode-tcp-server module
               .or(type(TcpClient.class))
 
-              // this is allowed
+              // allowed
               .or(type(MembershipBuilderImpl.class))
-              .or(type(MemberDataBuilderImpl.class))
-
-              // TODO to be extracted as Interfaces
-              .or(type(InternalDistributedMember.class))
-              .or(type(MembershipView.class))
-              .or(type(DistributedMember.class))
-              .or(type(InternalDistributedMember[].class)));
+              .or(type(MemberDataBuilderImpl.class)));
 }

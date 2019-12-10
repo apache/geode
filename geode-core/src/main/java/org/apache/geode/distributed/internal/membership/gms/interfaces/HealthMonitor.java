@@ -17,19 +17,19 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
-public interface HealthMonitor extends Service {
+public interface HealthMonitor<ID extends MemberIdentifier> extends Service<ID> {
 
   /**
    * Note that this member has been contacted by the given member
    *
    */
-  void contactedBy(MemberIdentifier sender);
+  void contactedBy(ID sender);
 
   /**
    * initiate, asynchronously, suspicion that the member is no longer available
    *
    */
-  void suspect(MemberIdentifier mbr, String reason);
+  void suspect(ID mbr, String reason);
 
   /**
    * Check on the health of the given member, initiating suspicion if it fails. Return true if the
@@ -38,13 +38,13 @@ public interface HealthMonitor extends Service {
    * @param reason the reason this check is being performed
    * @param initiateRemoval if the member should be removed if it is not available
    */
-  boolean checkIfAvailable(MemberIdentifier mbr, String reason, boolean initiateRemoval);
+  boolean checkIfAvailable(ID mbr, String reason, boolean initiateRemoval);
 
   /**
    * Invoked by the Manager, this notifies the HealthMonitor that a ShutdownMessage has been
    * received from the given member
    */
-  void memberShutdown(MemberIdentifier mbr, String reason);
+  void memberShutdown(ID mbr, String reason);
 
   /**
    * Returns the failure detection port for this member, or -1 if there is no such port

@@ -24,20 +24,20 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
-public class ViewAckMessage extends AbstractGMSMessage {
+public class ViewAckMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
   int viewId;
   boolean preparing;
-  GMSMembershipView alternateView;
+  GMSMembershipView<ID> alternateView;
 
-  public ViewAckMessage(MemberIdentifier recipient, int viewId, boolean preparing) {
+  public ViewAckMessage(ID recipient, int viewId, boolean preparing) {
     super();
     setRecipient(recipient);
     this.viewId = viewId;
     this.preparing = preparing;
   }
 
-  public ViewAckMessage(int viewId, MemberIdentifier recipient, GMSMembershipView alternateView) {
+  public ViewAckMessage(int viewId, ID recipient, GMSMembershipView<ID> alternateView) {
     super();
     setRecipient(recipient);
     this.viewId = viewId;
@@ -53,7 +53,7 @@ public class ViewAckMessage extends AbstractGMSMessage {
     return viewId;
   }
 
-  public GMSMembershipView getAlternateView() {
+  public GMSMembershipView<ID> getAlternateView() {
     return this.alternateView;
   }
 
@@ -79,7 +79,7 @@ public class ViewAckMessage extends AbstractGMSMessage {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.viewId = in.readInt();
     this.preparing = in.readBoolean();
-    this.alternateView = (GMSMembershipView) context.getDeserializer().readObject(in);
+    this.alternateView = context.getDeserializer().readObject(in);
   }
 
   @Override

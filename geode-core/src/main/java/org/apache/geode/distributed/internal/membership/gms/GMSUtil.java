@@ -62,14 +62,14 @@ public class GMSUtil {
     return parseLocators(locatorsString, addr);
   }
 
-  public static Set<MemberIdentifier> readHashSetOfMemberIDs(DataInput in,
+  public static <ID extends MemberIdentifier> Set<ID> readHashSetOfMemberIDs(DataInput in,
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
     int size = StaticSerialization.readArrayLength(in);
     if (size == -1) {
       return null;
     }
-    Set<MemberIdentifier> result = new HashSet<>();
+    Set<ID> result = new HashSet<>();
     for (int i = 0; i < size; i++) {
       result.add(context.getDeserializer().readObject(in));
     }
@@ -202,21 +202,21 @@ public class GMSUtil {
     return sb.toString();
   }
 
-  public static List<MemberIdentifier> readArrayOfIDs(DataInput in,
+  public static <ID extends MemberIdentifier> List<ID> readArrayOfIDs(DataInput in,
       DeserializationContext context)
       throws IOException, ClassNotFoundException {
     int size = StaticSerialization.readArrayLength(in);
     if (size == -1) {
       return null;
     }
-    List<MemberIdentifier> result = new ArrayList<>(size);
+    List<ID> result = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
       result.add(context.getDeserializer().readObject(in));
     }
     return result;
   }
 
-  public static void writeSetOfMemberIDs(Set<MemberIdentifier> set, DataOutput out,
+  public static <ID extends MemberIdentifier> void writeSetOfMemberIDs(Set<ID> set, DataOutput out,
       SerializationContext context) throws IOException {
     int size;
     if (set == null) {
@@ -226,7 +226,7 @@ public class GMSUtil {
     }
     StaticSerialization.writeArrayLength(size, out);
     if (size > 0) {
-      for (MemberIdentifier member : set) {
+      for (ID member : set) {
         context.getSerializer().writeObject(member, out);
       }
     }

@@ -16,7 +16,7 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 
 import java.util.Properties;
 
-public interface Authenticator {
+public interface Authenticator<ID extends MemberIdentifier> {
 
   /**
    * Authenticate peer member
@@ -26,7 +26,7 @@ public interface Authenticator {
    * @return null if authentication succeed (including no authenticator case), otherwise, return
    *         failure message
    */
-  String authenticate(MemberIdentifier member, Properties credentials);
+  String authenticate(ID member, Properties credentials);
 
   /**
    * Get credential object for the given GemFire distributed member.
@@ -34,5 +34,5 @@ public interface Authenticator {
    * @param member the target distributed member
    * @return the credentials
    */
-  Properties getCredentials(MemberIdentifier member);
+  Properties getCredentials(ID member);
 }

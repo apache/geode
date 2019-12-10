@@ -24,6 +24,7 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -111,10 +112,10 @@ public class MemberIdentifierFactoryImplTest {
   public void membersAreEqual() {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    MemberIdentifier member1 = factory.create(memberData);
+    InternalDistributedMember member1 = factory.create(memberData);
     memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    MemberIdentifier member2 = factory.create(memberData);
+    InternalDistributedMember member2 = factory.create(memberData);
     assertThat(factory.getComparator().compare(member1, member2)).isZero();
   }
 
@@ -122,10 +123,10 @@ public class MemberIdentifierFactoryImplTest {
   public void membersAreNotEqual() {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    MemberIdentifier member1 = factory.create(memberData);
+    InternalDistributedMember member1 = factory.create(memberData);
     memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(2).build();
-    MemberIdentifier member2 = factory.create(memberData);
+    InternalDistributedMember member2 = factory.create(memberData);
     assertThat(factory.getComparator().compare(member1, member2)).isLessThan(0);
     assertThat(factory.getComparator().compare(member2, member1)).isGreaterThan(0);
   }

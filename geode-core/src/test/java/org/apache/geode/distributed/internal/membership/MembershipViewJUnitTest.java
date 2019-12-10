@@ -175,7 +175,8 @@ public class MembershipViewJUnitTest {
 
   @Test
   public void testAddLotsOfMembers() throws Exception {
-    GMSMembershipView view = new GMSMembershipView(members.get(0), 2, new ArrayList<>(members));
+    GMSMembershipView<MemberIdentifier> view =
+        new GMSMembershipView(members.get(0), 2, new ArrayList<>(members));
     setFailureDetectionPorts(view);
 
     GMSMembershipView copy = new GMSMembershipView(view, 2);
@@ -199,7 +200,8 @@ public class MembershipViewJUnitTest {
 
   @Test
   public void testNullPublicKeysNotRetained() throws Exception {
-    GMSMembershipView view = new GMSMembershipView(members.get(0), 2, new ArrayList<>(members));
+    GMSMembershipView<MemberIdentifier> view =
+        new GMSMembershipView(members.get(0), 2, new ArrayList<>(members));
     setFailureDetectionPorts(view);
 
     GMSMembershipView newView = new GMSMembershipView(view, 3);

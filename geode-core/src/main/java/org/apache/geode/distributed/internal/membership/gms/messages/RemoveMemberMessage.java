@@ -25,12 +25,13 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
-public class RemoveMemberMessage extends AbstractGMSMessage implements HasMemberID {
-  private MemberIdentifier memberID;
+public class RemoveMemberMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID>
+    implements HasMemberID<ID> {
+  private ID memberID;
   private String reason;
 
 
-  public RemoveMemberMessage(MemberIdentifier recipient, MemberIdentifier id,
+  public RemoveMemberMessage(ID recipient, ID id,
       String reason) {
     super();
     setRecipient(recipient);
@@ -38,8 +39,8 @@ public class RemoveMemberMessage extends AbstractGMSMessage implements HasMember
     this.reason = reason;
   }
 
-  public RemoveMemberMessage(List<MemberIdentifier> recipients,
-      MemberIdentifier id, String reason) {
+  public RemoveMemberMessage(List<ID> recipients,
+      ID id, String reason) {
     super();
     setRecipients(recipients);
     this.memberID = id;
@@ -56,7 +57,7 @@ public class RemoveMemberMessage extends AbstractGMSMessage implements HasMember
   }
 
   @Override
-  public MemberIdentifier getMemberID() {
+  public ID getMemberID() {
     return memberID;
   }
 

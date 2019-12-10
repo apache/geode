@@ -60,8 +60,8 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
@@ -321,7 +321,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   public void testWaitForViewInstallation() {
     InternalDistributedSystem system = getSystem(new Properties());
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDM();
-    MembershipView view = dm.getDistribution().getView();
+    MembershipView<InternalDistributedMember> view = dm.getDistribution().getView();
 
     AtomicBoolean waitForViewInstallationDone = new AtomicBoolean();
     executorService.submit(() -> {

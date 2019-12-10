@@ -414,7 +414,7 @@ org/apache/geode/internal/tcp/ByteBufferInputStream,false,buffer:org/apache/geod
 org/apache/geode/internal/tcp/ConnectExceptions,true,-4173688946448867706,causes:java/util/List,members:java/util/List
 org/apache/geode/internal/tcp/ConnectionException,true,-1977443644277412122
 org/apache/geode/internal/tcp/ImmutableByteBufferInputStream,false
-org/apache/geode/internal/tcp/MemberShunnedException,true,-8453126202477831557,member:org/apache/geode/distributed/DistributedMember
+org/apache/geode/internal/tcp/MemberShunnedException,true,-8453126202477831557
 org/apache/geode/internal/tcp/ReenteredConnectException,true,2878977454669428469
 org/apache/geode/internal/util/Breadcrumbs$CrumbType,false
 org/apache/geode/internal/util/SunAPINotFoundException,true,75895915344106684

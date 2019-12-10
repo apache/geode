@@ -22,8 +22,8 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ClusterOperationExecutors;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
@@ -37,12 +37,13 @@ import org.apache.geode.internal.serialization.SerializationContext;
 
 public class LocalViewMessage extends SerialDistributionMessage {
 
-  private GMSMembership manager;
+  private GMSMembership<InternalDistributedMember> manager;
   private long viewId;
-  private MembershipView view;
+  private MembershipView<InternalDistributedMember> view;
 
-  public LocalViewMessage(InternalDistributedMember addr, long viewId, MembershipView view,
-      GMSMembership manager) {
+  public LocalViewMessage(InternalDistributedMember addr, long viewId,
+      MembershipView<InternalDistributedMember> view,
+      GMSMembership<InternalDistributedMember> manager) {
     super();
     this.sender = addr;
     this.viewId = viewId;

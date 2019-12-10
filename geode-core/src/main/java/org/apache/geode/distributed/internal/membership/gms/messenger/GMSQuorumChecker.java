@@ -40,15 +40,15 @@ import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class GMSQuorumChecker implements QuorumChecker {
+public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChecker {
   private static final Logger logger = LogService.getLogger();
   private boolean isInfoEnabled = false;
-  private Map<SocketAddress, MemberIdentifier> addressConversionMap;
+  private Map<SocketAddress, ID> addressConversionMap;
   private GMSPingPonger pingPonger;
 
-  private Set<MemberIdentifier> receivedAcks;
+  private Set<ID> receivedAcks;
 
-  private final GMSMembershipView lastView;
+  private final GMSMembershipView<ID> lastView;
 
   // guarded by this
   private boolean quorumAchieved = false;
@@ -57,7 +57,7 @@ public class GMSQuorumChecker implements QuorumChecker {
   private final long partitionThreshold;
   private ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
 
-  public GMSQuorumChecker(GMSMembershipView jgView, int partitionThreshold, JChannel channel) {
+  public GMSQuorumChecker(GMSMembershipView<ID> jgView, int partitionThreshold, JChannel channel) {
     this.lastView = jgView;
     this.partitionThreshold = partitionThreshold;
     this.channel = channel;
@@ -70,8 +70,8 @@ public class GMSQuorumChecker implements QuorumChecker {
     myAddress = (JGAddress) channel.down(new Event(Event.GET_LOCAL_ADDRESS));
 
     addressConversionMap = new ConcurrentHashMap<>(this.lastView.size());
-    List<MemberIdentifier> members = this.lastView.getMembers();
-    for (MemberIdentifier addr : members) {
+    List<ID> members = this.lastView.getMembers();
+    for (ID addr : members) {
       SocketAddress sockaddr =
           new InetSocketAddress(addr.getInetAddress(), addr.getMembershipPort());
       addressConversionMap.put(sockaddr, addr);
@@ -157,10 +157,10 @@ public class GMSQuorumChecker implements QuorumChecker {
     return false;
   }
 
-  private int getWeight(Collection<MemberIdentifier> idms,
+  private int getWeight(Collection<ID> idms,
       MemberIdentifier leader) {
     int weight = 0;
-    for (MemberIdentifier mbr : idms) {
+    for (ID mbr : idms) {
       int thisWeight = mbr.getMemberWeight();
       if (mbr.getVmKind() == 10 /* NORMAL_DM_KIND */) {
         thisWeight += 10;
@@ -177,8 +177,8 @@ public class GMSQuorumChecker implements QuorumChecker {
 
   private void sendPingMessages() {
     // send a ping message to each member in the last view seen
-    List<MemberIdentifier> members = this.lastView.getMembers();
-    for (MemberIdentifier addr : members) {
+    List<ID> members = this.lastView.getMembers();
+    for (ID addr : members) {
       if (!receivedAcks.contains(addr)) {
         JGAddress dest = new JGAddress(addr);
         if (isInfoEnabled) {
@@ -237,7 +237,7 @@ public class GMSQuorumChecker implements QuorumChecker {
       logger.info("received ping-pong response from {}", sender);
       JGAddress jgSender = (JGAddress) sender;
       SocketAddress sockaddr = new InetSocketAddress(jgSender.getInetAddress(), jgSender.getPort());
-      MemberIdentifier memberAddr = addressConversionMap.get(sockaddr);
+      ID memberAddr = addressConversionMap.get(sockaddr);
 
       if (memberAddr != null) {
         logger.info("quorum check: mapped address to member ID {}", memberAddr);

@@ -22,9 +22,9 @@ import java.util.List;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 
-public abstract class AbstractGMSMessage implements Message {
-  private List<MemberIdentifier> recipients;
-  private MemberIdentifier sender;
+public abstract class AbstractGMSMessage<ID extends MemberIdentifier> implements Message<ID> {
+  private List<ID> recipients;
+  private ID sender;
 
   @Override
   public void registerProcessor() {
@@ -37,27 +37,27 @@ public abstract class AbstractGMSMessage implements Message {
   }
 
   @Override
-  public void setRecipient(MemberIdentifier member) {
+  public void setRecipient(ID member) {
     recipients = Collections.singletonList(member);
   }
 
   @Override
-  public void setRecipients(Collection recipients) {
+  public void setRecipients(Collection<ID> recipients) {
     if (recipients instanceof List) {
-      this.recipients = (List) recipients;
+      this.recipients = (List<ID>) recipients;
     } else {
       this.recipients = new ArrayList<>(recipients);
     }
   }
 
   @Override
-  public List<MemberIdentifier> getRecipients() {
+  public List<ID> getRecipients() {
     if (getMulticast()) {
-      return Collections.singletonList(ALL_RECIPIENTS);
+      return (List<ID>) Collections.singletonList(ALL_RECIPIENTS);
     } else if (this.recipients != null) {
       return this.recipients;
     } else {
-      return Collections.singletonList(ALL_RECIPIENTS);
+      return (List<ID>) Collections.singletonList(ALL_RECIPIENTS);
     }
   }
 
@@ -66,18 +66,18 @@ public abstract class AbstractGMSMessage implements Message {
     if (getMulticast()) {
       return true;
     }
-    List<MemberIdentifier> recipients = getRecipients();
+    List<ID> recipients = getRecipients();
     return recipients == ALL_RECIPIENTS ||
         (recipients.size() == 1 && recipients.get(0) == ALL_RECIPIENTS);
   }
 
   @Override
-  public void setSender(MemberIdentifier sender) {
+  public void setSender(ID sender) {
     this.sender = sender;
   }
 
   @Override
-  public MemberIdentifier getSender() {
+  public ID getSender() {
     return sender;
   }
 

@@ -22,8 +22,8 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier
  * Services in GMS all implement this interface
  *
  */
-public interface Service {
-  void init(Services s);
+public interface Service<ID extends MemberIdentifier> {
+  void init(Services<ID> s);
 
   /**
    * called after all services have been initialized with init() and all services are available via
@@ -49,7 +49,7 @@ public interface Service {
   /**
    * called when a new view is installed by Membership
    */
-  void installView(GMSMembershipView v);
+  void installView(GMSMembershipView<ID> v);
 
   /**
    * test method for simulating a sick/dead member
@@ -74,9 +74,9 @@ public interface Service {
   /**
    * a member is suspected of having crashed
    */
-  void memberSuspected(MemberIdentifier initiator, MemberIdentifier suspect,
+  void memberSuspected(ID initiator, ID suspect,
       String reason);
 
 
-  default void setLocalAddress(MemberIdentifier address) {}
+  default void setLocalAddress(ID address) {}
 }
