@@ -2805,7 +2805,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private synchronized void determineDefaultPool() {
     if (!isClient()) {
-      throw new UnsupportedOperationException("determineDefaultPool requires a client cache");
+      throw new UnsupportedOperationException();
     }
 
     PoolFactory defaultPoolFactory = poolFactory;
@@ -2909,8 +2909,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     RegionAttributes<K, V> attrs = p_attrs;
     attrs = invokeRegionBefore(null, name, attrs, internalRegionArgs);
     if (attrs == null) {
-      throw new IllegalArgumentException(
-          "Attributes must not be null");
+      throw new IllegalArgumentException("Attributes must not be null");
     }
 
     InputStream snapshotInputStream = internalRegionArgs.getSnapshotInputStream();
