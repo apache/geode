@@ -632,6 +632,8 @@ public class OffHeapStoredObject extends AbstractStoredObject
       rawBits = AddressableMemoryManager.readIntVolatile(memAddr + REF_COUNT_OFFSET);
       if ((rawBits & MAGIC_MASK) != MAGIC_NUMBER) {
         // same as uc == 0
+
+        LogService.getLogger().info("JASON Magic number didn't match?!?!:" + Long.toHexString(memAddr));
         // TODO MAGIC_NUMBER rethink its use and interaction with compactor fragments
         return false;
       }
@@ -640,6 +642,8 @@ public class OffHeapStoredObject extends AbstractStoredObject
         throw new IllegalStateException(
             "Maximum use count exceeded. rawBits=" + Integer.toHexString(rawBits));
       } else if (uc == 0) {
+        LogService.getLogger().info("JASON UC is 0???!?!:" + Long.toHexString(memAddr));
+
         return false;
       }
       retryCount++;
