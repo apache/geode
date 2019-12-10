@@ -35,9 +35,6 @@ ZONE="$(cat instance-data/zone)"
 
 echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 
-set +e
 gcloud compute instances delete ${INSTANCE_NAME} \
   --zone=${ZONE} \
-  --quiet
-  
-exit 0
+  --quiet || true
