@@ -106,11 +106,12 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
   }
 
   public void loadExpectedSerializables() throws Exception {
-    this.expectedSerializablesInputStream =
-        getResourceAsStream(getModuleClass(), expectedSerializablesFileName);
-
-    this.expectedSerializables =
-        CompiledClassUtils.loadClassesAndVariables(this.expectedSerializablesInputStream);
+    try (InputStream expectedSerializablesStream =
+        getResourceAsStream(getModuleClass(), expectedSerializablesFileName)) {
+      // the expectedSerializablesStream will be automatically closed when we exit this block
+      this.expectedSerializables =
+          CompiledClassUtils.loadClassesAndVariables(expectedSerializablesStream);
+    }
   }
 
   public void findClasses() throws Exception {

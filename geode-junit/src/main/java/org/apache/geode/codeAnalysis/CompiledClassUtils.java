@@ -307,7 +307,6 @@ public class CompiledClassUtils {
         result.add(new ClassAndVariableDetails(line));
       }
     }
-    stream.close();
     return result;
   }
 
