@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.admin.AdminDistributedSystemFactory.defineDistributedSystem;
@@ -96,6 +97,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -123,6 +125,8 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
   private VM vm2;
   private VM vm3;
 
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
 
@@ -138,7 +142,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   @Before
   public void setUp() {
-    vm0 = getVM(-1);
+    vm0 = getVM(0);
     vm1 = getVM(1);
     vm2 = getVM(2);
     vm3 = getVM(3);
@@ -1436,7 +1440,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     RecoveryObserver recoveryObserver =
         (RecoveryObserver) InternalResourceManager.getResourceObserver();
     messageObserver.unblock();
-    recoveryObserver.await(2, MINUTES);
+    recoveryObserver.await(TIMEOUT_MILLIS, MILLISECONDS);
     InternalResourceManager.setResourceObserver(null);
   }
 
@@ -1473,7 +1477,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     regionFactoryPR.createSubregion(parentRegion1, partitionedRegionName);
     regionFactoryPR.createSubregion(parentRegion2, partitionedRegionName);
 
-    recoveryDone.await();
+    recoveryDone.await(TIMEOUT_MILLIS, MILLISECONDS);
   }
 
   private void fakeCleanShutdown(final int bucketId) {
@@ -1608,7 +1612,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     regionFactory.create(partitionedRegionName);
 
-    recoveryDone.await();
+    recoveryDone.await(TIMEOUT_MILLIS, MILLISECONDS);
   }
 
   private void createData(final int startKey, final int endKey, final String value) {
@@ -1773,7 +1777,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
         // make sure this is a bucket region doing a GII
         if (requestImageMessage.regionPath.contains("B_")) {
           try {
-            latch.await();
+            latch.await(TIMEOUT_MILLIS, MILLISECONDS);
           } catch (InterruptedException e) {
             throw new Error(e);
           }
