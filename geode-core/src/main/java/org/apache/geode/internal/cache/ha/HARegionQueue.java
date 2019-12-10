@@ -440,6 +440,8 @@ public class HARegionQueue implements RegionQueue {
         }
         // use putIfAbsent to avoid overwriting newer dispatch information
         Object o = this.eventsMap.putIfAbsent(entry.getKey(), giiDace);
+        logger.info("[JUAN]: Added event with key {} trough recordEventState", entry.getKey());
+
         if (o != null && isDebugEnabled_BS) {
           sb.append(" -- could not store.  found ").append(o);
         }
@@ -683,6 +685,7 @@ public class HARegionQueue implements RegionQueue {
       dace = new DispatchedAndCurrentEvents(this);
       DispatchedAndCurrentEvents oldDace =
           (DispatchedAndCurrentEvents) this.eventsMap.putIfAbsent(ti, dace);
+      logger.info("[JUAN]: Added event with key {} trough basicPut", ti);
       if (oldDace != null) {
         dace = oldDace;
       } else {
@@ -946,13 +949,10 @@ public class HARegionQueue implements RegionQueue {
           // if (!HARegionQueue.this.isPrimary()) {
           HARegionQueue.this.expireTheEventOrThreadIdentifier(event);
           // }
-        } catch (CancelException ignore) {
-          // ignore, we're done
-        } catch (CacheException ce) {
-          if (!destroyInProgress) {
-            logger.error("HAREgionQueue::createCacheListner::Exception in the expiry thread",
-                ce);
-          }
+        } catch (Exception exception) {
+          logger.error(
+              "[JUAN]: afterInvalidate Exception in expiry thread for Event with Key {}. DestroyInProgress: {}",
+              event.getKey(), destroyInProgress, exception);
         }
       }
     };
@@ -1009,9 +1009,10 @@ public class HARegionQueue implements RegionQueue {
       }
       // }
     } else {
+      logger.info("[JUAN]: Unexpected condition reached. Key is instance of {}",
+          key.getClass().getSimpleName());
       // unexpected condition, throw exception?
     }
-
   }
 
   /**
@@ -1736,6 +1737,7 @@ public class HARegionQueue implements RegionQueue {
       dace.lastDispatchedSequenceId = sequenceID;
       DispatchedAndCurrentEvents oldDace =
           (DispatchedAndCurrentEvents) this.eventsMap.putIfAbsent(ti, dace);
+      logger.info("[JUAN]: Added event with key {} trough removeDispatchedEvents", ti);
       if (oldDace != null) {
         dace = oldDace;
         if (dace.lastDispatchedSequenceId < sequenceID) {
@@ -3114,23 +3116,22 @@ public class HARegionQueue implements RegionQueue {
             owningQueue.destroyFromQueue(ti);
             this.lastDispatchedSequenceId = TOKEN_DESTROYED;
             owningQueue.eventsMap.remove(ti);
+            logger.info("[JUAN]: Removed event with key {}", ti);
             expired = true;
             this.owningQueue.getStatistics().decThreadIdentifiers();
-          } catch (RegionDestroyedException e) {
-            if (!owningQueue.destroyInProgress && logger.isDebugEnabled()) {
-              logger.debug(
-                  "DispatchedAndCurrentEvents::expireOrUpdate: Queue found destroyed while removing expiry entry for ThreadIdentifier={} and expiry value={}",
-                  ti, expVal, e);
-            }
-          } catch (EntryNotFoundException enfe) {
-            if (!owningQueue.destroyInProgress) {
-              logger.error(
-                  "DispatchedAndCurrentEvents::expireOrUpdate: Unexpectedly encountered exception while removing expiry entry for ThreadIdentifier={} and expiry value={}",
-                  new Object[] {ti, expVal, enfe});
-            }
+          } catch (Exception e) {
+            logger.info(
+                "[JUAN]: Exception while removing from eventsMap for ThreadIdentifier={} and ExpiryValue={}. OwningQueue.destroyInProgress={}",
+                ti, expVal, owningQueue.destroyInProgress, e);
+            throw e;
           }
+        } else {
+          logger.info(
+              "[JUAN]: Conditions not met to expire event with ThreadIdentifier={} and ExpiryValue={}: this.lastDispatchedSequenceId={}; isCountersEmpty={}",
+              ti, expVal, this.lastDispatchedSequenceId, isCountersEmpty());
         }
       }
+
       if (!expired) {
         try {
           // Update the entry with latest sequence ID
