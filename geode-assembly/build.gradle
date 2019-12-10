@@ -29,7 +29,6 @@ import java.nio.file.Paths
 def dependentProjectNames = [
   ':geode-common',
   ':geode-connectors',
-  ':geode-serialization',
   ':geode-core',
   ':geode-cq',
   ':geode-gfsh',
@@ -42,6 +41,8 @@ def dependentProjectNames = [
   ':geode-protobuf-messages',
   ':geode-rebalancer',
   ':geode-redis',
+  ':geode-serialization',
+  ':geode-tcp-server',
   ':geode-wan'
 ]
 
@@ -175,6 +176,7 @@ dependencies {
   geodeArchives project(':geode-rebalancer')
   geodeArchives project(':geode-redis')
   geodeArchives project(':geode-serialization')
+  geodeArchives project(':geode-tcp-server')
   geodeArchives project(':geode-wan')
   geodeArchives project(':geode-web')
   geodeArchives project(':geode-web-api')
@@ -227,6 +229,7 @@ dependencies {
 
   distributedTestImplementation(project(':geode-logging'))
   distributedTestImplementation(project(':geode-serialization'))
+  distributedTestImplementation(project(':geode-tcp-server'))
   distributedTestCompile(project(':geode-core'))
   distributedTestCompile(project(':geode-log4j')) {
     exclude module: 'geode-core'

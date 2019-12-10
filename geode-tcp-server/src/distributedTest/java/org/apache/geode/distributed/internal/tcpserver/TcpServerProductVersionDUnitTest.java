@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -138,13 +137,9 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
 
   @Test
   public void testAllMessageTypes() {
-    System.out.println("BB: controller clientProductVersion is " + versions.clientProductVersion
-        + " and FIRST_NEW_VERSION is " + FIRST_NEW_VERSION);
     VM clientVM = Host.getHost(0).getVM(versions.clientProductVersion.toString(), 0);
     VM locatorVM = Host.getHost(0).getVM(versions.locatorProductVersion.toString(), 1);
     int locatorPort = createLocator(locatorVM, true);
-
-    clientVM.invoke(() -> System.out.println("BB: client vm started"));
 
     clientVM.invoke("issue version request",
         createRequestResponseFunction(locatorPort, VersionRequest.class.getName(),
@@ -157,7 +152,6 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
             ShutdownResponse.class.getName()));
   }
 
-  @NotNull
   private SerializableRunnableIF createRequestResponseFunction(
       final int locatorPort,
       final String requestClassName,
@@ -169,8 +163,6 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
       final Object requestMessage = requestClass.newInstance();
 
       final TcpClient tcpClient;
-      System.out.println("BB: clientVM clientProductVersion is " + versions.clientProductVersion
-          + " and FIRST_NEW_VERSION is " + FIRST_NEW_VERSION);
       if (versions.clientProductVersion.greaterThanOrEqualTo(FIRST_NEW_VERSION)) {
         tcpClient = getTcpClient();
       } else {
@@ -200,7 +192,6 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     return constructor.newInstance(getDistributedSystemProperties());
   }
 
-  @NotNull
   private TcpClient getTcpClient() {
 
     SocketCreatorFactory

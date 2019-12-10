@@ -98,7 +98,9 @@ public class TCPServerSSLJUnitTest {
         asTcpSocketCreator(
             socketCreator),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+        DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
 
     server.start();
   }
