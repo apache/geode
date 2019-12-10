@@ -17,6 +17,8 @@ package org.apache.geode.distributed.internal.membership.gms;
 public class MembershipIOException extends RuntimeException {
   private static final long serialVersionUID = -4952945536387123344L;
 
+  public MembershipIOException() {}
+
   public MembershipIOException(String message) {
     super(message);
   }

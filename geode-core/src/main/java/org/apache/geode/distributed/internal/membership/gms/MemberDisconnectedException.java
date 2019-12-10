@@ -22,7 +22,13 @@ package org.apache.geode.distributed.internal.membership.gms;
 public class MemberDisconnectedException extends RuntimeException {
   private static final long serialVersionUID = -3649273301807236514L;
 
+  public MemberDisconnectedException() {}
+
   public MemberDisconnectedException(String reason) {
     super(reason);
+  }
+
+  public MemberDisconnectedException(String reason, Throwable cause) {
+    super(reason, cause);
   }
 }
