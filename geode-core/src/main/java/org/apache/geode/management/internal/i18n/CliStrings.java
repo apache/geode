@@ -2272,7 +2272,8 @@ public class CliStrings {
 
   public static final String START_GATEWAYSENDER__CLEAN_QUEUE = "clean-queues";
   public static final String START_GATEWAYSENDER__CLEAN_QUEUE__HELP =
-      "Option to clean existing queue at start of the Gateway Sender.";
+      "Option to clean existing queue at start of the Gateway Sender. " +
+          "This option is only applicable for Gateway Senders with enabled persistence.";
 
   /* destroy gateway-sender */
   public static final String DESTROY_GATEWAYSENDER = "destroy gateway-sender";
