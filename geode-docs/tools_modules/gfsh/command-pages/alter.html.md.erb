@@ -192,22 +192,23 @@ Alter configuration details of the query configuration service.
 **Syntax:**
 
 ``` pre
-alter query-service [--method-authorizer=value]
-    [--authorizer-parameters=value(;value)*]
+alter query-service --method-authorizer=value
+    [--authorizer-parameters=value(;value)*] [--force-update(=value)]
 ```
 
 **Parameters, alter query-service**
 
 | Name | Description |
 |------|-------------|
-| &#8209;&#8209;method-authorizer   | Fully qualified class name of the `MethodInvocationAuthorizer` to be used for query authorization. |
-| &#8209;&#8209;authorizer-parameters | A **semicolon-separated** list of parameters to be used by the specified `MethodInvocationAuthorizer`. This requires that a method-authorizer option has been specified. |
-
+| &#8209;&#8209;method-authorizer       | _Required._ Fully qualified class name of the `MethodInvocationAuthorizer` to be used for query authorization. |
+| &#8209;&#8209;authorizer-parameters   | A **semicolon-separated** list of parameters to be used by the specified `MethodInvocationAuthorizer`. This requires that a method-authorizer option has been specified. |
+| &#8209;&#8209;force-update            | Specifies whether to forcibly update the `MethodInvocationAuthorizer`, even when there are continuous queries registered in the member. Default (if the parameter is not specified): `false`. Default (if the parameter is specified without value): `true`. **Note:** when set as `true`, any registered CQ will pick up the new `MethodInvocationAuthorizer` and invalidate its internal cache; consider checking that the new `MethodInvocationAuthorizer` allows the methods invoked by the CQs before using this option. |
 
 **Example Commands:**
 
 ``` pre
 alter query-service --method-authorizer=org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer
+alter query-service --method-authorizer=org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer --force-update=true
 alter query-service --method-authorizer=org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer --authorizer-parameters=java.lang;java.util
 ```
 

@@ -113,7 +113,7 @@ jobs:
           - name: attempts-log
             path: new
         timeout: 15m
-        attempts: 10
+        attempts: 2
       - task: rsync_code_up
         image: alpine-tools-image
         config:

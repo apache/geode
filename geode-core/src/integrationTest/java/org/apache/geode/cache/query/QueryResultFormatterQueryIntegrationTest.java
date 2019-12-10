@@ -26,16 +26,12 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.management.internal.cli.json.QueryResultFormatter;
-import org.apache.geode.management.internal.cli.json.QueryResultFormatterPdxIntegrationTest;
+import org.apache.geode.management.internal.json.QueryResultFormatter;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 /**
  * Integration tests for {@link QueryResultFormatter} querying {@link Portfolio}.
- * <p>
- *
- * Extracted from {@link QueryResultFormatterPdxIntegrationTest}.
- * <p>
+ * Extracted from {@code QueryResultFormatterPdxIntegrationTest}
  *
  * TODO: add real assertions
  */

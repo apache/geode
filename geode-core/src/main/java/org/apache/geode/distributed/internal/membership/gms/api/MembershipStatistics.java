@@ -115,6 +115,8 @@ public interface MembershipStatistics {
 
   void incUdpFinalCheckRequestsSent();
 
+  long getUdpFinalCheckRequestsSent();
+
   void incUdpFinalCheckResponsesReceived();
 
   long getHeartbeatRequestsReceived();

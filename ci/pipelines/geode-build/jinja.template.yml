@@ -101,7 +101,9 @@ groups:
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
-  - Benchmark
+  {%- for flavor in (benchmarks.flavors) %}
+  - Benchmark{{flavor.title}}
+  {%- endfor %}
 - name: complete
   jobs:
   - {{ build_test.name }}
@@ -114,7 +116,9 @@ groups:
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
-  - Benchmark
+  {%- for flavor in (benchmarks.flavors) %}
+  - Benchmark{{flavor.title}}
+  {%- endfor %}
 - name: linux
   jobs:
   - {{ build_test.name }}
@@ -123,7 +127,9 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
   {%- endfor %}
-  - Benchmark
+  {%- for flavor in (benchmarks.flavors) %}
+  - Benchmark{{flavor.title}}
+  {%- endfor %}
 - name: windows
   jobs:
   - {{ build_test.name }}
@@ -220,7 +226,7 @@ jobs:
 {% endfor %}
 - name: {{build_test.name}}
   public: true
-  serial: true
+  max_in_flight: {{build_test.MAX_IN_FLIGHT}}
   plan:
   - aggregate:
     - get: geode-ci
@@ -255,7 +261,7 @@ jobs:
           path: new
         - name: instance-data
       timeout: 15m
-      attempts: 10
+      attempts: 2
   - aggregate:
     - put: geode-build-version
       params:
@@ -362,7 +368,9 @@ jobs:
 {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
       - PublishArtifacts
 {% else %}
-      - Benchmark
+      {% for flavor in (benchmarks.flavors) %}
+      - Benchmark{{flavor.title}}
+      {% endfor %}
 {% endif %}
       trigger: true
     - get: geode-build-version
@@ -381,7 +389,7 @@ jobs:
         path: bash
         args:
         - -cx
-        - |-
+        - |
           pushd geode
             GEODE_SHA=$(git rev-parse HEAD)
           popd
@@ -405,15 +413,16 @@ jobs:
       params:
         file: geode-passing-tokens/passing-build-tokens.json
 
-- name: Benchmark
+{% for run_var in (benchmarks.flavors) %}
+- name: Benchmark{{ run_var.title }}
   public: true
   max_in_flight: 3
   plan:
   - get: geode-ci
     passed:
     {{ all_gating_jobs() | indent(4) }}
+  - get: alpine-tools-image
   - aggregate:
-    - get: alpine-tools-image
     - get: geode
       passed:
       {{ all_gating_jobs() | indent(6) }}
@@ -424,8 +433,7 @@ jobs:
       passed:
       {{ all_gating_jobs() | indent(6) }}
     - put: concourse-metadata-resource
-  - aggregate:
-    {% for run_var in [{'title': '', 'flag':'', 'options': ''}, {'title': '_with_ssl', 'flag': '-PwithSsl', 'options': '--tests=*GetBenchmark --tests=*PutBenchmark'}, {'title': '_with_security_manager', 'flag': '-PwithSecurityManager', 'options': '--tests=Partitioned*'}] %}
+  - do:
     - task: run_benchmarks{{ run_var.title }}
       image: alpine-tools-image
       config:
@@ -477,51 +485,50 @@ jobs:
             - name: geode-benchmarks
             - name: concourse-metadata-resource
             - name: results
-    {% endfor %}
+{% endfor %}
 {% if repository.upstream_fork != "apache" or repository.branch == "develop" %}
 - name: PublishArtifacts
   public: true
   plan:
   - aggregate:
     - get: geode-ci
-      passed:
-      - Benchmark
+      passed: &publish-passed-inputs
+      {% for flavor in (benchmarks.flavors) %}
+      - Benchmark{{flavor.title}}
+      {% endfor %}
     - get: alpine-tools-image
     - get: geode
-      passed:
-        - Benchmark
+      passed: *publish-passed-inputs
       trigger: true
   - aggregate:
     - get: geode-build-version
       trigger: true
-      passed:
-      - Benchmark
-    - do:
-      - put: concourse-metadata-resource
-      {{ init_retry()|indent(6) }}
-      - task: create_instance
-        image: alpine-tools-image
-        config:
-          platform: linux
-          params:
-            {{ common_instance_params(publish_artifacts) | indent(12) }}
-            GEODE_BRANCH: {{repository.branch}}
-            GEODE_FORK: {{repository.fork}}
-            JAVA_BUILD_VERSION: {{ java_build_version.version }}
-          run:
-            path: geode-ci/ci/scripts/create_instance.sh
-          inputs:
-          - name: concourse-metadata-resource
-          - name: geode-ci
-          - name: geode
-          - name: attempts-log
-            path: old
-          outputs:
-          - name: instance-data
-          - name: attempts-log
-            path: new
-        timeout: 15m
-        attempts: 10
+      passed: *publish-passed-inputs
+    - put: concourse-metadata-resource
+    {{ init_retry()|indent(4) }}
+  - task: create_instance
+    image: alpine-tools-image
+    config:
+      platform: linux
+      params:
+        {{ common_instance_params(publish_artifacts) | indent(8) }}
+        GEODE_BRANCH: {{repository.branch}}
+        GEODE_FORK: {{repository.fork}}
+        JAVA_BUILD_VERSION: {{ java_build_version.version }}
+      run:
+        path: geode-ci/ci/scripts/create_instance.sh
+      inputs:
+      - name: concourse-metadata-resource
+      - name: geode-ci
+      - name: geode
+      - name: attempts-log
+        path: old
+      outputs:
+      - name: instance-data
+      - name: attempts-log
+        path: new
+    timeout: 15m
+    attempts: 2
   - task: rsync_code_up
     image: alpine-tools-image
     config:
@@ -574,6 +581,7 @@ jobs:
       {%- do deep_merge(parameters, java_test_version.override[test.name]) %}
     {%- endif %}
 - name: {{test.name}}Test{{java_test_version.name}}
+  max_in_flight: {{parameters.MAX_IN_FLIGHT}}
   public: true
   plan:
   - do:
@@ -607,7 +615,7 @@ jobs:
             - name: attempts-log
               path: new
           timeout: 15m
-          attempts: 10
+          attempts: 2
         - task: rsync_code_up-{{java_test_version.name}}
           image: alpine-tools-image
           config:
@@ -620,7 +628,7 @@ jobs:
             - name: instance-data-{{java_test_version.name}}
               path: instance-data
           timeout: 15m
-          attempts: 10
+          attempts: 2
         - task: execute_tests-{{java_test_version.name}}
           image: alpine-tools-image
           config:
@@ -658,7 +666,7 @@ jobs:
               - name: geode-results-{{java_test_version.name}}
                 path: geode-results
             timeout: 15m
-            attempts: 10
+            attempts: 2
           ensure:
             do:
             - aggregate:

@@ -22,15 +22,8 @@ apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
-  compile('org.springframework.shell:spring-shell') {
-    exclude module: 'aopalliance'
-    exclude module: 'asm'
-    exclude module: 'cglib'
-    exclude module: 'guava'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-context-support'
-    ext.optional = true
-  }
+
+  compile(project(':geode-gfsh'))
 
   compile('org.apache.lucene:lucene-core')
   compile('org.apache.commons:commons-lang3')

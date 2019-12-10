@@ -25,6 +25,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.cache.query.internal.xml.QueryMethodAuthorizerCreation;
 import org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
@@ -38,11 +40,14 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 public class QueryConfigurationServiceImpl implements QueryConfigurationService {
-
-  static final String UPDATE_ERROR_MESSAGE =
-      "Exception while updating MethodInvocationAuthorizer. ";
+  private static final Logger logger = LogService.getLogger();
+  static final String NULL_CACHE_ERROR_MESSAGE = "Cache must not be null";
+  private static final String UPDATE_ERROR_MESSAGE =
+      "Exception while updating MethodInvocationAuthorizer.";
   public static final String INTERFACE_NOT_IMPLEMENTED_MESSAGE =
       "Provided method authorizer %S does not implement interface %S";
+  public static final String CONTINUOUS_QUERIES_RUNNING_MESSAGE =
+      "There are CQs running which might have method invocations not allowed by the new MethodInvocationAuthorizer, the update operation can not be completed on this member.";
 
   /**
    * Instead of the below property, please use the UnrestrictedMethodAuthorizer
@@ -51,12 +56,17 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   @Deprecated
   public final boolean ALLOW_UNTRUSTED_METHOD_INVOCATION;
 
-  public static final String DEPRECATION_WARNING = "The property " + GEMFIRE_PREFIX +
-      "QueryService.allowUntrustedMethodInvocation is deprecated. " +
-      "Please use the UnrestrictedMethodAuthorizer implementation of MethodInvocationAuthorizer " +
-      "instead";
+  /**
+   * Delete this once {@code ALLOW_UNTRUSTED_METHOD_INVOCATION} is removed.
+   * Keeping it here and public to avoid using using the same constant String across classes.
+   */
+  @Deprecated
+  public static final String ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY =
+      GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation";
 
-  private static final Logger logger = LogService.getLogger();
+  public static final String DEPRECATION_WARNING = "The property "
+      + ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY
+      + " is deprecated. Please use the UnrestrictedMethodAuthorizer implementation of MethodInvocationAuthorizer instead.";
 
   private MethodInvocationAuthorizer authorizer;
 
@@ -64,8 +74,8 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   private static final MethodInvocationAuthorizer NO_OP_AUTHORIZER = new NoOpAuthorizer();
 
   public QueryConfigurationServiceImpl() {
-    ALLOW_UNTRUSTED_METHOD_INVOCATION = Boolean.parseBoolean(
-        System.getProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation"));
+    ALLOW_UNTRUSTED_METHOD_INVOCATION =
+        Boolean.parseBoolean(System.getProperty(ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY));
   }
 
   public static MethodInvocationAuthorizer getNoOpAuthorizer() {
@@ -76,11 +86,10 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   @Override
   public boolean init(Cache cache) {
     if (cache == null) {
-      throw new IllegalArgumentException("cache must not be null");
+      throw new IllegalArgumentException(NULL_CACHE_ERROR_MESSAGE);
     }
 
-    if (System
-        .getProperty(GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation") != null) {
+    if (System.getProperty(ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY) != null) {
       logger.warn(DEPRECATION_WARNING);
     }
 
@@ -89,6 +98,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
     } else {
       this.authorizer = new RestrictedMethodAuthorizer(cache);
     }
+
     return true;
   }
 
@@ -103,9 +113,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   }
 
   @Override
-  public void close() {
-
-  }
+  public void close() {}
 
   @Override
   public MethodInvocationAuthorizer getMethodAuthorizer() {
@@ -113,16 +121,34 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
   }
 
   @Override
-  public void updateMethodAuthorizer(Cache cache, QueryMethodAuthorizerCreation creation)
-      throws QueryConfigurationServiceException {
-    updateMethodAuthorizer(cache, creation.getClassName(), creation.getParameters());
+  public void updateMethodAuthorizer(Cache cache, boolean forceUpdate,
+      QueryMethodAuthorizerCreation creation) throws QueryConfigurationServiceException {
+    updateMethodAuthorizer(cache, forceUpdate, creation.getClassName(), creation.getParameters());
+  }
+
+  private boolean isSecurityDisabled(InternalCache cache) {
+    return !cache.getSecurityService().isIntegratedSecurity();
+  }
+
+  private void invalidateContinuousQueryCache(CqService cqService) {
+    cqService.getAllCqs().forEach(cqQuery -> {
+      ServerCQ serverCQ = (ServerCQ) cqQuery;
+      serverCQ.invalidateCqResultKeys();
+    });
   }
 
   @Override
-  public void updateMethodAuthorizer(Cache cache, String className, Set<String> parameters)
-      throws QueryConfigurationServiceException {
+  public void updateMethodAuthorizer(Cache cache, boolean forceUpdate, String className,
+      Set<String> parameters) throws QueryConfigurationServiceException {
+    // Return quickly if security is disabled or deprecated flag is set
     if (isSecurityDisabled((InternalCache) cache) || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
       return;
+    }
+
+    // Throw exception if there are CQs running and forceUpdate flag is false.
+    CqService cqService = ((InternalCache) cache).getCqService();
+    if ((!cqService.getAllCqs().isEmpty()) && (!forceUpdate)) {
+      throw new QueryConfigurationServiceException(CONTINUOUS_QUERIES_RUNNING_MESSAGE);
     }
 
     try {
@@ -135,25 +161,23 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
       } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
         this.authorizer = new RegExMethodAuthorizer(cache, parameters);
       } else {
-        Class userClass = ClassPathLoader.getLatest().forName(className);
+        Class<?> userClass = ClassPathLoader.getLatest().forName(className);
         if (!Arrays.asList(userClass.getInterfaces()).contains(MethodInvocationAuthorizer.class)) {
           throw new QueryConfigurationServiceException(
               String.format(INTERFACE_NOT_IMPLEMENTED_MESSAGE, userClass.getName(),
                   MethodInvocationAuthorizer.class.getName()));
         }
+
         MethodInvocationAuthorizer tmpAuthorizer =
             (MethodInvocationAuthorizer) userClass.newInstance();
         tmpAuthorizer.initialize(cache, parameters);
         this.authorizer = tmpAuthorizer;
-
       }
+
+      invalidateContinuousQueryCache(cqService);
     } catch (Exception e) {
       throw new QueryConfigurationServiceException(UPDATE_ERROR_MESSAGE, e);
     }
-  }
-
-  private boolean isSecurityDisabled(InternalCache cache) {
-    return !cache.getSecurityService().isIntegratedSecurity();
   }
 
   private static class NoOpAuthorizer implements MethodInvocationAuthorizer {

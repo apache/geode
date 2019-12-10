@@ -29,6 +29,7 @@ import org.jgroups.protocols.pbcast.NakAckHeader2;
 import org.jgroups.stack.Protocol;
 
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 
 /**
@@ -37,7 +38,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatis
  *
  *
  */
-public class StatRecorder extends Protocol {
+public class StatRecorder<ID extends MemberIdentifier> extends Protocol {
 
   private static final Logger logger = Services.getLogger();
 
@@ -45,7 +46,7 @@ public class StatRecorder extends Protocol {
   private static final int INCOMING = 1;
 
   MembershipStatistics stats;
-  Services services;
+  Services<ID> services;
 
   private final short nakackHeaderId = ClassConfigurator.getProtocolId(NAKACK2.class);
   private final short unicastHeaderId = ClassConfigurator.getProtocolId(UNICAST3.class);
@@ -56,7 +57,7 @@ public class StatRecorder extends Protocol {
    *
    * @param services the Services collective of the GMS
    */
-  public void setServices(Services services) {
+  public void setServices(Services<ID> services) {
     this.services = services;
     this.stats = services.getStatistics();
   }

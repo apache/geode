@@ -236,7 +236,7 @@ public class ShutdownAllRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return "ShutdownAllRequest sent to " + Arrays.toString(this.getRecipients()) + " from "
+    return "ShutdownAllRequest sent to " + Arrays.toString(this.getRecipientsArray()) + " from "
         + this.getSender();
   }
 

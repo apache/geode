@@ -17,19 +17,19 @@ package org.apache.geode.distributed.internal.membership.gms;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
 /** represents a suspicion raised about a member */
-public class SuspectMember {
+public class SuspectMember<ID extends MemberIdentifier> {
   /** the source of suspicion */
-  public MemberIdentifier whoSuspected;
+  public ID whoSuspected;
 
   /** suspected member */
-  public MemberIdentifier suspectedMember;
+  public ID suspectedMember;
 
   /** the reason */
   public String reason;
 
   /** create a new SuspectMember */
-  public SuspectMember(MemberIdentifier whoSuspected,
-      MemberIdentifier suspectedMember, String reason) {
+  public SuspectMember(ID whoSuspected,
+      ID suspectedMember, String reason) {
     this.whoSuspected = whoSuspected;
     this.suspectedMember = suspectedMember;
     this.reason = reason;
@@ -50,6 +50,6 @@ public class SuspectMember {
     if (!(other instanceof SuspectMember)) {
       return false;
     }
-    return this.suspectedMember.equals(((SuspectMember) other).suspectedMember);
+    return this.suspectedMember.equals(((SuspectMember<ID>) other).suspectedMember);
   }
 }

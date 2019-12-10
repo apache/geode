@@ -115,7 +115,7 @@ public class CompactRequest extends CliLegacyMessage {
 
   @Override
   public String toString() {
-    return "Compact request sent to " + ArrayUtils.toString((Object[]) this.getRecipients())
+    return "Compact request sent to " + ArrayUtils.toString((Object[]) this.getRecipientsArray())
         + " from " + this.getSender();
   }
 

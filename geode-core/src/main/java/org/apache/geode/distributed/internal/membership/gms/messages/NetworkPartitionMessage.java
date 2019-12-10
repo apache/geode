@@ -24,11 +24,11 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
-public class NetworkPartitionMessage extends AbstractGMSMessage {
+public class NetworkPartitionMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
   public NetworkPartitionMessage() {}
 
-  public NetworkPartitionMessage(List<MemberIdentifier> recipients) {
+  public NetworkPartitionMessage(List<ID> recipients) {
     setRecipients(recipients);
   }
 

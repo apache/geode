@@ -169,6 +169,8 @@ dependencies {
   // External
   //------------------------------------------------------------
 
+  //Commons IO is used in persistence and management
+  api('commons-io:commons-io')
 
   //tools.jar seems to be used by gfsh is some cases to control processes using
   //the sun attach API? But this code path may not even be used?
@@ -189,9 +191,6 @@ dependencies {
 
   //Jackson databind is used in gfsh, and also in pdx
   implementation('com.fasterxml.jackson.core:jackson-databind')
-
-  //Commons IO is used in persistence and management
-  implementation('commons-io:commons-io')
 
   //Commons validator is used to validate inet addresses in membership
   implementation('commons-validator:commons-validator')
@@ -263,8 +262,8 @@ dependencies {
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')
 
-  //Jansi is used by the CLI (maybe? it is a runtime dependency)
-  runtimeOnly('org.fusesource.jansi:jansi') {
+  runtimeOnly(project(':geode-gfsh')) {
+    exclude module: 'geode-core'
     ext.optional = true
   }
 
@@ -274,24 +273,6 @@ dependencies {
 
   runtimeOnly(project(':geode-http-service')) {
     ext.optional = true
-  }
-
-  //Spring core is used by the the gfsh cli
-  implementation('org.springframework:spring-core') {
-    ext.optional = true
-  }
-
-  //Spring shell is used by the gfsh cli. It's unclear why we can exclude
-  //So many transitive dependencies - are these really optional?
-  //GfshCommand is a public API class that depends on spring shell
-  api('org.springframework.shell:spring-shell') {
-    exclude module: 'aopalliance'
-    exclude module: 'asm'
-    exclude module: 'cglib'
-    exclude module: 'guava'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-context-support'
-    exclude module: 'spring-core'
   }
 
   //Snappy is used for compressing values, if enabled
@@ -329,7 +310,6 @@ dependencies {
   testCompile(project(':geode-concurrency-test'))
   testCompile('org.apache.bcel:bcel')
   testCompile('org.mockito:mockito-core')
-  testCompile('org.springframework:spring-test')
   testCompile('com.pholser:junit-quickcheck-core')
   testCompile('org.powermock:powermock-core')
   testCompile('org.powermock:powermock-module-junit4')
@@ -361,7 +341,6 @@ dependencies {
   integrationTestCompile('org.powermock:powermock-core')
   integrationTestCompile('org.powermock:powermock-module-junit4')
   integrationTestCompile('org.powermock:powermock-api-mockito2')
-  integrationTestCompile('org.springframework:spring-test')
   integrationTestCompile('pl.pragmatists:JUnitParams')
   integrationTestCompile('com.tngtech.archunit:archunit-junit4')
 

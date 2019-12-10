@@ -23,14 +23,14 @@ import java.util.Comparator;
  * service. For Geode this implementation is InternalDistributedMember.<br>
  * See {@link MembershipBuilder} - where you inject your factory into GMS
  */
-public interface MemberIdentifierFactory {
+public interface MemberIdentifierFactory<ID extends MemberIdentifier> {
   /**
    * Create a new identifier instance
    */
-  MemberIdentifier create(MemberData memberInfo);
+  ID create(MemberData memberInfo);
 
   /**
    * Create a Comparator for the implementation of identifiers provided by this factory
    */
-  Comparator<MemberIdentifier> getComparator();
+  Comparator<ID> getComparator();
 }

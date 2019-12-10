@@ -31,7 +31,9 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.internal.UniquePortSupplier;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.modules.session.functions.GetMaxInactiveInterval;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.SessionTest;
@@ -131,8 +133,29 @@ public abstract class CargoTestBase {
             resp.getSessionCookie());
 
       // Check that the response from this server is correct
-      assertEquals("Session data is not replicating properly", expectedValue, resp.getResponse());
+      if (install.getConnectionType() == ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER) {
+        // There might be delay for other client cache to gets the update through
+        // HARegionQueue
+        String value = resp.getResponse();
+        if (!expectedValue.equals(value)) {
+          LogService.getLogger().info("verifying container {} for expected value of {}"
+              + " for key {}, but gets response value of {}. Waiting for update from server.", i,
+              expectedValue, key, value);
+        }
+        GeodeAwaitility.await().until(() -> expectedValue.equals(getResponseValue(client, key)));
+      } else {
+        // either p2p cache or client cache which has proxy/empty region - retrieving session from
+        // servers
+        assertEquals("Session data is not replicating properly", expectedValue, resp.getResponse());
+      }
     }
+  }
+
+  private String getResponseValue(Client client, String key)
+      throws IOException, URISyntaxException {
+    String value = client.get(key).getResponse();
+    LogService.getLogger().info("client gets response value of {}", value);
+    return value;
   }
 
   /**
@@ -224,18 +247,12 @@ public abstract class CargoTestBase {
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
 
-    if (!localCacheEnabled()) {
-      getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
-    }
+    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
 
     client.setMaxInactive(1);
     Thread.sleep(5000);
 
     verifySessionIsRemoved(key);
-  }
-
-  private boolean localCacheEnabled() {
-    return install.getConnectionType().enableLocalCache();
   }
 
   /**
@@ -256,19 +273,21 @@ public abstract class CargoTestBase {
     // 59 minutes is the value configured in web.xml
     verifyMaxInactiveInterval(59 * 60);
 
-    if (!localCacheEnabled()) {
-      client.setMaxInactive(63);
-
-      verifyMaxInactiveInterval(63);
-    }
+    client.setMaxInactive(63);
+    verifyMaxInactiveInterval(63);
 
   }
 
   protected void verifyMaxInactiveInterval(int expected) throws IOException, URISyntaxException {
     for (int i = 0; i < manager.numContainers(); i++) {
       client.setPort(Integer.parseInt(manager.getContainerPort(i)));
-      assertEquals(Integer.toString(expected),
-          client.executionFunction(GetMaxInactiveInterval.class).getResponse());
+      if (install.getConnectionType() == ContainerInstall.ConnectionType.CACHING_CLIENT_SERVER) {
+        GeodeAwaitility.await().until(() -> Integer.toString(expected)
+            .equals(client.executionFunction(GetMaxInactiveInterval.class).getResponse()));
+      } else {
+        assertEquals(Integer.toString(expected),
+            client.executionFunction(GetMaxInactiveInterval.class).getResponse());
+      }
     }
   }
 
@@ -322,10 +341,7 @@ public abstract class CargoTestBase {
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     Client.Response resp = client.set(key, value);
 
-
-    if (!localCacheEnabled()) {
-      getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
-    }
+    getKeyValueDataOnAllClients(key, value, resp.getSessionCookie());
 
     client.setPort(Integer.parseInt(manager.getContainerPort(0)));
     client.remove(key);

@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.internal.util.DriverJarUtil;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class ListDriversFunctionTest {
 

@@ -417,7 +417,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    */
   protected void appendFields(StringBuffer buff) {
     buff.append("; sender=").append(getSender()).append("; recipients=[");
-    InternalDistributedMember[] recips = getRecipients();
+    InternalDistributedMember[] recips = getRecipientsArray();
     for (int i = 0; i < recips.length - 1; i++) {
       buff.append(recips[i]).append(',');
     }
@@ -428,7 +428,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   }
 
   public InternalDistributedMember getRecipient() {
-    return getRecipients()[0];
+    return getRecipientsArray()[0];
   }
 
   public void setOperation(Operation op) {

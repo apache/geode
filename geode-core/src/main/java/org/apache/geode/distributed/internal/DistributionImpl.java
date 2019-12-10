@@ -16,6 +16,9 @@ package org.apache.geode.distributed.internal;
 
 import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
@@ -41,8 +45,6 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.direct.ShunnedMemberException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
-import org.apache.geode.distributed.internal.membership.adapter.GMSLocatorAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
@@ -55,6 +57,8 @@ import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilde
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
@@ -64,12 +68,19 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.DeserializationContext;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 
 public class DistributionImpl implements Distribution {
   private static final Logger logger = Services.getLogger();
+
+  @Immutable
+  public static final InternalDistributedMember[] EMPTY_MEMBER_ARRAY =
+      new InternalDistributedMember[0];
   /**
    * @see SystemFailure#loadEmergencyClasses() /** break any potential circularity in
    *      {@link #loadEmergencyClasses()}
@@ -83,7 +94,7 @@ public class DistributionImpl implements Distribution {
   private final long ackSevereAlertThreshold;
   private final long ackWaitThreshold;
   private final RemoteTransportConfig transportConfig;
-  private final Membership membership;
+  private final Membership<InternalDistributedMember> membership;
   private DirectChannel directChannel;
 
   /**
@@ -101,8 +112,8 @@ public class DistributionImpl implements Distribution {
 
   public DistributionImpl(final ClusterDistributionManager clusterDistributionManager,
       final RemoteTransportConfig transport, final InternalDistributedSystem system,
-      final MembershipListener listener,
-      final MessageListener messageListener) {
+      final MembershipListener<InternalDistributedMember> listener,
+      final MessageListener<InternalDistributedMember> messageListener) {
     this.clusterDistributionManager = clusterDistributionManager;
     this.transportConfig = transport;
     this.tcpDisabled = transportConfig.isTcpDisabled();
@@ -116,8 +127,7 @@ public class DistributionImpl implements Distribution {
     }
 
     memberTimeout = system.getConfig().getMemberTimeout();
-    membership = MembershipBuilder.newMembershipBuilder(
-        clusterDistributionManager)
+    membership = MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
         .setAuthenticator(
             new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
                 system.getSecurityLogWriter(), system.getInternalLogWriter()))
@@ -151,15 +161,17 @@ public class DistributionImpl implements Distribution {
     GMSHealthMonitor.loadEmergencyClasses();
   }
 
-  public static void connectLocatorToServices(Services services) {
+  public static void connectLocatorToServices(Membership<InternalDistributedMember> membership) {
     // see if a locator was started and put it in GMS Services
     InternalLocator l = (InternalLocator) Locator.getLocator();
     if (l != null && l.getLocatorHandler() != null) {
-      if (l.getLocatorHandler().setServices(services)) {
-        services
-            .setLocator(((GMSLocatorAdapter) l.getLocatorHandler()).getGMSLocator());
-      }
+      l.getLocatorHandler().setMembership(membership);
     }
+  }
+
+  @Override
+  public Membership<InternalDistributedMember> getMembership() {
+    return membership;
   }
 
   @Override
@@ -170,7 +182,7 @@ public class DistributionImpl implements Distribution {
   @VisibleForTesting
   DistributionImpl(final ClusterDistributionManager clusterDistributionManager,
       final RemoteTransportConfig transport, final InternalDistributedSystem system,
-      Membership membership) {
+      Membership<InternalDistributedMember> membership) {
     this.clusterDistributionManager = clusterDistributionManager;
     this.transportConfig = transport;
     this.tcpDisabled = transportConfig.isTcpDisabled();
@@ -188,8 +200,8 @@ public class DistributionImpl implements Distribution {
   static DistributionImpl createDistribution(
       ClusterDistributionManager clusterDistributionManager, RemoteTransportConfig transport,
       InternalDistributedSystem system,
-      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener listener,
-      MessageListener messageListener) {
+      MembershipListener<InternalDistributedMember> listener,
+      MessageListener<InternalDistributedMember> messageListener) {
 
     DistributionImpl distribution =
         new DistributionImpl(clusterDistributionManager, transport, system, listener,
@@ -200,7 +212,7 @@ public class DistributionImpl implements Distribution {
 
 
   @Override
-  public MembershipView getView() {
+  public MembershipView<InternalDistributedMember> getView() {
     return membership.getView();
   }
 
@@ -232,7 +244,7 @@ public class DistributionImpl implements Distribution {
 
     if (msg instanceof AdminMessageType && shutdownInProgress()) {
       // no admin messages while shutting down - this can cause threads to hang
-      return new HashSet<>(Arrays.asList(msg.getRecipients()));
+      return new HashSet<>(Arrays.asList(msg.getRecipientsArray()));
     }
 
     // Handle trivial cases
@@ -294,7 +306,7 @@ public class DistributionImpl implements Distribution {
     InternalDistributedMember[] keys;
     if (content.forAll()) {
       allDestinations = true;
-      keys = membership.getAllMembers();
+      keys = membership.getAllMembers(EMPTY_MEMBER_ARRAY);
     } else {
       allDestinations = false;
       keys = destinations;
@@ -334,11 +346,11 @@ public class DistributionImpl implements Distribution {
 
 
       // Iterate through members and causes in tandem :-(
-      Iterator it_mem = members.iterator();
-      Iterator it_causes = ex.getCauses().iterator();
+      Iterator<InternalDistributedMember> it_mem = members.iterator();
+      Iterator<Throwable> it_causes = ex.getCauses().iterator();
       while (it_mem.hasNext()) {
-        InternalDistributedMember member = (InternalDistributedMember) it_mem.next();
-        Throwable th = (Throwable) it_causes.next();
+        InternalDistributedMember member = it_mem.next();
+        Throwable th = it_causes.next();
 
         if (!membership.hasMember(member) || (th instanceof ShunnedMemberException)) {
           continue;
@@ -374,11 +386,11 @@ public class DistributionImpl implements Distribution {
     if (dc != null) {
       dc.getChannelStates(member, result);
     }
-    return membership.getMessageState(member, includeMulticast, result);
+    return membership.getMessageState((InternalDistributedMember) member, includeMulticast, result);
   }
 
   @Override
-  public void waitForMessageState(DistributedMember member,
+  public void waitForMessageState(InternalDistributedMember member,
       Map<String, Long> state) throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException();
@@ -391,25 +403,18 @@ public class DistributionImpl implements Distribution {
 
     if (mcastEnabled && !tcpDisabled) {
       // GEODE-2865: wait for scheduled multicast messages to be applied to the cache
-      waitForSerialMessageProcessing((InternalDistributedMember) member);
+      waitForSerialMessageProcessing(member);
     }
   }
 
   @Override
-  public boolean requestMemberRemoval(DistributedMember member,
-      String reason) {
+  public boolean requestMemberRemoval(InternalDistributedMember member, String reason) {
     return membership.requestMemberRemoval(member, reason);
   }
 
   @Override
-  public boolean verifyMember(DistributedMember mbr,
-      String reason) {
+  public boolean verifyMember(InternalDistributedMember mbr, String reason) {
     return membership.verifyMember(mbr, reason);
-  }
-
-  @Override
-  public boolean isShunned(DistributedMember m) {
-    return membership.isShunned(m);
   }
 
   @Override
@@ -418,7 +423,7 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public boolean memberExists(DistributedMember m) {
+  public boolean memberExists(InternalDistributedMember m) {
     return membership.memberExists(m);
   }
 
@@ -458,7 +463,7 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public void shutdownMessageReceived(DistributedMember id,
+  public void shutdownMessageReceived(InternalDistributedMember id,
       String reason) {
     membership.shutdownMessageReceived(id, reason);
   }
@@ -497,19 +502,19 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public void addSurpriseMemberForTesting(DistributedMember mbr,
+  public void addSurpriseMemberForTesting(InternalDistributedMember mbr,
       long birthTime) {
     membership.addSurpriseMemberForTesting(mbr, birthTime);
   }
 
   @Override
-  public void suspectMembers(Set<DistributedMember> members,
+  public void suspectMembers(Set<InternalDistributedMember> members,
       String reason) {
     membership.suspectMembers(members, reason);
   }
 
   @Override
-  public void suspectMember(DistributedMember member,
+  public void suspectMember(InternalDistributedMember member,
       String reason) {
     membership.suspectMember(member, reason);
   }
@@ -532,12 +537,12 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public boolean addSurpriseMember(DistributedMember mbr) {
+  public boolean addSurpriseMember(InternalDistributedMember mbr) {
     return membership.addSurpriseMember(mbr);
   }
 
   @Override
-  public void startupMessageFailed(DistributedMember mbr,
+  public void startupMessageFailed(InternalDistributedMember mbr,
       String failureMessage) {
     membership.startupMessageFailed(mbr, failureMessage);
   }
@@ -548,7 +553,7 @@ public class DistributionImpl implements Distribution {
   }
 
   @Override
-  public boolean isSurpriseMember(DistributedMember m) {
+  public boolean isSurpriseMember(InternalDistributedMember m) {
     return membership.isSurpriseMember(m);
   }
 
@@ -564,11 +569,6 @@ public class DistributionImpl implements Distribution {
   @Override
   public Set<InternalDistributedMember> getMembersNotShuttingDown() {
     return membership.getMembersNotShuttingDown();
-  }
-
-  @Override
-  public Services getServices() {
-    return membership.getServices();
   }
 
   // TODO - this method is only used by tests
@@ -693,6 +693,11 @@ public class DistributionImpl implements Distribution {
     forceUseUDPMessaging.set(Boolean.FALSE);
   }
 
+  @Override
+  public void setCloseInProgress() {
+    membership.setCloseInProgress();
+  }
+
   private boolean isForceUDPCommunications() {
     return forceUseUDPMessaging.get();
   }
@@ -707,7 +712,7 @@ public class DistributionImpl implements Distribution {
    * @throws TimeoutException if we wait too long for the member to go away
    */
   @Override
-  public boolean waitForDeparture(DistributedMember mbr)
+  public boolean waitForDeparture(InternalDistributedMember mbr)
       throws TimeoutException, InterruptedException {
     return waitForDeparture(mbr, memberTimeout * 4);
   }
@@ -723,14 +728,14 @@ public class DistributionImpl implements Distribution {
    * @throws TimeoutException if we wait too long for the member to go away
    */
   @Override
-  public boolean waitForDeparture(DistributedMember mbr, long timeoutMs)
+  public boolean waitForDeparture(InternalDistributedMember mbr, long timeoutMs)
       throws TimeoutException, InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException();
     boolean result = false;
     // TODO - Move the bulk of this method to the adapter.
     DirectChannel dc = directChannel;
-    InternalDistributedMember idm = (InternalDistributedMember) mbr;
+    InternalDistributedMember idm = mbr;
     long pauseTime = (timeoutMs < 4000) ? 100 : timeoutMs / 40;
     boolean wait;
     int numWaits = 0;
@@ -810,7 +815,7 @@ public class DistributionImpl implements Distribution {
    *
    *
    */
-  class MyDCReceiver implements MessageListener {
+  class MyDCReceiver implements MessageListener<InternalDistributedMember> {
 
     /**
      * Don't provide events until the caller has told us we are ready.
@@ -826,7 +831,7 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    public void messageReceived(DistributionMessage msg) {
+    public void messageReceived(Message<InternalDistributedMember> msg) {
       membership.processMessage(msg);
 
     }
@@ -849,30 +854,47 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    protected void process(ClusterDistributionManager dm) {
-      // not used
-    }
-
-    @Override
     public int getDSFID() {
       return 0;
     }
 
     @Override
     public int getProcessorType() {
-      return OperationExecutors.SERIAL_EXECUTOR;
+      return 0;
+    }
+
+    @Override
+    protected void process(ClusterDistributionManager dm) {
+
+    }
+
+    @Override
+    public void toData(DataOutput out, SerializationContext context) throws IOException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void fromData(DataInput in, DeserializationContext context)
+        throws IOException, ClassNotFoundException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Version[] getSerializationVersions() {
+      return null;
     }
   }
 
-  public static class LifecycleListenerImpl implements LifecycleListener {
+  private static class LifecycleListenerImpl
+      implements LifecycleListener<InternalDistributedMember> {
     private DistributionImpl distribution;
 
-    public LifecycleListenerImpl(final DistributionImpl distribution) {
+    LifecycleListenerImpl(final DistributionImpl distribution) {
       this.distribution = distribution;
     }
 
     @Override
-    public void start(final MemberIdentifier memberID) {
+    public void start(final InternalDistributedMember memberID) {
       distribution.startDirectChannel(memberID);
     }
 
@@ -893,7 +915,7 @@ public class DistributionImpl implements Distribution {
 
     @Override
     public void started() {
-      connectLocatorToServices(distribution.getServices());
+      connectLocatorToServices(distribution.getMembership());
     }
 
     @Override

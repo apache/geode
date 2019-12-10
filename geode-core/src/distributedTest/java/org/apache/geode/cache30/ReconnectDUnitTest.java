@@ -418,10 +418,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
               failure = false;
               cache = ((InternalLocator) locator).getCache();
               system = cache.getInternalDistributedSystem();
-              assertTrue(
-                  (getDistribution(system))
-                      .getServices().getMessenger()
-                      .isOldMembershipIdentifier(dm));
               return ds.getReconnectedSystem().getDistributedMember();
             } catch (InterruptedException e) {
               System.err.println("interrupted while waiting for reconnect");

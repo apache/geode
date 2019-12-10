@@ -39,7 +39,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.util.ManagementUtils;
 
 /**
  * this is used by DistributedSystemBridge.queryData() call. It calls QueryDataFunction on each
@@ -95,7 +95,7 @@ public class DataQueryEngine {
 
     Set<DistributedMember> inputMembers = null;
     if (StringUtils.isNotBlank(members)) {
-      inputMembers = CliUtil.findMembers(null, members.split(","), cache);
+      inputMembers = ManagementUtils.findMembers(null, members.split(","), cache);
       if (inputMembers.size() == 0) {
         return new JsonisedErrorMessage(
             String.format("Query is invalid due to invalid member : %s", members)).toString();
@@ -115,7 +115,7 @@ public class DataQueryEngine {
                     .toString();
           } else {
             Set<DistributedMember> associatedMembers =
-                CliUtil.getRegionAssociatedMembers(regionPath, cache, true);
+                ManagementUtils.getRegionAssociatedMembers(regionPath, cache, true);
 
             if (inputMembers != null && inputMembers.size() > 0) {
               if (!associatedMembers.containsAll(inputMembers)) {
@@ -149,7 +149,7 @@ public class DataQueryEngine {
 
       // get the first available member
       Set<DistributedMember> associatedMembers =
-          CliUtil.getQueryRegionsAssociatedMembers(regionsInQuery, cache, false);
+          ManagementUtils.getQueryRegionsAssociatedMembers(regionsInQuery, cache, false);
 
       if (associatedMembers != null && associatedMembers.size() > 0) {
         Object[] functionArgs = new Object[6];

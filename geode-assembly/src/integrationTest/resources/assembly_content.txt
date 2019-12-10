@@ -618,11 +618,11 @@ javadoc/org/apache/geode/examples/SimpleSecurityManager.html
 javadoc/org/apache/geode/examples/package-frame.html
 javadoc/org/apache/geode/examples/package-summary.html
 javadoc/org/apache/geode/examples/package-tree.html
+javadoc/org/apache/geode/examples/security/ExampleAnnotationBasedMethodInvocationAuthorizer.html
 javadoc/org/apache/geode/examples/security/ExamplePostProcessor.html
 javadoc/org/apache/geode/examples/security/ExampleSecurityManager.Role.html
 javadoc/org/apache/geode/examples/security/ExampleSecurityManager.User.html
 javadoc/org/apache/geode/examples/security/ExampleSecurityManager.html
-javadoc/org/apache/geode/examples/security/ExampleAnnotationBasedMethodInvocationAuthorizer.html
 javadoc/org/apache/geode/examples/security/package-frame.html
 javadoc/org/apache/geode/examples/security/package-summary.html
 javadoc/org/apache/geode/examples/security/package-tree.html
@@ -740,12 +740,17 @@ javadoc/org/apache/geode/management/client/package-tree.html
 javadoc/org/apache/geode/management/configuration/AbstractConfiguration.html
 javadoc/org/apache/geode/management/configuration/AutoSerializer.html
 javadoc/org/apache/geode/management/configuration/ClassName.html
+javadoc/org/apache/geode/management/configuration/Deployment.html
 javadoc/org/apache/geode/management/configuration/GatewayReceiver.html
 javadoc/org/apache/geode/management/configuration/GroupableConfiguration.html
 javadoc/org/apache/geode/management/configuration/Index.html
+javadoc/org/apache/geode/management/configuration/IndexType.html
 javadoc/org/apache/geode/management/configuration/Links.html
 javadoc/org/apache/geode/management/configuration/Member.html
 javadoc/org/apache/geode/management/configuration/Pdx.html
+javadoc/org/apache/geode/management/configuration/Region.Eviction.html
+javadoc/org/apache/geode/management/configuration/Region.EvictionAction.html
+javadoc/org/apache/geode/management/configuration/Region.EvictionType.html
 javadoc/org/apache/geode/management/configuration/Region.Expiration.html
 javadoc/org/apache/geode/management/configuration/Region.ExpirationAction.html
 javadoc/org/apache/geode/management/configuration/Region.ExpirationType.html
@@ -773,6 +778,7 @@ javadoc/org/apache/geode/management/package-frame.html
 javadoc/org/apache/geode/management/package-summary.html
 javadoc/org/apache/geode/management/package-tree.html
 javadoc/org/apache/geode/management/runtime/CacheServerInfo.html
+javadoc/org/apache/geode/management/runtime/DeploymentInfo.html
 javadoc/org/apache/geode/management/runtime/GatewayReceiverInfo.html
 javadoc/org/apache/geode/management/runtime/MemberInformation.html
 javadoc/org/apache/geode/management/runtime/OperationResult.html
@@ -965,6 +971,7 @@ lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar
 lib/geode-cq-0.0.0.jar
 lib/geode-dependencies.jar
+lib/geode-gfsh-0.0.0.jar
 lib/geode-http-service-0.0.0.jar
 lib/geode-jca-0.0.0.rar
 lib/geode-log4j-0.0.0.jar
@@ -988,7 +995,6 @@ lib/istack-commons-runtime-2.2.jar
 lib/jackson-annotations-2.10.0.jar
 lib/jackson-core-2.10.0.jar
 lib/jackson-databind-2.10.0.jar
-lib/jansi-1.17.1.jar
 lib/javax.activation-1.2.0.jar
 lib/javax.activation-api-1.2.0.jar
 lib/javax.mail-api-1.6.2.jar

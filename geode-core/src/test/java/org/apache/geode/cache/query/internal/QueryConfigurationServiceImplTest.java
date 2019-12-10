@@ -14,14 +14,22 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY;
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.CONTINUOUS_QUERIES_RUNNING_MESSAGE;
 import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.INTERFACE_NOT_IMPLEMENTED_MESSAGE;
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.cache.query.internal.QueryConfigurationServiceImpl.NULL_CACHE_ERROR_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,40 +37,70 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.cache.query.internal.cq.CqService;
+import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.cache.query.security.JavaBeanAccessorMethodAuthorizer;
 import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
-import org.apache.geode.cache.util.TestMethodAuthorizer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.cli.util.TestMethodAuthorizer;
 
 @RunWith(JUnitParamsRunner.class)
 public class QueryConfigurationServiceImplTest {
+  private static final Set<String> EMPTY_SET = Collections.emptySet();
+  private CqService mockCqService;
   private InternalCache mockCache;
   private SecurityService mockSecurity;
   private QueryConfigurationServiceImpl configService;
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   @Before
   public void setUp() {
-    mockCache = mock(InternalCache.class);
+    mockCqService = mock(CqService.class);
+    when(mockCqService.getAllCqs()).thenReturn(Collections.emptyList());
+
     mockSecurity = mock(SecurityService.class);
-    when(mockCache.getSecurityService()).thenReturn(mockSecurity);
     configService = spy(new QueryConfigurationServiceImpl());
+
+    mockCache = mock(InternalCache.class);
+    when(mockCache.getCqService()).thenReturn(mockCqService);
+    when(mockCache.getSecurityService()).thenReturn(mockSecurity);
+  }
+
+  @SuppressWarnings("unused")
+  private Object[] getMethodAuthorizerClasses() {
+    return new Object[] {
+        RegExMethodAuthorizer.class,
+        RestrictedMethodAuthorizer.class,
+        UnrestrictedMethodAuthorizer.class,
+        JavaBeanAccessorMethodAuthorizer.class,
+    };
+  }
+
+  @SuppressWarnings("deprecation")
+  private void setAllowUntrustedMethodInvocationSystemProperty() {
+    System.setProperty(ALLOW_UNTRUSTED_METHOD_INVOCATION_SYSTEM_PROPERTY, "true");
   }
 
   @Test
   public void initThrowsExceptionWhenCacheIsNull() {
     assertThatThrownBy(() -> configService.init(null))
-        .isInstanceOf(IllegalArgumentException.class);
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage(NULL_CACHE_ERROR_MESSAGE);
   }
 
   @Test
-  public void queryConfigurationServiceUsesNoOpAuthorizerWithSecurityDisabled() {
+  public void initSetsNoOpAuthorizerWhenSecurityDisabled() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(false);
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer())
@@ -70,22 +108,17 @@ public class QueryConfigurationServiceImplTest {
   }
 
   @Test
-  public void queryConfigurationServiceUsesNoOpAuthorizerWhenSystemPropertyIsSet() {
-    String propertyKey = GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation";
-    try {
-      System.setProperty(propertyKey, "true");
-      configService = new QueryConfigurationServiceImpl();
-      when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
-      configService.init(mockCache);
-      assertThat(configService.getMethodAuthorizer())
-          .isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
-    } finally {
-      System.clearProperty(propertyKey);
-    }
+  public void initSetsNoOpAuthorizerWhenSystemPropertyIsSet() {
+    setAllowUntrustedMethodInvocationSystemProperty();
+    configService = new QueryConfigurationServiceImpl();
+    when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
+    configService.init(mockCache);
+    assertThat(configService.getMethodAuthorizer())
+        .isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
   }
 
   @Test
-  public void queryConfigurationServiceUsesRestrictedMethodAuthorizerWhenSecurityIsEnabled() {
+  public void initSetsRestrictedMethodAuthorizerWhenSecurityIsEnabledAndSystemPropertyIsNotSet() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
@@ -95,48 +128,37 @@ public class QueryConfigurationServiceImplTest {
   public void updateMethodAuthorizerDoesNothingWhenSecurityIsDisabled() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(false);
     configService.init(mockCache);
-
     MethodInvocationAuthorizer authorizer = configService.getMethodAuthorizer();
-
     assertThat(authorizer).isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
 
-    configService.updateMethodAuthorizer(mockCache,
-        RestrictedMethodAuthorizer.class.getName(), new HashSet<>());
-
+    configService.updateMethodAuthorizer(mockCache, false,
+        RestrictedMethodAuthorizer.class.getName(), EMPTY_SET);
     assertThat(configService.getMethodAuthorizer()).isSameAs(authorizer);
   }
 
   @Test
   public void updateMethodAuthorizerDoesNothingWhenSystemPropertyIsSet() {
-    String propertyKey = GEMFIRE_PREFIX + "QueryService.allowUntrustedMethodInvocation";
-    try {
-      System.setProperty(propertyKey, "true");
-      configService = new QueryConfigurationServiceImpl();
-      when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
-      configService.init(mockCache);
+    setAllowUntrustedMethodInvocationSystemProperty();
+    configService = new QueryConfigurationServiceImpl();
+    when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
+    configService.init(mockCache);
 
-      MethodInvocationAuthorizer authorizer = configService.getMethodAuthorizer();
+    MethodInvocationAuthorizer authorizer = configService.getMethodAuthorizer();
+    assertThat(authorizer).isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
 
-      assertThat(authorizer).isSameAs(QueryConfigurationServiceImpl.getNoOpAuthorizer());
-
-      configService.updateMethodAuthorizer(mockCache,
-          RestrictedMethodAuthorizer.class.getName(), new HashSet<>());
-
-      assertThat(configService.getMethodAuthorizer()).isSameAs(authorizer);
-    } finally {
-      System.clearProperty(propertyKey);
-    }
+    configService.updateMethodAuthorizer(mockCache, false,
+        RestrictedMethodAuthorizer.class.getName(), EMPTY_SET);
+    assertThat(configService.getMethodAuthorizer()).isSameAs(authorizer);
   }
 
   @Test
   @TestCaseName("{method} Authorizer={0}")
   @Parameters(method = "getMethodAuthorizerClasses")
   public void updateMethodAuthorizerSetsCorrectAuthorizer(Class methodAuthorizerClass) {
-
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
 
-    configService.updateMethodAuthorizer(mockCache, methodAuthorizerClass.getName(),
-        new HashSet<>());
+    configService.updateMethodAuthorizer(mockCache, false, methodAuthorizerClass.getName(),
+        EMPTY_SET);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(methodAuthorizerClass);
   }
 
@@ -150,10 +172,8 @@ public class QueryConfigurationServiceImplTest {
     parameters.add(testParam1);
     parameters.add(testParam2);
 
-    configService.updateMethodAuthorizer(mockCache, testAuthorizerName, parameters);
-
+    configService.updateMethodAuthorizer(mockCache, false, testAuthorizerName, parameters);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(TestMethodAuthorizer.class);
-
     TestMethodAuthorizer methodAuthorizer =
         (TestMethodAuthorizer) configService.getMethodAuthorizer();
     assertThat(methodAuthorizer.getParameters()).isEqualTo(parameters);
@@ -166,7 +186,7 @@ public class QueryConfigurationServiceImplTest {
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     assertThatThrownBy(
-        () -> configService.updateMethodAuthorizer(mockCache, null, new HashSet<>()))
+        () -> configService.updateMethodAuthorizer(mockCache, false, null, EMPTY_SET))
             .isInstanceOf(QueryConfigurationServiceException.class);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
   }
@@ -179,7 +199,7 @@ public class QueryConfigurationServiceImplTest {
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     String className = "FakeClassName";
     assertThatThrownBy(
-        () -> configService.updateMethodAuthorizer(mockCache, className, new HashSet<>()))
+        () -> configService.updateMethodAuthorizer(mockCache, false, className, EMPTY_SET))
             .isInstanceOf(QueryConfigurationServiceException.class);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
   }
@@ -191,39 +211,60 @@ public class QueryConfigurationServiceImplTest {
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
     String className = this.getClass().getName();
-    try {
-      configService.updateMethodAuthorizer(mockCache,
-          className, new HashSet<>());
-    } catch (Exception expectedException) {
-      assertThat(expectedException.getCause())
-          .isInstanceOf(QueryConfigurationServiceException.class)
-          .hasMessage(String.format(INTERFACE_NOT_IMPLEMENTED_MESSAGE, className,
-              MethodInvocationAuthorizer.class.getName()));
-    }
+    assertThatThrownBy(
+        () -> configService.updateMethodAuthorizer(mockCache, false, className, EMPTY_SET))
+            .hasCauseInstanceOf(QueryConfigurationServiceException.class)
+            .hasStackTraceContaining(String.format(INTERFACE_NOT_IMPLEMENTED_MESSAGE, className,
+                MethodInvocationAuthorizer.class.getName()));
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
   }
 
   @Test
   public void updateMethodAuthorizerDoesNotChangeMethodAuthorizerWhenSecurityIsEnabledAndSpecifiedClassCannotBeInstantiated() {
     when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
-
     when(mockCache.isClosed()).thenThrow(new RuntimeException("Test exception"));
 
     configService.init(mockCache);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
-    assertThatThrownBy(
-        () -> configService.updateMethodAuthorizer(mockCache, TestMethodAuthorizer.class.getName(),
-            new HashSet<>())).isInstanceOf(QueryConfigurationServiceException.class);
+    assertThatThrownBy(() -> configService.updateMethodAuthorizer(mockCache, false,
+        TestMethodAuthorizer.class.getName(), EMPTY_SET))
+            .isInstanceOf(QueryConfigurationServiceException.class);
     assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
   }
 
-  @SuppressWarnings("unused")
-  private Object[] getMethodAuthorizerClasses() {
-    return new Object[] {
-        RestrictedMethodAuthorizer.class,
-        UnrestrictedMethodAuthorizer.class,
-        JavaBeanAccessorMethodAuthorizer.class,
-        RegExMethodAuthorizer.class
-    };
+  @Test
+  @TestCaseName("{method} Authorizer={0}")
+  @Parameters(method = "getMethodAuthorizerClasses")
+  public void updateMethodAuthorizerDoesNotChangeMethodAuthorizerAndThrowsExceptionWhenCqsAreRunningAndForceUpdateFlagIsSetAsFalse(
+      Class methodAuthorizerClass) {
+    when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
+    doReturn(Collections.singletonList(mock(ServerCQ.class))).when(mockCqService).getAllCqs();
+    configService.init(mockCache);
+    assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
+
+    assertThatThrownBy(() -> configService.updateMethodAuthorizer(mockCache, false,
+        methodAuthorizerClass.getName(), EMPTY_SET))
+            .isInstanceOf(QueryConfigurationServiceException.class)
+            .hasMessage(CONTINUOUS_QUERIES_RUNNING_MESSAGE);
+    assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
+  }
+
+  @Test
+  @TestCaseName("{method} Authorizer={0}")
+  @Parameters(method = "getMethodAuthorizerClasses")
+  public void updateMethodAuthorizerChangesMethodAuthorizerAndInvalidatesCqsCacheWhenCqsAreRunningAndForceUpdateFlagIsSetAsTrue(
+      Class methodAuthorizerClass) {
+    ServerCQ serverCQ1 = mock(ServerCQ.class);
+    ServerCQ serverCQ2 = mock(ServerCQ.class);
+    when(mockSecurity.isIntegratedSecurity()).thenReturn(true);
+    doReturn(Arrays.asList(serverCQ1, serverCQ2)).when(mockCqService).getAllCqs();
+    configService.init(mockCache);
+    assertThat(configService.getMethodAuthorizer()).isInstanceOf(RestrictedMethodAuthorizer.class);
+
+    assertThatCode(() -> configService.updateMethodAuthorizer(mockCache, true,
+        methodAuthorizerClass.getName(), EMPTY_SET)).doesNotThrowAnyException();
+    assertThat(configService.getMethodAuthorizer()).isInstanceOf(methodAuthorizerClass);
+    verify(serverCQ1, times(1)).invalidateCqResultKeys();
+    verify(serverCQ2, times(1)).invalidateCqResultKeys();
   }
 }

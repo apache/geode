@@ -88,10 +88,16 @@ attempts=$(cat new/attempts | wc -l)
 if [ $attempts -eq 1 ]; then
   ZONE=${MY_ZONE}
 else
+  #during retry we need to clean up the prior zone
+  PRIOR_ZONE=$(cat new/prior-zone)
+  gcloud compute instances delete ${INSTANCE_NAME} --zone=${PRIOR_ZONE} --quiet &>/dev/null || true
   PERMITTED_ZONES=(us-central1-a us-central1-b us-central1-c us-central1-f)
   ZONE=${PERMITTED_ZONES[$((${RANDOM} % 4))]}
 fi
 echo "Deploying to zone ${ZONE}"
+
+#remember zone in case we retry
+echo ${ZONE} > new/prior-zone
 
 #in a retry loop we intentionally generate the same instance name, so make sure prior attempt is cleaned up
 gcloud compute instances delete ${INSTANCE_NAME} --zone=${ZONE} --quiet &>/dev/null || true

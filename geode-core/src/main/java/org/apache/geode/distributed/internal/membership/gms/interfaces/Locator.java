@@ -15,16 +15,17 @@
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
 /**
  * The Locator interface allows member services to interact with the Locator TcpHandler component of
  * Geode's locator. The Locator handler's lifecycle is not controlled by member services.
  */
-public interface Locator {
+public interface Locator<ID extends MemberIdentifier> {
   /**
    * called when a new view is installed by Membership
    */
-  void installView(GMSMembershipView v);
+  void installView(GMSMembershipView<ID> v);
 
   /**
    * informs the locator that this process is becoming the membership coordinator

@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal;
 import org.apache.geode.annotations.internal.MutableForTesting;
 
 /**
- * This class is a test hook to intercept DistributionMessages in the VM receiving the message.
+ * This class is a test hook to intercept messages in the VM receiving the message.
  */
 public abstract class DistributionMessageObserver {
 

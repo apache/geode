@@ -14,16 +14,14 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.api;
 
-import org.apache.geode.distributed.internal.DistributionMessage;
-
-public interface MessageListener {
+public interface MessageListener<ID extends MemberIdentifier> {
 
   /**
    * Event indicating a message has been delivered that we need to process.
    *
    * @param o the message that should be processed.
    */
-  void messageReceived(DistributionMessage o);
+  void messageReceived(Message<ID> o);
 
 
 }

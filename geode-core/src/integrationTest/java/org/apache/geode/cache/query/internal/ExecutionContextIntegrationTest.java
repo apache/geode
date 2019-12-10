@@ -159,7 +159,7 @@ public class ExecutionContextIntegrationTest {
   }
 
   @Test
-  public void resetShouldUpdateTheMethodInvocationAuthorizer() throws ClassNotFoundException {
+  public void resetShouldUpdateTheMethodInvocationAuthorizer() {
     server.stopMember();
 
     // Security Enabled -> RestrictedMethodAuthorizer
@@ -172,7 +172,7 @@ public class ExecutionContextIntegrationTest {
     // Change the authorizer
     InternalCache internalCache = server.getCache();
     internalCache.getService(QueryConfigurationService.class).updateMethodAuthorizer(internalCache,
-        RegExMethodAuthorizer.class.getName(), Collections.emptySet());
+        false, RegExMethodAuthorizer.class.getName(), Collections.emptySet());
 
     // Reset the context - used by CQs when processing events
     securedContext.reset();

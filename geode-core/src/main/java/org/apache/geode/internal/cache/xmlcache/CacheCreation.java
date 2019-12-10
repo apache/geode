@@ -617,7 +617,7 @@ public class CacheCreation implements InternalCache {
         QueryMethodAuthorizerCreation authorizerCreation =
             queryConfigurationServiceCreation.getMethodAuthorizerCreation();
         if (authorizerCreation != null) {
-          queryConfigService.updateMethodAuthorizer(cache, authorizerCreation);
+          queryConfigService.updateMethodAuthorizer(cache, true, authorizerCreation);
         }
       }
     }

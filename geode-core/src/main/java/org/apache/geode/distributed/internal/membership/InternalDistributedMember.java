@@ -1272,7 +1272,7 @@ public class InternalDistributedMember
     uniqueTag = tag;
   }
 
-  @VisibleForTesting
+  @Override
   public void setIsPartial(boolean value) {
     isPartial = value;
   }

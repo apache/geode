@@ -31,8 +31,8 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunct
 import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
+import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.security.ResourcePermission;
 
 public class LuceneListIndexCommand extends LuceneCommandBase {

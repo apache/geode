@@ -19,46 +19,42 @@ import java.util.Set;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 
-public interface Messenger extends Service {
+public interface Messenger<ID extends MemberIdentifier> extends Service<ID> {
   /**
    * adds a handler for the given class/interface of messages
    */
-  <T> void addHandler(Class<T> c, MessageHandler<T> h);
+  <T extends Message<ID>> void addHandler(Class<T> c, MessageHandler<T> h);
 
   /**
    * sends an asynchronous message when the membership view may not have been established. Returns
    * destinations that did not receive the message due to no longer being in the view
    */
-  Set<MemberIdentifier> send(GMSMessage m, GMSMembershipView alternateView);
+  Set<ID> send(Message<ID> m, GMSMembershipView<ID> alternateView);
 
   /**
    * sends an asynchronous message. Returns destinations that did not receive the message due to no
    * longer being in the view
    */
-  Set<MemberIdentifier> send(GMSMessage m);
+  Set<ID> send(Message<ID> m);
 
   /**
    * sends an asynchronous message. Returns destinations that did not receive the message due to no
    * longer being in the view. Does not guarantee delivery of the message (no retransmissions)
    */
-  Set<MemberIdentifier> sendUnreliably(GMSMessage m);
+  Set<ID> sendUnreliably(Message<ID> m);
 
   /**
    * returns the endpoint ID for this member
    */
-  MemberIdentifier getMemberID();
-
-  /**
-   * check to see if a member ID has already been used
-   */
-  boolean isOldMembershipIdentifier(MemberIdentifier id);
+  ID getMemberID();
 
   /**
    * retrieves the quorum checker that is used during auto-reconnect attempts
    */
-  GMSQuorumChecker getQuorumChecker();
+  GMSQuorumChecker<ID> getQuorumChecker();
 
   /**
    * test whether multicast is not only turned on but is working
@@ -76,7 +72,7 @@ public interface Messenger extends Service {
    * @param state messaging state is stored in this map
    * @param includeMulticast whether to record multicast state
    */
-  void getMessageState(MemberIdentifier member, Map<String, Long> state,
+  void getMessageState(ID member, Map<String, Long> state,
       boolean includeMulticast);
 
   /**
@@ -86,7 +82,7 @@ public interface Messenger extends Service {
    * @param member the member flushing operations to this member
    * @param state the state of that member's outgoing messaging to this member
    */
-  void waitForMessageState(MemberIdentifier member, Map<String, Long> state)
+  void waitForMessageState(ID member, Map<String, Long> state)
       throws InterruptedException;
 
   /**
@@ -94,14 +90,14 @@ public interface Messenger extends Service {
    *
    * @return byte[] public key for member
    */
-  byte[] getPublicKey(MemberIdentifier mbr);
+  byte[] getPublicKey(ID mbr);
 
   /**
    * Set public key of member.
    *
    */
 
-  void setPublicKey(byte[] publickey, MemberIdentifier mbr);
+  void setPublicKey(byte[] publickey, ID mbr);
 
   /**
    * Set cluster key in local member.Memebr calls when it gets cluster key in join response

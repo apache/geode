@@ -37,9 +37,10 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
+import org.apache.geode.management.internal.i18n.CliStrings;
+import org.apache.geode.management.internal.util.ManagementUtils;
 
 
 /**
@@ -131,7 +132,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
       return null;
     }
     Class<? extends LuceneSerializer> clazz =
-        CliUtil.forName(serializerName, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
+        ManagementUtils.forName(serializerName, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
     return CliUtil.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
   }
 
@@ -147,7 +148,7 @@ public class LuceneCreateIndexFunction implements InternalFunction {
     }
 
     Class<? extends Analyzer> clazz =
-        CliUtil.forName(className, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
+        ManagementUtils.forName(className, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
     return CliUtil.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
   }
 }

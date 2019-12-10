@@ -61,11 +61,12 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OSProcess;
@@ -667,7 +668,7 @@ public class ClusterDistributionManager implements DistributionManager {
     try {
 
       // And the distinguished guests today are...
-      MembershipView v = distribution.getView();
+      MembershipView<InternalDistributedMember> v = distribution.getView();
       logger.info("Initial (distribution manager) view, {}",
           String.valueOf(v));
 
@@ -1088,6 +1089,7 @@ public class ClusterDistributionManager implements DistributionManager {
         return;
       }
       closeInProgress = true;
+      this.distribution.setCloseInProgress();
     } // synchronized
 
     // [bruce] log shutdown at info level and with ID to balance the
@@ -1801,7 +1803,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public boolean isCurrentMember(DistributedMember id) {
-    return distribution.getView().contains(id);
+    return distribution.getView().contains((InternalDistributedMember) id);
   }
 
   /**
@@ -1820,7 +1822,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * Process an incoming distribution message. This includes scheduling it correctly based on the
    * message's nioPriority (executor type)
    */
-  private void handleIncomingDMsg(DistributionMessage message) {
+  private void handleIncomingDMsg(Message message) {
     stats.incReceivedMessages(1L);
     stats.incReceivedBytes(message.getBytesRead());
     stats.incMessageChannelTime(message.resetTimestamp());
@@ -1828,7 +1830,7 @@ public class ClusterDistributionManager implements DistributionManager {
     if (logger.isDebugEnabled()) {
       logger.debug("Received message '{}' from <{}>", message, message.getSender());
     }
-    scheduleIncomingMessage(message);
+    scheduleIncomingMessage((DistributionMessage) message);
   }
 
   /**
@@ -1939,7 +1941,7 @@ public class ClusterDistributionManager implements DistributionManager {
     try {
       // m.resetTimestamp(); // nanotimers across systems don't match
       long startTime = DistributionStats.getStatTime();
-      sendViaMembershipManager(m.getRecipients(), m, this, stats);
+      sendViaMembershipManager(m.getRecipientsArray(), m, this, stats);
       stats.incSentMessages(1L);
       if (DistributionStats.enableClockStats) {
         stats.incSentMessagesTime(DistributionStats.getStatTime() - startTime);
@@ -1960,7 +1962,7 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    * @param message the message to send
    * @return list of recipients that did not receive the message because they left the view (null if
-   *         all received it or it was sent to {@link DistributionMessage#ALL_RECIPIENTS}.
+   *         all received it or it was sent to {@link Message#ALL_RECIPIENTS}.
    * @throws NotSerializableException If <code>message</code> cannot be serialized
    */
   Set<InternalDistributedMember> sendOutgoing(DistributionMessage message)
@@ -1968,7 +1970,7 @@ public class ClusterDistributionManager implements DistributionManager {
     long startTime = DistributionStats.getStatTime();
 
     Set<InternalDistributedMember> result =
-        sendViaMembershipManager(message.getRecipients(), message, this, stats);
+        sendViaMembershipManager(message.getRecipientsArray(), message, this, stats);
     long endTime = 0L;
     if (DistributionStats.enableClockStats) {
       endTime = NanoTimer.getTime();
@@ -2020,13 +2022,13 @@ public class ClusterDistributionManager implements DistributionManager {
       if (message == null || message.forAll()) {
         return null;
       }
-      return new HashSet<>(Arrays.asList(message.getRecipients()));
+      return new HashSet<>(Arrays.asList(message.getRecipientsArray()));
     }
   }
 
   /**
    * @return list of recipients who did not receive the message because they left the view (null if
-   *         all received it or it was sent to {@link DistributionMessage#ALL_RECIPIENTS}).
+   *         all received it or it was sent to {@link Message#ALL_RECIPIENTS}).
    * @throws NotSerializableException If content cannot be serialized
    */
   private Set<InternalDistributedMember> sendViaMembershipManager(
@@ -2035,7 +2037,7 @@ public class ClusterDistributionManager implements DistributionManager {
       throws NotSerializableException {
     if (distribution == null) {
       logger.warn("Attempting a send to a disconnected DistributionManager");
-      if (destinations.length == 1 && destinations[0] == DistributionMessage.ALL_RECIPIENTS)
+      if (destinations.length == 1 && destinations[0] == Message.ALL_RECIPIENTS)
         return null;
       HashSet<InternalDistributedMember> result = new HashSet<>();
       Collections.addAll(result, destinations);
@@ -2275,7 +2277,7 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    */
   private class DMListener implements
-      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener {
+      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener<InternalDistributedMember> {
     ClusterDistributionManager dm;
 
     DMListener(ClusterDistributionManager dm) {
@@ -2290,12 +2292,12 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    public void newMemberConnected(DistributedMember member) {
+    public void newMemberConnected(InternalDistributedMember member) {
       // Do not elect the elder here as surprise members invoke this callback
       // without holding the view lock. That can cause a race condition and
       // subsequent deadlock (#45566). Elder selection is now done when a view
       // is installed.
-      dm.addNewMember((InternalDistributedMember) member);
+      dm.addNewMember(member);
     }
 
     @Override
@@ -2813,22 +2815,19 @@ public class ClusterDistributionManager implements DistributionManager {
     return stopper;
   }
 
-  static class ClusterDistributionManagerIDFactory implements MemberIdentifierFactory {
+  static class ClusterDistributionManagerIDFactory
+      implements MemberIdentifierFactory<InternalDistributedMember> {
     @Immutable
-    private static final Comparator<MemberIdentifier> idComparator = new Comparator() {
-      @Override
-      public int compare(Object o1, Object o2) {
-        return ((DistributedMember) o1).compareTo((DistributedMember) o2);
-      }
-    };
+    private static final Comparator<InternalDistributedMember> idComparator =
+        InternalDistributedMember::compareTo;
 
     @Override
-    public MemberIdentifier create(MemberData memberInfo) {
+    public InternalDistributedMember create(MemberData memberInfo) {
       return new InternalDistributedMember(memberInfo);
     }
 
     @Override
-    public Comparator<MemberIdentifier> getComparator() {
+    public Comparator<InternalDistributedMember> getComparator() {
       return idComparator;
     }
   }

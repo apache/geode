@@ -22,7 +22,7 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.internal.configuration.converters.PdxConverter;
 
-public class PdxManager implements ConfigurationManager<Pdx> {
+public class PdxManager extends CacheConfigurationManager<Pdx> {
   private final PdxConverter pdxConverter = new PdxConverter();
 
   @Override

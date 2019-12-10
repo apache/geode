@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Member;
-import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
+import org.apache.geode.management.internal.functions.GetMemberInformationFunction;
 import org.apache.geode.management.runtime.MemberInformation;
 
 public class MemberRealizer

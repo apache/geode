@@ -102,7 +102,7 @@ public class AddressManager extends Protocol {
    * find and initialize the method used to update UDP's address cache
    */
   private void findPingDataMethod() {
-    transport = (TP) getProtocolStack().getTransport();
+    transport = getProtocolStack().getTransport();
     try {
       setPingData = TP.class.getDeclaredMethod("setPingData", new Class<?>[] {PingData.class});
       setPingData.setAccessible(true);

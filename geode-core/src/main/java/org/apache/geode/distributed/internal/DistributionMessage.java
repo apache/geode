@@ -19,6 +19,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -28,14 +30,13 @@ import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.MessageLogger;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
@@ -57,7 +58,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * getExecutor().
  * </P>
  */
-public abstract class DistributionMessage implements DataSerializableFixedID, Cloneable {
+public abstract class DistributionMessage
+    implements Message<InternalDistributedMember>, Cloneable {
 
   /**
    * WARNING: setting this to true may break dunit tests.
@@ -68,12 +70,6 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
       !Boolean.getBoolean("DistributionManager.enqueueOrderedMessages");
 
   private static final Logger logger = LogService.getLogger();
-
-  /**
-   * Indicates that a distribution message should be sent to all other distribution managers.
-   */
-  @Immutable
-  public static final InternalDistributedMember ALL_RECIPIENTS = null;
 
   // common flags used by operation messages
   /** Keep this compatible with the other GFE layer PROCESSOR_ID flags. */
@@ -91,6 +87,18 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
 
   /** the unreserved flags start for child classes */
   protected static final short UNRESERVED_FLAGS_START = (HAS_PROCESSOR_TYPE << 1);
+
+  private final InternalDistributedMember[] EMPTY_RECIPIENTS_ARRAY =
+      new InternalDistributedMember[0];
+
+  private final List<InternalDistributedMember> ALL_RECIPIENTS_LIST =
+      Collections.singletonList(null);
+
+  private final InternalDistributedMember[] ALL_RECIPIENTS_ARRAY =
+      {null};
+
+  @Immutable
+  protected static final InternalDistributedMember ALL_RECIPIENTS = null;
 
   //////////////////// Instance Fields ////////////////////
 
@@ -206,7 +214,8 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   }
 
   /**
-   * Sets the intended recipient of the message. If recipient is {@link #ALL_RECIPIENTS} then the
+   * Sets the intended recipient of the message. If recipient is Message.ALL_RECIPIENTS
+   * then the
    * message will be sent to all distribution managers.
    */
   public void setRecipient(InternalDistributedMember recipient) {
@@ -244,17 +253,36 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   }
 
   /**
-   * Sets the intended recipient of the message. If recipient set contains {@link #ALL_RECIPIENTS}
+   * Sets the intended recipient of the message. If recipient set contains
+   * Message.ALL_RECIPIENTS
    * then the message will be sent to all distribution managers.
    */
-  public void setRecipients(Collection<? extends DistributedMember> recipients) {
-    if (this.recipients != null) {
-      throw new IllegalStateException(
-          "Recipients can only be set once");
-    }
-    this.recipients = recipients
-        .toArray(new InternalDistributedMember[0]);
+  @Override
+  public void setRecipients(Collection recipients) {
+    this.recipients = (InternalDistributedMember[]) recipients
+        .toArray(EMPTY_RECIPIENTS_ARRAY);
   }
+
+  @Override
+  public void registerProcessor() {
+    // override if direct-ack is supported
+  }
+
+  @Override
+  public boolean isHighPriority() {
+    return false;
+  }
+
+  @Override
+  public List<InternalDistributedMember> getRecipients() {
+    InternalDistributedMember[] recipients = getRecipientsArray();
+    if (recipients == null
+        || recipients.length == 1 && recipients[0] == ALL_RECIPIENTS) {
+      return ALL_RECIPIENTS_LIST;
+    }
+    return Arrays.asList(recipients);
+  }
+
 
   public void resetRecipients() {
     this.recipients = null;
@@ -267,14 +295,11 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * all distribution managers, then the array will contain ALL_RECIPIENTS. If the recipients have
    * not been set null is returned.
    */
-  public InternalDistributedMember[] getRecipients() {
-    if (this.multicast) {
-      return new InternalDistributedMember[] {ALL_RECIPIENTS};
-    } else if (this.recipients != null) {
-      return this.recipients;
-    } else {
-      return new InternalDistributedMember[] {ALL_RECIPIENTS};
+  public InternalDistributedMember[] getRecipientsArray() {
+    if (this.multicast || this.recipients == null) {
+      return ALL_RECIPIENTS_ARRAY;
     }
+    return this.recipients;
   }
 
   /**
@@ -286,11 +311,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   }
 
   public String getRecipientsDescription() {
-    if (this.recipients == null) {
-      return "recipients: ALL";
-    } else if (this.multicast) {
-      return "recipients: multicast";
-    } else if (this.recipients.length > 0 && this.recipients[0] == ALL_RECIPIENTS) {
+    if (forAll()) {
       return "recipients: ALL";
     } else {
       StringBuffer sb = new StringBuffer(100);
@@ -318,6 +339,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * Sets the sender of this message. This method is only invoked when the message is
    * <B>received</B> by a <code>DistributionManager</code>.
    */
+  @Override
   public void setSender(InternalDistributedMember _sender) {
     this.sender = _sender;
   }
@@ -662,6 +684,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * does this message carry state that will alter the content of one or more cache regions? This is
    * used to track the flight of content changes through communication channels
    */
+  @Override
   public boolean containsRegionContentChange() {
     return false;
   }
