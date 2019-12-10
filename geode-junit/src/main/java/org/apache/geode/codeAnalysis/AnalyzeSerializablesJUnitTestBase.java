@@ -89,7 +89,6 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
   private File expectedDataSerializablesFile;
   private String expectedSerializablesFileName =
       "sanctioned-" + getModuleName() + "-serializables.txt";
-  private InputStream expectedSerializablesInputStream;
 
   private List<ClassAndMethodDetails> expectedDataSerializables;
   private List<ClassAndVariableDetails> expectedSerializables;
