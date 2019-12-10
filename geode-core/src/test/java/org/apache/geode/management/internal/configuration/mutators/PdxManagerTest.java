@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 
 public class PdxManagerTest {
   private PdxManager manager;
@@ -29,7 +30,9 @@ public class PdxManagerTest {
 
   @Before
   public void before() throws Exception {
-    manager = new PdxManager();
+    ConfigurationPersistenceService persistenceService =
+        mock(ConfigurationPersistenceService.class);
+    manager = new PdxManager(persistenceService);
     config = mock(CacheConfig.class);
   }
 

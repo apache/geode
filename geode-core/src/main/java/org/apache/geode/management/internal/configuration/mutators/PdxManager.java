@@ -19,11 +19,16 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.internal.configuration.converters.PdxConverter;
 
 public class PdxManager extends CacheConfigurationManager<Pdx> {
   private final PdxConverter pdxConverter = new PdxConverter();
+
+  public PdxManager(ConfigurationPersistenceService service) {
+    super(service);
+  }
 
   @Override
   public void add(Pdx config, CacheConfig existing) {
