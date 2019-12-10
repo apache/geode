@@ -59,6 +59,7 @@ public class DeploymentRealizerTest {
     when(deployedJar.getFile()).thenReturn(new File("/test/a.jar"));
     deployed.put("a", deployedJar);
     DeploymentInfo deploymentInfo = realizer.get(deployment, null);
-    assertThat(deploymentInfo.getJarLocation()).isEqualTo("/test/a.jar");
+    assertThat(deploymentInfo.getJarLocation().replace('\\', '/'))
+        .isEqualTo("/test/a.jar");
   }
 }
