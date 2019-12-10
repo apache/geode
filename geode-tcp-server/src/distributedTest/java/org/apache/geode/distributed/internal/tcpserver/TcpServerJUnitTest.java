@@ -94,7 +94,7 @@ public class TcpServerJUnitTest {
     InfoRequest testInfoRequest = new InfoRequest();
     InfoResponse testInfoResponse =
         (InfoResponse) tcpClient.requestToServer(localhost, port, testInfoRequest, 60 * 1000);
-    assertThat(testInfoResponse.getInfo()[0]).contains("geode-core");
+    assertThat(testInfoResponse.getInfo()[0]).contains("geode-tcp-server");
 
     String[] requrestedInfo = tcpClient.getInfo(localhost, port);
     assertNotNull(requrestedInfo);
