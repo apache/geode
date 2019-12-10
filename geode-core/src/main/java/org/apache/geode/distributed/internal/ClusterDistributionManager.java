@@ -2288,6 +2288,10 @@ public class ClusterDistributionManager implements DistributionManager {
     public void membershipFailure(String reason, Throwable t) {
       exceptionInThreads = true;
       rootCause = t;
+      if (rootCause != null && !(rootCause instanceof ForcedDisconnectException) ) {
+        logger.info("cluster membership failed due to ", rootCause);
+        rootCause = new ForcedDisconnectException(rootCause.getMessage());
+      }
       getSystem().disconnect(reason, true);
     }
 

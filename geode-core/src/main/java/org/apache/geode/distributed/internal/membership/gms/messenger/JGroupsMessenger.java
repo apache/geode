@@ -641,7 +641,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
             Long.toString((warnTime - startTime) / 1000L), sender, received, seqno);
       }
       if (now >= quitTime) {
-        throw new InterruptedException("Multicast operations from " + sender
+        throw new MembershipIOException("Multicast operations from " + sender
             + " did not distribute within " + (now - startTime) + " milliseconds");
       }
       Thread.sleep(50);

@@ -57,6 +57,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -237,6 +238,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
   @Test
   public void testKickOutSickMember() {
     addIgnoredException("10 seconds have elapsed while waiting");
+    addIgnoredException(MemberDisconnectedException.class);
 
     // in order to set a small ack-wait-threshold, we have to remove the
     // system property established by the dunit harness
