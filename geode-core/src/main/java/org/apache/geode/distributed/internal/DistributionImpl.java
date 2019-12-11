@@ -60,7 +60,6 @@ import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
@@ -426,7 +425,14 @@ public class DistributionImpl implements Distribution {
 
   @Override
   public boolean requestMemberRemoval(InternalDistributedMember member, String reason) {
-    return membership.requestMemberRemoval(member, reason);
+    try {
+      return membership.requestMemberRemoval(member, reason);
+    } catch (RuntimeException e) {
+      if (!membership.isConnected()) {
+        throw new DistributedSystemDisconnectedException("Distribution is closed", e);
+      }
+      throw e;
+    }
   }
 
   @Override
@@ -539,18 +545,6 @@ public class DistributionImpl implements Distribution {
   @Override
   public Throwable getShutdownCause() {
     return membership.getShutdownCause();
-  }
-
-  @Override
-  public void registerTestHook(
-      MembershipTestHook mth) {
-    membership.registerTestHook(mth);
-  }
-
-  @Override
-  public void unregisterTestHook(
-      MembershipTestHook mth) {
-    membership.unregisterTestHook(mth);
   }
 
   @Override

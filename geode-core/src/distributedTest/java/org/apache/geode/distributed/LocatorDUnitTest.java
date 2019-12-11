@@ -89,9 +89,10 @@ import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -163,6 +164,7 @@ public class LocatorDUnitTest implements Serializable {
     port3 = ports[2];
     port4 = ports[3];
     Invoke.invokeInEveryVM(() -> deleteLocatorStateFile(port1, port2, port3, port4));
+    addIgnoredException(MemberDisconnectedException.class); // ignore this suspect string
   }
 
   @After
@@ -765,7 +767,7 @@ public class LocatorDUnitTest implements Serializable {
         addIgnoredException(ForcedDisconnectException.class);
 
         hook = new TestHook();
-        MembershipManagerHelper.getDistribution(system).registerTestHook(hook);
+        MembershipManagerHelper.addTestHook(system, hook);
         try {
           MembershipManagerHelper.crashDistributedSystem(system);
         } finally {
@@ -809,7 +811,7 @@ public class LocatorDUnitTest implements Serializable {
           mmgr.requestMemberRemoval((InternalDistributedMember) mem1, "test reasons");
           fail("It should have thrown exception in requestMemberRemoval");
         } catch (DistributedSystemDisconnectedException e) {
-          assertThat(e).hasRootCauseInstanceOf(ForcedDisconnectException.class);
+          // expected
         } finally {
           hook.reset();
         }

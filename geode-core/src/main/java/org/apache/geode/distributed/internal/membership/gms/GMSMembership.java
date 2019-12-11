@@ -54,7 +54,6 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
@@ -239,11 +238,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * This is the listener that accepts our membership messages
    */
   private final MessageListener<ID> messageListener;
-
-  /**
-   * Membership failure listeners - for testing
-   */
-  private List<MembershipTestHook> membershipTestHooks;
 
   /**
    * This is a representation of the local member (ourself)
@@ -1313,21 +1307,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
     if (e != null) {
       try {
-        if (membershipTestHooks != null) {
-          List<MembershipTestHook> l = membershipTestHooks;
-          for (final MembershipTestHook aL : l) {
-            MembershipTestHook dml = aL;
-            dml.beforeMembershipFailure(reason, e);
-          }
-        }
         listener.membershipFailure(reason, e);
-        if (membershipTestHooks != null) {
-          List<MembershipTestHook> l = membershipTestHooks;
-          for (final MembershipTestHook aL : l) {
-            MembershipTestHook dml = aL;
-            dml.afterMembershipFailure(reason, e);
-          }
-        }
       } catch (RuntimeException re) {
         logger.warn("Exception caught while shutting down", re);
       }
@@ -1346,13 +1326,13 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     try {
       services.getJoinLeave().remove(mbr, reason);
     } catch (RuntimeException e) {
-      Throwable problem = e;
+      RuntimeException problem = e;
       if (services.getShutdownCause() != null) {
         Throwable cause = services.getShutdownCause();
         // If ForcedDisconnectException occurred then report it as actual
         // problem.
         if (cause instanceof MemberDisconnectedException) {
-          problem = cause;
+          problem = (MemberDisconnectedException) cause;
         } else {
           Throwable ne = problem;
           while (ne.getCause() != null) {
@@ -1368,7 +1348,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       listener.saveConfig();
 
       listener.membershipFailure("Channel closed", problem);
-      throw new DistributedSystemDisconnectedException("Channel closed", problem);
+      throw problem;
     }
     return true;
   }
@@ -1781,41 +1761,6 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   @Override
   public Throwable getShutdownCause() {
     return services.getShutdownCause();
-  }
-
-  @Override
-  public void registerTestHook(MembershipTestHook mth) {
-    // lock for additions to avoid races during startup
-    latestViewWriteLock.lock();
-    try {
-      if (this.membershipTestHooks == null) {
-        this.membershipTestHooks = Collections.singletonList(mth);
-      } else {
-        List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
-        l.add(mth);
-        this.membershipTestHooks = l;
-      }
-    } finally {
-      latestViewWriteLock.unlock();
-    }
-  }
-
-  @Override
-  public void unregisterTestHook(MembershipTestHook mth) {
-    latestViewWriteLock.lock();
-    try {
-      if (this.membershipTestHooks != null) {
-        if (this.membershipTestHooks.size() == 1) {
-          this.membershipTestHooks = null;
-        } else {
-          List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
-          l.remove(mth);
-          this.membershipTestHooks = l;
-        }
-      }
-    } finally {
-      latestViewWriteLock.unlock();
-    }
   }
 
   private volatile boolean beingSick;

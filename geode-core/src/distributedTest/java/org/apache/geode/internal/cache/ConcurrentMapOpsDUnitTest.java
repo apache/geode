@@ -36,6 +36,7 @@ import org.junit.Test;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Delta;
+import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.EntryEvent;
@@ -52,6 +53,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -1209,8 +1211,14 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
     Set<IgnoredException> exceptions = new HashSet<IgnoredException>();
     exceptions.add(IgnoredException.addIgnoredException("Membership: requesting removal", server1));
     exceptions.add(IgnoredException.addIgnoredException("Membership: requesting removal", server2));
-    exceptions.add(IgnoredException.addIgnoredException("ForcedDisconnect", server1));
-    exceptions.add(IgnoredException.addIgnoredException("ForcedDisconnect", server2));
+    exceptions.add(IgnoredException
+        .addIgnoredException(ForcedDisconnectException.class.getSimpleName(), server1));
+    exceptions.add(IgnoredException
+        .addIgnoredException(ForcedDisconnectException.class.getSimpleName(), server2));
+    exceptions.add(IgnoredException
+        .addIgnoredException(MemberDisconnectedException.class.getSimpleName(), server1));
+    exceptions.add(IgnoredException
+        .addIgnoredException(MemberDisconnectedException.class.getSimpleName(), server2));
 
     try {
 

@@ -19,6 +19,7 @@ package org.apache.geode.distributed.internal;
 import java.io.NotSerializableException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -161,6 +162,12 @@ public class ClusterDistributionManager implements DistributionManager {
   private final ClusterElderManager clusterElderManager = new ClusterElderManager(this);
   private Distribution distribution;
   private ClusterOperationExecutors executors;
+
+  /**
+   * Membership failure listeners - for testing
+   */
+  private List<MembershipTestHook> membershipTestHooks;
+
 
   /**
    * The <code>MembershipListener</code>s that are registered on this manager for ALL members.
@@ -2292,7 +2299,25 @@ public class ClusterDistributionManager implements DistributionManager {
         logger.info("cluster membership failed due to ", rootCause);
         rootCause = new ForcedDisconnectException(rootCause.getMessage());
       }
-      getSystem().disconnect(reason, true);
+      try {
+        if (membershipTestHooks != null) {
+          List<MembershipTestHook> l = membershipTestHooks;
+          for (final MembershipTestHook aL : l) {
+            MembershipTestHook dml = aL;
+            dml.beforeMembershipFailure(reason, rootCause);
+          }
+        }
+        getSystem().disconnect(reason, true);
+        if (membershipTestHooks != null) {
+          List<MembershipTestHook> l = membershipTestHooks;
+          for (final MembershipTestHook aL : l) {
+            MembershipTestHook dml = aL;
+            dml.afterMembershipFailure(reason, rootCause);
+          }
+        }
+      } catch (RuntimeException re) {
+        logger.warn("Exception caught while shutting down", re);
+      }
     }
 
     @Override
@@ -2658,6 +2683,36 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public int getDistributedSystemId() {
     return distributedSystemId;
+  }
+
+  @Override
+  public void registerTestHook(MembershipTestHook mth) {
+    this.getDistribution().doWithViewLocked(() -> {
+      if (this.membershipTestHooks == null) {
+        this.membershipTestHooks = Collections.singletonList(mth);
+      } else {
+        List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
+        l.add(mth);
+        this.membershipTestHooks = l;
+      }
+      return null;
+    });
+  }
+
+  @Override
+  public void unregisterTestHook(MembershipTestHook mth) {
+    this.getDistribution().doWithViewLocked(() -> {
+      if (this.membershipTestHooks != null) {
+        if (this.membershipTestHooks.size() == 1) {
+          this.membershipTestHooks = null;
+        } else {
+          List<MembershipTestHook> l = new ArrayList<>(this.membershipTestHooks);
+          l.remove(mth);
+          this.membershipTestHooks = l;
+        }
+      }
+      return null;
+    });
   }
 
   /**

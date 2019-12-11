@@ -235,18 +235,6 @@ public interface Membership<ID extends MemberIdentifier> {
   Throwable getShutdownCause();
 
   /**
-   * register a test hook for membership events
-   *
-   * @see MembershipTestHook
-   */
-  void registerTestHook(MembershipTestHook mth);
-
-  /**
-   * remove a test hook previously registered with the manager
-   */
-  void unregisterTestHook(MembershipTestHook mth);
-
-  /**
    * If this member is shunned, ensure that a warning is generated at least once.
    *
    * @param mbr the member that may be shunned
