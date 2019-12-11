@@ -41,6 +41,8 @@ pushd geode
 GEODE_SHA=$(git rev-parse --verify HEAD)
 popd
 
+input= "$(pwd)/results/failedTests"
+
 pushd geode-benchmarks/infrastructure/scripts/aws/
 ./launch_cluster.sh -t ${CLUSTER_TAG} -c ${CLUSTER_COUNT} --ci
 
@@ -48,7 +50,6 @@ pushd geode-benchmarks/infrastructure/scripts/aws/
 # failed tests. Test failures only result in an exit code of 1 when on the last iteration of loop.
 for i in {1..5}
 do
-  input="/tmp/build/eeb5231a/results/failedTests"
   if [[ -f ${input} ]]; then
     unset TEST_OPTIONS
     TEST_OPTIONS=""
