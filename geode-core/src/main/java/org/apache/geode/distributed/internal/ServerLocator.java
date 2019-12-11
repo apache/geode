@@ -396,7 +396,7 @@ public class ServerLocator implements RestartableTcpHandler, DistributionAdvisee
   }
 
   protected static ServerLocation buildServerLocation(GridProfile p) {
-    return new ServerLocation(p.getHost(), p.getPort());
+    return new ServerLocation(p.getHost(), p.getPort(), p.getDistributedMember().getId());
   }
 
   public void profileCreated(Profile profile) {

@@ -23,6 +23,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Represents the location of a cache server. This class is preferable to InetSocketAddress because
@@ -30,11 +32,12 @@ import org.apache.geode.internal.net.SocketCreator;
  *
  *
  */
-public class ServerLocation implements DataSerializable, Comparable {
+public class ServerLocation implements DataSerializable, Comparable, SerializationVersions {
   private static final long serialVersionUID = -5850116974987640560L;
 
   private String hostName;
   private int port;
+  private String memberId;
   /**
    * Used exclusively in case of single user authentication mode. Client sends this userId to the
    * server with each operation to identify itself at the server.
@@ -62,8 +65,13 @@ public class ServerLocation implements DataSerializable, Comparable {
   }
 
   public ServerLocation(String hostName, int port) {
+    this(hostName, port, "");
+  }
+
+  public ServerLocation(String hostName, int port, String memberId) {
     this.hostName = hostName;
     this.port = port;
+    this.memberId = memberId;
   }
 
   public String getHostName() {
@@ -74,14 +82,36 @@ public class ServerLocation implements DataSerializable, Comparable {
     return port;
   }
 
+  public String getMemberId() {
+    return memberId;
+  }
+
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     hostName = DataSerializer.readString(in);
     port = in.readInt();
+    memberId = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeString(hostName, out);
+    out.writeInt(port);
+    DataSerializer.writeString(memberId, out);
+  }
+
+  public Version[] getSerializationVersions() {
+    return new Version[] {Version.GEODE_1_12_0};
+  }
+
+  public void fromDataPre_GEODE_1_12_0_0(DataInput in) throws IOException, ClassNotFoundException {
+    hostName = DataSerializer.readString(in);
+    port = in.readInt();
+    memberId = "";
+  }
+
+
+  public void toDataPre_GEODE_1_12_0_0(DataOutput out) throws IOException {
     DataSerializer.writeString(hostName, out);
     out.writeInt(port);
   }
@@ -90,8 +120,8 @@ public class ServerLocation implements DataSerializable, Comparable {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    // result = prime * result + ((hostName == null) ? 0 : hostName.hashCode());
-    result = prime * result + port;
+    result = prime * result + ((hostName == null) ? 0 : hostName.hashCode()) + port
+        + memberId.hashCode();
     return result;
   }
 
@@ -130,12 +160,15 @@ public class ServerLocation implements DataSerializable, Comparable {
     }
     if (port != other.port)
       return false;
+    if (!memberId.equals(other.memberId)) {
+      return false;
+    }
     return true;
   }
 
   @Override
   public String toString() {
-    return hostName + ":" + port;
+    return hostName + ":" + port + "@" + memberId;
   }
 
   @Override
