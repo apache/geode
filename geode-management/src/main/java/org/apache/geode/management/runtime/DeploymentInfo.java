@@ -16,11 +16,21 @@
 package org.apache.geode.management.runtime;
 
 
+
 public class DeploymentInfo extends RuntimeInfo {
   private String jarLocation;
+  private String timeDeployed;
 
   public String getJarLocation() {
     return jarLocation;
+  }
+
+  public void setTimeDeployed(String timeDeployed) {
+    this.timeDeployed = timeDeployed;
+  }
+
+  public String getTimeDeployed() {
+    return timeDeployed;
   }
 
   public void setJarLocation(String jarLocation) {
