@@ -60,13 +60,13 @@ Additionally the query engine supports the use of query bind parameter in place 
 
 **Examples:**
 
-The following query can be used on any collection by passing in the collection as a query parameter value. In this query you could pass in a Region Object for $1, but not the String name of a region.
+The following query can be used on any collection by passing in the collection as a query parameter value. In this query you could pass in a Region object for $1, but not the String name of a region.
 
 ``` pre
 SELECT DISTINCT * FROM $1 p WHERE p.status = $2
 ```
 
-Get all the keys from the region passed as a Region Object for $1 for those entries whose name attribute is equal to the value passed for $2:
+Get all the keys from the region passed as a Region object for $1 for those entries whose name attribute is equal to the value passed for $2:
 
 ``` pre
 SELECT e.key FROM ($1).entrySet e WHERE e.value.name=$2"
