@@ -38,10 +38,6 @@ public abstract class CacheConfigurationManager<T extends AbstractConfiguration>
   private static final Logger logger = LogService.getLogger();
   private final ConfigurationPersistenceService persistenceService;
 
-  // CacheConfigurationManager() {
-  // this(null);
-  // }
-  //
   CacheConfigurationManager(ConfigurationPersistenceService persistenceService) {
     this.persistenceService = persistenceService;
   }
