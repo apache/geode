@@ -63,4 +63,9 @@ public class DeploymentRealizerTest {
     assertThat(Paths.get(deploymentInfo.getJarLocation()).toUri())
         .isEqualTo(Paths.get("/test/a.jar").toUri());
   }
+
+  @Test
+  public void getDateString() throws Exception {
+    assertThat(realizer.getDateString(1576029093330L)).isEqualTo("2019-12-11T01:51:33.330Z");
+  }
 }
