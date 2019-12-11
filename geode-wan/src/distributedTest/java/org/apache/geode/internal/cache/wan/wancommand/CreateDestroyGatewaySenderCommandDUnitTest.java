@@ -136,7 +136,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
   }
 
   /**
-   * GatewaySender with given attribute values +
+   * GatewaySender with given attribute values
    */
   @Test
   public void testCreateDestroyGatewaySender() {
@@ -168,6 +168,42 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
       verifySenderState("ln", false, false);
       verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000, true,
           false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, null);
+    }, server1, server2, server3);
+
+    // destroy gateway sender and verify AEQs cleaned up
+    gfsh.executeAndAssertThat(DESTROY).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
+            "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
+            "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",
+            "GatewaySender \"ln\" destroyed on \"" + SERVER_5 + "\"");
+
+    VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
+        server3);
+  }
+
+  /**
+   * GatewaySender with single dispatcher thread
+   */
+  @Test
+  public void testCreateDestroyGatewaySenderWithSingleDispatcherThread() {
+    String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
+        + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=true" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE + "=1000" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=1";
+
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
+            "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
+            "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
+            "GatewaySender \"ln\" created on \"" + SERVER_5 + "\"");
+
+    VMProvider.invokeInEveryMember(() -> {
+      verifySenderState("ln", false, false);
+      verifySenderAttributes("ln", 2, false, true, 1000, 0, false, 100, 1000, false,
+          true, 100, 0, 1, null, null, null);
     }, server1, server2, server3);
 
     // destroy gateway sender and verify AEQs cleaned up
