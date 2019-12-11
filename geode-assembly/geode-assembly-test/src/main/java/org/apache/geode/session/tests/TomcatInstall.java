@@ -56,7 +56,6 @@ public class TomcatInstall extends ContainerInstall {
 
     /**
      * Converts the version to an integer
-     *
      */
     public int toInteger() {
       return getVersion();
@@ -90,16 +89,16 @@ public class TomcatInstall extends ContainerInstall {
   }
 
   /**
-   * If you update this list method to return different dependencies, please also update
-   * the Tomcat module documentation!
-   * The documentation can be found here:
+   * If you update this list method to return different dependencies, please also update the Tomcat
+   * module documentation! The documentation can be found here:
    * geode-docs/tools_modules/http_session_mgmt/tomcat_installing_the_module.html.md.erb
    */
   private static final String[] tomcatRequiredJars =
       {"antlr", "commons-io", "commons-lang", "commons-validator", "fastutil", "geode-common",
           "geode-core", "geode-log4j", "geode-logging", "geode-management", "geode-serialization",
-          "javax.transaction-api", "jgroups", "log4j-api", "log4j-core", "log4j-jul", "micrometer",
-          "shiro-core", "jetty-server", "jetty-util", "jetty-http", "jetty-io", "geode-tcp-server"};
+          "geode-tcp-server", "javax.transaction-api", "jgroups", "log4j-api", "log4j-core",
+          "log4j-jul", "micrometer", "shiro-core", "jetty-server", "jetty-util", "jetty-http",
+          "jetty-io"};
 
   private final TomcatVersion version;
 
@@ -120,7 +119,8 @@ public class TomcatInstall extends ContainerInstall {
    * skipping properties needed to speedup container startup.
    */
   public TomcatInstall(String name, TomcatVersion version, ConnectionType connType,
-      String modulesJarLocation, String extraJarsPath, IntSupplier portSupplier) throws Exception {
+      String modulesJarLocation, String extraJarsPath, IntSupplier portSupplier)
+      throws Exception {
     // Does download and install from URL
     super(name, version.getDownloadURL(), connType, "tomcat", modulesJarLocation, portSupplier);
 
@@ -160,8 +160,8 @@ public class TomcatInstall extends ContainerInstall {
   /**
    * Get the server life cycle class that should be used
    *
-   * Generates the class based on whether the installation's connection type
-   * {@link ContainerInstall#connType} is client server or peer to peer.
+   * Generates the class based on whether the installation's connection type {@link
+   * ContainerInstall#connType} is client server or peer to peer.
    */
   public String getServerLifeCycleListenerClass() {
     String className = "org.apache.geode.modules.session.catalina.";
@@ -256,8 +256,9 @@ public class TomcatInstall extends ContainerInstall {
     // List of required jars and form version regexps from them
     String versionRegex = "-?[0-9]*.*\\.jar";
     ArrayList<Pattern> patterns = new ArrayList<>(tomcatRequiredJars.length);
-    for (String jar : tomcatRequiredJars)
+    for (String jar : tomcatRequiredJars) {
       patterns.add(Pattern.compile(jar + versionRegex));
+    }
 
     // Don't need to copy any jars already in the tomcat install
     File tomcatLib = new File(tomcatLibPath);
@@ -305,8 +306,9 @@ public class TomcatInstall extends ContainerInstall {
   private void updateProperties() throws Exception {
     String jarsToSkip = "";
     // Adds all the required jars as jars to skip when starting Tomcat
-    for (String jarName : tomcatRequiredJars)
+    for (String jarName : tomcatRequiredJars) {
       jarsToSkip += "," + jarName + "*.jar";
+    }
 
     // Add the jars to skip to the catalina property file
     editPropertyFile(getHome() + "/conf/catalina.properties", version.jarSkipPropertyName(),
