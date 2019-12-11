@@ -87,8 +87,9 @@ public class GetClientPRMetadataCommand extends BaseCommand {
           for (List<BucketServerLocation66> serverLocations : bucketToServerLocations.values()) {
             List<BucketServerLocation> oldServerLocations = new ArrayList<BucketServerLocation>();
             for (BucketServerLocation66 bs : serverLocations) {
-              oldServerLocations.add(new BucketServerLocation(bs.getBucketId(), bs.getPort(),
-                  bs.getHostName(), bs.isPrimary(), bs.getVersion()));
+              oldServerLocations
+                  .add(new BucketServerLocation(bs.getBucketId(), bs.getPort(), bs.getHostName(),
+                      bs.isPrimary(), bs.getVersion(), bs.getMemberId()));
               responseMsg.addObjPart(oldServerLocations);
             }
           }

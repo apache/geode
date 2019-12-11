@@ -85,7 +85,8 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
         while (i.hasNext()) {
           CacheServerImpl bs = (CacheServerImpl) i.next();
           if (bs.getAcceptor().getCacheClientNotifier().getClientProxy(proxyId) != null) {
-            ServerLocation loc = new ServerLocation(bs.getExternalAddress(), bs.getPort());
+            ServerLocation loc = new ServerLocation(bs.getExternalAddress(), bs.getPort(),
+                bs.getProfile().getDistributedMember().getId());
             matches.add(loc);
           }
         }

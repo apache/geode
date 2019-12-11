@@ -173,7 +173,8 @@ public class ClientMetadataService {
     ServerLocation location = null;
     if (bucketServerLocation != null) {
       location =
-          new ServerLocation(bucketServerLocation.getHostName(), bucketServerLocation.getPort());
+          new ServerLocation(bucketServerLocation.getHostName(), bucketServerLocation.getPort(),
+              bucketServerLocation.getMemberId());
     }
     return location;
   }

@@ -130,7 +130,8 @@ public class ExecuteRegionFunctionSingleHopOp {
       AbstractOp op = opFactory.apply(executor);
 
       SingleHopOperationCallable task =
-          new SingleHopOperationCallable(new ServerLocation(server.getHostName(), server.getPort()),
+          new SingleHopOperationCallable(
+              new ServerLocation(server.getHostName(), server.getPort(), server.getMemberId()),
               pool, op, UserAttributes.userAttributes.get());
       tasks.add(task);
     }

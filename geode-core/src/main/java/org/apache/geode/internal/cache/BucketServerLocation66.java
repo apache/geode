@@ -43,8 +43,8 @@ public class BucketServerLocation66 extends ServerLocation {
   public BucketServerLocation66() {}
 
   public BucketServerLocation66(int bucketId, int port, String host, boolean isPrimary,
-      byte version, String[] groups) {
-    super(host, port);
+      byte version, String[] groups, String memberId) {
+    super(host, port, memberId);
     this.bucketId = bucketId;
     this.isPrimary = isPrimary;
     this.version = version;
@@ -52,6 +52,11 @@ public class BucketServerLocation66 extends ServerLocation {
     this.serverGroups = new String[groups.length];
     System.arraycopy(groups, 0, this.serverGroups, 0, groups.length);
     this.numServerGroups = (byte) this.serverGroups.length;
+  }
+
+  public BucketServerLocation66(int bucketId, int port, String host, boolean isPrimary,
+      byte version, String[] groups) {
+    this(bucketId, port, host, isPrimary, version, groups, "");
   }
 
   @Override

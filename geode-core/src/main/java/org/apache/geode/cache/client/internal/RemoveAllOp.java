@@ -223,7 +223,8 @@ public class RemoveAllOp {
           new RemoveAllOpImpl(region, serverToFilterMap.get(server), eventId, true, callbackArg);
 
       SingleHopOperationCallable task =
-          new SingleHopOperationCallable(new ServerLocation(server.getHostName(), server.getPort()),
+          new SingleHopOperationCallable(
+              new ServerLocation(server.getHostName(), server.getPort(), server.getMemberId()),
               pool, RemoveAllOp, UserAttributes.userAttributes.get());
       tasks.add(task);
     }

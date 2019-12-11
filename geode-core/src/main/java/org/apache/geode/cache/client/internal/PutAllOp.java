@@ -241,7 +241,8 @@ public class PutAllOp {
           new PutAllOpImpl(region, newKeysValuesMap, eventId, true, skipCallbacks, callbackArg);
 
       SingleHopOperationCallable task =
-          new SingleHopOperationCallable(new ServerLocation(server.getHostName(), server.getPort()),
+          new SingleHopOperationCallable(
+              new ServerLocation(server.getHostName(), server.getPort(), server.getMemberId()),
               pool, putAllOp, UserAttributes.userAttributes.get());
       tasks.add(task);
     }

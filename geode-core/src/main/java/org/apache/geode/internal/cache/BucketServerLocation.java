@@ -38,12 +38,17 @@ public class BucketServerLocation extends ServerLocation {
 
   public BucketServerLocation() {}
 
-  public BucketServerLocation(int bucketId, int port, String host, boolean isPrimary,
-      byte version) {
-    super(host, port);
+  public BucketServerLocation(int bucketId, int port, String host, boolean isPrimary, byte version,
+      String memberId) {
+    super(host, port, memberId);
     this.bucketId = bucketId;
     this.isPrimary = isPrimary;
     this.version = version;
+  }
+
+  public BucketServerLocation(int bucketId, int port, String host, boolean isPrimary,
+      byte version) {
+    this(bucketId, port, host, isPrimary, version, "");
   }
 
   @Override

@@ -129,7 +129,8 @@ public class GetAllOp {
       AbstractOp getAllOp = new GetAllOpImpl(region, new ArrayList(filterSet), callback);
 
       SingleHopOperationCallable task =
-          new SingleHopOperationCallable(new ServerLocation(server.getHostName(), server.getPort()),
+          new SingleHopOperationCallable(
+              new ServerLocation(server.getHostName(), server.getPort(), server.getMemberId()),
               pool, getAllOp, UserAttributes.userAttributes.get());
       tasks.add(task);
     }

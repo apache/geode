@@ -1651,7 +1651,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         if (server.isRunning() && ((serverExternalAddress = server.getExternalAddress()) != null)) {
           BucketServerLocation66 location = new BucketServerLocation66(getBucket().getId(),
               server.getPort(), serverExternalAddress, getBucket().isPrimary(),
-              Integer.valueOf(version).byteValue(), server.getCombinedGroups());
+              Integer.valueOf(version).byteValue(), server.getCombinedGroups(),
+              server.getCache().getMyId().getId());
           serverLocations.add(location);
         }
       } catch (IllegalStateException e) {
