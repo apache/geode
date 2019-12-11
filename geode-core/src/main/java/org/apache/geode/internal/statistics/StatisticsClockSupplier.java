@@ -14,7 +14,18 @@
  */
 package org.apache.geode.internal.statistics;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
+
+@FunctionalInterface
 public interface StatisticsClockSupplier {
 
+  /**
+   * Please pass the {@code StatisticsClock} through constructors where possible instead of
+   * accessing it from this supplier.
+   *
+   * <p>
+   * Various factories may use this supplier to acquire the {@code StatisticsClock} which is
+   * created by the Cache as configured by {@link DistributionConfig#getEnableTimeStatistics()}.
+   */
   StatisticsClock getStatisticsClock();
 }

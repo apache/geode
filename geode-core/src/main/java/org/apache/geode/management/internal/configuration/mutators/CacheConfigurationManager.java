@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 
@@ -36,6 +36,11 @@ import org.apache.geode.management.configuration.AbstractConfiguration;
 public abstract class CacheConfigurationManager<T extends AbstractConfiguration>
     implements ConfigurationManager<T> {
   private static final Logger logger = LogService.getLogger();
+  private final ConfigurationPersistenceService persistenceService;
+
+  CacheConfigurationManager(ConfigurationPersistenceService persistenceService) {
+    this.persistenceService = persistenceService;
+  }
 
   /**
    * specify how to add the config to the existing cache config. Note at this point, the config
@@ -60,38 +65,37 @@ public abstract class CacheConfigurationManager<T extends AbstractConfiguration>
    *
    *         Note: incoming and existing should have the same ID already
    */
-  public void checkCompatibility(T incoming, String group, T existing) {};
+  public void checkCompatibility(T incoming, String group, T existing) {}
 
-  public final boolean add(InternalConfigurationPersistenceService service, T config,
-      String groupName) {
-    return updateCacheConfig(service, config, groupName, this::add);
+  @Override
+  public final boolean add(T config, String groupName) {
+    return updateCacheConfig(config, groupName, this::add);
   }
 
-  public final boolean delete(InternalConfigurationPersistenceService service, T config,
-      String groupName) {
-    return updateCacheConfig(service, config, groupName, this::delete);
+  @Override
+  public final boolean delete(T config, String groupName) {
+    return updateCacheConfig(config, groupName, this::delete);
   }
 
-  public final boolean update(InternalConfigurationPersistenceService service, T config,
-      String groupName) {
-    return updateCacheConfig(service, config, groupName, this::update);
+  @Override
+  public final boolean update(T config, String groupName) {
+    return updateCacheConfig(config, groupName, this::update);
   }
 
-  public final List<T> list(InternalConfigurationPersistenceService service, T filterConfig,
-      String groupName) {
+  @Override
+  public final List<T> list(T filterConfig, String groupName) {
     CacheConfig currentPersistedConfig =
-        service.getCacheConfig(
+        persistenceService.getCacheConfig(
             AbstractConfiguration.isCluster(groupName) ? AbstractConfiguration.CLUSTER : groupName,
             true);
     return list(filterConfig, currentPersistedConfig);
   }
 
-  boolean updateCacheConfig(InternalConfigurationPersistenceService service, T config,
-      String groupName, BiConsumer<T, CacheConfig> consumer) {
+  boolean updateCacheConfig(T config, String groupName, BiConsumer<T, CacheConfig> updater) {
     AtomicBoolean success = new AtomicBoolean(true);
-    service.updateCacheConfig(groupName, cacheConfigForGroup -> {
+    persistenceService.updateCacheConfig(groupName, cacheConfigForGroup -> {
       try {
-        consumer.accept(config, cacheConfigForGroup);
+        updater.accept(config, cacheConfigForGroup);
       } catch (Exception e) {
         String message = "Failed to update cluster configuration for " + groupName + ".";
         logger.error(message, e);

@@ -106,11 +106,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
         new MemberValidator(cache, persistenceService), new CommonConfigurationValidator(),
         new OperationManager(cache, new OperationHistoryManager()));
     // initialize the list of managers
-    managers.put(Region.class, new RegionConfigManager());
-    managers.put(Pdx.class, new PdxManager());
-    managers.put(GatewayReceiver.class, new GatewayReceiverConfigManager());
-    managers.put(Index.class, new IndexConfigManager());
-    managers.put(Deployment.class, new DeploymentManager());
+    managers.put(Region.class, new RegionConfigManager(persistenceService));
+    managers.put(Pdx.class, new PdxManager(persistenceService));
+    managers.put(GatewayReceiver.class, new GatewayReceiverConfigManager(persistenceService));
+    managers.put(Index.class, new IndexConfigManager(persistenceService));
+    managers.put(Deployment.class, new DeploymentManager(persistenceService));
 
     // initialize the list of validators
     validators.put(Region.class, new RegionConfigValidator(cache));
@@ -183,7 +183,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // persist configuration in cache config
-    boolean success = configurationManager.add(persistenceService, config, groupName);
+    boolean success = configurationManager.add(config, groupName);
     if (success) {
       result.setStatus(StatusCode.OK,
           "Successfully updated configuration for " + groupName + ".");
@@ -249,7 +249,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     List<String> updatedGroups = new ArrayList<>();
     List<String> failedGroups = new ArrayList<>();
     for (String finalGroup : groupsWithThisElement) {
-      boolean success = configurationManager.delete(persistenceService, config, finalGroup);
+      boolean success = configurationManager.delete(config, finalGroup);
       if (success) {
         updatedGroups.add(finalGroup);
       } else {
@@ -298,7 +298,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       }
 
       for (String group : groups) {
-        List<T> list = manager.list(persistenceService, filter, group);
+        List<T> list = manager.list(filter, group);
         if (!AbstractConfiguration.isCluster(group)) {
           list.forEach(t -> {
             if (t instanceof GroupableConfiguration) {

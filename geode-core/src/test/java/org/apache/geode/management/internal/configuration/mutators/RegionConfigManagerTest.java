@@ -31,7 +31,7 @@ public class RegionConfigManagerTest {
 
   @Before
   public void before() throws Exception {
-    manager = spy(new RegionConfigManager());
+    manager = spy(new RegionConfigManager(null));
     config1 = new Region();
     config1.setName("test");
     config2 = new Region();

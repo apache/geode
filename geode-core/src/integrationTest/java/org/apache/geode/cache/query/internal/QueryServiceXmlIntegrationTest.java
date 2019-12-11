@@ -146,7 +146,7 @@ public class QueryServiceXmlIntegrationTest {
   }
 
   private MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
-    return serverRule.getCache().getQueryService().getMethodInvocationAuthorizer();
+    return serverRule.getCache().getInternalQueryService().getMethodInvocationAuthorizer();
   }
 
   private String getFilePath(String fileName) throws IOException {

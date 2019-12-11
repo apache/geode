@@ -24,28 +24,30 @@ import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 
 public class DeploymentManager implements ConfigurationManager<Deployment> {
+  private final InternalConfigurationPersistenceService persistenceService;
+
+  public DeploymentManager(InternalConfigurationPersistenceService persistenceService) {
+    this.persistenceService = persistenceService;
+  }
+
   @Override
-  public boolean add(InternalConfigurationPersistenceService service, Deployment config,
-      String groupName) {
+  public boolean add(Deployment config, String groupName) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
-  public boolean delete(InternalConfigurationPersistenceService service, Deployment config,
-      String groupName) {
+  public boolean delete(Deployment config, String groupName) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
-  public boolean update(InternalConfigurationPersistenceService service, Deployment config,
-      String groupName) {
+  public boolean update(Deployment config, String groupName) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
-  public List<Deployment> list(InternalConfigurationPersistenceService service,
-      Deployment filterConfig, String groupName) {
-    Configuration existing = service.getConfiguration(groupName);
+  public List<Deployment> list(Deployment filterConfig, String groupName) {
+    Configuration existing = persistenceService.getConfiguration(groupName);
     Stream<String> stream = existing.getJarNames().stream();
     if (filterConfig.getJarFileName() != null) {
       stream = stream.filter(x -> x.equals(filterConfig.getJarFileName()));

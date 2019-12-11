@@ -15,9 +15,12 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.test.junit.assertions.ClusterManagementGetResultAssert.assertManagementGetResult;
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
 import org.junit.BeforeClass;
@@ -25,6 +28,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.management.api.ClusterManagementGetResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -33,6 +37,7 @@ import org.apache.geode.management.runtime.DeploymentInfo;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.ClusterManagementGetResultAssert;
 import org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
@@ -49,19 +54,19 @@ public class DeploymentManagementDUnitTest {
 
   @ClassRule
   public static TemporaryFolder stagingTempDir = new TemporaryFolder();
-  private static File stagingDir, jar1, jar2, jar3;
+  private static File stagingDir, group1Jar, group2Jar, clusterJar;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
     // prepare the jars to be deployed
     stagingDir = stagingTempDir.newFolder("staging");
-    jar1 = new File(stagingDir, "jar1.jar");
-    jar2 = new File(stagingDir, "jar2.jar");
-    jar3 = new File(stagingDir, "jar3.jar");
+    group1Jar = new File(stagingDir, "group1.jar");
+    group2Jar = new File(stagingDir, "group2.jar");
+    clusterJar = new File(stagingDir, "cluster.jar");
     JarBuilder jarBuilder = new JarBuilder();
-    jarBuilder.buildJarFromClassNames(jar1, "Class1");
-    jarBuilder.buildJarFromClassNames(jar2, "Class2");
-    jarBuilder.buildJarFromClassNames(jar3, "Class3");
+    jarBuilder.buildJarFromClassNames(group1Jar, "Class1");
+    jarBuilder.buildJarFromClassNames(group2Jar, "Class2");
+    jarBuilder.buildJarFromClassNames(clusterJar, "Class3");
 
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     server1 = cluster.startServerVM(1, "group1", locator.getPort());
@@ -73,11 +78,11 @@ public class DeploymentManagementDUnitTest {
             .build();
     gfsh.connect(locator);
 
-    gfsh.executeAndAssertThat("deploy --group=group1 --jar=" + jar1.getAbsolutePath())
+    gfsh.executeAndAssertThat("deploy --group=group1 --jar=" + group1Jar.getAbsolutePath())
         .statusIsSuccess();
-    gfsh.executeAndAssertThat("deploy --group=group2 --jar=" + jar2.getAbsolutePath())
+    gfsh.executeAndAssertThat("deploy --group=group2 --jar=" + group2Jar.getAbsolutePath())
         .statusIsSuccess();
-    gfsh.executeAndAssertThat("deploy --jar=" + jar3.getAbsolutePath()).statusIsSuccess();
+    gfsh.executeAndAssertThat("deploy --jar=" + clusterJar.getAbsolutePath()).statusIsSuccess();
   }
 
   @Test
@@ -86,10 +91,11 @@ public class DeploymentManagementDUnitTest {
     ClusterManagementListResultAssert<Deployment, DeploymentInfo> resultAssert =
         assertManagementListResult(list).isSuccessful();
     resultAssert.hasConfigurations().extracting(Deployment::getJarFileName)
-        .containsExactlyInAnyOrder("jar1.jar", "jar2.jar", "jar3.jar");
+        .containsExactlyInAnyOrder("group1.jar", "group2.jar", "cluster.jar");
     resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
         FilenameUtils::getName)
-        .containsExactlyInAnyOrder("jar1.v1.jar", "jar2.v1.jar", "jar3.v1.jar", "jar3.v1.jar");
+        .containsExactlyInAnyOrder("group1.v1.jar", "group2.v1.jar", "cluster.v1.jar",
+            "cluster.v1.jar");
   }
 
   @Test
@@ -100,21 +106,35 @@ public class DeploymentManagementDUnitTest {
     ClusterManagementListResultAssert<Deployment, DeploymentInfo> resultAssert =
         assertManagementListResult(list).isSuccessful();
     resultAssert.hasConfigurations().extracting(Deployment::getJarFileName)
-        .containsExactlyInAnyOrder("jar1.jar");
+        .containsExactlyInAnyOrder("group1.jar");
     resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
-        FilenameUtils::getName).containsExactlyInAnyOrder("jar1.v1.jar");
+        FilenameUtils::getName).containsExactlyInAnyOrder("group1.v1.jar");
   }
 
   @Test
   public void listById() throws Exception {
     Deployment filter = new Deployment();
-    filter.setJarFileName("jar3.jar");
+    filter.setJarFileName("cluster.jar");
     ClusterManagementListResult<Deployment, DeploymentInfo> list = client.list(filter);
     ClusterManagementListResultAssert<Deployment, DeploymentInfo> resultAssert =
         assertManagementListResult(list).isSuccessful();
     resultAssert.hasConfigurations().extracting(Deployment::getJarFileName)
-        .containsExactlyInAnyOrder("jar3.jar");
+        .containsExactlyInAnyOrder("cluster.jar");
+    List<DeploymentInfo> runtimeResult = resultAssert.getActual().getRuntimeResult();
+    assertThat(runtimeResult).extracting(DeploymentInfo::getJarLocation).extracting(
+        FilenameUtils::getName).containsExactlyInAnyOrder("cluster.v1.jar", "cluster.v1.jar");
+    assertThat(runtimeResult.get(0).getTimeDeployed()).isNotNull();
+  }
+
+  @Test
+  public void getById() throws Exception {
+    Deployment filter = new Deployment();
+    filter.setJarFileName("cluster.jar");
+    ClusterManagementGetResult<Deployment, DeploymentInfo> result = client.get(filter);
+    ClusterManagementGetResultAssert<Deployment, DeploymentInfo> resultAssert =
+        assertManagementGetResult(result).isSuccessful();
+    resultAssert.hasConfiguration().extracting(Deployment::getJarFileName).isEqualTo("cluster.jar");
     resultAssert.hasRuntimeInfos().extracting(DeploymentInfo::getJarLocation).extracting(
-        FilenameUtils::getName).containsExactlyInAnyOrder("jar3.v1.jar", "jar3.v1.jar");
+        FilenameUtils::getName).containsExactlyInAnyOrder("cluster.v1.jar", "cluster.v1.jar");
   }
 }

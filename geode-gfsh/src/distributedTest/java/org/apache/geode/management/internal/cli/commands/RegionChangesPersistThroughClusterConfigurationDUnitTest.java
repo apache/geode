@@ -109,7 +109,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
     server2.invoke(() -> {
       InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
       InternalCache cache = system.getCache();
-      assertThat(cache.getRegionByPath(REGION_PATH)).isNotNull();
+      assertThat(cache.getInternalRegionByPath(REGION_PATH)).isNotNull();
     });
   }
 
@@ -118,7 +118,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
     server2.invoke(() -> {
       InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
       InternalCache cache = system.getCache();
-      assertThat(cache.getRegionByPath(REGION_PATH).isEntryExpiryPossible()).isFalse();
+      assertThat(cache.getInternalRegionByPath(REGION_PATH).isEntryExpiryPossible()).isFalse();
     });
 
     gfsh.executeAndAssertThat(
@@ -141,8 +141,8 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
     server2.invoke(() -> {
       InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
       InternalCache cache = system.getCache();
-      assertThat(cache.getRegionByPath(REGION_PATH)).isNotNull();
-      assertThat(cache.getRegionByPath(REGION_PATH).isEntryExpiryPossible()).isTrue();
+      assertThat(cache.getInternalRegionByPath(REGION_PATH)).isNotNull();
+      assertThat(cache.getInternalRegionByPath(REGION_PATH).isEntryExpiryPossible()).isTrue();
     });
   }
 
@@ -165,7 +165,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
     server2.invoke(() -> {
       InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
       InternalCache cache = system.getCache();
-      assertThat(cache.getRegionByPath(REGION_PATH)).isNull();
+      assertThat(cache.getInternalRegionByPath(REGION_PATH)).isNull();
     });
   }
 }
