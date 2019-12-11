@@ -283,7 +283,7 @@ public class RebalanceCommandDUnitTest {
 
   private static Integer getLocalDataSizeForRegion(String regionName) {
     InternalCache cache = ClusterStartupRule.getCache();
-    Region region = cache.getRegionByPath("/" + regionName);
+    Region region = cache.getInternalRegionByPath("/" + regionName);
     return PartitionRegionHelper.getLocalData(region).size();
   }
 

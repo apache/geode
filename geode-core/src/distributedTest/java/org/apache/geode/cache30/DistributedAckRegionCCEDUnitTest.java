@@ -180,7 +180,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
                 InitialImageOperation.VMOTION_DURING_GII = false;
                 final InitializationLevel oldLevel =
                     LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
-                LocalRegion ccregion = (LocalRegion) cache.getRegionByPath("/" + name);
+                LocalRegion ccregion = (LocalRegion) cache.getInternalRegionByPath("/" + name);
                 try {
                   // wait for the update op (sent below from vm1) to arrive, then allow the GII to
                   // happen

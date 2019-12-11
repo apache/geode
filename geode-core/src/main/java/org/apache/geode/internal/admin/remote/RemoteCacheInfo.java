@@ -62,7 +62,7 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
     this.lockTimeout = internalCache.getLockTimeout();
     this.lockLease = internalCache.getLockLease();
     this.searchTimeout = internalCache.getSearchTimeout();
-    this.upTime = internalCache.getUpTime();
+    this.upTime = (int) internalCache.getUpTime();
     if (this.closed) {
       this.rootRegionNames = null;
       this.perfStats = null;

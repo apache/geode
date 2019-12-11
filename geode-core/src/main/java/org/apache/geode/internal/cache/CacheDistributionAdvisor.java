@@ -709,7 +709,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
         final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
         try {
           InternalCache cache = dm.getCache();
-          lclRgn = cache == null ? null : cache.getRegionByPath(adviseePath);
+          lclRgn = cache == null ? null : cache.getInternalRegionByPath(adviseePath);
         } finally {
           LocalRegion.setThreadInitLevelRequirement(oldLevel);
         }

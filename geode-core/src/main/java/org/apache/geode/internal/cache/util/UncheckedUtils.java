@@ -12,20 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.statistics;
+package org.apache.geode.internal.cache.util;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.cache.Region;
 
-@FunctionalInterface
-public interface StatisticsClockSupplier {
+@SuppressWarnings({"unchecked", "unused"})
+public class UncheckedUtils {
 
-  /**
-   * Please pass the {@code StatisticsClock} through constructors where possible instead of
-   * accessing it from this supplier.
-   *
-   * <p>
-   * Various factories may use this supplier to acquire the {@code StatisticsClock} which is
-   * created by the Cache as configured by {@link DistributionConfig#getEnableTimeStatistics()}.
-   */
-  StatisticsClock getStatisticsClock();
+  public static <K, V> Region<K, V> uncheckedRegion(Region region) {
+    return region;
+  }
 }

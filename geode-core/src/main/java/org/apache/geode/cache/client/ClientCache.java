@@ -27,9 +27,11 @@ import org.apache.geode.cache.query.QueryService;
 
 /**
  * A ClientCache instance controls the life cycle of the local singleton cache in a client.
+ *
  * <p>
  * A ClientCache is created using {@link ClientCacheFactory#create}. See {@link ClientCacheFactory}
  * for common usage patterns for creating the client cache instance.
+ *
  * <p>
  * ClientCache provides access to functionality when a member connects as a client to GemFire
  * servers. It provides the following services:
@@ -46,11 +48,13 @@ import org.apache.geode.cache.query.QueryService;
  * <li>Creation of authenticated cache views that support multiple users (see
  * {@link #createAuthenticatedView}).
  * </ul>
+ *
  * <p>
  * A ClientCache connects to a server using a {@link Pool}. This pool can be configured in the
  * ClientCacheFactory (by default GemFire tries to create a pool which tries to connect to a server
  * on the localhost on port 40404). This default pool is used by {@link Region}s (created using
  * {@link ClientRegionFactory}) to talk to regions on the server.
+ *
  * <p>
  * More pools can be created using {@link PoolManager} or by declaring them in cache.xml.
  *
@@ -92,9 +96,10 @@ public interface ClientCache extends GemFireCache {
   /**
    * Create and return a client region factory that is initialized to create a region using the
    * given named region attributes.
+   *
    * <p>
    * Named region attributes are defined in cache.xml by setting the name as the value of the
-   * <code>id</code> attribute on a <code>region-attributes</code> element.
+   * {@code id} attribute on a {@code region-attributes} element.
    *
    * @param regionAttributesId the named region attributes to initialize the factory with.
    * @throws IllegalStateException if named region attributes has not been defined.
@@ -106,12 +111,12 @@ public interface ClientCache extends GemFireCache {
    * Notifies the server that this durable client is ready to receive updates. This method is used
    * by durable clients to notify servers that they are ready to receive updates. As soon as the
    * server receives this message, it will forward updates to this client (if necessary).
+   *
    * <p>
    * Durable clients must call this method after they are done creating regions and issuing interest
    * registration requests.If it is called before then events will be lost.Any time a new
    * {@link Pool} is created and regions have been added to it then this method needs to be called
    * again.
-   * <p>
    *
    * @throws IllegalStateException if called by a non-durable client
    */
@@ -122,9 +127,11 @@ public interface ClientCache extends GemFireCache {
    * cache's default pool. Multiple views with different user properties can be created on a single
    * client cache.
    *
+   * <p>
    * Requires that {@link ClientCacheFactory#setPoolMultiuserAuthentication(boolean)
    * multiuser-authentication} to be set to true on the default pool.
    *
+   * <p>
    * Applications must use this instance to do operations, when multiuser-authentication is set to
    * true.
    *
@@ -144,6 +151,7 @@ public interface ClientCache extends GemFireCache {
    * pool to connect to servers. Requires that
    * {@link PoolFactory#setMultiuserAuthentication(boolean) multiuser-authentication} to be set to
    * true on the given pool.
+   *
    * <p>
    * See {@link #createAuthenticatedView(Properties)} for more information on the returned cache
    * view.
@@ -166,8 +174,7 @@ public interface ClientCache extends GemFireCache {
    * return null.
    *
    * @since GemFire 7.0
-   * @see org.apache.geode.cache.client.Pool
+   * @see Pool
    */
   Pool getDefaultPool();
-
 }
