@@ -50,6 +50,8 @@ pushd geode-benchmarks/infrastructure/scripts/aws/
 # failed tests. Test failures only result in an exit code of 1 when on the last iteration of loop.
 for i in {1..5}
 do
+  echo "This is ITERATION ${i} of benchmarking against baseline."
+
   if [[ -f ${input} ]]; then
     unset TEST_OPTIONS
     TEST_OPTIONS=""
