@@ -20,7 +20,7 @@ package org.apache.geode.distributed.internal.membership.gms.api;
  * MembershipConfigurationException, may also be thrown during startup and indicates a
  * problem with configuration parameters.
  */
-public class MemberStartupException extends RuntimeException {
+public class MemberStartupException extends Exception {
   private static final long serialVersionUID = 6610743861046044144L;
 
   public MemberStartupException() {}

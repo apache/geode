@@ -176,8 +176,16 @@ public class GMSHealthMonitorJUnitTest {
     when(joinLeave.getMemberID()).thenReturn(mockMembers.get(myAddressIndex));
     when(messenger.getMemberID()).thenReturn(mockMembers.get(myAddressIndex));
     gmsHealthMonitor = new GMSHealthMonitorTest();
-    gmsHealthMonitor.init(services);
-    gmsHealthMonitor.start();
+    try {
+      gmsHealthMonitor.init(services);
+    } catch (org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException e) {
+      e.printStackTrace();
+    }
+    try {
+      gmsHealthMonitor.start();
+    } catch (org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException e) {
+      e.printStackTrace();
+    }
   }
 
   @After

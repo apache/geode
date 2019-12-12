@@ -321,7 +321,11 @@ public class GMSMembershipJUnitTest {
     final GMSMembership spy = Mockito.spy(manager);
 
     spy.beSick();
-    spy.getGMSManager().start();
+    try {
+      spy.getGMSManager().start();
+    } catch (org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException e) {
+      e.printStackTrace();
+    }
     spy.getGMSManager().started();
 
     spy.handleOrDeferMessage(msg);

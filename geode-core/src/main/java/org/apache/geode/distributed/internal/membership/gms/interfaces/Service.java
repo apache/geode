@@ -17,19 +17,21 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 
 /**
  * Services in GMS all implement this interface
  *
  */
 public interface Service<ID extends MemberIdentifier> {
-  void init(Services<ID> s);
+  void init(Services<ID> s) throws MembershipConfigurationException;
 
   /**
    * called after all services have been initialized with init() and all services are available via
    * Services
    */
-  void start();
+  void start() throws MemberStartupException;
 
   /**
    * called after all servers have been started

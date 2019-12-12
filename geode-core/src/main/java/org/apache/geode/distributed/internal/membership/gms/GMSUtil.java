@@ -47,7 +47,8 @@ public class GMSUtil {
    * @param bindAddress optional address to check for loopback compatibility
    * @return addresses of locators
    */
-  public static List<HostAddress> parseLocators(String locatorsString, String bindAddress) {
+  public static List<HostAddress> parseLocators(String locatorsString, String bindAddress)
+      throws MembershipConfigurationException {
     InetAddress addr = null;
 
     try {
@@ -85,7 +86,8 @@ public class GMSUtil {
    *
    * @see org.apache.geode.distributed.ConfigurationProperties#LOCATORS for format
    */
-  public static List<HostAddress> parseLocators(String locatorsString, InetAddress bindAddress) {
+  public static List<HostAddress> parseLocators(String locatorsString, InetAddress bindAddress)
+      throws MembershipConfigurationException {
     List<HostAddress> result = new ArrayList<>(2);
     Set<InetSocketAddress> inetAddresses = new HashSet<>();
     String host;

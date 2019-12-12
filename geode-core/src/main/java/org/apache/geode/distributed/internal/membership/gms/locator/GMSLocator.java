@@ -46,6 +46,7 @@ import org.apache.geode.distributed.internal.membership.gms.InternalMembershipEx
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSMemberWrapper;
@@ -98,7 +99,8 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
    */
   public GMSLocator(InetAddress bindAddress, String locatorString, boolean usePreferredCoordinators,
       boolean networkPartitionDetectionEnabled, LocatorStats locatorStats,
-      String securityUDPDHAlgo, Path workingDirectory, final TcpClient locatorClient) {
+      String securityUDPDHAlgo, Path workingDirectory, final TcpClient locatorClient)
+      throws MembershipConfigurationException {
     this.usePreferredCoordinators = usePreferredCoordinators;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.securityUDPDHAlgo = securityUDPDHAlgo;

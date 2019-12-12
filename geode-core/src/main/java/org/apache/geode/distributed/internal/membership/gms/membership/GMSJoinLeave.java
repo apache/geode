@@ -302,7 +302,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    * @return true if successful, false if not
    */
   @Override
-  public boolean join() {
+  public boolean join() throws MemberStartupException {
 
     try {
       if (Boolean.getBoolean(BYPASS_DISCOVERY_PROPERTY)) {
@@ -421,7 +421,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    * @return true if the attempt succeeded, false if it timed out
    */
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "WA_NOT_IN_LOOP")
-  boolean attemptToJoin() {
+  boolean attemptToJoin() throws MemberStartupException {
     SearchState<ID> state = searchState;
 
     // send a join request to the coordinator and wait for a response
@@ -1108,7 +1108,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    * This contacts the locators to find out who the current coordinator is. All locators are
    * contacted. If they don't agree then we choose the oldest coordinator and return it.
    */
-  boolean findCoordinator() {
+  boolean findCoordinator() throws MemberStartupException {
     SearchState<ID> state = searchState;
 
     assert this.localAddress != null;
@@ -1185,7 +1185,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
               }
             }
           }
-        } catch (IOException | ClassNotFoundException problem) {
+        } catch (IOException | ClassNotFoundException | MembershipConfigurationException problem) {
           logger.debug("Exception thrown when contacting a locator", problem);
           if (state.locatorsContacted == 0 && System.currentTimeMillis() < giveUpTime) {
             try {
@@ -1678,7 +1678,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   }
 
   @Override
-  public void start() {}
+  public void start() throws MemberStartupException {}
 
   @Override
   public void started() {}
@@ -1821,7 +1821,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   }
 
   @Override
-  public void init(Services<ID> s) {
+  public void init(Services<ID> s) throws MembershipConfigurationException {
     this.services = s;
 
     MembershipConfig config = services.getConfig();

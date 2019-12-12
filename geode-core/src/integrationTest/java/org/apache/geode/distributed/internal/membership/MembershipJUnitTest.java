@@ -65,6 +65,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
@@ -256,7 +257,7 @@ public class MembershipJUnitTest {
 
   private Pair<Membership, MessageListener> createMembershipManager(
       final DistributionConfigImpl config,
-      final RemoteTransportConfig transport) {
+      final RemoteTransportConfig transport) throws MemberStartupException {
     final MembershipListener listener = mock(MembershipListener.class);
     final MessageListener messageListener = mock(MessageListener.class);
     final DMStats stats1 = mock(DMStats.class);
@@ -492,6 +493,8 @@ public class MembershipJUnitTest {
           "expected a GemFireConfigException to be thrown because no locators are configured");
     } catch (GemFireConfigException e) {
       // expected
+    } catch (org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException e) {
+      e.printStackTrace();
     }
   }
 }

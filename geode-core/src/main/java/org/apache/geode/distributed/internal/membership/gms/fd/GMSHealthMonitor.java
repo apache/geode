@@ -56,8 +56,10 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
@@ -668,7 +670,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   }
 
   @Override
-  public void start() {
+  public void start() throws MemberStartupException {
     scheduler = LoggingExecutors.newScheduledThreadPool("Geode Failure Detection Scheduler", 1);
     checkExecutor = LoggingExecutors.newCachedThreadPool("Geode Failure Detection thread ", true);
     Monitor m = this.new Monitor(memberTimeout);
@@ -918,7 +920,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   }
 
   @Override
-  public void init(Services<ID> s) {
+  public void init(Services<ID> s) throws MembershipConfigurationException {
     isStopping = false;
     services = s;
     memberTimeout = s.getConfig().getMemberTimeout();

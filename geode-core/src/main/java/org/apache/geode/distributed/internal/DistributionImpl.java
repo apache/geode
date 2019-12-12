@@ -204,11 +204,14 @@ public class DistributionImpl implements Distribution {
     } catch (SecurityException e) {
       throw new GemFireSecurityException("Security problem encountered while joining the cluster",
           e);
-    } catch (GemFireConfigException | SystemConnectException | GemFireSecurityException e) {
-      throw e;
+    } catch (MembershipConfigurationException e) {
+      throw new GemFireConfigException(e.getMessage());
+    } catch (MemberStartupException e) {
+      throw new SystemConnectException(e.getMessage());
     } catch (RuntimeException e) {
-      Services.getLogger().error("Unexpected problem starting up membership services", e);
-      throw new SystemConnectException("Problem starting up membership services", e);
+      logger.error("Unexpected problem starting up membership services", e);
+      throw new SystemConnectException("Problem starting up membership services: " + e.getMessage()
+          + ".  Consult log file for more details");
     }
   }
 

@@ -51,6 +51,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListene
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
@@ -555,7 +556,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    *
    * @throws GemFireConfigException - configuration error
    */
-  private void join() {
+  private void join() throws MemberStartupException {
     services.setShutdownCause(null);
     services.getCancelCriterion().cancel(null);
 
@@ -1838,7 +1839,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   }
 
   @Override
-  public void start() {
+  public void start() throws MemberStartupException {
     services.start();
   }
 
@@ -1857,7 +1858,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
     @Override
     /* Service interface */
-    public void init(Services<ID> services) {
+    public void init(Services<ID> services) throws MembershipConfigurationException {
       GMSMembership.this.services = services;
 
       MembershipConfig config = services.getConfig();
@@ -1876,7 +1877,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
     /* Service interface */
     @Override
-    public void start() {
+    public void start() throws MemberStartupException {
       lifecycleListener.start(services.getMessenger().getMemberID());
 
     }
@@ -1957,12 +1958,12 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
 
     @Override
-    public void joinDistributedSystem() {
+    public void joinDistributedSystem() throws MemberStartupException {
       long startTime = System.currentTimeMillis();
 
       try {
         join();
-      } catch (RuntimeException e) {
+      } catch (MemberStartupException | RuntimeException e) {
         lifecycleListener.disconnect(e);
         throw e;
       }

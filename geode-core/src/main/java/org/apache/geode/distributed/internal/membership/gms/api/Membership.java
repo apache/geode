@@ -306,7 +306,7 @@ public interface Membership<ID extends MemberIdentifier> {
    */
   boolean hasMember(ID member);
 
-  void start();
+  void start() throws MemberStartupException;
 
   void setCloseInProgress();
 }

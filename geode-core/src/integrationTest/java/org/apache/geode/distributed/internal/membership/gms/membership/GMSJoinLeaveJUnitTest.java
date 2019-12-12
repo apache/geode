@@ -174,8 +174,16 @@ public class GMSJoinLeaveJUnitTest {
     } else {
       gmsJoinLeave = new GMSJoinLeave(locatorClient);
     }
-    gmsJoinLeave.init(services);
-    gmsJoinLeave.start();
+    try {
+      gmsJoinLeave.init(services);
+    } catch (org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException e) {
+      e.printStackTrace();
+    }
+    try {
+      gmsJoinLeave.start();
+    } catch (org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException e) {
+      e.printStackTrace();
+    }
     gmsJoinLeave.started();
     gmsJoinLeave.setLocalAddress(gmsJoinLeaveMemberId);
   }

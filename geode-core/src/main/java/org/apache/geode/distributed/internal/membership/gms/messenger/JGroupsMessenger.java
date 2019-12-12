@@ -193,7 +193,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
-  public void init(Services<ID> s) {
+  public void init(Services<ID> s) throws MembershipConfigurationException {
     this.services = s;
 
     MembershipConfig config = services.getConfig();
@@ -311,7 +311,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
-  public void start() {
+  public void start() throws MemberStartupException {
     // create the configuration XML string for JGroups
     String properties = this.jgStackConfig;
 

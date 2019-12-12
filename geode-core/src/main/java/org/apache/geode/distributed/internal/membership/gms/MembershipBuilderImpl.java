@@ -22,6 +22,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
@@ -97,7 +98,7 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
   }
 
   @Override
-  public Membership<ID> create() {
+  public Membership<ID> create() throws MembershipConfigurationException {
     GMSMembership<ID> gmsMembership =
         new GMSMembership<>(membershipListener, messageListener, lifecycleListener);
     Services<ID> services =

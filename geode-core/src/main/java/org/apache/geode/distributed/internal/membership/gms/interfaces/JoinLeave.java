@@ -16,6 +16,7 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 
 public interface JoinLeave<ID extends MemberIdentifier> extends Service<ID> {
 
@@ -23,7 +24,7 @@ public interface JoinLeave<ID extends MemberIdentifier> extends Service<ID> {
    * joins the distributed system and returns true if successful, false if not. Throws
    * MemberStartupException and MemberConfigurationException
    */
-  boolean join();
+  boolean join() throws MemberStartupException;
 
   /**
    * leaves the distributed system. Should be invoked before stop()

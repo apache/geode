@@ -42,8 +42,10 @@ import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -173,7 +175,7 @@ public class Services<ID extends MemberIdentifier> {
   /**
    * Initialize services - do this before invoking start()
    */
-  public void init() {
+  public void init() throws MembershipConfigurationException {
     this.messenger.init(this);
     this.manager.init(this);
     this.joinLeave.init(this);
@@ -184,7 +186,7 @@ public class Services<ID extends MemberIdentifier> {
    * Start services - this will start everything up and join the cluster.
    * Invoke init() before this method.
    */
-  public void start() {
+  public void start() throws MemberStartupException {
     boolean started = false;
     try {
       logger.info("Starting membership services");
