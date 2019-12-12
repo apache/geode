@@ -113,7 +113,6 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -347,7 +346,7 @@ public class DiskStoreImpl implements DiskStore {
   /**
    * A set of overflow only regions that are using this disk store.
    */
-  private final Set<DiskRegion> overflowMap = new ConcurrentHashSet<DiskRegion>();
+  private final Set<DiskRegion> overflowMap = ConcurrentHashMap.newKeySet();
 
   /**
    * Contains all of the disk recovery stores for which we are recovering values asnynchronously.

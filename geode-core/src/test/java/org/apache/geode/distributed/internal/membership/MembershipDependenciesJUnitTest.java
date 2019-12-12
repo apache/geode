@@ -42,7 +42,6 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -136,9 +135,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO:
               .or(type(JavaWorkarounds.class))
-
-              // TODO:
-              .or(type(ConcurrentHashSet.class))
 
               // TODO:
               .or(type(OSProcess.class))

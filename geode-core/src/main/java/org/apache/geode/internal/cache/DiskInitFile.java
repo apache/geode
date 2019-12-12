@@ -77,7 +77,6 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -336,9 +335,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
   private final LongOpenHashSet crfIds;
   private final LongOpenHashSet drfIds;
-  // krfIds uses a concurrent impl because backup
-  // can call hasKrf concurrently with cmnKrfCreate
-  private final ConcurrentHashSet<Long> krfIds;
+  private final Set<Long> krfIds;
 
   /**
    * Map used to keep track of regions we know of from the DiskInitFile but that do not yet exist
@@ -1906,7 +1903,10 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     this.instIds = new IntOpenHashSet();
     this.crfIds = new LongOpenHashSet();
     this.drfIds = new LongOpenHashSet();
-    this.krfIds = new ConcurrentHashSet<>();
+
+    // krfIds uses a concurrent impl because backup
+    // can call hasKrf concurrently with cmnKrfCreate
+    this.krfIds = ConcurrentHashMap.newKeySet();
     recover();
     if (this.parent.isOffline() && !this.parent.isOfflineCompacting()
         && !this.parent.isOfflineModify()) {

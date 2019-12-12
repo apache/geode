@@ -243,7 +243,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlPropertyResolver;
 import org.apache.geode.internal.cache.xmlcache.PropertyResolver;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
@@ -563,14 +562,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final CqService cqService;
 
-  private final Set<RegionListener> regionListeners = new ConcurrentHashSet<>();
+  private final Set<RegionListener> regionListeners = ConcurrentHashMap.newKeySet();
 
   private final Map<Class<? extends CacheService>, CacheService> services = new HashMap<>();
 
   private final SecurityService securityService;
 
   private final Set<RegionEntrySynchronizationListener> synchronizationListeners =
-      new ConcurrentHashSet<>();
+      ConcurrentHashMap.newKeySet();
 
   private final ClusterConfigurationLoader ccLoader = new ClusterConfigurationLoader();
 

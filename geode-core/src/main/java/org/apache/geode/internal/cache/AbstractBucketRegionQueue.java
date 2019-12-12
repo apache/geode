@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -39,7 +40,6 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -66,7 +66,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * Holds keys for those events that were not found in BucketRegionQueue during processing of
    * ParallelQueueRemovalMessage. This can occur due to the scenario mentioned in #49196.
    */
-  private final ConcurrentHashSet<Object> failedBatchRemovalMessageKeys = new ConcurrentHashSet<>();
+  private final Set<Object> failedBatchRemovalMessageKeys = ConcurrentHashMap.newKeySet();
 
   AbstractBucketRegionQueue(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
       InternalCache cache, InternalRegionArguments internalRegionArgs,
@@ -469,7 +469,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   private boolean failedBatchRemovalMessageKeysClearedFlag = false;
 
 
-  public ConcurrentHashSet<Object> getFailedBatchRemovalMessageKeys() {
+  public Set<Object> getFailedBatchRemovalMessageKeys() {
     return this.failedBatchRemovalMessageKeys;
   }
 
