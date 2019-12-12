@@ -17,56 +17,30 @@ package org.apache.geode.internal.cache;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
-import org.junit.Rule;
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
+public class CacheFactoryIntegrationTest {
 
-public class CacheFactoryStaticsTest {
-  @Rule
-  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
-
-  private CountDownLatch latch;
-  private Exception failure;
   private Cache cache;
 
-  @Test
-  public void cacheFactoryStaticsGetAnyInstanceDoesNotRequireSynchronizedLock() throws Exception {
-    latch = new CountDownLatch(1);
+  @Before
+  public void setUp() {
     cache = new CacheFactory(new Properties()).create();
-    assertThat(CacheFactory.getAnyInstance()).isNotNull();
-
-    synchronized (InternalCacheBuilder.class) {
-      executorServiceRule.submit(() -> cacheFactoryStaticsGetAnyInstanceCanGetCacheInstance());
-      latch.await();
-    }
-
-    if (failure != null) {
-      throw failure;
-    }
-  }
-
-  private void cacheFactoryStaticsGetAnyInstanceCanGetCacheInstance() {
-    try {
-      GeodeAwaitility.await().until(() -> (CacheFactoryStatics.getAnyInstance()) != null);
-    } catch (Exception exception) {
-      failure = exception;
-    } finally {
-      latch.countDown();
-    }
   }
 
   @After
   public void after() {
-    if (cache != null) {
-      cache.close();
-    }
+    cache.close();
+  }
+
+  @Test
+  public void getAnyInstanceReturnsLatestCreatedCache() {
+    assertThat(CacheFactory.getAnyInstance()).isSameAs(cache);
   }
 }
