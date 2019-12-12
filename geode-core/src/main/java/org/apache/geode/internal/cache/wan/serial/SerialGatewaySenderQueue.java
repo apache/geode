@@ -31,6 +31,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -135,6 +136,11 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   private final boolean cleanQueues;
 
+  // This is for UT purpose only
+  @VisibleForTesting
+  public boolean getCleanQueues() {
+    return cleanQueues;
+  }
 
   /**
    * Whether write to disk is synchronous.
