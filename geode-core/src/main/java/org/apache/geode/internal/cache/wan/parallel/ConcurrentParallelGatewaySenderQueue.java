@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.Region;
@@ -79,6 +80,12 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
 
   public Set<PartitionedRegion> getRegions() {
     return ((ParallelGatewaySenderQueue) (processors[0].getQueue())).getRegions();
+  }
+
+  // This is for UT purpose only
+  @VisibleForTesting
+  public boolean getCleanQueues() {
+    return ((ParallelGatewaySenderQueue) (processors[0].getQueue())).getCleanQueues();
   }
 
   @Override
