@@ -57,7 +57,7 @@ public class DeploymentTest {
   }
 
   @Test
-  public void serializeToJson() throws Exception {
+  public void jsonSerializationRoundTrip() throws Exception {
     deployment.setGroup("group1");
     deployment.setJarFileName("jarFileName");
     deployment.setDeployedBy("deployedBy");
