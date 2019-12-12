@@ -101,6 +101,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
   public static boolean LUCENE_REINDEX =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "luceneReindex");
 
+  // Change this to the correct version once reindexing on an existing region is enabled
+  public static short LUCENE_REINDEX_ENABLED_VERSION_ORDINAL = Version.CURRENT_ORDINAL;
+
   public LuceneServiceImpl() {}
 
   @Override
