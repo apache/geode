@@ -16,7 +16,8 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 
 /**
  * MembershipClosedException is thrown if membership services are no longer
- * available.
+ * available. This exception may be thrown by any membership API and does
+ * not appear in API interfaces.
  */
 public class MembershipClosedException extends RuntimeException {
   private static final long serialVersionUID = 6112938405434046127L;

@@ -203,7 +203,7 @@ public class DistributionImpl implements Distribution {
           "Unable to create membership manager",
           e);
     } catch (SecurityException e) {
-      throw new GemFireSecurityException("Security problem encountered while joining the cluster",
+      throw new GemFireSecurityException(e.getMessage(),
           e);
     } catch (MembershipConfigurationException e) {
       throw new GemFireConfigException(e.getMessage());
@@ -462,6 +462,8 @@ public class DistributionImpl implements Distribution {
   public boolean requestMemberRemoval(InternalDistributedMember member, String reason) {
     try {
       return membership.requestMemberRemoval(member, reason);
+    } catch (MemberDisconnectedException | MembershipClosedException e) {
+      throw new DistributedSystemDisconnectedException("Distribution is closed");
     } catch (RuntimeException e) {
       if (!membership.isConnected()) {
         throw new DistributedSystemDisconnectedException("Distribution is closed", e);

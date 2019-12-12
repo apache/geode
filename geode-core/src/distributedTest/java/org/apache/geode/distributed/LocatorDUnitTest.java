@@ -93,6 +93,7 @@ import org.apache.geode.distributed.internal.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -165,6 +166,7 @@ public class LocatorDUnitTest implements Serializable {
     port4 = ports[3];
     Invoke.invokeInEveryVM(() -> deleteLocatorStateFile(port1, port2, port3, port4));
     addIgnoredException(MemberDisconnectedException.class); // ignore this suspect string
+    addIgnoredException(MembershipConfigurationException.class); // ignore this suspect string
   }
 
   @After
@@ -795,8 +797,6 @@ public class LocatorDUnitTest implements Serializable {
 
     vm2.invokeAsync(crashSystem);
 
-    Wait.pause(1000); // 4 x the member-timeout
-
     // request member removal for first peer from second peer.
     vm2.invoke(new SerializableRunnable("Request Member Removal") {
 
@@ -807,6 +807,7 @@ public class LocatorDUnitTest implements Serializable {
         // check for shutdown cause in Distribution. Following call should
         // throw DistributedSystemDisconnectedException which should have cause as
         // ForceDisconnectException.
+        await().until(() -> !mmgr.getMembership().isConnected());
         try (IgnoredException i = addIgnoredException("Membership: requesting removal of")) {
           mmgr.requestMemberRemoval((InternalDistributedMember) mem1, "test reasons");
           fail("It should have thrown exception in requestMemberRemoval");

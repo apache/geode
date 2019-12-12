@@ -76,7 +76,7 @@ public interface Membership<ID extends MemberIdentifier> {
   /**
    * Request the current membership coordinator to remove the given member
    */
-  boolean requestMemberRemoval(ID member, String reason);
+  boolean requestMemberRemoval(ID member, String reason) throws MemberDisconnectedException;
 
   /**
    * like memberExists() this checks to see if the given ID is in the current membership view. If it

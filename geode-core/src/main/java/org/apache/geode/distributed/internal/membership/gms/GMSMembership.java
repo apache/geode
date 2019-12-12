@@ -751,7 +751,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
           try {
             requestMemberRemoval(member,
                 "this member is no longer in the view but is initiating connections");
-          } catch (MembershipClosedException e) {
+          } catch (MembershipClosedException | MemberDisconnectedException e) {
             // okay to ignore
           }
         }).start();
@@ -1295,7 +1295,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
 
   @Override
-  public boolean requestMemberRemoval(ID mbr, String reason) {
+  public boolean requestMemberRemoval(ID mbr, String reason) throws MemberDisconnectedException {
     if (mbr.equals(this.address)) {
       return false;
     }
@@ -1309,9 +1309,8 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         Throwable cause = services.getShutdownCause();
         // If ForcedDisconnectException occurred then report it as actual
         // problem.
-        if ((cause instanceof MemberDisconnectedException)
-            || (cause instanceof MembershipClosedException)) {
-          return false;
+        if ((cause instanceof MemberDisconnectedException)) {
+          throw (MemberDisconnectedException) cause;
         } else {
           Throwable ne = problem;
           while (ne.getCause() != null) {

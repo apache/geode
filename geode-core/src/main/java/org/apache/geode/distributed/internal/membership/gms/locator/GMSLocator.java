@@ -221,7 +221,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     if (!findRequest.getDHAlgo().equals(securityUDPDHAlgo)) {
       return new FindCoordinatorResponse<>(
           "Rejecting findCoordinatorRequest, as member not configured same udp security("
-              + findRequest.getDHAlgo() + " )as locator (" + securityUDPDHAlgo + ")");
+              + findRequest.getDHAlgo() + ") as locator (" + securityUDPDHAlgo + ")");
     }
 
     if (services == null) {
