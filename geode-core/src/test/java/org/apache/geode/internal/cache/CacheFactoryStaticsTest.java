@@ -19,9 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -33,11 +35,12 @@ public class CacheFactoryStaticsTest {
 
   private CountDownLatch latch;
   private Exception failure;
+  private Cache cache;
 
   @Test
   public void cacheFactoryStaticsGetAnyInstanceDoesNotRequireSynchronizedLock() throws Exception {
     latch = new CountDownLatch(1);
-    new CacheFactory(new Properties()).create();
+    cache = new CacheFactory(new Properties()).create();
     assertThat(CacheFactory.getAnyInstance()).isNotNull();
 
     synchronized (InternalCacheBuilder.class) {
@@ -57,6 +60,13 @@ public class CacheFactoryStaticsTest {
       failure = exception;
     } finally {
       latch.countDown();
+    }
+  }
+
+  @After
+  public void after() {
+    if (cache != null) {
+      cache.close();
     }
   }
 }
