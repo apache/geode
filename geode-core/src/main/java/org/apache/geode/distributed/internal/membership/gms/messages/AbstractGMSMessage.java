@@ -96,11 +96,6 @@ public abstract class AbstractGMSMessage<ID extends MemberIdentifier> implements
   }
 
   @Override
-  public boolean containsRegionContentChange() {
-    return false;
-  }
-
-  @Override
   public void setBytesRead(int amount) {
     // no-op in GMS messages
   }

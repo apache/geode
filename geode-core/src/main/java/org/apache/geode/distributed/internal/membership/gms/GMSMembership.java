@@ -888,7 +888,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * @param msg the message to process
    */
   protected void handleOrDeferMessage(Message<ID> msg) {
-    if (msg.containsRegionContentChange() && (beingSick || playingDead)) {
+    if (msg.dropMessageWhenMembershipIsPlayingDead() && (beingSick || playingDead)) {
       return;
     }
     if (!processingEvents) {
