@@ -61,7 +61,9 @@ public class TcpServerFactory {
             SocketCreatorFactory
                 .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+        DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
   }
 
   public static Supplier<ExecutorService> createExecutorServiceSupplier(PoolStatHelper poolHelper) {

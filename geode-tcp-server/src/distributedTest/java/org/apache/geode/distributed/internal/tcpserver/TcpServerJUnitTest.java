@@ -16,6 +16,7 @@ package org.apache.geode.distributed.internal.tcpserver;
 
 import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -32,7 +33,9 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,6 +62,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @Category({MembershipTest.class})
 public class TcpServerJUnitTest {
 
+  private static final int TIMEOUT = 60 * 1000;
   private/* GemStoneAddition */ InetAddress localhost;
   private/* GemStoneAddition */ int port;
   private SimpleStats stats;
@@ -76,7 +80,7 @@ public class TcpServerJUnitTest {
 
   private void start(TcpHandler handler) throws IOException {
     localhost = InetAddress.getLocalHost();
-    port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    port = getNeverUsedPort();
 
     stats = new SimpleStats();
     server = new TcpServerFactory().makeTcpServer(port, localhost, handler,
@@ -84,29 +88,43 @@ public class TcpServerJUnitTest {
     server.start();
   }
 
+  /*
+   * TcpClient keeps a static map of server port to server version. If a test happens to reuse a
+   * port
+   * (as happens sometimes in stress test, which runs a test many times) the number of requests
+   * to the server will vary, since TcpClient elides the VersionRequest if there is already an
+   * entry in the map for the given server.
+   *
+   * Make sure we never reuse a server port, so we never encounter this nondeterminism.
+   */
+  private static Set<Integer> ports = new HashSet<>();
+
+  private static int getNeverUsedPort() {
+    int port;
+    do {
+      port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    } while (ports.contains(port));
+    ports.add(port);
+    return port;
+  }
+
   @Test
   public void testClientGetInfo() throws Exception {
     TcpHandler handler = new InfoRequestHandler();
     start(handler);
 
-    TcpClient tcpClient = createTcpClient();
+    final TcpClient tcpClient = createTcpClient();
 
     InfoRequest testInfoRequest = new InfoRequest();
     InfoResponse testInfoResponse =
-        (InfoResponse) tcpClient.requestToServer(localhost, port, testInfoRequest, 60 * 1000);
-    assertThat(testInfoResponse.getInfo()[0]).contains("geode-core");
+        (InfoResponse) tcpClient.requestToServer(localhost, port, testInfoRequest, TIMEOUT);
+    assertThat(testInfoResponse.getInfo()[0]).contains("geode-tcp-server");
 
-    String[] requrestedInfo = tcpClient.getInfo(localhost, port);
-    assertNotNull(requrestedInfo);
-    assertTrue(requrestedInfo.length > 1);
+    String[] requestedInfo = tcpClient.getInfo(localhost, port);
+    assertNotNull(requestedInfo);
+    assertTrue(requestedInfo.length > 1);
 
-    try {
-      tcpClient.stop(localhost, port);
-    } catch (ConnectException ignore) {
-      // must not be running
-    }
-    server.join(60 * 1000);
-    assertFalse(server.isAlive());
+    stopServer(tcpClient);
 
     assertEquals(4, stats.started.get());
     assertEquals(4, stats.ended.get());
@@ -127,8 +145,7 @@ public class TcpServerJUnitTest {
     CountDownLatch latch = new CountDownLatch(1);
     DelayHandler handler = new DelayHandler(latch);
     start(handler);
-
-    TcpClient tcpClient = createTcpClient();
+    final TcpClient tcpClient = createTcpClient();
 
     final AtomicBoolean done = new AtomicBoolean();
     Thread delayedThread = new Thread() {
@@ -136,7 +153,7 @@ public class TcpServerJUnitTest {
       public void run() {
         Boolean delay = Boolean.valueOf(true);
         try {
-          tcpClient.requestToServer(localhost, port, delay, 60 * 1000);
+          tcpClient.requestToServer(localhost, port, delay, TIMEOUT);
         } catch (IOException e) {
           e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -149,7 +166,7 @@ public class TcpServerJUnitTest {
     try {
       Thread.sleep(500);
       assertFalse(done.get());
-      tcpClient.requestToServer(localhost, port, Boolean.valueOf(false), 60 * 1000);
+      tcpClient.requestToServer(localhost, port, Boolean.valueOf(false), TIMEOUT);
       assertFalse(done.get());
 
       latch.countDown();
@@ -157,14 +174,9 @@ public class TcpServerJUnitTest {
       assertTrue(done.get());
     } finally {
       latch.countDown();
-      delayedThread.join(60 * 1000);
+      delayedThread.join(TIMEOUT);
       assertTrue(!delayedThread.isAlive()); // GemStoneAddition
-      try {
-        tcpClient.stop(localhost, port);
-      } catch (ConnectException ignore) {
-        // must not be running
-      }
-      server.join(60 * 1000);
+      stopServer(tcpClient);
     }
   }
 
@@ -176,15 +188,12 @@ public class TcpServerJUnitTest {
     TcpHandler mockTcpHandler = mock(TcpHandler.class);
     doThrow(SocketException.class).when(mockTcpHandler).processRequest(any(Object.class));
     start(mockTcpHandler);
+    final TcpClient tcpClient = createTcpClient();
 
-    TcpClient tcpClient = createTcpClient();
-
-    // Due to the mocked handler, an EOFException will be thrown on the client. This is expected,
-    // so we just catch it.
-    try {
-      tcpClient.requestToServer(localhost, port, new TestObject(), 60 * 1000);
-    } catch (EOFException eofEx) {
-    }
+    // Due to the mocked handler, an EOFException will be thrown on the client. This is expected.
+    assertThatThrownBy(
+        () -> tcpClient.requestToServer(localhost, port, new TestObject(), TIMEOUT))
+            .isInstanceOf(EOFException.class);
 
     // Change the mock handler behavior to echo the request back
     doAnswer(new Answer() {
@@ -198,20 +207,24 @@ public class TcpServerJUnitTest {
     TestObject test = new TestObject();
     test.id = 5;
     TestObject result =
-        (TestObject) tcpClient.requestToServer(localhost, port, test, 60 * 1000);
+        (TestObject) tcpClient.requestToServer(localhost, port, test, TIMEOUT);
 
     assertEquals(test.id, result.id);
 
+    stopServer(tcpClient);
+
+    assertEquals(4, stats.started.get());
+    assertEquals(4, stats.ended.get());
+  }
+
+  private void stopServer(final TcpClient tcpClient) throws InterruptedException {
     try {
       tcpClient.stop(localhost, port);
     } catch (ConnectException ignore) {
       // must not be running
     }
-    server.join(60 * 1000);
+    server.join(TIMEOUT);
     assertFalse(server.isAlive());
-
-    assertEquals(4, stats.started.get());
-    assertEquals(4, stats.ended.get());
   }
 
   private static class TestObject implements DataSerializable {
@@ -297,18 +310,18 @@ public class TcpServerJUnitTest {
   }
 
   private/* GemStoneAddition */ static class SimpleStats implements PoolStatHelper {
-    AtomicInteger started = new AtomicInteger();
     AtomicInteger ended = new AtomicInteger();
+    AtomicInteger started = new AtomicInteger();
 
 
     @Override
     public void endJob() {
-      started.incrementAndGet();
+      ended.incrementAndGet();
     }
 
     @Override
     public void startJob() {
-      ended.incrementAndGet();
+      started.incrementAndGet();
     }
   }
 }
