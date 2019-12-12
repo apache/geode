@@ -31,17 +31,17 @@ public class DeploymentManager implements ConfigurationManager<Deployment> {
   }
 
   @Override
-  public boolean add(Deployment config, String groupName) {
+  public void add(Deployment config, String groupName) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
-  public boolean delete(Deployment config, String groupName) {
+  public void delete(Deployment config, String groupName) {
     throw new IllegalStateException("Not implemented");
   }
 
   @Override
-  public boolean update(Deployment config, String groupName) {
+  public void update(Deployment config, String groupName) {
     throw new IllegalStateException("Not implemented");
   }
 

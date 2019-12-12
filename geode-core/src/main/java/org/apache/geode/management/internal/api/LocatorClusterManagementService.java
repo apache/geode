@@ -185,14 +185,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // persist configuration in cache config
-    boolean success = configurationManager.add(config, groupName);
-    if (success) {
-      result.setStatus(StatusCode.OK,
-          "Successfully updated configuration for " + groupName + ".");
-    } else {
-      String message = "Failed to update cluster configuration for " + groupName + ".";
-      result.setStatus(StatusCode.FAIL_TO_PERSIST, message);
-    }
+
+    configurationManager.add(config, groupName);
+    result.setStatus(StatusCode.OK,
+        "Successfully updated configuration for " + groupName + ".");
 
     // add the config object which includes the HATEOAS information of the element created
     if (result.isSuccessful()) {
@@ -251,10 +247,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
     List<String> updatedGroups = new ArrayList<>();
     List<String> failedGroups = new ArrayList<>();
     for (String finalGroup : groupsWithThisElement) {
-      boolean success = configurationManager.delete(config, finalGroup);
-      if (success) {
+      try {
+        configurationManager.delete(config, finalGroup);
         updatedGroups.add(finalGroup);
-      } else {
+      } catch (Exception e) {
+        logger.error(e.getMessage(), e);
         failedGroups.add(finalGroup);
       }
     }

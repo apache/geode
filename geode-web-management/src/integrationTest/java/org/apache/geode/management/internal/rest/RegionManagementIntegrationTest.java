@@ -148,6 +148,18 @@ public class RegionManagementIntegrationTest {
         .andExpect(jsonPath("$.statusMessage",
             Matchers.containsString("Index 'index' already exists in group cluster.")));
 
+    // trying to create another index in this region in another group
+    index.setName("index2");
+    index.setRegionPath("/customers");
+    index.setExpression("key");
+    index.setGroup("notExist");
+    context.perform(post("/v1/regions/customers/indexes").content(mapper.writeValueAsString(index)))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.statusCode", Matchers.is("ILLEGAL_ARGUMENT")))
+        .andExpect(jsonPath("$.statusMessage",
+            Matchers
+                .containsString("Region provided does not exist: customers.")));
+
     assertManagementResult(client.delete(region))
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
   }
@@ -171,5 +183,20 @@ public class RegionManagementIntegrationTest {
         .andExpect(jsonPath("$.statusMessage",
             Matchers.containsString("Region products not found.")));
 
+  }
+
+  @Test
+  public void createIndex_failsOnNonExistentRegionGroup() throws Exception {
+    index.setRegionPath("region1");
+    index.setExpression("i am le tired");
+    index.setName("wontwork");
+    index.setGroup("legroup");
+
+    context.perform(post("/v1/regions/region1/indexes").content(mapper.writeValueAsString(index)))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
+        .andExpect(jsonPath("$.statusMessage",
+            Matchers
+                .containsString("Region region1 not found.")));
   }
 }
