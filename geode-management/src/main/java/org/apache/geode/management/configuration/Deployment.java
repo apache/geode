@@ -15,13 +15,22 @@
 
 package org.apache.geode.management.configuration;
 
+import static io.swagger.annotations.ApiModelProperty.AccessMode.READ_ONLY;
+
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 
 import org.apache.geode.management.runtime.DeploymentInfo;
 
 public class Deployment extends GroupableConfiguration<DeploymentInfo> {
   public static final String DEPLOYMENT_ENDPOINT = "/deployments";
   private String jarFileName;
+  @ApiModelProperty(accessMode = READ_ONLY)
+  private String timeDeployed;
+  @ApiModelProperty(accessMode = READ_ONLY)
+  private String deployedBy;
 
   @Override
   @JsonIgnore
@@ -37,8 +46,49 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> {
     this.jarFileName = jarFileName;
   }
 
+  public String getTimeDeployed() {
+    return timeDeployed;
+  }
+
+  /**
+   * For internal use only
+   */
+  public void setTimeDeployed(String timeDeployed) {
+    this.timeDeployed = timeDeployed;
+  }
+
+  public String getDeployedBy() {
+    return deployedBy;
+  }
+
+  /**
+   * For internal use only
+   */
+  public void setDeployedBy(String deployedBy) {
+    this.deployedBy = deployedBy;
+  }
+
   @Override
   public Links getLinks() {
     return new Links(getId(), DEPLOYMENT_ENDPOINT);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Deployment that = (Deployment) o;
+    return Objects.equals(jarFileName, that.jarFileName) &&
+        Objects.equals(timeDeployed, that.timeDeployed) &&
+        Objects.equals(deployedBy, that.deployedBy);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(jarFileName, timeDeployed, deployedBy);
   }
 }
