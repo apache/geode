@@ -316,7 +316,7 @@ public class GMSMembershipJUnitTest {
   @Test
   public void noDispatchWhenSick() {
     final DistributionMessage msg = mock(DistributionMessage.class);
-    when(msg.containsRegionContentChange()).thenReturn(true);
+    when(msg.dropMessageWhenMembershipIsPlayingDead()).thenReturn(true);
 
     final GMSMembership spy = Mockito.spy(manager);
 
