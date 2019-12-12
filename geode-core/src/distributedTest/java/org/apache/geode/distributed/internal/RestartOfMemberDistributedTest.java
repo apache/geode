@@ -27,7 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.ForcedDisconnectException;
-import org.apache.geode.distributed.internal.membership.gms.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 public class RestartOfMemberDistributedTest {

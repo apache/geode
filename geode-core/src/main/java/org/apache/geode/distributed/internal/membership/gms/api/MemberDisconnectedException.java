@@ -12,23 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
 /**
- * MemberShunnedException may be thrown to prevent ack-ing a message received from a member that has
- * been removed from membership. It is currently only thrown by
- * JGroupMembershipManager.processMessage()
+ * MemberDisconnectedException indicates that we've been kicked out of the cluster.
+ * Geode-core generally translates this into a ForcedDisconnectException, which is
+ * part of its public API.
  */
-public class MemberShunnedException extends RuntimeException {
-  private static final long serialVersionUID = -8453126202477831557L;
+public class MemberDisconnectedException extends RuntimeException {
+  private static final long serialVersionUID = -3649273301807236514L;
 
-  /**
-   * constructor
-   *
-   */
-  public MemberShunnedException() {
-    super("");
+  public MemberDisconnectedException() {}
+
+  public MemberDisconnectedException(String reason) {
+    super(reason);
   }
 
+  public MemberDisconnectedException(String reason, Throwable cause) {
+    super(reason, cause);
+  }
 }

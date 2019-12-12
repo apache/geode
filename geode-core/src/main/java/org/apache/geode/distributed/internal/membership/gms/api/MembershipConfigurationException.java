@@ -12,22 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.gms.api;
+
 
 /**
- * MembershipClosedException is thrown if membership services are no longer
- * available.
+ * MembershipConfigurationException may be thrown during startup and indicates a
+ * problem with configuration parameters. MembershipConfigurationException is a
+ * subclass of MemberStartupException, which may also be thrown during startup but
+ * indicates a problem connecting to the cluster after membership configuration has
+ * completed.
  */
-public class MembershipClosedException extends RuntimeException {
-  private static final long serialVersionUID = 6112938405434046127L;
+public class MembershipConfigurationException extends MemberStartupException {
+  private static final long serialVersionUID = 5633602142465129621L;
 
-  public MembershipClosedException() {}
+  public MembershipConfigurationException() {}
 
-  public MembershipClosedException(String reason) {
+  public MembershipConfigurationException(String reason) {
     super(reason);
   }
 
-  public MembershipClosedException(String reason, Throwable cause) {
+  public MembershipConfigurationException(String reason, Throwable cause) {
     super(reason, cause);
   }
 }

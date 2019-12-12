@@ -45,7 +45,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.MemberShunnedException;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.internal.cache.DirectReplyMessage;
