@@ -157,8 +157,6 @@ public class DistributionImpl implements Distribution {
           .create();
     } catch (MembershipConfigurationException e) {
       throw new GemFireConfigException(e.getMessage(), e.getCause());
-    } catch (MemberStartupException e) {
-      throw new SystemConnectException(e.getMessage(), e.getCause());
     } catch (GemFireSecurityException e) {
       throw e;
     } catch (RuntimeException e) {
