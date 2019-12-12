@@ -19,8 +19,10 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,6 +52,7 @@ public class Configuration implements DataSerializable {
   private String propertiesFileName;
   private Properties gemfireProperties;
   Set<String> jarNames;
+  private HashMap<String, String> jarNameToWhen;
 
   // Public no arg constructor required for Deserializable
   public Configuration() {
@@ -64,6 +67,7 @@ public class Configuration implements DataSerializable {
     this.gemfireProperties = new Properties();
     this.gemfireProperties.putAll(that.gemfireProperties);
     this.jarNames = new HashSet<>(that.jarNames);
+    this.jarNameToWhen = new HashMap<>(that.jarNameToWhen);
   }
 
   public Configuration(String configName) {
@@ -72,6 +76,7 @@ public class Configuration implements DataSerializable {
     this.propertiesFileName = configName + ".properties";
     this.gemfireProperties = new Properties();
     this.jarNames = new HashSet<>();
+    this.jarNameToWhen = new HashMap<>();
   }
 
   public String getCacheXmlContent() {
@@ -169,6 +174,7 @@ public class Configuration implements DataSerializable {
     DataSerializer.writeString(propertiesFileName, out);
     DataSerializer.writeProperties(gemfireProperties, out);
     DataSerializer.writeHashSet((HashSet<?>) jarNames, out);
+    DataSerializer.writeHashMap(jarNameToWhen, out);
   }
 
   @Override
@@ -179,6 +185,7 @@ public class Configuration implements DataSerializable {
     this.propertiesFileName = DataSerializer.readString(in);
     this.gemfireProperties = DataSerializer.readProperties(in);
     this.jarNames = DataSerializer.readHashSet(in);
+    this.jarNameToWhen = DataSerializer.readHashMap(in);
   }
 
 
@@ -186,62 +193,32 @@ public class Configuration implements DataSerializable {
   public String toString() {
     return "Configuration [configName=" + configName + ", cacheXmlContent=" + cacheXmlContent
         + ", cacheXmlFileName=" + cacheXmlFileName + ", propertiesFileName=" + propertiesFileName
-        + ", gemfireProperties=" + gemfireProperties + ", jarNames=" + jarNames + "]";
+        + ", gemfireProperties=" + gemfireProperties + ", jarNames=" + jarNames + ", jarNameToWhen="
+        + jarNameToWhen + "]";
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Configuration that = (Configuration) o;
+    return Objects.equals(configName, that.configName) &&
+        Objects.equals(cacheXmlContent, that.cacheXmlContent) &&
+        Objects.equals(cacheXmlFileName, that.cacheXmlFileName) &&
+        Objects.equals(propertiesFileName, that.propertiesFileName) &&
+        Objects.equals(gemfireProperties, that.gemfireProperties) &&
+        Objects.equals(jarNames, that.jarNames) &&
+        Objects.equals(jarNameToWhen, that.jarNameToWhen);
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + ((cacheXmlContent == null) ? 0 : cacheXmlContent.hashCode());
-    result = prime * result + ((cacheXmlFileName == null) ? 0 : cacheXmlFileName.hashCode());
-    result = prime * result + ((configName == null) ? 0 : configName.hashCode());
-    result = prime * result + ((gemfireProperties == null) ? 0 : gemfireProperties.hashCode());
-    result = prime * result + ((jarNames == null) ? 0 : jarNames.hashCode());
-    result = prime * result + ((propertiesFileName == null) ? 0 : propertiesFileName.hashCode());
-    return result;
+    return Objects
+        .hash(configName, cacheXmlContent, cacheXmlFileName, propertiesFileName, gemfireProperties,
+            jarNames, jarNameToWhen);
   }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (!(obj instanceof Configuration))
-      return false;
-    Configuration other = (Configuration) obj;
-    if (cacheXmlContent == null) {
-      if (other.cacheXmlContent != null)
-        return false;
-    } else if (!cacheXmlContent.equals(other.cacheXmlContent))
-      return false;
-    if (cacheXmlFileName == null) {
-      if (other.cacheXmlFileName != null)
-        return false;
-    } else if (!cacheXmlFileName.equals(other.cacheXmlFileName))
-      return false;
-    if (configName == null) {
-      if (other.configName != null)
-        return false;
-    } else if (!configName.equals(other.configName))
-      return false;
-    if (gemfireProperties == null) {
-      if (other.gemfireProperties != null)
-        return false;
-    } else if (!gemfireProperties.equals(other.gemfireProperties))
-      return false;
-    if (jarNames == null) {
-      if (other.jarNames != null)
-        return false;
-    } else if (!jarNames.equals(other.jarNames))
-      return false;
-    if (propertiesFileName == null) {
-      if (other.propertiesFileName != null)
-        return false;
-    } else if (!propertiesFileName.equals(other.propertiesFileName))
-      return false;
-    return true;
-  }
-
 }
