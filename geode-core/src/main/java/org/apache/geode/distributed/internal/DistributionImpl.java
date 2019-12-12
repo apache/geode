@@ -442,7 +442,7 @@ public class DistributionImpl implements Distribution {
 
   @Override
   public void waitForMessageState(InternalDistributedMember member,
-      Map<String, Long> state) throws InterruptedException {
+      Map<String, Long> state) throws InterruptedException, TimeoutException {
     if (Thread.interrupted())
       throw new InterruptedException();
     DirectChannel dc = directChannel;

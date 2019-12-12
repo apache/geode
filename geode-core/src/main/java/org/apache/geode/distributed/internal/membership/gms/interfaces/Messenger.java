@@ -16,6 +16,7 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -83,7 +84,7 @@ public interface Messenger<ID extends MemberIdentifier> extends Service<ID> {
    * @param state the state of that member's outgoing messaging to this member
    */
   void waitForMessageState(ID member, Map<String, Long> state)
-      throws InterruptedException;
+      throws InterruptedException, TimeoutException;
 
   /**
    * Get the public key of member.

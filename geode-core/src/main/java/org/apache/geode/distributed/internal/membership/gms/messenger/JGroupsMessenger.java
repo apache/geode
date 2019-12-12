@@ -42,6 +42,7 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -602,7 +603,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
   @Override
   public void waitForMessageState(ID sender, Map<String, Long> state)
-      throws InterruptedException {
+      throws InterruptedException, TimeoutException {
     Long seqno = state.get("JGroups.mcastState");
     if (seqno == null) {
       return;

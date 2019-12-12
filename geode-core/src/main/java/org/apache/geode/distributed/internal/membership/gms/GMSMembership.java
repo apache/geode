@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -1683,7 +1684,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
   @Override
   public void waitForMessageState(ID otherMember, Map<String, Long> state)
-      throws InterruptedException {
+      throws InterruptedException, TimeoutException {
     services.getMessenger().waitForMessageState(otherMember, state);
   }
 

@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 import java.io.NotSerializableException;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import org.apache.geode.SystemFailure;
@@ -71,7 +72,7 @@ public interface Membership<ID extends MemberIdentifier> {
    * @since GemFire 5.1
    */
   void waitForMessageState(ID member, Map<String, Long> state)
-      throws InterruptedException;
+      throws InterruptedException, TimeoutException;
 
   /**
    * Request the current membership coordinator to remove the given member

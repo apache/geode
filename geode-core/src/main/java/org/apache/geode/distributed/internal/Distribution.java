@@ -47,7 +47,7 @@ public interface Distribution {
       DistributedMember member, boolean includeMulticast);
 
   void waitForMessageState(InternalDistributedMember member,
-      Map<String, Long> state) throws InterruptedException;
+      Map<String, Long> state) throws InterruptedException, java.util.concurrent.TimeoutException;
 
   boolean requestMemberRemoval(InternalDistributedMember member,
       String reason);
