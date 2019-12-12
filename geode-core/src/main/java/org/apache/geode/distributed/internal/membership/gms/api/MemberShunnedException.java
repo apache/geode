@@ -20,7 +20,7 @@ package org.apache.geode.distributed.internal.membership.gms.api;
  * been removed from membership. It is currently only thrown by
  * JGroupMembershipManager.processMessage()
  */
-public class MemberShunnedException extends RuntimeException {
+public class MemberShunnedException extends Exception {
   private static final long serialVersionUID = -8453126202477831557L;
 
   /**

@@ -842,7 +842,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    *
    * @param msg the message to process
    */
-  protected void handleOrDeferMessage(Message<ID> msg) {
+  protected void handleOrDeferMessage(Message<ID> msg) throws MemberShunnedException {
     if (msg.dropMessageWhenMembershipIsPlayingDead() && (beingSick || playingDead)) {
       return;
     }
@@ -884,7 +884,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    *
    * @param msg the message
    */
-  protected void dispatchMessage(Message<ID> msg) {
+  protected void dispatchMessage(Message<ID> msg) throws MemberShunnedException {
     ID m = msg.getSender();
     boolean shunned = false;
 
@@ -983,7 +983,11 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
           (MembershipView<InternalDistributedMember>) viewArg,
           (GMSMembership<InternalDistributedMember>) GMSMembership.this);
 
-      messageListener.messageReceived((Message<ID>) v);
+      try {
+        messageListener.messageReceived((Message<ID>) v);
+      } catch (MemberShunnedException e) {
+        logger.error("View installation was blocked by a MemberShunnedException", e);
+      }
     } finally {
       latestViewWriteLock.unlock();
     }
@@ -1198,7 +1202,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   }
 
   @Override
-  public void processMessage(final Message<ID> msg) {
+  public void processMessage(final Message<ID> msg) throws MemberShunnedException {
     // notify failure detection that we've had contact from a member
     services.getHealthMonitor().contactedBy(msg.getSender());
     handleOrDeferMessage(msg);
@@ -1305,8 +1309,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         Throwable cause = services.getShutdownCause();
         // If ForcedDisconnectException occurred then report it as actual
         // problem.
-        if (cause instanceof MemberDisconnectedException) {
-          problem = (MemberDisconnectedException) cause;
+        if ((cause instanceof MemberDisconnectedException)
+            || (cause instanceof MembershipClosedException)) {
+          return false;
         } else {
           Throwable ne = problem;
           while (ne.getCause() != null) {
@@ -1401,7 +1406,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    *
    * @throws MembershipClosedException if the system is shutting down
    */
-  public void checkCancelled() {
+  public void checkCancelled() throws MembershipClosedException {
     if (services.getCancelCriterion().isCancelInProgress()) {
       throw new MembershipClosedException("Distributed System is shutting down",
           services.getCancelCriterion().generateCancelledException(services.getShutdownCause()));
@@ -2069,7 +2074,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     }
 
     @Override
-    public void processMessage(Message<ID> msg) {
+    public void processMessage(Message<ID> msg) throws MemberShunnedException {
       // UDP messages received from surprise members will have partial IDs.
       // Attempt to replace these with full IDs from the Membership's view.
       if (msg.getSender().isPartial()) {

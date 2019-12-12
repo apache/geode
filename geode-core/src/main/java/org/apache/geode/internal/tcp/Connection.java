@@ -2655,8 +2655,6 @@ public class Connection implements Runnable {
       stats.incMessageChannelTime(msg.resetTimestamp());
       msg.process(dm, processor);
       // dispatchMessage(msg, len, false);
-    } catch (MemberShunnedException e) {
-      // do nothing
     } catch (SocketTimeoutException timeout) {
       throw timeout;
     } catch (IOException e) {
@@ -3172,7 +3170,8 @@ public class Connection implements Runnable {
     }
   }
 
-  private boolean dispatchMessage(DistributionMessage msg, int bytesRead, boolean directAck) {
+  private boolean dispatchMessage(DistributionMessage msg, int bytesRead, boolean directAck)
+      throws MemberShunnedException {
     try {
       msg.setDoDecMessagesBeingReceived(true);
       if (directAck) {

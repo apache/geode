@@ -699,7 +699,7 @@ public class DirectChannel {
     }
   }
 
-  public void receive(DistributionMessage msg, int bytesRead) {
+  public void receive(DistributionMessage msg, int bytesRead) throws MemberShunnedException {
     if (disconnected) {
       return;
     }

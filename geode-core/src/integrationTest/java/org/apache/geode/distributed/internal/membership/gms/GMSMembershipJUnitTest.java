@@ -63,6 +63,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
@@ -314,7 +315,7 @@ public class GMSMembershipJUnitTest {
   }
 
   @Test
-  public void noDispatchWhenSick() {
+  public void noDispatchWhenSick() throws MemberShunnedException {
     final DistributionMessage msg = mock(DistributionMessage.class);
     when(msg.dropMessageWhenMembershipIsPlayingDead()).thenReturn(true);
 

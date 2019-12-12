@@ -289,9 +289,9 @@ public interface Membership<ID extends MemberIdentifier> {
    * takes care of queueing up the message during startup and filtering out messages
    * from shunned members, before calling the message listener.
    */
-  void processMessage(Message<ID> msg);
+  void processMessage(Message<ID> msg) throws MemberShunnedException;
 
-  void checkCancelled();
+  void checkCancelled() throws MembershipClosedException;
 
   void waitIfPlayingDead();
 

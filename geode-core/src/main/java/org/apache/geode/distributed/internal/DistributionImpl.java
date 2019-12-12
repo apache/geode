@@ -56,6 +56,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
@@ -334,8 +335,6 @@ public class DistributionImpl implements Distribution {
       membership.checkCancelled();
     } catch (MembershipClosedException e) {
       throw new DistributedSystemDisconnectedException(e.getMessage());
-    } catch (MemberDisconnectedException e) {
-      throw new ForcedDisconnectException(e.getMessage());
     }
   }
 
@@ -878,7 +877,8 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    public void messageReceived(Message<InternalDistributedMember> msg) {
+    public void messageReceived(Message<InternalDistributedMember> msg)
+        throws MemberShunnedException {
       membership.processMessage(msg);
 
     }
