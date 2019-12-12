@@ -54,7 +54,6 @@ import org.junit.experimental.categories.Category;
 import org.mockito.internal.verification.Times;
 import org.mockito.verification.Timeout;
 
-import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
@@ -66,6 +65,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
@@ -227,7 +227,7 @@ public class GMSJoinLeaveJUnitTest {
     // and will throw an exception when going to pause
     Thread.currentThread().interrupt();
     assertThatThrownBy(() -> gmsJoinLeave.findCoordinator())
-        .isInstanceOf(SystemConnectException.class)
+        .isInstanceOf(MemberStartupException.class)
         .hasMessageContaining("Interrupted while trying to contact locators");
     assertThat(Thread.currentThread().interrupted()).isTrue();
     verify(locatorClient, times(1)).requestToServer(isA(InetSocketAddress.class),

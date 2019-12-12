@@ -68,7 +68,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.SerializationException;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -80,6 +79,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -332,7 +332,7 @@ public class JGroupsMessengerJUnitTest {
         try {
           messenger.send(msg);
           fail("expected a failure");
-        } catch (DistributedSystemDisconnectedException e) {
+        } catch (MembershipClosedException e) {
           // success
         }
         verify(mockChannel).send(isA(org.jgroups.Message.class));
@@ -373,7 +373,7 @@ public class JGroupsMessengerJUnitTest {
         try {
           messenger.send(msg);
           fail("expected a failure");
-        } catch (DistributedSystemDisconnectedException e) {
+        } catch (MembershipClosedException e) {
           // the ultimate cause should be the shutdownCause returned
           // by Services.getShutdownCause()
           Throwable cause = e;
@@ -408,7 +408,7 @@ public class JGroupsMessengerJUnitTest {
         try {
           messenger.send(msg);
           fail("expected a failure");
-        } catch (DistributedSystemDisconnectedException e) {
+        } catch (MembershipClosedException e) {
           // success
         }
         verify(mockChannel, never()).send(isA(org.jgroups.Message.class));

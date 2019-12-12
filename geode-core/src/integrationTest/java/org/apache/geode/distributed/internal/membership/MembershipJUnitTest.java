@@ -44,7 +44,6 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -69,6 +68,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupExc
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
@@ -491,10 +491,8 @@ public class MembershipJUnitTest {
       joinLeave.init(services);
       throw new Error(
           "expected a GemFireConfigException to be thrown because no locators are configured");
-    } catch (GemFireConfigException e) {
+    } catch (MembershipConfigurationException e) {
       // expected
-    } catch (org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException e) {
-      e.printStackTrace();
     }
   }
 }
