@@ -43,15 +43,15 @@ import java.util.concurrent.Future;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.SystemConnectException;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.gms.MembershipClosedException;
+import org.apache.geode.distributed.internal.membership.gms.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
@@ -71,8 +71,6 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
-import org.apache.geode.security.AuthenticationRequiredException;
-import org.apache.geode.security.GemFireSecurityException;
 
 /**
  * GMSJoinLeave handles membership communication with other processes in the distributed system. It
@@ -397,10 +395,10 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             + (System.currentTimeMillis() - startTime) + "ms");
       }
 
-      // to preserve old behavior we need to throw a SystemConnectException if
+      // to preserve old behavior we need to throw a MemberStartupException if
       // unable to contact any of the locators
       if (!this.isJoined && state.hasContactedAJoinedLocator) {
-        throw new SystemConnectException("Unable to join the distributed system in "
+        throw new MemberStartupException("Unable to join the distributed system in "
             + (System.currentTimeMillis() - startTime) + "ms");
       }
 
@@ -418,7 +416,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
 
   /**
    * send a join request and wait for a reply. Process the reply. This may throw a
-   * SystemConnectException or an AuthenticationFailedException
+   * MemberStartupException or an exception from the authenticator, if present.
    *
    * @return true if the attempt succeeded, false if it timed out
    */
@@ -462,11 +460,11 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       if (failReason.contains("Rejecting the attempt of a member using an older version")
           || failReason.contains("15806")
           || failReason.contains("ForcedDisconnectException")) {
-        throw new SystemConnectException(failReason);
+        throw new MemberStartupException(failReason);
       } else if (failReason.contains("Failed to find credentials")) {
-        throw new AuthenticationRequiredException(failReason);
+        throw new SecurityException(failReason);
       }
-      throw new GemFireSecurityException(failReason);
+      throw new SecurityException(failReason);
     }
 
     throw new RuntimeException("Join Request Failed with response " + response);
@@ -1149,7 +1147,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
               (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse<ID>) o : null;
           if (response != null) {
             if (response.getRejectionMessage() != null) {
-              throw new GemFireConfigException(response.getRejectionMessage());
+              throw new MembershipConfigurationException(response.getRejectionMessage());
             }
             setCoordinatorPublicKey(response);
             state.locatorsContacted++;
@@ -1195,7 +1193,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
               services.getCancelCriterion().checkCancelInProgress(e);
-              throw new SystemConnectException("Interrupted while trying to contact locators");
+              throw new MemberStartupException("Interrupted while trying to contact locators");
             }
           }
         }
@@ -1829,9 +1827,10 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     MembershipConfig config = services.getConfig();
     if (config.getMcastPort() != 0 && StringUtils.isBlank(config.getLocators())
         && StringUtils.isBlank(config.getStartLocator())) {
-      throw new GemFireConfigException("Multicast cannot be configured for a non-distributed cache."
-          + "  Please configure the locator services for this cache using " + LOCATORS + " or "
-          + START_LOCATOR + ".");
+      throw new MembershipConfigurationException(
+          "Multicast cannot be configured for a non-distributed cache."
+              + "  Please configure the locator services for this cache using " + LOCATORS + " or "
+              + START_LOCATOR + ".");
     }
 
     services.getMessenger().addHandler(JoinRequestMessage.class, this::processMessage);
@@ -2187,7 +2186,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
           }
         } catch (InterruptedException e) {
           setShutdownFlag();
-        } catch (DistributedSystemDisconnectedException e) {
+        } catch (MembershipClosedException e) {
           setShutdownFlag();
         }
       } while (retry);
@@ -2322,7 +2321,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
               } catch (InterruptedException e2) {
                 setShutdownFlag();
               }
-            } catch (DistributedSystemDisconnectedException e) {
+            } catch (MembershipClosedException e) {
               setShutdownFlag();
             } catch (InterruptedException e) {
               logger.info("View Creator thread interrupted");

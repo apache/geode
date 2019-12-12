@@ -36,9 +36,7 @@ import java.util.Timer;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.CancelCriterion;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -376,32 +374,42 @@ public class Services<ID extends MemberIdentifier> {
     return this.serializer;
   }
 
-  public class Stopper extends CancelCriterion {
+  public class Stopper {
     volatile String reasonForStopping = null;
 
     public void cancel(String reason) {
       this.reasonForStopping = reason;
     }
 
-    @Override
     public String cancelInProgress() {
       if (Services.this.shutdownCause != null)
         return Services.this.shutdownCause.toString();
       return this.reasonForStopping;
     }
 
-    @Override
     public RuntimeException generateCancelledException(Throwable e) {
       String reason = cancelInProgress();
       if (reason == null) {
         return null;
       } else {
         if (e == null) {
-          return new DistributedSystemDisconnectedException(reason);
+          return new MembershipClosedException(reason);
         } else {
-          return new DistributedSystemDisconnectedException(reason, e);
+          return new MembershipClosedException(reason, e);
         }
       }
+    }
+
+    public boolean isCancelInProgress() {
+      return cancelInProgress() != null;
+    }
+
+    public void checkCancelInProgress(Throwable e) {
+      String reason = cancelInProgress();
+      if (reason == null) {
+        return;
+      }
+      throw generateCancelledException(e);
     }
 
   }

@@ -21,7 +21,7 @@ public interface JoinLeave<ID extends MemberIdentifier> extends Service<ID> {
 
   /**
    * joins the distributed system and returns true if successful, false if not. Throws
-   * SystemConnectException and GemFireConfigException
+   * MemberStartupException and MemberConfigurationException
    */
   boolean join();
 

@@ -40,11 +40,9 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.StartupMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -60,7 +58,6 @@ import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.tcp.MemberShunnedException;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 
@@ -455,19 +452,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
         logger.info("Membership: Processing addition <{}>", m);
 
-        try {
-          listener.newMemberConnected(m);
-        } catch (VirtualMachineError err) {
-          // If this ever returns, rethrow the error. We're poisoned
-          // now, so don't let this thread continue.
-          throw err;
-        } catch (DistributedSystemDisconnectedException e) {
-          // don't log shutdown exceptions
-        } catch (Throwable t) {
-          logger.info(String.format("Membership: Fault while processing view addition of %s",
-              m),
-              t);
-        }
+        listener.newMemberConnected(m);
       } // additions
 
       // look for departures
@@ -530,10 +515,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       // the view is complete - let's install it
       newlatestView.makeUnmodifiable();
       latestView = newlatestView;
-      try {
-        listener.viewInstalled(latestView);
-      } catch (DistributedSystemDisconnectedException se) {
-      }
+      listener.viewInstalled(latestView);
     } finally {
       latestViewWriteLock.unlock();
     }
@@ -582,7 +564,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
         boolean ok = services.getJoinLeave().join();
 
         if (!ok) {
-          throw new GemFireConfigException("Unable to join the distributed system.  "
+          throw new MembershipConfigurationException("Unable to join the distributed system.  "
               + "Operation either timed out, was stopped or Locator does not exist.");
         }
 
@@ -695,11 +677,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       return; // Explicit deletion, no upcall.
     }
 
-    try {
-      listener.memberDeparted(dm, crashed, reason);
-    } catch (DistributedSystemDisconnectedException se) {
-      // let's not get huffy about it
-    }
+    listener.memberDeparted(dm, crashed, reason);
   }
 
   /**
@@ -723,13 +701,8 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   public void startupMessageFailed(ID mbr, String failureMessage) {
     // fix for bug #40666
     addShunnedMember(mbr);
-    // fix for bug #41329, hang waiting for replies
-    try {
-      listener.memberDeparted(mbr, true,
-          "failed to pass startup checks");
-    } catch (DistributedSystemDisconnectedException se) {
-      // let's not get huffy about it
-    }
+    listener.memberDeparted(mbr, true,
+        "failed to pass startup checks");
   }
 
 
@@ -773,7 +746,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
           try {
             requestMemberRemoval(member,
                 "this member is no longer in the view but is initiating connections");
-          } catch (CancelException e) {
+          } catch (MembershipClosedException e) {
             // okay to ignore
           }
         }).start();
@@ -1029,11 +1002,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       ID suspect = gmsMemberToDMember(suspectInfo.suspectedMember);
       ID who = gmsMemberToDMember(suspectInfo.whoSuspected);
       this.suspectedMembers.put(suspect, Long.valueOf(System.currentTimeMillis()));
-      try {
-        listener.memberSuspect(suspect, who, suspectInfo.reason);
-      } catch (DistributedSystemDisconnectedException se) {
-        // let's not get huffy about it
-      }
+      listener.memberSuspect(suspect, who, suspectInfo.reason);
     } finally {
       latestViewWriteLock.unlock();
     }
@@ -1348,7 +1317,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       listener.saveConfig();
 
       listener.membershipFailure("Channel closed", problem);
-      throw problem;
+      throw new MembershipClosedException("Channel closed", problem);
     }
     return true;
   }
@@ -1425,11 +1394,11 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   /**
    * Check to see if the membership system is being shutdown
    *
-   * @throws DistributedSystemDisconnectedException if the system is shutting down
+   * @throws MembershipClosedException if the system is shutting down
    */
   public void checkCancelled() {
     if (services.getCancelCriterion().isCancelInProgress()) {
-      throw new DistributedSystemDisconnectedException("Distributed System is shutting down",
+      throw new MembershipClosedException("Distributed System is shutting down",
           services.getCancelCriterion().generateCancelledException(services.getShutdownCause()));
     }
   }

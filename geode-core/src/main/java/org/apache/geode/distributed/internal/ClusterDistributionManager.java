@@ -2326,39 +2326,63 @@ public class ClusterDistributionManager implements DistributionManager {
       // without holding the view lock. That can cause a race condition and
       // subsequent deadlock (#45566). Elder selection is now done when a view
       // is installed.
-      dm.addNewMember(member);
+      try {
+        dm.addNewMember(member);
+      } catch (VirtualMachineError err) {
+        // If this ever returns, rethrow the error. We're poisoned
+        // now, so don't let this thread continue.
+        throw err;
+      } catch (DistributedSystemDisconnectedException e) {
+        // don't log shutdown exceptions
+      } catch (Throwable t) {
+        logger.info(String.format("Membership: Fault while processing view addition of %s",
+            member),
+            t);
+      }
     }
 
     @Override
     public void memberDeparted(InternalDistributedMember theId, boolean crashed, String reason) {
-      boolean wasAdmin = getAdminMemberSet().contains(theId);
-      if (wasAdmin) {
-        // Pretend we received an AdminConsoleDisconnectMessage from the console that
-        // is no longer in the JavaGroup view.
-        // It must have died without sending a ShutdownMessage.
-        // This fixes bug 28454.
-        AdminConsoleDisconnectMessage message = new AdminConsoleDisconnectMessage();
-        message.setSender(theId);
-        message.setCrashed(crashed);
-        message.setAlertListenerExpected(true);
-        message.setIgnoreAlertListenerRemovalFailure(true); // we don't know if it was a listener so
-                                                            // don't issue a warning
-        message.setRecipient(localAddress);
-        message.setReason(reason); // added for #37950
-        handleIncomingDMsg(message);
+      try {
+        boolean wasAdmin = getAdminMemberSet().contains(theId);
+        if (wasAdmin) {
+          // Pretend we received an AdminConsoleDisconnectMessage from the console that
+          // is no longer in the JavaGroup view.
+          // It must have died without sending a ShutdownMessage.
+          // This fixes bug 28454.
+          AdminConsoleDisconnectMessage message = new AdminConsoleDisconnectMessage();
+          message.setSender(theId);
+          message.setCrashed(crashed);
+          message.setAlertListenerExpected(true);
+          message.setIgnoreAlertListenerRemovalFailure(true); // we don't know if it was a listener
+                                                              // so
+          // don't issue a warning
+          message.setRecipient(localAddress);
+          message.setReason(reason); // added for #37950
+          handleIncomingDMsg(message);
+        }
+        dm.handleManagerDeparture(theId, crashed, reason);
+      } catch (DistributedSystemDisconnectedException se) {
+        // let's not get huffy about it
       }
-      dm.handleManagerDeparture(theId, crashed, reason);
     }
 
     @Override
     public void memberSuspect(InternalDistributedMember suspect,
         InternalDistributedMember whoSuspected, String reason) {
-      dm.handleManagerSuspect(suspect, whoSuspected, reason);
+      try {
+        dm.handleManagerSuspect(suspect, whoSuspected, reason);
+      } catch (DistributedSystemDisconnectedException se) {
+        // let's not get huffy about it
+      }
     }
 
     @Override
     public void viewInstalled(MembershipView view) {
-      dm.handleViewInstalled(view);
+      try {
+        dm.handleViewInstalled(view);
+      } catch (DistributedSystemDisconnectedException se) {
+      }
     }
 
     @Override

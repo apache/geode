@@ -27,7 +27,6 @@ import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 
 @RunWith(JUnitParamsRunner.class)
@@ -57,7 +56,7 @@ public class GMSUtilTest {
     assertThatThrownBy(
         () -> parseLocators(RESOLVEABLE_NON_LOOPBACK_HOST + "[" + PORT + "]",
             InetAddress.getLoopbackAddress()))
-                .isInstanceOf(GemFireConfigException.class)
+                .isInstanceOf(MembershipConfigurationException.class)
                 .hasMessageContaining("does not have a local address");
   }
 
@@ -66,7 +65,7 @@ public class GMSUtilTest {
     assertThatThrownBy(
         () -> parseLocators(UNRESOLVEABLE_HOST + "[" + PORT + "]",
             InetAddress.getLoopbackAddress()))
-                .isInstanceOf(GemFireConfigException.class)
+                .isInstanceOf(MembershipConfigurationException.class)
                 .hasMessageContaining("unknown address or FQDN: " + UNRESOLVEABLE_HOST);
   }
 
@@ -86,7 +85,7 @@ public class GMSUtilTest {
     final String locatorsString = RESOLVEABLE_LOOPBACK_HOST + portSpecification;
     assertThatThrownBy(
         () -> parseLocators(locatorsString, InetAddress.getLoopbackAddress()))
-            .isInstanceOf(GemFireConfigException.class)
+            .isInstanceOf(MembershipConfigurationException.class)
             .hasMessageContaining("malformed port specification: " + locatorsString);
   }
 

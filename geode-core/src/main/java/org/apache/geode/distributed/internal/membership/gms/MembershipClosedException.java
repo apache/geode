@@ -12,25 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.internal.tcp;
-
-import org.apache.geode.GemFireException;
+package org.apache.geode.distributed.internal.membership.gms;
 
 /**
- * MemberShunnedException may be thrown to prevent ack-ing a message received from a member that has
- * been removed from membership. It is currently only thrown by
- * JGroupMembershipManager.processMessage()
+ * MembershipClosedException is thrown if membership services are no longer
+ * available.
  */
-public class MemberShunnedException extends GemFireException {
-  private static final long serialVersionUID = -8453126202477831557L;
+public class MembershipClosedException extends RuntimeException {
+  private static final long serialVersionUID = 6112938405434046127L;
 
-  /**
-   * constructor
-   *
-   */
-  public MemberShunnedException() {
-    super("");
+  public MembershipClosedException() {}
+
+  public MembershipClosedException(String reason) {
+    super(reason);
   }
 
+  public MembershipClosedException(String reason, Throwable cause) {
+    super(reason, cause);
+  }
 }

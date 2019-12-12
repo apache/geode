@@ -50,9 +50,9 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
-import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.gms.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -200,7 +200,7 @@ public class LocatorIntegrationTest {
     Throwable thrown = catchThrowable(
         () -> locator = Locator.startLocatorAndDS(port, new File(""), configProperties));
 
-    assertThat(thrown).isInstanceOf(SystemConnectException.class);
+    assertThat(thrown).isInstanceOf(MemberStartupException.class);
 
     for (int i = 0; i < 10; i++) {
       if (threadCount < Thread.activeCount()) {

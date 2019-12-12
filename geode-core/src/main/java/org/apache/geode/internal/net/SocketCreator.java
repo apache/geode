@@ -79,7 +79,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -754,44 +753,48 @@ public class SocketCreator {
    */
   public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
       boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange,
-      boolean sslConnection) throws IOException {
+      boolean sslConnection) {
 
-    // Get a random port from range.
-    int startingPort = tcpPortRange[0]
-        + ThreadLocalRandom.current().nextInt(tcpPortRange[1] - tcpPortRange[0] + 1);
-    int localPort = startingPort;
-    int portLimit = tcpPortRange[1];
+    try {
+      // Get a random port from range.
+      int startingPort = tcpPortRange[0]
+          + ThreadLocalRandom.current().nextInt(tcpPortRange[1] - tcpPortRange[0] + 1);
+      int localPort = startingPort;
+      int portLimit = tcpPortRange[1];
 
-    while (true) {
-      if (localPort > portLimit) {
-        if (startingPort != 0) {
-          localPort = tcpPortRange[0];
-          portLimit = startingPort - 1;
-          startingPort = 0;
-        } else {
-          throw new SystemConnectException(
-              "Unable to find a free port in the membership-port-range");
+      while (true) {
+        if (localPort > portLimit) {
+          if (startingPort != 0) {
+            localPort = tcpPortRange[0];
+            portLimit = startingPort - 1;
+            startingPort = 0;
+          } else {
+            throw new GemFireConfigException(
+                "Unable to find a free port in the membership-port-range");
+          }
+        }
+        ServerSocket socket = null;
+        try {
+          if (useNIO) {
+            ServerSocketChannel channel = ServerSocketChannel.open();
+            socket = channel.socket();
+
+            InetSocketAddress address = new InetSocketAddress(isBindAddress ? ba : null, localPort);
+            socket.bind(address, backlog);
+          } else {
+            socket = this.createServerSocket(localPort, backlog, isBindAddress ? ba : null,
+                tcpBufferSize, sslConnection);
+          }
+          return socket;
+        } catch (java.net.SocketException ex) {
+          if (socket != null && !socket.isClosed()) {
+            socket.close();
+          }
+          localPort++;
         }
       }
-      ServerSocket socket = null;
-      try {
-        if (useNIO) {
-          ServerSocketChannel channel = ServerSocketChannel.open();
-          socket = channel.socket();
-
-          InetSocketAddress address = new InetSocketAddress(isBindAddress ? ba : null, localPort);
-          socket.bind(address, backlog);
-        } else {
-          socket = this.createServerSocket(localPort, backlog, isBindAddress ? ba : null,
-              tcpBufferSize, sslConnection);
-        }
-        return socket;
-      } catch (java.net.SocketException ex) {
-        if (socket != null && !socket.isClosed()) {
-          socket.close();
-        }
-        localPort++;
-      }
+    } catch (IOException e) {
+      throw new GemFireConfigException("unable to create a socket in the membership-port range", e);
     }
   }
 

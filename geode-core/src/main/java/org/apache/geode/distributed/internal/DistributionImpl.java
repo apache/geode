@@ -53,6 +53,9 @@ import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenti
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.gms.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.gms.MembershipClosedException;
+import org.apache.geode.distributed.internal.membership.gms.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -132,24 +135,35 @@ public class DistributionImpl implements Distribution {
     }
 
     memberTimeout = system.getConfig().getMemberTimeout();
-    membership = MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
-        .setAuthenticator(
-            new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
-                system.getSecurityLogWriter(), system.getInternalLogWriter()))
-        .setStatistics(clusterDistributionManager.stats)
-        .setMessageListener(messageListener)
-        .setMembershipListener(listener)
-        .setConfig(new ServiceConfig(transport, system.getConfig()))
-        .setSerializer(InternalDataSerializer.getDSFIDSerializer())
-        .setLifecycleListener(new LifecycleListenerImpl(this))
-        .setMemberIDFactory(new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
-        .setLocatorClient(new TcpClient(
-            asTcpSocketCreator(
-                SocketCreatorFactory
-                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
-            InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
-        .create();
+    try {
+      membership = MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
+          .setAuthenticator(
+              new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
+                  system.getSecurityLogWriter(), system.getInternalLogWriter()))
+          .setStatistics(clusterDistributionManager.stats)
+          .setMessageListener(messageListener)
+          .setMembershipListener(listener)
+          .setConfig(new ServiceConfig(transport, system.getConfig()))
+          .setSerializer(InternalDataSerializer.getDSFIDSerializer())
+          .setLifecycleListener(new LifecycleListenerImpl(this))
+          .setMemberIDFactory(new ClusterDistributionManager.ClusterDistributionManagerIDFactory())
+          .setLocatorClient(new TcpClient(
+              asTcpSocketCreator(
+                  SocketCreatorFactory
+                      .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+              InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+              InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
+          .create();
+    } catch (MembershipConfigurationException e) {
+      throw new GemFireConfigException(e.getMessage(), e.getCause());
+    } catch (MemberStartupException e) {
+      throw new SystemConnectException(e.getMessage(), e.getCause());
+    } catch (GemFireSecurityException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      Services.getLogger().error("Unexpected problem starting up membership services", e);
+      throw new SystemConnectException("Problem starting up membership services", e);
+    }
   }
 
   /**
@@ -186,6 +200,9 @@ public class DistributionImpl implements Distribution {
     } catch (ConnectionException e) {
       throw new DistributionException(
           "Unable to create membership manager",
+          e);
+    } catch (SecurityException e) {
+      throw new GemFireSecurityException("Security problem encountered while joining the cluster",
           e);
     } catch (GemFireConfigException | SystemConnectException | GemFireSecurityException e) {
       throw e;
@@ -243,7 +260,7 @@ public class DistributionImpl implements Distribution {
     Set<InternalDistributedMember> result;
     boolean allDestinations = msg.forAll();
 
-    membership.checkCancelled();
+    checkCancelled();
 
     membership.waitIfPlayingDead();
 
@@ -305,6 +322,21 @@ public class DistributionImpl implements Distribution {
   }
 
   /**
+   * This method catches membership exceptions that need to be translated into
+   * exceptions implementing CancelException in order to satisfy geode-core
+   * error handling.
+   */
+  private void checkCancelled() {
+    try {
+      membership.checkCancelled();
+    } catch (MembershipClosedException e) {
+      throw new DistributedSystemDisconnectedException(e.getMessage());
+    } catch (MemberDisconnectedException e) {
+      throw new ForcedDisconnectException(e.getMessage());
+    }
+  }
+
+  /**
    * Perform the grossness associated with sending a message over a DirectChannel
    *
    * @param destinations the list of destinations
@@ -341,9 +373,10 @@ public class DistributionImpl implements Distribution {
       if (sentBytes == 0) {
         membership.checkCancelled();
       }
+    } catch (MembershipClosedException e) {
+      throw new DistributedSystemDisconnectedException(e.getMessage(), e.getCause());
     } catch (DistributedSystemDisconnectedException ex) {
-      membership.checkCancelled();
-      throw ex; // see bug 41416
+      throw ex;
     } catch (ConnectExceptions ex) {
       // Check if the connect exception is due to system shutting down.
       if (membership.shutdownInProgress()) {

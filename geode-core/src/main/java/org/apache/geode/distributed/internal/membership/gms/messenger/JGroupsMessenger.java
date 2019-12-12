@@ -66,17 +66,18 @@ import org.jgroups.stack.IpAddress;
 import org.jgroups.util.Digest;
 import org.jgroups.util.UUID;
 
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.SystemConnectException;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.InternalMembershipException;
 import org.apache.geode.distributed.internal.membership.gms.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.gms.MemberShunnedException;
+import org.apache.geode.distributed.internal.membership.gms.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.gms.MembershipClosedException;
+import org.apache.geode.distributed.internal.membership.gms.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.MembershipIOException;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
@@ -99,7 +100,6 @@ import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
-import org.apache.geode.internal.tcp.MemberShunnedException;
 
 
 @SuppressWarnings("StatementWithEmptyBody")
@@ -212,7 +212,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     }
     is = ClassPathLoader.getLatest().getResourceAsStream(getClass(), r);
     if (is == null) {
-      throw new GemFireConfigException(
+      throw new MembershipConfigurationException(
           String.format("Cannot find %s", r));
     }
 
@@ -228,7 +228,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       br.close();
       properties = sb.toString();
     } catch (Exception ex) {
-      throw new GemFireConfigException(
+      throw new MembershipConfigurationException(
           "An Exception was thrown while reading JGroups config.",
           ex);
     }
@@ -272,7 +272,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       try {
         str = SocketCreator.getLocalHost().getHostAddress();
       } catch (UnknownHostException e) {
-        throw new GemFireConfigException(e.getMessage(), e);
+        throw new MembershipConfigurationException(e.getMessage(), e);
       }
     }
     properties = replaceStrings(properties, "BIND_ADDR_SETTING", "bind_addr=\"" + str + "\"");
@@ -303,7 +303,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         this.encrypt = new GMSEncrypt<>(services, config.getSecurityUDPDHAlgo());
         logger.info("Initializing GMSEncrypt ");
       } catch (Exception e) {
-        throw new GemFireConfigException("problem initializing encryption protocol", e);
+        throw new MembershipConfigurationException("problem initializing encryption protocol", e);
       }
     }
   }
@@ -353,7 +353,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         myChannel = new JChannel(is);
       }
     } catch (Exception e) {
-      throw new GemFireConfigException("unable to create jgroups channel", e);
+      throw new MembershipConfigurationException("unable to create jgroups channel", e);
     }
 
     // give the stats to the jchannel statistics recorder
@@ -376,12 +376,12 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       }
     } catch (Exception e) {
       myChannel.close();
-      throw new SystemConnectException("unable to create jgroups channel", e);
+      throw new MemberStartupException("unable to create jgroups channel", e);
     }
 
     if (JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK) {
       JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = false;
-      throw new SystemConnectException("failing for test");
+      throw new MemberStartupException("failing for test");
     }
 
     establishLocalAddress();
@@ -671,7 +671,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
     if (!myChannel.isConnected()) {
       logger.info("JGroupsMessenger channel is closed - messaging is not possible");
-      throw new DistributedSystemDisconnectedException("Distributed System is shutting down");
+      throw new MembershipClosedException("Distributed System is shutting down");
     }
 
     filterOutgoingMessage(msg);
@@ -733,7 +733,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         }
         final String channelClosed =
             "Channel closed";
-        throw new DistributedSystemDisconnectedException(channelClosed, problem);
+        throw new MembershipClosedException(channelClosed, problem);
       }
     } // useMcast
     else { // ! useMcast
@@ -810,7 +810,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
           }
           final String channelClosed =
               "Channel closed";
-          throw new DistributedSystemDisconnectedException(channelClosed, problem);
+          throw new MembershipClosedException(channelClosed, problem);
         }
       } // send individually
     } // !useMcast
@@ -1019,7 +1019,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       boolean isEncrypted = dis.readBoolean();
 
       if (isEncrypted && encrypt == null) {
-        throw new GemFireConfigException("Got remote message as encrypted");
+        throw new MembershipConfigurationException("Got remote message as encrypted");
       }
 
       if (isEncrypted) {
