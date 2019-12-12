@@ -380,12 +380,6 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
-        <groupId>org.fusesource.jansi</groupId>
-        <artifactId>jansi</artifactId>
-        <version>1.17.1</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
         <groupId>org.httpunit</groupId>
         <artifactId>httpunit</artifactId>
         <version>1.7.3</version>
@@ -831,6 +825,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-gfsh</artifactId>
+        <version>1.12.0-SNAPSHOT</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-http-service</artifactId>
         <version>1.12.0-SNAPSHOT</version>
         <scope>compile</scope>
@@ -910,6 +910,12 @@
       <dependency>
         <groupId>org.apache.geode</groupId>
         <artifactId>geode-serialization</artifactId>
+        <version>1.12.0-SNAPSHOT</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-tcp-server</artifactId>
         <version>1.12.0-SNAPSHOT</version>
         <scope>compile</scope>
       </dependency>

@@ -49,9 +49,9 @@ import org.apache.geode.cache.query.security.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.security.RegExMethodAuthorizer;
 import org.apache.geode.cache.query.security.RestrictedMethodAuthorizer;
 import org.apache.geode.cache.query.security.UnrestrictedMethodAuthorizer;
-import org.apache.geode.cache.util.TestMethodAuthorizer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.cli.util.TestMethodAuthorizer;
 
 @RunWith(JUnitParamsRunner.class)
 public class QueryConfigurationServiceImplTest {

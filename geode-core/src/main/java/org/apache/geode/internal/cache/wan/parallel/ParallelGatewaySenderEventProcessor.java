@@ -89,6 +89,12 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
   }
 
   @Override
+  public int eventQueueSize() {
+    ParallelGatewaySenderQueue queue = (ParallelGatewaySenderQueue) getQueue();
+    return queue == null ? 0 : queue.localSize();
+  }
+
+  @Override
   public void enqueueEvent(EnumListenerEvent operation, EntryEvent event, Object substituteValue)
       throws IOException, CacheException {
     GatewaySenderEventImpl gatewayQueueEvent = null;

@@ -107,6 +107,11 @@ public abstract class PartitionMessageWithDirectReply extends PartitionMessage
   }
 
   @Override
+  public boolean dropMessageWhenMembershipIsPlayingDead() {
+    return true;
+  }
+
+  @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
     if (this.posDup) {

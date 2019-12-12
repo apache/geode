@@ -48,9 +48,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.DestroyJndiBindingFunction;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class DestroyDataSourceCommandTest {

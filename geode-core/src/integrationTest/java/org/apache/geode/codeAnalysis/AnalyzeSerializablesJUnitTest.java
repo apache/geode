@@ -25,5 +25,4 @@ public class AnalyzeSerializablesJUnitTest extends AnalyzeSerializablesJUnitTest
   protected String getModuleName() {
     return "geode-core";
   }
-
 }

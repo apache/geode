@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.GatewayReceiverMXBean;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;

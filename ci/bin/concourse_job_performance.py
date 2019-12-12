@@ -32,6 +32,7 @@ import requests
 import sseclient
 from colors import color
 from tqdm import tqdm
+import yaml
 
 TEST_FAILURE_REGEX = re.compile('(\S+)\s*>\s*(\S+).*FAILED')
 
@@ -50,10 +51,13 @@ class SingleFailure:
         return f"Failure({self.class_name}, {self.method}, ({self.build_json['name']} ...))"
 
 
-def main(url, team, pipeline, job, max_fetch_count, build_count, authorization_cookie, threaded):
-    builds = get_builds_summary_sheet(url, team, pipeline, job, max_fetch_count, authorization_cookie)
+def main(url, team, pipeline, job, number_of_builds, authorization_cookie, threaded):
 
-    build_to_examine = get_builds_to_examine(builds, build_count)
+    cookie = get_cookie(url)
+    authorization_cookie = {u'skymarshal_auth0': cookie}
+    builds = get_builds_summary_sheet(url, team, pipeline, job, number_of_builds+10, authorization_cookie)
+
+    build_to_examine = get_builds_to_examine(builds, number_of_builds)
     expected_failed_builds = [int(b['name']) for b in build_to_examine if b['status'] == 'failed']
     expected_failed_builds_count = len(expected_failed_builds)
     logging.info(f"Expecting {expected_failed_builds_count} runs to have failure strings: {expected_failed_builds}")
@@ -63,6 +67,16 @@ def main(url, team, pipeline, job, max_fetch_count, build_count, authorization_c
     failure_url_base = f"{url}/teams/{team}/pipelines/{pipeline}/jobs/{job}/builds/"
 
     print_results(len(build_to_examine), expected_failed_builds, long_list_of_failures, url, failure_url_base)
+
+
+def get_cookie(url):
+    data = yaml.load(open("/Users/mhanson/.flyrc"))
+    for target in data["targets"]:
+        api = data["targets"][target]["api"]
+        if api == url:
+            cookie = "\"Bearer " + data["targets"][target]["token"]["value"] + "\""
+            return cookie
+    return ""
 
 
 def aggregate_failure_information(authorization_cookie, build_to_examine, threaded, url) -> List[SingleFailure]:
@@ -75,14 +89,16 @@ def aggregate_failure_information(authorization_cookie, build_to_examine, thread
     if threaded:
         # Number of CPUs is not necessarily number of CPUs available.
         # Since it's a minor thing, we'll just ask for half.
-        n_cpus = multiprocessing.cpu_count() // 2 + 1
+        n_cpus = multiprocessing.cpu_count() - 2
         logging.info(f"Using {n_cpus} threads to make queries.")
 
         pool = Pool(n_cpus)
         list_of_list_of_failures = pool.map(build_examiner, build_to_examine)
     else:
         list_of_list_of_failures = [build_examiner(build) for build in build_to_examine]
-    return list(itertools.chain(*list_of_list_of_failures))
+
+    data = list(itertools.chain(*list_of_list_of_failures))
+    return data
 
 
 def examine_build_and_update_progress(authorization_cookie, build, url, progress_bar) -> List[SingleFailure]:
@@ -308,6 +324,9 @@ def get_builds_to_examine(builds, build_count):
     logging.debug(f"{len(errored)} errored builds in examination range: {list_and_sort_by_name(errored)}")
     logging.debug(f"{len(pending)} pending builds in examination range: {list_and_sort_by_name(pending)}")
     logging.debug(f"{len(started)} started builds in examination range: {list_and_sort_by_name(started)}")
+    returnable = (len(failed) + len(errored) + len(succeeded) + len(pending) + len(aborted))
+    if returnable == 0:
+        raise IOError(f"There are 0 completed jobs ")
 
     failures_in_analysis_range = list_and_sort_by_name([build for build in builds_to_analyze
                                                         if build['status'] == 'failed'])
@@ -319,16 +338,17 @@ def list_and_sort_by_name(builds):
     return sorted([int(b['name']) for b in builds], reverse=True)
 
 
-def get_builds_summary_sheet(url, team, pipeline, job, max_fetch_count, authorization_cookie):
+def get_builds_summary_sheet(url, team, pipeline, job,  number_of_builds, authorization_cookie):
     session = requests.Session()
-    if max_fetch_count == 0:
+    if number_of_builds == 0:
         # Snoop the top result's name to discover the number of jobs that have been queued.
-        snoop = get_builds_summary_sheet(url, team, pipeline, job, 1, authorization_cookie)
-        max_fetch_count = int(snoop[0]['name'])
-        logging.info(f"Snooped: fetching a full history of {max_fetch_count} builds.")
+        snoop = get_builds_summary_sheet(url, team, pipeline, job,  1, authorization_cookie)
+        number_of_builds = int(snoop[0]['name'])
+        logging.info(f"Snooped: fetching a full history of {number_of_builds} builds.")
 
     builds_url = '{}/api/v1/teams/{}/pipelines/{}/jobs/{}/builds'.format(url, team, pipeline, job)
-    build_params = {'limit': max_fetch_count}
+    build_params = {'limit': number_of_builds}
+    logging.info(f"fetching the last {number_of_builds} builds.")
     build_response = session.get(builds_url, cookies=authorization_cookie, params=build_params)
     if build_response.status_code != 200:
         raise IOError(f"Initial build summary query to {builds_url} returned status code {build_response.status_code}.")
@@ -360,22 +380,17 @@ if __name__ == '__main__':
     parser.add_argument('job',
                         help="Name of job.",
                         type=str)
-    parser.add_argument('n',
-                        help="Number of completed jobs to examine.  Enter 0 to examine all jobs fetched.",
+    parser.add_argument('--number-of-builds',
+                        help="The number of builds to fetch.  [Default=0] aka All.",
                         type=int,
                         nargs='?',
-                        default=50)
+                        default=0)
     # Optional args
     parser.add_argument('--team',
                         help='Team to which the provided pipeline belongs.  [Default="main"]',
                         type=str,
                         nargs='?',
                         default="main")
-    parser.add_argument('--initial-fetch',
-                        help="Limit size of initial build-status page.  [Default=100]",
-                        type=int,
-                        nargs='?',
-                        default=100)
     parser.add_argument('--cookie-token',
                         help='If authentication is required (e.g., team="staging"), '
                              "provide your skymarshal_auth0 cookie's token here.  "
@@ -401,13 +416,14 @@ if __name__ == '__main__':
         print(color("Url {} seems to be invalid. Please check your arguments.".format(args.url), fg='red'))
         exit(1)
 
-    # Examination limit should be less than fetch limit, or either/both should be set to 0 for full analysis
-    if args.initial_fetch and args.n and args.initial_fetch < args.n:
-        raise AssertionError("Fetching fewer jobs than you will analyze is pathological.")
+    # # Examination limit should be less than fetch limit, or either/both should be set to 0 for full analysis
+    # if args.starting_build and args.n and args.starting_build < args.number_of_builds:
+    #     raise AssertionError("Fetching fewer jobs than you will analyze is pathological.")
 
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
     elif args.verbose:
         logging.getLogger().setLevel(logging.INFO)
 
-    main(args.url, args.team, args.pipeline, args.job, args.initial_fetch, args.n, args.cookie_token, args.threaded)
+    main(args.url, args.team, args.pipeline, args.job, args.number_of_builds, args.cookie_token,
+         args.threaded)

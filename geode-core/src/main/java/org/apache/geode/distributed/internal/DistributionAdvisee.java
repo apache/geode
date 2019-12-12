@@ -25,9 +25,9 @@ import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 public interface DistributionAdvisee {
 
   /**
-   * Returns the underlying <code>DistributionManager</code> used for messaging.
+   * Returns the underlying {@code DistributionManager} used for messaging.
    *
-   * @return the underlying <code>DistributionManager</code>
+   * @return the underlying {@code DistributionManager}
    */
   DistributionManager getDistributionManager();
 
@@ -37,31 +37,31 @@ public interface DistributionAdvisee {
   CancelCriterion getCancelCriterion();
 
   /**
-   * Returns the <code>DistributionAdvisor</code> that provides advice for this advisee.
+   * Returns the {@code DistributionAdvisor} that provides advice for this advisee.
    *
-   * @return the <code>DistributionAdvisor</code>
+   * @return the {@code DistributionAdvisor}
    */
   DistributionAdvisor getDistributionAdvisor();
 
   /**
-   * Returns the <code>Profile</code> representing this member in the
-   * <code>DistributionAdvisor</code>.
+   * Returns the {@code Profile} representing this member in the
+   * {@code DistributionAdvisor}.
    *
-   * @return the <code>Profile</code> representing this member
+   * @return the {@code Profile} representing this member
    */
   Profile getProfile();
 
   /**
-   * Returns this advisees parent or null if no parent exists.
+   * Returns this advisee's parent or null if no parent exists.
    *
    * @return parent advisee
    */
   DistributionAdvisee getParentAdvisee();
 
   /**
-   * Returns the underlying <code>InternalDistributedSystem</code> connection.
+   * Returns the underlying {@code InternalDistributedSystem} connection.
    *
-   * @return the underlying <code>InternalDistributedSystem</code>
+   * @return the underlying {@code InternalDistributedSystem}
    */
   InternalDistributedSystem getSystem();
 
@@ -80,9 +80,9 @@ public interface DistributionAdvisee {
   String getFullPath();
 
   /**
-   * Fill in the <code>Profile</code> with details from the advisee.
+   * Fill in the {@code Profile} with details from the advisee.
    *
-   * @param profile the <code>Profile</code> to fill in with details
+   * @param profile the {@code Profile} to fill in with details
    */
   void fillInProfile(Profile profile);
 

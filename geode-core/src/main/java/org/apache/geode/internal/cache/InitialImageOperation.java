@@ -2302,7 +2302,7 @@ public class InitialImageOperation {
       try {
         Assert.assertTrue(this.regionPath != null, "Region path is null.");
         InternalCache cache = dm.getCache();
-        lclRgn = cache == null ? null : cache.getRegionByPath(regionPath);
+        lclRgn = cache == null ? null : cache.getInternalRegionByPath(regionPath);
 
         if (lclRgn == null) {
           if (logger.isDebugEnabled()) {

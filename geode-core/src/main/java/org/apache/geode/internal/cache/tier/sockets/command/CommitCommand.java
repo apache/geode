@@ -135,7 +135,7 @@ public class CommitCommand extends BaseCommand {
               timeToWait, target);
           try {
             serverConnection.getCache().getDistributionManager().getDistribution()
-                .waitForDeparture(target, timeToWait);
+                .waitForDeparture((InternalDistributedMember) target, timeToWait);
           } catch (TimeoutException e) {
             // status will be logged below
           } catch (InterruptedException e) {

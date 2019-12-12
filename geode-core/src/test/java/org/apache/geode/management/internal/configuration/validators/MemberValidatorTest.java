@@ -53,7 +53,7 @@ public class MemberValidatorTest {
   public void before() throws Exception {
     cache = mock(InternalCache.class);
     service = mock(ConfigurationPersistenceService.class);
-    regionManager = new RegionConfigManager();
+    regionManager = new RegionConfigManager(null);
     validator = spy(new MemberValidator(cache, service));
 
     DistributedMember member1 = mock(DistributedMember.class);

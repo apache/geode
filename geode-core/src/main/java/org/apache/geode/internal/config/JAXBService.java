@@ -43,7 +43,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import org.apache.geode.cache.configuration.XSDRootElement;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
-import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
+import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
 
 public class JAXBService {
 

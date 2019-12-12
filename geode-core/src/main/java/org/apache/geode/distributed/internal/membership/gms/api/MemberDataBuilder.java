@@ -47,7 +47,7 @@ public interface MemberDataBuilder {
     List<String> groups = new ArrayList<String>();
     parseCsv(groups, csvRoles);
     parseCsv(groups, csvGroups);
-    return (String[]) groups.toArray(new String[groups.size()]);
+    return groups.toArray(new String[groups.size()]);
   }
 
   static void parseCsv(List<String> groups, String csv) {

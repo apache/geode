@@ -36,7 +36,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.WanTest;

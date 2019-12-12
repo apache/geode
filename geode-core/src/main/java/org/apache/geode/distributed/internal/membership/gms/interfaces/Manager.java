@@ -25,7 +25,8 @@ import org.apache.geode.distributed.internal.membership.gms.api.Message;
  * Manager presents the GMS services to the outside world and handles startup/shutdown race
  * conditions. It is also the default MessageHandler
  */
-public interface Manager extends Service, MessageHandler<Message> {
+public interface Manager<ID extends MemberIdentifier>
+    extends Service<ID>, MessageHandler<Message<ID>> {
 
   /**
    * After all services have been started this is used to join the distributed system
@@ -41,7 +42,7 @@ public interface Manager extends Service, MessageHandler<Message> {
   /**
    * notifies the manager that membership quorum has been lost
    */
-  void quorumLost(Collection<MemberIdentifier> failures, GMSMembershipView view);
+  void quorumLost(Collection<ID> failures, GMSMembershipView<ID> view);
 
   /**
    * sometimes we cannot perform multicast messaging, such as during a rolling upgrade.
@@ -57,12 +58,6 @@ public interface Manager extends Service, MessageHandler<Message> {
   boolean shutdownInProgress();
 
   /**
-   * Returns true if a distributed system close is started. And shutdown msg has not sent yet,its in
-   * progress.
-   */
-  boolean isShutdownStarted();
-
-  /**
    * Indicate whether we are attempting a reconnect
    */
   boolean isReconnectingDS();
@@ -70,6 +65,11 @@ public interface Manager extends Service, MessageHandler<Message> {
   /**
    * Return the Services object owning this Manager service
    */
-  Services getServices();
+  Services<ID> getServices();
 
+  /**
+   * Returns true if we've been informed that this node has started to close or has
+   * progressed past close (sending ShutdownMessages, etc) to shutting down membership services
+   */
+  boolean isCloseInProgress();
 }

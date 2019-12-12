@@ -173,7 +173,7 @@ rat {
     'geode-pulse/src/main/webapp/css/jquery-ui.css',
 
     // BSD License
-    'geode-core/src/main/java/org/apache/geode/management/internal/cli/shell/jline/ANSIBuffer.java',
+    'geode-gfsh/src/main/java/org/apache/geode/management/internal/cli/shell/jline/ANSIBuffer.java',
     'geode-pulse/src/main/webapp/scripts/lib/jquery.sparkline.js',
 
     // Apache License

@@ -18,11 +18,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
-public class HeartbeatMessage extends AbstractGMSMessage {
+public class HeartbeatMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
   /**
    * RequestId identifies the HeartbeatRequestMessage for which this is a response. If it is < 0
    * this is a periodic heartbeat message.

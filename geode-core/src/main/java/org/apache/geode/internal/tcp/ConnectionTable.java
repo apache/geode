@@ -39,7 +39,6 @@ import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -50,6 +49,7 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCloser;
+import org.apache.geode.internal.util.JavaWorkarounds;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -106,7 +106,7 @@ public class ConnectionTable {
    * threadOrderedConnMap. The value is an ArrayList since we can have any number of connections
    * with the same key.
    */
-  private ConcurrentMap threadConnectionMap;
+  private final ConcurrentMap threadConnectionMap;
 
   /**
    * Used for all non-ordered messages. Only connections used for sending messages, and receiving
@@ -290,7 +290,8 @@ public class ConnectionTable {
    * @return the Connection, or null if someone else already created or closed it
    * @throws IOException if unable to connect
    */
-  private Connection handleNewPendingConnection(DistributedMember id, boolean sharedResource,
+  private Connection handleNewPendingConnection(InternalDistributedMember id,
+      boolean sharedResource,
       boolean preserveOrder, Map m, PendingConnection pc, long startTime, long ackThreshold,
       long ackSAThreshold) throws IOException, DistributedSystemDisconnectedException {
     // handle new pending connection
@@ -378,7 +379,7 @@ public class ConnectionTable {
    * @return the new Connection, or null if an error
    * @throws IOException if unable to create the connection
    */
-  private Connection getSharedConnection(DistributedMember id, boolean scheduleTimeout,
+  private Connection getSharedConnection(InternalDistributedMember id, boolean scheduleTimeout,
       boolean preserveOrder, long startTime, long ackTimeout, long ackSATimeout)
       throws IOException, DistributedSystemDisconnectedException {
     Connection result = null;
@@ -448,7 +449,7 @@ public class ConnectionTable {
    * @return the connection, or null if an error
    * @throws IOException if the connection could not be created
    */
-  Connection getThreadOwnedConnection(DistributedMember id, long startTime, long ackTimeout,
+  Connection getThreadOwnedConnection(InternalDistributedMember id, long startTime, long ackTimeout,
       long ackSATimeout) throws IOException, DistributedSystemDisconnectedException {
     Connection result = null;
 
@@ -495,15 +496,7 @@ public class ConnectionTable {
 
     // Update the list of connections owned by this thread....
 
-    if (this.threadConnectionMap == null) {
-      // This instance is being destroyed; fail the operation
-      closeCon(
-          "Connection table being destroyed",
-          result);
-      return null;
-    }
-
-    ArrayList al = (ArrayList) this.threadConnectionMap.get(id);
+    ArrayList al = (ArrayList) threadConnectionMap.get(id);
     if (al == null) {
       // First connection for this DistributedMember. Make sure list for this
       // stub is created if it isn't already there.
@@ -511,7 +504,9 @@ public class ConnectionTable {
 
       // Since it's a concurrent map, we just try to put it and then
       // return whichever we got.
-      Object o = this.threadConnectionMap.putIfAbsent(id, al);
+      ArrayList tempAl = al;
+      Object o = JavaWorkarounds.computeIfAbsent(this.threadConnectionMap, id, k -> tempAl);
+
       if (o != null) {
         al = (ArrayList) o;
       }
@@ -581,7 +576,7 @@ public class ConnectionTable {
    * @return the new Connection, or null if a problem
    * @throws java.io.IOException if the connection could not be created
    */
-  protected Connection get(DistributedMember id, boolean preserveOrder, long startTime,
+  protected Connection get(InternalDistributedMember id, boolean preserveOrder, long startTime,
       long ackTimeout, long ackSATimeout)
       throws java.io.IOException, DistributedSystemDisconnectedException {
     if (this.closed) {
@@ -684,7 +679,19 @@ public class ConnectionTable {
       this.unorderedConnectionMap.clear();
     }
     if (this.threadConnectionMap != null) {
-      this.threadConnectionMap = null;
+      synchronized (this.threadConnectionMap) {
+        for (Iterator it = this.threadConnectionMap.values().iterator(); it.hasNext();) {
+          ArrayList al = (ArrayList) it.next();
+          if (al != null) {
+            synchronized (al) {
+              for (Object o : al) {
+                closeCon("Connection table being destroyed", o);
+              }
+            }
+          }
+        }
+        this.threadConnectionMap.clear();
+      }
     }
     if (this.threadConnMaps != null) {
       synchronized (this.threadConnMaps) {
@@ -766,17 +773,6 @@ public class ConnectionTable {
     synchronized (this.receivers) {
       this.receivers.remove(con);
     }
-  }
-
-  /**
-   * Return true if our owner already knows that this endpoint is departing
-   */
-  protected boolean isEndpointShuttingDown(DistributedMember id) {
-    return giveUpOnMember(owner.getDM().getDistribution(), id);
-  }
-
-  protected boolean giveUpOnMember(Distribution mgr, DistributedMember remoteAddr) {
-    return !mgr.memberExists(remoteAddr) || mgr.isShunned(remoteAddr) || mgr.shutdownInProgress();
   }
 
   /** remove an endpoint and notify the membership manager of the departure */

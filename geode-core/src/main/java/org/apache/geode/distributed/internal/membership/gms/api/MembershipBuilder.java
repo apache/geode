@@ -15,7 +15,6 @@
 package org.apache.geode.distributed.internal.membership.gms.api;
 
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
@@ -24,29 +23,29 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
  * Builder for creating a new {@link Membership}.
  *
  */
-public interface MembershipBuilder {
-  MembershipBuilder setAuthenticator(Authenticator authenticator);
+public interface MembershipBuilder<ID extends MemberIdentifier> {
+  MembershipBuilder<ID> setAuthenticator(Authenticator<ID> authenticator);
 
-  MembershipBuilder setStatistics(MembershipStatistics statistics);
+  MembershipBuilder<ID> setStatistics(MembershipStatistics statistics);
 
-  MembershipBuilder setMembershipListener(MembershipListener membershipListener);
+  MembershipBuilder<ID> setMembershipListener(MembershipListener<ID> membershipListener);
 
-  MembershipBuilder setMessageListener(MessageListener messageListener);
+  MembershipBuilder<ID> setMessageListener(MessageListener<ID> messageListener);
 
-  MembershipBuilder setConfig(MembershipConfig membershipConfig);
+  MembershipBuilder<ID> setConfig(MembershipConfig membershipConfig);
 
-  MembershipBuilder setSerializer(DSFIDSerializer serializer);
+  MembershipBuilder<ID> setSerializer(DSFIDSerializer serializer);
 
-  MembershipBuilder setMemberIDFactory(MemberIdentifierFactory memberFactory);
+  MembershipBuilder<ID> setMemberIDFactory(MemberIdentifierFactory<ID> memberFactory);
 
-  MembershipBuilder setLifecycleListener(LifecycleListener lifecycleListener);
+  MembershipBuilder<ID> setLifecycleListener(LifecycleListener<ID> lifecycleListener);
 
-  MembershipBuilder setLocatorClient(final TcpClient tcpClient);
+  MembershipBuilder<ID> setLocatorClient(final TcpClient tcpClient);
 
 
-  Membership create();
+  Membership<ID> create();
 
-  static MembershipBuilder newMembershipBuilder(ClusterDistributionManager dm) {
-    return new MembershipBuilderImpl(dm);
+  static <ID extends MemberIdentifier> MembershipBuilder<ID> newMembershipBuilder() {
+    return new MembershipBuilderImpl<>();
   }
 }

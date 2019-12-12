@@ -15,12 +15,10 @@
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import java.util.Queue;
-import java.util.Set;
 
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipInformation;
 
 /**
@@ -29,15 +27,12 @@ import org.apache.geode.distributed.internal.membership.gms.api.MembershipInform
  */
 public class MembershipInformationImpl implements MembershipInformation {
   private final JChannel channel;
-  private final Set<MemberIdentifier> membershipIdentifiers;
   private final Queue<Message> queuedMessages;
 
   protected MembershipInformationImpl(JChannel channel,
-      Set<MemberIdentifier> oldMembershipIdentifiers,
       Queue<Message> queuedMessages) {
 
     this.channel = channel;
-    this.membershipIdentifiers = oldMembershipIdentifiers;
     this.queuedMessages = queuedMessages;
   }
 
@@ -45,11 +40,7 @@ public class MembershipInformationImpl implements MembershipInformation {
     return channel;
   }
 
-  public Set<MemberIdentifier> getMembershipIdentifiers() {
-    return membershipIdentifiers;
-  }
-
-  public Queue<Message> getQueuedMessages() {
+  Queue<Message> getQueuedMessages() {
     return this.queuedMessages;
   }
 }

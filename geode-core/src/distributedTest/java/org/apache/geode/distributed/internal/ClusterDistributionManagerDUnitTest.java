@@ -60,8 +60,8 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
@@ -321,8 +321,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   public void testWaitForViewInstallation() {
     InternalDistributedSystem system = getSystem(new Properties());
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDM();
-    Distribution membershipManager = dm.getDistribution();
-    GMSMembershipView view = membershipManager.getServices().getJoinLeave().getView();
+    MembershipView<InternalDistributedMember> view = dm.getDistribution().getView();
 
     AtomicBoolean waitForViewInstallationDone = new AtomicBoolean();
     executorService.submit(() -> {
@@ -336,8 +335,9 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
 
     pause(2000);
 
-    GMSMembershipView newView = new GMSMembershipView(view, view.getViewId() + 1);
-    membershipManager.installView(newView);
+    VM.getVM(1).invoke("create another member to initiate a new view", () -> {
+      getSystem(new Properties());
+    });
 
     await()
         .untilAsserted(() -> assertThat(waitForViewInstallationDone.get()).isTrue());

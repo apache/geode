@@ -74,27 +74,27 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 @SuppressWarnings("ConstantConditions")
-public class Services {
+public class Services<ID extends MemberIdentifier> {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final Manager manager;
-  private final JoinLeave joinLeave;
-  private final HealthMonitor healthMon;
-  private final Messenger messenger;
-  private final Authenticator auth;
+  private final Manager<ID> manager;
+  private final JoinLeave<ID> joinLeave;
+  private final HealthMonitor<ID> healthMon;
+  private final Messenger<ID> messenger;
+  private final Authenticator<ID> auth;
   private final MembershipConfig config;
   private final MembershipStatistics stats;
   private final Stopper cancelCriterion;
   private final DSFIDSerializer serializer;
 
-  private final MemberIdentifierFactory memberFactory;
+  private final MemberIdentifierFactory<ID> memberFactory;
 
   private volatile boolean stopping;
   private volatile boolean stopped;
   private volatile Exception shutdownCause;
 
-  private Locator locator;
+  private Locator<ID> locator;
 
   private final Timer timer = new Timer("Geode Membership Timer", true);
 
@@ -132,17 +132,17 @@ public class Services {
     this.memberFactory = null;
   }
 
-  public Services(Manager membershipManager, MembershipStatistics stats,
-      final Authenticator authenticator, MembershipConfig membershipConfig,
-      DSFIDSerializer serializer, MemberIdentifierFactory memberFactory,
+  public Services(Manager<ID> membershipManager, MembershipStatistics stats,
+      final Authenticator<ID> authenticator, MembershipConfig membershipConfig,
+      DSFIDSerializer serializer, MemberIdentifierFactory<ID> memberFactory,
       final TcpClient locatorClient) {
     this.cancelCriterion = new Stopper();
     this.stats = stats;
     this.config = membershipConfig;
     this.manager = membershipManager;
-    this.joinLeave = new GMSJoinLeave(locatorClient);
-    this.healthMon = new GMSHealthMonitor();
-    this.messenger = new JGroupsMessenger();
+    this.joinLeave = new GMSJoinLeave<>(locatorClient);
+    this.healthMon = new GMSHealthMonitor<>();
+    this.messenger = new JGroupsMessenger<>();
     this.auth = authenticator;
     this.serializer = serializer;
     this.memberFactory = memberFactory;
@@ -223,7 +223,7 @@ public class Services {
     }
   }
 
-  public void setLocalAddress(MemberIdentifier address) {
+  public void setLocalAddress(ID address) {
     this.messenger.setLocalAddress(address);
     this.joinLeave.setLocalAddress(address);
     this.healthMon.setLocalAddress(address);
@@ -287,11 +287,11 @@ public class Services {
     }
   }
 
-  public Authenticator getAuthenticator() {
+  public Authenticator<ID> getAuthenticator() {
     return this.auth;
   }
 
-  public void installView(GMSMembershipView v) {
+  public void installView(GMSMembershipView<ID> v) {
     if (this.locator != null) {
       this.locator.installView(v);
     }
@@ -300,8 +300,8 @@ public class Services {
     this.manager.installView(v);
   }
 
-  public void memberSuspected(MemberIdentifier initiator,
-      MemberIdentifier suspect, String reason) {
+  public void memberSuspected(ID initiator,
+      ID suspect, String reason) {
     try {
       this.joinLeave.memberSuspected(initiator, suspect, reason);
     } finally {
@@ -317,23 +317,23 @@ public class Services {
     }
   }
 
-  public Manager getManager() {
+  public Manager<ID> getManager() {
     return this.manager;
   }
 
-  public Locator getLocator() {
+  public Locator<ID> getLocator() {
     return this.locator;
   }
 
-  public void setLocator(Locator locator) {
+  public void setLocator(Locator<ID> locator) {
     this.locator = locator;
   }
 
-  public JoinLeave getJoinLeave() {
+  public JoinLeave<ID> getJoinLeave() {
     return this.joinLeave;
   }
 
-  public HealthMonitor getHealthMonitor() {
+  public HealthMonitor<ID> getHealthMonitor() {
     return this.healthMon;
   }
 
@@ -341,7 +341,7 @@ public class Services {
     return this.config;
   }
 
-  public Messenger getMessenger() {
+  public Messenger<ID> getMessenger() {
     return this.messenger;
   }
 
@@ -349,7 +349,7 @@ public class Services {
     return this.stats;
   }
 
-  public MemberIdentifierFactory getMemberFactory() {
+  public MemberIdentifierFactory<ID> getMemberFactory() {
     return memberFactory;
   }
 

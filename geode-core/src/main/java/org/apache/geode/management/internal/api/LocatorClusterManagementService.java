@@ -36,13 +36,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -60,6 +59,7 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.AbstractConfiguration;
+import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.GroupableConfiguration;
 import org.apache.geode.management.configuration.Index;
@@ -69,8 +69,9 @@ import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
-import org.apache.geode.management.internal.cli.functions.CacheRealizationFunction;
+import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
+import org.apache.geode.management.internal.configuration.mutators.DeploymentManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.IndexConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.PdxManager;
@@ -82,6 +83,7 @@ import org.apache.geode.management.internal.configuration.validators.MemberValid
 import org.apache.geode.management.internal.configuration.validators.PdxValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
+import org.apache.geode.management.internal.functions.CacheRealizationFunction;
 import org.apache.geode.management.internal.operation.OperationHistoryManager;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
@@ -91,7 +93,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
   private static final Logger logger = LogService.getLogger();
-  private final ConfigurationPersistenceService persistenceService;
+  private final InternalConfigurationPersistenceService persistenceService;
   private final Map<Class, ConfigurationManager> managers;
   private final Map<Class, ConfigurationValidator> validators;
   private final OperationManager operationManager;
@@ -99,15 +101,16 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private final CommonConfigurationValidator commonValidator;
 
   public LocatorClusterManagementService(InternalCache cache,
-      ConfigurationPersistenceService persistenceService) {
+      InternalConfigurationPersistenceService persistenceService) {
     this(persistenceService, new ConcurrentHashMap<>(), new ConcurrentHashMap<>(),
         new MemberValidator(cache, persistenceService), new CommonConfigurationValidator(),
         new OperationManager(cache, new OperationHistoryManager()));
     // initialize the list of managers
-    managers.put(Region.class, new RegionConfigManager());
-    managers.put(Pdx.class, new PdxManager());
-    managers.put(GatewayReceiver.class, new GatewayReceiverConfigManager());
-    managers.put(Index.class, new IndexConfigManager());
+    managers.put(Region.class, new RegionConfigManager(persistenceService));
+    managers.put(Pdx.class, new PdxManager(persistenceService));
+    managers.put(GatewayReceiver.class, new GatewayReceiverConfigManager(persistenceService));
+    managers.put(Index.class, new IndexConfigManager(persistenceService));
+    managers.put(Deployment.class, new DeploymentManager(persistenceService));
 
     // initialize the list of validators
     validators.put(Region.class, new RegionConfigValidator(cache));
@@ -116,7 +119,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @VisibleForTesting
-  public LocatorClusterManagementService(ConfigurationPersistenceService persistenceService,
+  public LocatorClusterManagementService(InternalConfigurationPersistenceService persistenceService,
       Map<Class, ConfigurationManager> managers,
       Map<Class, ConfigurationValidator> validators,
       MemberValidator memberValidator,
@@ -153,7 +156,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
       }
 
       // check if this config already exists on all/some members of this group
-      memberValidator.validateCreate(config, configurationManager);
+      if (configurationManager instanceof CacheConfigurationManager) {
+        memberValidator.validateCreate(config, (CacheConfigurationManager) configurationManager);
+      }
       // execute function on all members
     } catch (EntityExistsException e) {
       raise(StatusCode.ENTITY_EXISTS, e);
@@ -178,19 +183,14 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // persist configuration in cache config
-    persistenceService.updateCacheConfig(groupName, cacheConfigForGroup -> {
-      try {
-        configurationManager.add(config, cacheConfigForGroup);
-        result.setStatus(StatusCode.OK,
-            "Successfully updated configuration for " + groupName + ".");
-      } catch (Exception e) {
-        String message = "Failed to update cluster configuration for " + groupName + ".";
-        logger.error(message, e);
-        result.setStatus(StatusCode.FAIL_TO_PERSIST, message);
-        return null;
-      }
-      return cacheConfigForGroup;
-    });
+    boolean success = configurationManager.add(config, groupName);
+    if (success) {
+      result.setStatus(StatusCode.OK,
+          "Successfully updated configuration for " + groupName + ".");
+    } else {
+      String message = "Failed to update cluster configuration for " + groupName + ".";
+      result.setStatus(StatusCode.FAIL_TO_PERSIST, message);
+    }
 
     // add the config object which includes the HATEOAS information of the element created
     if (result.isSuccessful()) {
@@ -203,7 +203,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
   public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult delete(
       T config) {
     // validate that user used the correct config object type
-    ConfigurationManager configurationManager = getConfigurationManager(config);
+    CacheConfigurationManager configurationManager =
+        (CacheConfigurationManager) getConfigurationManager(config);
 
     if (persistenceService == null) {
       return assertSuccessful(new ClusterManagementRealizationResult(StatusCode.ERROR,
@@ -248,17 +249,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
     List<String> updatedGroups = new ArrayList<>();
     List<String> failedGroups = new ArrayList<>();
     for (String finalGroup : groupsWithThisElement) {
-      persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
-        try {
-          configurationManager.delete(config, cacheConfigForGroup);
-          updatedGroups.add(finalGroup);
-        } catch (Exception e) {
-          logger.error("Failed to update cluster configuration for " + finalGroup + ".", e);
-          failedGroups.add(finalGroup);
-          return null;
-        }
-        return cacheConfigForGroup;
-      });
+      boolean success = configurationManager.delete(config, finalGroup);
+      if (success) {
+        updatedGroups.add(finalGroup);
+      } else {
+        failedGroups.add(finalGroup);
+      }
     }
 
     if (failedGroups.isEmpty()) {
@@ -302,19 +298,15 @@ public class LocatorClusterManagementService implements ClusterManagementService
       }
 
       for (String group : groups) {
-        CacheConfig currentPersistedConfig =
-            persistenceService.getCacheConfig(
-                AbstractConfiguration.isCluster(group) ? AbstractConfiguration.CLUSTER : group,
-                true);
-        List<T> listInGroup = manager.list(filter, currentPersistedConfig);
+        List<T> list = manager.list(filter, group);
         if (!AbstractConfiguration.isCluster(group)) {
-          listInGroup.forEach(t -> {
+          list.forEach(t -> {
             if (t instanceof GroupableConfiguration) {
               ((GroupableConfiguration<?>) t).setGroup(group);
             }
           });
         }
-        resultList.addAll(listInGroup);
+        resultList.addAll(list);
       }
     }
 

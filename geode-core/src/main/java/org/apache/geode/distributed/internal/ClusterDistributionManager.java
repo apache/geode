@@ -61,11 +61,11 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
@@ -668,7 +668,7 @@ public class ClusterDistributionManager implements DistributionManager {
     try {
 
       // And the distinguished guests today are...
-      MembershipView v = distribution.getView();
+      MembershipView<InternalDistributedMember> v = distribution.getView();
       logger.info("Initial (distribution manager) view, {}",
           String.valueOf(v));
 
@@ -1089,6 +1089,7 @@ public class ClusterDistributionManager implements DistributionManager {
         return;
       }
       closeInProgress = true;
+      this.distribution.setCloseInProgress();
     } // synchronized
 
     // [bruce] log shutdown at info level and with ID to balance the
@@ -1802,7 +1803,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public boolean isCurrentMember(DistributedMember id) {
-    return distribution.getView().contains(id);
+    return distribution.getView().contains((InternalDistributedMember) id);
   }
 
   /**
@@ -2276,7 +2277,7 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    */
   private class DMListener implements
-      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener {
+      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener<InternalDistributedMember> {
     ClusterDistributionManager dm;
 
     DMListener(ClusterDistributionManager dm) {
@@ -2291,12 +2292,12 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    public void newMemberConnected(DistributedMember member) {
+    public void newMemberConnected(InternalDistributedMember member) {
       // Do not elect the elder here as surprise members invoke this callback
       // without holding the view lock. That can cause a race condition and
       // subsequent deadlock (#45566). Elder selection is now done when a view
       // is installed.
-      dm.addNewMember((InternalDistributedMember) member);
+      dm.addNewMember(member);
     }
 
     @Override
@@ -2814,22 +2815,19 @@ public class ClusterDistributionManager implements DistributionManager {
     return stopper;
   }
 
-  static class ClusterDistributionManagerIDFactory implements MemberIdentifierFactory {
+  static class ClusterDistributionManagerIDFactory
+      implements MemberIdentifierFactory<InternalDistributedMember> {
     @Immutable
-    private static final Comparator<MemberIdentifier> idComparator = new Comparator() {
-      @Override
-      public int compare(Object o1, Object o2) {
-        return ((DistributedMember) o1).compareTo((DistributedMember) o2);
-      }
-    };
+    private static final Comparator<InternalDistributedMember> idComparator =
+        InternalDistributedMember::compareTo;
 
     @Override
-    public MemberIdentifier create(MemberData memberInfo) {
+    public InternalDistributedMember create(MemberData memberInfo) {
       return new InternalDistributedMember(memberInfo);
     }
 
     @Override
-    public Comparator<MemberIdentifier> getComparator() {
+    public Comparator<InternalDistributedMember> getComparator() {
       return idComparator;
     }
   }

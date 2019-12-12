@@ -36,7 +36,7 @@ public class IndexConfigManagerTest {
   public void before() throws Exception {
     cacheConfig = new CacheConfig();
     index = new Index();
-    manager = new IndexConfigManager();
+    manager = new IndexConfigManager(null);
   }
 
   @Test

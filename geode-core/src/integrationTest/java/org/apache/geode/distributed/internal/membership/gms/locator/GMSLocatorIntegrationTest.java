@@ -32,6 +32,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
@@ -85,7 +86,9 @@ public class GMSLocatorIntegrationTest {
                         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
                 InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
                 InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()));
-    gmsLocator.setServices(services);
+    GMSMembership membership = mock(GMSMembership.class);
+    when(membership.getServices()).thenReturn(services);
+    gmsLocator.setMembership(membership);
   }
 
   @After

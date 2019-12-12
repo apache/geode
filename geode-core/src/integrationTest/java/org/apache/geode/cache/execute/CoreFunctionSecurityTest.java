@@ -52,7 +52,6 @@ import org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateF
 import org.apache.geode.management.internal.cli.functions.GatewaySenderCreateFunction;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderDestroyFunction;
 import org.apache.geode.management.internal.cli.functions.GetMemberConfigInformationFunction;
-import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
 import org.apache.geode.management.internal.cli.functions.GetRegionDescriptionFunction;
 import org.apache.geode.management.internal.cli.functions.GetRegionsFunction;
 import org.apache.geode.management.internal.cli.functions.GetStackTracesFunction;
@@ -65,7 +64,6 @@ import org.apache.geode.management.internal.cli.functions.ListDurableCqNamesFunc
 import org.apache.geode.management.internal.cli.functions.ListFunctionFunction;
 import org.apache.geode.management.internal.cli.functions.ListIndexFunction;
 import org.apache.geode.management.internal.cli.functions.NetstatFunction;
-import org.apache.geode.management.internal.cli.functions.RebalanceFunction;
 import org.apache.geode.management.internal.cli.functions.RegionAlterFunction;
 import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
 import org.apache.geode.management.internal.cli.functions.RegionDestroyFunction;
@@ -79,6 +77,8 @@ import org.apache.geode.management.internal.configuration.functions.DownloadJarF
 import org.apache.geode.management.internal.configuration.functions.GetClusterConfigurationFunction;
 import org.apache.geode.management.internal.configuration.functions.GetRegionNamesFunction;
 import org.apache.geode.management.internal.configuration.functions.RecreateCacheFunction;
+import org.apache.geode.management.internal.functions.GetMemberInformationFunction;
+import org.apache.geode.management.internal.functions.RebalanceFunction;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;

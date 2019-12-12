@@ -111,7 +111,7 @@ public class RegionManagementDunitTest {
 
     server1.invoke(() -> {
       org.apache.geode.cache.Region customers2 =
-          ClusterStartupRule.getCache().getRegionByPath("/customers2");
+          ClusterStartupRule.getCache().getInternalRegionByPath("/customers2");
       assertThatThrownBy(() -> customers2.put("key", 2)).isInstanceOf(ClassCastException.class)
           .hasMessageContaining("does not satisfy keyConstraint");
       assertThatThrownBy(() -> customers2.put(Boolean.TRUE, "2"))

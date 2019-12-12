@@ -17,10 +17,10 @@ package org.apache.geode.distributed.internal.membership.gms;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
@@ -33,83 +33,80 @@ import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.security.GemFireSecurityException;
 
-public class MembershipBuilderImpl implements MembershipBuilder {
+public class MembershipBuilderImpl<ID extends MemberIdentifier> implements MembershipBuilder<ID> {
   private TcpClient locatorClient;
-  private MembershipListener membershipListener;
-  private MessageListener messageListener;
+  private MembershipListener<ID> membershipListener;
+  private MessageListener<ID> messageListener;
   private MembershipStatistics statistics;
-  private Authenticator authenticator;
-  private ClusterDistributionManager dm;
+  private Authenticator<ID> authenticator;
   private MembershipConfig membershipConfig;
   private DSFIDSerializer serializer;
-  private MemberIdentifierFactory memberFactory = new MemberIdentifierFactoryImpl();
-  private LifecycleListener lifecycleListener;
+  private MemberIdentifierFactory<ID> memberFactory;
+  private LifecycleListener<ID> lifecycleListener;
 
-  public MembershipBuilderImpl(ClusterDistributionManager dm) {
-    this.dm = dm;
-  }
+  public MembershipBuilderImpl() {}
 
   @Override
-  public MembershipBuilder setAuthenticator(Authenticator authenticator) {
+  public MembershipBuilder<ID> setAuthenticator(Authenticator<ID> authenticator) {
     this.authenticator = authenticator;
     return this;
   }
 
   @Override
-  public MembershipBuilder setStatistics(MembershipStatistics statistics) {
+  public MembershipBuilder<ID> setStatistics(MembershipStatistics statistics) {
     this.statistics = statistics;
     return this;
   }
 
   @Override
-  public MembershipBuilder setMembershipListener(MembershipListener membershipListener) {
+  public MembershipBuilder<ID> setMembershipListener(MembershipListener<ID> membershipListener) {
     this.membershipListener = membershipListener;
     return this;
   }
 
   @Override
-  public MembershipBuilder setMessageListener(MessageListener messageListener) {
+  public MembershipBuilder<ID> setMessageListener(MessageListener<ID> messageListener) {
     this.messageListener = messageListener;
     return this;
   }
 
   @Override
-  public MembershipBuilder setConfig(MembershipConfig membershipConfig) {
+  public MembershipBuilder<ID> setConfig(MembershipConfig membershipConfig) {
     this.membershipConfig = membershipConfig;
     return this;
   }
 
   @Override
-  public MembershipBuilder setSerializer(DSFIDSerializer serializer) {
+  public MembershipBuilder<ID> setSerializer(DSFIDSerializer serializer) {
     this.serializer = serializer;
     return this;
   }
 
   @Override
-  public MembershipBuilder setMemberIDFactory(MemberIdentifierFactory memberFactory) {
+  public MembershipBuilder<ID> setMemberIDFactory(MemberIdentifierFactory<ID> memberFactory) {
     this.memberFactory = memberFactory;
     return this;
   }
 
   @Override
-  public MembershipBuilder setLocatorClient(final TcpClient locatorClient) {
+  public MembershipBuilder<ID> setLocatorClient(final TcpClient locatorClient) {
     this.locatorClient = locatorClient;
     return this;
   }
 
   @Override
-  public MembershipBuilder setLifecycleListener(
-      LifecycleListener lifecycleListener) {
+  public MembershipBuilder<ID> setLifecycleListener(
+      LifecycleListener<ID> lifecycleListener) {
     this.lifecycleListener = lifecycleListener;
     return this;
   }
 
   @Override
-  public Membership create() {
-    GMSMembership gmsMembership =
-        new GMSMembership(membershipListener, messageListener, dm, lifecycleListener);
-    Services services =
-        new Services(gmsMembership.getGMSManager(), statistics, authenticator,
+  public Membership<ID> create() {
+    GMSMembership<ID> gmsMembership =
+        new GMSMembership<>(membershipListener, messageListener, lifecycleListener);
+    Services<ID> services =
+        new Services<>(gmsMembership.getGMSManager(), statistics, authenticator,
             membershipConfig, serializer, memberFactory, locatorClient);
     try {
       services.init();

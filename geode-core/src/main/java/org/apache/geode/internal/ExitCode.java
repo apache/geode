@@ -16,9 +16,6 @@ package org.apache.geode.internal;
 
 import java.util.Arrays;
 
-import org.springframework.shell.core.ExitShellRequest;
-
-
 public enum ExitCode {
 
   // JVM_TERMINATED_EXIT(99) exists for coverage of Spring's ExitShellRequest values in fromSpring.
@@ -41,9 +38,5 @@ public enum ExitCode {
   public static ExitCode fromValue(int i) {
     return Arrays.stream(ExitCode.values()).filter(c -> c.getValue() == i).findFirst().orElseThrow(
         () -> new IllegalArgumentException("No ExitCode exists with shell exit value: " + i));
-  }
-
-  public static ExitCode fromSpring(ExitShellRequest s) {
-    return fromValue(s.getExitCode());
   }
 }

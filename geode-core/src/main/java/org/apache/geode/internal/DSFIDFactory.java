@@ -407,8 +407,8 @@ import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfileM
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.JmxManagerLocatorResponse;
 import org.apache.geode.management.internal.ManagerStartupMessage;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.pdx.internal.CheckTypeRegistryState;
 import org.apache.geode.pdx.internal.EnumId;
 import org.apache.geode.pdx.internal.EnumInfo;
@@ -460,6 +460,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.registerDSFID(SUSPECT_MEMBERS_MESSAGE, SuspectMembersMessage.class);
     serializer.registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
     serializer.registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
+    serializer.registerDSFID(CLI_FUNCTION_RESULT, CliFunctionResult.class);
     serializer.registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
     serializer.registerDSFID(NETVIEW, GMSMembershipView.class);
     serializer.registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
@@ -595,7 +596,6 @@ public class DSFIDFactory implements DataSerializableFixedID {
     serializer.registerDSFID(R_SIZE_MESSAGE, RemoteSizeMessage.class);
     serializer.registerDSFID(R_SIZE_REPLY_MESSAGE, RemoteSizeMessage.SizeReplyMessage.class);
     serializer.registerDSFID(PR_DESTROY_REPLY_MESSAGE, DestroyMessage.DestroyReplyMessage.class);
-    serializer.registerDSFID(CLI_FUNCTION_RESULT, CliFunctionResult.class);
     serializer.registerDSFID(R_FETCH_KEYS_MESSAGE, RemoteFetchKeysMessage.class);
     serializer.registerDSFID(R_FETCH_KEYS_REPLY,
         RemoteFetchKeysMessage.RemoteFetchKeysReplyMessage.class);

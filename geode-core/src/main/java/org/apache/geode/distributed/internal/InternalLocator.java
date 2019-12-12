@@ -707,9 +707,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           (InternalDistributedSystem) DistributedSystem.connect(distributedSystemProperties);
 
       if (peerLocator) {
-        netLocator.setServices(
-            internalDistributedSystem.getDM().getDistribution()
-                .getServices());
+        // We've created a peer location message handler - it needs to be connected to
+        // the membership service in order to get membership view notifications
+        netLocator
+            .setMembership(internalDistributedSystem.getDM().getDistribution().getMembership());
       }
 
       internalDistributedSystem.addDisconnectListener(sys -> stop(false, false, false));

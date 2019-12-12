@@ -130,7 +130,9 @@ public class PlainClusterManagementServiceBuilder implements
     MappingJackson2HttpMessageConverter messageConverter =
         new MappingJackson2HttpMessageConverter();
     messageConverter.setPrettyPrint(false);
-    messageConverter.setObjectMapper(GeodeJsonMapper.getMapper());
+    // the client should use a mapper that would ignore unknown properties in case the server
+    // is a newer version than the client
+    messageConverter.setObjectMapper(GeodeJsonMapper.getMapperIgnoringUnknownProperties());
     restTemplate.getMessageConverters().removeIf(
         m -> m.getClass().getName().equals(MappingJackson2HttpMessageConverter.class.getName()));
     restTemplate.getMessageConverters().add(messageConverter);

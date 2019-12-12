@@ -16,13 +16,17 @@ package org.apache.geode.internal.cache.partitioned.colocation;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION_PERSISTENT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.internal.cache.GemFireCacheImpl.addCacheLifecycleListener;
+import static org.apache.geode.internal.cache.GemFireCacheImpl.removeCacheLifecycleListener;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -31,24 +35,41 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.CacheLifecycleListener;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.RegionsTest;
 
 @Category(RegionsTest.class)
 public class ModifyColocationIntegrationTest {
 
+  private final AtomicBoolean cacheExists = new AtomicBoolean();
+
+  private CacheLifecycleListener cacheLifecycleListener;
   private InternalCache cache;
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+  @Before
+  public void setUp() {
+    cacheLifecycleListener = new CacheLifecycleListener() {
+      @Override
+      public void cacheCreated(InternalCache cache) {
+        cacheExists.set(true);
+      }
+
+      @Override
+      public void cacheClosed(InternalCache cache) {
+        cacheExists.set(false);
+      }
+    };
+    addCacheLifecycleListener(cacheLifecycleListener);
+  }
+
   @After
   public void tearDown() {
-    if (cache != null && !cache.isClosed()) {
-      cache.close();
-    }
-    waitUntilCloseActuallyCompletes();
+    removeCacheLifecycleListener(cacheLifecycleListener);
+    cache.close();
   }
 
   /**
@@ -61,7 +82,6 @@ public class ModifyColocationIntegrationTest {
 
     // Close everything
     cache.close();
-    waitUntilCloseActuallyCompletes();
 
     // Restart colocated with "region2"
     Throwable thrown = catchThrowable(() -> createCacheAndColocatedPRs("region2"));
@@ -72,16 +92,14 @@ public class ModifyColocationIntegrationTest {
         .hasMessageContaining("because there is persistent data with different colocation.")
         .hasMessageContaining("Previous configured value is \"/region1\"");
 
-    // Close everything
-    cache.close();
-    waitUntilCloseActuallyCompletes();
+    // await cache close is complete
+    awaitCacheClose();
 
     // Restart colocated with region1. Make sure we didn't screw anything up.
     createCacheAndColocatedPRs("region1");
 
     // Close everything
     cache.close();
-    waitUntilCloseActuallyCompletes();
 
     // Restart uncolocated. We don't allow changing from colocated to uncolocated.
     thrown = catchThrowable(() -> createCacheAndColocatedPRs(null));
@@ -92,6 +110,8 @@ public class ModifyColocationIntegrationTest {
         .hasMessageContaining("cannot change colocated-with to \"\"")
         .hasMessageContaining("because there is persistent data with different colocation.")
         .hasMessageContaining("Previous configured value is \"/region1\"");
+
+    awaitCacheClose();
   }
 
   /**
@@ -134,7 +154,7 @@ public class ModifyColocationIntegrationTest {
     regionFactory.create("region3");
   }
 
-  private void waitUntilCloseActuallyCompletes() {
-    await().until(() -> InternalDistributedSystem.getConnectedInstance() == null);
+  private void awaitCacheClose() {
+    await().until(() -> !cacheExists.get());
   }
 }

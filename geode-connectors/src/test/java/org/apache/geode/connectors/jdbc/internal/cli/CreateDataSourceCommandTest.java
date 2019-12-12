@@ -46,8 +46,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
+import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class CreateDataSourceCommandTest {

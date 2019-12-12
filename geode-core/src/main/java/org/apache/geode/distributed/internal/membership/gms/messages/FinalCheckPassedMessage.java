@@ -23,14 +23,13 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
-public class FinalCheckPassedMessage extends AbstractGMSMessage {
+public class FinalCheckPassedMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
-  private MemberIdentifier suspect;
+  private ID suspect;
 
   public FinalCheckPassedMessage() {}
 
-  public FinalCheckPassedMessage(MemberIdentifier recipient,
-      MemberIdentifier suspect) {
+  public FinalCheckPassedMessage(ID recipient, ID suspect) {
     super();
     setRecipient(recipient);
     this.suspect = suspect;
@@ -63,7 +62,7 @@ public class FinalCheckPassedMessage extends AbstractGMSMessage {
     suspect = context.getDeserializer().readObject(in);
   }
 
-  public MemberIdentifier getSuspect() {
+  public ID getSuspect() {
     return suspect;
   }
 }

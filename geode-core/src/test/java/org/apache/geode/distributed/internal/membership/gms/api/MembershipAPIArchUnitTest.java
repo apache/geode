@@ -27,13 +27,8 @@ import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImpl;
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 
 @RunWith(ArchUnitRunner.class)
@@ -56,19 +51,7 @@ public class MembershipAPIArchUnitTest {
               // TODO: replace this with a rule allowing dependencies on geode-tcp-server module
               .or(type(TcpClient.class))
 
-              // this is allowed
+              // allowed
               .or(type(MembershipBuilderImpl.class))
-              .or(type(MemberDataBuilderImpl.class))
-
-              // TODO to be extracted as Interfaces
-              .or(type(InternalDistributedMember.class))
-              .or(type(MembershipView.class))
-              .or(type(MemberIdentifier.class))
-              .or(type(DistributedMember.class))
-              .or(type(InternalDistributedMember[].class))
-              .or(type(ClusterDistributionManager.class))
-
-              // TODO: This is used by the GMSLocatorAdapter to reach into the locator
-              // part of the services
-              .or(type(Services.class)));
+              .or(type(MemberDataBuilderImpl.class)));
 }

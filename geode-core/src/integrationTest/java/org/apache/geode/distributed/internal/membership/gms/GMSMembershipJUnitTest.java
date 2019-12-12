@@ -23,8 +23,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -46,14 +48,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
-import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership.StartupEvent;
@@ -63,6 +65,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListene
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -79,7 +82,6 @@ public class GMSMembershipJUnitTest {
   private Services services;
   private MembershipConfig mockConfig;
   private DistributionConfig distConfig;
-  private Properties distProperties;
   private Authenticator authenticator;
   private HealthMonitor healthMonitor;
   private InternalDistributedMember myMemberId;
@@ -88,9 +90,8 @@ public class GMSMembershipJUnitTest {
   private JoinLeave joinLeave;
   private Stopper stopper;
   private MembershipListener listener;
-  private GMSMembership manager;
+  private GMSMembership<InternalDistributedMember> manager;
   private List<InternalDistributedMember> members;
-  private DirectChannel dc;
   private MessageListener messageListener;
   private LifecycleListener directChannelCallback;
 
@@ -107,7 +108,6 @@ public class GMSMembershipJUnitTest {
     nonDefault.put(MEMBER_TIMEOUT, "2000");
     nonDefault.put(LOCATORS, "localhost[10344]");
     distConfig = new DistributionConfigImpl(nonDefault);
-    distProperties = nonDefault;
     RemoteTransportConfig tconfig =
         new RemoteTransportConfig(distConfig, ClusterDistributionManager.NORMAL_DM_TYPE);
 
@@ -154,7 +154,7 @@ public class GMSMembershipJUnitTest {
     listener = mock(MembershipListener.class);
     messageListener = mock(MessageListener.class);
     directChannelCallback = mock(LifecycleListener.class);
-    manager = new GMSMembership(listener, messageListener, null, directChannelCallback);
+    manager = new GMSMembership(listener, messageListener, directChannelCallback);
     manager.getGMSManager().init(services);
     when(services.getManager()).thenReturn(manager.getGMSManager());
   }
@@ -313,5 +313,21 @@ public class GMSMembershipJUnitTest {
     }
   }
 
+  @Test
+  public void noDispatchWhenSick() {
+    final DistributionMessage msg = mock(DistributionMessage.class);
+    when(msg.dropMessageWhenMembershipIsPlayingDead()).thenReturn(true);
+
+    final GMSMembership spy = Mockito.spy(manager);
+
+    spy.beSick();
+    spy.getGMSManager().start();
+    spy.getGMSManager().started();
+
+    spy.handleOrDeferMessage(msg);
+
+    verify(spy, never()).dispatchMessage(any(DistributionMessage.class));
+    assertThat(spy.getStartupEvents()).isEmpty();
+  }
 
 }

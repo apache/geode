@@ -24,7 +24,9 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
+  implementation(project(':geode-tcp-server'))
   compile(project(':geode-core'))
+  compile(project(':geode-gfsh'))
   implementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }

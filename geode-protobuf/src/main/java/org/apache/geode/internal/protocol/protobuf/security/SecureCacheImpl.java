@@ -171,7 +171,7 @@ public class SecureCacheImpl implements SecureCache {
   public Object query(String queryString, Object[] bindParameters) throws NameResolutionException,
       TypeMismatchException, QueryInvocationTargetException, FunctionDomainException {
 
-    InternalQueryService queryService = cache.getQueryService();
+    InternalQueryService queryService = (InternalQueryService) cache.getQueryService();
 
     Query query = queryService.newQuery(queryString);
 

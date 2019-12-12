@@ -261,7 +261,7 @@ jobs:
           path: new
         - name: instance-data
       timeout: 15m
-      attempts: 2
+      attempts: 5
   - aggregate:
     - put: geode-build-version
       params:
@@ -528,7 +528,7 @@ jobs:
       - name: attempts-log
         path: new
     timeout: 15m
-    attempts: 2
+    attempts: 5
   - task: rsync_code_up
     image: alpine-tools-image
     config:
@@ -615,7 +615,7 @@ jobs:
             - name: attempts-log
               path: new
           timeout: 15m
-          attempts: 2
+          attempts: 5
         - task: rsync_code_up-{{java_test_version.name}}
           image: alpine-tools-image
           config:
@@ -628,7 +628,7 @@ jobs:
             - name: instance-data-{{java_test_version.name}}
               path: instance-data
           timeout: 15m
-          attempts: 2
+          attempts: 5
         - task: execute_tests-{{java_test_version.name}}
           image: alpine-tools-image
           config:
@@ -666,7 +666,7 @@ jobs:
               - name: geode-results-{{java_test_version.name}}
                 path: geode-results
             timeout: 15m
-            attempts: 2
+            attempts: 5
           ensure:
             do:
             - aggregate:

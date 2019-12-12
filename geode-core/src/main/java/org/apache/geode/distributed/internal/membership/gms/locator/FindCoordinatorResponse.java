@@ -32,14 +32,14 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
-public class FindCoordinatorResponse extends AbstractGMSMessage
+public class FindCoordinatorResponse<ID extends MemberIdentifier> extends AbstractGMSMessage<ID>
     implements DataSerializableFixedID {
 
-  private MemberIdentifier coordinator;
-  private MemberIdentifier senderId;
+  private ID coordinator;
+  private ID senderId;
   private boolean fromView;
-  private GMSMembershipView view;
-  private Set<MemberIdentifier> registrants;
+  private GMSMembershipView<ID> view;
+  private Set<ID> registrants;
   private boolean networkPartitionDetectionEnabled;
   private boolean usePreferredCoordinators;
   private boolean isShortForm;
@@ -48,9 +48,9 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
 
   private int requestId;
 
-  public FindCoordinatorResponse(MemberIdentifier coordinator,
-      MemberIdentifier senderId, boolean fromView, GMSMembershipView view,
-      HashSet<MemberIdentifier> registrants, boolean networkPartitionDectionEnabled,
+  public FindCoordinatorResponse(ID coordinator,
+      ID senderId, boolean fromView, GMSMembershipView<ID> view,
+      HashSet<ID> registrants, boolean networkPartitionDectionEnabled,
       boolean usePreferredCoordinators, byte[] pk) {
     this.coordinator = coordinator;
     this.senderId = senderId;
@@ -63,8 +63,8 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
     this.coordinatorPublicKey = pk;
   }
 
-  public FindCoordinatorResponse(MemberIdentifier coordinator,
-      MemberIdentifier senderId, byte[] pk, int requestId) {
+  public FindCoordinatorResponse(ID coordinator,
+      ID senderId, byte[] pk, int requestId) {
     this.coordinator = coordinator;
     this.senderId = senderId;
     this.isShortForm = true;
@@ -100,7 +100,7 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
     return usePreferredCoordinators;
   }
 
-  public MemberIdentifier getCoordinator() {
+  public ID getCoordinator() {
     return coordinator;
   }
 
@@ -108,7 +108,7 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
    * When the response comes from a locator via TcpClient this will return the locators member ID.
    * If the locator hasn't yet joined this may be null.
    */
-  public MemberIdentifier getSenderId() {
+  public ID getSenderId() {
     return senderId;
   }
 
@@ -116,11 +116,11 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
     return fromView;
   }
 
-  public GMSMembershipView getView() {
+  public GMSMembershipView<ID> getView() {
     return view;
   }
 
-  public Set<MemberIdentifier> getRegistrants() {
+  public Set<ID> getRegistrants() {
     return registrants;
   }
 
@@ -179,7 +179,7 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
       fromView = in.readBoolean();
       networkPartitionDetectionEnabled = in.readBoolean();
       usePreferredCoordinators = in.readBoolean();
-      view = (GMSMembershipView) context.getDeserializer().readObject(in);
+      view = context.getDeserializer().readObject(in);
       registrants = GMSUtil.readHashSetOfMemberIDs(in, context);
     }
   }

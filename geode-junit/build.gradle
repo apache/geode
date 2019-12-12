@@ -27,6 +27,7 @@ dependencies {
   compileOnly(project(':geode-logging'))
   compileOnly(project(':geode-serialization'))
   compileOnly(project(':geode-unsafe'))
+  compileOnly(project(':geode-gfsh'))
 
   compile('com.fasterxml.jackson.core:jackson-annotations')
   compile('com.fasterxml.jackson.core:jackson-databind')

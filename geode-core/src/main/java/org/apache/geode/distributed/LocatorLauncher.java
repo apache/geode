@@ -88,8 +88,8 @@ import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.management.internal.cli.util.HostUtils;
-import org.apache.geode.management.internal.cli.util.JsonUtil;
+import org.apache.geode.management.internal.util.HostUtils;
+import org.apache.geode.management.internal.util.JsonUtil;
 
 /**
  * The LocatorLauncher class is a launcher for a GemFire Locator.
