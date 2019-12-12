@@ -168,7 +168,7 @@ public class ServerLocation implements DataSerializable, Comparable, Serializati
 
   @Override
   public String toString() {
-    return hostName + ":" + port + "@" + memberId;
+    return hostName + ":" + port;
   }
 
   @Override
