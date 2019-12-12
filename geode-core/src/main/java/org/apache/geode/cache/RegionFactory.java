@@ -103,9 +103,9 @@ public class RegionFactory<K, V> {
   /**
    * For internal use only.
    *
-   * @since GemFire 9.10
+   * @since Geode 1.12.0
    */
-  public RegionFactory(InternalCache cache, RegionFactory<K, V> regionFactory) {
+  public RegionFactory(RegionFactory<K, V> regionFactory) {
     this.attrsFactory = new AttributesFactory<>(regionFactory.attrsFactory.create());
     this.cache = regionFactory.cache;
   }
@@ -169,10 +169,6 @@ public class RegionFactory<K, V> {
   public RegionFactory(String regionAttributesId)
       throws CacheWriterException, RegionExistsException, TimeoutException {
     this((InternalCache) new CacheFactory().create(), regionAttributesId);
-  }
-
-  public RegionFactory(RegionFactory<K, V> regionFactory) {
-    this((InternalCache) new CacheFactory().create(), regionFactory);
   }
 
   /**

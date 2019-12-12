@@ -4369,7 +4369,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionFactory<K, V> regionFactory) {
     throwIfClient();
-    return new RegionFactoryImpl<>(this, regionFactory);
+    return new RegionFactoryImpl<>(regionFactory);
   }
 
   /**
