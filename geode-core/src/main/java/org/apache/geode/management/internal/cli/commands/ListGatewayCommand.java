@@ -54,18 +54,17 @@ public class ListGatewayCommand extends GfshCommand {
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.LIST_GATEWAY__GROUP__HELP) String[] onGroup,
-      @CliOption(key = {CliStrings.LIST_GATEWAY__RECEIVERS_ONLY},
-          specifiedDefaultValue = "false", unspecifiedDefaultValue = "true",
-          help = CliStrings.LIST_GATEWAY__RECEIVERS_ONLY) boolean getSenders,
-      @CliOption(key = {CliStrings.LIST_GATEWAY__SENDERS_ONLY},
-          specifiedDefaultValue = "false", unspecifiedDefaultValue = "true",
-          help = CliStrings.LIST_GATEWAY__SENDERS_ONLY__HELP) boolean getReceivers)
+      @CliOption(key = {CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY},
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY) boolean showReceiversOnly,
+      @CliOption(key = {CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY},
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY__HELP) boolean showSendersOnly)
 
       throws Exception {
 
-    if (!getSenders && !getReceivers) {
-      getSenders = true;
-      getReceivers = true;
+    if (showReceiversOnly && showSendersOnly) {
+      return ResultModel.createError(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
     }
 
     ResultModel result = new ResultModel();
@@ -86,7 +85,7 @@ public class ListGatewayCommand extends GfshCommand {
       String memberNameOrId =
           (memberName != null && !memberName.isEmpty()) ? memberName : member.getId();
 
-      if (getSenders) {
+      if (!showReceiversOnly) {
         ObjectName gatewaySenderObjectNames[] =
             dsMXBean.listGatewaySenderObjectNames(memberNameOrId);
         // gateway senders : a member can have multiple gateway senders defined
@@ -109,7 +108,7 @@ public class ListGatewayCommand extends GfshCommand {
         }
       }
       // gateway receivers : a member can have only one gateway receiver
-      if (getReceivers) {
+      if (!showSendersOnly) {
         ObjectName gatewayReceiverObjectName = MBeanJMXAdapter.getGatewayReceiverMBeanName(member);
         if (gatewayReceiverObjectName != null) {
           GatewayReceiverMXBean receiverBean;

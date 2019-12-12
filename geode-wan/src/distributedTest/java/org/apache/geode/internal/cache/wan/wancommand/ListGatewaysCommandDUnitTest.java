@@ -374,7 +374,7 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
   public void testListGatewaySenderOnly() {
     setupClusters();
 
-    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SENDERS_ONLY;
+    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY;
     CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
     commandAssert
         .hasTableSection("gatewaySenders").hasRowSize(4)
@@ -386,7 +386,7 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
   public void testListGatewayReceiversOnly() {
     setupClusters();
 
-    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__RECEIVERS_ONLY;
+    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY;
     CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
     commandAssert.hasNoSection("gatewaySenders");
     commandAssert.hasTableSection("gatewayReceivers")
@@ -394,11 +394,33 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void testListGatewaySenderOnlyAndGatewayReceiverOnly() {
+  public void testListGatewaySenderOnlyAndGatewayReceiverOnlyDefaultValue() {
     setupClusters();
 
-    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SENDERS_ONLY + " --"
-        + CliStrings.LIST_GATEWAY__RECEIVERS_ONLY;
+    String command =
+        CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY + " --"
+            + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY;
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
+  }
+
+  @Test
+  public void testListGatewaySenderOnlyAndGatewayReceiverOnlyExplicitTrue() {
+    setupClusters();
+
+    String command =
+        CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY + "=true --"
+            + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY + "=true";
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(CliStrings.LIST_GATEWAY__ERROR_ON_SHOW_PARAMETERS);
+  }
+
+  @Test
+  public void testListGatewayNoSendersAndNoReceivers() {
+    setupClusters();
+
+    String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.LIST_GATEWAY__SHOW_RECEIVERS_ONLY
+        + "=false --" + CliStrings.LIST_GATEWAY__SHOW_SENDERS_ONLY + "=false";
     CommandResultAssert commandAssert = gfsh.executeAndAssertThat(command).statusIsSuccess();
     commandAssert
         .hasTableSection("gatewaySenders").hasRowSize(4)

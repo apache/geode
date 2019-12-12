@@ -327,7 +327,7 @@ Displays the gateway senders and receivers for a member or members.
 **Syntax:**
 
 ``` pre
-list gateways [--members=value(,value)*] [--groups=value(,value)*] [--senders] [--receivers]
+list gateways [--members=value(,value)*] [--groups=value(,value)*] [--senders | --receivers]
 ```
 
 **Parameters, list gateways:**
@@ -336,8 +336,8 @@ list gateways [--members=value(,value)*] [--groups=value(,value)*] [--senders] [
 |------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">&#8209;&#8209;members</span> | Member(s) whose gateways senders and receiver display.                                                                         |
 | <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members for which Gateway Senders and Receivers will be displayed. Use a comma separated list for multiple groups. |
-| \\-\\-senders                                      | List only gateway senders.                                                                                                     |
-| \\-\\-receivers                                    | List only gateway receivers.                                                                                                   |
+| \\-\\-senders                                      | List only gateway senders. This parameter cannot be used together with `--receivers`                                                                                                     |
+| \\-\\-receivers                                    | List only gateway receivers This parameter cannot be used together with `--senders`.                                                                                                   |
 
 
 **Example Commands:**
