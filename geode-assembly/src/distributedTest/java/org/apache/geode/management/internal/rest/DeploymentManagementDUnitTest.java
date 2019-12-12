@@ -123,7 +123,7 @@ public class DeploymentManagementDUnitTest {
     List<DeploymentInfo> runtimeResult = resultAssert.getActual().getRuntimeResult();
     assertThat(runtimeResult).extracting(DeploymentInfo::getJarLocation).extracting(
         FilenameUtils::getName).containsExactlyInAnyOrder("cluster.v1.jar", "cluster.v1.jar");
-    assertThat(runtimeResult.get(0).getTimeDeployed()).isNotNull();
+    assertThat(runtimeResult.get(0).getLastModified()).isNotNull();
   }
 
   @Test

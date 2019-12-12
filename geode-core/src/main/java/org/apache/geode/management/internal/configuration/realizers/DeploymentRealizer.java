@@ -47,7 +47,7 @@ public class DeploymentRealizer extends ReadOnlyConfigurationRealizer<Deployment
     DeployedJar deployedJar = deployedJars.get(artifactId);
     if (deployedJar != null) {
       File file = deployedJar.getFile();
-      info.setTimeDeployed(getDateString(file.lastModified()));
+      info.setLastModified(getDateString(file.lastModified()));
       info.setJarLocation(file.getAbsolutePath());
     } else {
       info.setJarLocation(JAR_NOT_DEPLOYED);
