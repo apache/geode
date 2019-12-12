@@ -64,6 +64,7 @@ import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
@@ -315,18 +316,14 @@ public class GMSMembershipJUnitTest {
   }
 
   @Test
-  public void noDispatchWhenSick() throws MemberShunnedException {
+  public void noDispatchWhenSick() throws MemberShunnedException, MemberStartupException {
     final DistributionMessage msg = mock(DistributionMessage.class);
     when(msg.dropMessageWhenMembershipIsPlayingDead()).thenReturn(true);
 
     final GMSMembership spy = Mockito.spy(manager);
 
     spy.beSick();
-    try {
-      spy.getGMSManager().start();
-    } catch (org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException e) {
-      e.printStackTrace();
-    }
+    spy.getGMSManager().start();
     spy.getGMSManager().started();
 
     spy.handleOrDeferMessage(msg);
