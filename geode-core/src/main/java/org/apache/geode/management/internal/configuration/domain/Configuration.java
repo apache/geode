@@ -19,7 +19,6 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Objects;
@@ -52,7 +51,6 @@ public class Configuration implements DataSerializable {
   private String propertiesFileName;
   private Properties gemfireProperties;
   Set<String> jarNames;
-  private HashMap<String, String> jarNameToWhen;
 
   // Public no arg constructor required for Deserializable
   public Configuration() {
@@ -67,7 +65,6 @@ public class Configuration implements DataSerializable {
     this.gemfireProperties = new Properties();
     this.gemfireProperties.putAll(that.gemfireProperties);
     this.jarNames = new HashSet<>(that.jarNames);
-    this.jarNameToWhen = new HashMap<>(that.jarNameToWhen);
   }
 
   public Configuration(String configName) {
@@ -76,7 +73,6 @@ public class Configuration implements DataSerializable {
     this.propertiesFileName = configName + ".properties";
     this.gemfireProperties = new Properties();
     this.jarNames = new HashSet<>();
-    this.jarNameToWhen = new HashMap<>();
   }
 
   public String getCacheXmlContent() {
@@ -174,7 +170,6 @@ public class Configuration implements DataSerializable {
     DataSerializer.writeString(propertiesFileName, out);
     DataSerializer.writeProperties(gemfireProperties, out);
     DataSerializer.writeHashSet((HashSet<?>) jarNames, out);
-    DataSerializer.writeHashMap(jarNameToWhen, out);
   }
 
   @Override
@@ -185,16 +180,19 @@ public class Configuration implements DataSerializable {
     this.propertiesFileName = DataSerializer.readString(in);
     this.gemfireProperties = DataSerializer.readProperties(in);
     this.jarNames = DataSerializer.readHashSet(in);
-    this.jarNameToWhen = DataSerializer.readHashMap(in);
   }
 
 
   @Override
   public String toString() {
-    return "Configuration [configName=" + configName + ", cacheXmlContent=" + cacheXmlContent
-        + ", cacheXmlFileName=" + cacheXmlFileName + ", propertiesFileName=" + propertiesFileName
-        + ", gemfireProperties=" + gemfireProperties + ", jarNames=" + jarNames + ", jarNameToWhen="
-        + jarNameToWhen + "]";
+    return "Configuration{" +
+        "configName='" + configName + '\'' +
+        ", cacheXmlContent='" + cacheXmlContent + '\'' +
+        ", cacheXmlFileName='" + cacheXmlFileName + '\'' +
+        ", propertiesFileName='" + propertiesFileName + '\'' +
+        ", gemfireProperties=" + gemfireProperties +
+        ", jarNames=" + jarNames +
+        '}';
   }
 
   @Override
@@ -211,14 +209,13 @@ public class Configuration implements DataSerializable {
         Objects.equals(cacheXmlFileName, that.cacheXmlFileName) &&
         Objects.equals(propertiesFileName, that.propertiesFileName) &&
         Objects.equals(gemfireProperties, that.gemfireProperties) &&
-        Objects.equals(jarNames, that.jarNames) &&
-        Objects.equals(jarNameToWhen, that.jarNameToWhen);
+        Objects.equals(jarNames, that.jarNames);
   }
 
   @Override
   public int hashCode() {
     return Objects
         .hash(configName, cacheXmlContent, cacheXmlFileName, propertiesFileName, gemfireProperties,
-            jarNames, jarNameToWhen);
+            jarNames);
   }
 }
