@@ -112,6 +112,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private volatile boolean isQueueEmpty = true;
 
   private final boolean cleanQueues;
+
+  // This is for UT purpose only
+  boolean getCleanQueues() {
+    return cleanQueues;
+  }
+
+
   private final boolean asyncEvent;
 
   /**
