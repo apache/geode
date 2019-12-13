@@ -36,12 +36,9 @@ import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
-import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -76,7 +73,13 @@ public class MembershipDependenciesJUnitTest {
       .should()
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
+
+              // OK to depend on these "leaf" dependencies
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
+              .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api.."))
+              .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
+              .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
+
               .or(not(resideInAPackage("org.apache.geode.."))));
 
   /*
@@ -98,6 +101,7 @@ public class MembershipDependenciesJUnitTest {
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
               .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api.."))
               .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
+              .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
 
@@ -117,18 +121,12 @@ public class MembershipDependenciesJUnitTest {
               // TODO
               .or(assignableTo(CancelCriterion.class))
 
-              // TODO
-              .or(assignableTo(ConnectionWatcher.class))
-
               // TODO:
               .or(type(SocketCreator.class))
               .or(type(SocketCreatorFactory.class))
 
               // TODO: break dependencies on locator-related classes
               .or(type(Locator.class))
-              .or(type(TcpClient.class))
-              .or(type(DistributionLocatorId.class))
-              .or(type(NetLocator.class))
 
               // TODO: break dependency on internal.security
               .or(type(SecurableCommunicationChannel.class))
@@ -146,7 +144,5 @@ public class MembershipDependenciesJUnitTest {
               .or(type(AlertingAction.class))
 
               // TODO:
-              .or(type(LocalViewMessage.class))
-
-  );
+              .or(type(LocalViewMessage.class)));
 }
