@@ -16,9 +16,9 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.management.configuration.Index.INDEXES;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.configuration.Region.REGION_CONFIG_ENDPOINT;
-import static org.apache.geode.management.internal.rest.controllers.RegionManagementController.INDEXES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;

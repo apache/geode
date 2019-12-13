@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.runtime;
 
+import java.util.Objects;
+
 import org.apache.geode.annotations.Experimental;
 
 @Experimental
@@ -54,5 +56,30 @@ public class PdxInfo extends RuntimeInfo {
 
   public void setPdxSerializer(String pdxSerializer) {
     this.pdxSerializer = pdxSerializer;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof PdxInfo)) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    PdxInfo pdxInfo = (PdxInfo) o;
+    return isReadSerialized() == pdxInfo.isReadSerialized() &&
+        isIgnoreUnreadFields() == pdxInfo.isIgnoreUnreadFields() &&
+        Objects.equals(getDiskStoreName(), pdxInfo.getDiskStoreName()) &&
+        Objects.equals(getPdxSerializer(), pdxInfo.getPdxSerializer());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects
+        .hash(super.hashCode(), isReadSerialized(), getDiskStoreName(), isIgnoreUnreadFields(),
+            getPdxSerializer());
   }
 }

@@ -16,6 +16,7 @@
 package org.apache.geode.management.runtime;
 
 
+import java.util.Objects;
 
 public class DeploymentInfo extends RuntimeInfo {
   private String jarLocation;
@@ -35,5 +36,25 @@ public class DeploymentInfo extends RuntimeInfo {
 
   public void setJarLocation(String jarLocation) {
     this.jarLocation = jarLocation;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof DeploymentInfo)) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    DeploymentInfo that = (DeploymentInfo) o;
+    return Objects.equals(getJarLocation(), that.getJarLocation());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), getJarLocation());
   }
 }

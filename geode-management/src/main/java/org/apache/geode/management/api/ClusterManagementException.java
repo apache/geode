@@ -24,6 +24,12 @@ public class ClusterManagementException extends RuntimeException {
   /**
    * for internal use only
    */
+
+  public ClusterManagementException(ClusterManagementResult.StatusCode statusCode, String message) {
+    super(statusCode.name() + ": " + message);
+    this.result = new ClusterManagementResult(statusCode, message);
+  }
+
   public ClusterManagementException(ClusterManagementResult result) {
     super(result.toString());
     this.result = result;

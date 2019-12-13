@@ -13,25 +13,20 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.configuration.mutators;
+package org.apache.geode.management.runtime;
 
+public class IndexInfo extends RuntimeInfo {
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof IndexInfo) {
+      return super.equals(o);
+    } else {
+      return false;
+    }
+  }
 
-import java.util.List;
-
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.configuration.AbstractConfiguration;
-
-/**
- * Defines the behavior to mutate a configuration change into a pre-existing cache config
- */
-@Experimental
-public interface ConfigurationManager<T extends AbstractConfiguration> {
-
-  void add(T config, String groupName);
-
-  void delete(T config, String groupName);
-
-  void update(T config, String groupName);
-
-  List<T> list(T filterConfig, String groupName);
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
 }

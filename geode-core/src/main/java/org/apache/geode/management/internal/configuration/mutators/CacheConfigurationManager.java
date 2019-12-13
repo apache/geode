@@ -18,7 +18,6 @@
 package org.apache.geode.management.internal.configuration.mutators;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 import org.apache.logging.log4j.Logger;
@@ -54,9 +53,10 @@ public abstract class CacheConfigurationManager<T extends AbstractConfiguration>
 
   public abstract List<T> list(T filterConfig, CacheConfig existing);
 
-  public abstract T get(String id, CacheConfig existing);
+  public abstract T get(T config, CacheConfig existing);
 
   /**
+   *
    * @param incoming the one that's about to be persisted
    * @param group the group name of the existing cache element
    * @param existing the existing cache element on another group
@@ -68,18 +68,18 @@ public abstract class CacheConfigurationManager<T extends AbstractConfiguration>
   public void checkCompatibility(T incoming, String group, T existing) {}
 
   @Override
-  public final boolean add(T config, String groupName) {
-    return updateCacheConfig(config, groupName, this::add);
+  public final void add(T config, String groupName) {
+    updateCacheConfig(config, groupName, this::add);
   }
 
   @Override
-  public final boolean delete(T config, String groupName) {
-    return updateCacheConfig(config, groupName, this::delete);
+  public final void delete(T config, String groupName) {
+    updateCacheConfig(config, groupName, this::delete);
   }
 
   @Override
-  public final boolean update(T config, String groupName) {
-    return updateCacheConfig(config, groupName, this::update);
+  public final void update(T config, String groupName) {
+    updateCacheConfig(config, groupName, this::update);
   }
 
   @Override
@@ -91,21 +91,11 @@ public abstract class CacheConfigurationManager<T extends AbstractConfiguration>
     return list(filterConfig, currentPersistedConfig);
   }
 
-  boolean updateCacheConfig(T config, String groupName, BiConsumer<T, CacheConfig> updater) {
-    AtomicBoolean success = new AtomicBoolean(true);
+  void updateCacheConfig(T config, String groupName, BiConsumer<T, CacheConfig> updater) {
     persistenceService.updateCacheConfig(groupName, cacheConfigForGroup -> {
-      try {
-        updater.accept(config, cacheConfigForGroup);
-      } catch (Exception e) {
-        String message = "Failed to update cluster configuration for " + groupName + ".";
-        logger.error(message, e);
-        success.set(false);
-        // returning null indicating no changes needs to be persisted.
-        return null;
-      }
+      updater.accept(config, cacheConfigForGroup);
       return cacheConfigForGroup;
     });
-    return success.get();
   }
 
 }

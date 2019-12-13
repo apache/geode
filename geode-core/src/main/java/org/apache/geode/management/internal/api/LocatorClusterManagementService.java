@@ -79,6 +79,7 @@ import org.apache.geode.management.internal.configuration.mutators.RegionConfigM
 import org.apache.geode.management.internal.configuration.validators.CommonConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.GatewayReceiverConfigValidator;
+import org.apache.geode.management.internal.configuration.validators.IndexValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.PdxValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
@@ -116,6 +117,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     validators.put(Region.class, new RegionConfigValidator(cache));
     validators.put(GatewayReceiver.class, new GatewayReceiverConfigValidator());
     validators.put(Pdx.class, new PdxValidator());
+    validators.put(Index.class, new IndexValidator());
   }
 
   @VisibleForTesting
@@ -183,14 +185,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // persist configuration in cache config
-    boolean success = configurationManager.add(config, groupName);
-    if (success) {
-      result.setStatus(StatusCode.OK,
-          "Successfully updated configuration for " + groupName + ".");
-    } else {
-      String message = "Failed to update cluster configuration for " + groupName + ".";
-      result.setStatus(StatusCode.FAIL_TO_PERSIST, message);
-    }
+
+    configurationManager.add(config, groupName);
+    result.setStatus(StatusCode.OK,
+        "Successfully updated configuration for " + groupName + ".");
 
     // add the config object which includes the HATEOAS information of the element created
     if (result.isSuccessful()) {
@@ -224,7 +222,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     String[] groupsWithThisElement =
-        memberValidator.findGroupsWithThisElement(config.getId(), configurationManager);
+        memberValidator.findGroupsWithThisElement(config, configurationManager);
     if (groupsWithThisElement.length == 0) {
       raise(StatusCode.ENTITY_NOT_FOUND,
           config.getClass().getSimpleName() + " '" + config.getId() + "' does not exist.");
@@ -249,10 +247,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
     List<String> updatedGroups = new ArrayList<>();
     List<String> failedGroups = new ArrayList<>();
     for (String finalGroup : groupsWithThisElement) {
-      boolean success = configurationManager.delete(config, finalGroup);
-      if (success) {
+      try {
+        configurationManager.delete(config, finalGroup);
         updatedGroups.add(finalGroup);
-      } else {
+      } catch (Exception e) {
+        logger.error(e.getMessage(), e);
         failedGroups.add(finalGroup);
       }
     }
