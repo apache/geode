@@ -74,7 +74,6 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.InternalMembershipException;
-import org.apache.geode.distributed.internal.membership.gms.MembershipIOException;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
@@ -694,12 +693,18 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
     JGAddress local = this.jgAddress;
 
+    Set<ID> failedRecipients = new HashSet<>();
     if (useMcast) {
-
       long startSer = theStats.startMsgSerialization();
-      org.jgroups.Message jmsg =
-          createJGMessage(msg, local, null, Version.getCurrentVersion().ordinal());
-      theStats.endMsgSerialization(startSer);
+      org.jgroups.Message jmsg;
+      try {
+        jmsg =
+            createJGMessage(msg, local, null, Version.getCurrentVersion().ordinal());
+      } catch (IOException e) {
+        return new HashSet<>(msg.getRecipients());
+      } finally {
+        theStats.endMsgSerialization(startSer);
+      }
 
       Exception problem;
       try {
@@ -766,8 +771,14 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       for (ID mbr : calculatedMembers) {
         short version = mbr.getVersionOrdinal();
         if (!messages.containsKey(version)) {
-          org.jgroups.Message jmsg = createJGMessage(msg, local, mbr, version);
-          messages.put(version, jmsg);
+          org.jgroups.Message jmsg;
+          try {
+            jmsg = createJGMessage(msg, local, mbr, version);
+            messages.put(version, jmsg);
+          } catch (IOException e) {
+            failedRecipients.add(mbr);
+            continue;
+          }
           if (firstMessage) {
             theStats.incSentBytes(jmsg.getLength());
             firstMessage = false;
@@ -819,20 +830,19 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     // The contract is that every destination enumerated in the
     // message should have received the message. If one left
     // (i.e., left the view), we signal it here.
-    if (msg.forAll()) {
+    if (failedRecipients.isEmpty() && msg.forAll()) {
       return Collections.emptySet();
     }
-    Set<ID> result = new HashSet<>();
     GMSMembershipView<ID> newView = this.view;
     if (newView != null && newView != oldView) {
       for (ID d : destinations) {
         if (!newView.contains(d)) {
           logger.debug("messenger: member has left the view: {}  view is now {}", d, newView);
-          result.add(d);
+          failedRecipients.add(d);
         }
       }
     }
-    return result;
+    return failedRecipients;
   }
 
   /**
@@ -846,7 +856,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
    * @return the new message
    */
   org.jgroups.Message createJGMessage(Message<ID> gfmsg, JGAddress src, ID dst,
-      short version) {
+      short version) throws IOException {
     gfmsg.registerProcessor();
     org.jgroups.Message msg = new org.jgroups.Message();
     msg.setDest(null);
@@ -868,19 +878,13 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
       msg.setBuffer(out_stream.toByteArray());
       services.getStatistics().endMsgSerialization(start);
-    } catch (IOException | MembershipIOException ex) {
+    } catch (IOException ex) {
       logger.warn("Error serializing message", ex);
-      if (ex instanceof MembershipIOException) {
-        throw (MembershipIOException) ex;
-      } else {
-        MembershipIOException ioe = new MembershipIOException("Error serializing message");
-        ioe.initCause(ex);
-        throw ioe;
-      }
+      throw ex;
     } catch (Exception ex) {
       logger.warn("Error serializing message", ex);
-      MembershipIOException ioe =
-          new MembershipIOException("Error serializing message", ex.getCause());
+      IOException ioe =
+          new IOException("Error serializing message", ex.getCause());
       throw ioe;
     }
     return msg;

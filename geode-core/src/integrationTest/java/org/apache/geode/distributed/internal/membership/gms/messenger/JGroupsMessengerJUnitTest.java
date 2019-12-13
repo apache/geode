@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -52,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeoutException;
 
@@ -75,7 +77,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
-import org.apache.geode.distributed.internal.membership.gms.MembershipIOException;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
@@ -294,23 +295,17 @@ public class JGroupsMessengerJUnitTest {
       // latter is not
       doThrow(new SerializationException("")).when(msg).toData(any(DataOutput.class),
           any(SerializationContext.class));
-      try {
-        messenger.send(msg);
-        fail("expected a failure");
-      } catch (MembershipIOException e) {
-        // success
-      }
+      Set<?> failures = messenger.send(msg);
+      assertThat(failures).isNotNull();
+      assertThat(failures).isNotEmpty();
       if (enableMcast) {
         verify(msg, atLeastOnce()).registerProcessor();
       }
       doThrow(new IOException()).when(msg).toData(any(DataOutput.class),
           any(SerializationContext.class));
-      try {
-        messenger.send(msg);
-        fail("expected a failure");
-      } catch (MembershipIOException e) {
-        // success
-      }
+      failures = messenger.send(msg);
+      assertThat(failures).isNotNull();
+      assertThat(failures).isNotEmpty();
     }
   }
 
@@ -431,11 +426,8 @@ public class JGroupsMessengerJUnitTest {
       when(msg.getMulticast()).thenReturn(enableMcast);
       when(msg.getDSFID()).thenReturn((int) DataSerializableFixedID.HEARTBEAT_RESPONSE);
       interceptor.collectMessages = true;
-      try {
-        messenger.sendUnreliably(msg);
-      } catch (MembershipIOException e) {
-        fail("expected success");
-      }
+      Set<?> failures = messenger.sendUnreliably(msg);
+      assertTrue(failures == null || failures.isEmpty());
       if (enableMcast) {
         verify(msg, atLeastOnce()).registerProcessor();
       }
