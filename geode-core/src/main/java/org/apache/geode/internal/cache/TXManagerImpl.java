@@ -61,7 +61,6 @@ import org.apache.geode.internal.SystemTimer.SystemTimerTask;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
@@ -122,7 +121,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   // Used for testing only.
   private final Set<TXId> scheduledToBeRemovedTx =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "trackScheduledToBeRemovedTx")
-          ? new ConcurrentHashSet<TXId>() : null;
+          ? ConcurrentHashMap.newKeySet() : null;
 
   /**
    * the number of client initiated transactions to store for client failover
@@ -1876,7 +1875,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   private final Set<InternalDistributedMember> departedProxyServers =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "trackScheduledToBeRemovedTx")
-          ? new ConcurrentHashSet<InternalDistributedMember>() : null;
+          ? ConcurrentHashMap.newKeySet() : null;
 
   /**
    * provide a test hook to track departed peers

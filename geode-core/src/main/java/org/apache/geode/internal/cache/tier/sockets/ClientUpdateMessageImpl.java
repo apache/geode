@@ -44,7 +44,6 @@ import org.apache.geode.internal.cache.WrappedCallbackArgument;
 import org.apache.geode.internal.cache.ha.HAContainerRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -1149,12 +1148,12 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     // This happens under synchronization on HAContainer.
     if (receiveValues) {
       if (this._clientInterestList == null) {
-        this._clientInterestList = new ConcurrentHashSet<>();
+        this._clientInterestList = ConcurrentHashMap.newKeySet();
       }
       this._clientInterestList.add(clientId);
     } else {
       if (this._clientInterestListInv == null) {
-        this._clientInterestListInv = new ConcurrentHashSet<>();
+        this._clientInterestListInv = ConcurrentHashMap.newKeySet();
       }
       this._clientInterestListInv.add(clientId);
     }
