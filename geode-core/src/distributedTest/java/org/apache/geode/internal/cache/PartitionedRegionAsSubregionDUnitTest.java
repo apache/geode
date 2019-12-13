@@ -216,8 +216,8 @@ public class PartitionedRegionAsSubregionDUnitTest extends CacheTestCase {
   private void createChildRegion(final VM vm) {
     vm.invoke(() -> {
       Cache cache = getCache();
-      RegionFactory<String, String> regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
-      Region<String, String> parentRegion = cache.getRegion(PARENT_REGION_NAME);
+      RegionFactory<?, ?> regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+      Region<?, ?> parentRegion = cache.getRegion(PARENT_REGION_NAME);
       regionFactory.createSubregion(parentRegion, CHILD_REGION_NAME);
     });
   }
