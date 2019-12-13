@@ -30,8 +30,9 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /**
  * Used to configure an attribute that represents an instance of a java class.
- * If the class implements {@link org.apache.geode.cache.Declarable} then
- * properties can also be configured that will be used to initialize the instance.
+ * If the class implements the org.apache.geode.cache.Declarable interface from the
+ * geode-core module then properties can also be configured that will be
+ * used to initialize the instance.
  */
 public class ClassName implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -60,7 +61,8 @@ public class ClassName implements Serializable {
    *
    * @param className this class needs to have a no-arg constructor
    * @param jsonInitProperties a json representation of the initialization properties
-   *        that will be passed to {@link org.apache.geode.cache.Declarable#initialize}.
+   *        that will be passed to {@code org.apache.geode.cache.Declarable#initialize}
+   *        in the geode-core module.
    *        If the className is not Declarable, then these properties will be ignored
    * @throws IllegalArgumentException if the class name is not valid
    * @throws IllegalArgumentException if jsonInitProperties is invalid JSON
@@ -84,7 +86,8 @@ public class ClassName implements Serializable {
    * @param className the name of the class to be instantiated. This class needs to have
    *        a no-arg constructor.
    * @param properties the initialization properties
-   *        that will be passed to {@link org.apache.geode.cache.Declarable#initialize}.
+   *        that will be passed to {@code org.apache.geode.cache.Declarable#initialize}
+   *        in the geode-core module.
    *        If the className is not Declarable, then these properties will be ignored
    *
    * @throws IllegalArgumentException if classname contains illegal classname characters
