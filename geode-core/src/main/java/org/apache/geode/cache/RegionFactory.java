@@ -780,7 +780,8 @@ public class RegionFactory<K, V> {
    * @throws CacheClosedException if the cache is closed
    * @since GemFire 7.0
    */
-  public Region<K, V> createSubregion(Region<K, V> parent, String name)
+  @SuppressWarnings("unchecked")
+  public Region<K, V> createSubregion(Region<?, ?> parent, String name)
       throws RegionExistsException {
     @SuppressWarnings("deprecation")
     RegionAttributes<K, V> ra = this.attrsFactory.create();
