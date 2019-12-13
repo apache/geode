@@ -73,7 +73,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.distributed.internal.membership.gms.InternalMembershipException;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
@@ -186,7 +185,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       receiver.setAccessible(true);
       receiver.set(channel, r);
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new InternalMembershipException("unable to establish a JGroups receiver", e);
+      throw new IllegalStateException("unable to establish a JGroups receiver", e);
     }
   }
 
@@ -370,7 +369,11 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
     try {
       jgroupsReceiver = new JGroupsReceiver();
-      setChannelReceiver(myChannel, jgroupsReceiver);
+      try {
+        setChannelReceiver(myChannel, jgroupsReceiver);
+      } catch (IllegalStateException e) {
+        throw new MemberStartupException("problem initializing JGroups", e);
+      }
       if (!reconnecting) {
         myChannel.connect("AG"); // Apache Geode
       }
@@ -506,7 +509,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     }
   }
 
-  private void establishLocalAddress() {
+  private void establishLocalAddress() throws MemberStartupException {
     UUID logicalAddress = (UUID) myChannel.getAddress();
     logicalAddress = logicalAddress.copy();
 
@@ -523,7 +526,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         ipaddr = (IpAddress) getAddress.invoke(udp, new Object[0]);
         this.jgAddress = new JGAddress(logicalAddress, ipaddr);
       } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-        throw new InternalMembershipException(
+        throw new MemberStartupException(
             "Unable to configure JGroups channel for membership communications", e);
       }
     }
@@ -792,6 +795,9 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         JGAddress to = new JGAddress(mbr);
         short version = mbr.getVersionOrdinal();
         org.jgroups.Message jmsg = messages.get(version);
+        if (jmsg == null) {
+          continue; // failed for all recipients
+        }
         Exception problem = null;
         try {
           org.jgroups.Message tmp = (i < (calculatedLen - 1)) ? jmsg.copy(true) : jmsg;

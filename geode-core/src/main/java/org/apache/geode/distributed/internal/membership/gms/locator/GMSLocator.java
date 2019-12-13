@@ -42,7 +42,6 @@ import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.distributed.internal.membership.gms.InternalMembershipException;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
@@ -471,7 +470,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
         logger.warn("Peer locator was unable to recover from or delete {}", file);
         viewFile = null;
       }
-      throw new InternalMembershipException(message, e);
+      throw new IllegalStateException(message, e);
     }
   }
 }
