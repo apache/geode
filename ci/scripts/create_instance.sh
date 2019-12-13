@@ -122,6 +122,7 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
   --labels="${LABELS}" \
   --tags="heavy-lifter" \
   --scopes="default,storage-rw" \
+  --metadata="disable-agent-updates=true" \
   --format=json)
 
 CREATE_RC=$?
