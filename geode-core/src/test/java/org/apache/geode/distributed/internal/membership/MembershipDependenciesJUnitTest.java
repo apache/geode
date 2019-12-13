@@ -33,7 +33,6 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
@@ -150,11 +149,7 @@ public class MembershipDependenciesJUnitTest {
               // TODO:
               .or(type(AlertingAction.class))
 
-              // TODO: MemberIDs need a new interface for membership
-              .or(type(InternalDistributedMember.class))
-              .or(type(InternalDistributedMember[].class))
-              .or(type(DistributedMember.class))
-              .or(type(MembershipView.class))
+              // TODO:
               .or(type(LocalViewMessage.class))
 
   );

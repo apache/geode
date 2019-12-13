@@ -130,7 +130,9 @@ public class TCPClientSSLIntegrationTest {
                     new DistributionConfigImpl(sslProperties),
                     SecurableCommunicationChannel.LOCATOR))),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        "not-a-system-property",
+        "not-a-system-property");
 
     server.start();
   }

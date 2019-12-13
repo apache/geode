@@ -24,21 +24,22 @@ import javax.crypto.Cipher;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
-public class GMSEncryptionCipherPool {
+public class GMSEncryptionCipherPool<ID extends MemberIdentifier> {
   private static final int MAX_CIPHERS_PER_POOL = Integer.getInteger("GMSEncrypt.MAX_ENCRYPTORS",
       Math.max(Runtime.getRuntime().availableProcessors() * 4, 16));
   private static final int MAX_CIPHER_WAIT_IN_SEC = 10;
   private static final Logger logger = Services.getLogger();
 
-  private final GMSEncrypt gmsEncrypt;
+  private final GMSEncrypt<ID> gmsEncrypt;
   private final byte[] secretBytes;
   private final BlockingQueue<Cipher> encryptCipherQueue = new LinkedBlockingQueue<>();
   private final AtomicInteger encryptCipherCount = new AtomicInteger(0);
   private final BlockingQueue<Cipher> decryptCipherQueue = new LinkedBlockingQueue<>();
   private final AtomicInteger decryptCipherCount = new AtomicInteger(0);
 
-  GMSEncryptionCipherPool(GMSEncrypt gmsEncrypt, byte[] secretBytes) {
+  GMSEncryptionCipherPool(GMSEncrypt<ID> gmsEncrypt, byte[] secretBytes) {
     this.gmsEncrypt = gmsEncrypt;
     this.secretBytes = secretBytes;
   }

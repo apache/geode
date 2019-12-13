@@ -22,11 +22,16 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.internal.configuration.converters.IndexConverter;
 
-public class IndexConfigManager implements ConfigurationManager<Index> {
+public class IndexConfigManager extends CacheConfigurationManager<Index> {
   private final IndexConverter converter = new IndexConverter();
+
+  public IndexConfigManager(ConfigurationPersistenceService persistenceService) {
+    super(persistenceService);
+  }
 
   @Override
   public void add(Index config, CacheConfig existing) {

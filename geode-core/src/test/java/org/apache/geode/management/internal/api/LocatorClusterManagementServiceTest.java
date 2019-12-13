@@ -64,6 +64,7 @@ import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
+import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
@@ -89,24 +90,24 @@ public class LocatorClusterManagementServiceTest {
   private OperationManager executorManager;
   private ConfigurationValidator<Region> regionValidator;
   private CommonConfigurationValidator cacheElementValidator;
-  private ConfigurationManager<Region> regionManager;
+  private CacheConfigurationManager<Region> regionManager;
   private MemberValidator memberValidator;
 
   @Before
   public void before() throws Exception {
+    persistenceService = spy(new InternalConfigurationPersistenceService(
+        JAXBService.create(CacheConfig.class)));
+
     cache = mock(InternalCache.class);
     regionValidator = mock(RegionConfigValidator.class);
     doCallRealMethod().when(regionValidator).validate(eq(CacheElementOperation.DELETE), any());
-    regionManager = spy(RegionConfigManager.class);
+    regionManager = spy(new RegionConfigManager(persistenceService));
     cacheElementValidator = spy(CommonConfigurationValidator.class);
     validators.put(Region.class, regionValidator);
     managers.put(Region.class, regionManager);
-    managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager());
+    managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager(null));
 
     memberValidator = mock(MemberValidator.class);
-
-    persistenceService = spy(new InternalConfigurationPersistenceService(
-        JAXBService.create(CacheConfig.class)));
 
     Set<String> groups = new HashSet<>();
     groups.add("cluster");
@@ -208,7 +209,7 @@ public class LocatorClusterManagementServiceTest {
 
     service.list(regionConfig);
     verify(persistenceService).getCacheConfig("cluster", true);
-    verify(regionManager).list(any(), any());
+    verify(regionManager).list(any(Region.class), any(CacheConfig.class));
   }
 
   @Test
@@ -218,7 +219,7 @@ public class LocatorClusterManagementServiceTest {
 
     service.list(regionConfig);
     verify(persistenceService).getCacheConfig("cluster", true);
-    verify(regionManager).list(any(), any());
+    verify(regionManager).list(any(Region.class), any(CacheConfig.class));
   }
 
   @Test
@@ -341,7 +342,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
     ClusterManagementRealizationResult result = service.delete(regionConfig);
-    verify(regionManager).delete(eq(regionConfig), any());
+    verify(regionManager).delete(eq(regionConfig), any(CacheConfig.class));
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).hasSize(0);
     assertThat(result.getStatusMessage())

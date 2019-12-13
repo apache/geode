@@ -23,16 +23,16 @@ import java.util.function.Supplier;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 
 public interface Distribution {
   void start();
 
-  MembershipView getView();
+  MembershipView<InternalDistributedMember> getView();
 
   InternalDistributedMember getLocalMember();
 
@@ -47,20 +47,18 @@ public interface Distribution {
   Map<String, Long> getMessageState(
       DistributedMember member, boolean includeMulticast);
 
-  void waitForMessageState(DistributedMember member,
+  void waitForMessageState(InternalDistributedMember member,
       Map<String, Long> state) throws InterruptedException;
 
-  boolean requestMemberRemoval(DistributedMember member,
+  boolean requestMemberRemoval(InternalDistributedMember member,
       String reason);
 
-  boolean verifyMember(DistributedMember mbr,
+  boolean verifyMember(InternalDistributedMember mbr,
       String reason);
-
-  boolean isShunned(DistributedMember m);
 
   <V> V doWithViewLocked(Supplier<V> function);
 
-  boolean memberExists(DistributedMember m);
+  boolean memberExists(InternalDistributedMember m);
 
   boolean isConnected();
 
@@ -76,7 +74,7 @@ public interface Distribution {
 
   void shutdown();
 
-  void shutdownMessageReceived(DistributedMember id,
+  void shutdownMessageReceived(InternalDistributedMember id,
       String reason);
 
   void waitForEventProcessing() throws InterruptedException;
@@ -91,13 +89,13 @@ public interface Distribution {
 
   void emergencyClose();
 
-  void addSurpriseMemberForTesting(DistributedMember mbr,
+  void addSurpriseMemberForTesting(InternalDistributedMember mbr,
       long birthTime);
 
-  void suspectMembers(Set<DistributedMember> members,
+  void suspectMembers(Set<InternalDistributedMember> members,
       String reason);
 
-  void suspectMember(DistributedMember member,
+  void suspectMember(InternalDistributedMember member,
       String reason);
 
   Throwable getShutdownCause();
@@ -108,14 +106,14 @@ public interface Distribution {
   void unregisterTestHook(
       MembershipTestHook mth);
 
-  boolean addSurpriseMember(DistributedMember mbr);
+  boolean addSurpriseMember(InternalDistributedMember mbr);
 
-  void startupMessageFailed(DistributedMember mbr,
+  void startupMessageFailed(InternalDistributedMember mbr,
       String failureMessage);
 
   boolean testMulticast();
 
-  boolean isSurpriseMember(DistributedMember m);
+  boolean isSurpriseMember(InternalDistributedMember m);
 
   QuorumChecker getQuorumChecker();
 
@@ -141,7 +139,7 @@ public interface Distribution {
 
   // TODO - this method is only used by tests
   @VisibleForTesting
-  void installView(GMSMembershipView newView);
+  void installView(GMSMembershipView<InternalDistributedMember> newView);
 
   // TODO - this method is only used by tests
   @VisibleForTesting
@@ -149,10 +147,10 @@ public interface Distribution {
 
   void disableDisconnectOnQuorumLossForTesting();
 
-  boolean waitForDeparture(DistributedMember mbr)
+  boolean waitForDeparture(InternalDistributedMember mbr)
       throws TimeoutException, InterruptedException;
 
-  boolean waitForDeparture(DistributedMember mbr, long timeoutMs)
+  boolean waitForDeparture(InternalDistributedMember mbr, long timeoutMs)
       throws TimeoutException, InterruptedException;
 
   void forceUDPMessagingForCurrentThread();

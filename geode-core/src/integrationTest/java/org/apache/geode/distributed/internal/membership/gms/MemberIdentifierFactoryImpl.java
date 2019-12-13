@@ -16,26 +16,22 @@ package org.apache.geode.distributed.internal.membership.gms;
 
 import java.util.Comparator;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 
 @VisibleForTesting
-public class MemberIdentifierFactoryImpl implements MemberIdentifierFactory {
-  @Immutable
-  private static final Comparator<MemberIdentifier> idComparator =
-      (o1, o2) -> ((InternalDistributedMember) o1).compareTo((InternalDistributedMember) o2);
+public class MemberIdentifierFactoryImpl
+    implements MemberIdentifierFactory<InternalDistributedMember> {
 
   @Override
-  public MemberIdentifier create(MemberData memberInfo) {
+  public InternalDistributedMember create(MemberData memberInfo) {
     return new InternalDistributedMember(memberInfo);
   }
 
   @Override
-  public Comparator<MemberIdentifier> getComparator() {
-    return idComparator;
+  public Comparator<InternalDistributedMember> getComparator() {
+    return Comparator.naturalOrder();
   }
 }

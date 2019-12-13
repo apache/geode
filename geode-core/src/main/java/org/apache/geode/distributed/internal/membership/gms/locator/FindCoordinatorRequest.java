@@ -27,23 +27,23 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
-public class FindCoordinatorRequest extends AbstractGMSMessage
+public class FindCoordinatorRequest<ID extends MemberIdentifier> extends AbstractGMSMessage<ID>
     implements PeerLocatorRequest {
 
-  private MemberIdentifier memberID;
-  private Collection<MemberIdentifier> rejectedCoordinators;
+  private ID memberID;
+  private Collection<ID> rejectedCoordinators;
   private int lastViewId;
   private byte[] myPublicKey;
   private int requestId;
   private String dhalgo;
 
-  public FindCoordinatorRequest(MemberIdentifier myId) {
+  public FindCoordinatorRequest(ID myId) {
     this.memberID = myId;
     this.dhalgo = "";
   }
 
-  public FindCoordinatorRequest(MemberIdentifier myId,
-      Collection<MemberIdentifier> rejectedCoordinators, int lastViewId, byte[] pk,
+  public FindCoordinatorRequest(ID myId,
+      Collection<ID> rejectedCoordinators, int lastViewId, byte[] pk,
       int requestId, String dhalgo) {
     this.memberID = myId;
     this.rejectedCoordinators = rejectedCoordinators;
@@ -57,7 +57,7 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
     // no-arg constructor for serialization
   }
 
-  public MemberIdentifier getMemberID() {
+  public ID getMemberID() {
     return memberID;
   }
 
@@ -69,7 +69,7 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
     return dhalgo;
   }
 
-  public Collection<MemberIdentifier> getRejectedCoordinators() {
+  public Collection<ID> getRejectedCoordinators() {
     return rejectedCoordinators;
   }
 
@@ -109,7 +109,7 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
     context.getSerializer().writeObject(memberID, out);
     if (this.rejectedCoordinators != null) {
       out.writeInt(this.rejectedCoordinators.size());
-      for (MemberIdentifier mbr : this.rejectedCoordinators) {
+      for (ID mbr : this.rejectedCoordinators) {
         context.getSerializer().writeObject(mbr, out);
       }
     } else {
@@ -126,7 +126,7 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.memberID = context.getDeserializer().readObject(in);
     int size = in.readInt();
-    this.rejectedCoordinators = new ArrayList<MemberIdentifier>(size);
+    this.rejectedCoordinators = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
       this.rejectedCoordinators.add(context.getDeserializer().readObject(in));
     }
@@ -156,7 +156,7 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
       return false;
     if (getClass() != obj.getClass())
       return false;
-    FindCoordinatorRequest other = (FindCoordinatorRequest) obj;
+    FindCoordinatorRequest<ID> other = (FindCoordinatorRequest<ID>) obj;
     if (lastViewId != other.lastViewId)
       return false;
     if (!dhalgo.equals(other.dhalgo)) {

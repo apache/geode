@@ -60,6 +60,7 @@ import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenti
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -132,7 +133,7 @@ public class MembershipJUnitTest {
   private List<String> doTestMultipleManagersInSameProcessWithGroups(String groups)
       throws Exception {
 
-    Membership m1 = null, m2 = null;
+    Membership<InternalDistributedMember> m1 = null, m2 = null;
     Locator l = null;
     // int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 
@@ -195,7 +196,7 @@ public class MembershipJUnitTest {
         }
       }
 
-      GMSMembershipView view = jl1.getView();
+      GMSMembershipView<InternalDistributedMember> view = jl1.getView();
       MemberIdentifier notCreator;
       if (view.getCreator().equals(jl1.getMemberID())) {
         notCreator = view.getMembers().get(1);
@@ -271,7 +272,7 @@ public class MembershipJUnitTest {
     });
     LifecycleListener lifeCycleListener = mock(LifecycleListener.class);
     final Membership m1 =
-        MembershipBuilder.newMembershipBuilder()
+        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
             .setAuthenticator(new GMSAuthenticator(config.getSecurityProps(), securityService,
                 mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()))
             .setStatistics(stats1)
@@ -280,6 +281,7 @@ public class MembershipJUnitTest {
             .setConfig(new ServiceConfig(transport, config))
             .setSerializer(serializer)
             .setLifecycleListener(lifeCycleListener)
+            .setMemberIDFactory(new MemberIdentifierFactoryImpl())
             .setLocatorClient(new TcpClient(
                 asTcpSocketCreator(
                     SocketCreatorFactory
@@ -308,7 +310,7 @@ public class MembershipJUnitTest {
   @Test
   public void testLocatorAndTwoServersJoinUsingDiffeHellman() throws Exception {
 
-    Membership m1 = null, m2 = null;
+    Membership<InternalDistributedMember> m1 = null, m2 = null;
     Locator l = null;
     int mcastPort = AvailablePortHelper.getRandomAvailableUDPPort();
 

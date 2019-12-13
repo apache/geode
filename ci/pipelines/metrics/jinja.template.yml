@@ -82,7 +82,7 @@ resources:
           chmod +x fly
           TARGET_NAME=concourse
 
-          PYTHON_ARGUMENTS="${CONCOURSE_URL} ${MAIN_PIPELINE_NAME} ${JOB_NAME} ${JOB_COUNT} --team=${CONCOURSE_TEAM}"
+          PYTHON_ARGUMENTS="--number-of-builds ${JOB_COUNT} --team ${CONCOURSE_TEAM} ${CONCOURSE_URL} ${MAIN_PIPELINE_NAME} ${JOB_NAME}"
 
           if [ ${UPSTREAM_FORK} != "apache" ]; then
             set +x

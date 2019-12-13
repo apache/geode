@@ -43,7 +43,7 @@ public class RegionCommitTest {
     txCommitMessage = mock(TXCommitMessage.class);
 
     when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegionByPath(path)).thenReturn(region);
+    when(cache.getInternalRegionByPath(path)).thenReturn(region);
     when(dm.getSystem()).thenReturn(mock(InternalDistributedSystem.class));
   }
 

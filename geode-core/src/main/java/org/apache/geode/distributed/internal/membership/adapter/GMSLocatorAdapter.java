@@ -27,6 +27,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
@@ -39,7 +40,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
 
-  private final GMSLocator gmsLocator;
+  private final GMSLocator<InternalDistributedMember> gmsLocator;
 
   /**
    * @param bindAddress network address that TcpServer will bind to
@@ -61,7 +62,7 @@ public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     gmsLocator =
-        new GMSLocator(bindAddress, locatorString, usePreferredCoordinators,
+        new GMSLocator<>(bindAddress, locatorString, usePreferredCoordinators,
             networkPartitionDetectionEnabled,
             locatorStats, securityUDPDHAlgo, workingDirectory, locatorClient);
   }
@@ -100,7 +101,7 @@ public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
   }
 
   @Override
-  public boolean setMembership(Membership membership) {
+  public boolean setMembership(Membership<InternalDistributedMember> membership) {
     return gmsLocator.setMembership(membership);
   }
 

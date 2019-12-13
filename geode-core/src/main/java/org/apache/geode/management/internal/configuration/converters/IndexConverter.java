@@ -48,11 +48,11 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
     if (keyIndex != null && keyIndex) {
       index.setIndexType(IndexType.KEY);
     } else if (HASH.equalsIgnoreCase(regionConfigIndex.getType())) {
-      index.setIndexType(IndexType.HASH_LEGACY);
+      index.setIndexType(IndexType.HASH_DEPRECATED);
     }
     // functional is the default type
     else {
-      index.setIndexType(IndexType.FUNCTIONAL);
+      index.setIndexType(IndexType.RANGE);
     }
 
     return index;
@@ -67,7 +67,7 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
 
     if (index.getIndexType() == IndexType.KEY) {
       regionConfigIndex.setKeyIndex(true);
-    } else if (index.getIndexType() == IndexType.HASH_LEGACY) {
+    } else if (index.getIndexType() == IndexType.HASH_DEPRECATED) {
       regionConfigIndex.setType(HASH);
     } else {
       regionConfigIndex.setType(RANGE);

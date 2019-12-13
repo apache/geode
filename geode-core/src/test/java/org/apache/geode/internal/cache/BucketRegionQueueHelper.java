@@ -50,7 +50,7 @@ public class BucketRegionQueueHelper {
   public void initialize(GemFireCacheImpl cache, PartitionedRegion queueRegion) {
     InternalDistributedMember member = cache.getMyId();
     when(queueRegion.getMyId()).thenReturn(member);
-    when(cache.getRegionByPath(this.bucketRegionQueue.getFullPath()))
+    when(cache.getInternalRegionByPath(this.bucketRegionQueue.getFullPath()))
         .thenReturn(this.bucketRegionQueue);
   }
 }

@@ -41,7 +41,7 @@ public class CacheProfileTest {
     region = mock(LocalRegion.class);
 
     when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegionByPath(adviseePath)).thenReturn(region);
+    when(cache.getInternalRegionByPath(adviseePath)).thenReturn(region);
   }
 
   @Test
@@ -49,6 +49,6 @@ public class CacheProfileTest {
     CacheProfile profile = new CacheProfile();
     profile.processIncoming(dm, adviseePath, false, false, null);
     verify(dm, times(1)).getCache();
-    verify(cache, times(1)).getRegionByPath(adviseePath);
+    verify(cache, times(1)).getInternalRegionByPath(adviseePath);
   }
 }

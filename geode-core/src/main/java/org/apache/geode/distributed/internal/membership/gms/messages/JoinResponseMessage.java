@@ -34,23 +34,23 @@ import org.apache.geode.internal.serialization.Version;
 // 2. a response indicating that the coordinator is now a different process
 // 3. a response containing the cluster encryption key
 
-public class JoinResponseMessage extends AbstractGMSMessage {
+public class JoinResponseMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
-  private GMSMembershipView currentView;
+  private GMSMembershipView<ID> currentView;
   private String rejectionMessage;
-  private MemberIdentifier memberID;
+  private ID memberID;
   private byte[] messengerData;
   private int requestId;
   private byte[] secretPk;
 
-  public JoinResponseMessage(MemberIdentifier memberID, GMSMembershipView view, int requestId) {
+  public JoinResponseMessage(ID memberID, GMSMembershipView<ID> view, int requestId) {
     this.currentView = view;
     this.memberID = memberID;
     this.requestId = requestId;
     setRecipient(memberID);
   }
 
-  public JoinResponseMessage(MemberIdentifier memberID, byte[] sPk, int requestId) {
+  public JoinResponseMessage(ID memberID, byte[] sPk, int requestId) {
     this.memberID = memberID;
     this.requestId = requestId;
     this.secretPk = sPk;
@@ -74,11 +74,11 @@ public class JoinResponseMessage extends AbstractGMSMessage {
     return requestId;
   }
 
-  public GMSMembershipView getCurrentView() {
+  public GMSMembershipView<ID> getCurrentView() {
     return currentView;
   }
 
-  public MemberIdentifier getMemberID() {
+  public ID getMemberID() {
     return memberID;
   }
 
@@ -124,7 +124,7 @@ public class JoinResponseMessage extends AbstractGMSMessage {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    currentView = (GMSMembershipView) context.getDeserializer().readObject(in);
+    currentView = context.getDeserializer().readObject(in);
     memberID = context.getDeserializer().readObject(in);
     rejectionMessage = StaticSerialization.readString(in);
     messengerData = StaticSerialization.readByteArray(in);
@@ -144,7 +144,7 @@ public class JoinResponseMessage extends AbstractGMSMessage {
       return false;
     if (getClass() != obj.getClass())
       return false;
-    JoinResponseMessage other = (JoinResponseMessage) obj;
+    JoinResponseMessage<ID> other = (JoinResponseMessage<ID>) obj;
     if (currentView == null) {
       if (other.currentView != null)
         return false;

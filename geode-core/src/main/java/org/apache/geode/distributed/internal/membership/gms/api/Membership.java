@@ -20,25 +20,22 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 
-public interface Membership {
+public interface Membership<ID extends MemberIdentifier> {
   /**
    * Fetch the current view of memberships in th distributed system, as an ordered list.
    *
    * @return list of members
    */
-  MembershipView getView();
+  MembershipView<ID> getView();
 
   /**
-   * Return a {@link InternalDistributedMember} representing the current system
+   * Return a {@link ID} representing the current system
    *
    * @return an address corresponding to the current system
    */
-  InternalDistributedMember getLocalMember();
+  ID getLocalMember();
 
   /**
    * @param destinations list of members to send the message to. A list of length 1 with
@@ -50,8 +47,7 @@ public interface Membership {
    *         not receive the message because they departed the distributed system.
    * @throws NotSerializableException If content cannot be serialized
    */
-  Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
-      Message content)
+  Set<ID> send(ID[] destinations, Message<ID> content)
       throws NotSerializableException;
 
   /**
@@ -63,7 +59,7 @@ public interface Membership {
    *         distributed member
    * @since GemFire 5.1
    */
-  Map<String, Long> getMessageState(DistributedMember member, boolean includeMulticast,
+  Map<String, Long> getMessageState(ID member, boolean includeMulticast,
       Map<String, Long> result);
 
   /**
@@ -74,13 +70,13 @@ public interface Membership {
    * @throws InterruptedException Thrown if the thread is interrupted
    * @since GemFire 5.1
    */
-  void waitForMessageState(DistributedMember member, Map<String, Long> state)
+  void waitForMessageState(ID member, Map<String, Long> state)
       throws InterruptedException;
 
   /**
    * Request the current membership coordinator to remove the given member
    */
-  boolean requestMemberRemoval(DistributedMember member, String reason);
+  boolean requestMemberRemoval(ID member, String reason);
 
   /**
    * like memberExists() this checks to see if the given ID is in the current membership view. If it
@@ -92,12 +88,12 @@ public interface Membership {
    * @param reason why the check is being done (must not be blank/null)
    * @return true if the member checks out
    */
-  boolean verifyMember(DistributedMember mbr, String reason);
+  boolean verifyMember(ID mbr, String reason);
 
   /**
    * Returns true if the member is being shunned
    */
-  boolean isShunned(DistributedMember m);
+  boolean isShunned(ID m);
 
   /**
    * execute code with the membership view locked so that it doesn't change
@@ -110,7 +106,7 @@ public interface Membership {
    * @param m the member
    * @return true if it still exists
    */
-  boolean memberExists(DistributedMember m);
+  boolean memberExists(ID m);
 
   /**
    * Is this manager still connected? If it has not been initialized, this method will return true;
@@ -160,7 +156,7 @@ public interface Membership {
   /**
    * A shutdown message has been received from another member
    */
-  void shutdownMessageReceived(DistributedMember id, String reason);
+  void shutdownMessageReceived(ID id, String reason);
 
   /**
    * Stall the current thread until we are ready to accept view events
@@ -203,7 +199,7 @@ public interface Membership {
    *
    * @return true if membership is confirmed, else timeout and false
    */
-  boolean waitForNewMember(DistributedMember remoteId);
+  boolean waitForNewMember(ID remoteId);
 
   /**
    * Release critical resources, avoiding any possibility of deadlock
@@ -216,19 +212,19 @@ public interface Membership {
    * Notifies the manager that a member has contacted us who is not in the current membership view
    *
    */
-  void addSurpriseMemberForTesting(DistributedMember mbr, long birthTime);
+  void addSurpriseMemberForTesting(ID mbr, long birthTime);
 
   /**
    * Initiate SUSPECT processing for the given members. This may be done if the members have not
    * been responsive. If they fail SUSPECT processing, they will be removed from membership.
    */
-  void suspectMembers(Set<DistributedMember> members, String reason);
+  void suspectMembers(Set<ID> members, String reason);
 
   /**
    * Initiate SUSPECT processing for the given member. This may be done if the member has not been
    * responsive. If it fails SUSPECT processing, it will be removed from membership.
    */
-  void suspectMember(DistributedMember member, String reason);
+  void suspectMember(ID member, String reason);
 
   /**
    * if the manager initiated shutdown, this will return the cause of abnormal termination of
@@ -255,9 +251,9 @@ public interface Membership {
    *
    * @param mbr the member that may be shunned
    */
-  void warnShun(DistributedMember mbr);
+  void warnShun(ID mbr);
 
-  boolean addSurpriseMember(DistributedMember mbr);
+  boolean addSurpriseMember(ID mbr);
 
   /**
    * if a StartupMessage is going to reject a new member, this should be used to make sure we don't
@@ -266,7 +262,7 @@ public interface Membership {
    * @param mbr the failed member
    * @param failureMessage the reason for the failure (e.g., license limitation)
    */
-  void startupMessageFailed(DistributedMember mbr, String failureMessage);
+  void startupMessageFailed(ID mbr, String failureMessage);
 
   /**
    * @return true if multicast is disabled, or if multicast is enabled and seems to be working
@@ -279,7 +275,7 @@ public interface Membership {
    * @param m the member in question
    * @return true if the member is a surprise member
    */
-  boolean isSurpriseMember(DistributedMember m);
+  boolean isSurpriseMember(ID m);
 
   /**
    * After a forced-disconnect this method should be used once before attempting to use
@@ -292,12 +288,12 @@ public interface Membership {
   /**
    * return the coordinator for the view.
    */
-  DistributedMember getCoordinator();
+  ID getCoordinator();
 
   /**
    * return a list of all members excluding those in the process of shutting down
    */
-  Set<InternalDistributedMember> getMembersNotShuttingDown();
+  Set<ID> getMembersNotShuttingDown();
 
   /**
    * Process a message and pass it on to the {@link MessageListener} that was configured
@@ -305,7 +301,7 @@ public interface Membership {
    * takes care of queueing up the message during startup and filtering out messages
    * from shunned members, before calling the message listener.
    */
-  void processMessage(Message msg);
+  void processMessage(Message<ID> msg);
 
   void checkCancelled();
 
@@ -313,14 +309,14 @@ public interface Membership {
 
   boolean isJoining();
 
-  InternalDistributedMember[] getAllMembers();
+  ID[] getAllMembers(final ID[] arrayType);
 
   /**
-   * TODO - this is very similar to {@link #memberExists(DistributedMember)}. However, this
+   * TODO - this is very similar to {@link #memberExists(ID)}. However, this
    * is looking at {@link GMSJoinLeave#getView()} rather than {@link Membership#getView()}.
    * Should we remove this in favor of member exists?
    */
-  boolean hasMember(InternalDistributedMember member);
+  boolean hasMember(ID member);
 
   void start();
 

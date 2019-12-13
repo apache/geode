@@ -207,7 +207,7 @@ public class JGroupsMessengerJUnitTest {
   public void ioExceptionInitiatesSuspectProcessing() throws Exception {
     // see GEODE-634
     initMocks(false);
-    GMSMembershipView v = createView();
+    GMSMembershipView<MemberIdentifier> v = createView();
     when(joinLeave.getView()).thenReturn(v);
     messenger.installView(v);
     messenger.handleJGroupsIOException(new IOException("je m'en fiche"),
@@ -220,7 +220,7 @@ public class JGroupsMessengerJUnitTest {
   public void ioExceptionDuringShutdownAvoidsSuspectProcessing() throws Exception {
     // see GEODE-634
     initMocks(false);
-    GMSMembershipView v = createView();
+    GMSMembershipView<MemberIdentifier> v = createView();
     when(joinLeave.getView()).thenReturn(v);
     when(manager.shutdownInProgress()).thenReturn(true);
     messenger.installView(v);
@@ -527,7 +527,8 @@ public class JGroupsMessengerJUnitTest {
 
     // configure an incoming message handler for JoinRequestMessage
     final JoinRequestMessage[] messageReceived = new JoinRequestMessage[1];
-    messenger.addHandler(JoinRequestMessage.class, message -> messageReceived[0] = message);
+    messenger.addHandler(JoinRequestMessage.class,
+        (MessageHandler<JoinRequestMessage>) message -> messageReceived[0] = message);
 
     // configure the outgoing message interceptor
     interceptor.mcastSentDataMessages = 0;

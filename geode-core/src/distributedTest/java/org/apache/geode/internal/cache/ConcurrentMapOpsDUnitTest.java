@@ -50,8 +50,8 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.internal.DestroyOp;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.Distribution;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -1203,8 +1203,8 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    final DistributedMember server1ID = (DistributedMember) server1.invoke(getID);
-    final DistributedMember server2ID = (DistributedMember) server2.invoke(getID);
+    final InternalDistributedMember server1ID = (InternalDistributedMember) server1.invoke(getID);
+    final InternalDistributedMember server2ID = (InternalDistributedMember) server2.invoke(getID);
 
     Set<IgnoredException> exceptions = new HashSet<IgnoredException>();
     exceptions.add(IgnoredException.addIgnoredException("Membership: requesting removal", server1));

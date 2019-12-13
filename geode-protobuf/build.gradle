@@ -24,6 +24,7 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
+  implementation(project(':geode-tcp-server'))
   compile(project(':geode-core'))
   compile(project(':geode-protobuf-messages'))
   testCompile(project(':geode-core'))

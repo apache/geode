@@ -346,7 +346,8 @@ public class GMSJoinLeaveJUnitTest {
     int viewId = 1;
 
     // prepare the view
-    GMSMembershipView netView = new GMSMembershipView(coordinator, viewId, members);
+    GMSMembershipView<MemberIdentifier> netView =
+        new GMSMembershipView(coordinator, viewId, members);
     for (MemberIdentifier member : netView.getMembers()) {
       netView.setPublicKey(member, member.toString());
     }
@@ -750,7 +751,7 @@ public class GMSJoinLeaveJUnitTest {
     // failure to respond
     when(messenger.send(isA(InstallViewMessage.class), isA(GMSMembershipView.class)))
         .thenAnswer((request) -> {
-          InstallViewMessage installViewMessage = request.getArgument(0);
+          InstallViewMessage<MemberIdentifier> installViewMessage = request.getArgument(0);
           for (MemberIdentifier recipient : installViewMessage.getRecipients()) {
             ViewAckMessage viewAckMessage =
                 new ViewAckMessage(gmsJoinLeaveMemberId, installViewMessage.getView().getViewId(),
@@ -1370,7 +1371,7 @@ public class GMSJoinLeaveJUnitTest {
     prepareAndInstallView(gmsJoinLeaveMemberId,
         createMemberList(gmsJoinLeaveMemberId, mockMembers[0]));
     // a new member is joining
-    GMSMembershipView preparedView =
+    GMSMembershipView<MemberIdentifier> preparedView =
         new GMSMembershipView(gmsJoinLeave.getView(), gmsJoinLeave.getView().getViewId() + 5);
     for (MemberIdentifier member : preparedView.getMembers()) {
       preparedView.setPublicKey(member, member.toString());
