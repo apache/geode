@@ -82,6 +82,7 @@ import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class DistributionImpl implements Distribution {
@@ -201,6 +202,10 @@ public class DistributionImpl implements Distribution {
           "Unable to create membership manager",
           e);
     } catch (SecurityException e) {
+      String failReason = e.getMessage();
+      if (failReason.contains("Failed to find credentials")) {
+        throw new AuthenticationRequiredException(failReason);
+      }
       throw new GemFireSecurityException(e.getMessage(),
           e);
     } catch (MembershipConfigurationException e) {

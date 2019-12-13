@@ -79,6 +79,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -769,7 +770,7 @@ public class SocketCreator {
             portLimit = startingPort - 1;
             startingPort = 0;
           } else {
-            throw new GemFireConfigException(
+            throw new SystemConnectException(
                 "Unable to find a free port in the membership-port-range");
           }
         }

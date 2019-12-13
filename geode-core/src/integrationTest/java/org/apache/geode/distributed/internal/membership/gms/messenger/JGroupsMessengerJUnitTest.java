@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeoutException;
 
 import org.jgroups.Address;
 import org.jgroups.Event;
@@ -944,7 +945,7 @@ public class JGroupsMessengerJUnitTest {
       messenger.scheduledMcastSeqnos.put(mbr, new JGroupsMessenger.MessageTracker(30));
       messenger.waitForMessageState(mbr, state);
       fail("expected a MembershipIOException to be thrown");
-    } catch (MembershipIOException e) {
+    } catch (TimeoutException e) {
       // pass
     }
   }

@@ -461,8 +461,6 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
           || failReason.contains("15806")
           || failReason.contains("ForcedDisconnectException")) {
         throw new MemberStartupException(failReason);
-      } else if (failReason.contains("Failed to find credentials")) {
-        throw new SecurityException(failReason);
       }
       throw new SecurityException(failReason);
     }
