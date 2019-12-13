@@ -74,7 +74,7 @@ if [[ "${CONCOURSE_HOST}" == "concourse.apachegeode-ci.info" ]]; then
   CONCOURSE_SCHEME=https
 fi
 CONCOURSE_URL=${CONCOURSE_SCHEME:-"http"}://${CONCOURSE_HOST}
-FLY_TARGET=${CONCOURSE_HOST}
+FLY_TARGET=${CONCOURSE_HOST}-${CONCOURSE_TEAM}
 
 . ${SCRIPTDIR}/../shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
@@ -110,7 +110,10 @@ YML
 
   set -e
   if [[ ${UPSTREAM_FORK} != "apache" ]]; then
-    fly -t ${FLY_TARGET} login -n ${CONCOURSE_TEAM}
+    fly -t ${FLY_TARGET} status || \
+    fly -t ${FLY_TARGET} login \
+           --team-name ${CONCOURSE_TEAM} \
+           --concourse-url=${CONCOURSE_URL}
   fi
 
   fly -t ${FLY_TARGET} sync
