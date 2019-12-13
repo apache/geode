@@ -40,6 +40,7 @@ public class BootstrappingFunctionTest {
   private DistributionManager distributionManager;
   private BootstrappingFunction bootstrappingFunction;
   private InternalDistributedMember distributedMember;
+  private InternalDistributedSystem distributedSystem;
 
   @Before
   public void setUp() {
@@ -48,7 +49,7 @@ public class BootstrappingFunctionTest {
     distributedMember = mock(InternalDistributedMember.class);
     distributionManager = mock(DistributionManager.class);
 
-    InternalDistributedSystem distributedSystem = mock(InternalDistributedSystem.class);
+    distributedSystem = mock(InternalDistributedSystem.class);
     when(distributedSystem.getDistributedMember()).thenReturn(distributedMember);
     when(distributedSystem.getDistributionManager()).thenReturn(distributionManager);
     when(mockCache.getDistributedSystem()).thenReturn(distributedSystem);
@@ -70,7 +71,7 @@ public class BootstrappingFunctionTest {
 
   @Test
   public void registerFunctionIsNotCalledOnLocator() {
-    when(bootstrappingFunction.verifyCacheExists()).thenReturn(mockCache);
+    when(bootstrappingFunction.verifyCacheExists(distributedSystem)).thenReturn(mockCache);
     when(distributedMember.getVmKind()).thenReturn(ClusterDistributionManager.LOCATOR_DM_TYPE);
     doNothing().when(distributionManager).addMembershipListener(bootstrappingFunction);
 
@@ -79,6 +80,7 @@ public class BootstrappingFunctionTest {
     FunctionContext functionContext = mock(FunctionContext.class);
     doNothing().when(resultSender).lastResult(any());
     when(functionContext.getResultSender()).thenReturn(resultSender);
+    when(functionContext.getCache()).thenReturn(mockCache);
 
     bootstrappingFunction.execute(functionContext);
     verify(bootstrappingFunction, never()).registerFunctions();
@@ -86,7 +88,7 @@ public class BootstrappingFunctionTest {
 
   @Test
   public void registerFunctionGetsCalledOnNonLocators() {
-    when(bootstrappingFunction.verifyCacheExists()).thenReturn(mockCache);
+    when(bootstrappingFunction.verifyCacheExists(distributedSystem)).thenReturn(mockCache);
     when(distributedMember.getVmKind()).thenReturn(ClusterDistributionManager.NORMAL_DM_TYPE);
     doNothing().when(distributionManager).addMembershipListener(bootstrappingFunction);
 
@@ -95,6 +97,7 @@ public class BootstrappingFunctionTest {
     FunctionContext functionContext = mock(FunctionContext.class);
     doNothing().when(resultSender).lastResult(any());
     when(functionContext.getResultSender()).thenReturn(resultSender);
+    when(functionContext.getCache()).thenReturn(mockCache);
 
     bootstrappingFunction.execute(functionContext);
     verify(bootstrappingFunction, times(1)).registerFunctions();
