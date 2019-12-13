@@ -68,14 +68,16 @@ do
   fi
 
   if [ -z "${BASELINE_VERSION}" ]; then
-    ./run_on_cluster.sh -t testGets -- pkill -9 java
-    ./run_on_cluster.sh -t testGets -- rm /home/geode/locator10334view.dat;
-    ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -B ${BASELINE_BRANCH} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci','benchmark_branch':'${BENCHMARK_BRANCH}','baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
+    BASELINE_OPTION="-B ${BASELINE_BRANCH}"
+    METADATA_BASELINE="'benchmark_branch':'${BASELINE_BRANCH}'"
   else
-    ./run_on_cluster.sh -t testGets -- pkill -9 java
-    ./run_on_cluster.sh -t testGets -- rm /home/geode/locator10334view.dat;
-    ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} -V ${BASELINE_VERSION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci','benchmark_branch':'${BENCHMARK_BRANCH}','baseline_version':'${BASELINE_VERSION}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
+    BASELINE_OPTION="-V ${BASELINE_VERSION}"
+    METADATA_BASELINE="'benchmark_version':'${BASELINE_VERSION}'"
   fi
+
+  ./run_on_cluster.sh -t testGets -- pkill -9 java
+  ./run_on_cluster.sh -t testGets -- rm /home/geode/locator10334view.dat;
+  ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} ${BASELINE_OPTION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci',${METADATA_BASELINE},'baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
 
   if [[ $? -eq 0 ]]; then
     break;
