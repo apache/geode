@@ -144,7 +144,7 @@ public class DeployCommand extends GfshCommand {
       if (sc == null) {
         result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
       } else {
-        sc.addJarsToThisLocator(jarFullPaths, groups);
+        sc.addJarsToThisLocator("DEPLOYEDBY", "DEPLOYEDTIME", jarFullPaths, groups);
       }
     }
     return result;

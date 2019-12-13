@@ -75,6 +75,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
@@ -288,7 +289,9 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    * Add jar information into the shared configuration and save the jars in the file system used
    * when deploying jars
    */
-  public void addJarsToThisLocator(List<String> jarFullPaths, String[] groups) throws IOException {
+  public void addJarsToThisLocator(String deployedBy, String timeDeployed,
+      List<String> jarFullPaths,
+      String[] groups) throws IOException {
     lockSharedConfiguration();
     try {
       if (groups == null) {
@@ -296,12 +299,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       }
       Region<String, Configuration> configRegion = getConfigurationRegion();
       for (String group : groups) {
-        Configuration configuration = configRegion.get(group);
-
-        if (configuration == null) {
-          configuration = new Configuration(group);
-          createConfigDirIfNecessary(group);
-        }
+        Configuration configuration = getConfigurationCopy(configRegion, group);
 
         Path groupDir = configDirPath.resolve(group);
         Set<String> jarNames = new HashSet<>();
@@ -309,6 +307,11 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           File stagedJar = new File(jarFullPath);
           String jarFileName = stagedJar.getName();
           jarNames.add(jarFileName);
+          Deployment deployment = new Deployment();
+          deployment.setJarFileName(jarFileName);
+          deployment.setDeployedBy(deployedBy);
+          deployment.setTimeDeployed(timeDeployed);
+          configuration.addDeployment(deployment);
           Path filePath = groupDir.resolve(jarFileName);
           FileUtils.copyFile(stagedJar, filePath.toFile());
           // remove old version for the same artifact id
@@ -328,14 +331,25 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
         // using a new copy of the Configuration so that the change listener will pick up the jar
         // name changes.
         String memberId = cache.getMyId().getId();
-
-        Configuration configurationCopy = new Configuration(configuration);
-        configurationCopy.addJarNames(jarNames);
-        configRegion.put(group, configurationCopy, memberId);
+        configuration.addJarNames(jarNames);
+        configRegion.put(group, configuration, memberId);
       }
     } finally {
       unlockSharedConfiguration();
     }
+  }
+
+  private Configuration getConfigurationCopy(Region<String, Configuration> configRegion,
+      String group) throws IOException {
+    Configuration configuration = configRegion.get(group);
+
+    if (configuration == null) {
+      configuration = new Configuration(group);
+      createConfigDirIfNecessary(group);
+    } else {
+      configuration = new Configuration(configuration);
+    }
+    return configuration;
   }
 
   /**

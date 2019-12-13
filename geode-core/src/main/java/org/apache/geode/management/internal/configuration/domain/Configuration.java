@@ -19,8 +19,11 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
@@ -36,6 +39,7 @@ import org.xml.sax.SAXException;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.JarDeployer;
+import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 /**
@@ -50,7 +54,8 @@ public class Configuration implements DataSerializable {
   private String cacheXmlFileName;
   private String propertiesFileName;
   private Properties gemfireProperties;
-  Set<String> jarNames;
+  private Set<String> jarNames;
+  private Map<String, Deployment> deployments;
 
   // Public no arg constructor required for Deserializable
   public Configuration() {
@@ -65,6 +70,7 @@ public class Configuration implements DataSerializable {
     this.gemfireProperties = new Properties();
     this.gemfireProperties.putAll(that.gemfireProperties);
     this.jarNames = new HashSet<>(that.jarNames);
+    this.deployments = new HashMap<>(that.deployments);
   }
 
   public Configuration(String configName) {
@@ -73,6 +79,7 @@ public class Configuration implements DataSerializable {
     this.propertiesFileName = configName + ".properties";
     this.gemfireProperties = new Properties();
     this.jarNames = new HashSet<>();
+    this.deployments = new HashMap<String, Deployment>();
   }
 
   public String getCacheXmlContent() {
@@ -192,6 +199,7 @@ public class Configuration implements DataSerializable {
         ", propertiesFileName='" + propertiesFileName + '\'' +
         ", gemfireProperties=" + gemfireProperties +
         ", jarNames=" + jarNames +
+        ", deployments=" + deployments +
         '}';
   }
 
@@ -209,13 +217,25 @@ public class Configuration implements DataSerializable {
         Objects.equals(cacheXmlFileName, that.cacheXmlFileName) &&
         Objects.equals(propertiesFileName, that.propertiesFileName) &&
         Objects.equals(gemfireProperties, that.gemfireProperties) &&
-        Objects.equals(jarNames, that.jarNames);
+        Objects.equals(jarNames, that.jarNames) &&
+        Objects.equals(deployments, that.deployments);
   }
 
   @Override
   public int hashCode() {
     return Objects
         .hash(configName, cacheXmlContent, cacheXmlFileName, propertiesFileName, gemfireProperties,
-            jarNames);
+            jarNames, deployments);
+  }
+
+  public Collection<Deployment> getDeployments() {
+    return deployments.values();
+  }
+
+  public void addDeployment(Deployment deployment) {
+    String artifactId = JarDeployer.getArtifactId(deployment.getJarFileName());
+    deployments.values()
+        .removeIf(next -> JarDeployer.getArtifactId(next.getJarFileName()).equals(artifactId));
+    deployments.put(deployment.getId(), deployment);
   }
 }
