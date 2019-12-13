@@ -91,10 +91,10 @@ import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordina
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
@@ -131,6 +131,11 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   ID localAddress;
   JGAddress jgAddress;
   private Services<ID> services;
+  private TcpSocketCreator socketCreator;
+
+  public JGroupsMessenger(final TcpSocketCreator socketCreator) {
+    this.socketCreator = socketCreator;
+  }
 
   /** handlers that receive certain classes of messages instead of the Manager */
   private final Map<Class<?>, MessageHandler<?>> handlers = new ConcurrentHashMap<>();
@@ -269,7 +274,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     // JGroups UDP protocol requires a bind address
     if (str == null || str.length() == 0) {
       try {
-        str = SocketCreator.getLocalHost().getHostAddress();
+        str = socketCreator.getLocalHost().getHostAddress();
       } catch (UnknownHostException e) {
         throw new MembershipConfigurationException(e.getMessage(), e);
       }
@@ -541,7 +546,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
     // establish the DistributedSystem's address
     String hostname =
-        SocketCreator.resolve_dns ? SocketCreator.getHostName(jgAddress.getInetAddress())
+        socketCreator.resolveDns() ? socketCreator.getHostName(jgAddress.getInetAddress())
             : jgAddress.getInetAddress().getHostAddress();
     GMSMemberData gmsMember = new GMSMemberData(jgAddress.getInetAddress(),
         hostname, jgAddress.getPort(),

@@ -25,6 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.InetAddress;
 import java.util.Properties;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -41,6 +42,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -170,9 +172,11 @@ public class StatRecorderJUnitTest {
     when(mockConfig.getMembershipPortRange()).thenReturn(new int[] {0, 10});
     when(mockConfig.getSecurityUDPDHAlgo()).thenReturn("");
     when(mockServices.getConfig()).thenReturn(mockConfig);
+    TcpSocketCreator socketCreator = mock(TcpSocketCreator.class);
+    when(socketCreator.getLocalHost()).thenReturn(InetAddress.getLocalHost());
 
 
-    JGroupsMessenger messenger = new JGroupsMessenger();
+    JGroupsMessenger messenger = new JGroupsMessenger(socketCreator);
     messenger.init(mockServices);
     String jgroupsConfig = messenger.jgStackConfig;
     System.out.println(jgroupsConfig);
@@ -183,7 +187,7 @@ public class StatRecorderJUnitTest {
     when(mockServices.getConfig()).thenReturn(mockConfig);
 
 
-    messenger = new JGroupsMessenger();
+    messenger = new JGroupsMessenger(socketCreator);
     messenger.init(mockServices);
     assertTrue(jgroupsConfig.contains("gms.messenger.StatRecorder"));
   }

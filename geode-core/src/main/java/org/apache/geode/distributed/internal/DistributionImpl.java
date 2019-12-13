@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -155,6 +155,8 @@ public class DistributionImpl implements Distribution {
                       .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
               InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
               InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
+          .setSocketCreator(asTcpSocketCreator(SocketCreatorFactory
+              .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)))
           .create();
     } catch (MembershipConfigurationException e) {
       throw new GemFireConfigException(e.getMessage(), e.getCause());

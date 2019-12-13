@@ -35,8 +35,6 @@ import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
@@ -110,9 +108,6 @@ public class MembershipDependenciesJUnitTest {
               // TODO: Serialization needs to become its own module
               .or(type(InternalDataSerializer.class)) // still used by GMSLocator
 
-              // TODO:
-              .or(type(SocketCreator.class))
-              .or(type(SocketCreatorFactory.class))
 
               // TODO: break dependencies on locator-related classes
               .or(type(Locator.class))

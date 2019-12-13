@@ -15,7 +15,7 @@
 package org.apache.geode.admin.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.toInetAddress;
 import static org.apache.geode.internal.net.InetAddressUtilsWithLogging.validateHost;
 
