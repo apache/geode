@@ -26,8 +26,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.geode.management.api.ClusterManagementService;
 
 /**
- * The configuration of a {@link org.apache.geode.pdx.ReflectionBasedAutoSerializer}
- * that is used for easy PDX serialization.
+ * The configuration of a org.apache.geode.pdx.ReflectionBasedAutoSerializer
+ * found in the geode-core module that is used for easy PDX serialization.
  * At least one pattern is required if the AutoSerializer is used for a
  * {@link ClusterManagementService#create}.
  */

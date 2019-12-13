@@ -73,7 +73,8 @@ public class Pdx extends AbstractConfiguration<PdxInfo> {
 
   /**
    * Setting readSerialized to true causes any pdx deserialization to produce
-   * instances of {@link org.apache.geode.pdx.PdxInstance} instead of a domain class instance.
+   * instances of org.apache.geode.pdx.PdxInstance interface in the geode-core module
+   * instead of a domain class instance.
    */
   public void setReadSerialized(Boolean readSerialized) {
     this.readSerialized = readSerialized;
@@ -85,7 +86,7 @@ public class Pdx extends AbstractConfiguration<PdxInfo> {
 
   /**
    * @param pdxSerializer the class name given must implement the
-   *        {@link org.apache.geode.pdx.PdxSerializer} interface
+   *        org.apache.geode.pdx.PdxSerializer interface from the geode-core module.
    * @throws IllegalArgumentException if an autoSerializer has already been set
    */
   public void setPdxSerializer(ClassName pdxSerializer) {
