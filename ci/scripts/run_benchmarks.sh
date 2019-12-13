@@ -75,8 +75,8 @@ do
     METADATA_BASELINE="'benchmark_version':'${BASELINE_VERSION}'"
   fi
 
-  ./run_on_cluster.sh -t testGets -- pkill -9 java
-  ./run_on_cluster.sh -t testGets -- rm /home/geode/locator10334view.dat;
+  ./run_on_cluster.sh -t ${CLUSTER_TAG} -- pkill -9 java
+  ./run_on_cluster.sh -t ${CLUSTER_TAG} -- rm /home/geode/locator10334view.dat;
   ./run_against_baseline.sh -t ${CLUSTER_TAG} -b ${GEODE_SHA} ${BASELINE_OPTION} -e ${BENCHMARKS_BRANCH} -o ${RESULTS_DIR} -m "'source':'geode-ci',${METADATA_BASELINE},'baseline_branch':'${BASELINE_BRANCH}','geode_branch':'${GEODE_SHA}'" --ci -- ${FLAGS} ${TEST_OPTIONS}
 
   if [[ $? -eq 0 ]]; then
