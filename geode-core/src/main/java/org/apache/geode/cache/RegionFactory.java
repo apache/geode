@@ -101,7 +101,7 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * For internal use only.
+   * Constructs a RegionFactory that is a copy of an existing RegionFactory
    *
    * @since Geode 1.12.0
    */
