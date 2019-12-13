@@ -74,6 +74,15 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> {
   }
 
   @Override
+  public String toString() {
+    return "Deployment{" +
+        "jarFileName='" + jarFileName + '\'' +
+        ", timeDeployed='" + timeDeployed + '\'' +
+        ", deployedBy='" + deployedBy + '\'' +
+        '}';
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;

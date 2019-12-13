@@ -30,6 +30,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.management.configuration.Deployment;
+
 public class ConfigurationTest {
 
   @Rule
@@ -73,5 +75,35 @@ public class ConfigurationTest {
 
   private Set<String> getSet(String... values) {
     return new HashSet<>(Arrays.asList(values));
+  }
+
+  @Test
+  public void remembersDeployment() {
+    Deployment deployment = new Deployment();
+    deployment.setJarFileName("jar1");
+    configuration.addDeployment(deployment);
+    assertThat(configuration.getDeployments()).containsExactlyInAnyOrder(deployment);
+  }
+
+  @Test
+  public void remembersNewestDeploymentWithSameArtifactId() {
+    Deployment deployment1 = new Deployment();
+    deployment1.setJarFileName("abc-1.0.jar");
+    configuration.addDeployment(deployment1);
+    Deployment deployment2 = new Deployment();
+    deployment2.setJarFileName("abc-2.0.jar");
+    configuration.addDeployment(deployment2);
+    assertThat(configuration.getDeployments()).containsExactlyInAnyOrder(deployment2);
+  }
+
+  @Test
+  public void remembersAllDeploymentsWithDifferentArtifactIds() {
+    Deployment deployment1 = new Deployment();
+    deployment1.setJarFileName("abc-1.0.jar");
+    configuration.addDeployment(deployment1);
+    Deployment deployment2 = new Deployment();
+    deployment2.setJarFileName("def-2.0.jar");
+    configuration.addDeployment(deployment2);
+    assertThat(configuration.getDeployments()).containsExactlyInAnyOrder(deployment1, deployment2);
   }
 }
