@@ -57,7 +57,8 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     // Verify that the cache exists before continuing.
     // When this function is executed by a remote membership listener, it is
     // being invoked before the cache is started.
-    Cache cache = verifyCacheExists();
+    Cache cache = verifyCacheExists(
+        context.getCache() == null ? null : context.getCache().getDistributedSystem());
 
     // Register as membership listener
     registerAsMembershipListener(cache);
@@ -77,12 +78,12 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     return member.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE;
   }
 
-  protected Cache verifyCacheExists() {
+  protected Cache verifyCacheExists(DistributedSystem system) {
     int timeToWait = 0;
     Cache cache = null;
     while (timeToWait < TIME_TO_WAIT_FOR_CACHE) {
       try {
-        cache = CacheFactory.getAnyInstance();
+        cache = system == null ? CacheFactory.getAnyInstance() : CacheFactory.getInstance(system);
         break;
       } catch (Exception ignore) {
         // keep trying and hope for the best
