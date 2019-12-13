@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -59,6 +60,8 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
   @Override
   public final void postSetUp() {
     oldPropertySetting = System.setProperty(xmlProperty, "true");
+    // stress testing needs this so that join attempts don't give up too soon
+    Invoke.invokeInEveryVM(() -> System.setProperty("p2p.joinTimeout", "120000"));
   }
 
   @Override

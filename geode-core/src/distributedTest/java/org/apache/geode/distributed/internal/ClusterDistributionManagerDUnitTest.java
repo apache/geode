@@ -61,6 +61,9 @@ import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHel
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.dunit.DistributedTestCase;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
@@ -94,6 +97,8 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
   public void setUp() {
     executorService = Executors.newSingleThreadExecutor();
     vm1 = VM.getVM(1);
+    vm1 = Host.getHost(0).getVM(1);
+    Invoke.invokeInEveryVM(() -> System.setProperty("p2p.joinTimeout", "120000"));
   }
 
   @After

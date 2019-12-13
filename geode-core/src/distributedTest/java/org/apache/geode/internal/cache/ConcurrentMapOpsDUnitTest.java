@@ -31,7 +31,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializable;
@@ -59,12 +61,14 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 
 /**
  * tests for the concurrentMapOperations. there are more tests in ClientServerMiscDUnitTest
@@ -78,6 +82,15 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
 
   enum OP {
     PUTIFABSENT, REPLACE, REMOVE
+  }
+
+  @Rule
+  DistributedRestoreSystemProperties restoreProperties = new DistributedRestoreSystemProperties();
+
+  @Before
+  public void setup() {
+    // stress testing needs this so that join attempts don't give up too soon
+    Invoke.invokeInEveryVM(() -> System.setProperty("p2p.joinTimeout", "120000"));
   }
 
   @Override
