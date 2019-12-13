@@ -3433,7 +3433,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @since GemFire 3.2
    */
   @Override
-  public Object getValueInVM(Object key) throws EntryNotFoundException { // KIRK
+  public Object getValueInVM(Object key) throws EntryNotFoundException {
     return basicGetValueInVM(key, true);
   }
 
@@ -9694,13 +9694,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return isUsedForPartitionedRegionAdmin;
   }
 
-  /**
-   * This method determines whether this region should synchronize with peer replicated regions when
-   * the given member has crashed.
-   *
-   * @param id the crashed member
-   * @return true if synchronization should be attempted
-   */
   public boolean shouldSyncForCrashedMember(InternalDistributedMember id) {
     return getConcurrencyChecksEnabled() && getDataPolicy().withReplication()
         && !isUsedForPartitionedRegionAdmin && !isUsedForMetaRegion

@@ -14,15 +14,29 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import static org.apache.geode.admin.AdminDistributedSystemFactory.defineDistributedSystem;
-import static org.apache.geode.admin.AdminDistributedSystemFactory.getDistributedSystem;
+import static java.lang.String.valueOf;
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static javax.management.MBeanServerInvocationHandler.newProxyInstance;
+import static org.apache.commons.io.FileUtils.copyDirectory;
+import static org.apache.commons.io.FileUtils.deleteDirectory;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE;
+import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
 import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
-import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getAllVMs;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.getVMId;
 import static org.apache.geode.test.dunit.VM.toArray;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -31,42 +45,38 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
+import javax.management.ObjectName;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.After;
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.admin.AdminDistributedSystem;
-import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheTransactionManager;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
-import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.cache.persistence.PersistentReplicatesOfflineException;
 import org.apache.geode.cache.persistence.RevokedPersistentDataException;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -79,15 +89,20 @@ import org.apache.geode.internal.cache.DiskRegionStats;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.management.DiskStoreMXBean;
+import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.PersistentMemberDetails;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
+import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableErrorCollector;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
  * This is a test of how persistent distributed regions recover. This test makes sure that when
@@ -96,23 +111,64 @@ import org.apache.geode.test.junit.rules.serializable.SerializableErrorCollector
 @Category(PersistenceTest.class)
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
-public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBase {
+public class PersistentRecoveryOrderDUnitTest extends CacheTestCase {
 
+  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
   private static final AtomicBoolean SAW_REQUEST_IMAGE_MESSAGE = new AtomicBoolean();
+  private static final AtomicReference<CountDownLatch> LATCH = new AtomicReference<>();
+  private static final AtomicReference<CountDownLatch> SLEEP = new AtomicReference<>();
+  private static final AtomicInteger COUNT = new AtomicInteger();
 
   private static volatile InternalDistributedSystem system;
+
+  private final Map<Integer, File> diskDirs = new HashMap<>();
+
+  private String regionName;
+  private File rootDir;
+  private int jmxManagerPort;
+
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
+  private VM vm3;
 
   @Rule
   public DistributedDiskDirRule diskDirRule = new DistributedDiskDirRule();
 
   @Rule
+  public DistributedExecutorServiceRule executorServiceRule = new DistributedExecutorServiceRule();
+
+  @Rule
   public SerializableErrorCollector errorCollector = new SerializableErrorCollector();
+
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+
+  @Before
+  public void setUp() throws Exception {
+    vm0 = getVM(0);
+    vm1 = getVM(1);
+    vm2 = getVM(2);
+    vm3 = getVM(3);
+
+    rootDir = temporaryFolder.newFolder("rootDir-" + getName()).getAbsoluteFile();
+    for (VM vm : toArray(vm0, vm1, vm2, vm3)) {
+      diskDirs.put(vm.getId(), new File(rootDir, "vm-" + vm.getId()));
+    }
+
+    regionName = getUniqueName() + "Region";
+    jmxManagerPort = getRandomAvailablePort(SOCKET);
+  }
 
   @After
   public void tearDown() {
     for (VM vm : toArray(getAllVMs(), getController())) {
       vm.invoke(() -> {
         DistributionMessageObserver.setInstance(null);
+        CountDownLatch latch = SLEEP.get();
+        while (latch != null && latch.getCount() > 0) {
+          latch.countDown();
+        }
       });
     }
     disconnectAllFromDS();
@@ -131,32 +187,37 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    */
   @Test
   public void testWaitForLatestMember() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    }
 
-    createPersistentRegion(vm0);
-    createPersistentRegion(vm1);
+    vm0.invoke(() -> {
+      putEntry("A", "B");
+      getCache().getRegion(regionName).close();
+    });
 
-    putAnEntry(vm0);
-    closeRegion(vm0);
-
-    updateTheEntry(vm1);
-    closeRegion(vm1);
+    vm1.invoke(() -> {
+      updateEntry("A", "C");
+      getCache().getRegion(regionName).close();
+    });
 
     // This ought to wait for VM1 to come back
-    AsyncInvocation createPersistentRegionInVM0 = createPersistentRegionAsync(vm0);
-    waitForBlockedInitialization(vm0);
+    AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    vm0.invoke(() -> waitForBlockedInitialization());
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
-    createPersistentRegion(vm1);
+    vm1.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
 
     createPersistentRegionInVM0.await();
 
-    checkForEntry(vm0);
-    checkForEntry(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> validateEntry("A", "C"));
+    }
 
-    checkForRecoveryStat(vm1, true);
-    checkForRecoveryStat(vm0, false);
+    vm1.invoke(() -> validateDiskRegionInitializationStats(true));
+    vm0.invoke(() -> validateDiskRegionInitializationStats(false));
   }
 
   /**
@@ -164,74 +225,87 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    */
   @Test
   public void testRevokeAMember() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-    VM vm2 = getVM(2);
-
-    createPersistentRegion(vm0);
-    createPersistentRegion(vm1);
-
-    putAnEntry(vm0);
-
-    vm0.invoke(() -> {
-      PersistentMemberManager persistentMemberManager = getCache().getPersistentMemberManager();
-      Map<String, Set<PersistentMemberID>> waitingRegions =
-          persistentMemberManager.getWaitingRegions();
-      assertThat(waitingRegions).isEmpty();
+    vm2.invoke(() -> {
+      Properties props = getDistributedSystemProperties();
+      props.setProperty(JMX_MANAGER, "true");
+      props.setProperty(JMX_MANAGER_PORT, valueOf(jmxManagerPort));
+      props.setProperty(JMX_MANAGER_START, "true");
+      props.setProperty(HTTP_SERVICE_PORT, "0");
+      getCache(props);
     });
 
-    closeRegion(vm0);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    }
 
-    updateTheEntry(vm1);
+    vm0.invoke(() -> {
+      putEntry("A", "B");
 
-    closeCache(vm1);
+      PersistentMemberManager manager = getCache().getPersistentMemberManager();
+      Map<String, Set<PersistentMemberID>> waitingRegions = manager.getWaitingRegions();
+      assertThat(waitingRegions).isEmpty();
+
+      getCache().getRegion(regionName).close();
+    });
+
+    vm1.invoke(() -> {
+      updateEntry("A", "C");
+      getCache().close();
+    });
 
     // This ought to wait for VM1 to come back
-    AsyncInvocation createPersistentRegionInVM0 = createPersistentRegionAsync(vm0);
-    waitForBlockedInitialization(vm0);
+    AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    vm0.invoke(() -> waitForBlockedInitialization());
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
     vm2.invoke(() -> {
-      getCache();
-      AdminDistributedSystem adminDS = null;
-      try {
-        DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-        adminDS = getDistributedSystem(config);
-        adminDS.connect();
+      ManagementService managementService = ManagementService.getManagementService(getCache());
 
-        Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
-        assertThat(missingIds).hasSize(1);
+      await().untilAsserted(() -> {
+        assertThat(managementService.getDistributedSystemMXBean()).isNotNull();
+      });
 
-        PersistentID missingMember = missingIds.iterator().next();
-        adminDS.revokePersistentMember(missingMember.getUUID());
-      } finally {
-        if (adminDS != null) {
-          adminDS.disconnect();
-        }
-      }
+      DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
+
+      await().until(() -> dsMXBean.listMissingDiskStores().length > 0);
+
+      PersistentMemberDetails[] persistentMemberDetails = dsMXBean.listMissingDiskStores();
+      assertThat(persistentMemberDetails).hasSize(1);
+
+      String missingDiskStoreId = persistentMemberDetails[0].getDiskStoreId();
+      boolean revoked = dsMXBean.revokeMissingDiskStores(missingDiskStoreId);
+      assertThat(revoked).isTrue();
     });
 
     createPersistentRegionInVM0.await();
 
-    checkForRecoveryStat(vm0, true);
-
-    // Check to make sure we recovered the old value of the entry.
     vm0.invoke(() -> {
+      validateDiskRegionInitializationStats(true);
+
+      // Check to make sure we recovered the old value of the entry.
       Region<String, String> region = getCache().getRegion(regionName);
       assertThat(region.get("A")).isEqualTo("B");
     });
 
     // Now, we should not be able to create a region in vm1, because the this member was revoked
-    try (IgnoredException ignored = addIgnoredException(RevokedPersistentDataException.class)) {
-      Throwable thrown = catchThrowable(() -> createPersistentRegion(vm1));
-      assertThat(thrown).hasRootCauseInstanceOf(RevokedPersistentDataException.class);
-    }
+    vm1.invoke(() -> {
+      try (IgnoredException ie = addIgnoredException(RevokedPersistentDataException.class)) {
+        Throwable thrown = catchThrowable(() -> {
+          createReplicateRegion(regionName, getDiskDirs(getVMId()));
+        });
+        assertThat(thrown).isInstanceOf(RevokedPersistentDataException.class);
+      }
+    });
 
-    closeCache(vm1);
+    vm1.invoke(() -> getCache().close());
 
     // Restart vm0
-    closeCache(vm0);
-    createPersistentRegion(vm0);
+    vm0.invoke(() -> {
+      getCache().close();
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
   }
 
   /**
@@ -240,118 +314,144 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    */
   @Test
   public void testRevokeAHostBeforeInitialization() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-    VM vm2 = getVM(2);
-
-    createPersistentRegion(vm0);
-    createPersistentRegion(vm1);
-
-    putAnEntry(vm0);
-
-    vm0.invoke(() -> {
-      PersistentMemberManager persistentMemberManager = getCache().getPersistentMemberManager();
-      Map<String, Set<PersistentMemberID>> waitingRegions =
-          persistentMemberManager.getWaitingRegions();
-      assertThat(waitingRegions).isEmpty();
+    vm2.invoke(() -> {
+      Properties props = getDistributedSystemProperties();
+      props.setProperty(JMX_MANAGER, "true");
+      props.setProperty(JMX_MANAGER_PORT, "1099");
+      props.setProperty(JMX_MANAGER_START, "true");
+      props.setProperty(HTTP_SERVICE_PORT, "0");
+      getCache(props);
     });
 
-    closeRegion(vm0);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    }
 
-    updateTheEntry(vm1);
+    vm0.invoke(() -> {
+      putEntry("A", "B");
 
-    closeRegion(vm1);
+      PersistentMemberManager manager = getCache().getPersistentMemberManager();
+      Map<String, Set<PersistentMemberID>> waitingRegions = manager.getWaitingRegions();
+      assertThat(waitingRegions).isEmpty();
 
-    File dirToRevoke = getDiskDirForVM(vm1);
+      getCache().getRegion(regionName).close();
+    });
+
+    vm1.invoke(() -> {
+      updateEntry("A", "C");
+      getCache().close();
+    });
+
+    AsyncInvocation createRegionInVM0 = vm0.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+
     vm2.invoke(() -> {
-      getCache();
-      AdminDistributedSystem adminDS = null;
-      try {
-        DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-        adminDS = getDistributedSystem(config);
-        adminDS.connect();
-        adminDS.revokePersistentMember(getLocalHost(), dirToRevoke.getCanonicalPath());
-      } finally {
-        if (adminDS != null) {
-          adminDS.disconnect();
-        }
-      }
+      ManagementService managementService = ManagementService.getManagementService(getCache());
+
+      await().untilAsserted(() -> {
+        assertThat(managementService.getDistributedSystemMXBean()).isNotNull();
+      });
+
+      DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
+
+      await().until(() -> dsMXBean.listMissingDiskStores().length > 0);
+
+      PersistentMemberDetails[] persistentMemberDetails = dsMXBean.listMissingDiskStores();
+      assertThat(persistentMemberDetails).hasSize(1);
+
+      String missingDiskStoreId = persistentMemberDetails[0].getDiskStoreId();
+      boolean revoked = dsMXBean.revokeMissingDiskStores(missingDiskStoreId);
+      assertThat(revoked).isTrue();
     });
 
     // This shouldn't wait, because we revoked the member
-    createPersistentRegion(vm0);
+    createRegionInVM0.await();
 
-    checkForRecoveryStat(vm0, true);
-
-    // Check to make sure we recovered the old value of the entry.
     vm0.invoke(() -> {
+      validateDiskRegionInitializationStats(true);
+
+      // Check to make sure we recovered the old value of the entry.
       Region<String, String> region = getCache().getRegion(regionName);
       assertThat(region.get("A")).isEqualTo("B");
     });
 
     // Now, we should not be able to create a region
     // in vm1, because the this member was revoked
-    try (IgnoredException e = addIgnoredException(RevokedPersistentDataException.class)) {
-      Throwable thrown = catchThrowable(() -> createPersistentRegion(vm1));
-      assertThat(thrown).hasRootCauseInstanceOf(RevokedPersistentDataException.class);
-    }
+    vm1.invoke(() -> {
+      try (IgnoredException ie = addIgnoredException(RevokedPersistentDataException.class)) {
+        Throwable thrown = catchThrowable(() -> {
+          createReplicateRegion(regionName, getDiskDirs(getVMId()));
+        });
+        assertThat(thrown).isInstanceOf(RevokedPersistentDataException.class);
+      }
+    });
   }
 
   /**
    * Test which members show up in the list of members we're waiting on.
    */
   @Test
-  public void testWaitingMemberList() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-    VM vm2 = getVM(2);
-    VM vm3 = getVM(3);
-
-    createPersistentRegion(vm0);
-    createPersistentRegion(vm1);
-    createPersistentRegion(vm2);
-
-    putAnEntry(vm0);
-
-    vm0.invoke(() -> {
-      PersistentMemberManager persistentMemberManager = getCache().getPersistentMemberManager();
-      Map<String, Set<PersistentMemberID>> waitingRegions =
-          persistentMemberManager.getWaitingRegions();
-      assertThat(waitingRegions).isEmpty();
+  public void testWaitingMemberList() {
+    vm3.invoke(() -> {
+      Properties props = getDistributedSystemProperties();
+      props.setProperty(JMX_MANAGER, "true");
+      props.setProperty(JMX_MANAGER_PORT, "1099");
+      props.setProperty(JMX_MANAGER_START, "true");
+      props.setProperty(HTTP_SERVICE_PORT, "0");
+      getCache(props);
     });
 
-    closeCache(vm0);
+    for (VM vm : toArray(vm0, vm1, vm2)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    }
 
-    updateTheEntry(vm1);
-    closeCache(vm1);
+    vm0.invoke(() -> {
+      putEntry("A", "B");
 
-    updateTheEntry(vm2, "D");
-    closeCache(vm2);
+      PersistentMemberManager manager = getCache().getPersistentMemberManager();
+      Map<String, Set<PersistentMemberID>> waitingRegions = manager.getWaitingRegions();
+      assertThat(waitingRegions).isEmpty();
+
+      getCache().close();
+    });
+
+    vm1.invoke(() -> {
+      updateEntry("A", "C");
+      getCache().close();
+    });
+
+    vm2.invoke(() -> {
+      updateEntry("A", "D");
+      getCache().close();
+    });
 
     // These ought to wait for VM2 to come back
-    AsyncInvocation createPersistentRegionInVM0 = createPersistentRegionAsync(vm0);
-    waitForBlockedInitialization(vm0);
+    AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    vm0.invoke(() -> waitForBlockedInitialization());
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
-    AsyncInvocation createPersistentRegionInVM1 = createPersistentRegionAsync(vm1);
-    waitForBlockedInitialization(vm1);
+    AsyncInvocation<Void> createPersistentRegionInVM1 = vm1.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    vm1.invoke(() -> waitForBlockedInitialization());
     assertThat(createPersistentRegionInVM1.isAlive()).isTrue();
 
     vm3.invoke(() -> {
-      getCache();
-      AdminDistributedSystem adminDS = null;
-      try {
-        DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-        adminDS = getDistributedSystem(config);
-        adminDS.connect();
+      ManagementService managementService = ManagementService.getManagementService(getCache());
 
-        Set<PersistentID> missingIds = adminDS.getMissingPersistentMembers();
-        assertThat(missingIds).hasSize(1);
-      } finally {
-        if (adminDS != null) {
-          adminDS.disconnect();
-        }
-      }
+      await().untilAsserted(() -> {
+        assertThat(managementService.getDistributedSystemMXBean()).isNotNull();
+      });
+
+      DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
+
+      await().untilAsserted(() -> {
+        PersistentMemberDetails[] persistentMemberDetails = dsMXBean.listMissingDiskStores();
+        assertThat(persistentMemberDetails).hasSize(1);
+      });
     });
 
     vm1.invoke(() -> {
@@ -362,23 +462,18 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
     // Now we should be missing 2 members
     vm3.invoke(() -> {
-      getCache();
-      AdminDistributedSystem adminDS = null;
-      try {
-        DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-        adminDS = getDistributedSystem(config);
-        adminDS.connect();
+      ManagementService managementService = ManagementService.getManagementService(getCache());
 
-        AdminDistributedSystem connectedDS = adminDS;
-        await().until(() -> {
-          Set<PersistentID> missingIds = connectedDS.getMissingPersistentMembers();
-          return 2 == missingIds.size();
-        });
-      } finally {
-        if (adminDS != null) {
-          adminDS.disconnect();
-        }
-      }
+      await().untilAsserted(() -> {
+        assertThat(managementService.getDistributedSystemMXBean()).isNotNull();
+      });
+
+      DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
+
+      await().untilAsserted(() -> {
+        PersistentMemberDetails[] persistentMemberDetails = dsMXBean.listMissingDiskStores();
+        assertThat(persistentMemberDetails).hasSize(2);
+      });
     });
   }
 
@@ -386,24 +481,28 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    * Use Case AB are alive A crashes. B crashes. B starts up. It should not wait for A.
    */
   @Test
-  public void testDoNotWaitForOldMember() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
+  public void testDoNotWaitForOldMember() {
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    }
 
-    createPersistentRegion(vm0);
-    createPersistentRegion(vm1);
+    vm0.invoke(() -> {
+      putEntry("A", "B");
+      getCache().getRegion(regionName).close();
+    });
 
-    putAnEntry(vm0);
-    closeRegion(vm0);
+    vm1.invoke(() -> {
+      updateEntry("A", "C");
+      getCache().getRegion(regionName).close();
+    });
 
-    updateTheEntry(vm1);
-    closeRegion(vm1);
+    vm1.invoke(() -> {
+      // This shouldn't wait for vm0 to come back
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
 
-    // This shouldn't wait for vm0 to come back
-    createPersistentRegion(vm1);
-    checkForEntry(vm1);
-
-    checkForRecoveryStat(vm1, true);
+      validateEntry("A", "C");
+      validateDiskRegionInitializationStats(true);
+    });
   }
 
   /**
@@ -412,37 +511,43 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    */
   @Test
   public void testSimultaneousCrash() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    }
 
-    createPersistentRegion(vm0);
-    createPersistentRegion(vm1);
-    putAnEntry(vm0);
-    updateTheEntry(vm1);
+    vm0.invoke(() -> putEntry("A", "B"));
+
+    vm1.invoke(() -> updateEntry("A", "C"));
 
     // Copy the regions as they are with both members online.
-    backupDir(vm0);
-    backupDir(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      backupDir(vm.getId());
+    }
 
     // destroy the members
-    closeCache(vm0);
-    closeCache(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> getCache().close());
+    }
 
     // now restore from backup
-    restoreBackup(vm0);
-    restoreBackup(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      restoreBackup(vm.getId());
+    }
 
     // This ought to wait for VM1 to come back
-    AsyncInvocation createPersistentRegionInVM0 = createPersistentRegionAsync(vm0);
-    waitForBlockedInitialization(vm0);
+    AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    vm0.invoke(() -> waitForBlockedInitialization());
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
-    createPersistentRegion(vm1);
+    vm1.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
 
     createPersistentRegionInVM0.await();
 
-    checkForEntry(vm0);
-    checkForEntry(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> validateEntry("A", "C"));
+    }
   }
 
   /**
@@ -452,75 +557,79 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    */
   @Test
   public void testTransmitCrashedMembers() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-    VM vm2 = getVM(2);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    }
 
-    createPersistentRegion(vm0);
-    createPersistentRegion(vm1);
-
-    putAnEntry(vm0);
-    closeRegion(vm0);
+    vm0.invoke(() -> {
+      putEntry("A", "B");
+      getCache().getRegion(regionName).close();
+    });
 
     // VM 2 should be told about the fact that VM1 has crashed.
-    createPersistentRegion(vm2);
+    vm2.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
 
-    updateTheEntry(vm1);
-    closeRegion(vm1);
+    vm1.invoke(() -> {
+      updateEntry("A", "C");
+      getCache().getRegion(regionName).close();
+    });
 
-    closeRegion(vm2);
+    vm2.invoke(() -> getCache().getRegion(regionName).close());
 
     // This ought to wait for VM1 to come back
-    AsyncInvocation createPersistentRegionInVM0 = createPersistentRegionAsync(vm0);
-    waitForBlockedInitialization(vm0);
+    AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    vm0.invoke(() -> waitForBlockedInitialization());
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
     // VM2 has the most recent data, it should start
-    createPersistentRegion(vm2);
+    vm2.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
 
     // VM0 should be informed that VM2 is older, so it should start
     createPersistentRegionInVM0.await();
 
-    checkForEntry(vm0);
-    checkForEntry(vm2);
+    for (VM vm : toArray(vm0, vm2)) {
+      vm.invoke(() -> validateEntry("A", "C"));
+    }
   }
 
   /**
    * Tests that a persistent region cannot recover from a non persistent region.
    */
   @Test
-  public void testRecoverFromNonPersistentRegion() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
+  public void testRecoverFromNonPersistentRegion() {
+    vm0.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    vm1.invoke(() -> createReplicateRegion(regionName));
 
-    createPersistentRegion(vm0);
-    createNonPersistentRegion(vm1);
+    vm0.invoke(() -> {
+      putEntry("A", "B");
+      getCache().getRegion(regionName).close();
+    });
 
-    putAnEntry(vm0);
-    closeRegion(vm0);
-
-    Throwable thrown = catchThrowable(() -> updateTheEntry(vm1));
-    assertThat(thrown).hasRootCauseInstanceOf(PersistentReplicatesOfflineException.class);
+    vm1.invoke(() -> {
+      Throwable thrown = catchThrowable(() -> updateEntry("A", "C"));
+      assertThat(thrown).isInstanceOf(PersistentReplicatesOfflineException.class);
+    });
 
     // This should initialize from vm1
-    createPersistentRegion(vm0);
+    vm0.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      validateDiskRegionInitializationStats(true);
+    });
 
-    checkForRecoveryStat(vm0, true);
+    vm1.invoke(() -> updateEntry("A", "C"));
 
-    updateTheEntry(vm1);
-    checkForEntry(vm0);
-    checkForEntry(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> validateEntry("A", "C"));
+    }
   }
 
   @Test
   public void testFinishIncompleteInitializationNoSend() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-
     // Add a hook which will disconnect the DS before sending a prepare message
     vm1.invoke(() -> {
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
-
         @Override
         public void beforeSendMessage(ClusterDistributionManager dm,
             DistributionMessage message) {
@@ -533,29 +642,36 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       });
     });
 
-    createPersistentRegion(vm0);
+    vm0.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      putEntry("A", "B");
+      updateEntry("A", "C");
+    });
 
-    putAnEntry(vm0);
-    updateTheEntry(vm0);
+    vm1.invoke(() -> {
+      Throwable thrown = catchThrowable(() -> {
+        createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      });
+      assertThat(thrown).isInstanceOf(DistributedSystemDisconnectedException.class);
+    });
 
-    Throwable thrown = catchThrowable(() -> createPersistentRegion(vm1));
-    assertThat(thrown).hasRootCauseInstanceOf(DistributedSystemDisconnectedException.class);
-
-    closeRegion(vm0);
+    vm0.invoke(() -> getCache().getRegion(regionName).close());
 
     vm1.invoke(() -> {
       await().until(() -> system != null && system.isDisconnected());
     });
 
     // This wait for VM0 to come back
-    AsyncInvocation createPersistentRegionInVM1 = createPersistentRegionAsync(vm1);
-    waitForBlockedInitialization(vm1);
+    AsyncInvocation<Void> createPersistentRegionInVM1 = vm1.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    vm1.invoke(() -> waitForBlockedInitialization());
 
-    createPersistentRegion(vm0);
+    vm0.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
 
     createPersistentRegionInVM1.await();
 
-    checkForEntry(vm1);
+    vm1.invoke(() -> validateEntry("A", "C"));
 
     vm0.invoke(() -> {
       InternalRegion region = (InternalRegion) getCache().getRegion(regionName);
@@ -575,57 +691,70 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
   @Test
   @Parameters({"true", "false"})
   @TestCaseName("{method}({params})")
-  public void testPersistConflictOperations(boolean diskSync) throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
+  public void testPersistConflictOperations(boolean diskSynchronous) throws Exception {
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> addSleepBeforeSendAbstractUpdateMessage());
+    }
 
-    vm0.invoke(() -> addSleepBeforeSendAbstractUpdateMessage());
-    vm1.invoke(() -> addSleepBeforeSendAbstractUpdateMessage());
+    AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()), diskSynchronous);
+    });
+    AsyncInvocation<Void> createPersistentRegionInVM1 = vm1.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()), diskSynchronous);
+    });
 
-    AsyncInvocation createPersistentRegionInVM0 = createPersistentRegionAsync(vm0, diskSync);
-    AsyncInvocation createPersistentRegionInVM1 = createPersistentRegionAsync(vm1, diskSync);
     createPersistentRegionInVM0.await();
     createPersistentRegionInVM1.await();
 
-    AsyncInvocation putInVM0 = vm0.invokeAsync(() -> {
-      Region<String, String> region = getCache().getRegion(regionName);
-      region.put("A", "vm0");
+    AsyncInvocation<Void> putInVM0 = vm0.invokeAsync(() -> {
+      getCache().<String, String>getRegion(regionName).put("A", "vm0");
     });
-    AsyncInvocation putInVM1 = vm1.invokeAsync(() -> {
-      Region<String, String> region = getCache().getRegion(regionName);
-      region.put("A", "vm1");
+    AsyncInvocation<Void> putInVM1 = vm1.invokeAsync(() -> {
+      getCache().<String, String>getRegion(regionName).put("A", "vm1");
     });
+
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> SLEEP.get().countDown());
+    }
+
     putInVM0.await();
     putInVM1.await();
 
-    RegionVersionVector rvv0 = getRVV(vm0);
-    RegionVersionVector rvv1 = getRVV(vm1);
-    assertSameRVV(rvv1, rvv0);
+    RegionVersionVector rvvInVM0 = toRVV(vm0.invoke(() -> getRVVBytes()));
+    RegionVersionVector rvvInVM1 = toRVV(vm1.invoke(() -> getRVVBytes()));
+    assertSameRVV(rvvInVM1, rvvInVM0);
 
-    Object value0 = getEntry(vm0, "A");
-    Object value1 = getEntry(vm1, "A");
-    assertThat(value1).isEqualTo(value0);
+    Object valueInVM0 = vm0.invoke(() -> getCache().getRegion(regionName).get("A"));
+    Object valueInVM1 = vm1.invoke(() -> getCache().getRegion(regionName).get("A"));
+    assertThat(valueInVM1).isEqualTo(valueInVM0);
 
-    closeRegion(vm0);
-    closeRegion(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> getCache().getRegion(regionName).close());
+    }
 
     // recover
-    createPersistentRegionInVM1 = createPersistentRegionAsync(vm1, diskSync);
-    createPersistentRegionInVM0 = createPersistentRegionAsync(vm0, diskSync);
+    createPersistentRegionInVM1 = vm1.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()), diskSynchronous);
+    });
+    createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()), diskSynchronous);
+    });
+
     createPersistentRegionInVM1.await();
     createPersistentRegionInVM0.await();
 
-    value0 = getEntry(vm0, "A");
-    value1 = getEntry(vm1, "A");
-    assertThat(value1).isEqualTo(value0);
+    valueInVM0 = vm0.invoke(() -> getCache().getRegion(regionName).get("A"));
+    valueInVM1 = vm1.invoke(() -> getCache().getRegion(regionName).get("A"));
+    assertThat(valueInVM1).isEqualTo(valueInVM0);
 
-    rvv0 = getRVV(vm0);
-    rvv1 = getRVV(vm1);
-    assertSameRVV(rvv1, rvv0);
+    rvvInVM0 = toRVV(vm0.invoke(() -> getRVVBytes()));
+    rvvInVM1 = toRVV(vm1.invoke(() -> getRVVBytes()));
+    assertSameRVV(rvvInVM1, rvvInVM0);
 
     // round 2: async disk write
-    vm0.invoke(() -> addSleepBeforeSendAbstractUpdateMessage());
-    vm1.invoke(() -> addSleepBeforeSendAbstractUpdateMessage());
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> addSleepBeforeSendAbstractUpdateMessage());
+    }
 
     putInVM0 = vm0.invokeAsync(() -> {
       Region<String, String> region = getCache().getRegion(regionName);
@@ -639,33 +768,44 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
         region.put("A", "vm1-" + i);
       }
     });
+
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> SLEEP.get().countDown());
+    }
+
     putInVM0.await();
     putInVM1.await();
 
-    rvv0 = getRVV(vm0);
-    rvv1 = getRVV(vm1);
-    assertSameRVV(rvv1, rvv0);
+    rvvInVM0 = toRVV(vm0.invoke(() -> getRVVBytes()));
+    rvvInVM1 = toRVV(vm1.invoke(() -> getRVVBytes()));
+    assertSameRVV(rvvInVM1, rvvInVM0);
 
-    value0 = getEntry(vm0, "A");
-    value1 = getEntry(vm1, "A");
-    assertThat(value1).isEqualTo(value0);
+    valueInVM0 = vm0.invoke(() -> getCache().getRegion(regionName).get("A"));
+    valueInVM1 = vm1.invoke(() -> getCache().getRegion(regionName).get("A"));
+    assertThat(valueInVM1).isEqualTo(valueInVM0);
 
-    closeCache(vm0);
-    closeCache(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> getCache().close());
+    }
 
     // recover again
-    createPersistentRegionInVM1 = createPersistentRegionAsync(vm1, diskSync);
-    createPersistentRegionInVM0 = createPersistentRegionAsync(vm0, diskSync);
+    createPersistentRegionInVM1 = vm1.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()), diskSynchronous);
+    });
+    createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()), diskSynchronous);
+    });
+
     createPersistentRegionInVM1.await();
     createPersistentRegionInVM0.await();
 
-    value0 = getEntry(vm0, "A");
-    value1 = getEntry(vm1, "A");
-    assertThat(value1).isEqualTo(value0);
+    valueInVM0 = vm0.invoke(() -> getCache().getRegion(regionName).get("A"));
+    valueInVM1 = vm1.invoke(() -> getCache().getRegion(regionName).get("A"));
+    assertThat(valueInVM1).isEqualTo(valueInVM0);
 
-    rvv0 = getRVV(vm0);
-    rvv1 = getRVV(vm1);
-    assertSameRVV(rvv1, rvv0);
+    rvvInVM0 = toRVV(vm0.invoke(() -> getRVVBytes()));
+    rvvInVM1 = toRVV(vm1.invoke(() -> getRVVBytes()));
+    assertSameRVV(rvvInVM1, rvvInVM0);
   }
 
   /**
@@ -675,64 +815,71 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    */
   @Test
   public void testTransmitCrashedMembersWithNonPersistentRegion() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-    VM vm2 = getVM(2);
+    vm0.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    vm1.invoke(() -> createReplicateRegion(regionName));
 
-    createPersistentRegion(vm0);
-    createNonPersistentRegion(vm1);
-
-    putAnEntry(vm0);
-
-    closeRegion(vm0);
+    vm0.invoke(() -> {
+      putEntry("A", "B");
+      getCache().getRegion(regionName).close();
+    });
 
     // VM 2 should not do a GII from vm1, it should wait for vm0
-    AsyncInvocation createPersistentRegionInVM2 = createPersistentRegionWithWait(vm2);
+    AsyncInvocation<Void> createPersistentRegionInVM2 = vm2.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    vm2.invoke(() -> waitForBlockedInitialization());
+    assertThat(createPersistentRegionInVM2.isAlive()).isTrue();
 
-    createPersistentRegion(vm0);
+    vm0.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
 
     createPersistentRegionInVM2.await();
 
-    closeRegion(vm0);
+    vm0.invoke(() -> getCache().getRegion(regionName).close());
 
-    updateTheEntry(vm1);
+    vm1.invoke(() -> updateEntry("A", "C"));
 
-    closeRegion(vm1);
-    closeRegion(vm2);
+    for (VM vm : toArray(vm1, vm2)) {
+      vm.invoke(() -> getCache().getRegion(regionName).close());
+    }
 
     // VM2 has the most recent data, it should start
-    createPersistentRegion(vm2);
-
     // VM0 should be informed that it has older data than VM2, so it should initialize from vm2
-    createPersistentRegion(vm0);
+    for (VM vm : toArray(vm2, vm0)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    }
 
-    checkForEntry(vm0);
-    checkForEntry(vm2);
+    for (VM vm : toArray(vm0, vm2)) {
+      vm.invoke(() -> validateEntry("A", "C"));
+    }
   }
 
   @Test
-  public void testSplitBrain() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
+  public void testSplitBrain() {
+    vm0.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      putEntry("A", "B");
+      getCache().getRegion(regionName).close();
+    });
 
-    createPersistentRegion(vm0);
-    putAnEntry(vm0);
-    closeRegion(vm0);
+    vm1.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      updateEntry("A", "C");
+      getCache().getRegion(regionName).close();
+    });
 
-    createPersistentRegion(vm1);
-    updateTheEntry(vm1);
-    closeRegion(vm1);
+    // VM0 doesn't know that VM1 ever existed so it will start up.
+    vm0.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
 
-    // VM0 doesn't know that VM1 ever existed
-    // so it will start up.
-    createPersistentRegion(vm0);
-
-    try (IgnoredException e = addIgnoredException(ConflictingPersistentDataException.class)) {
-      // VM1 should not start up, because we should detect that vm1
-      // was never in the same distributed system as vm0
-      Throwable thrown = catchThrowable(() -> createPersistentRegion(vm1));
-      assertThat(thrown).hasRootCauseInstanceOf(ConflictingPersistentDataException.class);
-    }
+    vm1.invoke(() -> {
+      try (IgnoredException ie = addIgnoredException(ConflictingPersistentDataException.class)) {
+        // VM1 should not start up, because we should detect that vm1
+        // was never in the same distributed system as vm0
+        Throwable thrown = catchThrowable(() -> {
+          createReplicateRegion(regionName, getDiskDirs(getVMId()));
+        });
+        assertThat(thrown).isInstanceOf(ConflictingPersistentDataException.class);
+      }
+    });
   }
 
   /**
@@ -741,29 +888,31 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    */
   @Test
   public void testCrashDuringGII() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    }
 
-    createPersistentRegion(vm0);
-    createPersistentRegion(vm1);
+    vm0.invoke(() -> {
+      putEntry("A", "B");
+      getCache().getRegion(regionName).close();
+    });
 
-    putAnEntry(vm0);
-    closeRegion(vm0);
-
-    updateTheEntry(vm1);
-    closeRegion(vm1);
+    vm1.invoke(() -> {
+      updateEntry("A", "C");
+      getCache().getRegion(regionName).close();
+    });
 
     // This ought to wait for VM1 to come back
-    AsyncInvocation createPersistentRegionInVM0 = createPersistentRegionAsync(vm0);
-    waitForBlockedInitialization(vm0);
+    AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    vm0.invoke(() -> waitForBlockedInitialization());
     assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
 
-    // Add a hook which will disconnect from the system when the initial image message shows up.
     vm1.invoke(() -> {
+      // Add a hook which will disconnect from the system when the initial image message shows up.
       SAW_REQUEST_IMAGE_MESSAGE.set(false);
-
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
-
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
             DistributionMessage message) {
@@ -778,40 +927,35 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
           }
         }
       });
-    });
 
-    createPersistentRegion(vm1);
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
 
-    vm1.invoke(() -> {
       synchronized (SAW_REQUEST_IMAGE_MESSAGE) {
         try {
           while (!SAW_REQUEST_IMAGE_MESSAGE.get()) {
-            SAW_REQUEST_IMAGE_MESSAGE.wait();
+            SAW_REQUEST_IMAGE_MESSAGE.wait(TIMEOUT_MILLIS);
           }
         } catch (InterruptedException e) {
           errorCollector.addError(e);
         }
       }
-    });
 
-    waitForBlockedInitialization(vm0);
-    assertThat(createPersistentRegionInVM0.isAlive()).isTrue();
-
-    vm1.invoke(() -> {
       await().until(() -> system != null && system.isDisconnected());
+
+      // Now create the region again. The initialization should
+      // work (the observer was cleared when we disconnected from the DS.
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
     });
 
-    // Now create the region again. The initialization should
-    // work (the observer was cleared when we disconnected from the DS.
-    createPersistentRegion(vm1);
 
     createPersistentRegionInVM0.await();
 
-    checkForEntry(vm0);
-    checkForEntry(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> validateEntry("A", "C"));
+    }
 
-    checkForRecoveryStat(vm1, true);
-    checkForRecoveryStat(vm0, false);
+    vm1.invoke(() -> validateDiskRegionInitializationStats(true));
+    vm0.invoke(() -> validateDiskRegionInitializationStats(false));
   }
 
   /**
@@ -820,24 +964,27 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    */
   @Test
   public void testGIIDuringDestroy() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-    VM vm2 = getVM(2);
+    vm0.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
 
-    createPersistentRegion(vm0);
+    vm2.invoke(() -> LATCH.set(new CountDownLatch(1)));
+
+    AsyncInvocation<Void> createPersistentRegionAsyncOnVM2 = vm2.invokeAsync(() -> {
+      LATCH.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
 
     // Add a hook which will disconnect from the distributed
     // system when the initial image message shows up.
     vm1.invoke(() -> {
+      SLEEP.set(new CountDownLatch(1));
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
-
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
             DistributionMessage message) {
           if (message instanceof DestroyRegionMessage) {
-            createPersistentRegionAsync(vm2);
+            vm2.invoke(() -> LATCH.get().countDown());
             try {
-              Thread.sleep(10_000);
+              SLEEP.get().await(TIMEOUT_MILLIS, MILLISECONDS);
             } catch (InterruptedException e) {
               errorCollector.addError(e);
             } finally {
@@ -848,21 +995,21 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
       });
     });
 
-    createPersistentRegion(vm1);
+    vm1.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
 
-    vm0.invoke(() -> {
+    AsyncInvocation<Void> destroyRegionInVM0 = vm0.invokeAsync(() -> {
       getCache().getRegion(regionName).destroyRegion();
     });
 
-
     vm1.invoke(() -> {
-      assertThat(getCache().getRegion(regionName)).isNull();
+      SLEEP.get().countDown();
+      await().untilAsserted(() -> {
+        assertThat(getCache().getRegion(regionName)).isNull();
+      });
     });
 
-    vm2.invoke(() -> {
-      Cache cache = getCache();
-      await().until(() -> cache.getRegion(regionName) != null);
-    });
+    createPersistentRegionAsyncOnVM2.await();
+    destroyRegionInVM0.await();
 
     vm2.invoke(() -> {
       DistributedRegion region = (DistributedRegion) getCache().getRegion(regionName);
@@ -873,11 +1020,8 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
   @Test
   public void testCrashDuringPreparePersistentId() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-
-    addIgnoredException(DistributedSystemDisconnectedException.class);
     addIgnoredException(CacheClosedException.class);
+    addIgnoredException(DistributedSystemDisconnectedException.class);
 
     // Add a hook which will disconnect from the distributed
     // system when the initial image message shows up.
@@ -893,63 +1037,74 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
           }
         }
       });
+
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      putEntry("A", "B");
+      updateEntry("A", "C");
     });
 
-    createPersistentRegion(vm0);
-    putAnEntry(vm0);
-    updateTheEntry(vm0);
+    AsyncInvocation<Void> createPersistentRegionInVM1 = vm1.invokeAsync(() -> {
+      Throwable thrown = catchThrowable(() -> {
+        createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      });
+      assertThat(thrown).isInstanceOf(CacheClosedException.class);
+    });
 
-    AsyncInvocation createPersistentRegionInVM1 = createPersistentRegionAsync(vm1);
-    waitForBlockedInitialization(vm1);
-    closeCache(vm1);
+    vm1.invoke(() -> {
+      waitForBlockedInitialization();
+      getCache().close();
+    });
 
-    Throwable thrown = catchThrowable(() -> createPersistentRegionInVM1.await());
-    assertThat(thrown).hasRootCauseInstanceOf(CacheClosedException.class);
+    createPersistentRegionInVM1.await();
 
     vm0.invoke(() -> {
       await().until(() -> system != null && system.isDisconnected());
     });
 
-    createPersistentRegion(vm0);
-    createPersistentRegion(vm1);
-
-    checkForEntry(vm0);
-    checkForEntry(vm1);
-  }
-
-  @Test
-  public void testSplitBrainWithNonPersistentRegion() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-
-    createPersistentRegion(vm1);
-    putAnEntry(vm1);
-    updateTheEntry(vm1);
-    closeRegion(vm1);
-
-    createNonPersistentRegion(vm0);
-
-    try (IgnoredException e = addIgnoredException(IllegalStateException.class)) {
-      Throwable thrown = catchThrowable(() -> createPersistentRegion(vm1));
-      assertThat(thrown).hasRootCauseInstanceOf(IllegalStateException.class);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
     }
 
-    closeRegion(vm0);
-
-    createPersistentRegion(vm1);
-    checkForEntry(vm1);
-    checkForRecoveryStat(vm1, true);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> validateEntry("A", "C"));
+    }
   }
 
   @Test
-  public void testMissingEntryOnDisk() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
+  public void testSplitBrainWithNonPersistentRegion() {
+    vm1.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      putEntry("A", "B");
+      updateEntry("A", "C");
+      getCache().getRegion(regionName).close();
+    });
 
+    vm0.invoke(() -> createReplicateRegion(regionName));
+
+    vm1.invoke(() -> {
+      try (IgnoredException ie = addIgnoredException(IllegalStateException.class)) {
+        Throwable thrown = catchThrowable(() -> {
+          createReplicateRegion(regionName, getDiskDirs(getVMId()));
+        });
+        assertThat(thrown).isInstanceOf(IllegalStateException.class);
+      }
+    });
+
+    vm0.invoke(() -> getCache().getRegion(regionName).close());
+
+    vm1.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+
+      validateEntry("A", "C");
+      validateDiskRegionInitializationStats(true);
+    });
+  }
+
+  @Test
+  public void testMissingEntryOnDisk() {
     // Add a hook which will perform some updates while the region is initializing
     vm0.invoke(() -> {
       DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
-
         @Override
         public void beforeProcessMessage(ClusterDistributionManager dm,
             DistributionMessage message) {
@@ -965,20 +1120,22 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
         }
       });
     });
-    createPersistentRegion(vm0);
 
-    createPersistentRegion(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    }
 
-    checkForEntry(vm1);
+    vm1.invoke(() -> validateEntry("A", "C"));
 
-    closeRegion(vm0);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> getCache().getRegion(regionName).close());
+    }
 
-    closeRegion(vm1);
-
-    // This should work
-    createPersistentRegion(vm1);
-
-    checkForEntry(vm1);
+    vm1.invoke(() -> {
+      // This should work
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      validateEntry("A", "C");
+    });
   }
 
   /**
@@ -986,46 +1143,46 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    */
   @Test
   public void testCompactFromAdmin() {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-    VM vm2 = getVM(2);
+    vm2.invoke(() -> {
+      Properties props = getDistributedSystemProperties();
+      props.setProperty(JMX_MANAGER, "true");
+      props.setProperty(JMX_MANAGER_PORT, valueOf(jmxManagerPort));
+      props.setProperty(JMX_MANAGER_START, "true");
+      props.setProperty(HTTP_SERVICE_PORT, "0");
+      getCache(props);
+    });
 
-    createPersistentRegionWithoutCompaction(vm0);
-    createPersistentRegionWithoutCompaction(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createReplicateRegionWithoutCompaction(regionName, getDiskDirs(getVMId())));
+    }
 
     vm1.invoke(() -> {
-      Region region = getCache().getRegion(regionName);
-
+      Region<Integer, byte[]> region = getCache().getRegion(regionName);
       for (int i = 0; i < 1024; i++) {
         region.put(i, new byte[1024]);
       }
-
       for (int i = 2; i < 1024; i++) {
-        assertThat(region.destroy(i) != null).isTrue();
+        assertThat(region.destroy(i)).isNotNull();
       }
-
-      DiskStore store = cache.findDiskStore(regionName);
-      store.forceRoll();
+      DiskStore diskStore = getCache().findDiskStore(regionName);
+      diskStore.forceRoll();
     });
 
     vm2.invoke(() -> {
-      getCache();
-      AdminDistributedSystem adminDS = null;
-      try {
-        DistributedSystemConfig config = defineDistributedSystem(getSystem(), "");
-        adminDS = getDistributedSystem(config);
-        adminDS.connect();
+      // GemFire:service=DiskStore,name={0},type=Member,member={1}
+      ObjectName pattern = new ObjectName("GemFire:service=DiskStore,*");
 
-        Map<DistributedMember, Set<PersistentID>> missingIds = adminDS.compactAllDiskStores();
-        assertThat(missingIds).hasSize(2);
+      await().untilAsserted(() -> {
+        Set<ObjectName> mbeanNames = getPlatformMBeanServer().queryNames(pattern, null);
 
-        for (Set<PersistentID> value : missingIds.values()) {
-          assertThat(value).hasSize(1);
-        }
-      } finally {
-        if (adminDS != null) {
-          adminDS.disconnect();
-        }
+        assertThat(mbeanNames).hasSize(2);
+      });
+
+      Set<ObjectName> mbeanNames = getPlatformMBeanServer().queryNames(pattern, null);
+      for (ObjectName objectName : mbeanNames) {
+        DiskStoreMXBean diskStoreMXBean =
+            newProxyInstance(getPlatformMBeanServer(), objectName, DiskStoreMXBean.class, false);
+        assertThat(diskStoreMXBean.forceCompaction()).isTrue();
       }
     });
 
@@ -1039,105 +1196,73 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
   @Test
   public void testCloseDuringRegionOperation() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-
-    createPersistentRegion(vm0);
-    createPersistentRegion(vm1);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> createReplicateRegion(regionName, getDiskDirs(getVMId())));
+    }
 
     // Try to make sure there are some operations in flight while closing the cache
 
     AsyncInvocation<Integer> createDataInVM0 = vm0.invokeAsync(() -> {
       Region<Integer, Integer> region = getCache().getRegion(regionName);
-      int i = 0;
+      COUNT.set(0);
       while (true) {
         try {
-          region.put(0, i);
-          i++;
+          region.put(0, COUNT.incrementAndGet());
         } catch (CacheClosedException | RegionDestroyedException e) {
           break;
         }
       }
-      return i - 1;
+      return COUNT.get();
     });
 
     AsyncInvocation<Integer> createDataInVM1 = vm1.invokeAsync(() -> {
       Region<Integer, Integer> region = getCache().getRegion(regionName);
-      int i = 0;
+      COUNT.set(0);
       while (true) {
         try {
-          region.put(1, i);
-          i++;
+          region.put(1, COUNT.incrementAndGet());
         } catch (CacheClosedException | RegionDestroyedException e) {
           break;
         }
       }
-      return i - 1;
+      return COUNT.get();
     });
 
-    Thread.sleep(500);
+    for (VM vm : toArray(vm0, vm1)) {
+      vm.invoke(() -> {
+        await().until(() -> COUNT.get() > 1);
+      });
+    }
 
-    AsyncInvocation closeCacheInVM0 = closeCacheAsync(vm0);
-    AsyncInvocation closeCacheInVM1 = closeCacheAsync(vm1);
+    AsyncInvocation<Void> closeCacheInVM0 = vm0.invokeAsync(() -> getCache().close());
+    AsyncInvocation<Void> closeCacheInVM1 = vm1.invokeAsync(() -> getCache().close());
 
-    // wait for the close to finish
     closeCacheInVM0.await();
     closeCacheInVM1.await();
 
-    int lastSuccessfulCreateInVM0 = createDataInVM0.get();
-    int lastSuccessfulCreateInVM1 = createDataInVM1.get();
+    int expectedValueFor0 = createDataInVM0.get();
+    int expectedValueFor1 = createDataInVM1.get();
 
-    AsyncInvocation createPersistentRegionInVM0 = createPersistentRegionAsync(vm0);
-    AsyncInvocation createPersistentRegionInVM1 = createPersistentRegionAsync(vm1);
+    AsyncInvocation<Void> createPersistentRegionInVM0 = vm0.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
+    AsyncInvocation<Void> createPersistentRegionInVM1 = vm1.invokeAsync(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+    });
 
     createPersistentRegionInVM0.await();
     createPersistentRegionInVM1.await();
 
-    checkConcurrentCloseValue(vm0, vm1, 0, lastSuccessfulCreateInVM0);
-    checkConcurrentCloseValue(vm0, vm1, 1, lastSuccessfulCreateInVM1);
-  }
+    for (int key : asList(0, 1)) {
+      int valueInVM0 = vm0.invoke(() -> getValue(key));
+      int valueInVM1 = vm1.invoke(() -> getValue(key));
 
-  @Ignore("TODO: Disabled due to bug #52240")
-  @Test
-  public void testCloseDuringRegionOperationWithTX() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-    VM vm2 = getVM(2);
+      int expectedValue = key == 0 ? expectedValueFor0 : expectedValueFor1;
 
-    createInternalPersistentRegionAsync(vm0).await();
-    createInternalPersistentRegionAsync(vm1).await();
-    createInternalPersistentRegionAsync(vm2).await();
-
-    AsyncInvocation<Integer> createDataInVM0 = createDataAsyncTX(vm0, 0);
-    AsyncInvocation<Integer> createDataInVM1 = createDataAsyncTX(vm0, 1);
-    AsyncInvocation<Integer> createDataInVM2 = createDataAsyncTX(vm0, 2);
-
-    Thread.sleep(500);
-
-    AsyncInvocation closeCacheInVM0 = closeCacheAsync(vm0);
-    AsyncInvocation closeCacheInVM1 = closeCacheAsync(vm1);
-    AsyncInvocation closeCacheInVM2 = closeCacheAsync(vm2);
-
-    // wait for the close to finish
-    closeCacheInVM0.await();
-    closeCacheInVM1.await();
-    closeCacheInVM2.await();
-
-    int lastPutInVM0 = createDataInVM0.getResult();
-    int lastPutInVM1 = createDataInVM1.getResult();
-    int lastPutInVM2 = createDataInVM2.getResult();
-
-    AsyncInvocation createPersistentRegionInVM0 = createInternalPersistentRegionAsync(vm0);
-    AsyncInvocation createPersistentRegionInVM1 = createInternalPersistentRegionAsync(vm1);
-    AsyncInvocation createPersistentRegionInVM2 = createInternalPersistentRegionAsync(vm2);
-
-    createPersistentRegionInVM0.await();
-    createPersistentRegionInVM1.await();
-    createPersistentRegionInVM2.await();
-
-    checkConcurrentCloseValue(vm0, vm1, 0, lastPutInVM0);
-    checkConcurrentCloseValue(vm0, vm1, 1, lastPutInVM1);
-    checkConcurrentCloseValue(vm0, vm1, 2, lastPutInVM2);
+      assertThat(valueInVM0)
+          .isEqualTo(valueInVM1)
+          .isBetween(expectedValue - 1, expectedValue);
+    }
   }
 
   /**
@@ -1145,109 +1270,149 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
    * recover.
    */
   @Test
-  public void testRecoverAfterConflict() throws Exception {
-    VM vm0 = getVM(0);
-    VM vm1 = getVM(1);
-
-    createPersistentRegion(vm0);
-    putAnEntry(vm0);
-    closeCache(vm0);
-
-    createPersistentRegion(vm1);
-    putAnEntry(vm1);
-
-    try (IgnoredException e = addIgnoredException(ConflictingPersistentDataException.class)) {
-      // this should cause a conflict
-      Throwable thrown = catchThrowable(() -> createPersistentRegion(vm0));
-      assertThat(thrown).hasRootCauseInstanceOf(ConflictingPersistentDataException.class);
-    }
-
-    closeCache(vm1);
-
-    // This should work now
-    createPersistentRegion(vm0);
-
-    updateTheEntry(vm0);
-
-    // Now make sure vm1 gets a conflict
-    try (IgnoredException e = addIgnoredException(ConflictingPersistentDataException.class)) {
-      // this should cause a conflict
-      Throwable thrown = catchThrowable(() -> createPersistentRegion(vm1));
-      assertThat(thrown).hasRootCauseInstanceOf(ConflictingPersistentDataException.class);
-    }
-  }
-
-  private Object getEntry(VM vm, String key) {
-    return vm.invoke(() -> getCache().getRegion(regionName).get(key));
-  }
-
-  private RegionVersionVector getRVV(VM vm) throws IOException, ClassNotFoundException {
-    byte[] result = vm.invoke(() -> {
-      InternalRegion region = (InternalRegion) getCache().getRegion(regionName);
-
-      RegionVersionVector regionVersionVector = region.getVersionVector();
-      regionVersionVector = regionVersionVector.getCloneForTransmission();
-      HeapDataOutputStream outputStream = new HeapDataOutputStream(2048);
-
-      // Using gemfire serialization because RegionVersionVector is not java serializable
-      DataSerializer.writeObject(regionVersionVector, outputStream);
-      return outputStream.toByteArray();
+  public void testRecoverAfterConflict() {
+    vm0.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      putEntry("A", "B");
+      getCache().close();
     });
 
-    ByteArrayInputStream inputStream = new ByteArrayInputStream(result);
+    vm1.invoke(() -> {
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      putEntry("A", "B");
+    });
+
+    vm0.invoke(() -> {
+      try (IgnoredException ie = addIgnoredException(ConflictingPersistentDataException.class)) {
+        // this should cause a conflict
+        Throwable thrown = catchThrowable(() -> {
+          createReplicateRegion(regionName, getDiskDirs(getVMId()));
+        });
+        assertThat(thrown).isInstanceOf(ConflictingPersistentDataException.class);
+      }
+    });
+
+    vm1.invoke(() -> getCache().close());
+
+    vm0.invoke(() -> {
+      // This should work now
+      createReplicateRegion(regionName, getDiskDirs(getVMId()));
+      updateEntry("A", "C");
+    });
+
+    // Now make sure vm1 gets a conflict
+    vm1.invoke(() -> {
+      try (IgnoredException ie = addIgnoredException(ConflictingPersistentDataException.class)) {
+        // this should cause a conflict
+        Throwable thrown = catchThrowable(() -> {
+          createReplicateRegion(regionName, getDiskDirs(getVMId()));
+        });
+        assertThat(thrown).isInstanceOf(ConflictingPersistentDataException.class);
+      }
+    });
+  }
+
+  protected void createReplicateRegion(String regionName, File[] diskDirs,
+      boolean diskSynchronous) {
+    DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();
+    diskStoreFactory.setDiskDirs(diskDirs);
+    diskStoreFactory.setMaxOplogSize(1);
+
+    DiskStore diskStore = diskStoreFactory.create(regionName);
+
+    RegionFactory regionFactory = getCache().createRegionFactory(REPLICATE_PERSISTENT);
+    regionFactory.setDiskStoreName(diskStore.getName());
+    regionFactory.setDiskSynchronous(diskSynchronous);
+
+    regionFactory.create(regionName);
+  }
+
+  private void createReplicateRegion(String regionName, File[] diskDirs) {
+    createReplicateRegion(regionName, diskDirs, true);
+  }
+
+  private void createReplicateRegion(String regionName) {
+    getCache().createRegionFactory(REPLICATE).create(regionName);
+  }
+
+  private void createReplicateRegionWithoutCompaction(String regionName, File[] diskDirs) {
+    DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();
+    diskStoreFactory.setAllowForceCompaction(true);
+    diskStoreFactory.setAutoCompact(false);
+    diskStoreFactory.setCompactionThreshold(20);
+    diskStoreFactory.setDiskDirs(diskDirs);
+    diskStoreFactory.setMaxOplogSize(1);
+
+    DiskStore diskStore = diskStoreFactory.create(regionName);
+
+    RegionFactory regionFactory = getCache().createRegionFactory(REPLICATE_PERSISTENT);
+    regionFactory.setDiskStoreName(diskStore.getName());
+    regionFactory.setDiskSynchronous(true);
+
+    regionFactory.create(regionName);
+  }
+
+  private int getValue(int key) {
+    return getCache().<Integer, Integer>getRegion(regionName).get(key);
+  }
+
+  private void putEntry(String key, String value) {
+    getCache().<String, String>getRegion(regionName).put(key, value);
+  }
+
+  private void updateEntry(String key, String value) {
+    getCache().<String, String>getRegion(regionName).put(key, value);
+  }
+
+  private void validateEntry(String key, String value) {
+    assertThat(getCache().<String, String>getRegion(regionName).get(key)).isEqualTo(value);
+  }
+
+  private byte[] getRVVBytes() throws IOException {
+    InternalRegion region = (InternalRegion) getCache().getRegion(regionName);
+
+    RegionVersionVector regionVersionVector = region.getVersionVector();
+    regionVersionVector = regionVersionVector.getCloneForTransmission();
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(2048);
+
+    // Using gemfire serialization because RegionVersionVector is not java serializable
+    DataSerializer.writeObject(regionVersionVector, outputStream);
+    return outputStream.toByteArray();
+  }
+
+  private RegionVersionVector toRVV(byte[] bytes) throws IOException, ClassNotFoundException {
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
     return DataSerializer.readObject(new DataInputStream(inputStream));
   }
 
-  private SerializableRunnable addSleepBeforeSendAbstractUpdateMessage() {
-    return new SerializableRunnable() {
+  private void addSleepBeforeSendAbstractUpdateMessage() {
+    SLEEP.set(new CountDownLatch(1));
+    DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
       @Override
-      public void run() {
-        DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
-
-          @Override
-          public void beforeSendMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
-            if (message instanceof AbstractUpdateMessage) {
-              try {
-                Thread.sleep(2000);
-              } catch (InterruptedException e) {
-                errorCollector.addError(e);
-              }
-            }
+      public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+        if (message instanceof AbstractUpdateMessage) {
+          try {
+            SLEEP.get().await(TIMEOUT_MILLIS, MILLISECONDS);
+          } catch (InterruptedException e) {
+            errorCollector.addError(e);
           }
-
-          @Override
-          public void afterProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
-            if (message instanceof AbstractUpdateMessage) {
-              DistributionMessageObserver.setInstance(null);
-            }
-          }
-        });
+        }
       }
-    };
+
+      @Override
+      public void afterProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+        if (message instanceof AbstractUpdateMessage) {
+          DistributionMessageObserver.setInstance(null);
+        }
+      }
+    });
   }
 
-  private AsyncInvocation createPersistentRegionAsync(VM vm, boolean diskSynchronous) {
-    return vm.invokeAsync(() -> {
-      getCache();
-
-      File dir = getDiskDirForVM(vm);
-      dir.mkdirs();
-
-      DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();
-      diskStoreFactory.setDiskDirs(new File[] {dir});
-      diskStoreFactory.setMaxOplogSize(1);
-
-      DiskStore diskStore = diskStoreFactory.create(regionName);
-
-      RegionFactory regionFactory = new RegionFactory();
-      regionFactory.setDiskStoreName(diskStore.getName());
-      regionFactory.setDiskSynchronous(diskSynchronous);
-      regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-      regionFactory.setScope(Scope.DISTRIBUTED_ACK);
-
-      regionFactory.create(regionName);
+  private void waitForBlockedInitialization() {
+    await().until(() -> {
+      PersistentMemberManager manager = getCache().getPersistentMemberManager();
+      Map<String, Set<PersistentMemberID>> regions = manager.getWaitingRegions();
+      return !regions.isEmpty();
     });
   }
 
@@ -1257,108 +1422,44 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
         .isTrue();
   }
 
-  private AsyncInvocation<Integer> createDataAsyncTX(VM vm, int member) {
-    return vm.invokeAsync(() -> {
-      Region<Integer, Integer> region = getCache().getRegion(regionName);
-      CacheTransactionManager txManager = getCache().getCacheTransactionManager();
-      int i = 0;
-      while (true) {
-        try {
-          txManager.begin();
-          region.put(member, i);
-          txManager.commit();
-          i++;
-        } catch (CacheClosedException | LockServiceDestroyedException
-            | RegionDestroyedException e) {
-          break;
-        } catch (IllegalArgumentException e) {
-          if (!e.getMessage().contains("Invalid txLockId")) {
-            throw e;
-          }
-          break;
-        }
-      }
-      return i - 1;
-    });
+  private void validateDiskRegionInitializationStats(boolean localRecovery) {
+    InternalRegion region = (InternalRegion) getCache().getRegion(regionName);
+    DiskRegionStats diskRegionStats = region.getDiskRegion().getStats();
+
+    if (localRecovery) {
+      assertThat(diskRegionStats.getLocalInitializations()).isEqualTo(1);
+      assertThat(diskRegionStats.getRemoteInitializations()).isEqualTo(0);
+    } else {
+      assertThat(diskRegionStats.getLocalInitializations()).isEqualTo(0);
+      assertThat(diskRegionStats.getRemoteInitializations()).isEqualTo(1);
+    }
   }
 
-  private void checkConcurrentCloseValue(VM vm0, VM vm1, int key, int lastSuccessfulInt) {
-    int valueInVM0 = vm0.invoke(() -> doRegionGet(key));
-    int valueInVM1 = vm1.invoke(() -> doRegionGet(key));
-
-    assertThat(valueInVM1).isEqualTo(valueInVM0);
-    assertThat(valueInVM0 == lastSuccessfulInt || valueInVM0 == lastSuccessfulInt + 1)
-        .as("value = " + valueInVM0 + ", lastSuccessfulInt=" + lastSuccessfulInt)
-        .isTrue();
+  private File[] getDiskDirs(int vmId) {
+    return new File[] {getDiskDir(vmId)};
   }
 
-  private int doRegionGet(int key) {
-    Region<Integer, Integer> region = getCache().getRegion(regionName);
-    return region.get(key);
+  private File getDiskDir(int vmId) {
+    File diskDir = diskDirs.get(vmId);
+    diskDir.mkdirs();
+    return diskDir;
   }
 
-  private void checkForEntry(VM vm) {
-    vm.invoke(() -> {
-      Region<String, String> region = getCache().getRegion(regionName);
-      assertThat(region.get("A")).isEqualTo("C");
-    });
+  private void backupDir(int vmId) throws IOException {
+    File diskDir = getDiskDir(vmId);
+    File backupDir = new File(rootDir, diskDir.getName() + ".bk");
+
+    copyDirectory(diskDir, backupDir);
   }
 
-  private void updateTheEntry(VM vm) {
-    updateTheEntry(vm, "C");
-  }
+  private void restoreBackup(int vmId) throws IOException {
+    File diskDir = getDiskDir(vmId);
+    File backupDir = new File(rootDir, diskDir.getName() + ".bk");
 
-  private void updateTheEntry(VM vm, String value) {
-    vm.invoke(() -> {
-      Region<String, String> region = getCache().getRegion(regionName);
-      region.put("A", value);
-    });
-  }
-
-  private void putAnEntry(VM vm) {
-    vm.invoke(() -> {
-      Region<String, String> region = getCache().getRegion(regionName);
-      region.put("A", "B");
-    });
-  }
-
-  private void checkForRecoveryStat(VM vm, boolean localRecovery) {
-    vm.invoke(() -> {
-      InternalRegion region = (InternalRegion) getCache().getRegion(regionName);
-      DiskRegionStats diskRegionStats = region.getDiskRegion().getStats();
-
-      if (localRecovery) {
-        assertThat(diskRegionStats.getLocalInitializations()).isEqualTo(1);
-        assertThat(diskRegionStats.getRemoteInitializations()).isEqualTo(0);
-      } else {
-        assertThat(diskRegionStats.getLocalInitializations()).isEqualTo(0);
-        assertThat(diskRegionStats.getRemoteInitializations()).isEqualTo(1);
-      }
-    });
-  }
-
-  private AsyncInvocation createInternalPersistentRegionAsync(VM vm) {
-    return vm.invokeAsync(() -> {
-      File dir = getDiskDirForVM(vm);
-      dir.mkdirs();
-
-      DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();
-      diskStoreFactory.setDiskDirs(new File[] {dir});
-      diskStoreFactory.setMaxOplogSize(1);
-
-      DiskStore diskStore = diskStoreFactory.create(regionName);
-
-      InternalRegionArguments internalRegionArguments = new InternalRegionArguments();
-      internalRegionArguments.setIsUsedForMetaRegion(true);
-      internalRegionArguments.setMetaRegionWithTransactions(true);
-
-      AttributesFactory attributesFactory = new AttributesFactory();
-      attributesFactory.setDiskStoreName(diskStore.getName());
-      attributesFactory.setDiskSynchronous(true);
-      attributesFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-      attributesFactory.setScope(Scope.DISTRIBUTED_ACK);
-
-      getCache().createVMRegion(regionName, attributesFactory.create(), internalRegionArguments);
-    });
+    if (!backupDir.renameTo(diskDir)) {
+      deleteDirectory(diskDir);
+      copyDirectory(backupDir, diskDir);
+      deleteDirectory(backupDir);
+    }
   }
 }

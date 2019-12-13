@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import static java.lang.System.lineSeparator;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -25,20 +29,24 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.DiskRegion;
+import org.apache.geode.internal.cache.DiskRegionStats;
 import org.apache.geode.internal.cache.persistence.PersistentStateQueryMessage.PersistentStateQueryReplyProcessor;
+import org.apache.geode.internal.process.StartupStatus;
+import org.apache.geode.internal.util.TransformUtils.CollectionTransformer;
+import org.apache.geode.internal.util.Transformer;
 
 public class PersistenceAdvisorImplTest {
 
@@ -67,22 +75,23 @@ public class PersistenceAdvisorImplTest {
   public void setUp() throws Exception {
     cacheDistributionAdvisor = mock(CacheDistributionAdvisor.class);
     persistentMemberView = mock(DiskRegion.class);
-    PersistentStateQueryMessageSenderFactory persistentStateQueryMessageSenderFactory =
+    PersistentStateQueryMessageSenderFactory queryMessageSenderFactory =
         mock(PersistentStateQueryMessageSenderFactory.class);
-    PersistentStateQueryMessage persistentStateQueryMessage =
+    PersistentStateQueryMessage queryMessage =
         mock(PersistentStateQueryMessage.class);
     persistentStateQueryResults = mock(PersistentStateQueryResults.class);
 
-    when(persistentStateQueryMessageSenderFactory.createPersistentStateQueryReplyProcessor(any(),
-        any())).thenReturn(mock(PersistentStateQueryReplyProcessor.class));
-    when(persistentStateQueryMessageSenderFactory.createPersistentStateQueryMessage(any(), any(),
-        any(), anyInt())).thenReturn(persistentStateQueryMessage);
-    when(persistentStateQueryMessage.send(any(), any(), any()))
+    when(queryMessageSenderFactory.createPersistentStateQueryReplyProcessor(any(), any()))
+        .thenReturn(mock(PersistentStateQueryReplyProcessor.class));
+    when(queryMessageSenderFactory.createPersistentStateQueryMessage(any(), any(), any(), anyInt()))
+        .thenReturn(queryMessage);
+    when(queryMessage.send(any(), any(), any()))
         .thenReturn(persistentStateQueryResults);
 
     persistenceAdvisorImpl =
         new PersistenceAdvisorImpl(cacheDistributionAdvisor, null, persistentMemberView, null, null,
-            null, persistentStateQueryMessageSenderFactory);
+            null, mock(StartupStatus.class), mock(Transformer.class),
+            mock(CollectionTransformer.class), queryMessageSenderFactory);
   }
 
   /**
@@ -185,39 +194,116 @@ public class PersistenceAdvisorImplTest {
     assertThat(aSet).containsExactly(id_1, id_3, id_6);
   }
 
+  @Test
+  public void prepareNewMemberRemovesOldPersistentMemberId() {
+    InternalDistributedMember sender = mock(InternalDistributedMember.class);
+    PersistentMemberID oldId = mock(PersistentMemberID.class);
+    PersistentMemberID newId = mock(PersistentMemberID.class);
+    when(cacheDistributionAdvisor.containsId(sender)).thenReturn(true);
+    PersistenceAdvisorImpl spy = spy(persistenceAdvisorImpl);
+    doNothing().when(spy).memberRemoved(oldId, false);
+
+    spy.prepareNewMember(sender, oldId, newId);
+
+    verify(persistentMemberView).memberOnline(newId);
+    verify(spy).memberRemoved(oldId, false);
+  }
+
+  @Test
+  public void waitingForMembersMessage_logsMessage1_whenHasOfflineMembersWaitingFor() {
+    DistributedLockService distributedLockService = mock(DistributedLockService.class);
+    String regionPath = "/region";
+    DiskRegionStats diskRegionStats = mock(DiskRegionStats.class);
+    PersistentMemberManager persistentMemberManager = mock(PersistentMemberManager.class);
+    StartupStatus startupStatus = mock(StartupStatus.class);
+    PersistentStateQueryMessageSenderFactory persistentStateQueryMessageSenderFactory =
+        mock(PersistentStateQueryMessageSenderFactory.class);
+
+    PersistentMemberID missingPersistentId = mock(PersistentMemberID.class);
+    Set<PersistentMemberID> allMembersToWaitFor = singleton(missingPersistentId);
+    Set<PersistentMemberID> offlineMembersToWaitFor = singleton(missingPersistentId);
+
+    String transformedMissingPersistentId = "myId";
+
+    PersistenceAdvisorImpl persistenceAdvisor = new PersistenceAdvisorImpl(cacheDistributionAdvisor,
+        distributedLockService, persistentMemberView, regionPath, diskRegionStats,
+        persistentMemberManager, startupStatus, id -> transformedMissingPersistentId,
+        mock(CollectionTransformer.class), persistentStateQueryMessageSenderFactory);
+
+    persistenceAdvisor.setWaitingOnMembers(allMembersToWaitFor, offlineMembersToWaitFor);
+
+    persistenceAdvisor.logWaitingForMembers();
+
+    ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
+    verify(startupStatus).startup(messageCaptor.capture(), any());
+
+    assertThat(messageCaptor.getValue())
+        .contains("Region " + regionPath
+            + " has potentially stale data. It is waiting for another member to recover the latest data.")
+        .contains(lineSeparator() + "My persistent id:" + lineSeparator())
+        .contains(transformedMissingPersistentId)
+        .contains(lineSeparator() + "Members with potentially new data:" + lineSeparator())
+        // skip validation of CollectionTransformer for now
+        .contains(lineSeparator()
+            + "Use the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.");
+  }
+
+  @Test
+  public void waitingForMembersMessage_logsMessage2_whenNoOfflineMembersWaitingFor() {
+    DistributedLockService distributedLockService = mock(DistributedLockService.class);
+    String regionPath = "/region";
+    DiskRegionStats diskRegionStats = mock(DiskRegionStats.class);
+    PersistentMemberManager persistentMemberManager = mock(PersistentMemberManager.class);
+    StartupStatus startupStatus = mock(StartupStatus.class);
+    PersistentStateQueryMessageSenderFactory persistentStateQueryMessageSenderFactory =
+        mock(PersistentStateQueryMessageSenderFactory.class);
+
+    String transformedMissingPersistentId = "myId";
+
+    PersistenceAdvisorImpl persistenceAdvisor = new PersistenceAdvisorImpl(cacheDistributionAdvisor,
+        distributedLockService, persistentMemberView, regionPath, diskRegionStats,
+        persistentMemberManager, startupStatus, id -> transformedMissingPersistentId,
+        mock(CollectionTransformer.class), persistentStateQueryMessageSenderFactory);
+
+    persistenceAdvisor.setWaitingOnMembers(emptySet(), emptySet());
+
+    persistenceAdvisor.logWaitingForMembers();
+
+    ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
+    verify(startupStatus).startup(messageCaptor.capture(), any());
+
+    assertThat(messageCaptor.getValue())
+        .contains("Region " + regionPath
+            + " has potentially stale data. It is waiting for another online member to recover the latest data.")
+        .contains(lineSeparator() + "My persistent id:" + lineSeparator())
+        .contains(transformedMissingPersistentId)
+        .contains(lineSeparator() + "Members with potentially new data:" + lineSeparator())
+        // skip validation of CollectionTransformer for now
+        .contains(lineSeparator()
+            + "Use the gfsh show missing-disk-stores command to see all disk stores that are being waited on by other members.");
+  }
+
   private void getMembersToWaitForRemovesAllMembers(DiskStoreID diskStoreID,
       Set<PersistentMemberID> previouslyOnlineMembers) {
     InternalDistributedMember member = mock(InternalDistributedMember.class);
-    Map<InternalDistributedMember, PersistentMemberState> stateOnPeers = new HashMap<>();
-    Map<InternalDistributedMember, PersistentMemberID> persistentIds = new HashMap<>();
-    Map<InternalDistributedMember, PersistentMemberID> initializingIds = new HashMap<>();
-    Map<InternalDistributedMember, DiskStoreID> diskStoreIds = new HashMap<>();
 
-    stateOnPeers.put(member, PersistentMemberState.ONLINE);
-    persistentIds.put(member, createPersistentMemberID(diskStoreID, TIME_STAMP_2));
-    initializingIds.put(member, createPersistentMemberID(diskStoreID, TIME_STAMP_3));
-    diskStoreIds.put(member, diskStoreID);
-
-    when(cacheDistributionAdvisor.adviseGeneric()).thenReturn(createMemberSet(member));
+    when(cacheDistributionAdvisor.adviseGeneric())
+        .thenReturn(createMemberSet(member));
     when(persistentMemberView.getMyPersistentID())
-        .thenReturn(createPersistentMemberID(getNewDiskStoreID(),
-            TIME_STAMP_4));
-    when(persistentStateQueryResults.getDiskStoreIds()).thenReturn(diskStoreIds);
-    when(persistentStateQueryResults.getInitializingIds()).thenReturn(initializingIds);
-    when(persistentStateQueryResults.getPersistentIds()).thenReturn(persistentIds);
-    when(persistentStateQueryResults.getStateOnPeers()).thenReturn(stateOnPeers);
+        .thenReturn(createPersistentMemberID(getNewDiskStoreID(), TIME_STAMP_4));
+    when(persistentStateQueryResults.getDiskStoreIds())
+        .thenReturn(singletonMap(member, diskStoreID));
+    when(persistentStateQueryResults.getInitializingIds())
+        .thenReturn(singletonMap(member, createPersistentMemberID(diskStoreID, TIME_STAMP_3)));
+    when(persistentStateQueryResults.getPersistentIds())
+        .thenReturn(singletonMap(member, createPersistentMemberID(diskStoreID, TIME_STAMP_2)));
+    when(persistentStateQueryResults.getStateOnPeers())
+        .thenReturn(singletonMap(member, PersistentMemberState.ONLINE));
 
     Set<PersistentMemberID> membersToWaitFor =
         persistenceAdvisorImpl.getMembersToWaitFor(previouslyOnlineMembers, new HashSet<>());
 
     assertThat(membersToWaitFor).isEmpty();
-  }
-
-  private class PersistentMemberIDComparator implements Comparator<PersistentMemberID> {
-    @Override
-    public int compare(PersistentMemberID id1, PersistentMemberID id2) {
-      return id1.getName().compareTo(id2.getName());
-    }
   }
 
   private Set<InternalDistributedMember> createMemberSet(InternalDistributedMember... member) {
@@ -240,18 +326,10 @@ public class PersistenceAdvisorImplTest {
     return new DiskStoreID(uuid);
   }
 
-  @Test
-  public void prepareNewMemberRemovesOldPersistentMemberId() {
-    InternalDistributedMember sender = mock(InternalDistributedMember.class);
-    PersistentMemberID oldId = mock(PersistentMemberID.class);
-    PersistentMemberID newId = mock(PersistentMemberID.class);
-    when(cacheDistributionAdvisor.containsId(sender)).thenReturn(true);
-    PersistenceAdvisorImpl spy = spy(persistenceAdvisorImpl);
-    doNothing().when(spy).memberRemoved(oldId, false);
-
-    spy.prepareNewMember(sender, oldId, newId);
-
-    verify(persistentMemberView).memberOnline(newId);
-    verify(spy).memberRemoved(oldId, false);
+  private static class PersistentMemberIDComparator implements Comparator<PersistentMemberID> {
+    @Override
+    public int compare(PersistentMemberID id1, PersistentMemberID id2) {
+      return id1.getName().compareTo(id2.getName());
+    }
   }
 }

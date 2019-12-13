@@ -14,58 +14,51 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import static org.apache.geode.internal.lang.SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductIntegerProperty;
+import static java.time.Instant.now;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Set;
 import java.util.function.BooleanSupplier;
 
-import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public class MembershipChangeListener implements MembershipListener, PersistentStateListener {
+
   private static final int POLL_INTERVAL_MILLIS = 100;
 
-  private final Runnable warning;
-  private final BooleanSupplier cancelCondition;
   private final Duration pollDuration;
   private final Duration warningDelay;
+  private final BooleanSupplier cancelCondition;
+  private final Runnable warning;
 
   private boolean membershipChanged;
   private boolean warned;
 
-  public MembershipChangeListener(InternalPersistenceAdvisor persistenceAdvisor) {
-    warningDelay = warningDelay(persistenceAdvisor);
-    cancelCondition = cancelCondition(persistenceAdvisor);
-    warning = persistenceAdvisor::logWaitingForMembers;
-    pollDuration = pollDuration();
-  }
-
-  private Duration warningDelay(InternalPersistenceAdvisor persistenceAdvisor) {
-    return Duration.ofSeconds(persistenceAdvisor.getCacheDistributionAdvisor()
-        .getDistributionManager().getConfig().getAckWaitThreshold());
+  MembershipChangeListener(Duration warningDelay, Duration pollDuration,
+      BooleanSupplier cancelCondition, Runnable warning) {
+    this.warningDelay = warningDelay;
+    this.pollDuration = pollDuration;
+    this.cancelCondition = cancelCondition;
+    this.warning = warning;
   }
 
   public synchronized void waitForChange() throws InterruptedException {
-    Instant now = Instant.now();
+    Instant now = now();
     Instant timeoutTime = now.plus(pollDuration);
     Instant warningTime = now.plus(warningDelay);
 
-    while (!membershipChanged && !cancelCondition.getAsBoolean()
-        && Instant.now().isBefore(timeoutTime)) {
+    while (!membershipChanged && !cancelCondition.getAsBoolean() && now().isBefore(timeoutTime)) {
       warnOnceAfter(warningTime);
       wait(POLL_INTERVAL_MILLIS);
     }
+
     membershipChanged = false;
   }
 
   private void warnOnceAfter(Instant warningTime) {
-    if (!warned && warningTime.isBefore(Instant.now())) {
+    if (!warned && warningTime.isBefore(now())) {
       warning.run();
       warned = true;
     }
@@ -88,14 +81,6 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
   }
 
   @Override
-  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
-      InternalDistributedMember whoSuspected, String reason) {}
-
-  @Override
-  public void quorumLost(DistributionManager distributionManager,
-      Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
-
-  @Override
   public void memberOffline(InternalDistributedMember member, PersistentMemberID persistentID) {
     afterMembershipChange();
   }
@@ -108,20 +93,5 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
   @Override
   public void memberRemoved(PersistentMemberID id, boolean revoked) {
     afterMembershipChange();
-  }
-
-  private static BooleanSupplier cancelCondition(InternalPersistenceAdvisor persistenceAdvisor) {
-    CancelCriterion cancelCriterion =
-        persistenceAdvisor.getCacheDistributionAdvisor().getAdvisee().getCancelCriterion();
-    return () -> {
-      persistenceAdvisor.checkInterruptedByShutdownAll();
-      cancelCriterion.checkCancelInProgress(null);
-      return persistenceAdvisor.isClosed();
-    };
-  }
-
-  private static Duration pollDuration() {
-    return Duration
-        .ofSeconds(getProductIntegerProperty(PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS).orElse(5));
   }
 }
