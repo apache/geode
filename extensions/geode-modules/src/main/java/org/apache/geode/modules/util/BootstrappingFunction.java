@@ -25,6 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -57,8 +58,14 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     // Verify that the cache exists before continuing.
     // When this function is executed by a remote membership listener, it is
     // being invoked before the cache is started.
+    Cache contextCache = null;
+    try {
+      contextCache = context.getCache();
+    } catch (CacheClosedException ignore) {
+    }
+
     Cache cache = verifyCacheExists(
-        context.getCache() == null ? null : context.getCache().getDistributedSystem());
+        contextCache == null ? null : context.getCache().getDistributedSystem());
 
     // Register as membership listener
     registerAsMembershipListener(cache);
