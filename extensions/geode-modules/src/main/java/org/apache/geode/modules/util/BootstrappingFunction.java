@@ -65,7 +65,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     }
 
     Cache cache = verifyCacheExists(
-        contextCache == null ? null : context.getCache().getDistributedSystem());
+        contextCache == null ? null : contextCache.getDistributedSystem());
 
     // Register as membership listener
     registerAsMembershipListener(cache);
