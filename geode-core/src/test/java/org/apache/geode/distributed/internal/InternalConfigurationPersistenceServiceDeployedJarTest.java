@@ -15,7 +15,9 @@
 
 package org.apache.geode.distributed.internal;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -26,7 +28,11 @@ import static org.mockito.Mockito.when;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -74,7 +80,7 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
     Path jar1 = Files.createFile(stagingDir.resolve("abc.jar"));
     FileUtils.writeStringToFile(jar1.toFile(), "version1", "UTF-8");
     Path jar2 = Files.createFile(stagingDir.resolve("def.jar"));
-    List<String> paths = Stream.of(jar1, jar2).map(Path::toString).collect(Collectors.toList());
+    List<String> paths = Stream.of(jar1, jar2).map(Path::toString).collect(toList());
     service.addJarsToThisLocator("DEPLOYEDBY1", "DEPLOYEDTIME1", paths, null);
     assertThat(workingDir.resolve("cluster").toFile().list()).containsExactlyInAnyOrder("abc.jar",
         "def.jar");
@@ -93,7 +99,7 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
 
     // deploy abc.jar again
     FileUtils.writeStringToFile(jar1.toFile(), "version2", "UTF-8");
-    paths = Stream.of(jar1).map(Path::toString).collect(Collectors.toList());
+    paths = Stream.of(jar1).map(Path::toString).collect(toList());
     service.addJarsToThisLocator("DEPLOYEDBY2", "DEPLOYEDTIME2", paths, null);
     assertThat(workingDir.resolve("cluster").toFile().list()).containsExactlyInAnyOrder("abc.jar",
         "def.jar");
@@ -119,7 +125,7 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
   public void addSemanticJarToThisLocator() throws Exception {
     Path jar1 = Files.createFile(stagingDir.resolve("abc-1.0.jar"));
     Path jar2 = Files.createFile(stagingDir.resolve("def-1.0.jar"));
-    List<String> paths = Stream.of(jar1, jar2).map(Path::toString).collect(Collectors.toList());
+    List<String> paths = Stream.of(jar1, jar2).map(Path::toString).collect(toList());
     service.addJarsToThisLocator("DEPLOYEDBY1", "DEPLOYEDTIME1", paths, null);
     assertThat(workingDir.resolve("cluster").toFile().list())
         .containsExactlyInAnyOrder("abc-1.0.jar", "def-1.0.jar");
@@ -135,7 +141,7 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
 
     // deploy abc-1.1.jar
     Path jar3 = Files.createFile(stagingDir.resolve("abc-1.1.jar"));
-    paths = Stream.of(jar3).map(Path::toString).collect(Collectors.toList());
+    paths = Stream.of(jar3).map(Path::toString).collect(toList());
     service.addJarsToThisLocator("DEPLOYEDBY2", "DEPLOYEDTIME2", paths, null);
     assertThat(workingDir.resolve("cluster").toFile().list())
         .containsExactlyInAnyOrder("abc-1.1.jar", "def-1.0.jar");
@@ -153,7 +159,7 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
     // deploy abc-1.0.jar and def-1.0.jar
     Path jar1 = Files.createFile(stagingDir.resolve("abc-1.0.jar"));
     Path jar2 = Files.createFile(stagingDir.resolve("def-1.0.jar"));
-    List<String> paths = Stream.of(jar1, jar2).map(Path::toString).collect(Collectors.toList());
+    List<String> paths = Stream.of(jar1, jar2).map(Path::toString).collect(toList());
     service.addJarsToThisLocator("DEPLOYEDBY1", "DEPLOYEDTIME1", paths, null);
     ArgumentCaptor<Configuration> argumentCaptor = ArgumentCaptor.forClass(Configuration.class);
     verify(configRegion).put(eq("cluster"), argumentCaptor.capture(), eq("member"));
@@ -174,5 +180,28 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
     configuration = argumentCaptor.getValue();
     assertThat(configuration.getDeployments()).containsExactlyInAnyOrder(
         createDeployment("abc.jar", "DEPLOYEDBY2", "DEPLOYEDTIME2"), defDeployment);
+  }
+
+  @Test
+  public void addsDeploymentsFromJarFileNames() {
+    String deployedBy = "deployedBy";
+    String timeDeployed = Instant.now().toString();
+
+    Collection<String> allFileNames = new HashSet<>();
+    Collection<String> jarFileNames = asList("jar1.jar", "jar2.jar", "jar3.jar");
+    allFileNames.addAll(jarFileNames);
+    allFileNames.addAll(asList("nonJar.xml", "nonJar.pdf"));
+
+    Configuration configuration = new Configuration();
+
+    InternalConfigurationPersistenceService
+        .loadDeploymentsFromFileNames(allFileNames, configuration, deployedBy, timeDeployed);
+
+    List<Deployment> expectedDeployments = jarFileNames.stream()
+        .map(jarFileName -> new Deployment(jarFileName, deployedBy, timeDeployed))
+        .collect(toList());
+
+    assertThat(configuration.getDeployments())
+        .containsExactlyInAnyOrderElementsOf(expectedDeployments);
   }
 }

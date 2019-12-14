@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static java.util.Arrays.asList;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 
@@ -27,8 +28,9 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,8 +39,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -48,6 +50,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.subject.Subject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -83,6 +86,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.apache.geode.security.AuthenticationRequiredException;
 
 public class InternalConfigurationPersistenceService implements ConfigurationPersistenceService {
   private static final Logger logger = LogService.getLogger();
@@ -289,9 +293,13 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    * Add jar information into the shared configuration and save the jars in the file system used
    * when deploying jars
    */
-  public void addJarsToThisLocator(String deployedBy, String timeDeployed,
-      List<String> jarFullPaths,
-      String[] groups) throws IOException {
+  public void addJarsToThisLocator(List<String> jarFullPaths, String[] groups) throws IOException {
+    addJarsToThisLocator(getDeployedBy(), Instant.now().toString(), jarFullPaths, groups);
+  }
+
+  @VisibleForTesting
+  void addJarsToThisLocator(String deployedBy, String timeDeployed,
+      List<String> jarFullPaths, String[] groups) throws IOException {
     lockSharedConfiguration();
     try {
       if (groups == null) {
@@ -307,10 +315,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           File stagedJar = new File(jarFullPath);
           String jarFileName = stagedJar.getName();
           jarNames.add(jarFileName);
-          Deployment deployment = new Deployment();
-          deployment.setJarFileName(jarFileName);
-          deployment.setDeployedBy(deployedBy);
-          deployment.setTimeDeployed(timeDeployed);
+          Deployment deployment = new Deployment(jarFileName, deployedBy, timeDeployed);
           configuration.addDeployment(deployment);
           Path filePath = groupDir.resolve(jarFileName);
           FileUtils.copyFile(stagedJar, filePath.toFile());
@@ -326,12 +331,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           }
         }
 
-        // update the record after writing the jars to the file system, since the listener
-        // will need the jars on file to upload to other locators. Need to update the jars
-        // using a new copy of the Configuration so that the change listener will pick up the jar
-        // name changes.
         String memberId = cache.getMyId().getId();
-        configuration.addJarNames(jarNames);
         configRegion.put(group, configuration, memberId);
       }
     } finally {
@@ -828,10 +828,39 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     configuration.setCacheXmlFile(cacheXmlFull);
     configuration.setPropertiesFile(propertiesFull);
 
-    Set<String> jarFileNames = Arrays.stream(groupConfigDir.list())
-        .filter((String filename) -> filename.endsWith(".jar")).collect(Collectors.toSet());
-    configuration.addJarNames(jarFileNames);
+    String deployedBy = getDeployedBy();
+    String deployedTime = Instant.now().toString();
+    List<String> fileNames = asList(groupConfigDir.list());
+    loadDeploymentsFromFileNames(fileNames, configuration, deployedBy, deployedTime);
     return configuration;
+  }
+
+  private String getDeployedBy() {
+    Object principal = cache.getSecurityService().getPrincipal();
+    return principal == null ? "" : principal.toString();
+  }
+  
+  @VisibleForTesting
+  static void loadDeploymentsFromFileNames(Collection<String> fileNames,
+      Configuration configuration, String deployedBy, String timeDeployed) {
+    fileNames.stream()
+        .filter(filename -> filename.endsWith(".jar"))
+        .map(toDeployment(deployedBy, timeDeployed))
+        .forEach(configuration::addDeployment);
+  }
+
+  private static Function<String,Deployment> toDeployment(String deployedBy,
+      String timeDeployed) {
+    return jarFileName -> createDeployment(jarFileName, deployedBy, timeDeployed);
+  }
+
+  private static Deployment createDeployment(String jarFileName, String deployedBy,
+      String timeDeployed) {
+    Deployment deployment = new Deployment();
+    deployment.setJarFileName(jarFileName);
+    deployment.setDeployedBy(deployedBy);
+    deployment.setTimeDeployed(timeDeployed);
+    return deployment;
   }
 
   /**
