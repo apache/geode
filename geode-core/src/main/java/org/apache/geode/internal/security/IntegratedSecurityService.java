@@ -36,6 +36,7 @@ import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
 import org.apache.geode.internal.security.shiro.SecurityManagerProvider;
 import org.apache.geode.internal.security.shiro.ShiroPrincipal;
@@ -123,6 +124,20 @@ public class IntegratedSecurityService implements SecurityService {
     }
 
     return currentUser;
+  }
+
+  @Override
+  public Object getPrincipal() {
+    Subject subject;
+    try {
+      subject = getSubject();
+    } catch (AuthenticationRequiredException ignored) {
+      return null;
+    }
+    if(subject == null) {
+      return null;
+    }
+    return subject.getPrincipal();
   }
 
   /**

@@ -16,12 +16,9 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
 import java.util.Map;
-import java.util.TimeZone;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
@@ -32,12 +29,6 @@ import org.apache.geode.management.runtime.DeploymentInfo;
 public class DeploymentRealizer extends ReadOnlyConfigurationRealizer<Deployment, DeploymentInfo> {
 
   static final String JAR_NOT_DEPLOYED = "Jar file not deployed on the server.";
-  @Immutable
-  private static final SimpleDateFormat formatter;
-  static {
-    formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-    formatter.setTimeZone(TimeZone.getTimeZone("GMT"));
-  }
 
   @Override
   public DeploymentInfo get(Deployment config, InternalCache cache) {
@@ -56,7 +47,7 @@ public class DeploymentRealizer extends ReadOnlyConfigurationRealizer<Deployment
   }
 
   String getDateString(long milliseconds) {
-    return formatter.format(new Date(milliseconds));
+    return Instant.ofEpochMilli(milliseconds).toString();
   }
 
   Map<String, DeployedJar> getDeployedJars() {

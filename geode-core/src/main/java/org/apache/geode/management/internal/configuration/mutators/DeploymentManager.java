@@ -15,9 +15,11 @@
 
 package org.apache.geode.management.internal.configuration.mutators;
 
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.function.Predicate;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.configuration.Deployment;
@@ -46,16 +48,18 @@ public class DeploymentManager implements ConfigurationManager<Deployment> {
   }
 
   @Override
-  public List<Deployment> list(Deployment filterConfig, String groupName) {
-    Configuration existing = persistenceService.getConfiguration(groupName);
-    Stream<String> stream = existing.getJarNames().stream();
-    if (filterConfig.getJarFileName() != null) {
-      stream = stream.filter(x -> x.equals(filterConfig.getJarFileName()));
+  public List<Deployment> list(Deployment filter, String groupName) {
+    Configuration configuration = persistenceService.getConfiguration(groupName);
+    if(configuration == null) {
+      return emptyList();
     }
-    return stream.map(jar -> {
-      Deployment deployment = new Deployment();
-      deployment.setJarFileName(jar);
-      return deployment;
-    }).collect(Collectors.toList());
+
+    return configuration.getDeployments().stream()
+        .filter(deploymentsForJarName(filter.getJarFileName()))
+        .collect(toList());
+  }
+
+  private static Predicate<Deployment> deploymentsForJarName(String jarFileName) {
+    return jarFileName == null ? d -> true : d -> d.getJarFileName().equals(jarFileName);
   }
 }

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.configuration.domain;
 
+import static org.apache.geode.internal.JarDeployer.getArtifactId;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -39,6 +41,7 @@ import org.xml.sax.SAXException;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.JarDeployer;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
@@ -55,7 +58,7 @@ public class Configuration implements DataSerializable {
   private String propertiesFileName;
   private Properties gemfireProperties;
   private Set<String> jarNames;
-  private Map<String, Deployment> deployments;
+  private final Map<String, Deployment> deployments = new HashMap<>();
 
   // Public no arg constructor required for Deserializable
   public Configuration() {
@@ -70,7 +73,7 @@ public class Configuration implements DataSerializable {
     this.gemfireProperties = new Properties();
     this.gemfireProperties.putAll(that.gemfireProperties);
     this.jarNames = new HashSet<>(that.jarNames);
-    this.deployments = new HashMap<>(that.deployments);
+    this.deployments.putAll(that.deployments);
   }
 
   public Configuration(String configName) {
@@ -79,7 +82,6 @@ public class Configuration implements DataSerializable {
     this.propertiesFileName = configName + ".properties";
     this.gemfireProperties = new Properties();
     this.jarNames = new HashSet<>();
-    this.deployments = new HashMap<String, Deployment>();
   }
 
   public String getCacheXmlContent() {
@@ -145,11 +147,11 @@ public class Configuration implements DataSerializable {
 
   public void addJarNames(Set<String> jarNames) {
     for (String jarName : jarNames) {
-      String artifactId = JarDeployer.getArtifactId(jarName);
+      String artifactId = getArtifactId(jarName);
       Iterator<String> iterator = this.jarNames.iterator();
       while (iterator.hasNext()) {
         String next = iterator.next();
-        if (JarDeployer.getArtifactId(next).equals(artifactId)) {
+        if (getArtifactId(next).equals(artifactId)) {
           iterator.remove();
         }
       }
@@ -166,7 +168,7 @@ public class Configuration implements DataSerializable {
   }
 
   public Set<String> getJarNames() {
-    return this.jarNames;
+    return new HashSet<>(deployments.keySet());
   }
 
   @Override
@@ -188,7 +190,6 @@ public class Configuration implements DataSerializable {
     this.gemfireProperties = DataSerializer.readProperties(in);
     this.jarNames = DataSerializer.readHashSet(in);
   }
-
 
   @Override
   public String toString() {
@@ -233,9 +234,8 @@ public class Configuration implements DataSerializable {
   }
 
   public void addDeployment(Deployment deployment) {
-    String artifactId = JarDeployer.getArtifactId(deployment.getJarFileName());
-    deployments.values()
-        .removeIf(next -> JarDeployer.getArtifactId(next.getJarFileName()).equals(artifactId));
+    String artifactId = getArtifactId(deployment.getJarFileName());
+    deployments.values().removeIf(d -> getArtifactId(d.getJarFileName()).equals(artifactId));
     deployments.put(deployment.getId(), deployment);
   }
 }

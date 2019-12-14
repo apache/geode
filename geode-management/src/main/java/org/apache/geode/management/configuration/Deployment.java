@@ -32,6 +32,14 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> {
   @ApiModelProperty(accessMode = READ_ONLY)
   private String deployedBy;
 
+  public Deployment() {}
+
+  public Deployment(String jarFileName, String deployedBy, String timeDeployed) {
+    this.jarFileName = jarFileName;
+    this.deployedBy = deployedBy;
+    this.timeDeployed = timeDeployed;
+  }
+
   @Override
   @JsonIgnore
   public String getId() {
