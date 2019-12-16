@@ -176,7 +176,7 @@ public class Configuration implements DataSerializable {
     DataSerializer.writeString(cacheXmlContent, out);
     DataSerializer.writeString(propertiesFileName, out);
     DataSerializer.writeProperties(gemfireProperties, out);
-    DataSerializer.writeHashSet((HashSet<?>) jarNames, out);
+    DataSerializer.writeHashMap(deployments, out);
   }
 
   @Override
@@ -186,7 +186,7 @@ public class Configuration implements DataSerializable {
     this.cacheXmlContent = DataSerializer.readString(in);
     this.propertiesFileName = DataSerializer.readString(in);
     this.gemfireProperties = DataSerializer.readProperties(in);
-    this.jarNames = DataSerializer.readHashSet(in);
+    this.deployments.putAll(DataSerializer.readHashMap(in));
   }
 
   @Override

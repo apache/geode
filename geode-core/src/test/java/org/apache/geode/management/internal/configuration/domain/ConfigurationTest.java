@@ -17,7 +17,14 @@ package org.apache.geode.management.internal.configuration.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -30,6 +37,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.management.configuration.Deployment;
 
 public class ConfigurationTest {
@@ -105,5 +113,53 @@ public class ConfigurationTest {
     deployment2.setJarFileName("def-2.0.jar");
     configuration.addDeployment(deployment2);
     assertThat(configuration.getDeployments()).containsExactlyInAnyOrder(deployment1, deployment2);
+  }
+
+  @Test
+  public void dataSerializationRoundTrip() throws IOException, ClassNotFoundException {
+    ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
+    DataOutputStream dataOut = new DataOutputStream(outBytes);
+
+    Configuration config = new Configuration();
+    config.addDeployment(new Deployment("jarName1.jar", "deployedBy1", "timeDeployed1"));
+    config.addDeployment(new Deployment("jarName2.jar", "deployedBy2", "timeDeployed2"));
+    config.addDeployment(new Deployment("jarName3.jar", "deployedBy3", "timeDeployed3"));
+
+    DataSerializer.writeObject(config, dataOut);
+    dataOut.flush();
+
+    ByteArrayInputStream inBytes = new ByteArrayInputStream(outBytes.toByteArray());
+    DataInput dataIn = new DataInputStream(inBytes);
+
+    assertEquals(config, DataSerializer.readObject(dataIn));
+  }
+
+  @Test
+  public void dataSerializationDeserializesOldFormat() throws IOException, ClassNotFoundException {
+    ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
+    DataOutputStream dataOut = new DataOutputStream(outBytes);
+
+    Configuration config = new Configuration();
+    config.addDeployment(new Deployment("jarName1.jar", "deployedBy1", "timeDeployed1"));
+    config.addDeployment(new Deployment("jarName2.jar", "deployedBy2", "timeDeployed2"));
+    config.addDeployment(new Deployment("jarName3.jar", "deployedBy3", "timeDeployed3"));
+
+    writeConfigInOldFormat(config, dataOut);
+    dataOut.flush();
+
+
+    ByteArrayInputStream inBytes = new ByteArrayInputStream(outBytes.toByteArray());
+    DataInput dataIn = new DataInputStream(inBytes);
+
+    assertEquals(config, DataSerializer.readObject(dataIn));
+  }
+  
+  private void writeConfigInOldFormat(Configuration config, DataOutput out) throws IOException {
+    DataSerializer.writeString(config.getConfigName(), out);
+    DataSerializer.writeString(config.getCacheXmlFileName(), out);
+    DataSerializer.writeString(config.getCacheXmlContent(), out);
+    DataSerializer.writeString(config.getPropertiesFileName(), out);
+    DataSerializer.writeProperties(config.getGemfireProperties(), out);
+    DataSerializer.writeHashSet(new HashSet<>(config.getJarNames()), out);
   }
 }
