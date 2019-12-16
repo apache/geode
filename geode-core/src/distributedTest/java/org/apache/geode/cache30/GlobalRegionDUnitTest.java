@@ -14,12 +14,8 @@
  */
 package org.apache.geode.cache30;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -27,21 +23,20 @@ import java.util.concurrent.locks.Lock;
 
 import org.junit.Test;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
@@ -72,14 +67,13 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
   /**
    * Tests the compatibility of creating certain kinds of subregions of a local region.
    *
-   * @see Region#createSubregion
+   * @see RegionFactory#createSubregion
    */
   @Test
-  public void testIncompatibleSubregions() throws CacheException, InterruptedException {
+  public void testIncompatibleSubregions() throws CacheException {
 
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
 
     // Scope.DISTRIBUTED_NO_ACK is illegal if there is any other cache
     // in the distributed system that has the same region with
@@ -92,9 +86,10 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
         try {
           createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
         } catch (CacheException ex) {
-          Assert.fail("While creating GLOBAL region", ex);
+          fail("While creating GLOBAL region", ex);
         }
-        assertTrue(getRootRegion("INCOMPATIBLE_ROOT").getAttributes().getScope().isGlobal());
+        assertThat(getRootRegion("INCOMPATIBLE_ROOT").getAttributes().getScope().isGlobal())
+            .isTrue();
       }
     });
 
@@ -105,16 +100,16 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
           AttributesFactory factory = new AttributesFactory(getRegionAttributes());
           factory.setScope(Scope.DISTRIBUTED_NO_ACK);
           try {
-            assertNull(getRootRegion("INCOMPATIBLE_ROOT"));
+            assertThat(getRootRegion("INCOMPATIBLE_ROOT")).isNull();
             createRegion(name, "INCOMPATIBLE_ROOT", factory.create());
+
             fail("Should have thrown an IllegalStateException");
-          } catch (IllegalStateException ex) {
+          } catch (IllegalStateException ignored) {
             // pass...
-            // assertNull(getRootRegion());
           }
 
         } catch (CacheException ex) {
-          Assert.fail("While creating GLOBAL Region", ex);
+          fail("While creating GLOBAL Region", ex);
         }
       }
     });
@@ -130,17 +125,16 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
             RegionAttributes attrs = factory.create();
             createRootRegion("INCOMPATIBLE_ROOT", attrs);
             fail("Should have thrown an IllegalStateException");
-
             createRegion(name, "INCOMPATIBLE_ROOT", factory.create());
             fail("Should have thrown an IllegalStateException");
 
           } catch (IllegalStateException ex) {
             // pass...
-            assertNull(getRootRegion());
+            assertThat(getRootRegion()).isNull();
           }
 
         } catch (CacheException ex) {
-          Assert.fail("While creating GLOBAL Region", ex);
+          fail("While creating GLOBAL Region", ex);
         }
       }
     });
@@ -152,20 +146,19 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
    */
   @Test
   public void testRemoteFetch() throws CacheException {
-    assertTrue(getRegionAttributes().getScope().isDistributed());
+    assertThat(getRegionAttributes().getScope().isDistributed()).isTrue();
 
     final String name = this.getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
 
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
       @Override
       public void run2() throws CacheException {
-        Region region = createRegion(name);
+        Region<Object, Object> region = createRegion(name);
         setLoader(new TestCacheLoader<Object, Object>() {
           @Override
           public Object load2(LoaderHelper<Object, Object> helper) throws CacheLoaderException {
@@ -182,9 +175,9 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     vm0.invoke(new CacheSerializableRunnable("Put") {
       @Override
       public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(name);
+        Region<Object, Object> region = getRootRegion().getSubregion(name);
         region.put(key, value);
-        assertFalse(loader().wasInvoked());
+        assertThat(loader().wasInvoked()).isFalse();
       }
     });
 
@@ -193,9 +186,9 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
     vm1.invoke(new CacheSerializableRunnable("Get") {
       @Override
       public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(name);
-        assertEquals(value, region.get(key));
-        assertFalse(loader().wasInvoked());
+        Region<Object, Object> region = getRootRegion().getSubregion(name);
+        assertThat(value).isEqualTo(region.get(key));
+        assertThat(loader().wasInvoked()).isFalse();
       }
     });
   }
@@ -205,13 +198,10 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
    * entry get the right value.
    */
   @Test
-  public void testSynchronousIncrements() throws InterruptedException {
-
-    // getCache().setLockTimeout(getCache().getLockTimeout() * 2);
+  public void testSynchronousIncrements() {
 
     final String name = this.getUniqueName();
     final Object key = "KEY";
-    // final Object value = "VALUE";
 
     Host host = Host.getHost(0);
     final int vmCount = host.getVMCount();
@@ -222,15 +212,13 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
       @Override
       public void run2() throws CacheException {
         createRegion(name);
-        Region region = getRootRegion().getSubregion(name);
-        region.put(key, new Integer(0));
+        Region<Object, Object> region = getRootRegion().getSubregion(name);
+        region.put(key, 0);
       }
     };
 
-    VM vm0 = host.getVM(0);
-    vm0.invoke(create);
-    for (int i = 1; i < vmCount; i++) {
-      VM vm = host.getVM(i);
+    for (int i = 0; i < vmCount; i++) {
+      VM vm = VM.getVM(i);
       vm.invoke(create);
     }
 
@@ -246,11 +234,8 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
         final ThreadGroup group = new ThreadGroup("Incrementors") {
           @Override
           public void uncaughtException(Thread t, Throwable e) {
-            if (e instanceof VirtualMachineError) {
-              SystemFailure.setFailure((VirtualMachineError) e); // don't throw
-            }
             String s = "Uncaught exception in thread " + t;
-            Assert.fail(s, e);
+            fail(s, e);
           }
         };
 
@@ -260,45 +245,40 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
             @Override
             public void run() {
               try {
-                LogWriterUtils.getLogWriter().info("testSynchronousIncrements." + this);
                 final Random rand = new Random(System.identityHashCode(this));
                 try {
-                  Region region = getRootRegion().getSubregion(name);
+                  Region<Object, Integer> region = getRootRegion().getSubregion(name);
                   for (int j = 0; j < incrementsPerThread; j++) {
                     Thread.sleep(rand.nextInt(30) + 30);
 
                     Lock lock = region.getDistributedLock(key);
-                    assertTrue(lock.tryLock(-1, TimeUnit.MILLISECONDS));
+                    assertThat(lock.tryLock(-1, TimeUnit.MILLISECONDS)).isTrue();
 
-                    Integer value = (Integer) region.get(key);
+                    Integer value = region.get(key);
                     Integer oldValue = value;
                     if (value == null) {
-                      value = new Integer(1);
+                      value = 1;
 
                     } else {
                       Integer v = value;
-                      value = new Integer(v.intValue() + 1);
+                      value = v + 1;
                     }
 
-                    assertEquals(oldValue, region.get(key));
+                    assertThat(oldValue).isEqualTo(region.get(key));
                     region.put(key, value);
-                    assertEquals(value, region.get(key));
+                    assertThat(value).isEqualTo(region.get(key));
 
-                    LogWriterUtils.getLogWriter()
-                        .info("testSynchronousIncrements." + this + ": " + key + " -> " + value);
                     lock.unlock();
                   }
 
-                } catch (InterruptedException ex) {
-                  Assert.fail("While incrementing", ex);
-                } catch (Exception ex) {
-                  Assert.fail("While incrementing", ex);
+                } catch (IllegalStateException | InterruptedException | CacheLoaderException
+                    | CacheWriterException | TimeoutException ex) {
+                  fail("While incrementing", ex);
                 }
               } catch (VirtualMachineError e) {
-                SystemFailure.initiateFailure(e);
                 throw e;
               } catch (Throwable t) {
-                LogWriterUtils.getLogWriter()
+                logger
                     .info("testSynchronousIncrements." + this + " caught Throwable", t);
               }
             }
@@ -307,32 +287,32 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
           thread.start();
         }
 
-        for (int i = 0; i < threads.length; i++) {
-          ThreadUtils.join(threads[i], 30 * 1000);
+        for (Thread thread : threads) {
+          ThreadUtils.join(thread, 30 * 1000);
         }
       }
     };
 
     AsyncInvocation[] invokes = new AsyncInvocation[vmCount];
     for (int i = 0; i < vmCount; i++) {
-      invokes[i] = host.getVM(i).invokeAsync(increment);
+      invokes[i] = VM.getVM(i).invokeAsync(increment);
     }
 
     for (int i = 0; i < vmCount; i++) {
       ThreadUtils.join(invokes[i], 5 * 60 * 1000);
       if (invokes[i].exceptionOccurred()) {
-        Assert.fail("invocation failed", invokes[i].getException());
+        fail("invocation failed", invokes[i].getException());
       }
     }
 
-    vm0.invoke(new CacheSerializableRunnable("Verify final value") {
+    VM.getVM(0).invoke(new CacheSerializableRunnable("Verify final value") {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion().getSubregion(name);
         Integer value = (Integer) region.get(key);
-        assertNotNull(value);
+        assertThat(value).isNotNull();
         int expected = vmCount * threadsPerVM * incrementsPerThread;
-        assertEquals(expected, value.intValue());
+        assertThat(expected).isEqualTo(value.intValue());
       }
     });
   }
@@ -343,15 +323,14 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
    */
   @Test
   public void testPutGetTimeout() {
-    assertEquals(Scope.GLOBAL, getRegionAttributes().getScope());
+    assertThat(Scope.GLOBAL).isEqualTo(getRegionAttributes().getScope());
 
     final String name = this.getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
 
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
       @Override
@@ -379,7 +358,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
         Cache cache = getCache();
         cache.setLockTimeout(1);
         cache.setSearchTimeout(1);
-        Region region = getRootRegion().getSubregion(name);
+        Region<Object, Object> region = getRootRegion().getSubregion(name);
 
         try {
           region.put(key, value);
@@ -390,7 +369,7 @@ public class GlobalRegionDUnitTest extends MultiVMRegionTestCase {
         }
 
         // With a loader, should try to lock and time out
-        region.getAttributesMutator().setCacheLoader(new TestCacheLoader() {
+        region.getAttributesMutator().setCacheLoader(new TestCacheLoader<Object, Object>() {
           @Override
           public Object load2(LoaderHelper helper) {
             return null;

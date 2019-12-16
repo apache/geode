@@ -100,6 +100,7 @@ public class RegionFactory<K, V> {
     this.attrsFactory = new AttributesFactory<K, V>(ra);
   }
 
+
   /**
    * For internal use only.
    *
@@ -222,6 +223,7 @@ public class RegionFactory<K, V> {
     this((InternalCache) new CacheFactory(distributedSystemProperties).create(),
         regionAttributesId);
   }
+
 
   /**
    * Returns the cache used by this factory.

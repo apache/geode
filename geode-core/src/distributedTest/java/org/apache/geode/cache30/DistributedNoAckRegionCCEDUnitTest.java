@@ -17,8 +17,8 @@ package org.apache.geode.cache30;
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_BUFFER_SIZE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Map;
 import java.util.Properties;
@@ -37,10 +37,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -48,7 +45,7 @@ import org.apache.geode.test.dunit.Wait;
 
 public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDUnitTest {
 
-  static volatile boolean ListenerBlocking;
+  private static volatile boolean ListenerBlocking;
 
   @Override
   public Properties getDistributedSystemProperties() {
@@ -99,11 +96,10 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
 
   @Test
   public void testClearWithManyEventsInFlight() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
+    VM vm2 = VM.getVM(2);
+    VM vm3 = VM.getVM(3);
 
     // create replicated regions in VM 0 and 1, then perform concurrent ops
     // on the same key while creating the region in VM2. Afterward make
@@ -114,18 +110,18 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     createRegionWithAttribute(vm1, name, false);
     createRegionWithAttribute(vm2, name, false);
     createRegionWithAttribute(vm3, name, false);
-    vm0.invoke(() -> DistributedNoAckRegionCCEDUnitTest.addBlockingListener());
-    vm1.invoke(() -> DistributedNoAckRegionCCEDUnitTest.addBlockingListener());
-    vm2.invoke(() -> DistributedNoAckRegionCCEDUnitTest.addBlockingListener());
-    AsyncInvocation vm0Ops = vm0.invokeAsync(() -> DistributedNoAckRegionCCEDUnitTest.doManyOps());
-    AsyncInvocation vm1Ops = vm1.invokeAsync(() -> DistributedNoAckRegionCCEDUnitTest.doManyOps());
-    AsyncInvocation vm2Ops = vm2.invokeAsync(() -> DistributedNoAckRegionCCEDUnitTest.doManyOps());
+    vm0.invoke(DistributedNoAckRegionCCEDUnitTest::addBlockingListener);
+    vm1.invoke(DistributedNoAckRegionCCEDUnitTest::addBlockingListener);
+    vm2.invoke(DistributedNoAckRegionCCEDUnitTest::addBlockingListener);
+    AsyncInvocation vm0Ops = vm0.invokeAsync(DistributedNoAckRegionCCEDUnitTest::doManyOps);
+    AsyncInvocation vm1Ops = vm1.invokeAsync(DistributedNoAckRegionCCEDUnitTest::doManyOps);
+    AsyncInvocation vm2Ops = vm2.invokeAsync(DistributedNoAckRegionCCEDUnitTest::doManyOps);
     // pause to let a bunch of operations build up
     Wait.pause(5000);
-    AsyncInvocation a0 = vm3.invokeAsync(() -> DistributedNoAckRegionCCEDUnitTest.clearRegion());
-    vm0.invoke(() -> DistributedNoAckRegionCCEDUnitTest.unblockListener());
-    vm1.invoke(() -> DistributedNoAckRegionCCEDUnitTest.unblockListener());
-    vm2.invoke(() -> DistributedNoAckRegionCCEDUnitTest.unblockListener());
+    AsyncInvocation a0 = vm3.invokeAsync(DistributedNoAckRegionCCEDUnitTest::clearRegion);
+    vm0.invoke(DistributedNoAckRegionCCEDUnitTest::unblockListener);
+    vm1.invoke(DistributedNoAckRegionCCEDUnitTest::unblockListener);
+    vm2.invoke(DistributedNoAckRegionCCEDUnitTest::unblockListener);
     waitForAsyncProcessing(a0, "");
     waitForAsyncProcessing(vm0Ops, "");
     waitForAsyncProcessing(vm1Ops, "");
@@ -133,29 +129,32 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
 
     Wait.pause(2000);// this test has with noack, thus we should wait before validating entries
     // check consistency of the regions
-    Map r0Contents = vm0.invoke(() -> getCCRegionContents());
-    Map r1Contents = vm1.invoke(() -> getCCRegionContents());
-    Map r2Contents = vm2.invoke(() -> getCCRegionContents());
-    Map r3Contents = vm3.invoke(() -> getCCRegionContents());
+    Map r0Contents = vm0.invoke(MultiVMRegionTestCase::getCCRegionContents);
+    Map r1Contents = vm1.invoke(MultiVMRegionTestCase::getCCRegionContents);
+    Map r2Contents = vm2.invoke(MultiVMRegionTestCase::getCCRegionContents);
+    Map r3Contents = vm3.invoke(MultiVMRegionTestCase::getCCRegionContents);
 
     for (int i = 0; i < 10; i++) {
       String key = "cckey" + i;
-      assertEquals("region contents are not consistent", r0Contents.get(key), r1Contents.get(key));
-      assertEquals("region contents are not consistent", r1Contents.get(key), r2Contents.get(key));
-      assertEquals("region contents are not consistent", r2Contents.get(key), r3Contents.get(key));
+      assertThat(r0Contents.get(key)).withFailMessage("region contents are not consistent")
+          .isEqualTo(r1Contents.get(key));
+      assertThat(r1Contents.get(key)).withFailMessage("region contents are not consistent")
+          .isEqualTo(r2Contents.get(key));
+      assertThat(r2Contents.get(key)).withFailMessage("region contents are not consistent")
+          .isEqualTo(r3Contents.get(key));
       for (int subi = 1; subi < 3; subi++) {
         String subkey = key + "-" + subi;
-        assertEquals("region contents are not consistent", r0Contents.get(subkey),
-            r1Contents.get(subkey));
-        assertEquals("region contents are not consistent", r1Contents.get(subkey),
-            r2Contents.get(subkey));
-        assertEquals("region contents are not consistent", r2Contents.get(subkey),
-            r3Contents.get(subkey));
+        assertThat(r0Contents.get(subkey)).withFailMessage("region contents are not consistent")
+            .isEqualTo(r1Contents.get(subkey));
+        assertThat(r1Contents.get(subkey)).withFailMessage("region contents are not consistent")
+            .isEqualTo(r2Contents.get(subkey));
+        assertThat(r2Contents.get(subkey)).withFailMessage("region contents are not consistent")
+            .isEqualTo(r3Contents.get(subkey));
       }
     }
   }
 
-  static void addBlockingListener() {
+  private static void addBlockingListener() {
     ListenerBlocking = true;
     CCRegion.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
       @Override
@@ -168,28 +167,27 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
         if (event.isOriginRemote()) {
           synchronized (this) {
             while (ListenerBlocking) {
-              LogWriterUtils.getLogWriter()
+              logger
                   .info("blocking cache operations for " + event.getDistributedMember());
               blocked = true;
               try {
                 wait();
               } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                LogWriterUtils.getLogWriter().info("blocking cache listener interrupted");
+                logger.info("blocking cache listener interrupted");
                 return;
               }
             }
           }
           if (blocked) {
-            LogWriterUtils.getLogWriter()
-                .info("allowing cache operations for " + event.getDistributedMember());
+            logger.info("allowing cache operations for " + event.getDistributedMember());
           }
         }
       }
 
       @Override
       public void close() {
-        LogWriterUtils.getLogWriter().info("closing blocking listener");
+        logger.info("closing blocking listener");
         ListenerBlocking = false;
         synchronized (this) {
           notifyAll();
@@ -213,12 +211,12 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     });
   }
 
-  static void doManyOps() {
+  private static void doManyOps() {
     // do not include putAll, which requires an Ack to detect failures
-    doOpsLoopNoFlush(5000, false, false);
+    doOpsLoopNoFlush(false, false);
   }
 
-  static void unblockListener() {
+  private static void unblockListener() {
     CacheListener listener = CCRegion.getCacheListener();
     ListenerBlocking = false;
     synchronized (listener) {
@@ -226,7 +224,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     }
   }
 
-  static void clearRegion() {
+  private static void clearRegion() {
     CCRegion.clear();
   }
 
@@ -239,12 +237,6 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
   @Test
   public void testGIISendsTombstones() {
     versionTestGIISendsTombstones();
-  }
-
-
-  protected void do_version_recovery_if_necessary(final VM vm0, final VM vm1, final VM vm2,
-      final Object[] params) {
-    // do nothing here
   }
 
   /**
@@ -282,52 +274,60 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
 
   @Test
   public void testOneHopKnownIssues() {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3); // this VM, but treat as a remote for uniformity
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
+    VM vm2 = VM.getVM(2);
 
+    assertThat(vm0).isNotNull();
+    assertThat(vm1).isNotNull();
+    assertThat(vm2).isNotNull();
     // create an empty region in vm0 and replicated regions in VM 1 and 3,
     // then perform concurrent ops
     // on the same key while creating the region in VM2. Afterward make
     // sure that all three regions are consistent
 
     final String name = this.getUniqueName() + "-CC";
-    SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
-      @Override
-      public void run() {
-        try {
-          final RegionFactory f;
-          int vmNumber = VM.getCurrentVMNum();
-          switch (vmNumber) {
-            case 0:
-              f = getCache().createRegionFactory(
-                  getRegionAttributes(RegionShortcut.REPLICATE_PROXY.toString()));
-              break;
-            case 1:
-              f = getCache()
-                  .createRegionFactory(getRegionAttributes(RegionShortcut.REPLICATE.toString()));
-              f.setDataPolicy(DataPolicy.NORMAL);
-              break;
-            default:
-              f = getCache().createRegionFactory(getRegionAttributes());
-              break;
-          }
-          CCRegion = (LocalRegion) f.create(name);
-        } catch (CacheException ex) {
-          Assert.fail("While creating region", ex);
-        }
-      }
-    };
 
-    vm0.invoke(createRegion); // empty
-    vm1.invoke(createRegion); // normal
-    vm2.invoke(createRegion); // replicate
+    assertThat(vm0.invoke("Create Region", () -> {
+      try {
+        final RegionFactory f = getCache().createRegionFactory(
+            getRegionAttributes(RegionShortcut.REPLICATE_PROXY.toString()));
+
+        CCRegion = (LocalRegion) f.create(name);
+        assertThat(CCRegion).isNotNull();
+      } catch (CacheException ex) {
+        fail("While creating region", ex);
+      }
+      return true;
+    })).isTrue(); // empty
+
+    assertThat(vm1.invoke("Create Region", () -> {
+      try {
+        final RegionFactory f = getCache()
+            .createRegionFactory(getRegionAttributes(RegionShortcut.REPLICATE.toString()));
+        f.setDataPolicy(DataPolicy.NORMAL);
+
+        CCRegion = (LocalRegion) f.create(name);
+        assertThat(CCRegion).isNotNull();
+      } catch (CacheException ex) {
+        fail("While creating region", ex);
+      }
+      return true;
+    })).isTrue(); // normal
+
+    assertThat(vm2.invoke("Create Region", () -> {
+      try {
+        final RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
+        CCRegion = (LocalRegion) f.create(name);
+        assertThat(CCRegion).isNotNull();
+      } catch (CacheException ex) {
+        fail("While creating region", ex);
+      }
+      return true;
+    })).isTrue(); // replicate
 
     // case 1: entry already invalid on vm2 (replicate) is invalidated by vm0 (empty)
     final String invalidationKey = "invalidationKey";
-    final String destroyKey = "destroyKey";
     SerializableRunnable test =
         new SerializableRunnable() {
           @Override
@@ -337,7 +337,8 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
             long invalidationCount = CCRegion.getCachePerfStats().getInvalidates();
             CCRegion.invalidate(invalidationKey);
             CCRegion.invalidate(invalidationKey);
-            assertEquals(invalidationCount + 1, CCRegion.getCachePerfStats().getInvalidates());
+            assertThat(invalidationCount + 1)
+                .isEqualTo(CCRegion.getCachePerfStats().getInvalidates());
 
             // also test destroy() while we're at it. It should throw an exception
             long destroyCount = CCRegion.getCachePerfStats().getDestroys();
@@ -348,7 +349,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
             } catch (EntryNotFoundException e) {
               // expected
             }
-            assertEquals(destroyCount + 1, CCRegion.getCachePerfStats().getDestroys());
+            assertThat(destroyCount + 1).isEqualTo(CCRegion.getCachePerfStats().getDestroys());
           }
         };
     vm0.invoke("case 1: second invalidation not applied or distributed", test);
