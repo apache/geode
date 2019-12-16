@@ -17,13 +17,11 @@ package org.apache.geode.management.internal.configuration.mutators;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
-import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,19 +40,19 @@ public class DeploymentManagerTest {
         new Deployment("jar1.jar", "deployedBy1", "deployedTime1"),
         new Deployment("jar2.jar", "deployedBy2", "deployedTime2"),
         new Deployment("jar3.jar", "deployedBy3", "deployedTime3")));
-    
+
     Configuration configuration = mock(Configuration.class);
     when(configuration.getDeployments()).thenReturn(configuredDeployments);
 
-    InternalConfigurationPersistenceService
-        persistenceService = mock(InternalConfigurationPersistenceService.class);
+    InternalConfigurationPersistenceService persistenceService =
+        mock(InternalConfigurationPersistenceService.class);
     when(persistenceService.getConfiguration(any())).thenReturn(configuration);
 
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
     Deployment filter = new Deployment();
     filter.setJarFileName(null);
-    
+
     List<Deployment> result = manager.list(filter, "some-group");
 
     assertThat(result)
@@ -64,25 +62,26 @@ public class DeploymentManagerTest {
   @Test
   public void listWithJarNameReturnsSingletonListConfiguredDeploymentForThatJar() {
     String requestedJarFile = "jar2.jar";
-    Deployment expectedDeployment = new Deployment(requestedJarFile, "deployedBy2", "deployedTime2");
+    Deployment expectedDeployment =
+        new Deployment(requestedJarFile, "deployedBy2", "deployedTime2");
 
     Set<Deployment> configuredJarNames = new HashSet<>(asList(
         new Deployment("jar1.jar", "deployedBy1", "deployedTime1"),
         expectedDeployment,
         new Deployment("jar3.jar", "deployedBy3", "deployedTime3")));
-    
+
     Configuration configuration = mock(Configuration.class);
     when(configuration.getDeployments()).thenReturn(configuredJarNames);
 
-    InternalConfigurationPersistenceService
-        persistenceService = mock(InternalConfigurationPersistenceService.class);
+    InternalConfigurationPersistenceService persistenceService =
+        mock(InternalConfigurationPersistenceService.class);
     when(persistenceService.getConfiguration(any())).thenReturn(configuration);
 
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
     Deployment filter = new Deployment();
     filter.setJarFileName(requestedJarFile);
-    
+
     List<Deployment> result = manager.list(filter, "some-group");
 
     assertThat(result).containsExactly(expectedDeployment);
@@ -93,15 +92,15 @@ public class DeploymentManagerTest {
     Configuration configuration = mock(Configuration.class);
     when(configuration.getDeployments()).thenReturn(emptySet());
 
-    InternalConfigurationPersistenceService
-        persistenceService = mock(InternalConfigurationPersistenceService.class);
+    InternalConfigurationPersistenceService persistenceService =
+        mock(InternalConfigurationPersistenceService.class);
     when(persistenceService.getConfiguration(any())).thenReturn(configuration);
 
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
     Deployment filter = new Deployment();
     filter.setJarFileName("jarFileThatHasNotBeenDeployed.jar");
-    
+
     List<Deployment> result = manager.list(filter, "some-group");
 
     assertThat(result).isEmpty();
@@ -109,14 +108,14 @@ public class DeploymentManagerTest {
 
   @Test
   public void listNonExistentGroup() {
-    InternalConfigurationPersistenceService
-        persistenceService = mock(InternalConfigurationPersistenceService.class);
+    InternalConfigurationPersistenceService persistenceService =
+        mock(InternalConfigurationPersistenceService.class);
     when(persistenceService.getConfiguration("some-group")).thenReturn(null);
 
     DeploymentManager manager = new DeploymentManager(persistenceService);
 
     Deployment filter = new Deployment();
-    
+
     List<Deployment> result = manager.list(filter, "some-group");
 
     assertThat(result).isEmpty();

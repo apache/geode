@@ -86,7 +86,6 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.apache.geode.security.AuthenticationRequiredException;
 
 public class InternalConfigurationPersistenceService implements ConfigurationPersistenceService {
   private static final Logger logger = LogService.getLogger();
@@ -836,10 +835,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
   private String getDeployedBy() {
-    Object principal = cache.getSecurityService().getPrincipal();
-    return principal == null ? "" : principal.toString();
+    Subject subject = cache.getSecurityService().getSubject();
+    return subject == null ? null : subject.getPrincipal().toString();
   }
-  
+
   @VisibleForTesting
   static void loadDeploymentsFromFileNames(Collection<String> fileNames,
       Configuration configuration, String deployedBy, String timeDeployed) {
@@ -849,7 +848,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
         .forEach(configuration::addDeployment);
   }
 
-  private static Function<String,Deployment> toDeployment(String deployedBy,
+  private static Function<String, Deployment> toDeployment(String deployedBy,
       String timeDeployed) {
     return jarFileName -> createDeployment(jarFileName, deployedBy, timeDeployed);
   }

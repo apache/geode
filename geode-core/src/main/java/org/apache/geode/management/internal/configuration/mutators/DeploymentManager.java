@@ -50,7 +50,7 @@ public class DeploymentManager implements ConfigurationManager<Deployment> {
   @Override
   public List<Deployment> list(Deployment filter, String groupName) {
     Configuration configuration = persistenceService.getConfiguration(groupName);
-    if(configuration == null) {
+    if (configuration == null) {
       return emptyList();
     }
 
