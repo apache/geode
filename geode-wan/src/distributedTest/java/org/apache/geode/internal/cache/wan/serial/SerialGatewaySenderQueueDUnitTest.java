@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan.serial;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -25,7 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -47,6 +50,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
@@ -364,6 +368,59 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     // Verify receiver listener events
     vm2.invoke(() -> WANTestBase.verifyListenerEvents(maxSenders * numPuts));
   }
+
+
+  @Test
+  public void whenBatchBasedOnTimeOnlyThenQueueShouldNotDispatchUntilIntervalIsHit() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    int batchIntervalTime = 5000;
+
+    // Create receiver and region
+    vm2.invoke(() -> WANTestBase.createCache(nyPort));
+    vm2.invoke(
+        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(() -> WANTestBase.addListenerOnRegion(getTestMethodName() + "_RR"));
+
+    // Create sender with batchSize disabled
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    StringBuilder builder = new StringBuilder();
+    String senderId = "ln";
+    builder.append(senderId);
+    vm4.invoke(() -> {
+      InternalGatewaySenderFactory gateway =
+          (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
+      gateway.setParallel(false);
+      gateway.setMaximumQueueMemory(100);
+      gateway.setBatchSize(RegionQueue.BATCH_BASED_ON_TIME_ONLY);
+      gateway.setBatchConflationEnabled(true);
+      gateway.setDispatcherThreads(1);
+      gateway.setSocketBufferSize(32768);
+      gateway.setBatchTimeInterval(batchIntervalTime);
+      gateway.create(senderId, 2);
+    });
+
+    // Create region with the sender ids
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR",
+        builder.toString(), isOffHeap()));
+
+    // Do puts
+    int numPuts = 100;
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", numPuts));
+
+    vm2.invoke(() -> {
+      //attempt to prove the absence of a dispatch/ prove a dispatch has not occurred
+      long startTime = System.currentTimeMillis();
+      while (System.currentTimeMillis() - startTime < batchIntervalTime - 1000) {
+        assertEquals(0, listener1.getNumEvents());
+      }
+    });
+
+    // Verify receiver listener events
+    vm2.invoke(() -> WANTestBase.verifyListenerEvents(numPuts));
+  }
+
 
   /**
    * Test to validate that the maximum number of senders plus one fails to be created.

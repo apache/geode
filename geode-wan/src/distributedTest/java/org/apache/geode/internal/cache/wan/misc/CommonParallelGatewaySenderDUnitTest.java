@@ -15,10 +15,12 @@
 package org.apache.geode.internal.cache.wan.misc;
 
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.Set;
 
+import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -441,8 +443,56 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
 
       } // for loop ends
     }
+  }
 
+  @Test
+  public void whenBatchBasedOnTimeOnlyThenQueueShouldNotDispatchUntilIntervalIsHit() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    int batchIntervalTime = 5000;
 
+    // Create receiver and region
+    vm2.invoke(() -> WANTestBase.createCache(nyPort));
+    vm2.invoke(
+            () -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 10, isOffHeap()));
+    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(() -> WANTestBase.addListenerOnRegion(getTestMethodName() + "_PR"));
+
+    // Create sender with batchSize disabled
+    vm4.invoke(() -> WANTestBase.createCache(lnPort));
+    StringBuilder builder = new StringBuilder();
+    String senderId = "ln";
+    builder.append(senderId);
+    vm4.invoke(() -> {
+      InternalGatewaySenderFactory gateway =
+              (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
+      gateway.setParallel(true);
+      gateway.setMaximumQueueMemory(100);
+      gateway.setBatchSize(RegionQueue.BATCH_BASED_ON_TIME_ONLY);
+      gateway.setBatchConflationEnabled(true);
+      gateway.setDispatcherThreads(5);
+      gateway.setBatchTimeInterval(batchIntervalTime);
+      gateway.create(senderId, 2);
+    });
+
+    // Create region with the sender ids
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR",
+            builder.toString(), 0, 10, isOffHeap()));
+
+    // Do puts
+    int numPuts = 100;
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", numPuts));
+
+    vm2.invoke(() -> {
+      //attempt to prove the absence of a dispatch/ prove a dispatch has not occurred
+      long startTime = System.currentTimeMillis();
+      while (System.currentTimeMillis() - startTime < batchIntervalTime - 1000) {
+        assertEquals(0, listener1.getNumEvents());
+      }
+    });
+
+    // Verify receiver listener events
+    vm2.invoke(() -> WANTestBase.verifyListenerEvents(numPuts));
   }
 
 }
