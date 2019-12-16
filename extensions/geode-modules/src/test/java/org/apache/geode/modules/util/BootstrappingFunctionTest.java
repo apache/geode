@@ -17,6 +17,8 @@ package org.apache.geode.modules.util;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -28,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -71,7 +74,7 @@ public class BootstrappingFunctionTest {
 
   @Test
   public void registerFunctionIsNotCalledOnLocator() {
-    when(bootstrappingFunction.verifyCacheExists(distributedSystem)).thenReturn(mockCache);
+    doReturn(mockCache).when(bootstrappingFunction).verifyCacheExists(distributedSystem);
     when(distributedMember.getVmKind()).thenReturn(ClusterDistributionManager.LOCATOR_DM_TYPE);
     doNothing().when(distributionManager).addMembershipListener(bootstrappingFunction);
 
@@ -83,14 +86,16 @@ public class BootstrappingFunctionTest {
     when(functionContext.getCache()).thenReturn(mockCache);
 
     bootstrappingFunction.execute(functionContext);
+
     verify(bootstrappingFunction, never()).registerFunctions();
   }
 
   @Test
   public void registerFunctionGetsCalledOnNonLocators() {
-    when(bootstrappingFunction.verifyCacheExists(distributedSystem)).thenReturn(mockCache);
+    doReturn(mockCache).when(bootstrappingFunction).verifyCacheExists(distributedSystem);
     when(distributedMember.getVmKind()).thenReturn(ClusterDistributionManager.NORMAL_DM_TYPE);
     doNothing().when(distributionManager).addMembershipListener(bootstrappingFunction);
+    doNothing().when(bootstrappingFunction).registerFunctions();
 
     @SuppressWarnings("unchecked")
     ResultSender<String> resultSender = (ResultSender<String>) mock(ResultSender.class);
@@ -100,6 +105,39 @@ public class BootstrappingFunctionTest {
     when(functionContext.getCache()).thenReturn(mockCache);
 
     bootstrappingFunction.execute(functionContext);
+
     verify(bootstrappingFunction, times(1)).registerFunctions();
+  }
+
+  @Test
+  public void executeFunctionCanVerifyCacheExistsIfCacheSetInContext() {
+    FunctionContext context = mock(FunctionContext.class);
+    when(context.getCache()).thenReturn(mockCache);
+    doReturn(mockCache).when(bootstrappingFunction).verifyCacheExists(distributedSystem);
+    @SuppressWarnings("unchecked")
+    ResultSender<String> resultSender = (ResultSender<String>) mock(ResultSender.class);
+    when(context.getResultSender()).thenReturn(resultSender);
+    doNothing().when(resultSender).lastResult(any());
+    doNothing().when(bootstrappingFunction).registerFunctions();
+
+    bootstrappingFunction.execute(context);
+
+    verify(bootstrappingFunction).verifyCacheExists(distributedSystem);
+  }
+
+  @Test
+  public void executeFunctionCanVerifyCacheExistsIfGetCacheThrows() {
+    FunctionContext context = mock(FunctionContext.class);
+    doThrow(new CacheClosedException()).when(context).getCache();
+    doReturn(mockCache).when(bootstrappingFunction).verifyCacheExists(null);
+    @SuppressWarnings("unchecked")
+    ResultSender<String> resultSender = (ResultSender<String>) mock(ResultSender.class);
+    when(context.getResultSender()).thenReturn(resultSender);
+    doNothing().when(resultSender).lastResult(any());
+    doNothing().when(bootstrappingFunction).registerFunctions();
+
+    bootstrappingFunction.execute(context);
+
+    verify(bootstrappingFunction).verifyCacheExists(null);
   }
 }
