@@ -124,7 +124,7 @@ public class RegionManagementIntegrationTest {
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(jsonPath("$.statusMessage",
-            Matchers.containsString("Region regionA not found.")));
+            Matchers.containsString("Region provided does not exist: regionA.")));
   }
 
   @Test
@@ -154,8 +154,8 @@ public class RegionManagementIntegrationTest {
     index.setExpression("key");
     index.setGroup("notExist");
     context.perform(post("/v1/regions/customers/indexes").content(mapper.writeValueAsString(index)))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.statusCode", Matchers.is("ILLEGAL_ARGUMENT")))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(jsonPath("$.statusMessage",
             Matchers
                 .containsString("Region provided does not exist: customers.")));
@@ -181,7 +181,7 @@ public class RegionManagementIntegrationTest {
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(jsonPath("$.statusMessage",
-            Matchers.containsString("Region products not found.")));
+            Matchers.containsString("Region provided does not exist: products.")));
 
   }
 
@@ -197,6 +197,33 @@ public class RegionManagementIntegrationTest {
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(jsonPath("$.statusMessage",
             Matchers
-                .containsString("Region region1 not found.")));
+                .containsString("Region provided does not exist: region1.")));
+  }
+
+  @Test
+  public void createIndex_succeedsForSpecificRegionAndGroup() throws Exception {
+    region.setName("regionGroup");
+    region.setType(RegionType.PARTITION);
+    region.setGroup("legroup");
+
+    assertManagementResult(client.create(region))
+        .hasStatusCode(ClusterManagementResult.StatusCode.OK);
+
+    index.setRegionPath("regionGroup");
+    index.setExpression("i am le tired");
+    index.setName("itworks");
+    index.setGroup("legroup");
+
+    context.perform(
+        post("/v1/regions/regionGroup/indexes").content(mapper.writeValueAsString(index)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.statusCode", Matchers.is("OK")))
+        .andExpect(jsonPath("$.statusMessage",
+            Matchers
+                .containsString("Successfully updated configuration for legroup.")));
+
+    region.setGroup(null);
+    assertManagementResult(client.delete(region))
+        .hasStatusCode(ClusterManagementResult.StatusCode.OK);
   }
 }

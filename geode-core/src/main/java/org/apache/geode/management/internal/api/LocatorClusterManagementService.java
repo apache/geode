@@ -117,7 +117,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     validators.put(Region.class, new RegionConfigValidator(cache));
     validators.put(GatewayReceiver.class, new GatewayReceiverConfigValidator());
     validators.put(Pdx.class, new PdxValidator());
-    validators.put(Index.class, new IndexValidator());
+    validators.put(Index.class, new IndexValidator(persistenceService));
   }
 
   @VisibleForTesting
