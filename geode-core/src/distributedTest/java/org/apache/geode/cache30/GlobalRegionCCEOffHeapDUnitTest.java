@@ -63,7 +63,7 @@ public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
   protected RegionAttributes getRegionAttributes() {
     RegionAttributes attrs = super.getRegionAttributes();
     AttributesFactory factory = new AttributesFactory(attrs);
-      factory.setOffHeap(true);
+    factory.setOffHeap(true);
     return factory.create();
   }
 

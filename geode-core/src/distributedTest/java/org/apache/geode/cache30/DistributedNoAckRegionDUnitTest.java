@@ -91,10 +91,10 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     final String name = this.getUniqueName() + "-NO_ACK";
     vm0.invoke("Create NO ACK Region", () -> {
       try {
-          Region region = createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
+        Region region = createRegion(name, "INCOMPATIBLE_ROOT", getRegionAttributes());
         assertThat(
             getRootRegion("INCOMPATIBLE_ROOT").getAttributes().getScope().isDistributedNoAck())
-            .isTrue();
+                .isTrue();
         assertThat(region.getAttributes().getScope().isDistributedNoAck()).isTrue();
       } catch (CacheException ex) {
         fail("While creating NO ACK region", ex);
@@ -103,11 +103,11 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
 
     vm1.invoke("Create GLOBAL Region", () -> {
       try {
-          AttributesFactory factory = new AttributesFactory(getRegionAttributes());
+        AttributesFactory factory = new AttributesFactory(getRegionAttributes());
         factory.setScope(Scope.GLOBAL);
         assertThat(getRootRegion("INCOMPATIBLE_ROOT")).isNull();
         try {
-            createRootRegion("INCOMPATIBLE_ROOT", factory.create());
+          createRootRegion("INCOMPATIBLE_ROOT", factory.create());
           fail("Should have thrown an IllegalStateException");
         } catch (IllegalStateException ex) {
           // pass...
@@ -121,11 +121,11 @@ public class DistributedNoAckRegionDUnitTest extends MultiVMRegionTestCase {
     vm1.invoke("Create ACK Region", () -> {
 
       try {
-          AttributesFactory factory = new AttributesFactory(getRegionAttributes());
+        AttributesFactory factory = new AttributesFactory(getRegionAttributes());
         factory.setScope(Scope.DISTRIBUTED_ACK);
         assertThat(getRootRegion("INCOMPATIBLE_ROOT")).isNull();
         try {
-            createRootRegion("INCOMPATIBLE_ROOT", factory.create());
+          createRootRegion("INCOMPATIBLE_ROOT", factory.create());
           fail("Should have thrown an IllegalStateException");
         } catch (IllegalStateException ex) {
           // pass...

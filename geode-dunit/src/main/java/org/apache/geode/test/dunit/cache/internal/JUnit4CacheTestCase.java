@@ -37,7 +37,6 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
-import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -392,16 +391,16 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     if (root == null) {
       // don't put listeners on root region
       AttributesFactory<K, V> attributesFactory = new AttributesFactory<>(attributes);
-    ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
+      ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
 
-    attributesFactory.setCacheLoader(null);
-    attributesFactory.setCacheWriter(null);
-    attributesFactory.setPoolName(null);
+      attributesFactory.setCacheLoader(null);
+      attributesFactory.setCacheWriter(null);
+      attributesFactory.setPoolName(null);
       attributesFactory.setDataPolicy(DataPolicy.PARTITION);
-    attributesFactory.setRegionTimeToLive(expiration);
-    attributesFactory.setEntryTimeToLive(expiration);
-    attributesFactory.setRegionIdleTimeout(expiration);
-    attributesFactory.setEntryIdleTimeout(expiration);
+      attributesFactory.setRegionTimeToLive(expiration);
+      attributesFactory.setEntryTimeToLive(expiration);
+      attributesFactory.setRegionIdleTimeout(expiration);
+      attributesFactory.setEntryIdleTimeout(expiration);
 
       RegionAttributes<K, V> rootAttrs = attributesFactory.create();
       root = createRootRegion(rootName, rootAttrs);

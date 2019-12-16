@@ -3145,11 +3145,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
         factory.setDataPolicy(DataPolicy.REPLICATE);
         factory.setCacheLoader(new TestCacheLoader<Object, Object>() {
-              @Override
-              public Object load2(LoaderHelper<Object, Object> helper) throws CacheLoaderException {
-                return value;
-              }
-            });
+          @Override
+          public Object load2(LoaderHelper<Object, Object> helper) throws CacheLoaderException {
+            return value;
+          }
+        });
         createRegion(name, factory.create());
       }
     });
@@ -3221,11 +3221,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         }
         factory.setDataPolicy(DataPolicy.REPLICATE);
         factory.setCacheLoader(new TestCacheLoader<Object, Object>() {
-              @Override
-              public Object load2(LoaderHelper<Object, Object> helper) throws CacheLoaderException {
-                return value;
-              }
-            });
+          @Override
+          public Object load2(LoaderHelper<Object, Object> helper) throws CacheLoaderException {
+            return value;
+          }
+        });
         createRegion(name, factory.create());
       }
     };
