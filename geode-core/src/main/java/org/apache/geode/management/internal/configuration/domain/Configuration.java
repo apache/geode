@@ -40,8 +40,6 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.JarDeployer;
-import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 

@@ -69,11 +69,6 @@ public class LegacySecurityService implements SecurityService {
   }
 
   @Override
-  public Object getPrincipal() {
-    return null;
-  }
-
-  @Override
   public Subject login(Properties credentials) {
     return null;
   }
