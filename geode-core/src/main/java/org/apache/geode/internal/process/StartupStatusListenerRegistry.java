@@ -14,26 +14,28 @@
  */
 package org.apache.geode.internal.process;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.geode.annotations.internal.MakeNotStatic;
 
 public class StartupStatusListenerRegistry {
 
   @MakeNotStatic
-  private static volatile StartupStatusListener listener;
+  private static final AtomicReference<StartupStatusListener> listener = new AtomicReference<>();
 
   private StartupStatusListenerRegistry() {
     // do nothing
   }
 
   public static void setListener(StartupStatusListener listener) {
-    StartupStatusListenerRegistry.listener = listener;
+    StartupStatusListenerRegistry.listener.set(listener);
   }
 
   static StartupStatusListener getStartupListener() {
-    return listener;
+    return listener.get();
   }
 
   static void clearListener() {
-    listener = null;
+    listener.set(null);
   }
 }
