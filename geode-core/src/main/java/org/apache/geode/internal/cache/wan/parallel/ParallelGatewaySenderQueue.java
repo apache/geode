@@ -1215,7 +1215,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     PartitionedRegion prQ = getRandomShadowPR();
-    List<GatewaySenderEventImpl> batch = new ArrayList<>();
     if (prQ == null || prQ.getLocalMaxMemory() == 0) {
       try {
         Thread.sleep(50);
@@ -1223,8 +1222,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         Thread.currentThread().interrupt();
       }
       blockProcessorThreadIfRequired();
-      return batch;
+      return Collections.EMPTY_LIST;
     }
+    List<GatewaySenderEventImpl> batch = new ArrayList<>(batchSize);
 
     long start = System.currentTimeMillis();
     long end = start + timeToWait;

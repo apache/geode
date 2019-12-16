@@ -367,8 +367,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       logger.trace("{}: Peek start time={} end time={} time to wait={}", this, start, end,
           timeToWait);
     }
-    List<AsyncEvent> batch = new ArrayList<AsyncEvent>(size * 2); // why
-                                                                  // *2?
+    List<AsyncEvent> batch = new ArrayList<AsyncEvent>(size);
     while (batch.size() < size) {
       AsyncEvent object = peekAhead();
       // Conflate here
