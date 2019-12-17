@@ -14,19 +14,21 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import static java.time.Duration.ofSeconds;
 import static java.util.Objects.requireNonNull;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS;
-import static org.apache.geode.internal.lang.SystemPropertyHelper.getProductIntegerProperty;
 
 import java.time.Duration;
 import java.util.function.BooleanSupplier;
 
 import org.apache.geode.CancelCriterion;
 
+/**
+ * Creates instances of {@link MembershipChangeListener} with validation of arguments.
+ *
+ * <p>
+ * The warning delay must be less than the poll duration. If the values are identical then the
+ * persistence advisors will fail to log warnings about missing persistent members.
+ */
 public class MembershipChangeListenerFactory {
-
-  public static final int DEFAULT_PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS = 15;
 
   public static BooleanSupplier cancelCondition(InternalPersistenceAdvisor persistenceAdvisor,
       CancelCriterion cancelCriterion) {
@@ -35,15 +37,6 @@ public class MembershipChangeListenerFactory {
       cancelCriterion.checkCancelInProgress(null);
       return persistenceAdvisor.isClosed();
     };
-  }
-
-  public static Duration warningDelay(int value) {
-    return ofSeconds(value);
-  }
-
-  public static Duration pollDuration(int value) {
-    return ofSeconds(
-        getProductIntegerProperty(PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS).orElse(value));
   }
 
   private Duration warningDelay;

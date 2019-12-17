@@ -30,8 +30,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -43,7 +43,7 @@ public class MissingDiskStoreAcceptanceTest {
   private static final String LOCATOR_NAME = "locator";
   private static final String REGION_NAME = "myRegion";
 
-  private InternalClientCache clientCache;
+  private ClientCache clientCache;
 
   private Path locatorFolder;
   private Path server1Folder;
@@ -103,7 +103,7 @@ public class MissingDiskStoreAcceptanceTest {
     gfshRule.execute(startLocatorCommand, startServer1Command, startServer2Command,
         createRegionCommand);
 
-    clientCache = (InternalClientCache) new ClientCacheFactory()
+    clientCache = new ClientCacheFactory()
         .addPoolLocator("localhost", locatorPort)
         .create();
   }

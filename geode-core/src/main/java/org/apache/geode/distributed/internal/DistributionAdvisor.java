@@ -1346,8 +1346,6 @@ public class DistributionAdvisor {
     }
   }
 
-  // ------------------------------------ inner classes --------------------------------------------
-
   @FunctionalInterface
   public interface InitializationListener {
 

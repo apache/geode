@@ -24,6 +24,9 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
+/**
+ * Provides warning logging for persistence advisors while waiting for membership changes.
+ */
 public class MembershipChangeListener implements MembershipListener, PersistentStateListener {
 
   private static final int POLL_INTERVAL_MILLIS = 100;
@@ -36,6 +39,14 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
   private boolean membershipChanged;
   private boolean warned;
 
+  /**
+   * Please use {@link MembershipChangeListenerFactory} to create instances.
+   *
+   * @param warningDelay delay before logging the warning once
+   * @param pollDuration timeout before returning from wait for change
+   * @param cancelCondition indicates if wait for change has been cancelled
+   * @param warning simple runnable for logging the warning
+   */
   MembershipChangeListener(Duration warningDelay, Duration pollDuration,
       BooleanSupplier cancelCondition, Runnable warning) {
     this.warningDelay = warningDelay;
@@ -44,6 +55,9 @@ public class MembershipChangeListener implements MembershipListener, PersistentS
     this.warning = warning;
   }
 
+  /**
+   * Wait for membership change and log warning after waiting at least the warning delay.
+   */
   public synchronized void waitForChange() throws InterruptedException {
     Instant now = now();
     Instant timeoutTime = now.plus(pollDuration);
