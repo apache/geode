@@ -14,11 +14,18 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import static java.time.Duration.ofSeconds;
+import static org.apache.geode.internal.cache.persistence.MembershipChangeListenerFactory.cancelCondition;
+
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
@@ -26,7 +33,7 @@ import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvi
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class PersistenceInitialImageAdvisor {
+class PersistenceInitialImageAdvisor {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -35,22 +42,47 @@ public class PersistenceInitialImageAdvisor {
   private final String regionPath;
   private final CacheDistributionAdvisor cacheDistributionAdvisor;
   private final boolean hasDiskImageToRecoverFrom;
+  private final Function<InternalPersistenceAdvisor, MembershipChangeListener> membershipChangeListenerProvider;
 
-  public PersistenceInitialImageAdvisor(InternalPersistenceAdvisor persistenceAdvisor,
+  PersistenceInitialImageAdvisor(InternalPersistenceAdvisor persistenceAdvisor,
       String shortDiskStoreID, String regionPath, CacheDistributionAdvisor cacheDistributionAdvisor,
       boolean hasDiskImageToRecoverFrom) {
+    this(persistenceAdvisor, shortDiskStoreID, regionPath, cacheDistributionAdvisor,
+        hasDiskImageToRecoverFrom,
+        internalPersistenceAdvisor -> {
+          CacheDistributionAdvisor advisor =
+              internalPersistenceAdvisor.getCacheDistributionAdvisor();
+          DistributionConfig config = advisor.getDistributionManager().getConfig();
+          CancelCriterion stopper = advisor.getAdvisee().getCancelCriterion();
+
+          return new MembershipChangeListenerFactory()
+              .setWarningDelay(ofSeconds(config.getAckWaitThreshold() / 2))
+              .setPollDuration(ofSeconds(config.getAckWaitThreshold()))
+              .setCancelCondition(cancelCondition(internalPersistenceAdvisor, stopper))
+              .setWarning(internalPersistenceAdvisor::logWaitingForMembers)
+              .create();
+        });
+  }
+
+  @VisibleForTesting
+  PersistenceInitialImageAdvisor(InternalPersistenceAdvisor persistenceAdvisor,
+      String shortDiskStoreID, String regionPath, CacheDistributionAdvisor cacheDistributionAdvisor,
+      boolean hasDiskImageToRecoverFrom,
+      Function<InternalPersistenceAdvisor, MembershipChangeListener> membershipChangeListenerProvider) {
     this.persistenceAdvisor = persistenceAdvisor;
     this.shortDiskStoreID = shortDiskStoreID;
     this.regionPath = regionPath;
     this.cacheDistributionAdvisor = cacheDistributionAdvisor;
     this.hasDiskImageToRecoverFrom = hasDiskImageToRecoverFrom;
+    this.membershipChangeListenerProvider = membershipChangeListenerProvider;
   }
 
-  public InitialImageAdvice getAdvice(InitialImageAdvice previousAdvice) {
+  @VisibleForTesting
+  InitialImageAdvice getAdvice(InitialImageAdvice previousAdvice) {
     final boolean isPersistAdvisorDebugEnabled =
         logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE);
 
-    MembershipChangeListener listener = new MembershipChangeListener(persistenceAdvisor);
+    MembershipChangeListener listener = membershipChangeListenerProvider.apply(persistenceAdvisor);
     cacheDistributionAdvisor.addMembershipAndProxyListener(listener);
     persistenceAdvisor.addListener(listener);
     try {
@@ -67,12 +99,13 @@ public class PersistenceInitialImageAdvisor {
               removeReplicatesIfWeAreEqualToAnyOrElseClearEqualMembers(advice.getReplicates());
             }
             return advice;
-          } else if (hasNonPersistentMember(advice)) {
+          }
+          if (hasNonPersistentMember(advice)) {
             updateMembershipViewFromAnyPeer(advice.getNonPersistent(), hasDiskImageToRecoverFrom);
           }
 
-          // Fix for 51698 - If there are online members that we previously failed to get a GII
-          // from, retry those members rather than wait for new persistent members to recover.
+          // If there are online members that we previously failed to get a GII from, retry those
+          // members rather than wait for new persistent members to recover.
           if (hasReplicates(previousAdvice)) {
             logger.info(
                 "GII failed from all sources, but members are still online. Retrying the GII.");

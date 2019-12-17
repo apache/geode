@@ -12,21 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.dunit;
+package org.apache.geode.internal.process;
 
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.DistributedRule;
+import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * This class is the superclass of all distributed unit tests.
- *
- * @deprecated this class used to be the base for distributed test cases, but due to its complexity
- *             and the complexity of inheritance in test classes, it should not be used.
- *             Please use {@link DistributedRule} and Geode User APIs or
- *             {@link ClusterStartupRule} instead.
- */
-@Deprecated
-@SuppressWarnings("serial")
-public abstract class DistributedTestCase extends JUnit4DistributedTestCase {
+import org.apache.geode.annotations.internal.MakeNotStatic;
+
+public class StartupStatusListenerRegistry {
+
+  @MakeNotStatic
+  private static final AtomicReference<StartupStatusListener> listener = new AtomicReference<>();
+
+  private StartupStatusListenerRegistry() {
+    // do nothing
+  }
+
+  public static void setListener(StartupStatusListener listener) {
+    StartupStatusListenerRegistry.listener.set(listener);
+  }
+
+  static StartupStatusListener getStartupListener() {
+    return listener.get();
+  }
+
+  static void clearListener() {
+    listener.set(null);
+  }
 }
