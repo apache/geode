@@ -17,6 +17,7 @@ package org.apache.geode.cache;
 import java.io.File;
 import java.util.Properties;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.LeaseExpiredException;
@@ -98,6 +99,17 @@ public class RegionFactory<K, V> {
   protected RegionFactory(InternalCache cache, RegionAttributes ra) {
     this.cache = cache;
     this.attrsFactory = new AttributesFactory<K, V>(ra);
+  }
+
+  /**
+   * Constructs a RegionFactory that is a copy of an existing RegionFactory
+   *
+   * @since Geode 1.12.0
+   */
+  @VisibleForTesting
+  protected RegionFactory(RegionFactory<K, V> regionFactory) {
+    this.attrsFactory = new AttributesFactory<>(regionFactory.attrsFactory.create());
+    this.cache = regionFactory.cache;
   }
 
   /**
@@ -222,6 +234,7 @@ public class RegionFactory<K, V> {
     this((InternalCache) new CacheFactory(distributedSystemProperties).create(),
         regionAttributesId);
   }
+
 
   /**
    * Returns the cache used by this factory.

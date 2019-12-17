@@ -23,10 +23,9 @@ import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
 
-public class CustomerIDPartitionResolver implements PartitionResolver {
+public class CustomerIDPartitionResolver<K, V> implements PartitionResolver<K, V> {
 
-  private static CustomerIDPartitionResolver customerIDPartitionResolver = null;
-
+  private static CustomerIDPartitionResolver<Object, Object> customerIDPartitionResolver = null;
   private String id;
 
 

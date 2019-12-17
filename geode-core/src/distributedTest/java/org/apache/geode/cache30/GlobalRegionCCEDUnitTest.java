@@ -17,8 +17,9 @@ package org.apache.geode.cache30;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
@@ -36,8 +37,6 @@ import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TombstoneService;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 
@@ -47,6 +46,18 @@ import org.apache.geode.test.dunit.VM;
  */
 
 public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
+
+  private static final SerializableRunnable localDestroyRunnable = new SerializableRunnable(
+      "Locally destroy the entry and do a create that will be propagated with v1") {
+    @Override
+    public void run() {
+      CCRegion.getRegionMap().removeEntry("cckey0", CCRegion.getRegionEntry("cckey0"), true);
+      if (CCRegion.getRegionEntry("ckey0") != null) {
+        fail("expected removeEntry to remove the entry from the region's map");
+      }
+      CCRegion.put("cckey0", "updateAfterReap");
+    }
+  };
 
   @Override
   protected boolean supportsTransactions() {
@@ -67,8 +78,8 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
    * Returns region attributes for a <code>GLOBAL</code> region
    */
   @Override
-  protected RegionAttributes getRegionAttributes() {
-    AttributesFactory factory = new AttributesFactory();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.GLOBAL);
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setConcurrencyChecksEnabled(true);
@@ -76,12 +87,12 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
   }
 
   @Override
-  protected RegionAttributes getRegionAttributes(String type) {
-    RegionAttributes ra = getCache().getRegionAttributes(type);
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
+    RegionAttributes<K, V> ra = getCache().getRegionAttributes(type);
     if (ra == null) {
       throw new IllegalStateException("The region shortcut " + type + " has been removed.");
     }
-    AttributesFactory factory = new AttributesFactory(ra);
+    AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
     factory.setConcurrencyChecksEnabled(true);
     factory.setScope(Scope.GLOBAL);
     return factory.create();
@@ -107,14 +118,8 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
    * same sort of check is performed for register-interest.
    */
   @Test
-  public void testGIISendsTombstones() throws Exception {
+  public void testGIISendsTombstones() {
     versionTestGIISendsTombstones();
-  }
-
-  // TODO: delete this unused method
-  protected void do_version_recovery_if_necessary(final VM vm0, final VM vm1, final VM vm2,
-      final Object[] params) {
-    // do nothing here
   }
 
   /**
@@ -131,19 +136,19 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
 
   @Ignore("TODO: takes too long with global regions and cause false dunit hangs")
   @Test
-  public void testClearWithConcurrentEvents() throws Exception {
+  public void testClearWithConcurrentEvents() {
     versionTestClearWithConcurrentEvents();
   }
 
   @Ignore("TODO: takes too long with global regions and cause false dunit hangs")
   @Test
-  public void testClearWithConcurrentEventsAsync() throws Exception {
+  public void testClearWithConcurrentEventsAsync() {
     versionTestClearWithConcurrentEventsAsync();
   }
 
   @Ignore("TODO: takes too long with global regions and cause false dunit hangs")
   @Test
-  public void testClearOnNonReplicateWithConcurrentEvents() throws Exception {
+  public void testClearOnNonReplicateWithConcurrentEvents() {
     versionTestClearOnNonReplicateWithConcurrentEvents();
   }
 
@@ -158,9 +163,8 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
    */
   @Test
   public void testTombstoneExpirationRace() {
-    VM vm0 = Host.getHost(0).getVM(0);
-    VM vm1 = Host.getHost(0).getVM(1);
-    // VM vm2 = Host.getHost(0).getVM(2);
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
 
     final String name = this.getUniqueName() + "-CC";
     SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
@@ -172,13 +176,12 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
           CCRegion.put("cckey0", "ccvalue");
           CCRegion.put("cckey0", "ccvalue"); // version number will end up at 4
         } catch (CacheException ex) {
-          Assert.fail("While creating region", ex);
+          fail("While creating region", ex);
         }
       }
     };
     vm0.invoke(createRegion);
     vm1.invoke(createRegion);
-    // vm2.invoke(createRegion);
     vm1.invoke(new SerializableRunnable("Create local tombstone and adjust time") {
       @Override
       public void run() {
@@ -194,28 +197,18 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
         try {
           entry.makeTombstone(CCRegion, tag);
         } catch (RegionClearedException e) {
-          Assert.fail("region was mysteriously cleared during unit testing", e);
+          fail("region was mysteriously cleared during unit testing", e);
         }
       }
     });
     // now remove the entry on vm0, simulating that it initiated a GC, and
     // perform a CREATE with a new version number
-    vm0.invoke(new SerializableRunnable(
-        "Locally destroy the entry and do a create that will be propagated with v1") {
-      @Override
-      public void run() {
-        CCRegion.getRegionMap().removeEntry("cckey0", CCRegion.getRegionEntry("cckey0"), true);
-        if (CCRegion.getRegionEntry("ckey0") != null) {
-          fail("expected removEntry to remove the entry from the region's map");
-        }
-        CCRegion.put("cckey0", "updateAfterReap");
-      }
-    });
+    vm0.invoke(localDestroyRunnable);
     vm1.invoke(new SerializableRunnable("Check that the create() was applied") {
       @Override
       public void run() {
         RegionEntry entry = CCRegion.getRegionEntry("cckey0");
-        assertTrue(entry.getVersionStamp().getEntryVersion() == 1);
+        assertThat(entry.getVersionStamp().getEntryVersion()).isEqualTo(1);
       }
     });
     disconnectAllFromDS();

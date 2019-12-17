@@ -4365,6 +4365,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return new RegionFactoryImpl<>(this, regionAttributes);
   }
 
+  /**
+   * @since GemFire 6.5
+   */
   @Override
   public <K, V> ClientRegionFactory<K, V> createClientRegionFactory(ClientRegionShortcut shortcut) {
     return new ClientRegionFactoryImpl<>(this, shortcut);
