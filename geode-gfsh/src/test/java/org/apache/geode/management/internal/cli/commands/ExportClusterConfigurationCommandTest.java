@@ -22,8 +22,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -31,6 +29,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -110,10 +109,15 @@ public class ExportClusterConfigurationCommandTest {
     properties.put("key1", "value1");
     properties.put("key2", "value2");
     configuration.setGemfireProperties(properties);
-    configuration.addJarNames(new HashSet<>(Arrays.asList("jar1.jar", "jar2.jar")));
-    gfsh.executeAndAssertThat(command, EXPORT_SHARED_CONFIG).statusIsSuccess()
-        .containsOutput("cluster.xml:").containsOutput("Properties:").containsOutput("Jars:")
-        .containsOutput("jar1.jar, jar2.jar").containsOutput("<?xml version=\"1.0\"")
+    configuration.addDeployment(new Deployment("jar1.jar"));
+    configuration.addDeployment(new Deployment("jar2.jar"));
+    gfsh.executeAndAssertThat(command, EXPORT_SHARED_CONFIG)
+        .statusIsSuccess()
+        .containsOutput("cluster.xml:")
+        .containsOutput("Properties:")
+        .containsOutput("Jars:")
+        .containsOutput("jar1.jar, jar2.jar")
+        .containsOutput("<?xml version=\"1.0\"")
         .containsOutput("</cache>");
   }
 }
