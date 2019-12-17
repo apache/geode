@@ -160,8 +160,8 @@ public class ServerLocation implements DataSerializable, Comparable, Serializati
     }
     if (port != other.port)
       return false;
-    if (!memberId.equals(other.memberId)) {
-      return false;
+    if (!memberId.equals("") && !other.memberId.equals("")) {
+      return memberId.equals(other.memberId);
     }
     return true;
   }

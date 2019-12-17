@@ -387,7 +387,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
     this.acceptor.start();
     this.advisor.handshake();
-    this.loadMonitor.start(new ServerLocation(getExternalAddress(), getPort()),
+    this.loadMonitor.start(new ServerLocation(getExternalAddress(), getPort(),
+        (this.getProfile() == null) ? "" : this.getProfile().getDistributedMember().getId()),
         acceptor.getStats());
 
     // TODO : Need to provide facility to enable/disable client health monitoring.
