@@ -118,7 +118,7 @@ public class GMSJoinLeaveJUnitTest {
   public void initMocks(boolean enableNetworkPartition, boolean useTestGMSJoinLeave)
       throws Exception {
     mockConfig = mock(ServiceConfig.class);
-    when(mockConfig.getEnableNetworkPartitionDetection()).thenReturn(enableNetworkPartition);
+    when(mockConfig.isNetworkPartitionDetectionEnabled()).thenReturn(enableNetworkPartition);
     when(mockConfig.getSecurityUDPDHAlgo()).thenReturn("");
     when(mockConfig.getStartLocator()).thenReturn("localhost[12345]");
     when(mockConfig.getLocators()).thenReturn("localhost[12345]");

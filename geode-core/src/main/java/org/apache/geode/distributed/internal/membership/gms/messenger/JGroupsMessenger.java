@@ -200,14 +200,13 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
     MembershipConfig config = services.getConfig();
 
-
-    boolean enableNetworkPartitionDetection = config.getEnableNetworkPartitionDetection();
+    boolean enableNetworkPartitionDetection = config.isNetworkPartitionDetectionEnabled();
     System.setProperty("jgroups.resolve_dns", String.valueOf(!enableNetworkPartitionDetection));
 
     InputStream is = null;
 
     String r;
-    if (config.isMcastEnabled()) {
+    if (config.isMulticastEnabled()) {
       r = JGROUPS_MCAST_CONFIG_FILE_NAME;
     } else {
       r = DEFAULT_JGROUPS_TCP_CONFIG;
@@ -249,12 +248,11 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       properties = properties.substring(commentEnd + 3);
     }
 
-
-    if (config.isMcastEnabled()) {
+    if (config.isMulticastEnabled()) {
       properties = replaceStrings(properties, "MCAST_PORT",
           String.valueOf(config.getMcastPort()));
       properties =
-          replaceStrings(properties, "MCAST_ADDRESS", config.getMcastAddress().getHostAddress());
+          replaceStrings(properties, "MCAST_ADDRESS", config.getMcastAddress());
       properties = replaceStrings(properties, "MCAST_TTL", String.valueOf(config.getMcastTtl()));
       properties = replaceStrings(properties, "MCAST_SEND_BUFFER_SIZE",
           String.valueOf(config.getMcastSendBufferSize()));
@@ -266,7 +264,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
           String.valueOf(config.getUdpFragmentSize() - 256));
     }
 
-    if (config.isMcastEnabled() || config.isTcpDisabled()
+    if (config.isMulticastEnabled() || config.getDisableTcp()
         || (config.getUdpRecvBufferSize() != DistributionConfig.DEFAULT_UDP_RECV_BUFFER_SIZE)) {
       properties =
           replaceStrings(properties, "UDP_RECV_BUFFER_SIZE", "" + config.getUdpRecvBufferSize());
@@ -561,7 +559,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         -1 /* directport */, -1 /* viewID */, config.getName(),
         GMSUtil.parseGroups(config.getRoles(), config.getGroups()), config.getDurableClientId(),
         config.getDurableClientTimeout(),
-        config.getEnableNetworkPartitionDetection(), isLocator,
+        config.isNetworkPartitionDetectionEnabled(), isLocator,
         Version.getCurrentVersion().ordinal(),
         jgAddress.getUUIDMsbs(), jgAddress.getUUIDLsbs(),
         (byte) (services.getConfig().getMemberWeight() & 0xff));
@@ -695,7 +693,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     boolean allDestinations = msg.forAll();
 
     boolean useMcast = false;
-    if (services.getConfig().isMcastEnabled()) {
+    if (services.getConfig().isMulticastEnabled()) {
       if (msg.getMulticast() || allDestinations) {
         useMcast = services.getManager().isMulticastAllowed();
       }
