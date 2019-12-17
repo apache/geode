@@ -1232,7 +1232,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     long end = start + timeToWait;
 
     // Add peeked events
-    addPeekedEvents(batch, batchSize);
+    addPeekedEvents(batch, batchSize == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE : batchSize);
 
     int bId = -1;
     while (batchSize == BATCH_BASED_ON_TIME_ONLY || batch.size() < batchSize) {

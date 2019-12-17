@@ -407,7 +407,8 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", numPuts));
 
     // attempt to prove the absence of a dispatch/ prove a dispatch has not occurred
-    // will verify that no events have occurred over a period of time less than batch interval but more than enough
+    // will verify that no events have occurred over a period of time less than batch interval but
+    // more than enough
     // for a regular dispatch to have occurred
     vm2.invoke(() -> {
       long startTime = System.currentTimeMillis();
