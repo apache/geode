@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import java.net.InetAddress;
@@ -427,6 +428,23 @@ public class FederatingManagerTest {
     federatingManager.startManager();
 
     verify(executorServiceSupplier).get();
+  }
+
+  @Test
+  public void removeMemberArtifactsDoesNotRemoveAllProxiesIfMonitoringRegionIsNull() {
+    InternalDistributedMember member = member();
+    when(repo.getEntryFromMonitoringRegionMap(eq(member)))
+        .thenReturn(null);
+    when(repo.getEntryFromNotifRegionMap(eq(member)))
+        .thenReturn(mock(Region.class));
+    when(system.getDistributedMember())
+        .thenReturn(member);
+    FederatingManager federatingManager = new FederatingManager(repo, system, service, cache,
+        statisticsFactory, statisticsClock, proxyFactory, messenger, executorService);
+
+    federatingManager.removeMemberArtifacts(member, false);
+
+    verifyZeroInteractions(proxyFactory);
   }
 
   private InternalDistributedMember member() {
