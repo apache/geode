@@ -34,6 +34,10 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> {
 
   public Deployment() {}
 
+  public Deployment(String jarFileName) {
+    this(jarFileName, null, null);
+  }
+
   public Deployment(String jarFileName, String deployedBy, String timeDeployed) {
     this.jarFileName = jarFileName;
     this.deployedBy = deployedBy;
