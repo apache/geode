@@ -15,7 +15,9 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -25,12 +27,14 @@ import static org.apache.geode.test.dunit.Assert.fail;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -53,7 +57,9 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.internal.DestroyOp;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.Distribution;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
@@ -79,6 +85,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
   private static final String REP_REG_NAME = "repRegion";
   private static final String PR_REG_NAME = "prRegion";
   private static final int MAX_ENTRIES = 113;
+  private int locatorPort;
 
   enum OP {
     PUTIFABSENT, REPLACE, REMOVE
@@ -92,12 +99,28 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
   public void setup() {
     // stress testing needs this so that join attempts don't give up too soon
     Invoke.invokeInEveryVM(() -> System.setProperty("p2p.joinTimeout", "120000"));
+    VM locatorVM = VM.getVM(4);
+    final int port = locatorVM.invoke(() -> {
+      System.setProperty(BYPASS_DISCOVERY_PROPERTY, "true");
+      // set a big weight on the locator to prevent total shutdown when one server decides
+      // to kill the other server
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "member-weight", "100");
+      return Locator.startLocatorAndDS(0, new File(""), new Properties()).getPort();
+    });
+    Invoke.invokeInEveryVM(() -> locatorPort = port);
+    locatorPort = port;
+  }
+
+  @After
+  public void teardown() {
+    VM.getVM(4).invoke(() -> disconnectFromDS());
   }
 
   @Override
   public Properties getDistributedSystemProperties() {
     Properties result = super.getDistributedSystemProperties();
     result.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    result.put(LOCATORS, "localhost[" + locatorPort + "]");
     return result;
   }
 

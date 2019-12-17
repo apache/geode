@@ -346,7 +346,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
    */
   @Test
   public void testWaitForViewInstallation() {
-    InternalDistributedSystem system = getSystem(new Properties());
+    InternalDistributedSystem system = getSystem();
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDM();
     MembershipView<InternalDistributedMember> view = dm.getDistribution().getView();
 
@@ -363,7 +363,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     pause(2000);
 
     vm1.invoke("create another member to initiate a new view", () -> {
-      getSystem(new Properties());
+      getSystem();
     });
 
     await()
