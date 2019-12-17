@@ -30,6 +30,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.RegisterDataSerializersOp;
 import org.apache.geode.cache.client.internal.RegisterInstantiatorsOp;
@@ -46,7 +47,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * Implementation used by PoolManager.
  *
  * @since GemFire 5.7
- *
  */
 public class PoolManagerImpl {
   private static final Logger logger = LogService.getLogger();
@@ -115,9 +115,12 @@ public class PoolManagerImpl {
     boolean foundClientPool = false;
     synchronized (poolLock) {
       for (Entry<String, Pool> entry : pools.entrySet()) {
-        PoolImpl pool = (PoolImpl) entry.getValue();
-        pool.basicDestroy(keepAlive);
-        foundClientPool = true;
+        Pool pool = entry.getValue();
+        if (pool instanceof PoolImpl) {
+          ((PoolImpl) pool).basicDestroy(keepAlive);
+          foundClientPool = true;
+        }
+
       }
       pools = Collections.emptyMap();
       itrForEmergencyClose = null;
@@ -167,7 +170,10 @@ public class PoolManagerImpl {
    */
   public boolean unregister(Pool pool) {
     // Continue only if the pool is not currently being used by any region and/or service.
-    int attachCount = ((PoolImpl) pool).getAttachCount();
+    int attachCount = 0;
+    if (pool instanceof PoolImpl) {
+      attachCount = ((PoolImpl) pool).getAttachCount();
+    }
     if (attachCount > 0) {
       throw new IllegalStateException(String.format(
           "Pool could not be destroyed because it is still in use by %s regions", attachCount));
@@ -200,12 +206,14 @@ public class PoolManagerImpl {
     boolean foundDurablePool = false;
     Map<String, Pool> pools = PoolManager.getAll();
     for (Pool pool : pools.values()) {
-      PoolImpl p = (PoolImpl) pool;
-      if (p.isDurableClient()) {
-        // TODO - handle an exception and attempt on all pools?
-        foundDurablePool = true;
-        if (!xmlPoolsOnly) {
-          p.readyForEvents(system);
+      if (pool instanceof PoolImpl) {
+        PoolImpl p = (PoolImpl) pool;
+        if (p.isDurableClient()) {
+          // TODO - handle an exception and attempt on all pools?
+          foundDurablePool = true;
+          if (!xmlPoolsOnly) {
+            p.readyForEvents(system);
+          }
         }
       }
     }
@@ -218,11 +226,10 @@ public class PoolManagerImpl {
   public static void allPoolsRegisterInstantiator(Instantiator instantiator) {
     Instantiator[] instantiators = new Instantiator[] {instantiator};
     for (Pool pool : PoolManager.getAll().values()) {
-      PoolImpl next = (PoolImpl) pool;
       try {
         EventID eventId = InternalInstantiator.generateEventId();
         if (eventId != null) {
-          RegisterInstantiatorsOp.execute(next, instantiators, eventId);
+          RegisterInstantiatorsOp.execute((ExecutablePool) pool, instantiators, eventId);
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
@@ -233,11 +240,10 @@ public class PoolManagerImpl {
   public static void allPoolsRegisterInstantiator(InstantiatorAttributesHolder holder) {
     InstantiatorAttributesHolder[] holders = new InstantiatorAttributesHolder[] {holder};
     for (Pool pool : PoolManager.getAll().values()) {
-      PoolImpl next = (PoolImpl) pool;
       try {
         EventID eventId = InternalInstantiator.generateEventId();
         if (eventId != null) {
-          RegisterInstantiatorsOp.execute(next, holders, eventId);
+          RegisterInstantiatorsOp.execute((ExecutablePool) pool, holders, eventId);
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
@@ -248,14 +254,13 @@ public class PoolManagerImpl {
   public static void allPoolsRegisterDataSerializers(DataSerializer dataSerializer) {
     DataSerializer[] dataSerializers = new DataSerializer[] {dataSerializer};
     for (Pool pool : PoolManager.getAll().values()) {
-      PoolImpl next = (PoolImpl) pool;
       try {
         EventID eventId = (EventID) dataSerializer.getEventId();
         if (eventId == null) {
           eventId = InternalDataSerializer.generateEventId();
         }
         if (eventId != null) {
-          RegisterDataSerializersOp.execute(next, dataSerializers, eventId);
+          RegisterDataSerializersOp.execute((ExecutablePool) pool, dataSerializers, eventId);
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
@@ -266,14 +271,13 @@ public class PoolManagerImpl {
   public static void allPoolsRegisterDataSerializers(SerializerAttributesHolder holder) {
     SerializerAttributesHolder[] holders = new SerializerAttributesHolder[] {holder};
     for (Pool pool : PoolManager.getAll().values()) {
-      PoolImpl next = (PoolImpl) pool;
       try {
         EventID eventId = holder.getEventId();
         if (eventId == null) {
           eventId = InternalDataSerializer.generateEventId();
         }
         if (eventId != null) {
-          RegisterDataSerializersOp.execute(next, holders, eventId);
+          RegisterDataSerializersOp.execute((ExecutablePool) pool, holders, eventId);
         }
       } catch (RuntimeException e) {
         logger.warn("Error registering instantiator on pool:", e);
