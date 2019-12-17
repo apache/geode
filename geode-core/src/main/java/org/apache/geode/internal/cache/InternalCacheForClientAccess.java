@@ -312,11 +312,6 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public <K, V> RegionFactory<K, V> createRegionFactory(RegionFactory<K, V> regionFactory) {
-    return delegate.createRegionFactory(regionFactory);
-  }
-
-  @Override
   public void close(boolean keepAlive) {
     delegate.close(keepAlive);
   }

@@ -392,8 +392,14 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     return attributesFactory;
   }
 
+  protected class MyRegionFactory<K, V> extends RegionFactory {
+    public MyRegionFactory(RegionFactory<K, V> regionFactory) {
+      super(regionFactory);
+    }
+  }
+
   private <K, V> RegionFactory<K, V> getRootRegionFactory(RegionFactory<K, V> regionFactory) {
-    RegionFactory<K, V> regionFactory1 = getCache().createRegionFactory(regionFactory);
+    MyRegionFactory<K, V> regionFactory1 = new MyRegionFactory<>(regionFactory);
     ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
 
     regionFactory1.setCacheLoader(null);
