@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.GfManagerAgentConfig;
@@ -55,10 +56,13 @@ public class RemoteGfManagerAgentTest {
 
     when(config.getLogWriter()).thenReturn(mock(InternalLogWriter.class));
     when(config.getTransport()).thenReturn(mock(RemoteTransportConfig.class));
+    when(system.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
     agent = new RemoteGfManagerAgent(config, props -> system, agent -> mock(JoinProcessor.class),
         agent -> mock(SnapshotResultDispatcher.class), agent -> mock(DSConnectionDaemon.class),
         agent -> mock(MyMembershipListener.class));
+
+    agent.setDSConnection(system);
   }
 
   @Test
