@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
 
@@ -63,7 +64,7 @@ public class PoolManagerImpl {
   }
 
   private volatile Map<String, Pool> pools = Collections.emptyMap();
-  private volatile Iterator<Map.Entry<String, Pool>> itrForEmergencyClose = null;
+  private volatile Optional<Iterator<Pool>> itrForEmergencyClose = Optional.empty();
   private final Object poolLock = new Object();
   /**
    * True if this manager is a normal one owned by the PoolManager. False if this is a special one
@@ -123,7 +124,7 @@ public class PoolManagerImpl {
 
       }
       pools = Collections.emptyMap();
-      itrForEmergencyClose = null;
+      itrForEmergencyClose = Optional.empty();
       if (foundClientPool) {
         // Now that the client has all the pools destroyed free up the pooled comm buffers
         ServerConnection.emptyCommBufferPool();
@@ -159,7 +160,7 @@ public class PoolManagerImpl {
       // + " and more than one pool already exists in client.");
       // }
       pools = Collections.unmodifiableMap(copy);
-      itrForEmergencyClose = copy.entrySet().iterator();
+      itrForEmergencyClose = Optional.of(copy.values().iterator());
     }
   }
 
@@ -188,7 +189,7 @@ public class PoolManagerImpl {
         return false;
       } else {
         pools = Collections.unmodifiableMap(copy);
-        itrForEmergencyClose = copy.entrySet().iterator();
+        itrForEmergencyClose = Optional.of(copy.values().iterator());
         return true;
       }
     }
@@ -289,14 +290,14 @@ public class PoolManagerImpl {
     if (impl == null) {
       return;
     }
-    Iterator<Map.Entry<String, Pool>> itr = impl.itrForEmergencyClose;
-    if (itr == null) {
-      return;
-    }
-    while (itr.hasNext()) {
-      Entry<String, Pool> next = itr.next();
-      ((PoolImpl) next.getValue()).emergencyClose();
-    }
+    impl.itrForEmergencyClose.ifPresent(poolIterator -> {
+      while (poolIterator.hasNext()) {
+        Pool pool = poolIterator.next();
+        if (pool instanceof PoolImpl) {
+          ((PoolImpl) pool).emergencyClose();
+        }
+      }
+    });
   }
 
   public static void loadEmergencyClasses() {
