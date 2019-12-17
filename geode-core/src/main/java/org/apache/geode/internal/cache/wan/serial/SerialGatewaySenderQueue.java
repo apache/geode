@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
+import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -74,8 +76,6 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.AsyncEventQueueMBean;
 import org.apache.geode.management.internal.beans.GatewaySenderMBean;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
-
-import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_BATCH_SIZE;
 
 /**
  * @since GemFire 7.0
@@ -369,7 +369,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       logger.trace("{}: Peek start time={} end time={} time to wait={}", this, start, end,
           timeToWait);
     }
-    List<AsyncEvent> batch = new ArrayList<AsyncEvent>(size == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE: size);
+    List<AsyncEvent> batch =
+        new ArrayList<AsyncEvent>(size == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE : size);
     while (size == BATCH_BASED_ON_TIME_ONLY || batch.size() < size) {
       AsyncEvent object = peekAhead();
       // Conflate here

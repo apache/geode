@@ -20,7 +20,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Set;
 
-import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -30,6 +29,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -454,7 +454,8 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     // Create receiver and region
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
     vm2.invoke(
-            () -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 10, isOffHeap()));
+        () -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 10,
+            isOffHeap()));
     vm2.invoke(() -> WANTestBase.createReceiver());
     vm2.invoke(() -> WANTestBase.addListenerOnRegion(getTestMethodName() + "_PR"));
 
@@ -465,7 +466,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
     builder.append(senderId);
     vm4.invoke(() -> {
       InternalGatewaySenderFactory gateway =
-              (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
+          (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
       gateway.setParallel(true);
       gateway.setMaximumQueueMemory(100);
       gateway.setBatchSize(RegionQueue.BATCH_BASED_ON_TIME_ONLY);
@@ -477,14 +478,14 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
 
     // Create region with the sender ids
     vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR",
-            builder.toString(), 0, 10, isOffHeap()));
+        builder.toString(), 0, 10, isOffHeap()));
 
     // Do puts
     int numPuts = 100;
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", numPuts));
 
     vm2.invoke(() -> {
-      //attempt to prove the absence of a dispatch/ prove a dispatch has not occurred
+      // attempt to prove the absence of a dispatch/ prove a dispatch has not occurred
       long startTime = System.currentTimeMillis();
       while (System.currentTimeMillis() - startTime < batchIntervalTime - 1000) {
         assertEquals(0, listener1.getNumEvents());

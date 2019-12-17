@@ -1223,7 +1223,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       blockProcessorThreadIfRequired();
       return Collections.EMPTY_LIST;
     }
-    List<GatewaySenderEventImpl> batch = new ArrayList<>(batchSize == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE: batchSize);
+    List<GatewaySenderEventImpl> batch =
+        new ArrayList<>(batchSize == BATCH_BASED_ON_TIME_ONLY ? DEFAULT_BATCH_SIZE : batchSize);
 
     long start = System.currentTimeMillis();
     long end = start + timeToWait;

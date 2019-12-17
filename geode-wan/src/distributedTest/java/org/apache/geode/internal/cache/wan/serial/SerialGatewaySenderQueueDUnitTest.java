@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.wan.serial;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -26,9 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -410,7 +407,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", numPuts));
 
     vm2.invoke(() -> {
-      //attempt to prove the absence of a dispatch/ prove a dispatch has not occurred
+      // attempt to prove the absence of a dispatch/ prove a dispatch has not occurred
       long startTime = System.currentTimeMillis();
       while (System.currentTimeMillis() - startTime < batchIntervalTime - 1000) {
         assertEquals(0, listener1.getNumEvents());
