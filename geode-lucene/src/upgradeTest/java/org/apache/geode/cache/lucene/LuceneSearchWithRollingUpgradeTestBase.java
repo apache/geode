@@ -292,7 +292,7 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
   protected Collection executeLuceneQuery(Object luceneQuery)
       throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
     Collection results = null;
-    int retryCount = 10;
+    int retryCount = 40;
     while (true) {
       try {
         results = (Collection) luceneQuery.getClass().getMethod("findKeys").invoke(luceneQuery);
