@@ -36,13 +36,13 @@ public class IndexConfigManager extends CacheConfigurationManager<Index> {
 
   @Override
   public void add(Index config, CacheConfig existing) {
-    RegionConfig regionConfiguration = existing.findRegionConfiguration(config.getRegionName());
-    if (regionConfiguration == null) {
+    RegionConfig regionConfig = existing.findRegionConfiguration(config.getRegionName());
+    if (regionConfig == null) {
       throw new IllegalArgumentException(
           "Region provided does not exist: " + config.getRegionName());
     }
     RegionConfig.Index index = converter.fromConfigObject(config);
-    regionConfiguration.getIndexes().add(index);
+    regionConfig.getIndexes().add(index);
   }
 
   @Override
@@ -52,7 +52,20 @@ public class IndexConfigManager extends CacheConfigurationManager<Index> {
 
   @Override
   public void delete(Index config, CacheConfig existing) {
-    throw new NotImplementedException("Not implemented yet");
+    RegionConfig regionConfig = existing.findRegionConfiguration(config.getRegionName());
+    if (regionConfig == null) {
+      throw new IllegalArgumentException(
+          "Region provided does not exist: " + config.getRegionName());
+    }
+    RegionConfig.Index index = regionConfig.getIndexes().stream()
+        .filter(item -> item.getName().equals(config.getName()))
+        .findFirst()
+        .orElseThrow(() -> new IllegalArgumentException("Index provided does not exist on Region: "
+            + config.getRegionName()
+            + ", "
+            + config.getName()));
+
+    regionConfig.getIndexes().remove(index);
   }
 
   @Override

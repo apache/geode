@@ -196,4 +196,20 @@ public class RegionManagementController extends AbstractManagementController {
     return new ResponseEntity<>(result,
         HttpStatus.CREATED);
   }
+
+  @ApiOperation(value = "delete region index")
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE', 'QUERY')")
+  @DeleteMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{indexName}")
+  public ClusterManagementResult deleteRegion(
+      @PathVariable String regionName,
+      @PathVariable String indexName,
+      @RequestParam(required = false) String group) {
+    Index config = new Index();
+    config.setName(indexName);
+    config.setRegionPath(regionName);
+    if (StringUtils.isNotBlank(group)) {
+      config.setGroup(group);
+    }
+    return clusterManagementService.delete(config);
+  }
 }

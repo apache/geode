@@ -34,29 +34,40 @@ public class IndexValidator implements ConfigurationValidator<Index> {
   @Override
   public void validate(CacheElementOperation operation, Index config)
       throws IllegalArgumentException {
-    if (operation == CacheElementOperation.CREATE) {
-      if (config.getName() == null) {
-        throw new IllegalArgumentException("Name is required.");
-      }
+    switch (operation) {
+      case CREATE:
+        if (config.getName() == null) {
+          throw new IllegalArgumentException("Name is required.");
+        }
 
-      if (config.getExpression() == null) {
-        throw new IllegalArgumentException("Expression is required.");
-      }
+        if (config.getExpression() == null) {
+          throw new IllegalArgumentException("Expression is required.");
+        }
 
-      if (config.getRegionPath() == null) {
-        throw new IllegalArgumentException("RegionPath is required.");
-      }
+        if (config.getRegionPath() == null) {
+          throw new IllegalArgumentException("RegionPath is required.");
+        }
 
-      if (config.getIndexType() == IndexType.HASH_DEPRECATED) {
-        throw new IllegalArgumentException("IndexType HASH is not allowed.");
-      }
+        if (config.getIndexType() == IndexType.HASH_DEPRECATED) {
+          throw new IllegalArgumentException("IndexType HASH is not allowed.");
+        }
+        break;
+      case DELETE:
+        if (config.getName() == null) {
+          throw new IllegalArgumentException("Name is required.");
+        }
 
-      CacheConfig existing = persistenceService.getCacheConfig(config.getGroup(), true);
-      RegionConfig regionConfiguration = existing.findRegionConfiguration(config.getRegionName());
-      if (regionConfiguration == null) {
-        throw new ClusterManagementException(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND,
-            "Region provided does not exist: " + config.getRegionName() + ".");
-      }
+        if (config.getRegionPath() == null) {
+          throw new IllegalArgumentException("RegionPath is required.");
+        }
+        break;
+    }
+
+    CacheConfig existing = persistenceService.getCacheConfig(config.getGroup(), true);
+    RegionConfig regionConfiguration = existing.findRegionConfiguration(config.getRegionName());
+    if (regionConfiguration == null) {
+      throw new ClusterManagementException(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND,
+          "Region provided does not exist: " + config.getRegionName() + ".");
     }
   }
 }
