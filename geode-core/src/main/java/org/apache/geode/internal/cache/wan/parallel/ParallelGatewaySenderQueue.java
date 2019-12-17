@@ -660,9 +660,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     boolean putDone = false;
     // Can this region ever be null? Should we work with regionName and not with region
     // instance.
-    // It can't be as put is happeing on the region and its still under process
+    // It can't be as put is happening on the region and its still under process
     GatewaySenderEventImpl value = (GatewaySenderEventImpl) object;
-    boolean isDREvent = isDREvent(value);
+
+    boolean isDREvent = isDREvent(sender.getCache(), value);
 
     Region region = value.getRegion();
     String regionPath = null;
@@ -924,8 +925,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return prQ;
   }
 
-  private boolean isDREvent(GatewaySenderEventImpl event) {
-    return (event.getRegion() instanceof DistributedRegion) ? true : false;
+  private boolean isDREvent(InternalCache cache, GatewaySenderEventImpl event) {
+    Region region = cache.getRegion(event.getRegionPath());
+    return region instanceof DistributedRegion;
   }
 
   /**
@@ -1003,7 +1005,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         int bucketId = -1;
         Object key = null;
         if (event.getRegion() != null) {
-          if (isDREvent(event)) {
+          if (isDREvent(sender.getCache(), event)) {
             prQ = this.userRegionNameToshadowPRMap.get(event.getRegion().getFullPath());
             bucketId = event.getEventId().getBucketID();
             key = event.getEventId();
