@@ -925,7 +925,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return prQ;
   }
 
-  private boolean isDREvent(InternalCache cache, GatewaySenderEventImpl event) {
+  boolean isDREvent(InternalCache cache, GatewaySenderEventImpl event) {
     Region region = cache.getRegion(event.getRegionPath());
     return region instanceof DistributedRegion;
   }

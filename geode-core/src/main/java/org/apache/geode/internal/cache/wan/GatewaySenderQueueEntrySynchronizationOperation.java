@@ -163,7 +163,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
       }
     }
 
-    private Cache getCache() {
+    Cache getCache() {
       return dmgr.getCache();
     }
   }
