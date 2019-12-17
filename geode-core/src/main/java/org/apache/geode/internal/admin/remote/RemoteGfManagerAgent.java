@@ -940,6 +940,11 @@ public class RemoteGfManagerAgent implements GfManagerAgent {
     return system;
   }
 
+  @VisibleForTesting
+  void setDSConnection(InternalDistributedSystem system) {
+    this.system = system;
+  }
+
   /**
    * Handles a membership join asynchronously from the memberJoined notification. Sets and clears
    * current join. Also makes several checks to support aborting of the current join.
