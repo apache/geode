@@ -38,6 +38,8 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
@@ -151,7 +153,12 @@ public class Configuration implements DataSerializable {
     DataSerializer.writeString(cacheXmlContent, out);
     DataSerializer.writeString(propertiesFileName, out);
     DataSerializer.writeProperties(gemfireProperties, out);
-    DataSerializer.writeHashMap(deployments, out);
+    Version dataStreamVersion = InternalDataSerializer.getVersionForDataStream(out);
+    if (dataStreamVersion.compareTo(Version.GEODE_1_12_0) < 0) {
+      DataSerializer.writeHashSet(new HashSet<>(deployments.keySet()), out);
+    } else {
+      DataSerializer.writeHashMap(deployments, out);
+    }
   }
 
   @Override
@@ -161,7 +168,17 @@ public class Configuration implements DataSerializable {
     cacheXmlContent = DataSerializer.readString(in);
     propertiesFileName = DataSerializer.readString(in);
     gemfireProperties = DataSerializer.readProperties(in);
-    deployments.putAll(DataSerializer.readHashMap(in));
+    Version dataStreamVersion = InternalDataSerializer.getVersionForDataStream(in);
+    if (dataStreamVersion.compareTo(Version.GEODE_1_12_0) < 0) {
+      Set<String> jarNames = DataSerializer.readHashSet(in);
+      if (jarNames != null) {
+        jarNames.stream()
+            .map(Deployment::new)
+            .forEach(deployment -> deployments.put(deployment.getJarFileName(), deployment));
+      }
+    } else {
+      deployments.putAll(DataSerializer.readHashMap(in));
+    }
   }
 
   @Override

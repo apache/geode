@@ -2034,8 +2034,8 @@ fromData,17
 toData,17
 
 org/apache/geode/management/internal/configuration/domain/Configuration,2
-fromData,49
-toData,52
+fromData,108
+toData,87
 
 org/apache/geode/management/internal/configuration/domain/ConfigurationChangeResult,2
 fromData,31
