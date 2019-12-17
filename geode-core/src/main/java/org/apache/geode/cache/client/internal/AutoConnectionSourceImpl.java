@@ -267,8 +267,44 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     }
   }
 
+  /**
+   * Get Initial locators from current locator list
+   */
+  private Set<HostAddress> getInitLocators() {
+
+    Set<HostAddress> initLocators = new HashSet<>(initialLocators.size());
+    LocatorList locatorList = locators.get();
+
+    boolean locatorfound;
+    for (HostAddress initloc : initialLocators) {
+      locatorfound = false;
+      for (HostAddress currloc : locatorList.getLocatorAddresses()) {
+        if (initloc.getHostName().equals(currloc.getHostName())
+            && initloc.getPort() == currloc.getPort()) {
+          initLocators.add(currloc);
+          locatorfound = true;
+          break;
+        }
+      }
+      if (!locatorfound) {
+        initLocators.add(initloc);
+      }
+    }
+    return initLocators;
+
+  }
+
+
   protected List<InetSocketAddress> getCurrentLocators() {
     return locators.get().getLocators();
+  }
+
+  protected List<HostAddress> getCurrentLocatorsAddresses() {
+    return locators.get().getLocatorAddresses();
+  }
+
+  protected void setPool(InternalPool pool) {
+    this.pool = pool;
   }
 
   private ServerLocationResponse queryLocators(ServerLocationRequest request) {
@@ -290,7 +326,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     return response;
   }
 
-  private void updateLocatorList(LocatorListResponse response) {
+  protected void updateLocatorList(LocatorListResponse response) {
     if (response == null)
       return;
     isBalanced = response.isBalanced();
@@ -299,7 +335,10 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     List<LocatorAddress> newLocatorAddresses = new ArrayList<>(locatorResponse.size());
     List<LocatorAddress> newOnlineLocators = new ArrayList<>(locatorResponse.size());
 
+
     Set<LocatorAddress> badLocators = new HashSet<>(initialLocators);
+//    Set<HostAddress> badLocators = getInitLocators();
+
     for (ServerLocation locator : locatorResponse) {
       InetSocketAddress address = new InetSocketAddress(locator.getHostName(), locator.getPort());
       LocatorAddress hostAddress = new LocatorAddress(address, locator.getHostName());

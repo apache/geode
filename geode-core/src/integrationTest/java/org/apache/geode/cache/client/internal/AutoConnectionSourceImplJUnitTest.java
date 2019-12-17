@@ -200,7 +200,7 @@ public class AutoConnectionSourceImplJUnitTest {
     Assert.assertEquals(2, cLocList.size());
 
     for (InetSocketAddress t : cLocList) {
-      Assert.assertNotSame("Should have replaced floc1 intsance", t, floc1);
+      Assert.assertNotSame("Should have replaced floc1 instance", t, floc1);
     }
   }
 
@@ -418,6 +418,53 @@ public class AutoConnectionSourceImplJUnitTest {
         String.valueOf(updateLocatorInterval));
     source.start(pool);
     assertEquals(updateLocatorInterval, source.getLocatorUpdateInterval());
+  }
+
+
+  @Test
+  public void testLocatorIpChange2() {
+    int port = 11011;
+    List<InetSocketAddress> locators = new ArrayList<>();
+    InetSocketAddress floc1 = InetSocketAddress.createUnresolved("localhost", port);
+    InetSocketAddress floc2 = new InetSocketAddress("fakeLocalHost2", port);
+
+    locators.add(floc1);
+    locators.add(floc2);
+
+    List<HostAddress> la = new ArrayList<>();
+    la.add(new HostAddress(floc1, floc1.getHostName()));
+    la.add(new HostAddress(floc2, floc2.getHostName()));
+
+    AutoConnectionSourceImpl src = new AutoConnectionSourceImpl(la, "", 60 * 1000);
+    src.setPool(pool);
+
+    // This method will create a new InetSocketAddress of floc1
+    src.updateLocatorInLocatorList(new HostAddress(floc1, floc1.getHostName()));
+
+    List<HostAddress> cLocList = src.getCurrentLocatorsAddresses();
+
+    Assert.assertEquals(2, cLocList.size());
+
+    for (HostAddress t : cLocList) {
+      Assert.assertNotSame("Should have replaced floc1 instance", t.getSocketInetAddressNoLookup(),
+          floc1);
+    }
+
+    ArrayList<ServerLocation> responseLocators = new ArrayList<>();
+    responseLocators.add(new ServerLocation(floc2.getHostName(), port));
+    LocatorListResponse response = new LocatorListResponse(responseLocators, true);
+
+    src.updateLocatorList(response);
+
+    List<HostAddress> cLocList2 = src.getCurrentLocatorsAddresses();
+
+    Assert.assertEquals(2, cLocList2.size());
+    for (HostAddress t : cLocList2) {
+      Assert.assertNotSame("Should have replaced floc1 instance", t.getSocketInetAddressNoLookup(),
+          floc1);
+    }
+
+
   }
 
   private void startFakeLocator() throws IOException, InterruptedException {
