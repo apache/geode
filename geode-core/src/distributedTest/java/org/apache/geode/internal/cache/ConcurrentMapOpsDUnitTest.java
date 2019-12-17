@@ -85,7 +85,8 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Rule
-  DistributedRestoreSystemProperties restoreProperties = new DistributedRestoreSystemProperties();
+  public DistributedRestoreSystemProperties restoreProperties =
+      new DistributedRestoreSystemProperties();
 
   @Before
   public void setup() {

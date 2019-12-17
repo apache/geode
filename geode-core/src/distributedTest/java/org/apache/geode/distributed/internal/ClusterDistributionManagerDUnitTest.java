@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
@@ -29,6 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -56,13 +58,14 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.DistributedTestCase;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
@@ -84,6 +87,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
 
   private transient ExecutorService executorService;
 
+  private VM locatorvm;
   private VM vm1;
 
   @Rule
@@ -92,13 +96,28 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
 
   @Rule
   public SharedErrorCollector errorCollector = new SharedErrorCollector();
+  private int locatorPort;
 
   @Before
   public void setUp() {
     executorService = Executors.newSingleThreadExecutor();
+
+    locatorvm = VM.getVM(0);
     vm1 = VM.getVM(1);
-    vm1 = Host.getHost(0).getVM(1);
     Invoke.invokeInEveryVM(() -> System.setProperty("p2p.joinTimeout", "120000"));
+    final int port = locatorvm.invoke(() -> {
+      System.setProperty(BYPASS_DISCOVERY_PROPERTY, "true");
+      return Locator.startLocatorAndDS(0, new File(""), new Properties()).getPort();
+    });
+    vm1.invoke(() -> locatorPort = port);
+    locatorPort = port;
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.LOCATORS, "localhost[" + locatorPort + "]");
+    return result;
   }
 
   @After
@@ -344,7 +363,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
 
     pause(2000);
 
-    VM.getVM(1).invoke("create another member to initiate a new view", () -> {
+    vm1.invoke("create another member to initiate a new view", () -> {
       getSystem(new Properties());
     });
 
