@@ -452,4 +452,18 @@ public interface DistributionManager extends ReplySender {
    * Returns the {@link AlertingService}.
    */
   AlertingService getAlertingService();
+
+  /**
+   * register a test hook for membership events
+   *
+   * @see MembershipTestHook
+   */
+  void registerTestHook(MembershipTestHook mth);
+
+  /**
+   * remove a test hook previously registered with the manager
+   */
+  void unregisterTestHook(MembershipTestHook mth);
+
+
 }

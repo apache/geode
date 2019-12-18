@@ -14,14 +14,17 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.api;
 
-public interface MessageListener<ID extends MemberIdentifier> {
+/**
+ * MemberDisconnectedException indicates that we've been kicked out of the cluster.
+ * Geode-core generally translates this into a ForcedDisconnectException, which is
+ * part of its public API.
+ */
+public class MemberDisconnectedException extends Exception {
+  private static final long serialVersionUID = -3649273301807236514L;
 
-  /**
-   * Event indicating a message has been delivered that we need to process.
-   *
-   * @param o the message that should be processed.
-   */
-  void messageReceived(Message<ID> o) throws MemberShunnedException;
+  public MemberDisconnectedException() {}
 
-
+  public MemberDisconnectedException(String reason) {
+    super(reason);
+  }
 }

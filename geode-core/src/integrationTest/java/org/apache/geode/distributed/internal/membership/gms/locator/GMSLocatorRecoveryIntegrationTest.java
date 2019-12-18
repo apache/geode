@@ -42,7 +42,6 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
@@ -154,7 +153,7 @@ public class GMSLocatorRecoveryIntegrationTest {
     Throwable thrown = catchThrowable(() -> gmsLocator.recoverFromFile(stateFile));
 
     assertThat(thrown)
-        .isInstanceOf(InternalGemFireException.class)
+        .isInstanceOf(IllegalStateException.class)
         .hasMessageStartingWith("Unable to recover previous membership view from");
   }
 

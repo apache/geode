@@ -12,25 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.internal.tcp;
-
-import org.apache.geode.GemFireException;
+package org.apache.geode.distributed.internal;
 
 /**
- * MemberShunnedException may be thrown to prevent ack-ing a message received from a member that has
- * been removed from membership. It is currently only thrown by
- * JGroupMembershipManager.processMessage()
+ * Test hook for membership test development
  */
-public class MemberShunnedException extends GemFireException {
-  private static final long serialVersionUID = -8453126202477831557L;
+public interface MembershipTestHook {
 
   /**
-   * constructor
-   *
+   * test hook invoked prior to shutting down distributed system
    */
-  public MemberShunnedException() {
-    super("");
+  default void beforeMembershipFailure(String reason, Throwable cause) {
+    // nothing
   }
 
+  /**
+   * test hook invoked after shutting down distributed system
+   */
+  default void afterMembershipFailure(String reason, Throwable cause) {
+    // nothing
+  }
 }

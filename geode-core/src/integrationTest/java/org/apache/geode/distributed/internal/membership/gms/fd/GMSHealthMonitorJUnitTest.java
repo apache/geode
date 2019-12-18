@@ -83,6 +83,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor.ClientSocketHandler;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
@@ -119,7 +120,7 @@ public class GMSHealthMonitorJUnitTest {
   private final int myAddressIndex = 3;
 
   @Before
-  public void initMocks() throws UnknownHostException {
+  public void initMocks() throws UnknownHostException, MemberStartupException {
     // ensure that Geode's serialization and version are initialized
     Version currentVersion = Version.CURRENT;
     InternalDataSerializer.getDSFIDSerializer();

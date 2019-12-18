@@ -28,8 +28,8 @@ import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -47,7 +47,8 @@ public class GMSUtil {
    * @param bindAddress optional address to check for loopback compatibility
    * @return addresses of locators
    */
-  public static List<HostAddress> parseLocators(String locatorsString, String bindAddress) {
+  public static List<HostAddress> parseLocators(String locatorsString, String bindAddress)
+      throws MembershipConfigurationException {
     InetAddress addr = null;
 
     try {
@@ -85,7 +86,8 @@ public class GMSUtil {
    *
    * @see org.apache.geode.distributed.ConfigurationProperties#LOCATORS for format
    */
-  public static List<HostAddress> parseLocators(String locatorsString, InetAddress bindAddress) {
+  public static List<HostAddress> parseLocators(String locatorsString, InetAddress bindAddress)
+      throws MembershipConfigurationException {
     List<HostAddress> result = new ArrayList<>(2);
     Set<InetSocketAddress> inetAddresses = new HashSet<>();
     String host;
@@ -136,12 +138,12 @@ public class GMSUtil {
       final InetAddress locatorAddress = isa.getAddress();
 
       if (locatorAddress == null) {
-        throw new GemFireConfigException("This process is attempting to use a locator" +
+        throw new MembershipConfigurationException("This process is attempting to use a locator" +
             " at an unknown address or FQDN: " + host);
       }
 
       if (checkLoopback && isLoopback && !locatorAddress.isLoopbackAddress()) {
-        throw new GemFireConfigException(
+        throw new MembershipConfigurationException(
             "This process is attempting to join with a loopback address (" + bindAddress
                 + ") using a locator that does not have a local address (" + isa
                 + ").  On Unix this usually means that /etc/hosts is misconfigured.");
@@ -157,8 +159,8 @@ public class GMSUtil {
     return result;
   }
 
-  private static GemFireConfigException createBadPortException(final String str) {
-    return new GemFireConfigException("This process is attempting to use a locator" +
+  private static MembershipConfigurationException createBadPortException(final String str) {
+    return new MembershipConfigurationException("This process is attempting to use a locator" +
         " with a malformed port specification: " + str);
   }
 

@@ -14,14 +14,22 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.api;
 
-public interface MessageListener<ID extends MemberIdentifier> {
+/**
+ * MemberStartupException is thrown if there is a problem starting up membership
+ * services or joining the cluster. A subclass of MemberStartupException,
+ * MembershipConfigurationException, may also be thrown during startup and indicates a
+ * problem with configuration parameters.
+ */
+public class MemberStartupException extends Exception {
+  private static final long serialVersionUID = 6610743861046044144L;
 
-  /**
-   * Event indicating a message has been delivered that we need to process.
-   *
-   * @param o the message that should be processed.
-   */
-  void messageReceived(Message<ID> o) throws MemberShunnedException;
+  public MemberStartupException() {}
 
+  public MemberStartupException(String reason) {
+    super(reason);
+  }
 
+  public MemberStartupException(String reason, Throwable cause) {
+    super(reason, cause);
+  }
 }

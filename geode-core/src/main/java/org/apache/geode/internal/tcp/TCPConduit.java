@@ -48,6 +48,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.BufferPool;
@@ -655,7 +656,8 @@ public class TCPConduit implements Runnable {
    *
    * @param bytesRead number of bytes read off of network to get this message
    */
-  void messageReceived(Connection receiver, DistributionMessage message, int bytesRead) {
+  void messageReceived(Connection receiver, DistributionMessage message, int bytesRead)
+      throws MemberShunnedException {
     if (logger.isTraceEnabled()) {
       logger.trace("{} received {} from {}", id, message, receiver);
     }
