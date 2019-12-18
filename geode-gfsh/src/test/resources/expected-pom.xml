@@ -34,6 +34,17 @@
     <developerConnection>scm:git:https://github.com:apache/geode.git</developerConnection>
     <url>https://github.com/apache/geode</url>
   </scm>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
+        <artifactId>geode-all-bom</artifactId>
+        <version>1.12.0-SNAPSHOT</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.apache.geode</groupId>
