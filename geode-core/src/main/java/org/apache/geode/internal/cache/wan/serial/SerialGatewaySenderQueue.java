@@ -136,7 +136,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
   private final boolean cleanQueues;
 
-  // This is for UT purpose only
   @VisibleForTesting
   public boolean getCleanQueues() {
     return cleanQueues;

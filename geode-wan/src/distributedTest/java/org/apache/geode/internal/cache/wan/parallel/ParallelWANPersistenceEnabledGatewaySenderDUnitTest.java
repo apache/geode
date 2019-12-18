@@ -1606,7 +1606,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * Then start GatewaySender. Check if the remote site receives all the events.
    */
   @Test
-  public void testPRWithGatewaySenderPersistenceEnabled_Restart_Gateway() {
+  public void testpersistentWanGateway_restartSender_expectAllEventsReceived() {
     // create locator on local site
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     // create locator on remote site
@@ -1701,7 +1701,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
    * events.
    */
   @Test
-  public void testPRWithGatewaySenderPersistenceEnabled_Restart_Gateway_Clean() {
+  public void testpersistentWanGateway_restartSenderWithCleanQueues_expectNoEventsReceived() {
     // create locator on local site
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     // create locator on remote site
