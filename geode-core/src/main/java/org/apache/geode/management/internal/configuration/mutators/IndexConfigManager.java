@@ -24,8 +24,6 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.lang.Identifiable;
-import org.apache.geode.management.api.ClusterManagementException;
-import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.internal.configuration.converters.IndexConverter;
 
@@ -80,8 +78,7 @@ public class IndexConfigManager extends CacheConfigurationManager<Index> {
   public Index get(Index config, CacheConfig existing) {
     RegionConfig regionConfiguration = existing.findRegionConfiguration(config.getRegionName());
     if (regionConfiguration == null) {
-      throw new ClusterManagementException(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND,
-          "Region " + config.getRegionName() + " not found.");
+      return null;
     }
 
     return converter

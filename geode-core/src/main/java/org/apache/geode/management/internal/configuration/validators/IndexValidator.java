@@ -15,11 +15,22 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.management.api.ClusterManagementException;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
 import org.apache.geode.management.internal.CacheElementOperation;
 
 public class IndexValidator implements ConfigurationValidator<Index> {
+  private final ConfigurationPersistenceService persistenceService;
+
+  public IndexValidator(ConfigurationPersistenceService persistenceService) {
+    this.persistenceService = persistenceService;
+  }
+
   @Override
   public void validate(CacheElementOperation operation, Index config)
       throws IllegalArgumentException {
@@ -38,6 +49,13 @@ public class IndexValidator implements ConfigurationValidator<Index> {
 
       if (config.getIndexType() == IndexType.HASH_DEPRECATED) {
         throw new IllegalArgumentException("IndexType HASH is not allowed.");
+      }
+
+      CacheConfig existing = persistenceService.getCacheConfig(config.getGroup(), true);
+      RegionConfig regionConfiguration = existing.findRegionConfiguration(config.getRegionName());
+      if (regionConfiguration == null) {
+        throw new ClusterManagementException(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND,
+            "Region provided does not exist: " + config.getRegionName() + ".");
       }
     }
   }
