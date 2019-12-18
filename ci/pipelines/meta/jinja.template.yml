@@ -303,6 +303,8 @@ jobs:
         GCP_PROJECT: ((gcp-project))
         PUBLIC_PIPELINES: ((public-pipelines))
         CONCOURSE_URL: ((concourse-url))
+        CONCOURSE_HOST: ((!concourse-host))
+        CONCOURSE_TEAM: ((!concourse-team))
       run:
         path: geode-metrics-pipeline/ci/pipelines/metrics/deploy_metrics_pipeline.sh
   - put: concourse

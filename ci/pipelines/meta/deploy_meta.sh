@@ -116,6 +116,7 @@ YML
     --config ${SCRIPTDIR}/generated-pipeline.yml \
     --var artifact-bucket=${ARTIFACT_BUCKET} \
     --var concourse-team=${CONCOURSE_TEAM} \
+    --var concourse-host=${CONCOURSE_HOST} \
     --var concourse-url=${CONCOURSE_URL} \
     --var gcp-project=${GCP_PROJECT} \
     --var geode-build-branch=${GEODE_BRANCH} \
