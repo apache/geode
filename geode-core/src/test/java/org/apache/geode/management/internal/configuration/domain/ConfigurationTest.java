@@ -62,7 +62,7 @@ public class ConfigurationTest {
   public void remembersDeployment() {
     Deployment deployment = new Deployment();
     deployment.setJarFileName("jar1");
-    configuration.addDeployment(deployment);
+    configuration.putDeployment(deployment);
     assertThat(configuration.getDeployments()).containsExactlyInAnyOrder(deployment);
   }
 
@@ -70,10 +70,10 @@ public class ConfigurationTest {
   public void remembersNewestDeploymentWithSameArtifactId() {
     Deployment deployment1 = new Deployment();
     deployment1.setJarFileName("abc-1.0.jar");
-    configuration.addDeployment(deployment1);
+    configuration.putDeployment(deployment1);
     Deployment deployment2 = new Deployment();
     deployment2.setJarFileName("abc-2.0.jar");
-    configuration.addDeployment(deployment2);
+    configuration.putDeployment(deployment2);
     assertThat(configuration.getDeployments()).containsExactlyInAnyOrder(deployment2);
   }
 
@@ -81,10 +81,10 @@ public class ConfigurationTest {
   public void remembersAllDeploymentsWithDifferentArtifactIds() {
     Deployment deployment1 = new Deployment();
     deployment1.setJarFileName("abc-1.0.jar");
-    configuration.addDeployment(deployment1);
+    configuration.putDeployment(deployment1);
     Deployment deployment2 = new Deployment();
     deployment2.setJarFileName("def-2.0.jar");
-    configuration.addDeployment(deployment2);
+    configuration.putDeployment(deployment2);
     assertThat(configuration.getDeployments()).containsExactlyInAnyOrder(deployment1, deployment2);
   }
 
@@ -92,15 +92,15 @@ public class ConfigurationTest {
   public void getJarNamesReturnsJarNamesFromAllCurrentDeployments() {
     String originalAbcJarName = "abc-1.0.jar";
     Deployment deployment1 = new Deployment(originalAbcJarName);
-    configuration.addDeployment(deployment1);
+    configuration.putDeployment(deployment1);
 
     String updatedAbcJarName = "abc-2.0.jar";
     // Replace original abc with new version
-    configuration.addDeployment(new Deployment(updatedAbcJarName));
+    configuration.putDeployment(new Deployment(updatedAbcJarName));
 
     String defJarName = "def-1.0.jar";
     Deployment deployment3 = new Deployment(defJarName);
-    configuration.addDeployment(deployment3);
+    configuration.putDeployment(deployment3);
 
     assertThat(configuration.getJarNames())
         .containsExactlyInAnyOrder(updatedAbcJarName, defJarName);
@@ -112,9 +112,9 @@ public class ConfigurationTest {
     DataOutputStream dataOut = new DataOutputStream(outBytes);
 
     Configuration originalConfig = new Configuration();
-    originalConfig.addDeployment(new Deployment("jarName1.jar", "deployedBy1", "timeDeployed1"));
-    originalConfig.addDeployment(new Deployment("jarName2.jar", "deployedBy2", "timeDeployed2"));
-    originalConfig.addDeployment(new Deployment("jarName3.jar", "deployedBy3", "timeDeployed3"));
+    originalConfig.putDeployment(new Deployment("jarName1.jar", "deployedBy1", "timeDeployed1"));
+    originalConfig.putDeployment(new Deployment("jarName2.jar", "deployedBy2", "timeDeployed2"));
+    originalConfig.putDeployment(new Deployment("jarName3.jar", "deployedBy3", "timeDeployed3"));
 
     DataSerializer.writeObject(originalConfig, dataOut);
     dataOut.flush();
@@ -136,9 +136,9 @@ public class ConfigurationTest {
     DataOutputStream dataOut = new VersionedDataOutputStream(outBytes, dataStreamVersion);
 
     Configuration originalConfig = new Configuration();
-    originalConfig.addDeployment(new Deployment("jarName1.jar", "deployedBy1", "timeDeployed1"));
-    originalConfig.addDeployment(new Deployment("jarName2.jar", "deployedBy2", "timeDeployed2"));
-    originalConfig.addDeployment(new Deployment("jarName3.jar", "deployedBy3", "timeDeployed3"));
+    originalConfig.putDeployment(new Deployment("jarName1.jar", "deployedBy1", "timeDeployed1"));
+    originalConfig.putDeployment(new Deployment("jarName2.jar", "deployedBy2", "timeDeployed2"));
+    originalConfig.putDeployment(new Deployment("jarName3.jar", "deployedBy3", "timeDeployed3"));
 
     DataSerializer.writeObject(originalConfig, dataOut);
     dataOut.flush();
@@ -147,9 +147,9 @@ public class ConfigurationTest {
     DataInput dataIn = new VersionedDataInputStream(inBytes, dataStreamVersion);
 
     Configuration expectedConfig = new Configuration();
-    expectedConfig.addDeployment(new Deployment("jarName1.jar"));
-    expectedConfig.addDeployment(new Deployment("jarName2.jar"));
-    expectedConfig.addDeployment(new Deployment("jarName3.jar"));
+    expectedConfig.putDeployment(new Deployment("jarName1.jar"));
+    expectedConfig.putDeployment(new Deployment("jarName2.jar"));
+    expectedConfig.putDeployment(new Deployment("jarName3.jar"));
 
     Configuration deserializedConfig = DataSerializer.readObject(dataIn);
 

@@ -134,6 +134,16 @@ public class Configuration implements DataSerializable {
     return propertiesFileName;
   }
 
+  public void putDeployment(Deployment deployment) {
+    String artifactId = getArtifactId(deployment.getJarFileName());
+    deployments.values().removeIf(d -> getArtifactId(d.getJarFileName()).equals(artifactId));
+    deployments.put(deployment.getId(), deployment);
+  }
+
+  public Collection<Deployment> getDeployments() {
+    return deployments.values();
+  }
+
   public void removeJarNames(String[] jarNames) {
     if (jarNames == null) {
       deployments.clear();
@@ -143,7 +153,7 @@ public class Configuration implements DataSerializable {
   }
 
   public Set<String> getJarNames() {
-    return new HashSet<>(deployments.keySet());
+    return deployments.keySet();
   }
 
   @Override
@@ -155,7 +165,7 @@ public class Configuration implements DataSerializable {
     DataSerializer.writeProperties(gemfireProperties, out);
     Version dataStreamVersion = InternalDataSerializer.getVersionForDataStream(out);
     if (dataStreamVersion.compareTo(Version.GEODE_1_12_0) < 0) {
-      DataSerializer.writeHashSet(new HashSet<>(deployments.keySet()), out);
+      DataSerializer.writeHashSet(new HashSet<>(getJarNames()), out);
     } else {
       DataSerializer.writeHashMap(deployments, out);
     }
@@ -214,15 +224,5 @@ public class Configuration implements DataSerializable {
   public int hashCode() {
     return Objects.hash(configName, cacheXmlContent, cacheXmlFileName, propertiesFileName,
         gemfireProperties, deployments);
-  }
-
-  public Collection<Deployment> getDeployments() {
-    return deployments.values();
-  }
-
-  public void addDeployment(Deployment deployment) {
-    String artifactId = getArtifactId(deployment.getJarFileName());
-    deployments.values().removeIf(d -> getArtifactId(d.getJarFileName()).equals(artifactId));
-    deployments.put(deployment.getId(), deployment);
   }
 }

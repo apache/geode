@@ -27,10 +27,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -153,7 +155,6 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
 
-
   /**
    * Gets or creates (if not created) shared configuration lock service
    */
@@ -183,10 +184,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     lockSharedConfiguration();
     try {
       Region<String, Configuration> configRegion = getConfigurationRegion();
-      if (groups == null || groups.length == 0) {
-        groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
-      }
-      for (String group : groups) {
+      for (String group : listOf(groups)) {
         Configuration configuration = configRegion.get(group);
         if (configuration == null) {
           configuration = new Configuration(group);
@@ -249,11 +247,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   public void modifyXmlAndProperties(Properties properties, XmlEntity xmlEntity, String[] groups) {
     lockSharedConfiguration();
     try {
-      if (groups == null) {
-        groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
-      }
       Region<String, Configuration> configRegion = getConfigurationRegion();
-      for (String group : groups) {
+      for (String group : listOf(groups)) {
         Configuration configuration = configRegion.get(group);
         if (configuration == null) {
           configuration = new Configuration(group);
@@ -301,40 +296,65 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       List<String> jarFullPaths, String[] groups) throws IOException {
     lockSharedConfiguration();
     try {
-      if (groups == null) {
-        groups = new String[] {ConfigurationPersistenceService.CLUSTER_CONFIG};
-      }
-      Region<String, Configuration> configRegion = getConfigurationRegion();
-      for (String group : groups) {
-        Configuration configuration = getConfigurationCopy(configRegion, group);
-
-        Path groupDir = configDirPath.resolve(group);
-        Set<String> jarNames = new HashSet<>();
-        for (String jarFullPath : jarFullPaths) {
-          File stagedJar = new File(jarFullPath);
-          String jarFileName = stagedJar.getName();
-          jarNames.add(jarFileName);
-          Deployment deployment = new Deployment(jarFileName, deployedBy, timeDeployed);
-          configuration.addDeployment(deployment);
-          Path filePath = groupDir.resolve(jarFileName);
-          FileUtils.copyFile(stagedJar, filePath.toFile());
-          // remove old version for the same artifact id
-          String artifactId = JarDeployer.getArtifactId(jarFileName);
-          for (File file : groupDir.toFile().listFiles()) {
-            if (file.getName().equals(jarFileName)) {
-              continue;
-            }
-            if (JarDeployer.getArtifactId(file.getName()).equals(artifactId)) {
-              FileUtils.deleteQuietly(file);
-            }
-          }
-        }
-
-        String memberId = cache.getMyId().getId();
-        configRegion.put(group, configuration, memberId);
-      }
+      addJarsToGroups(listOf(groups), jarFullPaths, deployedBy, timeDeployed);
     } finally {
       unlockSharedConfiguration();
+    }
+  }
+
+  private void addJarsToGroups(List<String> groups, List<String> jarFullPaths, String deployedBy,
+      String timeDeployed) throws IOException {
+    for (String group : groups) {
+      copyJarsToGroupDir(group, jarFullPaths);
+      addJarsToGroupConfig(group, jarFullPaths, deployedBy, timeDeployed);
+    }
+  }
+
+  private void addJarsToGroupConfig(String group, List<String> jarFullPaths, String deployedBy,
+      String timeDeployed) throws IOException {
+    Region<String, Configuration> configRegion = getConfigurationRegion();
+    Configuration configuration = getConfigurationCopy(configRegion, group);
+
+    jarFullPaths.stream()
+        .map(toFileName())
+        .map(jarFileName -> new Deployment(jarFileName, deployedBy, timeDeployed))
+        .forEach(configuration::putDeployment);
+
+    String memberId = cache.getMyId().getId();
+    configRegion.put(group, configuration, memberId);
+  }
+
+  private static List<String> listOf(String[] groups) {
+    if (groups == null || groups.length == 0) {
+      return Collections.singletonList(ConfigurationPersistenceService.CLUSTER_CONFIG);
+    }
+    return asList(groups);
+  }
+
+  private static Function<String, String> toFileName() {
+    return fullPath -> Paths.get(fullPath).getFileName().toString();
+  }
+
+  private void copyJarsToGroupDir(String group, List<String> jarFullPaths) throws IOException {
+    Path groupDir = configDirPath.resolve(group);
+    for (String jarFullPath : jarFullPaths) {
+      File stagedJarFile = new File(jarFullPath);
+      String jarFileName = stagedJarFile.getName();
+      Path destinationJarPath = groupDir.resolve(jarFileName);
+      FileUtils.copyFile(stagedJarFile, destinationJarPath.toFile());
+      removeOtherVersionsOf(groupDir, jarFileName);
+    }
+  }
+
+  private static void removeOtherVersionsOf(Path groupDir, String jarFileName) throws IOException {
+    String artifactId = JarDeployer.getArtifactId(jarFileName);
+    for (File file : groupDir.toFile().listFiles()) {
+      if (file.getName().equals(jarFileName)) {
+        continue;
+      }
+      if (JarDeployer.getArtifactId(file.getName()).equals(artifactId)) {
+        FileUtils.deleteQuietly(file);
+      }
     }
   }
 
@@ -771,46 +791,41 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    */
   public Region<String, Configuration> getConfigurationRegion() {
     Region<String, Configuration> configRegion = cache.getRegion(CONFIG_REGION_NAME);
+    if (configRegion != null) {
+      return configRegion;
+    }
 
     try {
-      if (configRegion == null) {
-        File diskDir = configDiskDirPath.toFile();
+      File diskDir = configDiskDirPath.toFile();
 
-        if (!diskDir.exists() && !diskDir.mkdirs()) {
-          throw new IOException("Cannot create directory at " + configDiskDirPath);
-        }
-
-        File[] diskDirs = {diskDir};
-        cache.createDiskStoreFactory().setDiskDirs(diskDirs).setAutoCompact(true)
-            .setMaxOplogSize(10).create(CLUSTER_CONFIG_DISK_STORE_NAME);
-
-        AttributesFactory<String, Configuration> regionAttrsFactory = new AttributesFactory<>();
-        regionAttrsFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
-        regionAttrsFactory.setCacheListener(new ConfigurationChangeListener(this, cache));
-        regionAttrsFactory.setDiskStoreName(CLUSTER_CONFIG_DISK_STORE_NAME);
-        regionAttrsFactory.setScope(Scope.DISTRIBUTED_ACK);
-        InternalRegionArguments internalArgs = new InternalRegionArguments();
-        internalArgs.setIsUsedForMetaRegion(true);
-        internalArgs.setMetaRegionWithTransactions(false);
-
-        configRegion = cache.createVMRegion(CONFIG_REGION_NAME, regionAttrsFactory.create(),
-            internalArgs);
+      if (!diskDir.exists() && !diskDir.mkdirs()) {
+        throw new IOException("Cannot create directory at " + configDiskDirPath);
       }
+
+      File[] diskDirs = {diskDir};
+      cache.createDiskStoreFactory().setDiskDirs(diskDirs).setAutoCompact(true)
+          .setMaxOplogSize(10).create(CLUSTER_CONFIG_DISK_STORE_NAME);
+
+      AttributesFactory<String, Configuration> regionAttrsFactory = new AttributesFactory<>();
+      regionAttrsFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
+      regionAttrsFactory.setCacheListener(new ConfigurationChangeListener(this, cache));
+      regionAttrsFactory.setDiskStoreName(CLUSTER_CONFIG_DISK_STORE_NAME);
+      regionAttrsFactory.setScope(Scope.DISTRIBUTED_ACK);
+      InternalRegionArguments internalArgs = new InternalRegionArguments();
+      internalArgs.setIsUsedForMetaRegion(true);
+      internalArgs.setMetaRegionWithTransactions(false);
+
+      return cache.createVMRegion(CONFIG_REGION_NAME, regionAttrsFactory.create(),
+          internalArgs);
     } catch (RuntimeException e) {
-      if (configRegion == null) {
-        status.set(SharedConfigurationStatus.STOPPED);
-      }
+      status.set(SharedConfigurationStatus.STOPPED);
       // throw RuntimeException as is
       throw e;
     } catch (Exception e) {
-      if (configRegion == null) {
-        status.set(SharedConfigurationStatus.STOPPED);
-      }
+      status.set(SharedConfigurationStatus.STOPPED);
       // turn all other exceptions into runtime exceptions
       throw new RuntimeException("Error occurred while initializing cluster configuration", e);
     }
-
-    return configRegion;
   }
 
   /**
@@ -844,22 +859,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       Configuration configuration, String deployedBy, String timeDeployed) {
     fileNames.stream()
         .filter(filename -> filename.endsWith(".jar"))
-        .map(toDeployment(deployedBy, timeDeployed))
-        .forEach(configuration::addDeployment);
-  }
-
-  private static Function<String, Deployment> toDeployment(String deployedBy,
-      String timeDeployed) {
-    return jarFileName -> createDeployment(jarFileName, deployedBy, timeDeployed);
-  }
-
-  private static Deployment createDeployment(String jarFileName, String deployedBy,
-      String timeDeployed) {
-    Deployment deployment = new Deployment();
-    deployment.setJarFileName(jarFileName);
-    deployment.setDeployedBy(deployedBy);
-    deployment.setTimeDeployed(timeDeployed);
-    return deployment;
+        .map(jarFileName -> new Deployment(jarFileName, deployedBy, timeDeployed))
+        .forEach(configuration::putDeployment);
   }
 
   /**
