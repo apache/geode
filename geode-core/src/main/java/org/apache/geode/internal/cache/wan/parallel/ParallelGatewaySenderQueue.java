@@ -39,6 +39,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
@@ -112,7 +113,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   private final boolean cleanQueues;
 
-  // This is for UT purpose only
+  @VisibleForTesting
   boolean getCleanQueues() {
     return cleanQueues;
   }
