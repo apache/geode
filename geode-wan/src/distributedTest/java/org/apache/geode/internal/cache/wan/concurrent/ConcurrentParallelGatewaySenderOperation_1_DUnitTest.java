@@ -471,6 +471,12 @@ public class ConcurrentParallelGatewaySenderOperation_1_DUnitTest extends WANTes
     vm6start.getResult(START_TIMEOUT);
     vm7start.getResult(START_TIMEOUT);
 
+    // make sure all the senders are running before doing any puts
+    vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+    vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
+
     // Region size on remote site should remain same and below the number of puts done in the FIRST
     // RUN
     vm2.invoke(() -> WANTestBase.validateRegionSizeRemainsSame(getTestMethodName() + "_PR", 200));
