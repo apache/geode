@@ -82,7 +82,6 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
     return ((ParallelGatewaySenderQueue) (processors[0].getQueue())).getRegions();
   }
 
-  // This is for UT purpose only
   @VisibleForTesting
   public boolean getCleanQueues() {
     return ((ParallelGatewaySenderQueue) (processors[0].getQueue())).getCleanQueues();

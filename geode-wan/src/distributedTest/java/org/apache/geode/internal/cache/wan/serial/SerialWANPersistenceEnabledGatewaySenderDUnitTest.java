@@ -514,7 +514,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    * receives all the event.
    */
   @Test
-  public void testReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart_Sender() {
+  public void testReplicatedRegionPersistentWanGateway_restartSender_expectAllEventsReceived() {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -571,7 +571,11 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
       fail("Got interrupted exception while waiting for startSender to finish.");
     }
 
-    Wait.pause(5000);
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+
+    vm4.invoke(() -> checkQueueSize("ln", 0));
+    vm5.invoke(() -> checkQueueSize("ln", 0));
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
@@ -584,7 +588,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
    * Check if the remote site receives all the event.
    */
   @Test
-  public void testReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart_Sender_Clean() {
+  public void testReplicatedRegionPersistentWanGateway_restartSenderWithCleanQueues_expectNoEventsReceived() {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -641,7 +645,11 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
       fail("Got interrupted exception while waiting for startSender to finish.");
     }
 
-    Wait.pause(5000);
+    vm4.invoke(() -> waitForSenderRunningState("ln"));
+    vm5.invoke(() -> waitForSenderRunningState("ln"));
+
+    vm4.invoke(() -> checkQueueSize("ln", 0));
+    vm5.invoke(() -> checkQueueSize("ln", 0));
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));

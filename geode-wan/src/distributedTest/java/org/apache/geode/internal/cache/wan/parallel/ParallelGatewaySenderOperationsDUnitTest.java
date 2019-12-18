@@ -511,6 +511,9 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     // start the senders again
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
+    // make sure all the senders are not running on accessor nodes and running on non-accessor nodes
+    waitForSendersRunning();
+
     // Region size on remote site should remain same and below the number of puts done in the FIRST
     // RUN
     vm2.invoke(() -> validateRegionSizeRemainsSame(getUniqueName() + "_PR", 200));
