@@ -33,9 +33,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.internal.serialization.VersionedDataInputStream;
-import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.management.configuration.Deployment;
 
 public class ConfigurationTest {
@@ -126,34 +123,5 @@ public class ConfigurationTest {
 
     assertThat(deserializedConfig)
         .isEqualTo(originalConfig);
-  }
-
-  @Test
-  public void dataSerializationDeserializesGeode111Format()
-      throws IOException, ClassNotFoundException {
-    ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
-    Version dataStreamVersion = Version.GEODE_1_11_0;
-    DataOutputStream dataOut = new VersionedDataOutputStream(outBytes, dataStreamVersion);
-
-    Configuration originalConfig = new Configuration();
-    originalConfig.putDeployment(new Deployment("jarName1.jar", "deployedBy1", "timeDeployed1"));
-    originalConfig.putDeployment(new Deployment("jarName2.jar", "deployedBy2", "timeDeployed2"));
-    originalConfig.putDeployment(new Deployment("jarName3.jar", "deployedBy3", "timeDeployed3"));
-
-    DataSerializer.writeObject(originalConfig, dataOut);
-    dataOut.flush();
-
-    ByteArrayInputStream inBytes = new ByteArrayInputStream(outBytes.toByteArray());
-    DataInput dataIn = new VersionedDataInputStream(inBytes, dataStreamVersion);
-
-    Configuration expectedConfig = new Configuration();
-    expectedConfig.putDeployment(new Deployment("jarName1.jar"));
-    expectedConfig.putDeployment(new Deployment("jarName2.jar"));
-    expectedConfig.putDeployment(new Deployment("jarName3.jar"));
-
-    Configuration deserializedConfig = DataSerializer.readObject(dataIn);
-
-    assertThat(deserializedConfig)
-        .isEqualTo(expectedConfig);
   }
 }
