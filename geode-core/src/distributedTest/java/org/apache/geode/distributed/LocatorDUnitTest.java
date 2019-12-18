@@ -99,6 +99,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -1309,13 +1310,15 @@ public class LocatorDUnitTest implements Serializable {
     vm2.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
 
     if (vm1.invoke(() -> system.getDistributedMember().equals(getView().getCreator()))) {
-      assertFalse(
-          vm2.invoke("Checking ViewCreator",
-              () -> system.getDistributedMember().equals(getView().getCreator())));
+      vm2.invoke(() -> {
+        GeodeAwaitility.await()
+            .until(() -> !system.getDistributedMember().equals(getView().getCreator()));
+      });
     } else {
-      assertTrue(
-          vm2.invoke("Checking ViewCreator",
-              () -> system.getDistributedMember().equals(getView().getCreator())));
+      vm2.invoke(() -> {
+        GeodeAwaitility.await()
+            .until(() -> system.getDistributedMember().equals(getView().getCreator()));
+      });
     }
   }
 
