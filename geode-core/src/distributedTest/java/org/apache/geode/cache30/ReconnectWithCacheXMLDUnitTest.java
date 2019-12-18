@@ -14,11 +14,14 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY;
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,6 +32,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -36,6 +40,7 @@ import org.apache.geode.distributed.internal.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -56,12 +61,22 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
+  private int locatorPort;
 
   @Override
   public final void postSetUp() {
     oldPropertySetting = System.setProperty(xmlProperty, "true");
     // stress testing needs this so that join attempts don't give up too soon
     Invoke.invokeInEveryVM(() -> System.setProperty("p2p.joinTimeout", "120000"));
+    // reconnect tests should create their own locator so as to not impact other tests
+    VM locatorVM = VM.getVM(0);
+    final int port = locatorVM.invoke(() -> {
+      System.setProperty(BYPASS_DISCOVERY_PROPERTY, "true");
+      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "member-weight", "100");
+      return Locator.startLocatorAndDS(0, new File(""), new Properties()).getPort();
+    });
+    locatorPort = port;
+
   }
 
   @Override
@@ -71,6 +86,7 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
     } else {
       System.setProperty(xmlProperty, oldPropertySetting);
     }
+    disconnectAllFromDS();
   }
 
   @Override
@@ -82,7 +98,9 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
     result.setProperty(ConfigurationProperties.CACHE_XML_FILE, fileName);
     result.setProperty(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "true");
     result.setProperty(ConfigurationProperties.DISABLE_AUTO_RECONNECT, "false");
-    result.setProperty(ConfigurationProperties.MAX_WAIT_TIME_RECONNECT, "2000");
+    result.setProperty(ConfigurationProperties.MAX_WAIT_TIME_RECONNECT, "3000");
+    result.setProperty(ConfigurationProperties.MEMBER_TIMEOUT, "2000");
+    result.put(LOCATORS, "localhost[" + locatorPort + "]");
     return result;
   }
 
