@@ -54,7 +54,7 @@
         "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force",
         "Install-Module DockerMsftProvider -Force",
         "Install-Package Docker -ProviderName DockerMsftProvider -Force",
-        "New-Item \"C:\\ProgramData\\Docker\\config\\daemon.json\"",
+        "New-Item \"C:\\ProgramData\\Docker\\config\\daemon.json\" -Force",
         "Set-Content \"C:\\ProgramData\\Docker\\config\\daemon.json\" '{\"registry-mirrors\": [\"https://mirror.gcr.io\"]}'",
         "Set-Service wuauserv -StartupType Disabled",
         "Stop-Service wuauserv"
