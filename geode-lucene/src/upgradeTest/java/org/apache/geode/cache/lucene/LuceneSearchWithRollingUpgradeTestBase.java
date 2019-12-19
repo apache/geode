@@ -18,6 +18,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -265,9 +266,9 @@ public abstract class LuceneSearchWithRollingUpgradeTestBase extends JUnit4Distr
         .loadClass("org.apache.geode.cache.lucene.LuceneServiceProvider");
     Method getLuceneService = luceneServiceProvider.getMethod("get", GemFireCache.class);
     Object luceneService = getLuceneService.invoke(luceneServiceProvider, cache);
-    luceneService.getClass()
+    assertTrue((Boolean) luceneService.getClass()
         .getMethod("waitUntilFlushed", String.class, String.class, long.class, TimeUnit.class)
-        .invoke(luceneService, INDEX_NAME, regionName, 60, TimeUnit.SECONDS);
+        .invoke(luceneService, INDEX_NAME, regionName, 60, TimeUnit.SECONDS));
     Method createLuceneQueryFactoryMethod =
         luceneService.getClass().getMethod("createLuceneQueryFactory");
     createLuceneQueryFactoryMethod.setAccessible(true);
