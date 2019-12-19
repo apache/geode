@@ -12,16 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.distributed.internal.membership.gms.api;
 
-public interface MessageListener<ID extends MemberIdentifier> {
+/**
+ * MemberShunnedException may be thrown to prevent ack-ing a message received from a member that has
+ * been removed from membership. It is currently only thrown by
+ * JGroupMembershipManager.processMessage()
+ */
+public class MemberShunnedException extends Exception {
+  private static final long serialVersionUID = -8453126202477831557L;
 
   /**
-   * Event indicating a message has been delivered that we need to process.
+   * constructor
    *
-   * @param o the message that should be processed.
    */
-  void messageReceived(Message<ID> o) throws MemberShunnedException;
-
+  public MemberShunnedException() {
+    super("");
+  }
 
 }

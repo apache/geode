@@ -43,7 +43,7 @@ public interface MembershipBuilder<ID extends MemberIdentifier> {
   MembershipBuilder<ID> setLocatorClient(final TcpClient tcpClient);
 
 
-  Membership<ID> create();
+  Membership<ID> create() throws MembershipConfigurationException;
 
   static <ID extends MemberIdentifier> MembershipBuilder<ID> newMembershipBuilder() {
     return new MembershipBuilderImpl<>();

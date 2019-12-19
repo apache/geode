@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -59,7 +60,7 @@ public class GMSLocatorIntegrationTest {
   private Messenger messenger;
 
   @Before
-  public void setUp() {
+  public void setUp() throws MembershipConfigurationException {
 
     SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
 

@@ -14,14 +14,21 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.api;
 
-public interface MessageListener<ID extends MemberIdentifier> {
+/**
+ * MembershipClosedException is thrown if membership services are no longer
+ * available. This exception may be thrown by any membership API and does
+ * not appear in API interfaces.
+ */
+public class MembershipClosedException extends RuntimeException {
+  private static final long serialVersionUID = 6112938405434046127L;
 
-  /**
-   * Event indicating a message has been delivered that we need to process.
-   *
-   * @param o the message that should be processed.
-   */
-  void messageReceived(Message<ID> o) throws MemberShunnedException;
+  public MembershipClosedException() {}
 
+  public MembershipClosedException(String reason) {
+    super(reason);
+  }
 
+  public MembershipClosedException(String reason, Throwable cause) {
+    super(reason, cause);
+  }
 }
