@@ -99,7 +99,9 @@ public class GMSLocatorRecoveryIntegrationTest {
                 SocketCreatorFactory
                     .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
             InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()));
+            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     gmsLocator.setViewFile(stateFile);
   }
 
@@ -199,7 +201,9 @@ public class GMSLocatorRecoveryIntegrationTest {
 
     GMSLocator gmsLocator = new GMSLocator(localHost,
         distribution.getLocalMember().getHost() + "[" + port + "]", true, true,
-        new LocatorStats(), "", temporaryFolder.getRoot().toPath(), locatorClient);
+        new LocatorStats(), "", temporaryFolder.getRoot().toPath(), locatorClient,
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     gmsLocator.setViewFile(new File(temporaryFolder.getRoot(), "locator2.dat"));
     gmsLocator.init(null);
 

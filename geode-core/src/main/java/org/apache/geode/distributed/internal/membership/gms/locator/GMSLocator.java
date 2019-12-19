@@ -50,7 +50,8 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSMemberWrapper;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.ObjectDeserializer;
+import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -71,6 +72,8 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
   private final Map<GMSMemberWrapper, byte[]> publicKeys =
       new ConcurrentHashMap<>();
   private final Path workingDirectory;
+  private final ObjectSerializer objectSerializer;
+  private final ObjectDeserializer objectDeserializer;
 
   private volatile boolean isCoordinator;
 
@@ -95,10 +98,14 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
    * @param locatorStats the locator statistics object
    * @param securityUDPDHAlgo DF algorithm
    * @param workingDirectory directory to use for view file (defaults to "user.dir")
+   * @param objectSerializer a serializer used to persist the membership view
+   * @param objectDeserializer a deserializer used to recover the membership view
    */
   public GMSLocator(InetAddress bindAddress, String locatorString, boolean usePreferredCoordinators,
       boolean networkPartitionDetectionEnabled, LocatorStats locatorStats,
-      String securityUDPDHAlgo, Path workingDirectory, final TcpClient locatorClient)
+      String securityUDPDHAlgo, Path workingDirectory, final TcpClient locatorClient,
+      ObjectSerializer objectSerializer,
+      ObjectDeserializer objectDeserializer)
       throws MembershipConfigurationException {
     this.usePreferredCoordinators = usePreferredCoordinators;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
@@ -112,6 +119,8 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     this.locatorStats = locatorStats;
     this.workingDirectory = workingDirectory;
     this.locatorClient = locatorClient;
+    this.objectSerializer = objectSerializer;
+    this.objectDeserializer = objectDeserializer;
   }
 
   public synchronized boolean setMembership(Membership<ID> membership) {
@@ -347,7 +356,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
       oos.writeInt(Version.getCurrentVersion().ordinal());
       oos.flush();
       DataOutputStream dataOutputStream = new DataOutputStream(fileStream);
-      services.getSerializer().getObjectSerializer().writeObject(view, dataOutputStream);
+      objectSerializer.writeObject(view, dataOutputStream);
     } catch (Exception e) {
       logger.warn(
           "Peer locator encountered an error writing current membership to disk.  Disabling persistence.  Care should be taken when bouncing this locator as it will not be able to recover knowledge of the running distributed system",
@@ -446,7 +455,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
 
       // TBD - services isn't available when we recover from disk so this will throw an NPE
       // recoveredView = (GMSMembershipView) services.getSerializer().readDSFID(input);
-      recoveredView = InternalDataSerializer.readObject(input);
+      recoveredView = objectDeserializer.readObject(input);
 
       // this is not a valid view so it shouldn't have a usable Id
       recoveredView.setViewId(-1);
