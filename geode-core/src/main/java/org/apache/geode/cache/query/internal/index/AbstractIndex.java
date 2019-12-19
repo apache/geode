@@ -2024,7 +2024,8 @@ public abstract class AbstractIndex implements IndexProtocol {
       return;
     }
     if (!this.isIndexedPdxKeys) {
-      if (key instanceof PdxString && this.region.getAttributes().getCompressor() == null) {
+      if (region.getAttributes().getEvictionAttributes().isNoEviction() == true
+          && key instanceof PdxString && this.region.getAttributes().getCompressor() == null) {
         this.isIndexedPdxKeys = true;
       }
     }
