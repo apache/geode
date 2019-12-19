@@ -93,12 +93,12 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
 
-  protected RegionAttributes getRegionAttributes() {
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
     return this.getRegionAttributes(Scope.DISTRIBUTED_ACK);
   }
 
-  protected RegionAttributes getRegionAttributes(Scope scope) {
-    AttributesFactory factory = new AttributesFactory();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes(Scope scope) {
+    AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(scope);
     if (scope.isDistributedAck()) {
       factory.setEarlyAck(false);

@@ -45,7 +45,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Stream;
 
 import org.awaitility.core.ConditionTimeoutException;
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -143,6 +144,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   static LocalRegion CCRegion;
   static int distributedSystemID;
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
+  private VM vm3;
 
   private static <K, V> TestCacheListener<K, V> listener() {
     return testCacheListener;
@@ -175,8 +180,16 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     CCRegion = null;
   }
 
-  @AfterClass
-  public static void caseTearDown() {
+  @Before
+  public void setup() {
+    vm0 = VM.getVM(0);
+    vm1 = VM.getVM(1);
+    vm2 = VM.getVM(2);
+    vm3 = VM.getVM(3);
+  }
+
+  @After
+  public void caseTearDown() {
     disconnectAllFromDS();
   }
 
@@ -225,8 +238,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * Object) operations
    */
   private void concurrentMapTest(final String rName) {
-
-    VM vm0 = VM.getVM(0);
 
     vm0.invoke("doConcurrentMapOperations", new CacheSerializableRunnable() {
       @Override
@@ -381,8 +392,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
     vm0.invoke(create);
     vm1.invoke(create);
 
@@ -436,9 +446,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final String regionName = getUniqueName();
     final String key = "KEY";
     final int lastValue = 10;
-
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
 
     vm0.invoke("Create region", () -> {
       createRegion(regionName);
@@ -506,8 +513,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key = "KEY";
     final Object value = "VALUE";
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
 
     vm0.invoke("Populate region", new CacheSerializableRunnable() {
       @Override
@@ -545,8 +551,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -592,8 +597,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object oldValue = "OLD_VALUE";
     final Object newValue = "NEW_VALUE";
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
       @Override
@@ -658,9 +662,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -743,7 +745,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     invokeInEveryVM(create);
 
-    VM vm0 = VM.getVM(0);
 
     vm0.invoke("Destroy Region", new CacheSerializableRunnable() {
       @Override
@@ -788,8 +789,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -849,8 +849,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -892,9 +891,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -1065,8 +1062,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     invokeInEveryVM(put);
 
-    final VM vm0 = VM.getVM(0);
-
     vm0.invoke("Invalidate Region", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
@@ -1125,9 +1120,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         region.put(key, oldValue);
       }
     };
-
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(1);
 
     vm0.invoke(populate);
     vm1.invoke(populate);
@@ -1360,9 +1352,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(1);
-
     vm0.invoke("Create Root", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
@@ -1466,8 +1455,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(1);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -1531,8 +1519,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(1);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -1605,8 +1592,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(1);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -1667,7 +1653,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object value = 42;
 
     // use vm on other gemfire system
-    VM vm1 = VM.getVM(1);
+
     vm1.invoke("set remote value", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
@@ -1743,7 +1729,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key = this.getUniqueName();
     final Object value = 42;
 
-    final VM vm1 = VM.getVM(1);
+
     vm1.invoke("set up remote loader", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
@@ -1820,8 +1806,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         createRegion(name);
       }
     };
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(1);
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -1862,8 +1846,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(1);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -1933,8 +1916,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(1);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -2294,8 +2276,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object oldValue = "OLD_VALUE";
     final Object newValue = "NEW_VALUE";
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
 
     vm0.invoke("Create \"Local\" Region", new CacheSerializableRunnable() {
       @Override
@@ -2400,8 +2381,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(1);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -2498,8 +2478,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key = "KEY";
     final Object value = "VALUE";
 
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(1);
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Get value") {
       @Override
@@ -2541,8 +2520,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key = "KEY";
     final Object value = "VALUE";
 
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(1);
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Create \"remote\" region") {
       @Override
@@ -2629,7 +2607,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    final VM vm0 = VM.getVM(0);
 
     vm0.invoke(create);
     vm0.invoke(newKey);
@@ -2698,8 +2675,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key3 = "KEY3";
     final Object value3 = "VALUE3";
 
-    VM vm0 = VM.getVM(0);
-    VM vm2 = VM.getVM(2); // use VM on separate shared memory in case shared regions
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Mirrored Region") {
       @Override
@@ -2782,8 +2758,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key3 = "KEY3";
     final Object value3 = "VALUE3";
 
-    VM vm0 = VM.getVM(0);
-    VM vm2 = VM.getVM(2); // use VM on different shared memory area
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Mirrored Region") {
       @Override
@@ -2865,8 +2840,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       Arrays.fill(values[i], (byte) 0x42);
     }
 
-    VM vm0 = VM.getVM(0);
-    VM vm2 = VM.getVM(2); // use VM on different shared memory area
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Mirrored Region") {
       @Override
@@ -2940,8 +2914,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key3 = "KEY3";
     final Object value3 = "VALUE3";
 
-    VM vm0 = VM.getVM(0);
-    VM vm2 = VM.getVM(2); // use a VM on a different gemfire system
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Populate non-mirrored region") {
       @Override
@@ -3070,8 +3043,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key3 = "KEY3";
     final Object value3 = "VALUE3";
 
-    VM vm0 = VM.getVM(0);
-    VM vm2 = VM.getVM(2); // use VM on different gemfire system
+
 
     vm0.invoke("Create Non-mirrored Region", new CacheSerializableRunnable() {
       @Override
@@ -3137,8 +3109,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key = "KEY";
     final Object value = "VALUE";
 
-    VM vm0 = VM.getVM(0);
-    VM vm2 = VM.getVM(2); // use VMs on different gemfire systems
+
 
     vm0.invoke("Create region with loader", new CacheSerializableRunnable() {
       @Override
@@ -3200,8 +3171,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key = "KEY";
     final Object value = "VALUE";
 
-    VM vm0 = VM.getVM(0);
-    VM vm2 = VM.getVM(2); // use VMs on different gemfire systems
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Create region with loader") {
       @Override
@@ -3245,7 +3215,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key = "KEEP_ALIVE_KEY";
     final Object value = "VALUE";
 
-    VM vm0 = VM.getVM(0);
 
     vm0.invoke("Create region", new CacheSerializableRunnable() {
       @Override
@@ -3295,8 +3264,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key = "KEY";
     final Object value = "VALUE";
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(2); // Other VM is from a different gemfire system
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Create with TTL") {
       @Override
@@ -3387,8 +3355,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     // if using shared memory, make sure we use two VMs on different
     // gemfire systems
 
-    final VM vm0 = VM.getVM(0);
-    final VM vm1 = VM.getVM(2);
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Create with IdleTimeout") {
       @Override
@@ -3480,8 +3447,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key = "KEY";
     final Object value = "VALUE";
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
 
     class DestroyListener extends TestCacheListener<Object, Object> {
       boolean eventIsExpiration = false;
@@ -3633,8 +3599,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final String key = "KEY";
     final String value = "VALUE";
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Populate") {
       @Override
@@ -3789,8 +3754,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     final Object key = "KEY";
     final Object value = "VALUE";
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
 
     vm0.invoke("Create with Idle", new CacheSerializableRunnable() {
       @Override
@@ -3882,8 +3846,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       Arrays.fill(values[i], (byte) 0x42);
     }
 
-    VM vm0 = VM.getVM(0);
-    VM vm2 = VM.getVM(2);
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Mirrored Region") {
       @Override
@@ -4156,7 +4119,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * getInitialImage.
    */
   @Test
-  public void testTXNonblockingGetInitialImage() throws Exception {
+  public void testTXNonblockingGetInitialImage() {
     assumeThat(supportsReplication()).isTrue();
     assumeThat(supportsTransactions()).isTrue();
     // don't run this test if global scope since its too difficult to predict
@@ -4172,8 +4135,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       Arrays.fill(values[i], (byte) 0x42);
     }
 
-    VM vm0 = VM.getVM(0);
-    VM vm2 = VM.getVM(2);
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Mirrored Region") {
       @Override
@@ -4495,8 +4457,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       Arrays.fill(values[i], (byte) 0x42);
     }
 
-    VM vm0 = VM.getVM(0);
-    VM vm2 = VM.getVM(2);
+
 
     SerializableRunnable create = new CacheSerializableRunnable("Create Mirrored Region") {
       @Override
@@ -4802,8 +4763,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       Arrays.fill(values[i], (byte) 0x42);
     }
 
-    VM vm0 = VM.getVM(0);
-    VM vm2 = VM.getVM(2);
+
 
     vm0.invoke("Create Nonmirrored Region", new CacheSerializableRunnable() {
       @Override
@@ -5000,9 +4960,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
+
 
     logger.info(name + ": before creates");
     vm0.invoke(create);
@@ -5147,9 +5105,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
+
 
     vm0.invoke(create);
     vm1.invoke(create);
@@ -5974,7 +5930,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }
         };
 
-    VM vm0 = VM.getVM(0);
 
     try {
       MyTransactionListener tl = new MyTransactionListener();
@@ -6330,7 +6285,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         assertThat(tl.lastEvent.getCache()).isEqualTo(rgn2.getRegionService());
         {
           Collection<EntryEvent<?, ?>> events;
-          RegionAttributes attr = getRegionAttributes();
+          RegionAttributes<String, String> attr = getRegionAttributes();
           if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
             events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
           } else {
@@ -6471,10 +6426,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM vm3 = VM.getVM(3);
+
 
     try {
       DMStats dmStats = getSystem().getDistributionManager().getStats();
@@ -6931,8 +6883,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     // Make sure that a remote create done in a tx is created in a remote mirror
     // and dropped in a remote non-mirror
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
+
     vm0.invoke(createMirror);
     vm1.invoke(createNonMirror);
     region = createRegion(rgnName);
@@ -7081,7 +7033,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           tl.assertCounts(1);
           {
             Collection<EntryEvent<?, ?>> events;
-            RegionAttributes attr = getRegionAttributes();
+            RegionAttributes<String, String> attr = getRegionAttributes();
             if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
               events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
             } else {
@@ -7159,7 +7111,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               tl.assertCounts(2);
               {
                 Collection<EntryEvent<?, ?>> events;
-                RegionAttributes attr = getRegionAttributes();
+                RegionAttributes<String, String> attr = getRegionAttributes();
                 if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
                   events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
                 } else {
@@ -7368,7 +7320,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
               assertThat(rgn1.getEntry("key").getValue()).isEqualTo("value1");
               {
                 Collection<EntryEvent<?, ?>> events;
-                RegionAttributes attr = getRegionAttributes();
+                RegionAttributes<String, String> attr = getRegionAttributes();
                 if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
                   events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
                 } else {
@@ -7488,8 +7440,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    */
 
   protected void versionTestGIISendsTombstones() {
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
+
+
     final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     // create replicated regions in VM 0 and 1, then perform concurrent ops
@@ -7580,9 +7532,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * and that the statistic is being updated properly
    */
   protected void versionTestConcurrentEvents() throws Exception {
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
+
+
 
     // create replicated regions in VM 0 and 1, then perform concurrent ops
     // on the same key while creating the region in VM2. Afterward make
@@ -7761,9 +7712,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   }
 
   private void versionTestClearWithConcurrentEvents(boolean syncDiskWrite) {
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
+
+
 
     // create replicated regions in VM 0 and 1, then perform concurrent ops
     // on the same key while creating the region in VM2. Afterward make
@@ -7802,11 +7752,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   }
 
   protected void versionTestClearOnNonReplicateWithConcurrentEvents() {
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM vm3 = VM.getVM(3);
-
     // create replicated regions in VM 0 and 1, then perform concurrent ops
     // on the same key while creating the region in VM2. Afterward make
     // sure that all three regions are consistent
@@ -7817,10 +7762,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       public void run() {
         try {
           RegionFactory<?, ?> f;
-          if (VM.getCurrentVMNum() == 0) {
+          if (VM.getVMId() == 0) {
             f = getCache().createRegionFactory(
                 getRegionAttributes(RegionShortcut.REPLICATE_PROXY.toString()));
-          } else if (VM.getCurrentVMNum() == 1) {
+          } else if (VM.getVMId() == 1) {
             f = getCache().createRegionFactory(getRegionAttributes());
             f.setDataPolicy(DataPolicy.NORMAL);
           } else {
@@ -7918,8 +7863,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   protected void versionTestTombstones() {
     disconnectAllFromDS();
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
     final int numEntries = 100;
 
     // create replicated regions in VM 0 and 1, then perform concurrent ops
@@ -8133,16 +8076,13 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
   }
 
+
+
   /**
    * This tests the concurrency versioning system to ensure that event conflation happens correctly
    * and that the statistic is being updated properly
    */
   protected void versionTestConcurrentEventsOnEmptyRegion() {
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM vm3 = VM.getVM(3); // this VM, but treat as a remote for uniformity
-
     // create an empty region in vm0 and replicated regions in VM 1 and 3,
     // then perform concurrent ops
     // on the same key while creating the region in VM2. Afterward make
@@ -8154,14 +8094,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       public void run() {
         // set log-level to fine so we'll see InitialImageOperation keys in the log for
         // GEODE-6326
-        System.setProperty(DistributionConfig.LOG_LEVEL_NAME, "fine");
+        System.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
         try {
           final RegionFactory<?, ?> f;
-          if (VM.getCurrentVMNum() == 0) {
+          if (VM.getVMId() == 0) {
             f = getCache().createRegionFactory(
                 getRegionAttributes(RegionShortcut.REPLICATE_PROXY.toString()));
           } else {
-            if (VM.getCurrentVMNum() == 2) {
+            if (VM.getVMId() == 2) {
               InitialImageOperation.slowImageProcessing = 1;
             }
             f = getCache().createRegionFactory(getRegionAttributes());
@@ -8175,45 +8115,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    vm0.invoke(createRegion);
-    vm1.invoke(createRegion);
-    vm3.invoke(createRegion);
-
-    SerializableRunnable performOps = new SerializableRunnable("perform concurrent ops") {
-      @Override
-      public void run() {
-        try {
-          doOpsLoop(false);
-          // This send serial message is only going to flush the operations
-          // from the empty member to *one* of the replicas, not all of them.
-          sendSerialMessageToAll();
-          if (CCRegion.getAttributes().getDataPolicy().withReplication()) {
-            long events = CCRegion.getCachePerfStats().getConflatedEventsCount();
-            assertThat(events > 0).describedAs("expected some event conflation").isTrue();
-          }
-        } catch (CacheException e) {
-          fail("while performing concurrent operations", e);
-        }
-      }
-    };
-
-    AsyncInvocation a0 = vm0.invokeAsync(performOps);
-    AsyncInvocation a1 = vm1.invokeAsync(performOps);
-
-    try {
-      Thread.sleep(500);
-    } catch (InterruptedException e) {
-      fail("sleep was interrupted");
-    }
-
-    vm2.invoke(createRegion);
-
-    boolean a0failed = waitForAsyncProcessing(a0, "expected some event conflation");
-    boolean a1failed = waitForAsyncProcessing(a1, "expected some event conflation");
-
-    if (a0failed && a1failed) {
-      fail("neither member saw event conflation - check stats for " + name);
-    }
+    prepConcurrentEventsTest(name, createRegion);
 
     // For no-ack regions, messages may still be in flight between replicas at this point
     try {
@@ -8232,6 +8134,46 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         InitialImageOperation.slowImageProcessing = 0;
       });
       vm3.invoke("dump region contents", () -> CCRegion.dumpBackingMap());
+    }
+  }
+
+  private void prepConcurrentEventsTest(String name, SerializableRunnable createRegion) {
+    vm0.invoke(createRegion);
+    vm1.invoke(createRegion);
+    vm3.invoke(createRegion);
+
+    SerializableRunnable performOps = new SerializableRunnable("perform concurrent ops") {
+      @Override
+      public void run() {
+        try {
+          doOpsLoop(false);
+          // This send serial message is only going to flush the operations
+          // from the empty member to *one* of the replicas, not all of them.
+          sendSerialMessageToAll();
+
+          if (CCRegion.getAttributes().getDataPolicy().withReplication()) {
+            long events = CCRegion.getCachePerfStats().getConflatedEventsCount();
+            assertThat(events > 0).describedAs("expected some event conflation").isTrue();
+          }
+        } catch (CacheException e) {
+          fail("while performing concurrent operations", e);
+        }
+      }
+    };
+
+    AsyncInvocation a0 = vm0.invokeAsync(performOps);
+    AsyncInvocation a1 = vm1.invokeAsync(performOps);
+
+    try {
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      fail("sleep was interrupted");
+    }
+    vm2.invoke(createRegion);
+    boolean a0failed = waitForAsyncProcessing(a0, "expected some event conflation");
+    boolean a1failed = waitForAsyncProcessing(a1, "expected some event conflation");
+    if (a0failed && a1failed) {
+      fail("neither member saw event conflation - check stats for " + name);
     }
   }
 
@@ -8327,10 +8269,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    */
   protected void versionTestConcurrentEventsOnNonReplicatedRegion() {
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM vm3 = VM.getVM(3); // this VM, but treat as a remote for uniformity
     final boolean noAck = !getRegionAttributes().getScope().isAck();
 
     // create an empty region in vm0 and replicated regions in VM 1 and 3,
@@ -8344,7 +8282,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       public void run() {
         try {
           final RegionFactory<?, ?> f;
-          if (VM.getCurrentVMNum() == 0) {
+          if (VM.getVMId() == 0) {
             f = getCache()
                 .createRegionFactory(getRegionAttributes(RegionShortcut.LOCAL.toString()));
             f.setScope(getRegionAttributes().getScope());
@@ -8358,43 +8296,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       }
     };
 
-    vm0.invoke(createRegion);
-    vm1.invoke(createRegion);
-    vm3.invoke(createRegion);
+    prepConcurrentEventsTest(name, createRegion);
 
-    SerializableRunnable performOps = new SerializableRunnable("perform concurrent ops") {
-      @Override
-      public void run() {
-        try {
-          doOpsLoop(false);
-          sendSerialMessageToAll();
-          if (CCRegion.getAttributes().getDataPolicy().withReplication()) {
-            long events = CCRegion.getCachePerfStats().getConflatedEventsCount();
-            assertThat(events > 0).describedAs("expected some event conflation").isTrue();
-          }
-        } catch (CacheException e) {
-          fail("while performing concurrent operations", e);
-        }
-      }
-    };
-
-    AsyncInvocation a0 = vm0.invokeAsync(performOps);
-    AsyncInvocation a1 = vm1.invokeAsync(performOps);
-
-    try {
-      Thread.sleep(500);
-    } catch (InterruptedException e) {
-      fail("sleep was interrupted");
-    }
-
-    vm2.invoke(createRegion);
-
-    boolean a0failed = waitForAsyncProcessing(a0, "expected some event conflation");
-    boolean a1failed = waitForAsyncProcessing(a1, "expected some event conflation");
-
-    if (a0failed && a1failed) {
-      fail("neither member saw event conflation - check stats for " + name);
-    }
     await().untilAsserted(() -> {
       // check consistency of the regions
       Map r0Contents = vm0.invoke(MultiVMRegionTestCase::getCCRegionContents);
@@ -8495,8 +8398,6 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     assumeThat(getRegionAttributes().getScope().isAck()).isTrue();
     // scopes
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
 
     final String regionName = getUniqueName() + "CCRegion";
 

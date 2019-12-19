@@ -47,8 +47,8 @@ public class LocalRegionDUnitTest extends CacheListenerTestCase {
    * Returns the attributes of a region to be tested.
    */
   @Override
-  protected RegionAttributes getRegionAttributes() {
-    AttributesFactory factory = new AttributesFactory();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.LOCAL);
     factory.setConcurrencyChecksEnabled(false);
     return factory.create();

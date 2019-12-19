@@ -266,8 +266,8 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     CachedDeserializableFactory.STORE_ALL_VALUE_FORMS = true;
   }
 
-  protected RegionAttributes getRegionAttributes() {
-    AttributesFactory factory = new AttributesFactory();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.PRELOADED);
     factory.setEarlyAck(false);
