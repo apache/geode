@@ -40,6 +40,7 @@ build_test:
   MAX_IN_FLIGHT: 2
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
+  PLATFORM: linux
   RAM: '16'
   name: Build
 

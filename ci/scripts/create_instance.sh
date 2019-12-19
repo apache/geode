@@ -43,6 +43,11 @@ if [[ -z "${GEODE_BRANCH}" ]]; then
   exit 1
 fi
 
+if [[ -z "${IMAGE_FAMILY_NAME}" ]]; then
+  echo "IMAGE_FAMILY_NAME environment variable must be set for this script to work."
+  exit 1
+fi
+
 if [[ -d geode ]]; then
   pushd geode
   GEODE_SHA=$(git rev-parse --verify HEAD)
@@ -116,7 +121,7 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
   --min-cpu-platform=Intel\ Skylake \
   --network="${GCP_NETWORK}" \
   --subnet="${GCP_SUBNETWORK}" \
-  --image-family="${IMAGE_FAMILY_PREFIX}${WINDOWS_PREFIX}geode-builder" \
+  --image-family="${IMAGE_FAMILY_NAME}" \
   --boot-disk-size=100GB \
   --boot-disk-type=pd-ssd \
   --labels="${LABELS}" \
@@ -156,8 +161,11 @@ if [[ -z "${WINDOWS_PREFIX}" ]]; then
 else
   # Set up ssh access for Windows systems
   echo -n "Setting windows password via gcloud."
-  while [[ -z "${PASSWORD}" ]]; do
+  while true; do
     PASSWORD=$( yes | gcloud beta compute reset-windows-password ${INSTANCE_NAME} --user=geode --zone=${ZONE} --format json | jq -r .password )
+    if [[ -n "${PASSWORD}" ]]; then
+      break;
+    fi
     echo -n .
     sleep 5
   done
