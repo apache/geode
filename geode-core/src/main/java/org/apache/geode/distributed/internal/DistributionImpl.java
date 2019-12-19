@@ -376,7 +376,7 @@ public class DistributionImpl implements Distribution {
       }
 
       if (sentBytes == 0) {
-        membership.checkCancelled();
+        checkCancelled();
       }
     } catch (MembershipClosedException e) {
       throw new DistributedSystemDisconnectedException(e.getMessage(), e.getCause());
@@ -385,7 +385,7 @@ public class DistributionImpl implements Distribution {
     } catch (ConnectExceptions ex) {
       // Check if the connect exception is due to system shutting down.
       if (membership.shutdownInProgress()) {
-        membership.checkCancelled();
+        checkCancelled();
         throw new DistributedSystemDisconnectedException();
       }
 
