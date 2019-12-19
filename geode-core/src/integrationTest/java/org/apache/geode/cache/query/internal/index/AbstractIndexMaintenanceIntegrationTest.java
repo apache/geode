@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.CacheUtils;
 import org.apache.geode.cache.query.IndexExistsException;
@@ -115,6 +116,23 @@ public abstract class AbstractIndexMaintenanceIntegrationTest {
 
     statusIndex.removeIndexMapping(entry, IndexProtocol.OTHER_OP);
   }
+
+  @Test
+  public void indexKeysShouldBeStringIfRegionHasEvictionEnabled() throws Exception {
+    CacheUtils.startCache();
+    Cache cache = CacheUtils.getCache();
+    LocalRegion region =
+        (LocalRegion) cache.createRegionFactory(RegionShortcut.REPLICATE)
+            .setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes())
+            .create("portfolios");
+    QueryService qs = cache.getQueryService();
+    AbstractIndex statusIndex =
+        createIndex(qs, "statusIndex", "value.status", "/portfolios.entrySet()");
+
+    statusIndex.setPdxStringFlag(new PdxString("IndexKey"));
+    assertFalse(statusIndex.isIndexOnPdxKeys());
+  }
+
 
   protected abstract AbstractIndex createIndex(final QueryService qs, String name,
       String indexExpression, String regionPath)
