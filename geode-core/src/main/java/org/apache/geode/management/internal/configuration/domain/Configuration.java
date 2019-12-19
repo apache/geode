@@ -33,14 +33,12 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.Version;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
@@ -49,7 +47,6 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
  *
  */
 public class Configuration implements DataSerializable {
-  private static Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1L;
   private String configName;
   private String cacheXmlContent;
@@ -164,10 +161,11 @@ public class Configuration implements DataSerializable {
     DataSerializer.writeString(cacheXmlContent, out);
     DataSerializer.writeString(propertiesFileName, out);
     DataSerializer.writeProperties(gemfireProperties, out);
-    // before 1.12, we are wring a Hashset of jarnames to the output stream.
-    // as 1.12, write a null hashset to the stream, so that when we can still read the old
-    // configuration
+    // Before 1.12, this code wrote a non-null HashSet of jarnames to the output stream.
+    // As of 1.12, it writes a null HashSet to the stream, so that when we can still read the old
+    // configuration, and will now also write the deployment map.
     DataSerializer.writeHashSet(null, out);
+    // As of 1.12, this class starting writing the current version
     Version.getCurrentVersion().writeOrdinal(out, true);
     DataSerializer.writeHashMap(deployments, out);
   }
@@ -180,23 +178,16 @@ public class Configuration implements DataSerializable {
     propertiesFileName = DataSerializer.readString(in);
     gemfireProperties = DataSerializer.readProperties(in);
     HashSet<String> jarNames = DataSerializer.readHashSet(in);
-
-    Version version;
-    try {
-      // after 1.12, we would have version info in the input stream
-      version = Version.fromOrdinal(Version.readOrdinal(in));
-    } catch (Exception e) {
-      version = Version.GEODE_1_11_0;
-    }
-
-    // use version to decide what to do in the future changes
-    if (version.compareTo(Version.GEODE_1_12_0) >= 0) {
-      deployments.putAll(DataSerializer.readHashMap(in));
+    if (jarNames != null) {
+      // we are reading pre 1.12 data. So add each jar name to deployments
+      jarNames.stream()
+          .map(Deployment::new)
+          .forEach(deployment -> deployments.put(deployment.getJarFileName(), deployment));
     } else {
-      if (jarNames != null) {
-        jarNames.stream()
-            .map(Deployment::new)
-            .forEach(deployment -> deployments.put(deployment.getJarFileName(), deployment));
+      // version of the data we are reading (1.12 or later)
+      Version version = Version.fromOrdinalNoThrow(Version.readOrdinal(in), true);
+      if (version.compareTo(Version.GEODE_1_12_0) >= 0) {
+        deployments.putAll(DataSerializer.readHashMap(in));
       }
     }
   }
