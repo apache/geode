@@ -16,101 +16,78 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.management.internal.i18n.CliStrings.STATUS_LOCATOR;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
-import org.junit.AfterClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
+import org.apache.geode.test.junit.rules.LocatorLauncherStartupRule;
 
 public class StatusLocatorCommandDunitTest {
   private static final Integer TIMEOUT = 300;
   private static final Integer INTERVAL = 10;
   private static final String locatorName = "locator";
 
-  private static LocatorLauncher locator;
-
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @ClassRule
-  public static TemporaryFolder tempDir = new TemporaryFolder();
+  public static LocatorLauncherStartupRule locator = new LocatorLauncherStartupRule()
+      .withBuilder(b -> b.setMemberName(locatorName))
+      .withAutoStart();
+
+  private static int locatorPort;
+
+  private static LocatorState state;
 
   @BeforeClass
-  public static void before() throws IOException {
-    File workingDir = tempDir.newFolder("workingDir");
-
-    locator = new LocatorLauncher.Builder().setMemberName(locatorName).setPort(0)
-        .setWorkingDirectory(workingDir.getAbsolutePath())
-        .set("cluster-configuration-dir", workingDir.getAbsolutePath()).build();
-    locator.start();
+  public static void beforeClass() {
+    locatorPort = locator.getLauncher().getPort();
+    state = locator.getLauncher().waitOnStatusResponse(TIMEOUT, INTERVAL, SECONDS);
   }
 
-  @AfterClass
-  public static void after() {
-    locator.stop();
+  @Before
+  public void before() throws Exception {
+    gfsh.connectAndVerify(locatorPort, PortType.locator);
+  }
+
+  @After
+  public void after() throws Exception {
+    gfsh.disconnect();
   }
 
   @Test
   public void testWithMemberAddress() throws Exception {
-    gfsh.connectAndVerify(locator.getPort(), PortType.locator);
-
-    LocatorState state = locator.waitOnStatusResponse(TIMEOUT, INTERVAL, SECONDS);
-
-    CommandResult result =
-        gfsh.executeCommand(STATUS_LOCATOR + " --host=localhost --port=" + locator.getPort());
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat(STATUS_LOCATOR + " --host=localhost --port=" + locatorPort)
+        .statusIsSuccess();
     assertStatusCommandOutput(gfsh.getGfshOutput(), state);
   }
 
   @Test
   public void testWithMemberName() throws Exception {
-    gfsh.connectAndVerify(locator.getPort(), PortType.locator);
-
-    LocatorState state = locator.waitOnStatusResponse(TIMEOUT, INTERVAL, SECONDS);
-
-    CommandResult result = gfsh.executeCommand(STATUS_LOCATOR + " --name=" + locatorName);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat(STATUS_LOCATOR + " --name=" + locatorName).statusIsSuccess();
     assertStatusCommandOutput(gfsh.getGfshOutput(), state);
   }
 
   @Test
   public void testWithMemberID() throws Exception {
-    gfsh.connectAndVerify(locator.getPort(), PortType.locator);
-
-    LocatorState state = locator.waitOnStatusResponse(TIMEOUT, INTERVAL, SECONDS);
-
-    CommandResult result = gfsh.executeCommand(STATUS_LOCATOR + " --name=" + locator.getMemberId());
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat(STATUS_LOCATOR + " --name=" + locator.getLauncher().getMemberId())
+        .statusIsSuccess();
     assertStatusCommandOutput(gfsh.getGfshOutput(), state);
   }
 
   @Test
   public void testWithDirOnline() throws Exception {
-    gfsh.connectAndVerify(locator.getPort(), PortType.locator);
-
-    LocatorState state = locator.waitOnStatusResponse(TIMEOUT, INTERVAL, SECONDS);
-
-    CommandResult result =
-        gfsh.executeCommand(STATUS_LOCATOR + " --dir=" + locator.getWorkingDirectory());
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat(
+        STATUS_LOCATOR + " --dir=" + locator.getLauncher().getWorkingDirectory()).statusIsSuccess();
     assertStatusCommandOutput(gfsh.getGfshOutput(), state);
   }
 
@@ -120,12 +97,8 @@ public class StatusLocatorCommandDunitTest {
       gfsh.disconnect();
     }
 
-    LocatorState state = locator.waitOnStatusResponse(TIMEOUT, INTERVAL, SECONDS);
-
-    CommandResult result =
-        gfsh.executeCommand(STATUS_LOCATOR + " --dir=" + locator.getWorkingDirectory());
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat(
+        STATUS_LOCATOR + " --dir=" + locator.getLauncher().getWorkingDirectory()).statusIsSuccess();
     assertStatusCommandOutput(gfsh.getGfshOutput(), state);
   }
 
