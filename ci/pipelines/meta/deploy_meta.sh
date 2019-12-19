@@ -286,3 +286,7 @@ if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]]; then
 fi
 
 echo "Successfully deployed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PREFIX}main"
+
+rm ci/pipelines/meta/generated-pipeline.yml
+rm ci/pipelines/meta/pipelineProperties.yml
+rm ci/pipelines/meta/repository.yml

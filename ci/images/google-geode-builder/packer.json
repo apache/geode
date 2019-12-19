@@ -35,7 +35,7 @@
       "source_image_family": "{{ user `base_family`}}",
       "ssh_username": "packer",
       "zone": "us-central1-f",
-      "image_family": "{{user `pipeline_prefix`}}geode-builder",
+      "image_family": "{{user `pipeline_prefix`}}linux-geode-builder",
       "image_name": "{{user `hashed_pipeline_prefix`}}gb-{{timestamp}}",
       "tags": ["packer"]
     }
