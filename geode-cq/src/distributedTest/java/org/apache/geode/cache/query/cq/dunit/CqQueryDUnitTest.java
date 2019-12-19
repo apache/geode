@@ -3347,8 +3347,8 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Returns region attributes for a <code>LOCAL</code> region
    */
-  protected RegionAttributes getRegionAttributes() {
-    AttributesFactory factory = new AttributesFactory();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.LOCAL);
     return factory.createRegionAttributes();
   }

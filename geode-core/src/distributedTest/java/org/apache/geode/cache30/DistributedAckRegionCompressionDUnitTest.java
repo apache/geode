@@ -29,9 +29,8 @@ import org.apache.geode.compression.SnappyCompressor;
 @SuppressWarnings({"deprecation", "serial"})
 public class DistributedAckRegionCompressionDUnitTest extends DistributedAckRegionDUnitTest {
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
-  protected RegionAttributes getRegionAttributes() {
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
     Compressor compressor = null;
     try {
       compressor = SnappyCompressor.getDefaultInstance();
@@ -39,15 +38,14 @@ public class DistributedAckRegionCompressionDUnitTest extends DistributedAckRegi
       // Not a supported OS
       return super.getRegionAttributes();
     }
-    RegionAttributes attrs = super.getRegionAttributes();
-    AttributesFactory factory = new AttributesFactory(attrs);
+    RegionAttributes<K, V> attrs = super.getRegionAttributes();
+    AttributesFactory<K, V> factory = new AttributesFactory<>(attrs);
     factory.setCompressor(compressor);
     return factory.create();
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
-  protected RegionAttributes getRegionAttributes(String type) {
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes(String type) {
     Compressor compressor = null;
     try {
       compressor = SnappyCompressor.getDefaultInstance();
@@ -55,8 +53,8 @@ public class DistributedAckRegionCompressionDUnitTest extends DistributedAckRegi
       // Not a supported OS
       return super.getRegionAttributes(type);
     }
-    RegionAttributes ra = super.getRegionAttributes(type);
-    AttributesFactory factory = new AttributesFactory(ra);
+    RegionAttributes<K, V> ra = super.getRegionAttributes(type);
+    AttributesFactory<K, V> factory = new AttributesFactory<>(ra);
     if (!ra.getDataPolicy().isEmpty()) {
       factory.setCompressor(compressor);
     }
