@@ -115,7 +115,7 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
     Deployment result = new Deployment();
     result.setJarFileName(jarFileName);
     result.setDeployedBy(deployedby);
-    result.setTimeDeployed(deployedtime);
+    result.setDeployedTime(deployedtime);
     return result;
   }
 
@@ -183,7 +183,7 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
   @Test
   public void addsDeploymentsFromJarFileNames() {
     String deployedBy = "deployedBy";
-    String timeDeployed = Instant.now().toString();
+    String deployedTime = Instant.now().toString();
 
     Collection<String> allFileNames = new HashSet<>();
     Collection<String> jarFileNames = asList("jar1.jar", "jar2.jar", "jar3.jar");
@@ -193,10 +193,10 @@ public class InternalConfigurationPersistenceServiceDeployedJarTest {
     Configuration configuration = new Configuration();
 
     InternalConfigurationPersistenceService
-        .loadDeploymentsFromFileNames(allFileNames, configuration, deployedBy, timeDeployed);
+        .loadDeploymentsFromFileNames(allFileNames, configuration, deployedBy, deployedTime);
 
     List<Deployment> expectedDeployments = jarFileNames.stream()
-        .map(jarFileName -> new Deployment(jarFileName, deployedBy, timeDeployed))
+        .map(jarFileName -> new Deployment(jarFileName, deployedBy, deployedTime))
         .collect(toList());
 
     assertThat(configuration.getDeployments())

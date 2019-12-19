@@ -28,7 +28,7 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> {
   public static final String DEPLOYMENT_ENDPOINT = "/deployments";
   private String jarFileName;
   @ApiModelProperty(accessMode = READ_ONLY)
-  private String timeDeployed;
+  private String deployedTime;
   @ApiModelProperty(accessMode = READ_ONLY)
   private String deployedBy;
 
@@ -38,10 +38,10 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> {
     this(jarFileName, null, null);
   }
 
-  public Deployment(String jarFileName, String deployedBy, String timeDeployed) {
+  public Deployment(String jarFileName, String deployedBy, String deployedTime) {
     this.jarFileName = jarFileName;
     this.deployedBy = deployedBy;
-    this.timeDeployed = timeDeployed;
+    this.deployedTime = deployedTime;
   }
 
   @Override
@@ -58,15 +58,15 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> {
     this.jarFileName = jarFileName;
   }
 
-  public String getTimeDeployed() {
-    return timeDeployed;
+  public String getDeployedTime() {
+    return deployedTime;
   }
 
   /**
    * For internal use only
    */
-  public void setTimeDeployed(String timeDeployed) {
-    this.timeDeployed = timeDeployed;
+  public void setDeployedTime(String deployedTime) {
+    this.deployedTime = deployedTime;
   }
 
   public String getDeployedBy() {
@@ -89,7 +89,7 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> {
   public String toString() {
     return "Deployment{" +
         "jarFileName='" + jarFileName + '\'' +
-        ", timeDeployed='" + timeDeployed + '\'' +
+        ", deployedTime='" + deployedTime + '\'' +
         ", deployedBy='" + deployedBy + '\'' +
         '}';
   }
@@ -104,12 +104,12 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> {
     }
     Deployment that = (Deployment) o;
     return Objects.equals(jarFileName, that.jarFileName) &&
-        Objects.equals(timeDeployed, that.timeDeployed) &&
+        Objects.equals(deployedTime, that.deployedTime) &&
         Objects.equals(deployedBy, that.deployedBy);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(jarFileName, timeDeployed, deployedBy);
+    return Objects.hash(jarFileName, deployedTime, deployedBy);
   }
 }

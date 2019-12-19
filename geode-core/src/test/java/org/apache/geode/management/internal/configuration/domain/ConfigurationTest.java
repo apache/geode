@@ -109,9 +109,9 @@ public class ConfigurationTest {
     DataOutputStream dataOut = new DataOutputStream(outBytes);
 
     Configuration originalConfig = new Configuration();
-    originalConfig.putDeployment(new Deployment("jarName1.jar", "deployedBy1", "timeDeployed1"));
-    originalConfig.putDeployment(new Deployment("jarName2.jar", "deployedBy2", "timeDeployed2"));
-    originalConfig.putDeployment(new Deployment("jarName3.jar", "deployedBy3", "timeDeployed3"));
+    originalConfig.putDeployment(new Deployment("jarName1.jar", "deployedBy1", "deployedTime1"));
+    originalConfig.putDeployment(new Deployment("jarName2.jar", "deployedBy2", "deployedTime2"));
+    originalConfig.putDeployment(new Deployment("jarName3.jar", "deployedBy3", "deployedTime3"));
 
     DataSerializer.writeObject(originalConfig, dataOut);
     dataOut.flush();

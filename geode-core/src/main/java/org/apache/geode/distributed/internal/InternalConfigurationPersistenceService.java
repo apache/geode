@@ -292,32 +292,32 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
   @VisibleForTesting
-  void addJarsToThisLocator(String deployedBy, String timeDeployed,
+  void addJarsToThisLocator(String deployedBy, String deployedTime,
       List<String> jarFullPaths, String[] groups) throws IOException {
     lockSharedConfiguration();
     try {
-      addJarsToGroups(listOf(groups), jarFullPaths, deployedBy, timeDeployed);
+      addJarsToGroups(listOf(groups), jarFullPaths, deployedBy, deployedTime);
     } finally {
       unlockSharedConfiguration();
     }
   }
 
   private void addJarsToGroups(List<String> groups, List<String> jarFullPaths, String deployedBy,
-      String timeDeployed) throws IOException {
+      String deployedTime) throws IOException {
     for (String group : groups) {
       copyJarsToGroupDir(group, jarFullPaths);
-      addJarsToGroupConfig(group, jarFullPaths, deployedBy, timeDeployed);
+      addJarsToGroupConfig(group, jarFullPaths, deployedBy, deployedTime);
     }
   }
 
   private void addJarsToGroupConfig(String group, List<String> jarFullPaths, String deployedBy,
-      String timeDeployed) throws IOException {
+      String deployedTime) throws IOException {
     Region<String, Configuration> configRegion = getConfigurationRegion();
     Configuration configuration = getConfigurationCopy(configRegion, group);
 
     jarFullPaths.stream()
         .map(toFileName())
-        .map(jarFileName -> new Deployment(jarFileName, deployedBy, timeDeployed))
+        .map(jarFileName -> new Deployment(jarFileName, deployedBy, deployedTime))
         .forEach(configuration::putDeployment);
 
     String memberId = cache.getMyId().getId();
@@ -856,10 +856,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
 
   @VisibleForTesting
   static void loadDeploymentsFromFileNames(Collection<String> fileNames,
-      Configuration configuration, String deployedBy, String timeDeployed) {
+      Configuration configuration, String deployedBy, String deployedTime) {
     fileNames.stream()
         .filter(filename -> filename.endsWith(".jar"))
-        .map(jarFileName -> new Deployment(jarFileName, deployedBy, timeDeployed))
+        .map(jarFileName -> new Deployment(jarFileName, deployedBy, deployedTime))
         .forEach(configuration::putDeployment);
   }
 

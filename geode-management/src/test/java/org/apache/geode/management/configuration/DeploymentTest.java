@@ -28,14 +28,14 @@ public class DeploymentTest {
   private Deployment deployment;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     deployment = new Deployment();
   }
 
   @Test
-  public void remembersTimeDeployed() {
-    deployment.setTimeDeployed("timeDeployed");
-    assertThat(deployment.getTimeDeployed()).isEqualTo("timeDeployed");
+  public void remembersDeployedTime() {
+    deployment.setDeployedTime("deployedTime");
+    assertThat(deployment.getDeployedTime()).isEqualTo("deployedTime");
   }
 
   @Test
@@ -61,7 +61,7 @@ public class DeploymentTest {
     deployment.setGroup("group1");
     deployment.setJarFileName("jarFileName");
     deployment.setDeployedBy("deployedBy");
-    deployment.setTimeDeployed("timeDeployed");
+    deployment.setDeployedTime("deployedTime");
     String json = mapper.writeValueAsString(deployment);
     Deployment newValue = mapper.readValue(json, Deployment.class);
     assertThat(newValue).isEqualToComparingFieldByField(deployment);

@@ -132,7 +132,7 @@ public class DeploymentManagementDUnitTest {
     Deployment deployment = list.getConfigResult().get(0);
     assertThat(deployment.getJarFileName()).isEqualTo("cluster.jar");
     assertThat(deployment.getDeployedBy()).isEqualTo("cluster");
-    assertThat(deployment.getTimeDeployed()).isNotNull();
+    assertThat(deployment.getDeployedTime()).isNotNull();
 
     List<DeploymentInfo> runtimeResult = resultAssert.getActual().getRuntimeResult();
     assertThat(runtimeResult)
