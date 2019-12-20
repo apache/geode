@@ -25,6 +25,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 
@@ -47,7 +48,7 @@ public interface Distribution {
       DistributedMember member, boolean includeMulticast);
 
   void waitForMessageState(InternalDistributedMember member,
-      Map<String, Long> state) throws InterruptedException, java.util.concurrent.TimeoutException;
+      Map<String, Long> state) throws InterruptedException;
 
   boolean requestMemberRemoval(InternalDistributedMember member,
       String reason);
@@ -98,6 +99,12 @@ public interface Distribution {
       String reason);
 
   Throwable getShutdownCause();
+
+  void registerTestHook(
+      MembershipTestHook mth);
+
+  void unregisterTestHook(
+      MembershipTestHook mth);
 
   boolean addSurpriseMember(InternalDistributedMember mbr);
 

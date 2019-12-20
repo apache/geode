@@ -1478,14 +1478,4 @@ public class LonerDistributionManager implements DistributionManager {
   public AlertingService getAlertingService() {
     return NullAlertingService.get();
   }
-
-  @Override
-  public void registerTestHook(MembershipTestHook mth) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public void unregisterTestHook(MembershipTestHook mth) {
-    throw new UnsupportedOperationException();
-  }
 }

@@ -89,17 +89,14 @@ import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.MembershipListener;
-import org.apache.geode.distributed.internal.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -166,8 +163,6 @@ public class LocatorDUnitTest implements Serializable {
     port3 = ports[2];
     port4 = ports[3];
     Invoke.invokeInEveryVM(() -> deleteLocatorStateFile(port1, port2, port3, port4));
-    addIgnoredException(MemberDisconnectedException.class); // ignore this suspect string
-    addIgnoredException(MembershipConfigurationException.class); // ignore this suspect string
   }
 
   @After
@@ -770,7 +765,7 @@ public class LocatorDUnitTest implements Serializable {
         addIgnoredException(ForcedDisconnectException.class);
 
         hook = new TestHook();
-        MembershipManagerHelper.addTestHook(system, hook);
+        MembershipManagerHelper.getDistribution(system).registerTestHook(hook);
         try {
           MembershipManagerHelper.crashDistributedSystem(system);
         } finally {
@@ -798,6 +793,8 @@ public class LocatorDUnitTest implements Serializable {
 
     vm2.invokeAsync(crashSystem);
 
+    Wait.pause(1000); // 4 x the member-timeout
+
     // request member removal for first peer from second peer.
     vm2.invoke(new SerializableRunnable("Request Member Removal") {
 
@@ -808,12 +805,11 @@ public class LocatorDUnitTest implements Serializable {
         // check for shutdown cause in Distribution. Following call should
         // throw DistributedSystemDisconnectedException which should have cause as
         // ForceDisconnectException.
-        await().until(() -> !mmgr.getMembership().isConnected());
         try (IgnoredException i = addIgnoredException("Membership: requesting removal of")) {
           mmgr.requestMemberRemoval((InternalDistributedMember) mem1, "test reasons");
           fail("It should have thrown exception in requestMemberRemoval");
         } catch (DistributedSystemDisconnectedException e) {
-          // expected
+          assertThat(e).hasRootCauseInstanceOf(ForcedDisconnectException.class);
         } finally {
           hook.reset();
         }
@@ -1310,15 +1306,13 @@ public class LocatorDUnitTest implements Serializable {
     vm2.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
 
     if (vm1.invoke(() -> system.getDistributedMember().equals(getView().getCreator()))) {
-      vm2.invoke(() -> {
-        GeodeAwaitility.await()
-            .until(() -> !system.getDistributedMember().equals(getView().getCreator()));
-      });
+      assertFalse(
+          vm2.invoke("Checking ViewCreator",
+              () -> system.getDistributedMember().equals(getView().getCreator())));
     } else {
-      vm2.invoke(() -> {
-        GeodeAwaitility.await()
-            .until(() -> system.getDistributedMember().equals(getView().getCreator()));
-      });
+      assertTrue(
+          vm2.invoke("Checking ViewCreator",
+              () -> system.getDistributedMember().equals(getView().getCreator())));
     }
   }
 

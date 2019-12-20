@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.membership;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.assignableTo;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.type;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -28,6 +29,9 @@ import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.GemFireException;
+import org.apache.geode.InternalGemFireError;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
@@ -106,8 +110,15 @@ public class MembershipDependenciesJUnitTest {
               // TODO: Create a new stats interface for membership
               .or(type(LocatorStats.class))
 
+              // TODO: Figure out what to do with exceptions
+              .or(assignableTo(GemFireException.class))
+              .or(type(InternalGemFireError.class))
+
               // TODO: Serialization needs to become its own module
               .or(type(InternalDataSerializer.class)) // still used by GMSLocator
+
+              // TODO
+              .or(assignableTo(CancelCriterion.class))
 
               // TODO:
               .or(type(SocketCreator.class))

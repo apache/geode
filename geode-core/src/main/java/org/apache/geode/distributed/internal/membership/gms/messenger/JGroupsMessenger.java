@@ -42,7 +42,6 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -67,21 +66,23 @@ import org.jgroups.stack.IpAddress;
 import org.jgroups.util.Digest;
 import org.jgroups.util.UUID;
 
+import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.SystemConnectException;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.annotations.internal.MutableForTesting;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -98,7 +99,7 @@ import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
-
+import org.apache.geode.internal.tcp.MemberShunnedException;
 
 @SuppressWarnings("StatementWithEmptyBody")
 public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<ID> {
@@ -184,14 +185,14 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       receiver.setAccessible(true);
       receiver.set(channel, r);
     } catch (NoSuchFieldException | IllegalAccessException e) {
-      throw new IllegalStateException("unable to establish a JGroups receiver", e);
+      throw new InternalGemFireException("unable to establish a JGroups receiver", e);
     }
   }
 
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
-  public void init(Services<ID> s) throws MembershipConfigurationException {
+  public void init(Services<ID> s) {
     this.services = s;
 
     MembershipConfig config = services.getConfig();
@@ -219,7 +220,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       is = ClassLoader.getSystemResourceAsStream(r);
     }
     if (is == null) {
-      throw new MembershipConfigurationException(
+      throw new GemFireConfigException(
           String.format("Cannot find %s", r));
     }
 
@@ -235,7 +236,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       br.close();
       properties = sb.toString();
     } catch (Exception ex) {
-      throw new MembershipConfigurationException(
+      throw new GemFireConfigException(
           "An Exception was thrown while reading JGroups config.",
           ex);
     }
@@ -279,7 +280,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       try {
         str = SocketCreator.getLocalHost().getHostAddress();
       } catch (UnknownHostException e) {
-        throw new MembershipConfigurationException(e.getMessage(), e);
+        throw new GemFireConfigException(e.getMessage(), e);
       }
     }
     properties = replaceStrings(properties, "BIND_ADDR_SETTING", "bind_addr=\"" + str + "\"");
@@ -310,7 +311,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         this.encrypt = new GMSEncrypt<>(services, config.getSecurityUDPDHAlgo());
         logger.info("Initializing GMSEncrypt ");
       } catch (Exception e) {
-        throw new MembershipConfigurationException("problem initializing encryption protocol", e);
+        throw new GemFireConfigException("problem initializing encryption protocol", e);
       }
     }
   }
@@ -318,7 +319,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
-  public void start() throws MemberStartupException {
+  public void start() {
     // create the configuration XML string for JGroups
     String properties = this.jgStackConfig;
 
@@ -360,7 +361,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         myChannel = new JChannel(is);
       }
     } catch (Exception e) {
-      throw new MembershipConfigurationException("unable to create jgroups channel", e);
+      throw new GemFireConfigException("unable to create jgroups channel", e);
     }
 
     // give the stats to the jchannel statistics recorder
@@ -377,22 +378,18 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
     try {
       jgroupsReceiver = new JGroupsReceiver();
-      try {
-        setChannelReceiver(myChannel, jgroupsReceiver);
-      } catch (IllegalStateException e) {
-        throw new MemberStartupException("problem initializing JGroups", e);
-      }
+      setChannelReceiver(myChannel, jgroupsReceiver);
       if (!reconnecting) {
         myChannel.connect("AG"); // Apache Geode
       }
     } catch (Exception e) {
       myChannel.close();
-      throw new MemberStartupException("unable to create jgroups channel", e);
+      throw new SystemConnectException("unable to create jgroups channel", e);
     }
 
     if (JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK) {
       JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = false;
-      throw new MemberStartupException("failing for test");
+      throw new SystemConnectException("failing for test");
     }
 
     establishLocalAddress();
@@ -517,7 +514,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     }
   }
 
-  private void establishLocalAddress() throws MemberStartupException {
+  private void establishLocalAddress() {
     UUID logicalAddress = (UUID) myChannel.getAddress();
     logicalAddress = logicalAddress.copy();
 
@@ -534,7 +531,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         ipaddr = (IpAddress) getAddress.invoke(udp, new Object[0]);
         this.jgAddress = new JGAddress(logicalAddress, ipaddr);
       } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-        throw new MemberStartupException(
+        throw new InternalGemFireError(
             "Unable to configure JGroups channel for membership communications", e);
       }
     }
@@ -613,7 +610,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
   @Override
   public void waitForMessageState(ID sender, Map<String, Long> state)
-      throws InterruptedException, TimeoutException {
+      throws InterruptedException {
     Long seqno = state.get("JGroups.mcastState");
     if (seqno == null) {
       return;
@@ -652,7 +649,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
             Long.toString((warnTime - startTime) / 1000L), sender, received, seqno);
       }
       if (now >= quitTime) {
-        throw new TimeoutException("Multicast operations from " + sender
+        throw new GemFireIOException("Multicast operations from " + sender
             + " did not distribute within " + (now - startTime) + " milliseconds");
       }
       Thread.sleep(50);
@@ -682,7 +679,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
     if (!myChannel.isConnected()) {
       logger.info("JGroupsMessenger channel is closed - messaging is not possible");
-      throw new MembershipClosedException("Distributed System is shutting down");
+      throw new DistributedSystemDisconnectedException("Distributed System is shutting down");
     }
 
     filterOutgoingMessage(msg);
@@ -704,18 +701,12 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
     JGAddress local = this.jgAddress;
 
-    Set<ID> failedRecipients = new HashSet<>();
     if (useMcast) {
+
       long startSer = theStats.startMsgSerialization();
-      org.jgroups.Message jmsg;
-      try {
-        jmsg =
-            createJGMessage(msg, local, null, Version.getCurrentVersion().ordinal());
-      } catch (IOException e) {
-        return new HashSet<>(msg.getRecipients());
-      } finally {
-        theStats.endMsgSerialization(startSer);
-      }
+      org.jgroups.Message jmsg =
+          createJGMessage(msg, local, null, Version.getCurrentVersion().ordinal());
+      theStats.endMsgSerialization(startSer);
 
       Exception problem;
       try {
@@ -729,7 +720,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       } catch (Exception e) {
         logger.debug("caught unexpected exception", e);
         Throwable cause = e.getCause();
-        if (cause instanceof MemberDisconnectedException) {
+        if (cause instanceof ForcedDisconnectException) {
           problem = (Exception) cause;
         } else {
           problem = e;
@@ -738,7 +729,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
           Throwable shutdownCause = services.getShutdownCause();
           // If ForcedDisconnectException occurred then report it as actual
           // problem.
-          if (shutdownCause instanceof MemberDisconnectedException) {
+          if (shutdownCause instanceof ForcedDisconnectException) {
             problem = (Exception) shutdownCause;
           } else {
             Throwable ne = problem;
@@ -750,7 +741,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         }
         final String channelClosed =
             "Channel closed";
-        throw new MembershipClosedException(channelClosed, problem);
+        throw new DistributedSystemDisconnectedException(channelClosed, problem);
       }
     } // useMcast
     else { // ! useMcast
@@ -782,14 +773,8 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       for (ID mbr : calculatedMembers) {
         short version = mbr.getVersionOrdinal();
         if (!messages.containsKey(version)) {
-          org.jgroups.Message jmsg;
-          try {
-            jmsg = createJGMessage(msg, local, mbr, version);
-            messages.put(version, jmsg);
-          } catch (IOException e) {
-            failedRecipients.add(mbr);
-            continue;
-          }
+          org.jgroups.Message jmsg = createJGMessage(msg, local, mbr, version);
+          messages.put(version, jmsg);
           if (firstMessage) {
             theStats.incSentBytes(jmsg.getLength());
             firstMessage = false;
@@ -803,9 +788,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
         JGAddress to = new JGAddress(mbr);
         short version = mbr.getVersionOrdinal();
         org.jgroups.Message jmsg = messages.get(version);
-        if (jmsg == null) {
-          continue; // failed for all recipients
-        }
         Exception problem = null;
         try {
           org.jgroups.Message tmp = (i < (calculatedLen - 1)) ? jmsg.copy(true) : jmsg;
@@ -824,7 +806,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
           if (cause != null) {
             // If ForcedDisconnectException occurred then report it as actual
             // problem.
-            if (cause instanceof MemberDisconnectedException) {
+            if (cause instanceof ForcedDisconnectException) {
               problem = (Exception) cause;
             } else {
               Throwable ne = problem;
@@ -836,7 +818,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
           }
           final String channelClosed =
               "Channel closed";
-          throw new MembershipClosedException(channelClosed, problem);
+          throw new DistributedSystemDisconnectedException(channelClosed, problem);
         }
       } // send individually
     } // !useMcast
@@ -844,19 +826,20 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     // The contract is that every destination enumerated in the
     // message should have received the message. If one left
     // (i.e., left the view), we signal it here.
-    if (failedRecipients.isEmpty() && msg.forAll()) {
+    if (msg.forAll()) {
       return Collections.emptySet();
     }
+    Set<ID> result = new HashSet<>();
     GMSMembershipView<ID> newView = this.view;
     if (newView != null && newView != oldView) {
       for (ID d : destinations) {
         if (!newView.contains(d)) {
           logger.debug("messenger: member has left the view: {}  view is now {}", d, newView);
-          failedRecipients.add(d);
+          result.add(d);
         }
       }
     }
-    return failedRecipients;
+    return result;
   }
 
   /**
@@ -870,7 +853,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
    * @return the new message
    */
   org.jgroups.Message createJGMessage(Message<ID> gfmsg, JGAddress src, ID dst,
-      short version) throws IOException {
+      short version) {
     gfmsg.registerProcessor();
     org.jgroups.Message msg = new org.jgroups.Message();
     msg.setDest(null);
@@ -892,13 +875,19 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
 
       msg.setBuffer(out_stream.toByteArray());
       services.getStatistics().endMsgSerialization(start);
-    } catch (IOException ex) {
+    } catch (IOException | GemFireIOException ex) {
       logger.warn("Error serializing message", ex);
-      throw ex;
+      if (ex instanceof GemFireIOException) {
+        throw (GemFireIOException) ex;
+      } else {
+        GemFireIOException ioe = new GemFireIOException("Error serializing message");
+        ioe.initCause(ex);
+        throw ioe;
+      }
     } catch (Exception ex) {
       logger.warn("Error serializing message", ex);
-      IOException ioe =
-          new IOException("Error serializing message", ex.getCause());
+      GemFireIOException ioe = new GemFireIOException("Error serializing message");
+      ioe.initCause(ex.getCause());
       throw ioe;
     }
     return msg;
@@ -1038,7 +1027,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       boolean isEncrypted = dis.readBoolean();
 
       if (isEncrypted && encrypt == null) {
-        throw new MembershipConfigurationException("Got remote message as encrypted");
+        throw new GemFireConfigException("Got remote message as encrypted");
       }
 
       if (isEncrypted) {

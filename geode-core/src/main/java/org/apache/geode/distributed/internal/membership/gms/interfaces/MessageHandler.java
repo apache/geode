@@ -15,14 +15,12 @@
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
-
 /**
  * MessageHandler processes a message received by Messenger. Handlers are registered with Messenger
  * to consume specific classes of message.
  */
 public interface MessageHandler<T> {
 
-  void processMessage(T m) throws MemberShunnedException;
+  void processMessage(T m);
 
 }

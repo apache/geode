@@ -36,16 +36,15 @@ import java.util.Timer;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -175,7 +174,7 @@ public class Services<ID extends MemberIdentifier> {
   /**
    * Initialize services - do this before invoking start()
    */
-  public void init() throws MembershipConfigurationException {
+  public void init() {
     this.messenger.init(this);
     this.manager.init(this);
     this.joinLeave.init(this);
@@ -186,7 +185,7 @@ public class Services<ID extends MemberIdentifier> {
    * Start services - this will start everything up and join the cluster.
    * Invoke init() before this method.
    */
-  public void start() throws MemberStartupException {
+  public void start() {
     boolean started = false;
     try {
       logger.info("Starting membership services");
@@ -367,7 +366,7 @@ public class Services<ID extends MemberIdentifier> {
   }
 
   public boolean isShutdownDueToForcedDisconnect() {
-    return this.shutdownCause instanceof MemberDisconnectedException;
+    return this.shutdownCause instanceof ForcedDisconnectException;
   }
 
   public boolean isAutoReconnectEnabled() {
@@ -378,42 +377,32 @@ public class Services<ID extends MemberIdentifier> {
     return this.serializer;
   }
 
-  public class Stopper {
+  public class Stopper extends CancelCriterion {
     volatile String reasonForStopping = null;
 
     public void cancel(String reason) {
       this.reasonForStopping = reason;
     }
 
+    @Override
     public String cancelInProgress() {
       if (Services.this.shutdownCause != null)
         return Services.this.shutdownCause.toString();
       return this.reasonForStopping;
     }
 
+    @Override
     public RuntimeException generateCancelledException(Throwable e) {
       String reason = cancelInProgress();
       if (reason == null) {
         return null;
       } else {
         if (e == null) {
-          return new MembershipClosedException(reason);
+          return new DistributedSystemDisconnectedException(reason);
         } else {
-          return new MembershipClosedException(reason, e);
+          return new DistributedSystemDisconnectedException(reason, e);
         }
       }
-    }
-
-    public boolean isCancelInProgress() {
-      return cancelInProgress() != null;
-    }
-
-    public void checkCancelInProgress(Throwable e) {
-      String reason = cancelInProgress();
-      if (reason == null) {
-        return;
-      }
-      throw generateCancelledException(e);
     }
 
   }

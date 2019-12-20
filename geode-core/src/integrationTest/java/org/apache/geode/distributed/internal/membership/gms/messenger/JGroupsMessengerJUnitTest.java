@@ -21,7 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -53,9 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeoutException;
 
 import org.jgroups.Address;
 import org.jgroups.Event;
@@ -69,8 +66,11 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.GemFireIOException;
 import org.apache.geode.SerializationException;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -79,9 +79,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -291,21 +289,27 @@ public class JGroupsMessengerJUnitTest {
       when(msg.getDSFID()).thenReturn((int) DataSerializableFixedID.HEARTBEAT_RESPONSE);
 
       // for code coverage we need to test with both a SerializationException and
-      // an IOException. The former is wrapped in a MembershipIOException while the
+      // an IOException. The former is wrapped in a GemfireIOException while the
       // latter is not
       doThrow(new SerializationException("")).when(msg).toData(any(DataOutput.class),
           any(SerializationContext.class));
-      Set<?> failures = messenger.send(msg);
-      assertThat(failures).isNotNull();
-      assertThat(failures).isNotEmpty();
+      try {
+        messenger.send(msg);
+        fail("expected a failure");
+      } catch (GemFireIOException e) {
+        // success
+      }
       if (enableMcast) {
         verify(msg, atLeastOnce()).registerProcessor();
       }
       doThrow(new IOException()).when(msg).toData(any(DataOutput.class),
           any(SerializationContext.class));
-      failures = messenger.send(msg);
-      assertThat(failures).isNotNull();
-      assertThat(failures).isNotEmpty();
+      try {
+        messenger.send(msg);
+        fail("expected a failure");
+      } catch (GemFireIOException e) {
+        // success
+      }
     }
   }
 
@@ -328,7 +332,7 @@ public class JGroupsMessengerJUnitTest {
         try {
           messenger.send(msg);
           fail("expected a failure");
-        } catch (MembershipClosedException e) {
+        } catch (DistributedSystemDisconnectedException e) {
           // success
         }
         verify(mockChannel).send(isA(org.jgroups.Message.class));
@@ -351,7 +355,7 @@ public class JGroupsMessengerJUnitTest {
         ex = new RuntimeException("");
         shutdownCause = new RuntimeException("shutdownCause");
       } else {
-        shutdownCause = new MemberDisconnectedException("");
+        shutdownCause = new ForcedDisconnectException("");
         ex = new RuntimeException("", shutdownCause);
       }
       doThrow(ex).when(mockChannel).send(any(org.jgroups.Message.class));
@@ -369,7 +373,7 @@ public class JGroupsMessengerJUnitTest {
         try {
           messenger.send(msg);
           fail("expected a failure");
-        } catch (MembershipClosedException e) {
+        } catch (DistributedSystemDisconnectedException e) {
           // the ultimate cause should be the shutdownCause returned
           // by Services.getShutdownCause()
           Throwable cause = e;
@@ -404,7 +408,7 @@ public class JGroupsMessengerJUnitTest {
         try {
           messenger.send(msg);
           fail("expected a failure");
-        } catch (MembershipClosedException e) {
+        } catch (DistributedSystemDisconnectedException e) {
           // success
         }
         verify(mockChannel, never()).send(isA(org.jgroups.Message.class));
@@ -426,8 +430,11 @@ public class JGroupsMessengerJUnitTest {
       when(msg.getMulticast()).thenReturn(enableMcast);
       when(msg.getDSFID()).thenReturn((int) DataSerializableFixedID.HEARTBEAT_RESPONSE);
       interceptor.collectMessages = true;
-      Set<?> failures = messenger.sendUnreliably(msg);
-      assertTrue(failures == null || failures.isEmpty());
+      try {
+        messenger.sendUnreliably(msg);
+      } catch (GemFireIOException e) {
+        fail("expected success");
+      }
       if (enableMcast) {
         verify(msg, atLeastOnce()).registerProcessor();
       }
@@ -587,12 +594,12 @@ public class JGroupsMessengerJUnitTest {
   public void testChannelStillConnectedAfterEmergencyCloseAfterForcedDisconnectWithAutoReconnect()
       throws Exception {
     initMocks(false);
-    doCallRealMethod().when(services).setShutdownCause(any(MemberDisconnectedException.class));
+    doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
     doCallRealMethod().when(services).getShutdownCause();
     doCallRealMethod().when(services).emergencyClose();
     doCallRealMethod().when(services).isShutdownDueToForcedDisconnect();
     doCallRealMethod().when(services).isAutoReconnectEnabled();
-    services.setShutdownCause(new MemberDisconnectedException("Test Forced Disconnect"));
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
     assertTrue(messenger.myChannel.isConnected());
     messenger.emergencyClose();
     assertTrue(messenger.myChannel.isConnected());
@@ -602,12 +609,12 @@ public class JGroupsMessengerJUnitTest {
   public void testChannelStillConnectedAfterStopAfterForcedDisconnectWithAutoReconnect()
       throws Exception {
     initMocks(false);
-    doCallRealMethod().when(services).setShutdownCause(any(MemberDisconnectedException.class));
+    doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
     doCallRealMethod().when(services).getShutdownCause();
     doCallRealMethod().when(services).emergencyClose();
     doCallRealMethod().when(services).isShutdownDueToForcedDisconnect();
     doCallRealMethod().when(services).isAutoReconnectEnabled();
-    services.setShutdownCause(new MemberDisconnectedException("Test Forced Disconnect"));
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
     assertTrue(messenger.myChannel.isConnected());
     messenger.stop();
     assertTrue(messenger.myChannel.isConnected());
@@ -616,13 +623,13 @@ public class JGroupsMessengerJUnitTest {
   @Test
   public void testChannelStillConnectedAfteremergencyWhileReconnectingDS() throws Exception {
     initMocks(false);
-    doCallRealMethod().when(services).setShutdownCause(any(MemberDisconnectedException.class));
+    doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
     doCallRealMethod().when(services).getShutdownCause();
     doCallRealMethod().when(services).emergencyClose();
     doReturn(false).when(services).isShutdownDueToForcedDisconnect();
     doReturn(false).when(services).isAutoReconnectEnabled();
     doReturn(true).when(manager).isReconnectingDS();
-    services.setShutdownCause(new MemberDisconnectedException("Test Forced Disconnect"));
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
     assertTrue(messenger.myChannel.isConnected());
     messenger.emergencyClose();
     assertTrue(messenger.myChannel.isConnected());
@@ -632,13 +639,13 @@ public class JGroupsMessengerJUnitTest {
   @Test
   public void testChannelStillConnectedAfterStopWhileReconnectingDS() throws Exception {
     initMocks(false);
-    doCallRealMethod().when(services).setShutdownCause(any(MemberDisconnectedException.class));
+    doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
     doCallRealMethod().when(services).getShutdownCause();
     doCallRealMethod().when(services).emergencyClose();
     doReturn(false).when(services).isShutdownDueToForcedDisconnect();
     doReturn(false).when(services).isAutoReconnectEnabled();
     doReturn(true).when(manager).isReconnectingDS();
-    services.setShutdownCause(new MemberDisconnectedException("Test Forced Disconnect"));
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
     assertTrue(messenger.myChannel.isConnected());
     messenger.stop();
     assertTrue(messenger.myChannel.isConnected());
@@ -647,13 +654,13 @@ public class JGroupsMessengerJUnitTest {
   @Test
   public void testChannelClosedOnEmergencyClose() throws Exception {
     initMocks(false);
-    doCallRealMethod().when(services).setShutdownCause(any(MemberDisconnectedException.class));
+    doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
     doCallRealMethod().when(services).getShutdownCause();
     doCallRealMethod().when(services).emergencyClose();
     doReturn(false).when(services).isShutdownDueToForcedDisconnect();
     doReturn(false).when(services).isAutoReconnectEnabled();
     doReturn(false).when(manager).isReconnectingDS();
-    services.setShutdownCause(new MemberDisconnectedException("Test Forced Disconnect"));
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
     assertTrue(messenger.myChannel.isConnected());
     messenger.emergencyClose();
     assertFalse(messenger.myChannel.isConnected());
@@ -662,13 +669,13 @@ public class JGroupsMessengerJUnitTest {
   @Test
   public void testChannelClosedOnStop() throws Exception {
     initMocks(false);
-    doCallRealMethod().when(services).setShutdownCause(any(MemberDisconnectedException.class));
+    doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
     doCallRealMethod().when(services).getShutdownCause();
     doCallRealMethod().when(services).emergencyClose();
     doReturn(false).when(services).isShutdownDueToForcedDisconnect();
     doReturn(false).when(services).isAutoReconnectEnabled();
     doReturn(false).when(manager).isReconnectingDS();
-    services.setShutdownCause(new MemberDisconnectedException("Test Forced Disconnect"));
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
     assertTrue(messenger.myChannel.isConnected());
     messenger.stop();
     assertFalse(messenger.myChannel.isConnected());
@@ -678,13 +685,13 @@ public class JGroupsMessengerJUnitTest {
   public void testChannelClosedAfterEmergencyCloseForcedDisconnectWithoutAutoReconnect()
       throws Exception {
     initMocks(false);
-    doCallRealMethod().when(services).setShutdownCause(any(MemberDisconnectedException.class));
+    doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
     doCallRealMethod().when(services).getShutdownCause();
     doCallRealMethod().when(services).emergencyClose();
     doReturn(true).when(services).isShutdownDueToForcedDisconnect();
     doReturn(false).when(services).isAutoReconnectEnabled();
     doReturn(false).when(manager).isReconnectingDS();
-    services.setShutdownCause(new MemberDisconnectedException("Test Forced Disconnect"));
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
     assertTrue(messenger.myChannel.isConnected());
     messenger.emergencyClose();
     assertFalse(messenger.myChannel.isConnected());
@@ -694,13 +701,13 @@ public class JGroupsMessengerJUnitTest {
   public void testChannelStillConnectedStopAfterForcedDisconnectWithoutAutoReconnect()
       throws Exception {
     initMocks(false);
-    doCallRealMethod().when(services).setShutdownCause(any(MemberDisconnectedException.class));
+    doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
     doCallRealMethod().when(services).getShutdownCause();
     doCallRealMethod().when(services).emergencyClose();
     doReturn(true).when(services).isShutdownDueToForcedDisconnect();
     doReturn(false).when(services).isAutoReconnectEnabled();
     doReturn(false).when(manager).isReconnectingDS();
-    services.setShutdownCause(new MemberDisconnectedException("Test Forced Disconnect"));
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
     assertTrue(messenger.myChannel.isConnected());
     messenger.stop();
     assertFalse(messenger.myChannel.isConnected());
@@ -710,13 +717,13 @@ public class JGroupsMessengerJUnitTest {
   public void testChannelClosedAfterEmergencyCloseNotForcedDisconnectWithAutoReconnect()
       throws Exception {
     initMocks(false);
-    doCallRealMethod().when(services).setShutdownCause(any(MemberDisconnectedException.class));
+    doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
     doCallRealMethod().when(services).getShutdownCause();
     doCallRealMethod().when(services).emergencyClose();
     doReturn(false).when(services).isShutdownDueToForcedDisconnect();
     doReturn(true).when(services).isAutoReconnectEnabled();
     doReturn(false).when(manager).isReconnectingDS();
-    services.setShutdownCause(new MemberDisconnectedException("Test Forced Disconnect"));
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
     assertTrue(messenger.myChannel.isConnected());
     messenger.emergencyClose();
     assertFalse(messenger.myChannel.isConnected());
@@ -725,13 +732,13 @@ public class JGroupsMessengerJUnitTest {
   @Test
   public void testChannelStillConnectedStopNotForcedDisconnectWithAutoReconnect() throws Exception {
     initMocks(false);
-    doCallRealMethod().when(services).setShutdownCause(any(MemberDisconnectedException.class));
+    doCallRealMethod().when(services).setShutdownCause(any(ForcedDisconnectException.class));
     doCallRealMethod().when(services).getShutdownCause();
     doCallRealMethod().when(services).emergencyClose();
     doReturn(false).when(services).isShutdownDueToForcedDisconnect();
     doReturn(true).when(services).isAutoReconnectEnabled();
     doReturn(false).when(manager).isReconnectingDS();
-    services.setShutdownCause(new MemberDisconnectedException("Test Forced Disconnect"));
+    services.setShutdownCause(new ForcedDisconnectException("Test Forced Disconnect"));
     assertTrue(messenger.myChannel.isConnected());
     messenger.stop();
     assertFalse(messenger.myChannel.isConnected());
@@ -936,8 +943,8 @@ public class JGroupsMessengerJUnitTest {
       MemberIdentifier mbr = createAddress(1234);
       messenger.scheduledMcastSeqnos.put(mbr, new JGroupsMessenger.MessageTracker(30));
       messenger.waitForMessageState(mbr, state);
-      fail("expected a MembershipIOException to be thrown");
-    } catch (TimeoutException e) {
+      fail("expected a GemFireIOException to be thrown");
+    } catch (GemFireIOException e) {
       // pass
     }
   }

@@ -15,6 +15,9 @@
 package org.apache.geode.distributed.internal.membership.gms;
 
 
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -22,12 +25,13 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.tcp.ConnectionException;
+import org.apache.geode.security.GemFireSecurityException;
 
 public class MembershipBuilderImpl<ID extends MemberIdentifier> implements MembershipBuilder<ID> {
   private TcpClient locatorClient;
@@ -98,13 +102,24 @@ public class MembershipBuilderImpl<ID extends MemberIdentifier> implements Membe
   }
 
   @Override
-  public Membership<ID> create() throws MembershipConfigurationException {
+  public Membership<ID> create() {
     GMSMembership<ID> gmsMembership =
         new GMSMembership<>(membershipListener, messageListener, lifecycleListener);
     Services<ID> services =
         new Services<>(gmsMembership.getGMSManager(), statistics, authenticator,
             membershipConfig, serializer, memberFactory, locatorClient);
-    services.init();
+    try {
+      services.init();
+    } catch (ConnectionException e) {
+      throw new DistributionException(
+          "Unable to create membership manager",
+          e);
+    } catch (GemFireConfigException | SystemConnectException | GemFireSecurityException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      Services.getLogger().error("Unexpected problem starting up membership services", e);
+      throw new SystemConnectException("Problem starting up membership services", e);
+    }
     return gmsMembership;
   }
 

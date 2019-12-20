@@ -14,24 +14,22 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.api;
 
-
 /**
- * MembershipConfigurationException may be thrown during startup and indicates a
- * problem with configuration parameters. MembershipConfigurationException is a
- * subclass of MemberStartupException, which may also be thrown during startup but
- * indicates a problem connecting to the cluster after membership configuration has
- * completed.
+ * Test hook for membership test development
  */
-public class MembershipConfigurationException extends MemberStartupException {
-  private static final long serialVersionUID = 5633602142465129621L;
+public interface MembershipTestHook {
 
-  public MembershipConfigurationException() {}
-
-  public MembershipConfigurationException(String reason) {
-    super(reason);
+  /**
+   * test hook invoked prior to shutting down distributed system
+   */
+  default void beforeMembershipFailure(String reason, Throwable cause) {
+    // nothing
   }
 
-  public MembershipConfigurationException(String reason, Throwable cause) {
-    super(reason, cause);
+  /**
+   * test hook invoked after shutting down distributed system
+   */
+  default void afterMembershipFailure(String reason, Throwable cause) {
+    // nothing
   }
 }

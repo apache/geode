@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.file.Path;
 
-import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.Distribution;
@@ -31,7 +30,6 @@ import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -63,14 +61,10 @@ public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
                 .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
-    try {
-      gmsLocator =
-          new GMSLocator<>(bindAddress, locatorString, usePreferredCoordinators,
-              networkPartitionDetectionEnabled,
-              locatorStats, securityUDPDHAlgo, workingDirectory, locatorClient);
-    } catch (MembershipConfigurationException e) {
-      throw new GemFireConfigException(e.getMessage());
-    }
+    gmsLocator =
+        new GMSLocator<>(bindAddress, locatorString, usePreferredCoordinators,
+            networkPartitionDetectionEnabled,
+            locatorStats, securityUDPDHAlgo, workingDirectory, locatorClient);
   }
 
   @Override

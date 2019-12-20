@@ -45,7 +45,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.internal.cache.DirectReplyMessage;
@@ -55,6 +54,7 @@ import org.apache.geode.internal.tcp.BaseMsgStreamer;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.internal.tcp.ConnectionException;
+import org.apache.geode.internal.tcp.MemberShunnedException;
 import org.apache.geode.internal.tcp.MsgStreamer;
 import org.apache.geode.internal.tcp.TCPConduit;
 import org.apache.geode.internal.util.Breadcrumbs;
@@ -699,7 +699,7 @@ public class DirectChannel {
     }
   }
 
-  public void receive(DistributionMessage msg, int bytesRead) throws MemberShunnedException {
+  public void receive(DistributionMessage msg, int bytesRead) {
     if (disconnected) {
       return;
     }

@@ -43,7 +43,10 @@ import java.util.concurrent.Future;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -51,10 +54,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
@@ -71,6 +71,8 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.security.GemFireSecurityException;
 
 /**
  * GMSJoinLeave handles membership communication with other processes in the distributed system. It
@@ -302,7 +304,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    * @return true if successful, false if not
    */
   @Override
-  public boolean join() throws MemberStartupException {
+  public boolean join() {
 
     try {
       if (Boolean.getBoolean(BYPASS_DISCOVERY_PROPERTY)) {
@@ -395,10 +397,10 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             + (System.currentTimeMillis() - startTime) + "ms");
       }
 
-      // to preserve old behavior we need to throw a MemberStartupException if
+      // to preserve old behavior we need to throw a SystemConnectException if
       // unable to contact any of the locators
       if (!this.isJoined && state.hasContactedAJoinedLocator) {
-        throw new MemberStartupException("Unable to join the distributed system in "
+        throw new SystemConnectException("Unable to join the distributed system in "
             + (System.currentTimeMillis() - startTime) + "ms");
       }
 
@@ -416,12 +418,12 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
 
   /**
    * send a join request and wait for a reply. Process the reply. This may throw a
-   * MemberStartupException or an exception from the authenticator, if present.
+   * SystemConnectException or an AuthenticationFailedException
    *
    * @return true if the attempt succeeded, false if it timed out
    */
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "WA_NOT_IN_LOOP")
-  boolean attemptToJoin() throws MemberStartupException {
+  boolean attemptToJoin() {
     SearchState<ID> state = searchState;
 
     // send a join request to the coordinator and wait for a response
@@ -460,9 +462,11 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       if (failReason.contains("Rejecting the attempt of a member using an older version")
           || failReason.contains("15806")
           || failReason.contains("ForcedDisconnectException")) {
-        throw new MemberStartupException(failReason);
+        throw new SystemConnectException(failReason);
+      } else if (failReason.contains("Failed to find credentials")) {
+        throw new AuthenticationRequiredException(failReason);
       }
-      throw new SecurityException(failReason);
+      throw new GemFireSecurityException(failReason);
     }
 
     throw new RuntimeException("Join Request Failed with response " + response);
@@ -1106,7 +1110,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    * This contacts the locators to find out who the current coordinator is. All locators are
    * contacted. If they don't agree then we choose the oldest coordinator and return it.
    */
-  boolean findCoordinator() throws MemberStartupException {
+  boolean findCoordinator() {
     SearchState<ID> state = searchState;
 
     assert this.localAddress != null;
@@ -1145,7 +1149,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
               (o instanceof FindCoordinatorResponse) ? (FindCoordinatorResponse<ID>) o : null;
           if (response != null) {
             if (response.getRejectionMessage() != null) {
-              throw new MembershipConfigurationException(response.getRejectionMessage());
+              throw new GemFireConfigException(response.getRejectionMessage());
             }
             setCoordinatorPublicKey(response);
             state.locatorsContacted++;
@@ -1191,7 +1195,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
             } catch (InterruptedException e) {
               Thread.currentThread().interrupt();
               services.getCancelCriterion().checkCancelInProgress(e);
-              throw new MemberStartupException("Interrupted while trying to contact locators");
+              throw new SystemConnectException("Interrupted while trying to contact locators");
             }
           }
         }
@@ -1676,7 +1680,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   }
 
   @Override
-  public void start() throws MemberStartupException {}
+  public void start() {}
 
   @Override
   public void started() {}
@@ -1819,16 +1823,15 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   }
 
   @Override
-  public void init(Services<ID> s) throws MembershipConfigurationException {
+  public void init(Services<ID> s) {
     this.services = s;
 
     MembershipConfig config = services.getConfig();
     if (config.getMcastPort() != 0 && StringUtils.isBlank(config.getLocators())
         && StringUtils.isBlank(config.getStartLocator())) {
-      throw new MembershipConfigurationException(
-          "Multicast cannot be configured for a non-distributed cache."
-              + "  Please configure the locator services for this cache using " + LOCATORS + " or "
-              + START_LOCATOR + ".");
+      throw new GemFireConfigException("Multicast cannot be configured for a non-distributed cache."
+          + "  Please configure the locator services for this cache using " + LOCATORS + " or "
+          + START_LOCATOR + ".");
     }
 
     services.getMessenger().addHandler(JoinRequestMessage.class, this::processMessage);
@@ -2184,7 +2187,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
           }
         } catch (InterruptedException e) {
           setShutdownFlag();
-        } catch (MembershipClosedException e) {
+        } catch (DistributedSystemDisconnectedException e) {
           setShutdownFlag();
         }
       } while (retry);
@@ -2319,7 +2322,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
               } catch (InterruptedException e2) {
                 setShutdownFlag();
               }
-            } catch (MembershipClosedException e) {
+            } catch (DistributedSystemDisconnectedException e) {
               setShutdownFlag();
             } catch (InterruptedException e) {
               logger.info("View Creator thread interrupted");

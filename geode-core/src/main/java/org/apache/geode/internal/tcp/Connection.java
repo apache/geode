@@ -72,7 +72,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSFIDFactory;
@@ -2655,6 +2654,8 @@ public class Connection implements Runnable {
       stats.incMessageChannelTime(msg.resetTimestamp());
       msg.process(dm, processor);
       // dispatchMessage(msg, len, false);
+    } catch (MemberShunnedException e) {
+      // do nothing
     } catch (SocketTimeoutException timeout) {
       throw timeout;
     } catch (IOException e) {
@@ -3170,8 +3171,7 @@ public class Connection implements Runnable {
     }
   }
 
-  private boolean dispatchMessage(DistributionMessage msg, int bytesRead, boolean directAck)
-      throws MemberShunnedException {
+  private boolean dispatchMessage(DistributionMessage msg, int bytesRead, boolean directAck) {
     try {
       msg.setDoDecMessagesBeingReceived(true);
       if (directAck) {

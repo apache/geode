@@ -21,7 +21,7 @@ public interface MessageListener<ID extends MemberIdentifier> {
    *
    * @param o the message that should be processed.
    */
-  void messageReceived(Message<ID> o) throws MemberShunnedException;
+  void messageReceived(Message<ID> o);
 
 
 }

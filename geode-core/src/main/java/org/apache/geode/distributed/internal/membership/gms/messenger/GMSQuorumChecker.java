@@ -81,7 +81,6 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
   }
 
 
-  @Override
   public synchronized boolean checkForQuorum(long timeout) throws InterruptedException {
     if (quorumAchieved) {
       return true;
@@ -99,7 +98,6 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
     return quorumAchieved;
   }
 
-  @Override
   public void close() {
     if (channel != null && !channel.isClosed()) {
       channel.close();
@@ -111,7 +109,7 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
     JGroupsMessenger.setChannelReceiver(channel, new QuorumCheckerReceiver());
   }
 
-  @Override
+
   public MembershipInformation getMembershipInfo() {
     return new MembershipInformationImpl(channel, messageQueue);
   }

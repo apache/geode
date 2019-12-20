@@ -54,6 +54,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.internal.verification.Times;
 import org.mockito.verification.Timeout;
 
+import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
@@ -65,7 +66,6 @@ import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
@@ -107,16 +107,15 @@ public class GMSJoinLeaveJUnitTest {
   private MemberIdentifier leaveMember = null;
   private TcpClient locatorClient;
 
-  public void initMocks() throws Exception {
+  public void initMocks() {
     initMocks(false);
   }
 
-  public void initMocks(boolean enableNetworkPartition) throws Exception {
+  public void initMocks(boolean enableNetworkPartition) {
     initMocks(enableNetworkPartition, false);
   }
 
-  public void initMocks(boolean enableNetworkPartition, boolean useTestGMSJoinLeave)
-      throws Exception {
+  public void initMocks(boolean enableNetworkPartition, boolean useTestGMSJoinLeave) {
     mockConfig = mock(ServiceConfig.class);
     when(mockConfig.getEnableNetworkPartitionDetection()).thenReturn(enableNetworkPartition);
     when(mockConfig.getSecurityUDPDHAlgo()).thenReturn("");
@@ -220,7 +219,7 @@ public class GMSJoinLeaveJUnitTest {
     // and will throw an exception when going to pause
     Thread.currentThread().interrupt();
     assertThatThrownBy(() -> gmsJoinLeave.findCoordinator())
-        .isInstanceOf(MemberStartupException.class)
+        .isInstanceOf(SystemConnectException.class)
         .hasMessageContaining("Interrupted while trying to contact locators");
     assertThat(Thread.currentThread().interrupted()).isTrue();
     verify(locatorClient, times(1)).requestToServer(isA(InetSocketAddress.class),
@@ -271,7 +270,7 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   @Test
-  public void testProcessJoinMessageRejectOldMemberVersion() throws Exception {
+  public void testProcessJoinMessageRejectOldMemberVersion() throws IOException {
     initMocks();
 
     gmsJoinLeave.processMessage(new JoinRequestMessage(mockOldMember, mockOldMember, null, -1, 0));
@@ -293,7 +292,7 @@ public class GMSJoinLeaveJUnitTest {
 
 
   @Test
-  public void testProcessJoinMessageWithBadAuthentication() throws Exception {
+  public void testProcessJoinMessageWithBadAuthentication() throws IOException {
     initMocks();
     when(authenticator.authenticate(mockMembers[0], credentials))
         .thenThrow(new AuthenticationFailedException("we want to fail auth here"));
@@ -306,7 +305,7 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   @Test
-  public void testProcessJoinMessageWithAuthenticationButNullCredentials() throws Exception {
+  public void testProcessJoinMessageWithAuthenticationButNullCredentials() throws IOException {
     initMocks();
     when(authenticator.authenticate(mockMembers[0], null))
         .thenThrow(new AuthenticationFailedException("we want to fail auth here"));
@@ -320,7 +319,7 @@ public class GMSJoinLeaveJUnitTest {
 
   // This test does not test the actual join process but rather that the join response gets logged
   @Test
-  public void testProcessJoinResponseIsRecorded() throws Exception {
+  public void testProcessJoinResponseIsRecorded() throws IOException {
     initMocks();
     when(authenticator.authenticate(mockMembers[0], null))
         .thenThrow(new AuthenticationFailedException("we want to fail auth here"));
@@ -437,7 +436,7 @@ public class GMSJoinLeaveJUnitTest {
 
 
   @Test
-  public void testRejectOlderView() throws Exception {
+  public void testRejectOlderView() throws IOException {
     initMocks();
     prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
 
@@ -453,7 +452,7 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   @Test
-  public void testForceDisconnectedFromNewView() throws Exception {
+  public void testForceDisconnectedFromNewView() throws IOException {
     initMocks(true);// enabledNetworkPartition;
     Manager mockManager = mock(Manager.class);
     when(services.getManager()).thenReturn(mockManager);
@@ -840,7 +839,7 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   @Test
-  public void testNetworkPartitionDetected() throws Exception {
+  public void testNetworkPartitionDetected() throws IOException {
     initMocks(true);
     prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
 
@@ -888,7 +887,7 @@ public class GMSJoinLeaveJUnitTest {
 
 
   @Test
-  public void testQuorumLossNotificationWithNetworkPartitionDetectionDisabled() throws Exception {
+  public void testQuorumLossNotificationWithNetworkPartitionDetectionDisabled() throws IOException {
     initMocks(false);
     prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
 
