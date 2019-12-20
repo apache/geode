@@ -281,7 +281,7 @@ public class ListIndexManagementDUnitTest {
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region2", 3);
 
     Index index = new Index();
-    index.setName("index");
+    index.setName("index.1");
     index.setExpression("key");
     index.setRegionPath("/region2");
     index.setIndexType(IndexType.KEY);
@@ -292,7 +292,7 @@ public class ListIndexManagementDUnitTest {
     List<IndexInfo> runtimeResult = indexResult.getRuntimeResult();
     assertSoftly(softly -> {
       softly.assertThat(indexConfig.getRegionName()).isEqualTo("region2");
-      softly.assertThat(indexConfig.getName()).isEqualTo("index");
+      softly.assertThat(indexConfig.getName()).isEqualTo("index.1");
       softly.assertThat(indexConfig.getRegionPath()).isEqualTo("/region2");
       softly.assertThat(indexConfig.getExpression()).isEqualTo("key");
       softly.assertThat(runtimeResult).extracting(IndexInfo::getMemberName)
@@ -304,7 +304,7 @@ public class ListIndexManagementDUnitTest {
     assertSoftly(softly -> {
       softly.assertThat(deleteIndexResult.isSuccessful()).isTrue();
       softly.assertThatThrownBy(() -> cms.get(index))
-          .hasMessageContaining("Index 'index' does not exist");
+          .hasMessageContaining("Index 'index.1' does not exist");
       softly.assertThat(deleteRegionResult.isSuccessful()).isTrue();
       softly.assertThatThrownBy(() -> cms.get(config))
           .hasMessageContaining("Region 'region2' does not exist");

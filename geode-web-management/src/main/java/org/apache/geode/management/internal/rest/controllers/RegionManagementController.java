@@ -199,7 +199,7 @@ public class RegionManagementController extends AbstractManagementController {
 
   @ApiOperation(value = "delete region index")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE', 'QUERY')")
-  @DeleteMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{indexName}")
+  @DeleteMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{indexName:.+}")
   public ClusterManagementResult deleteRegion(
       @PathVariable String regionName,
       @PathVariable String indexName,
