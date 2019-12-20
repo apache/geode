@@ -388,6 +388,8 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     // SECOND RUN: do some more puts
     vm4.invoke(() -> doPuts(regionName, 1000));
 
+    vm4.invoke(() -> validateRegionSize(regionName, 1000));
+
     // verify all the buckets on all the sender nodes are drained
     validateParallelSenderQueueAllBucketsDrained();
 
