@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.fail;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -78,11 +77,6 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
     vm2 = VM.getVM(2);
   }
 
-  /**
-   * Clears fields used by a test
-   */
-  @After
-  public void cleanup() {}
 
   /**
    * Returns region attributes for a <code>GLOBAL</code> region
