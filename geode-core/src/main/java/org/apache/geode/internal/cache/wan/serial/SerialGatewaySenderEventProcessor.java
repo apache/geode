@@ -107,7 +107,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
 
   public SerialGatewaySenderEventProcessor(AbstractGatewaySender sender, String id,
       ThreadsMonitoring tMonitoring, boolean cleanQueues) {
-    super("Event Processor for GatewaySender_" + id, sender, tMonitoring);
+    super("Event Processor for serial GatewaySender_" + id, sender, tMonitoring);
 
     this.unprocessedEvents = new LinkedHashMap<EventID, EventWrapper>();
     this.unprocessedTokens = new LinkedHashMap<EventID, Long>();

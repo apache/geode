@@ -73,7 +73,8 @@ public class ConcurrentParallelGatewaySenderEventProcessor
 
   public ConcurrentParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
       ThreadsMonitoring tMonitoring, boolean cleanQueues) {
-    super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
+    super("Event Processor for ConcurrentParallel GatewaySender_" + sender.getId(), sender,
+        tMonitoring);
     // initializeMessageQueue(sender.getId());
     logger.info("ConcurrentParallelGatewaySenderEventProcessor: dispatcher threads {}",
         sender.getDispatcherThreads());

@@ -67,7 +67,8 @@ public class ConcurrentSerialGatewaySenderEventProcessor
 
   public ConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
       ThreadsMonitoring tMonitoring, boolean cleanQueues) {
-    super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
+    super("Event Processor for ConcurrentSerial GatewaySender_" + sender.getId(), sender,
+        tMonitoring);
     this.sender = sender;
 
     initializeMessageQueue(sender.getId(), cleanQueues);

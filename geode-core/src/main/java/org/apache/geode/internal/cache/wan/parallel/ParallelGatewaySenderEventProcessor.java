@@ -48,7 +48,7 @@ public class ParallelGatewaySenderEventProcessor extends AbstractGatewaySenderEv
 
   protected ParallelGatewaySenderEventProcessor(AbstractGatewaySender sender,
       ThreadsMonitoring tMonitoring, boolean cleanQueues) {
-    super("Event Processor for GatewaySender_" + sender.getId(), sender, tMonitoring);
+    super("Event Processor for parallel GatewaySender_" + sender.getId(), sender, tMonitoring);
     this.index = 0;
     this.nDispatcher = 1;
     initializeMessageQueue(sender.getId(), cleanQueues);
