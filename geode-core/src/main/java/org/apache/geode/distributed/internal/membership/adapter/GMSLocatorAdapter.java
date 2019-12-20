@@ -67,7 +67,9 @@ public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
       gmsLocator =
           new GMSLocator<>(bindAddress, locatorString, usePreferredCoordinators,
               networkPartitionDetectionEnabled,
-              locatorStats, securityUDPDHAlgo, workingDirectory, locatorClient);
+              locatorStats, securityUDPDHAlgo, workingDirectory, locatorClient,
+              InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+              InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     } catch (MembershipConfigurationException e) {
       throw new GemFireConfigException(e.getMessage());
     }

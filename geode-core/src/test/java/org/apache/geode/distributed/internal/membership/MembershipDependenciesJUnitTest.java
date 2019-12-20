@@ -32,7 +32,6 @@ import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.JavaWorkarounds;
@@ -103,10 +102,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO: Create a new stats interface for membership
               .or(type(LocatorStats.class))
-
-              // TODO: Serialization needs to become its own module
-              .or(type(InternalDataSerializer.class)) // still used by GMSLocator
-
 
               // TODO: break dependencies on locator-related classes
               .or(type(Locator.class))
