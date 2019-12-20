@@ -92,6 +92,14 @@ public abstract class BaseManagementService extends ManagementService {
     }
   }
 
+  public static void setCacheService(InternalCacheForClientAccess cache,
+      BaseManagementService service) {
+    synchronized (instances) {
+      instances.put(cache, service);
+    }
+  }
+
+
   /**
    * Initialises the distributed system listener
    */

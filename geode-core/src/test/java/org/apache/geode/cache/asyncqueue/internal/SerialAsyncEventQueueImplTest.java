@@ -41,6 +41,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.management.internal.BaseManagementService;
 import org.apache.geode.metrics.internal.InternalDistributedSystemMetricsService;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.test.fake.Fakes;
@@ -64,8 +65,7 @@ public class SerialAsyncEventQueueImplTest {
     cache = Fakes.cache();
     when(cache.getRegion(any())).thenReturn(null);
     when(cache.createVMRegion(any(), any(), any())).thenReturn(mock(LocalRegion.class));
-    InternalDistributedSystem system = cache.getInternalDistributedSystem();
-
+    //
     statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));
 
@@ -83,13 +83,16 @@ public class SerialAsyncEventQueueImplTest {
     InternalDistributedSystem.connectInternal(null, null, metricsSessionBuilder);
     InternalCacheForClientAccess intCacheFCA = mock(InternalCacheForClientAccess.class);
     when(cache.getCacheForProcessingClientRequests()).thenReturn(intCacheFCA);
-    when(intCacheFCA.getInternalDistributedSystem()).thenReturn(system);
+    // when(intCacheFCA.getInternalDistributedSystem()).thenReturn(system);
+    BaseManagementService service = mock(BaseManagementService.class);
+
+    BaseManagementService.setCacheService(intCacheFCA, service);
 
     statisticsClock = mock(StatisticsClock.class);
-    when(intCacheFCA.getStatisticsClock()).thenReturn(statisticsClock);
-    when(intCacheFCA.getSecurityService()).thenReturn(null);
-    when(intCacheFCA.getCacheForProcessingClientRequests()).thenReturn(intCacheFCA);
-    when(intCacheFCA.createInternalRegion(any(), any(), any())).thenReturn(null);
+    // when(intCacheFCA.getStatisticsClock()).thenReturn(statisticsClock);
+    // when(intCacheFCA.getSecurityService()).thenReturn(null);
+    // when(intCacheFCA.getCacheForProcessingClientRequests()).thenReturn(intCacheFCA);
+    // when(intCacheFCA.createInternalRegion(any(), any(), any())).thenReturn(null);
 
     DistributedLockService distributedLockService = mock(DistributedLockService.class);
     when(distributedLockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
