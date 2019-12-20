@@ -17,7 +17,9 @@ package org.apache.geode.management.internal.cli.commands.lifecycle;
 import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getMemberMXBean;
 import static org.apache.geode.management.internal.i18n.CliStrings.LOCATOR_TERM_NAME;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -35,6 +37,9 @@ import org.apache.geode.management.internal.configuration.utils.ClusterConfigura
 import org.apache.geode.management.internal.i18n.CliStrings;
 
 public class StatusLocatorCommand extends OfflineGfshCommand {
+  private static final String SECURITY_PROPERTIES__HELP =
+      "The gfsecurity.properties file for configuring SSL to connect to the Locator. The file's path can be absolute or relative to gfsh directory.";
+
   @CliCommand(value = CliStrings.STATUS_LOCATOR, help = CliStrings.STATUS_LOCATOR__HELP)
   @CliMetaData(shellOnly = true,
       relatedTopic = {CliStrings.TOPIC_GEODE_LOCATOR, CliStrings.TOPIC_GEODE_LIFECYCLE})
@@ -49,9 +54,14 @@ public class StatusLocatorCommand extends OfflineGfshCommand {
       @CliOption(key = CliStrings.STATUS_LOCATOR__PID,
           help = CliStrings.STATUS_LOCATOR__PID__HELP) final Integer pid,
       @CliOption(key = CliStrings.STATUS_LOCATOR__DIR,
-          help = CliStrings.STATUS_LOCATOR__DIR__HELP) final String workingDirectory)
+          help = CliStrings.STATUS_LOCATOR__DIR__HELP) final String workingDirectory,
+      @CliOption(key = CliStrings.CONNECT__SECURITY_PROPERTIES, optionContext = ConverterHint.FILE,
+          help = SECURITY_PROPERTIES__HELP) final File gfSecurityPropertiesFile)
       throws Exception {
-
+    Properties properties = new Properties();
+    if (gfSecurityPropertiesFile != null) {
+      properties = loadProperties(gfSecurityPropertiesFile);
+    }
     if (StringUtils.isNotBlank(member)) {
       if (isConnectedAndReady()) {
         final MemberMXBean locatorProxy = getMemberMXBean(member);
@@ -59,7 +69,7 @@ public class StatusLocatorCommand extends OfflineGfshCommand {
         if (locatorProxy != null) {
           LocatorLauncher.LocatorState state =
               LocatorLauncher.LocatorState.fromJson(locatorProxy.status());
-          return createStatusLocatorResult(state);
+          return createStatusLocatorResult(state, properties);
         } else {
           return ResultModel.createError(CliStrings.format(
               CliStrings.STATUS_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
@@ -72,6 +82,7 @@ public class StatusLocatorCommand extends OfflineGfshCommand {
       final LocatorLauncher locatorLauncher =
           new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STATUS)
               .setBindAddress(locatorHost).setDebug(isDebugging()).setPid(pid).setPort(locatorPort)
+              .set(properties)
               .setWorkingDirectory(workingDirectory).build();
 
       final LocatorLauncher.LocatorState status = locatorLauncher.status();
@@ -79,17 +90,18 @@ public class StatusLocatorCommand extends OfflineGfshCommand {
           || status.getStatus().equals(AbstractLauncher.Status.STOPPED)) {
         return ResultModel.createError(status.toString());
       }
-      return createStatusLocatorResult(status);
+      return createStatusLocatorResult(status, properties);
     }
 
   }
 
-  protected ResultModel createStatusLocatorResult(final LocatorLauncher.LocatorState state)
+  protected ResultModel createStatusLocatorResult(final LocatorLauncher.LocatorState state,
+      final Properties properties)
       throws NumberFormatException, IOException, ClassNotFoundException {
     ResultModel result = new ResultModel();
     InfoResultModel info = result.addInfo();
     info.addLine(state.toString());
-    info.addLine(ClusterConfigurationStatusRetriever.fromLocator(state));
+    info.addLine(ClusterConfigurationStatusRetriever.fromLocator(state, properties));
     return result;
   }
 }
