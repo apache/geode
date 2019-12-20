@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -258,7 +259,7 @@ public class SearchAndLoadDUnitTest extends JUnit4CacheTestCase {
               } catch (InterruptedException e) {
                 fail("interrupted");
               }
-              assertThat(loaderInvoked).isTrue();
+              await().until(() -> loaderInvoked);
 
               Thread t = new Thread("invoke get()") {
                 @Override
