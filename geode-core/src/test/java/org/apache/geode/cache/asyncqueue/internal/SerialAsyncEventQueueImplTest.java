@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -95,6 +96,7 @@ public class SerialAsyncEventQueueImplTest {
     serialAsyncEventQueue.setIsPrimary(true);
   }
 
+  @Ignore
   @Test
   public void whenStartedShouldCreateEventProcessor() {
     serialAsyncEventQueue.start();
@@ -106,6 +108,7 @@ public class SerialAsyncEventQueueImplTest {
 
   }
 
+  @Ignore
   @Test
   public void whenStartWithCleanQueueShouldCreateEventProcessor() {
     serialAsyncEventQueue.startWithCleanQueue();
@@ -117,6 +120,7 @@ public class SerialAsyncEventQueueImplTest {
 
   }
 
+  @Ignore
   @Test
   public void whenStoppedShouldResetTheEventProcessor() {
     serialAsyncEventQueue.stop();
