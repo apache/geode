@@ -17,43 +17,15 @@ package org.apache.geode.distributed;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Properties;
-
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.ssl.CertStores;
-import org.apache.geode.cache.ssl.CertificateBuilder;
-import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.test.junit.rules.LocatorLauncherStartupRule;
 
 public class LocatorLauncherStatusTest {
-  private static Properties properties;
-
-  static {
-    CertificateMaterial ca = new CertificateBuilder()
-        .commonName("Test CA")
-        .isCA()
-        .generate();
-    try {
-      CertificateMaterial memberMaterial = new CertificateBuilder()
-          .commonName("member")
-          .issuedBy(ca)
-          .generate();
-
-      CertStores memberStore = new CertStores("member");
-      memberStore.withCertificate("member", memberMaterial);
-      memberStore.trust("ca", ca);
-
-      properties = memberStore.propertiesWith("all", false, false);
-    } catch (Exception e) {
-      throw new RuntimeException(e.getMessage(), e);
-    }
-  }
-
   @ClassRule
   public static LocatorLauncherStartupRule launcher =
-      new LocatorLauncherStartupRule().withProperties(properties).withAutoStart();
+      new LocatorLauncherStartupRule().withSSL("all", false, false).withAutoStart();
 
   @Test
   public void status() {

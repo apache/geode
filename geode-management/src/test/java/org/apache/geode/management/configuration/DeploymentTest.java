@@ -28,22 +28,66 @@ public class DeploymentTest {
   private Deployment deployment;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     deployment = new Deployment();
   }
 
   @Test
-  public void serializeToJson() throws Exception {
+  public void remembersDeployedTime() {
+    deployment.setDeployedTime("deployedTime");
+    assertThat(deployment.getDeployedTime()).isEqualTo("deployedTime");
+  }
+
+  @Test
+  public void remembersDeployedBy() {
+    deployment.setDeployedBy("deployedBy");
+    assertThat(deployment.getDeployedBy()).isEqualTo("deployedBy");
+  }
+
+  @Test
+  public void remembersJarFileName() {
+    deployment.setJarFileName("jarFileName");
+    assertThat(deployment.getJarFileName()).isEqualTo("jarFileName");
+  }
+
+  @Test
+  public void idSetByJarFileName() {
+    deployment.setJarFileName("jarFileName");
+    assertThat(deployment.getId()).isEqualTo("jarFileName");
+  }
+
+  @Test
+  public void jsonSerializationRoundTrip() throws Exception {
     deployment.setGroup("group1");
+    deployment.setJarFileName("jarFileName");
+    deployment.setDeployedBy("deployedBy");
+    deployment.setDeployedTime("deployedTime");
     String json = mapper.writeValueAsString(deployment);
     Deployment newValue = mapper.readValue(json, Deployment.class);
-    assertThat(deployment).isEqualToComparingFieldByField(newValue);
+    assertThat(newValue).isEqualToComparingFieldByField(deployment);
   }
 
   @Test
   public void notShowId() throws Exception {
     deployment.setJarFileName("abc.jar");
     String json = mapper.writeValueAsString(deployment);
-    assertThat(json).contains("\"jarFileName\":\"abc.jar\"").doesNotContain("id");
+    assertThat(json).doesNotContain("id");
+  }
+
+  @Test
+  public void selfLinkUsesJarFileName() {
+    deployment.setJarFileName("jarFileName");
+    assertThat(deployment.getLinks().getSelf()).isEqualTo("/deployments/jarFileName");
+  }
+
+  @Test
+  public void listLinkUsesJarFileName() {
+    assertThat(deployment.getLinks().getList()).isEqualTo("/deployments");
+  }
+
+  @Test
+  public void linksHasOnlySelfAndList() {
+    deployment.setJarFileName("jarFileName");
+    assertThat(deployment.getLinks().getLinks()).containsOnlyKeys("self", "list");
   }
 }
