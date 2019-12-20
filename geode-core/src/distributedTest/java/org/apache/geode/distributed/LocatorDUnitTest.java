@@ -809,11 +809,16 @@ public class LocatorDUnitTest implements Serializable {
         // throw DistributedSystemDisconnectedException which should have cause as
         // ForceDisconnectException.
         await().until(() -> !mmgr.getMembership().isConnected());
+        await().untilAsserted(() -> {
+          Throwable cause = mmgr.getShutdownCause();
+          assertThat(cause).isInstanceOf(ForcedDisconnectException.class);
+        });
         try (IgnoredException i = addIgnoredException("Membership: requesting removal of")) {
           mmgr.requestMemberRemoval((InternalDistributedMember) mem1, "test reasons");
           fail("It should have thrown exception in requestMemberRemoval");
         } catch (DistributedSystemDisconnectedException e) {
           // expected
+          assertThat(e.getCause()).isInstanceOf(ForcedDisconnectException.class);
         } finally {
           hook.reset();
         }

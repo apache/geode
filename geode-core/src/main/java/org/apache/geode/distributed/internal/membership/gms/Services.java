@@ -392,6 +392,12 @@ public class Services<ID extends MemberIdentifier> {
     }
 
     public RuntimeException generateCancelledException(Throwable e) {
+      if (shutdownCause instanceof MemberDisconnectedException) {
+        MembershipClosedException newException =
+            new MembershipClosedException("membership shutdown",
+                e);
+        throw newException;
+      }
       String reason = cancelInProgress();
       if (reason == null) {
         return null;
