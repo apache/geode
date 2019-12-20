@@ -124,6 +124,40 @@ public class CreateGatewaySenderCommandTest {
   }
 
   @Test
+  public void testSingleDispatcherThread() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult = new CliFunctionResult("member",
+        CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --member=xyz --id=1 --remote-distributed-system-id=1 " +
+            "--dispatcher-threads=1")
+        .statusIsSuccess();
+    verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(),
+        any());
+    assertThat(argsArgumentCaptor.getValue().getDispatcherThreads()).isEqualTo(1);
+    assertThat(argsArgumentCaptor.getValue().getOrderPolicy()).isEqualTo(null);
+  }
+
+  @Test
+  public void testInvalidOrNullOrderPolicy() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult = new CliFunctionResult("member",
+        CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --member=xyz --id=1 --remote-distributed-system-id=1 " +
+            "--dispatcher-threads=2 --order-policy=XXX")
+        .statusIsError()
+        .containsOutput("Invalid command");
+
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --id=ln --remote-distributed-system-id=1 "
+            + "--dispatcher-threads=2 --order-policy=null")
+        .statusIsError().containsOutput("Invalid command");
+  }
+
+  @Test
   public void testFunctionArgs() {
     doReturn(mock(Set.class)).when(command).getMembers(any(), any());
     cliFunctionResult = new CliFunctionResult("member",

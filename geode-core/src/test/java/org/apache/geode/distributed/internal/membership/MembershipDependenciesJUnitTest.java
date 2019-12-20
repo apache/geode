@@ -32,7 +32,6 @@ import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -120,9 +119,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO:
               .or(type(OSProcess.class))
-
-              // TODO:
-              .or(type(ClassPathLoader.class))
 
               // TODO:
               .or(type(AlertingAction.class))

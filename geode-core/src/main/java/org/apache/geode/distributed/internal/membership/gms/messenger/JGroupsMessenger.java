@@ -92,7 +92,6 @@ import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordina
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
@@ -206,7 +205,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     boolean enableNetworkPartitionDetection = config.getEnableNetworkPartitionDetection();
     System.setProperty("jgroups.resolve_dns", String.valueOf(!enableNetworkPartitionDetection));
 
-    InputStream is;
+    InputStream is = null;
 
     String r;
     if (config.isMcastEnabled()) {
@@ -214,7 +213,16 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     } else {
       r = DEFAULT_JGROUPS_TCP_CONFIG;
     }
-    is = ClassPathLoader.getLatest().getResourceAsStream(getClass(), r);
+    ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+    if (contextClassLoader != null) {
+      is = contextClassLoader.getResourceAsStream(r);
+    }
+    if (is == null) {
+      is = getClass().getResourceAsStream(r);
+    }
+    if (is == null) {
+      is = ClassLoader.getSystemResourceAsStream(r);
+    }
     if (is == null) {
       throw new MembershipConfigurationException(
           String.format("Cannot find %s", r));

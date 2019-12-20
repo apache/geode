@@ -20,18 +20,18 @@ import java.util.Objects;
 
 public class DeploymentInfo extends RuntimeInfo {
   private String jarLocation;
-  private String timeDeployed;
+  private String lastModified;
 
   public String getJarLocation() {
     return jarLocation;
   }
 
-  public void setTimeDeployed(String timeDeployed) {
-    this.timeDeployed = timeDeployed;
+  public void setLastModified(String lastModified) {
+    this.lastModified = lastModified;
   }
 
-  public String getTimeDeployed() {
-    return timeDeployed;
+  public String getLastModified() {
+    return lastModified;
   }
 
   public void setJarLocation(String jarLocation) {
