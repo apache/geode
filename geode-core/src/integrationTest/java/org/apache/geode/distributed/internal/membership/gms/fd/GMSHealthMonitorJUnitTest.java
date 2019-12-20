@@ -197,7 +197,11 @@ public class GMSHealthMonitorJUnitTest {
         new InternalDistributedMember("localhost", 12345);
     mbr.setVmViewId(1);
     when(messenger.getMemberID()).thenReturn(mbr);
-    gmsHealthMonitor.started();
+    try {
+      gmsHealthMonitor.started();
+    } catch (MemberStartupException e) {
+      e.printStackTrace();
+    }
 
     GMSMembershipView v = new GMSMembershipView(mbr, 1, mockMembers);
 
@@ -213,7 +217,11 @@ public class GMSHealthMonitorJUnitTest {
     // stopServices call will attempt to shut down the socket during a normal close. This test tries
     // to create a problematic ordering to make sure we still shutdown properly.
     ((GMSHealthMonitorTest) gmsHealthMonitor).useBlockingSocket = true;
-    gmsHealthMonitor.started();
+    try {
+      gmsHealthMonitor.started();
+    } catch (MemberStartupException e) {
+      e.printStackTrace();
+    }
     gmsHealthMonitor.stop();
   }
 
@@ -290,7 +298,11 @@ public class GMSHealthMonitorJUnitTest {
 
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(myAddressIndex));
-    gmsHealthMonitor.started();
+    try {
+      gmsHealthMonitor.started();
+    } catch (MemberStartupException e) {
+      e.printStackTrace();
+    }
 
     gmsHealthMonitor.installView(v);
 
@@ -394,7 +406,11 @@ public class GMSHealthMonitorJUnitTest {
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(0)); // coordinator and local member
     when(joinLeave.getMemberID()).thenReturn(mockMembers.get(0)); // coordinator and local member
-    gmsHealthMonitor.started();
+    try {
+      gmsHealthMonitor.started();
+    } catch (MemberStartupException e) {
+      e.printStackTrace();
+    }
 
     gmsHealthMonitor.installView(v);
 
@@ -1042,7 +1058,7 @@ public class GMSHealthMonitorJUnitTest {
     }
 
     @Override
-    ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
+    ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) throws IOException {
       final ServerSocket serverSocket = super.createServerSocket(socketAddress, portRange);
       if (useBlockingSocket) {
         try {

@@ -199,6 +199,11 @@ public class Services<ID extends MemberIdentifier> {
       this.healthMon.start();
       logger.debug("starting Manager");
       this.manager.start();
+      this.messenger.started();
+      this.joinLeave.started();
+      this.healthMon.started();
+      this.manager.started();
+      logger.debug("All membership services have been started");
       started = true;
     } catch (RuntimeException e) {
       logger.fatal("Unexpected exception while booting membership services", e);
@@ -212,11 +217,7 @@ public class Services<ID extends MemberIdentifier> {
         this.timer.cancel();
       }
     }
-    this.messenger.started();
-    this.joinLeave.started();
-    this.healthMon.started();
-    this.manager.started();
-    logger.debug("All membership services have been started");
+
     try {
       this.manager.joinDistributedSystem();
     } catch (Throwable e) {

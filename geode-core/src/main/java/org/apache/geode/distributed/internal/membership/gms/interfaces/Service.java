@@ -36,7 +36,7 @@ public interface Service<ID extends MemberIdentifier> {
   /**
    * called after all servers have been started
    */
-  void started();
+  void started() throws MemberStartupException;
 
   /**
    * called when the GMS is stopping

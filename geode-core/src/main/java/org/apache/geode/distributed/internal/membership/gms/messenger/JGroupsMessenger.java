@@ -415,7 +415,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   }
 
   @Override
-  public void started() {
+  public void started() throws MemberStartupException {
     if (queuedMessagesFromReconnect != null && !services.getConfig().isUDPSecurityEnabled()) {
       logger.info("Delivering {} messages queued by quorum checker",
           queuedMessagesFromReconnect.size());

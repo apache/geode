@@ -683,8 +683,8 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
         LoggingExecutors.newCachedThreadPool("Geode Failure Detection Server thread ", true);
   }
 
-  ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
-    ServerSocket newSocket =socketCreator
+  ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) throws IOException {
+    ServerSocket newSocket = socketCreator
         .createServerSocketUsingPortRange(socketAddress, 50/* backlog */, true/* isBindAddress */,
             false/* useNIO */, 65536/* tcpBufferSize */, portRange, false);
     socketPort = newSocket.getLocalPort();
@@ -938,10 +938,14 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   }
 
   @Override
-  public void started() {
+  public void started() throws MemberStartupException {
     setLocalAddress(services.getMessenger().getMemberID());
-    serverSocket = createServerSocket(localAddress.getInetAddress(),
-        services.getConfig().getMembershipPortRange());
+    try {
+      serverSocket = createServerSocket(localAddress.getInetAddress(),
+          services.getConfig().getMembershipPortRange());
+    } catch (IOException e) {
+      throw new MemberStartupException("Problem creating HealthMonitor socket", e);
+    }
     startTcpServer(serverSocket);
     startHeartbeatThread();
   }
