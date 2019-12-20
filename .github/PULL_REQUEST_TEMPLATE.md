@@ -8,7 +8,7 @@ to ensure the following steps have been taken:
 
 - [ ] Has your PR been rebased against the latest commit within the target branch (typically `develop`)?
 
-- [ ] Is your initial contribution a single, squashed commit?
+- [ ] Is your initial contribution squashed for ease of review (e.g. a single commit, or a 'refactoring' commit plus a 'fix' commit)
 
 - [ ] Does `gradlew build` run cleanly?
 
