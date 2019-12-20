@@ -26,7 +26,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -65,6 +64,7 @@ public class SerialAsyncEventQueueImplTest {
     cache = Fakes.cache();
     when(cache.getRegion(any())).thenReturn(null);
     when(cache.createVMRegion(any(), any(), any())).thenReturn(mock(LocalRegion.class));
+    InternalDistributedSystem system = cache.getInternalDistributedSystem();
 
     statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));
@@ -81,10 +81,15 @@ public class SerialAsyncEventQueueImplTest {
             .setIsClient(true);
 
     InternalDistributedSystem.connectInternal(null, null, metricsSessionBuilder);
-    InternalCacheForClientAccess intCacheFCA = new InternalCacheForClientAccess(cache);
+    InternalCacheForClientAccess intCacheFCA = mock(InternalCacheForClientAccess.class);
     when(cache.getCacheForProcessingClientRequests()).thenReturn(intCacheFCA);
+    when(intCacheFCA.getInternalDistributedSystem()).thenReturn(system);
 
     statisticsClock = mock(StatisticsClock.class);
+    when(intCacheFCA.getStatisticsClock()).thenReturn(statisticsClock);
+    when(intCacheFCA.getSecurityService()).thenReturn(null);
+    when(intCacheFCA.getCacheForProcessingClientRequests()).thenReturn(intCacheFCA);
+    when(intCacheFCA.createInternalRegion(any(), any(), any())).thenReturn(null);
 
     DistributedLockService distributedLockService = mock(DistributedLockService.class);
     when(distributedLockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
@@ -96,7 +101,6 @@ public class SerialAsyncEventQueueImplTest {
     serialAsyncEventQueue.setIsPrimary(true);
   }
 
-  @Ignore
   @Test
   public void whenStartedShouldCreateEventProcessor() {
     serialAsyncEventQueue.start();
@@ -108,7 +112,6 @@ public class SerialAsyncEventQueueImplTest {
 
   }
 
-  @Ignore
   @Test
   public void whenStartWithCleanQueueShouldCreateEventProcessor() {
     serialAsyncEventQueue.startWithCleanQueue();
@@ -120,7 +123,6 @@ public class SerialAsyncEventQueueImplTest {
 
   }
 
-  @Ignore
   @Test
   public void whenStoppedShouldResetTheEventProcessor() {
     serialAsyncEventQueue.stop();
