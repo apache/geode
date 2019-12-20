@@ -337,6 +337,10 @@ public class DistributionImpl implements Distribution {
     try {
       membership.checkCancelled();
     } catch (MembershipClosedException e) {
+      if (e.getCause() instanceof MemberDisconnectedException) {
+        ForcedDisconnectException fde = new ForcedDisconnectException(e.getCause().getMessage());
+        throw new DistributedSystemDisconnectedException(e.getMessage(), fde);
+      }
       throw new DistributedSystemDisconnectedException(e.getMessage());
     }
   }
@@ -466,8 +470,10 @@ public class DistributionImpl implements Distribution {
     try {
       return membership.requestMemberRemoval(member, reason);
     } catch (MemberDisconnectedException | MembershipClosedException e) {
+      checkCancelled();
       throw new DistributedSystemDisconnectedException("Distribution is closed");
     } catch (RuntimeException e) {
+      checkCancelled();
       if (!membership.isConnected()) {
         throw new DistributedSystemDisconnectedException("Distribution is closed", e);
       }
@@ -584,7 +590,11 @@ public class DistributionImpl implements Distribution {
 
   @Override
   public Throwable getShutdownCause() {
-    return membership.getShutdownCause();
+    Throwable cause = membership.getShutdownCause();
+    if (cause instanceof MemberDisconnectedException) {
+      cause = new ForcedDisconnectException(cause.getMessage());
+    }
+    return cause;
   }
 
   @Override
