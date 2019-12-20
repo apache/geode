@@ -235,10 +235,13 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion) region);
 
-    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
+    await().until(cms::isMetadataStable);
 
-    await().until(() -> regionMetaData.size() > 0);
+    await().until(() -> cms.getClientPRMetadata_TEST_ONLY().size() > 0);
+
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     assertThat(regionMetaData).containsKey(region.getFullPath());
+
     await().until(() -> {
       ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
       assertThat(prMetaData).isNotNull();
