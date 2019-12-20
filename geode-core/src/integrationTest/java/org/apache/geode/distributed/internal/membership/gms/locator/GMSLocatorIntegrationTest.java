@@ -86,7 +86,9 @@ public class GMSLocatorIntegrationTest {
                     SocketCreatorFactory
                         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
                 InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-                InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()));
+                InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()),
+            InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     GMSMembership membership = mock(GMSMembership.class);
     when(membership.getServices()).thenReturn(services);
     gmsLocator.setMembership(membership);

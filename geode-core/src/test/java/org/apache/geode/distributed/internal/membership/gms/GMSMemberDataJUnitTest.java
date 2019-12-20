@@ -31,11 +31,13 @@ import java.io.DataOutputStream;
 import java.net.InetAddress;
 
 import org.jgroups.util.UUID;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
@@ -44,6 +46,14 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({SecurityTest.class})
 public class GMSMemberDataJUnitTest {
+
+  private DSFIDSerializer dsfidSerializer;
+
+  @Before
+  public void setup() {
+    dsfidSerializer = new DSFIDSerializerFactory().create();
+    Services.registerSerializables(dsfidSerializer);
+  }
 
   @Test
   public void testEqualsNotSameType() {
@@ -195,14 +205,14 @@ public class GMSMemberDataJUnitTest {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     GMSMemberData member = new GMSMemberData();
     DataOutput dataOutput = new DataOutputStream(baos);
-    SerializationContext serializationContext = InternalDataSerializer.getDSFIDSerializer()
+    SerializationContext serializationContext = dsfidSerializer
         .createSerializationContext(dataOutput);
     member.writeEssentialData(dataOutput, serializationContext);
 
     // vmKind should be transmitted to a member with the current version
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     DataInput dataInput = new DataInputStream(bais);
-    DeserializationContext deserializationContext = InternalDataSerializer.getDSFIDSerializer()
+    DeserializationContext deserializationContext = dsfidSerializer
         .createDeserializationContext(dataInput);
     GMSMemberData newMember = new GMSMemberData();
     newMember.readEssentialData(dataInput, deserializationContext);
@@ -213,8 +223,7 @@ public class GMSMemberDataJUnitTest {
     member.writeEssentialData(dataOutput, serializationContext);
     bais = new ByteArrayInputStream(baos.toByteArray());
     DataInputStream stream = new DataInputStream(bais);
-    deserializationContext =
-        InternalDataSerializer.createDeserializationContext(stream);
+    deserializationContext = dsfidSerializer.createDeserializationContext(stream);
     dataInput = new VersionedDataInputStream(stream, Version.GFE_90);
     newMember = new GMSMemberData();
     newMember.readEssentialData(dataInput, deserializationContext);
