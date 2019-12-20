@@ -51,14 +51,15 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 import org.jgroups.util.UUID;
 
-import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
@@ -454,7 +455,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
       boolean pinged;
       try {
         pinged = GMSHealthMonitor.this.doCheckMember(mbr, true);
-      } catch (CancelException e) {
+      } catch (MembershipClosedException e) {
         return;
       }
 
@@ -669,7 +670,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   }
 
   @Override
-  public void start() {
+  public void start() throws MemberStartupException {
     scheduler = LoggingExecutors.newScheduledThreadPool("Geode Failure Detection Scheduler", 1);
     checkExecutor = LoggingExecutors.newCachedThreadPool("Geode Failure Detection thread ", true);
     Monitor m = this.new Monitor(memberTimeout);
@@ -681,18 +682,12 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   }
 
   ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
-    ServerSocket serverSocket;
-    try {
-      serverSocket = SocketCreatorFactory
-          .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)
-          .createServerSocketUsingPortRange(socketAddress, 50/* backlog */, true/* isBindAddress */,
-              false/* useNIO */, 65536/* tcpBufferSize */, portRange, false);
-      socketPort = serverSocket.getLocalPort();
-    } catch (IOException | SystemConnectException e) {
-      throw new GemFireConfigException(
-          "Unable to allocate a failure detection port in the membership-port range", e);
-    }
-    return serverSocket;
+    ServerSocket newSocket = SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)
+        .createServerSocketUsingPortRange(socketAddress, 50/* backlog */, true/* isBindAddress */,
+            false/* useNIO */, 65536/* tcpBufferSize */, portRange, false);
+    socketPort = newSocket.getLocalPort();
+    return newSocket;
   }
 
   /**
@@ -789,7 +784,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
             }
             services.getMessenger().sendUnreliably(message);
             GMSHealthMonitor.this.stats.incHeartbeatsSent();
-          } catch (CancelException e) {
+          } catch (MembershipClosedException e) {
             return;
           }
         }
@@ -820,7 +815,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
             if (numSent >= NUM_HEARTBEATS) {
               break;
             }
-          } catch (CancelException e) {
+          } catch (MembershipClosedException e) {
             return;
           }
         }
@@ -925,7 +920,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   }
 
   @Override
-  public void init(Services<ID> s) {
+  public void init(Services<ID> s) throws MembershipConfigurationException {
     isStopping = false;
     services = s;
     memberTimeout = s.getConfig().getMemberTimeout();
@@ -1189,7 +1184,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
           services.getMessenger().send(message);
           this.stats.incHeartbeatsSent();
           it.remove();
-        } catch (CancelException e) {
+        } catch (MembershipClosedException e) {
           return;
         }
       }
@@ -1300,7 +1295,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
       checkExecutor.execute(() -> {
         try {
           inlineCheckIfAvailable(initiator, cv, true, mbr, reason);
-        } catch (CancelException e) {
+        } catch (MembershipClosedException e) {
           // shutting down
         } catch (Exception e) {
           logger.info("Unexpected exception while verifying member", e);
@@ -1473,7 +1468,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     try {
       failedRecipients = services.getMessenger().send(smm);
       this.stats.incSuspectsSent();
-    } catch (CancelException e) {
+    } catch (MembershipClosedException e) {
       return;
     }
 

@@ -780,6 +780,7 @@ javadoc/org/apache/geode/management/package-tree.html
 javadoc/org/apache/geode/management/runtime/CacheServerInfo.html
 javadoc/org/apache/geode/management/runtime/DeploymentInfo.html
 javadoc/org/apache/geode/management/runtime/GatewayReceiverInfo.html
+javadoc/org/apache/geode/management/runtime/IndexInfo.html
 javadoc/org/apache/geode/management/runtime/MemberInformation.html
 javadoc/org/apache/geode/management/runtime/OperationResult.html
 javadoc/org/apache/geode/management/runtime/PdxInfo.html
@@ -985,6 +986,7 @@ lib/geode-protobuf-messages-0.0.0.jar
 lib/geode-rebalancer-0.0.0.jar
 lib/geode-redis-0.0.0.jar
 lib/geode-serialization-0.0.0.jar
+lib/geode-tcp-server-0.0.0.jar
 lib/geode-unsafe-0.0.0.jar
 lib/geode-wan-0.0.0.jar
 lib/gfsh-dependencies.jar

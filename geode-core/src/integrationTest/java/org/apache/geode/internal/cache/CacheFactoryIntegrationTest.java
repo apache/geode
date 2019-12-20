@@ -12,25 +12,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.cache;
 
-package org.apache.geode.internal.tcp;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.GemFireException;
+import java.util.Properties;
 
-/**
- * MemberShunnedException may be thrown to prevent ack-ing a message received from a member that has
- * been removed from membership. It is currently only thrown by
- * JGroupMembershipManager.processMessage()
- */
-public class MemberShunnedException extends GemFireException {
-  private static final long serialVersionUID = -8453126202477831557L;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-  /**
-   * constructor
-   *
-   */
-  public MemberShunnedException() {
-    super("");
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+
+public class CacheFactoryIntegrationTest {
+
+  private Cache cache;
+
+  @Before
+  public void setUp() {
+    cache = new CacheFactory(new Properties()).create();
   }
 
+  @After
+  public void after() {
+    cache.close();
+  }
+
+  @Test
+  public void getAnyInstanceReturnsLatestCreatedCache() {
+    assertThat(CacheFactory.getAnyInstance()).isSameAs(cache);
+  }
 }

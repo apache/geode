@@ -16,6 +16,7 @@ package org.apache.geode.management.runtime;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
@@ -266,5 +267,58 @@ public class MemberInformation extends RuntimeInfo
 
   public void setCoordinator(boolean coordinator) {
     isCoordinator = coordinator;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof MemberInformation)) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    MemberInformation that = (MemberInformation) o;
+    return getHeapUsage() == that.getHeapUsage() &&
+        getMaxHeapSize() == that.getMaxHeapSize() &&
+        getInitHeapSize() == that.getInitHeapSize() &&
+        getProcessId() == that.getProcessId() &&
+        getLocatorPort() == that.getLocatorPort() &&
+        getHttpServicePort() == that.getHttpServicePort() &&
+        isServer() == that.isServer() &&
+        getClientCount() == that.getClientCount() &&
+        Double.compare(that.getCpuUsage(), getCpuUsage()) == 0 &&
+        isWebSSL() == that.isWebSSL() &&
+        isSecured() == that.isSecured() &&
+        isCoordinator() == that.isCoordinator() &&
+        Objects.equals(getId(), that.getId()) &&
+        Objects.equals(getWorkingDirPath(), that.getWorkingDirPath()) &&
+        Objects.equals(getGroups(), that.getGroups()) &&
+        Objects.equals(getLogFilePath(), that.getLogFilePath()) &&
+        Objects.equals(getStatArchiveFilePath(), that.getStatArchiveFilePath()) &&
+        Objects.equals(getServerBindAddress(), that.getServerBindAddress()) &&
+        Objects.equals(getLocators(), that.getLocators()) &&
+        Objects.equals(getStatus(), that.getStatus()) &&
+        Objects.equals(getCacheXmlFilePath(), that.getCacheXmlFilePath()) &&
+        Objects.equals(getHost(), that.getHost()) &&
+        Objects.equals(getHttpServiceBindAddress(), that.getHttpServiceBindAddress()) &&
+        Objects.equals(cacheServerList, that.cacheServerList) &&
+        Objects.equals(getHostedRegions(), that.getHostedRegions()) &&
+        Objects.equals(getOffHeapMemorySize(), that.getOffHeapMemorySize());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects
+        .hash(super.hashCode(), getId(), getWorkingDirPath(), getGroups(), getLogFilePath(),
+            getStatArchiveFilePath(), getServerBindAddress(), getLocators(), getStatus(),
+            getHeapUsage(),
+            getMaxHeapSize(), getInitHeapSize(), getCacheXmlFilePath(), getHost(), getProcessId(),
+            getLocatorPort(), getHttpServicePort(), getHttpServiceBindAddress(), isServer(),
+            cacheServerList, getClientCount(), getCpuUsage(), getHostedRegions(),
+            getOffHeapMemorySize(),
+            isWebSSL(), isSecured(), isCoordinator());
   }
 }

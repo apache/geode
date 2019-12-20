@@ -14,7 +14,6 @@
  */
 package org.apache.geode.test.dunit;
 
-
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -27,7 +26,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
  *             Please use {@link DistributedRule} and Geode User APIs or
  *             {@link ClusterStartupRule} instead.
  */
-
+@Deprecated
 @SuppressWarnings("serial")
 public abstract class DistributedTestCase extends JUnit4DistributedTestCase {
 }

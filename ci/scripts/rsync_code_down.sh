@@ -30,7 +30,9 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 SSHKEY_FILE="instance-data/sshkey"
-SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
+
+test -e ${SSHKEY_FILE}
+SSH_OPTIONS="-i ${SSHKEY_FILE} -o ConnectTimeout=5 -o ConnectionAttempts=60 -o StrictHostKeyChecking=no"
 
 INSTANCE_IP_ADDRESS="$(cat instance-data/instance-ip-address)"
 

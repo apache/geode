@@ -335,17 +335,14 @@ public class FederatingManager extends Manager {
     // If cache is closed all the regions would have been destroyed implicitly
     if (!cache.isClosed()) {
       try {
-        proxyFactory.removeAllProxies(member, monitoringRegion);
-      } catch (CancelException | RegionDestroyedException ignore) {
-        // ignored
-      }
-      try {
         if (monitoringRegion != null) {
+          proxyFactory.removeAllProxies(member, monitoringRegion);
           monitoringRegion.localDestroyRegion();
         }
       } catch (CancelException | RegionDestroyedException ignore) {
         // ignored
       }
+
       try {
         if (notificationRegion != null) {
           notificationRegion.localDestroyRegion();

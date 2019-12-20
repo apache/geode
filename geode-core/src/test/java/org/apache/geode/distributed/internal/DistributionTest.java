@@ -45,6 +45,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.tcp.ConnectExceptions;
@@ -138,7 +139,7 @@ public class DistributionTest {
         .directChannelSend(recipients, m);
     when(dc.send(any(), any(mockMembers.getClass()),
         any(DistributionMessage.class), anyInt(), anyInt())).thenReturn(0);
-    doThrow(DistributedSystemDisconnectedException.class).when(membership).checkCancelled();
+    doThrow(MembershipClosedException.class).when(membership).checkCancelled();
 
     try {
       distribution.directChannelSend(recipients, m);

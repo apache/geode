@@ -445,4 +445,13 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
       DistributedRemoveAllOperation removeAllOp, List<VersionTag> retryVersions);
 
   VersionTag getVersionTag(Object key);
+
+  /**
+   * This method determines whether this region should synchronize with peer replicated regions when
+   * the given member has crashed.
+   *
+   * @param id the crashed member
+   * @return true if synchronization should be attempted
+   */
+  boolean shouldSyncForCrashedMember(InternalDistributedMember id);
 }

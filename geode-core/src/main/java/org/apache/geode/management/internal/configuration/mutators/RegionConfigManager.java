@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.configuration.converters.RegionConverter;
@@ -34,6 +35,10 @@ import org.apache.geode.management.internal.configuration.converters.RegionConve
 public class RegionConfigManager extends CacheConfigurationManager<Region> {
 
   private final RegionConverter converter = new RegionConverter();
+
+  public RegionConfigManager(ConfigurationPersistenceService service) {
+    super(service);
+  }
 
   @Override
   public void add(Region configElement, CacheConfig existingConfig) {
@@ -61,8 +66,8 @@ public class RegionConfigManager extends CacheConfigurationManager<Region> {
   }
 
   @Override
-  public Region get(String id, CacheConfig existing) {
-    return converter.fromXmlObject(Identifiable.find(existing.getRegions(), id));
+  public Region get(Region config, CacheConfig existing) {
+    return converter.fromXmlObject(Identifiable.find(existing.getRegions(), config.getId()));
   }
 
   @Override

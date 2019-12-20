@@ -115,6 +115,12 @@ public class TransformUtils {
     }
   }
 
+  @FunctionalInterface
+  public interface CollectionTransformer<T1, T2> {
+
+    void transform(Collection<T1> from, Collection<T2> to, Transformer<T1, T2> transformer);
+  }
+
   /**
    * Transforms a collection of one data type into another and returns a map using the transformed
    * type as the key and the original type as the value.

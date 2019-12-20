@@ -37,7 +37,6 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipInformation;
 import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChecker {
@@ -64,7 +63,7 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
   }
 
   public void initialize() {
-    receivedAcks = new ConcurrentHashSet<>();
+    receivedAcks = ConcurrentHashMap.newKeySet();
 
     pingPonger = new GMSPingPonger();
     myAddress = (JGAddress) channel.down(new Event(Event.GET_LOCAL_ADDRESS));
@@ -82,6 +81,7 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
   }
 
 
+  @Override
   public synchronized boolean checkForQuorum(long timeout) throws InterruptedException {
     if (quorumAchieved) {
       return true;
@@ -99,6 +99,7 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
     return quorumAchieved;
   }
 
+  @Override
   public void close() {
     if (channel != null && !channel.isClosed()) {
       channel.close();
@@ -110,7 +111,7 @@ public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChec
     JGroupsMessenger.setChannelReceiver(channel, new QuorumCheckerReceiver());
   }
 
-
+  @Override
   public MembershipInformation getMembershipInfo() {
     return new MembershipInformationImpl(channel, messageQueue);
   }

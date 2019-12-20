@@ -20,13 +20,17 @@ import java.util.List;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.internal.configuration.converters.GatewayReceiverConverter;
 
-public class GatewayReceiverConfigManager
-    extends CacheConfigurationManager<GatewayReceiver> {
+public class GatewayReceiverConfigManager extends CacheConfigurationManager<GatewayReceiver> {
 
   private final GatewayReceiverConverter converter = new GatewayReceiverConverter();
+
+  public GatewayReceiverConfigManager(ConfigurationPersistenceService persistenceService) {
+    super(persistenceService);
+  }
 
   @Override
   public void add(GatewayReceiver config, CacheConfig existing) {
@@ -54,7 +58,7 @@ public class GatewayReceiverConfigManager
   }
 
   @Override
-  public GatewayReceiver get(String id, CacheConfig existing) {
+  public GatewayReceiver get(GatewayReceiver config, CacheConfig existing) {
     return converter.fromXmlObject(existing.getGatewayReceiver());
   }
 }

@@ -17,6 +17,8 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -41,7 +43,6 @@ import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
 public class MemberValidatorTest {
 
-  private InternalCache cache;
   private ConfigurationPersistenceService service;
   private RegionConfigManager regionManager;
   private Region regionConfig;
@@ -51,9 +52,11 @@ public class MemberValidatorTest {
 
   @Before
   public void before() throws Exception {
-    cache = mock(InternalCache.class);
+    InternalCache cache = mock(InternalCache.class);
     service = mock(ConfigurationPersistenceService.class);
-    regionManager = new RegionConfigManager();
+    regionManager = new RegionConfigManager(null);
+    when(service.getCacheConfig(any(), eq(true))).thenReturn(new CacheConfig());
+    regionManager = new RegionConfigManager(null);
     validator = spy(new MemberValidator(cache, service));
 
     DistributedMember member1 = mock(DistributedMember.class);
@@ -61,11 +64,13 @@ public class MemberValidatorTest {
     when(member1.getName()).thenReturn("member1");
 
     DistributedMember member2 = mock(DistributedMember.class);
-    when(member2.getGroups()).thenReturn(Arrays.asList("group1"));
+    when(member2.getGroups()).thenReturn(Collections.singletonList("group1"));
+
     when(member2.getName()).thenReturn("member2");
 
     DistributedMember member3 = mock(DistributedMember.class);
-    when(member3.getGroups()).thenReturn(Arrays.asList("group2"));
+    when(member3.getGroups()).thenReturn(Collections.singletonList("group2"));
+
     when(member3.getName()).thenReturn("member3");
 
     DistributedMember member4 = mock(DistributedMember.class);
@@ -73,7 +78,7 @@ public class MemberValidatorTest {
     when(member4.getName()).thenReturn("member4");
 
     DistributedMember member5 = mock(DistributedMember.class);
-    when(member5.getGroups()).thenReturn(Arrays.asList("group3"));
+    when(member5.getGroups()).thenReturn(Collections.singletonList("group3"));
     when(member5.getName()).thenReturn("member5");
 
     doReturn(new HashSet<>(Arrays.asList(member1, member2, member3, member4, member5)))
@@ -96,11 +101,11 @@ public class MemberValidatorTest {
   }
 
   @Test
-  public void findServers() throws Exception {
+  public void findServers() {
     assertThat(validator.findServers())
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
-    assertThat(validator.findServers(new String[] {}))
+    assertThat(validator.findServers())
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
 
@@ -116,26 +121,26 @@ public class MemberValidatorTest {
   }
 
   @Test
-  public void findMembers() throws Exception {
+  public void findMembers() {
     assertThat(validator.findMembers(null)).flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
 
-    assertThat(validator.findMembers(null, new String[] {}))
+    assertThat(validator.findMembers(null))
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
     assertThat(validator.findMembers(null, new String[] {null}))
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
-    assertThat(validator.findMembers(null, new String[] {"cluster"}))
+    assertThat(validator.findMembers(null, "cluster"))
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
-    assertThat(validator.findMembers(null, new String[] {"Cluster"}))
+    assertThat(validator.findMembers(null, "Cluster"))
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
-    assertThat(validator.findMembers(null, new String[] {"CLUSTER"}))
+    assertThat(validator.findMembers(null, "CLUSTER"))
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
-    assertThat(validator.findMembers(null, new String[] {""}))
+    assertThat(validator.findMembers(null, ""))
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
 
@@ -159,26 +164,26 @@ public class MemberValidatorTest {
   }
 
   @Test
-  public void findGroupsWithThisElement() throws Exception {
+  public void findGroupsWithThisElement() {
     cacheConfig.getRegions().add(xmlRegionConfig);
-    when(service.getCacheConfig("cluster")).thenReturn(cacheConfig);
-    assertThat(validator.findGroupsWithThisElement(regionConfig.getId(), regionManager))
+    when(service.getCacheConfig("cluster", true)).thenReturn(cacheConfig);
+    assertThat(validator.findGroupsWithThisElement(regionConfig, regionManager))
         .containsExactly("cluster");
 
-    when(service.getCacheConfig("cluster")).thenReturn(null);
-    when(service.getCacheConfig("group1")).thenReturn(cacheConfig);
-    when(service.getCacheConfig("group2")).thenReturn(cacheConfig);
+    when(service.getCacheConfig("cluster", true)).thenReturn(new CacheConfig());
+    when(service.getCacheConfig("group1", true)).thenReturn(cacheConfig);
+    when(service.getCacheConfig("group2", true)).thenReturn(cacheConfig);
 
     CacheConfig another = new CacheConfig();
-    when(service.getCacheConfig("group3")).thenReturn(another);
-    assertThat(validator.findGroupsWithThisElement(regionConfig.getId(), regionManager))
+    when(service.getCacheConfig("group3", true)).thenReturn(another);
+    assertThat(validator.findGroupsWithThisElement(regionConfig, regionManager))
         .containsExactlyInAnyOrder("group1", "group2");
   }
 
   @Test
-  public void validateCreate1() throws Exception {
+  public void validateCreate1() {
     cacheConfig.getRegions().add(xmlRegionConfig);
-    when(service.getCacheConfig("cluster")).thenReturn(cacheConfig);
+    when(service.getCacheConfig("cluster", true)).thenReturn(cacheConfig);
 
     regionConfig.setGroup("group1");
     assertThatThrownBy(() -> validator.validateCreate(regionConfig, regionManager))
@@ -188,9 +193,9 @@ public class MemberValidatorTest {
   }
 
   @Test
-  public void validateCreate2() throws Exception {
+  public void validateCreate2() {
     cacheConfig.getRegions().add(xmlRegionConfig);
-    when(service.getCacheConfig("group1")).thenReturn(cacheConfig);
+    when(service.getCacheConfig("group1", true)).thenReturn(cacheConfig);
 
     regionConfig.setGroup("group2");
     assertThatThrownBy(() -> validator.validateCreate(regionConfig, regionManager))
@@ -199,9 +204,9 @@ public class MemberValidatorTest {
   }
 
   @Test
-  public void validateCreateWhenNoMemberFound() throws Exception {
+  public void validateCreateWhenNoMemberFound() {
     cacheConfig.getRegions().add(xmlRegionConfig);
-    when(service.getCacheConfig("group1")).thenReturn(cacheConfig);
+    when(service.getCacheConfig("group1", true)).thenReturn(cacheConfig);
 
     doReturn(Collections.emptySet()).when(validator).getAllServers();
 
@@ -212,9 +217,9 @@ public class MemberValidatorTest {
   }
 
   @Test
-  public void validateCreate4() throws Exception {
+  public void validateCreate4() {
     cacheConfig.getRegions().add(xmlRegionConfig);
-    when(service.getCacheConfig("group1")).thenReturn(cacheConfig);
+    when(service.getCacheConfig("group1", true)).thenReturn(cacheConfig);
 
     regionConfig.setGroup("group3");
     // no exception thrown

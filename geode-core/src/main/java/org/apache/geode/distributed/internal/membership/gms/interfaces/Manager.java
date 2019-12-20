@@ -19,6 +19,7 @@ import java.util.Collection;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.Message;
 
 /**
@@ -31,7 +32,7 @@ public interface Manager<ID extends MemberIdentifier>
   /**
    * After all services have been started this is used to join the distributed system
    */
-  void joinDistributedSystem();
+  void joinDistributedSystem() throws MemberStartupException;
 
   /**
    * initiates a Forced Disconnect, shutting down the distributed system and closing the cache

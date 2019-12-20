@@ -73,11 +73,12 @@ public class LuceneQueryFunction implements InternalFunction<LuceneFunctionConte
       PartitionedRegionFunctionResultSender resultSender =
           (PartitionedRegionFunctionResultSender) context.getResultSender();
       Version clientVersion = resultSender.getClientVersion();
-      if (clientVersion != null) { // is a client server connection
-        if (clientVersion.ordinal() < Version.GEODE_1_6_0.ordinal()) {
-          execute(context, true);
-          return;
-        }
+      if (LuceneServiceImpl.LUCENE_REINDEX == false
+          || (clientVersion != null && clientVersion
+              .ordinal() < LuceneServiceImpl.LUCENE_REINDEX_ENABLED_VERSION_ORDINAL)) {
+        // is a client server connection (or reindex disabled)
+        execute(context, true);
+        return;
       }
     }
     execute(context, false);

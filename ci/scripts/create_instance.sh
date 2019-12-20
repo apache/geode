@@ -43,6 +43,11 @@ if [[ -z "${GEODE_BRANCH}" ]]; then
   exit 1
 fi
 
+if [[ -z "${IMAGE_FAMILY_NAME}" ]]; then
+  echo "IMAGE_FAMILY_NAME environment variable must be set for this script to work."
+  exit 1
+fi
+
 if [[ -d geode ]]; then
   pushd geode
   GEODE_SHA=$(git rev-parse --verify HEAD)
@@ -85,22 +90,18 @@ cp old/attempts new/
 echo attempt >> new/attempts
 attempts=$(cat new/attempts | wc -l)
 
+PERMITTED_ZONES=(us-central1-a us-central1-b us-central1-c us-central1-f)
 if [ $attempts -eq 1 ]; then
   ZONE=${MY_ZONE}
 else
-  #during retry we need to clean up the prior zone
-  PRIOR_ZONE=$(cat new/prior-zone)
-  gcloud compute instances delete ${INSTANCE_NAME} --zone=${PRIOR_ZONE} --quiet &>/dev/null || true
-  PERMITTED_ZONES=(us-central1-a us-central1-b us-central1-c us-central1-f)
   ZONE=${PERMITTED_ZONES[$((${RANDOM} % 4))]}
 fi
 echo "Deploying to zone ${ZONE}"
 
-#remember zone in case we retry
-echo ${ZONE} > new/prior-zone
-
-#in a retry loop we intentionally generate the same instance name, so make sure prior attempt is cleaned up
-gcloud compute instances delete ${INSTANCE_NAME} --zone=${ZONE} --quiet &>/dev/null || true
+# Ensure no existing instance with this name in any zone
+for KILL_ZONE in "${PERMITTED_ZONES}"; do
+  gcloud compute instances delete ${INSTANCE_NAME} --zone=${KILL_ZONE} --quiet &>/dev/null || true
+done
 
 echo "${INSTANCE_NAME}" > "instance-data/instance-name"
 echo "${GCP_PROJECT}" > "instance-data/project"
@@ -120,12 +121,13 @@ INSTANCE_INFORMATION=$(gcloud compute --project=${GCP_PROJECT} instances create 
   --min-cpu-platform=Intel\ Skylake \
   --network="${GCP_NETWORK}" \
   --subnet="${GCP_SUBNETWORK}" \
-  --image-family="${IMAGE_FAMILY_PREFIX}${WINDOWS_PREFIX}geode-builder" \
+  --image-family="${IMAGE_FAMILY_NAME}" \
   --boot-disk-size=100GB \
   --boot-disk-type=pd-ssd \
   --labels="${LABELS}" \
   --tags="heavy-lifter" \
   --scopes="default,storage-rw" \
+  --metadata="disable-agent-updates=true" \
   --format=json)
 
 CREATE_RC=$?
@@ -159,8 +161,11 @@ if [[ -z "${WINDOWS_PREFIX}" ]]; then
 else
   # Set up ssh access for Windows systems
   echo -n "Setting windows password via gcloud."
-  while [[ -z "${PASSWORD}" ]]; do
+  while true; do
     PASSWORD=$( yes | gcloud beta compute reset-windows-password ${INSTANCE_NAME} --user=geode --zone=${ZONE} --format json | jq -r .password )
+    if [[ -n "${PASSWORD}" ]]; then
+      break;
+    fi
     echo -n .
     sleep 5
   done

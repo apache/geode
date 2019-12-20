@@ -37,9 +37,7 @@ import javax.net.ssl.SSLException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.CancelException;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
@@ -84,6 +82,7 @@ public class TcpServer {
   private static final Map<Integer, Short> GOSSIP_TO_GEMFIRE_VERSION_MAP =
       createGossipToVersionMap();
   public static final int GOSSIP_BYTE = 0;
+  private static final String P2P_BACKLOG_PROPERTY_NAME = "p2p.backlog";
 
   // For test purpose only
   @MutableForTesting
@@ -99,11 +98,8 @@ public class TcpServer {
   private static final Logger logger = LogService.getLogger();
 
   // no longer static so that tests can test this system property
-  private final int READ_TIMEOUT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000);
-  private static final int P2P_BACKLOG = Integer.getInteger("p2p.backlog", 1000);
-  private static final int BACKLOG =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG);
+  private final int readTimeout;
+  private final int backlogLimit;
   private final ProtocolChecker protocolChecker;
   private final ObjectDeserializer objectDeserializer;
   private final ObjectSerializer objectSerializer;
@@ -143,7 +139,8 @@ public class TcpServer {
       final Supplier<ExecutorService> executorServiceSupplier,
       final TcpSocketCreator socketCreator,
       final ObjectSerializer objectSerializer,
-      final ObjectDeserializer objectDeserializer) {
+      final ObjectDeserializer objectDeserializer,
+      final String readTimeoutPropertyName, final String backlogLimitPropertyName) {
     this.port = port;
     this.bind_address = bind_address;
     this.handler = handler;
@@ -155,6 +152,9 @@ public class TcpServer {
     this.socketCreator = socketCreator;
     this.objectSerializer = objectSerializer;
     this.objectDeserializer = objectDeserializer;
+    readTimeout = Integer.getInteger(readTimeoutPropertyName, 60 * 1000);
+    final int p2pBacklog = Integer.getInteger(P2P_BACKLOG_PROPERTY_NAME, 1000);
+    backlogLimit = Integer.getInteger(backlogLimitPropertyName, p2pBacklog);
   }
 
   public void restarting() throws IOException {
@@ -183,10 +183,10 @@ public class TcpServer {
   private void initializeServerSocket() throws IOException {
     if (srv_sock == null || srv_sock.isClosed()) {
       if (bind_address == null) {
-        srv_sock = socketCreator.createServerSocket(port, BACKLOG);
+        srv_sock = socketCreator.createServerSocket(port, backlogLimit);
         bind_address = srv_sock.getInetAddress();
       } else {
-        srv_sock = socketCreator.createServerSocket(port, BACKLOG, bind_address);
+        srv_sock = socketCreator.createServerSocket(port, backlogLimit, bind_address);
       }
       // GEODE-4176 - set the port from a wild-card bind so that handlers know the correct value
 
@@ -297,8 +297,8 @@ public class TcpServer {
       final long startTime = nanoTimeSupplier.getAsLong();
       DataInputStream input = null;
       try {
-        socket.setSoTimeout(READ_TIMEOUT);
-        socketCreator.handshakeIfSocketIsSSL(socket, READ_TIMEOUT);
+        socket.setSoTimeout(readTimeout);
+        socketCreator.handshakeIfSocketIsSSL(socket, readTimeout);
 
         try {
           input = new DataInputStream(socket.getInputStream());
@@ -324,8 +324,6 @@ public class TcpServer {
         }
       } catch (EOFException | SocketException ignore) {
         // client went away - ignore
-      } catch (CancelException ignore) {
-        // ignore
       } catch (SocketTimeoutException ex) {
         String sender = null;
         if (socket != null) {

@@ -16,7 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PACKER=${PACKER:-packer135}
+PACKER=${PACKER:-packer}
 PACKER_ARGS="${*}"
 INTERNAL=${INTERNAL:-true}
 SOURCE="${BASH_SOURCE[0]}"
@@ -57,6 +57,7 @@ HASHED_PIPELINE_PREFIX="i$(uuidgen -n @dns -s -N "${PIPELINE_PREFIX}")-"
 
 echo "Running packer"
 PACKER_LOG=1 ${PACKER} build ${PACKER_ARGS} \
+  --var "base_family=${BASE_FAMILY}" \
   --var "geode_docker_image=${GEODE_DOCKER_IMAGE}" \
   --var "pipeline_prefix=${PIPELINE_PREFIX}" \
   --var "hashed_pipeline_prefix=${HASHED_PIPELINE_PREFIX}" \

@@ -12,24 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.api;
+package org.apache.geode.internal.cache.util;
 
-/**
- * Test hook for membership test development
- */
-public interface MembershipTestHook {
+import org.apache.geode.cache.Region;
 
-  /**
-   * test hook invoked prior to shutting down distributed system
-   */
-  default void beforeMembershipFailure(String reason, Throwable cause) {
-    // nothing
-  }
+@SuppressWarnings({"unchecked", "unused"})
+public class UncheckedUtils {
 
-  /**
-   * test hook invoked after shutting down distributed system
-   */
-  default void afterMembershipFailure(String reason, Throwable cause) {
-    // nothing
+  public static <K, V> Region<K, V> uncheckedRegion(Region region) {
+    return region;
   }
 }

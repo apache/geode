@@ -31,8 +31,8 @@ public class DiskDistributedNoAckAsyncRegionDUnitTest extends DiskDistributedNoA
   }
 
   @Override
-  protected RegionAttributes getRegionAttributes() {
-    AttributesFactory factory = new AttributesFactory();
+  protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
+    AttributesFactory<K, V> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
 
     File[] diskDirs = new File[1];

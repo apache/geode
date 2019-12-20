@@ -15,6 +15,9 @@
 
 package org.apache.geode.test.junit.rules;
 
+import static org.apache.geode.test.junit.rules.MemberStarterRule.getSSLProperties;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Properties;
@@ -48,6 +51,13 @@ public class LocatorLauncherStartupRule extends SerializableExternalResource {
     return this;
   }
 
+  public LocatorLauncherStartupRule withSSL(String components, boolean requireAuth,
+      boolean endPointIdentification) {
+    Properties sslProps = getSSLProperties(components, requireAuth, endPointIdentification);
+    properties.putAll(sslProps);
+    return this;
+  }
+
   public LocatorLauncherStartupRule withBuilder(
       UnaryOperator<LocatorLauncher.Builder> builderOperator) {
     this.builderOperator = builderOperator;
@@ -56,13 +66,21 @@ public class LocatorLauncherStartupRule extends SerializableExternalResource {
 
   @Override
   public void before() {
+    if (autoStart) {
+      start();
+    }
+  }
+
+  public void start() {
     LocatorLauncher.Builder builder = new LocatorLauncher.Builder()
         .setPort(0)
         .set(properties)
-        .setMemberName("locator-0")
         .set(ConfigurationProperties.LOG_LEVEL, "config");
     if (builderOperator != null) {
       builder = builderOperator.apply(builder);
+    }
+    if (builder.getMemberName() == null) {
+      builder.setMemberName("locator-0");
     }
     try {
       temp.create();
@@ -71,14 +89,15 @@ public class LocatorLauncherStartupRule extends SerializableExternalResource {
     }
     builder.setWorkingDirectory(temp.getRoot().getAbsolutePath());
     launcher = builder.build();
-
-    if (autoStart) {
-      start();
-    }
+    launcher.start();
   }
 
-  public void start() {
-    launcher.start();
+  public LocatorLauncher getLauncher() {
+    return launcher;
+  }
+
+  public File getWorkingDir() {
+    return temp.getRoot();
   }
 
   @Override

@@ -35,6 +35,10 @@ SERVICE_ACCOUNT: ((!concourse-gcp-account))
 ---
 
 resource_types:
+- name: gci
+  type: registry-image
+  source:
+    repository: smgoller/gci-resource
 - name: maven-resource
   type: docker-image
   source:
@@ -76,6 +80,13 @@ resources:
     password: ((docker-password))
     repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
     tag: latest
+- name: linux-builder-image-family
+  type: gci
+  source:
+    key: ((concourse-gcp-key))
+    family_project: ((gcp-project))
+    family: ((pipeline-prefix))linux-geode-builder
+
 
 jobs:
 - name: {{examples_test.name}}
@@ -85,6 +96,7 @@ jobs:
   - aggregate:
     - get: geode-ci
     - get: alpine-tools-image
+    - get: linux-builder-image-family
   - aggregate:
     - get: geode-examples
       trigger: true
@@ -101,6 +113,7 @@ jobs:
             {{ common_instance_params(examples_test) | indent(12) }}
             GEODE_BRANCH: {{repository.branch}}
             GEODE_FORK: {{repository.fork}}
+            IMAGE_FAMILY_NAME: ((pipeline-prefix))linux-geode-builder
           run:
             path: geode-ci/ci/scripts/create_instance.sh
           inputs:

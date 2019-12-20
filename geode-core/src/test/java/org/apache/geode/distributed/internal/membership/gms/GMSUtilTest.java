@@ -27,7 +27,7 @@ import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 
 @RunWith(JUnitParamsRunner.class)
@@ -43,7 +43,7 @@ public class GMSUtilTest {
 
 
   @Test
-  public void resolveableLoopBackAddress() {
+  public void resolveableLoopBackAddress() throws MembershipConfigurationException {
     assertThat(
         parseLocators(RESOLVEABLE_LOOPBACK_HOST + "[" + PORT + "]",
             InetAddress.getLoopbackAddress()))
@@ -57,7 +57,7 @@ public class GMSUtilTest {
     assertThatThrownBy(
         () -> parseLocators(RESOLVEABLE_NON_LOOPBACK_HOST + "[" + PORT + "]",
             InetAddress.getLoopbackAddress()))
-                .isInstanceOf(GemFireConfigException.class)
+                .isInstanceOf(MembershipConfigurationException.class)
                 .hasMessageContaining("does not have a local address");
   }
 
@@ -66,13 +66,13 @@ public class GMSUtilTest {
     assertThatThrownBy(
         () -> parseLocators(UNRESOLVEABLE_HOST + "[" + PORT + "]",
             InetAddress.getLoopbackAddress()))
-                .isInstanceOf(GemFireConfigException.class)
+                .isInstanceOf(MembershipConfigurationException.class)
                 .hasMessageContaining("unknown address or FQDN: " + UNRESOLVEABLE_HOST);
   }
 
   @Test
   @Parameters({"1234", "0"})
-  public void validPortSpecified(final int validPort) {
+  public void validPortSpecified(final int validPort) throws MembershipConfigurationException {
     final String locatorsString = RESOLVEABLE_LOOPBACK_HOST + "[" + validPort + "]";
     assertThat(parseLocators(locatorsString, InetAddress.getLoopbackAddress()))
         .contains(
@@ -86,13 +86,14 @@ public class GMSUtilTest {
     final String locatorsString = RESOLVEABLE_LOOPBACK_HOST + portSpecification;
     assertThatThrownBy(
         () -> parseLocators(locatorsString, InetAddress.getLoopbackAddress()))
-            .isInstanceOf(GemFireConfigException.class)
+            .isInstanceOf(MembershipConfigurationException.class)
             .hasMessageContaining("malformed port specification: " + locatorsString);
   }
 
   @Test
   @Parameters({"host@127.0.0.1[1234]", "host:127.0.0.1[1234]"})
-  public void validHostSpecified(final String locatorsString) {
+  public void validHostSpecified(final String locatorsString)
+      throws MembershipConfigurationException {
     assertThat(parseLocators(locatorsString, (InetAddress) null))
         .contains(
             new HostAddress(new InetSocketAddress("127.0.0.1", 1234), "127.0.0.1"));
@@ -100,7 +101,8 @@ public class GMSUtilTest {
 
   @Test
   @Parameters({"server1@fdf0:76cf:a0ed:9449::5[12233]", "fdf0:76cf:a0ed:9449::5[12233]"})
-  public void validIPV6AddySpecified(final String locatorsString) {
+  public void validIPV6AddySpecified(final String locatorsString)
+      throws MembershipConfigurationException {
     assertThat(parseLocators(locatorsString, (InetAddress) null))
         .contains(
             new HostAddress(new InetSocketAddress("fdf0:76cf:a0ed:9449::5", 12233),

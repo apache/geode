@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 import java.io.NotSerializableException;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 import org.apache.geode.SystemFailure;
@@ -71,12 +72,12 @@ public interface Membership<ID extends MemberIdentifier> {
    * @since GemFire 5.1
    */
   void waitForMessageState(ID member, Map<String, Long> state)
-      throws InterruptedException;
+      throws InterruptedException, TimeoutException;
 
   /**
    * Request the current membership coordinator to remove the given member
    */
-  boolean requestMemberRemoval(ID member, String reason);
+  boolean requestMemberRemoval(ID member, String reason) throws MemberDisconnectedException;
 
   /**
    * like memberExists() this checks to see if the given ID is in the current membership view. If it
@@ -235,18 +236,6 @@ public interface Membership<ID extends MemberIdentifier> {
   Throwable getShutdownCause();
 
   /**
-   * register a test hook for membership events
-   *
-   * @see MembershipTestHook
-   */
-  void registerTestHook(MembershipTestHook mth);
-
-  /**
-   * remove a test hook previously registered with the manager
-   */
-  void unregisterTestHook(MembershipTestHook mth);
-
-  /**
    * If this member is shunned, ensure that a warning is generated at least once.
    *
    * @param mbr the member that may be shunned
@@ -301,9 +290,9 @@ public interface Membership<ID extends MemberIdentifier> {
    * takes care of queueing up the message during startup and filtering out messages
    * from shunned members, before calling the message listener.
    */
-  void processMessage(Message<ID> msg);
+  void processMessage(Message<ID> msg) throws MemberShunnedException;
 
-  void checkCancelled();
+  void checkCancelled() throws MembershipClosedException;
 
   void waitIfPlayingDead();
 
@@ -318,7 +307,7 @@ public interface Membership<ID extends MemberIdentifier> {
    */
   boolean hasMember(ID member);
 
-  void start();
+  void start() throws MemberStartupException;
 
   void setCloseInProgress();
 }

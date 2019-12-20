@@ -3433,7 +3433,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @since GemFire 3.2
    */
   @Override
-  public Object getValueInVM(Object key) throws EntryNotFoundException { // KIRK
+  public Object getValueInVM(Object key) throws EntryNotFoundException {
     return basicGetValueInVM(key, true);
   }
 
@@ -8604,14 +8604,21 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           keysList = new ArrayList(keys);
         }
         for (Iterator iterator = keysList.iterator(); iterator.hasNext();) {
-          Object key = iterator.next();
           Object value;
+          Object key = iterator.next();
           Region.Entry entry = accessEntry(key, true);
-          if (entry != null && (value = entry.getValue()) != null) {
-            allResults.put(key, value);
-            iterator.remove();
+
+          try {
+            if (entry != null && (value = entry.getValue()) != null) {
+              allResults.put(key, value);
+              iterator.remove();
+            }
+          } catch (EntryDestroyedException ignored) {
+            // The entry might have been removed locally between first and second fetch.
+            // If that's the case, don't remove the key and try to retrieve the value from server.
           }
         }
+
         if (isDebugEnabled) {
           logger.debug("Added local results for getAll request: {}", allResults);
         }
@@ -9687,13 +9694,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return isUsedForPartitionedRegionAdmin;
   }
 
-  /**
-   * This method determines whether this region should synchronize with peer replicated regions when
-   * the given member has crashed.
-   *
-   * @param id the crashed member
-   * @return true if synchronization should be attempted
-   */
   public boolean shouldSyncForCrashedMember(InternalDistributedMember id) {
     return getConcurrencyChecksEnabled() && getDataPolicy().withReplication()
         && !isUsedForPartitionedRegionAdmin && !isUsedForMetaRegion

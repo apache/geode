@@ -22,15 +22,27 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
+import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.internal.configuration.converters.IndexConverter;
 
 public class IndexConfigManager extends CacheConfigurationManager<Index> {
   private final IndexConverter converter = new IndexConverter();
 
+  public IndexConfigManager(ConfigurationPersistenceService persistenceService) {
+    super(persistenceService);
+  }
+
   @Override
   public void add(Index config, CacheConfig existing) {
-    throw new NotImplementedException("Not implemented yet");
+    RegionConfig regionConfiguration = existing.findRegionConfiguration(config.getRegionName());
+    if (regionConfiguration == null) {
+      throw new IllegalArgumentException(
+          "Region provided does not exist: " + config.getRegionName());
+    }
+    RegionConfig.Index index = converter.fromConfigObject(config);
+    regionConfiguration.getIndexes().add(index);
   }
 
   @Override
@@ -63,7 +75,13 @@ public class IndexConfigManager extends CacheConfigurationManager<Index> {
   }
 
   @Override
-  public Index get(String id, CacheConfig existing) {
-    throw new NotImplementedException("Not implemented yet");
+  public Index get(Index config, CacheConfig existing) {
+    RegionConfig regionConfiguration = existing.findRegionConfiguration(config.getRegionName());
+    if (regionConfiguration == null) {
+      return null;
+    }
+
+    return converter
+        .fromXmlObject(Identifiable.find(regionConfiguration.getIndexes(), config.getId()));
   }
 }

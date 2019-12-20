@@ -22,12 +22,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * <code>IgnoredException</code> provides static utility methods that will log messages to add or
- * remove <code>IgnoredException</code>s. Each <code>IgnoredException</code> allows you to specify a
- * suspect string that will be ignored by the <code>GrepLogs</code> utility which is run after each
- * <code>DistributedTest</code> test method.
+ * {@code IgnoredException} provides static utility methods that will log messages to add or
+ * remove {@code IgnoredException}s. Each {@code IgnoredException} allows you to specify a
+ * suspect string that will be ignored by the {@code GrepLogs} utility which is run after each
+ * {@code DistributedTest} test method.
  *
- * These methods can be used directly: <code>IgnoredException.addIgnoredException(...)</code>,
+ * <p>
+ * These methods can be used directly: {@code IgnoredException.addIgnoredException(...)},
  * however, they are intended to be referenced through static import:
  *
  * <pre>
@@ -36,18 +37,22 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *    addIgnoredException(...);
  * </pre>
  *
- * A test should use <code>addIgnoredException(...)</code> before executing the code that will
- * potentially log the suspect string. The test should then <code>remove()</code> the
- * <code>IgnoredException</code> immediately after. Note that
- * <code>DistributedTestCase.tearDown()</code> will automatically remove all current
- * <code>IgnoredException</code>s by invoking <code>removeAllIgnoredExceptions</code>.
+ * <p>
+ * A test should use {@code addIgnoredException(...)} before executing the code that will
+ * potentially log the suspect string. The test should then {@code remove()} the
+ * {@code IgnoredException} immediately after. Note that
+ * {@code DistributedTestCase.tearDown()} will automatically remove all current
+ * {@code IgnoredException}s by invoking {@code removeAllIgnoredExceptions}.
  *
+ * <p>
  * A suspect string is typically an Exception class and/or message string.
  *
- * The <code>GrepLogs</code> utility is part of Hydra which is not included in Apache Geode. The
+ * <p>
+ * The {@code GrepLogs} utility is part of Hydra which is not included in Apache Geode. The
  * Hydra class which consumes logs and reports suspect strings is
- * <code>batterytest.greplogs.GrepLogs</code>.
+ * {@code batterytest.greplogs.GrepLogs}.
  *
+ * <p>
  * Extracted from DistributedTestCase.
  *
  * @since GemFire 5.7bugfix
@@ -57,120 +62,19 @@ public class IgnoredException implements Serializable, AutoCloseable {
 
   private static final Logger logger = LogService.getLogger();
 
+  private static final ConcurrentLinkedQueue<IgnoredException> IGNORED_EXCEPTIONS =
+      new ConcurrentLinkedQueue<>();
+
   private final String suspectString;
 
   private final transient VM vm;
 
-  private static ConcurrentLinkedQueue<IgnoredException> ignoredExceptions =
-      new ConcurrentLinkedQueue<IgnoredException>();
-
-  public IgnoredException(final String suspectString) {
-    this.suspectString = suspectString;
-    this.vm = null;
-  }
-
-  IgnoredException(final String suspectString, final VM vm) {
-    this.suspectString = suspectString;
-    this.vm = vm;
-  }
-
-  String suspectString() {
-    return this.suspectString;
-  }
-
-  VM vm() {
-    return this.vm;
-  }
-
-  public String getRemoveMessage() {
-    return "<ExpectedException action=remove>" + this.suspectString + "</ExpectedException>";
-  }
-
-  public String getAddMessage() {
-    return "<ExpectedException action=add>" + this.suspectString + "</ExpectedException>";
-  }
-
-  public void remove() {
-    final String removeMessage = getRemoveMessage();
-
-    @SuppressWarnings("serial")
-    SerializableRunnable removeRunnable =
-        new SerializableRunnable(IgnoredException.class.getSimpleName() + " remove") {
-          @Override
-          public void run() {
-            logger.info(removeMessage);
-          }
-        };
-
-    try {
-      removeRunnable.run();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
-    if (this.vm != null) {
-      vm.invoke(removeRunnable);
-    } else {
-      Invoke.invokeInEveryVM(removeRunnable);
-    }
-  }
-
-  @Override
-  public void close() {
-    remove();
-  }
-
-  public static void removeAllExpectedExceptions() {
-    IgnoredException ignoredException;
-    while ((ignoredException = ignoredExceptions.poll()) != null) {
-      ignoredException.remove();
-    }
-  }
-
   /**
    * Log in all VMs, in both the test logger and the GemFire logger the ignored exception string to
    * prevent grep logs from complaining. The suspect string is used by the GrepLogs utility and so
    * can contain regular expression characters.
    *
-   * @since GemFire 5.7bugfix
-   * @param suspectString the exception string to expect
-   * @param vm the VM on which to log the expected exception or null for all VMs
-   * @return an IgnoredException instance for removal purposes
-   */
-  public static IgnoredException addIgnoredException(final String suspectString, final VM vm) {
-    final IgnoredException ignoredException = new IgnoredException(suspectString, vm);
-    final String addMessage = ignoredException.getAddMessage();
-
-    @SuppressWarnings("serial")
-    SerializableRunnable addRunnable =
-        new SerializableRunnable(IgnoredException.class.getSimpleName() + " addIgnoredException") {
-          @Override
-          public void run() {
-            logger.info(addMessage);
-          }
-        };
-
-    try {
-      addRunnable.run();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-
-    if (vm != null) {
-      vm.invoke(addRunnable);
-    } else {
-      Invoke.invokeInEveryVM(addRunnable);
-    }
-
-    ignoredExceptions.add(ignoredException);
-    return ignoredException;
-  }
-
-  /**
-   * Log in all VMs, in both the test logger and the GemFire logger the ignored exception string to
-   * prevent grep logs from complaining. The suspect string is used by the GrepLogs utility and so
-   * can contain regular expression characters.
-   *
+   * <p>
    * If you do not remove the ignored exception, it will be removed at the end of your test case
    * automatically.
    *
@@ -184,5 +88,106 @@ public class IgnoredException implements Serializable, AutoCloseable {
 
   public static IgnoredException addIgnoredException(final Class exceptionClass) {
     return addIgnoredException(exceptionClass.getName(), null);
+  }
+
+  /**
+   * Log in all VMs, in both the test logger and the GemFire logger the ignored exception string to
+   * prevent grep logs from complaining. The suspect string is used by the GrepLogs utility and so
+   * can contain regular expression characters.
+   *
+   * @since GemFire 5.7bugfix
+   * @param suspectString the exception string to expect
+   * @param vm the VM on which to log the expected exception or null for all VMs
+   * @return an IgnoredException instance for removal purposes
+   */
+  public static IgnoredException addIgnoredException(final String suspectString, final VM vm) {
+    IgnoredException ignoredException = new IgnoredException(suspectString, vm);
+    SerializableRunnableIF addRunnable = runnableForAdd(ignoredException.getAddMessage());
+
+    try {
+      addRunnable.run();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    if (vm != null) {
+      vm.invoke(addRunnable);
+    } else {
+      Invoke.invokeInEveryVM(addRunnable);
+    }
+
+    IGNORED_EXCEPTIONS.add(ignoredException);
+    return ignoredException;
+  }
+
+  public static void removeAllExpectedExceptions() {
+    IgnoredException ignoredException;
+    while ((ignoredException = IGNORED_EXCEPTIONS.poll()) != null) {
+      ignoredException.remove();
+    }
+  }
+
+  public IgnoredException(final String suspectString) {
+    this.suspectString = suspectString;
+    vm = null;
+  }
+
+  IgnoredException(final String suspectString, final VM vm) {
+    this.suspectString = suspectString;
+    this.vm = vm;
+  }
+
+  public String getRemoveMessage() {
+    return "<ExpectedException action=remove>" + suspectString + "</ExpectedException>";
+  }
+
+  public String getAddMessage() {
+    return "<ExpectedException action=add>" + suspectString + "</ExpectedException>";
+  }
+
+  public void remove() {
+    SerializableRunnableIF removeRunnable = runnableForRemove(getRemoveMessage());
+
+    try {
+      removeRunnable.run();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+
+    if (vm != null) {
+      vm.invoke(removeRunnable);
+    } else {
+      Invoke.invokeInEveryVM(removeRunnable);
+    }
+  }
+
+  @Override
+  public void close() {
+    remove();
+  }
+
+  String suspectString() {
+    return suspectString;
+  }
+
+  VM vm() {
+    return vm;
+  }
+
+  private static SerializableRunnableIF runnableForAdd(String message) {
+    return createRunnable(message, "addIgnoredException");
+  }
+
+  private static SerializableRunnableIF runnableForRemove(String message) {
+    return createRunnable(message, "remove");
+  }
+
+  private static SerializableRunnableIF createRunnable(String message, String action) {
+    return new SerializableRunnable(IgnoredException.class.getSimpleName() + " " + action) {
+      @Override
+      public void run() {
+        logger.info(message);
+      }
+    };
   }
 }

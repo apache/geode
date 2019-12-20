@@ -18,11 +18,12 @@ package org.apache.geode.internal.process;
  * A listener for events that should be reported to the users console during the startup of a
  * gemfire member.
  */
+@FunctionalInterface
 public interface StartupStatusListener {
 
   /**
    * Report the current status of system startup. The status message reported to this method should
    * already be internationalized.
    */
-  void setStatus(final String status);
+  void setStatus(String status);
 }

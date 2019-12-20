@@ -45,7 +45,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.internal.cq.CqService;
-import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
@@ -68,7 +67,6 @@ import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.statistics.StatisticsClockSupplier;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
-import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.TypeRegistry;
 
@@ -76,14 +74,24 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  * The InternalCache interface is contract for implementing classes for defining internal cache
  * operations that should not be part of the "public" API of the implementing class.
  *
- * @see org.apache.geode.cache.Cache
+ * @see Cache
  * @since GemFire 7.0
  */
-public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
+public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, InternalCacheForTesting,
     StatisticsClockSupplier {
 
+  /**
+   * Return the member id of the local distributed system connection.
+   *
+   * @since GemFire 5.0
+   */
   InternalDistributedMember getMyId();
 
+  /**
+   * Return list of all disk stores.
+   *
+   * @since GemFire prPersistSprint2
+   */
   Collection<DiskStore> listDiskStores();
 
   Collection<DiskStore> listDiskStoresIncludingRegionOwned();
@@ -96,15 +104,34 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   Collection<CacheService> getServices();
 
+  /**
+   * Get the CacheClientProxy SystemTimer for this cache.
+   *
+   * @return the timer, lazily created
+   */
   SystemTimer getCCPTimer();
 
+  /**
+   * Called by the {@link CacheClientNotifier} when a client goes away.
+   *
+   * @since GemFire 5.7
+   */
   void cleanupForClient(CacheClientNotifier ccn, ClientProxyMembershipID client);
 
+  /**
+   * Purge the CCPTimer to prevent a large number of cancelled tasks from building up in it.
+   */
   void purgeCCPTimer();
 
+  /**
+   * Return the cq/interest information for a named region, creating one if it doesn't exist.
+   */
   FilterProfile getFilterProfile(String regionName);
 
-  Region getRegion(String path, boolean returnDestroyedRegion);
+  /**
+   * @param returnDestroyedRegion if true, okay to return a destroyed region
+   */
+  <K, V> Region<K, V> getRegion(String path, boolean returnDestroyedRegion);
 
   MemoryAllocator getOffHeapStore();
 
@@ -112,17 +139,31 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
       InternalRegionArguments internalRegionArgs)
       throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException;
 
+  /**
+   * Gets or lazily creates the PartitionedRegion distributed lock service. This call will
+   * synchronize on this GemFireCache.
+   *
+   * @return the PartitionedRegion distributed lock service
+   */
   DistributedLockService getPartitionedRegionLockService();
 
   PersistentMemberManager getPersistentMemberManager();
 
+  /**
+   * Return a list of all GatewaySenders (including the senders for internal use).
+   */
   Set<GatewaySender> getAllGatewaySenders();
 
   CachePerfStats getCachePerfStats();
 
   DistributionManager getDistributionManager();
 
-  void regionReinitialized(Region region);
+  /**
+   * Set the reinitialized region and unregister it as reinitializing.
+   *
+   * @throws IllegalStateException if there is no region by that name registered as reinitializing.
+   */
+  void regionReinitialized(Region<?, ?> region);
 
   void setRegionByPath(String path, InternalRegion r);
 
@@ -132,6 +173,14 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   boolean isCacheAtShutdownAll();
 
+  /**
+   * Check to see if any cache components require notification from a partitioned region.
+   * Notification adds to the messaging a PR must do on each put/destroy/invalidate operation and
+   * should be kept to a minimum
+   *
+   * @param r the partitioned region
+   * @return true if the region should deliver all of its events to this cache
+   */
   boolean requiresNotificationFromPR(PartitionedRegion r);
 
   <K, V> RegionAttributes<K, V> invokeRegionBefore(InternalRegion parent, String name,
@@ -145,10 +194,19 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   TXManagerImpl getTXMgr();
 
+  /**
+   * True if the cache was closed due to being shunned by other members.
+   */
   boolean forcedDisconnect();
 
   InternalResourceManager getInternalResourceManager(boolean checkCancellationInProgress);
 
+  /**
+   * Return true if get operations should return a copy; false if a reference to the value should be
+   * returned.
+   *
+   * @since GemFire 4.0
+   */
   boolean isCopyOnRead();
 
   TombstoneService getTombstoneService();
@@ -157,30 +215,82 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   void registerInterestStarted();
 
+  /**
+   * Update stats for completion of a registerInterest operation.
+   */
   void registerInterestCompleted();
 
+  /**
+   * Register the specified region name as reinitializing, creating and adding a Future for it to
+   * the map.
+   *
+   * @throws IllegalStateException if there is already a region by that name registered.
+   */
   void regionReinitializing(String fullPath);
 
+  /**
+   * Clear a reinitializing region, e.g. reinitialization failed.
+   *
+   * @throws IllegalStateException if cannot find reinitializing region registered by that name.
+   */
   void unregisterReinitializingRegion(String fullPath);
 
+  /**
+   * Remove the specified root region.
+   *
+   * @param rootRgn the region to be removed
+   *
+   * @return true if root region was removed, false if not found
+   */
   boolean removeRoot(InternalRegion rootRgn);
 
+  /**
+   * Return the {@code Executor} (thread pool) that is used to execute cache event listeners or
+   * {@code null} if no pool exists.
+   *
+   * @since GemFire 3.5
+   */
   Executor getEventThreadPool();
 
+  /**
+   * Get a reference to a Region that is reinitializing, or null if that Region is not
+   * reinitializing or this thread is interrupted. If a reinitializing region is found, then this
+   * method blocks until reinitialization is complete and then returns the region.
+   */
   InternalRegion getReinitializingRegion(String fullPath);
 
+  /**
+   * True if durable subscriptions (registrations and queries) should be preserved.
+   *
+   * @since GemFire 5.7
+   */
   boolean keepDurableSubscriptionsAlive();
 
+  /**
+   * Creates a CacheClosedException with the given reason.
+   */
   CacheClosedException getCacheClosedException(String reason);
 
+  /**
+   * Creates a CacheClosedException with the given reason and cause.
+   */
   CacheClosedException getCacheClosedException(String reason, Throwable cause);
 
   TypeRegistry getPdxRegistry();
 
   DiskStoreImpl getOrCreateDefaultDiskStore();
 
+  /**
+   * Get the ExpirationScheduler for this cache.
+   *
+   * @return the scheduler, lazily created
+   */
   ExpirationScheduler getExpirationScheduler();
 
+  /**
+   * @return JTA TransactionManager associated with the Cache.
+   * @since GemFire 4.0
+   */
   TransactionManager getJTATransactionManager();
 
   TXManagerImpl getTxManager();
@@ -191,19 +301,25 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   ClientMetadataService getClientMetadataService();
 
-  @Override
-  long cacheTimeMillis();
-
   URL getCacheXmlURL();
 
   List<File> getBackupFiles();
 
-  InternalRegion getRegionByPath(String path);
+  <K, V> Region<K, V> getRegionByPath(String path);
 
+  InternalRegion getInternalRegionByPath(String path);
+
+  /**
+   * @return true if cache is created using a ClientCacheFactory
+   * @see #hasPool()
+   */
   boolean isClient();
 
   InternalDistributedSystem getInternalDistributedSystem();
 
+  /**
+   * Return a set of all current partitioned regions for test hook.
+   */
   Set<PartitionedRegion> getPartitionedRegions();
 
   void addRegionListener(RegionListener regionListener);
@@ -214,41 +330,74 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   CacheConfig getCacheConfig();
 
+  /**
+   * Return true if any of the GemFire services prefer PdxInstance and an application has not
+   * requested getObject() on the PdxInstance.
+   */
   boolean getPdxReadSerializedByAnyGemFireServices();
 
   void setDeclarativeCacheConfig(CacheConfig cacheConfig);
 
   void initializePdxRegistry();
 
+  /**
+   * Make the dynamic region factory ready. Public so it can be called from CacheCreation during xml
+   * processing.
+   */
   void readyDynamicRegionFactory();
 
   void setBackupFiles(List<File> backups);
 
-  void addDeclarableProperties(final Map<Declarable, Properties> mapOfNewDeclarableProps);
+  /**
+   * Add to the map of declarable properties. Any properties that exactly match existing properties
+   * for a class in the list will be discarded (no duplicate Properties allowed).
+   *
+   * @param mapOfNewDeclarableProps Map of the declarable properties to add
+   */
+  void addDeclarableProperties(Map<Declarable, Properties> mapOfNewDeclarableProps);
 
   void setInitializer(Declarable initializer, Properties initializerProps);
 
+  /**
+   * Method to check for GemFire client. In addition to checking for ClientCacheFactory, this method
+   * checks for any defined pools.
+   *
+   * @return true if the cache has pools declared
+   */
   boolean hasPool();
 
+  /**
+   * Create disk store factory with predefined attributes.
+   *
+   * @since GemFire prPersistSprint2
+   */
   DiskStoreFactory createDiskStoreFactory(DiskStoreAttributes attrs);
-
-  void determineDefaultPool();
 
   <K, V> Region<K, V> basicCreateRegion(String name, RegionAttributes<K, V> attrs)
       throws RegionExistsException, TimeoutException;
 
   BackupService getBackupService();
 
-  Throwable getDisconnectCause();
-
+  /**
+   * Add the partitioned region to the set of tracked partitioned regions. Used to notify the
+   * regions when this cache requires, or does not require notification of all region/entry events.
+   */
   void addPartitionedRegion(PartitionedRegion region);
 
+  /**
+   * Remove the partitioned region from the set of tracked instances.
+   */
   void removePartitionedRegion(PartitionedRegion region);
 
   void addDiskStore(DiskStoreImpl dsi);
 
   TXEntryStateFactory getTXEntryStateFactory();
 
+  /**
+   * Return the threadId/sequenceId sweeper task for this cache.
+   *
+   * @return the sweeper task
+   */
   EventTrackerExpiryTask getEventTrackerTask();
 
   void removeDiskStore(DiskStoreImpl diskStore);
@@ -259,18 +408,39 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   void removeAsyncEventQueue(AsyncEventQueue asyncQueue);
 
+  /**
+   * Return the QueryMonitor for this cache based on system property MAX_QUERY_EXECUTION_TIME.
+   *
+   * @since GemFire 6.0
+   */
   QueryMonitor getQueryMonitor();
 
   void close(String reason, Throwable systemFailureCause, boolean keepAlive, boolean keepDS);
 
   JmxManagerAdvisor getJmxManagerAdvisor();
 
-  List<Properties> getDeclarableProperties(final String className);
+  /**
+   * Return the list of all instances of properties for Declarables with the given class name.
+   *
+   * @param className Class name of the declarable
+   * @return List of all instances of properties found for the given declarable
+   */
+  List<Properties> getDeclarableProperties(String className);
 
-  int getUpTime();
+  /**
+   * Return the number of seconds that have elapsed since the Cache was created.
+   *
+   * @since GemFire 3.5
+   */
+  long getUpTime();
 
   Set<Region<?, ?>> rootRegions(boolean includePRAdminRegions);
 
+  /**
+   * Return a set of all current regions in the cache, including buckets.
+   *
+   * @since GemFire 6.0
+   */
   Set<InternalRegion> getAllRegions();
 
   DistributedRegion getRegionInDestroy(String path);
@@ -285,6 +455,9 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   List<InternalCacheServer> getCacheServersAndGatewayReceiver();
 
+  /**
+   * Return true if the named global region is initializing.
+   */
   boolean isGlobalRegionInitializing(String fullPath);
 
   DistributionAdvisor getDistributionAdvisor();
@@ -295,22 +468,39 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   boolean isRESTServiceRunning();
 
+  /**
+   * @deprecated Please use {@code LogService.getLogger()} instead.
+   */
+  @Deprecated
   InternalLogWriter getInternalLogWriter();
 
+  @Deprecated
   InternalLogWriter getSecurityInternalLogWriter();
 
   Set<InternalRegion> getApplicationRegions();
 
   void removeGatewaySender(GatewaySender sender);
 
+  /**
+   * Gets or lazily creates the GatewaySender distributed lock service.
+   *
+   * @return the GatewaySender distributed lock service
+   */
   DistributedLockService getGatewaySenderLockService();
 
-  RestAgent getRestAgent();
-
-  Properties getDeclarableProperties(final Declarable declarable);
+  /**
+   * Get the properties for the given declarable.
+   *
+   * @param declarable The declarable
+   * @return Properties found for the given declarable
+   */
+  Properties getDeclarableProperties(Declarable declarable);
 
   void setRESTServiceRunning(boolean isRESTServiceRunning);
 
+  /**
+   * TODO: is this flavor of close not used?
+   */
   void close(String reason, boolean keepAlive, boolean keepDS);
 
   void addGatewayReceiver(GatewayReceiver receiver);
@@ -319,17 +509,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   InternalCacheServer addGatewayReceiverServer(GatewayReceiver receiver);
 
-  boolean removeCacheServer(CacheServer cacheServer);
-
   boolean removeGatewayReceiverServer(InternalCacheServer receiverServer);
-
-  /**
-   * A test-hook allowing you to alter the cache setting established by
-   * CacheFactory.setPdxReadSerialized()
-   *
-   * @deprecated tests using this method should be refactored to not require it
-   */
-  void setReadSerializedForTest(boolean value);
 
   /**
    * Enables or disables the reading of PdxInstances from all cache Regions for the thread that
@@ -339,6 +519,9 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
 
   PdxInstanceFactory createPdxInstanceFactory(String className, boolean expectDomainClass);
 
+  /**
+   * Blocks until no register interests are in progress.
+   */
   void waitForRegisterInterestsInProgress();
 
   void reLoadClusterConfiguration() throws IOException, ClassNotFoundException;
@@ -352,13 +535,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
   void invokeRegionEntrySynchronizationListenersAfterSynchronization(
       InternalDistributedMember sender, InternalRegion region,
       List<InitialImageOperation.Entry> entriesToSynchronize);
-
-  @Override
-  InternalQueryService getQueryService();
-
-  Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly);
-
-  void closeDiskStores();
 
   /**
    * If obj is a PdxInstance and pdxReadSerialized is not true
@@ -380,11 +556,20 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime,
    */
   InternalCacheForClientAccess getCacheForProcessingClientRequests();
 
+  /**
+   * Perform initialization, solve the early escaped reference problem by putting publishing
+   * references to this instance in this method (vs. the constructor).
+   */
   void initialize();
 
   void throwCacheExistsException();
 
   MeterRegistry getMeterRegistry();
 
+  /**
+   * Generate XML for the cache before shutting down due to forced disconnect.
+   */
   void saveCacheXmlForReconnect();
+
+  InternalQueryService getInternalQueryService();
 }

@@ -921,6 +921,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-tcp-server</artifactId>
+        <version>1.12.0-SNAPSHOT</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-unsafe</artifactId>
         <version>1.12.0-SNAPSHOT</version>
         <scope>compile</scope>

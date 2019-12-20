@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -31,7 +32,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -74,8 +74,8 @@ import org.apache.geode.management.internal.configuration.validators.MemberValid
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
+import org.apache.geode.management.runtime.IndexInfo;
 import org.apache.geode.management.runtime.OperationResult;
-import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
 public class LocatorClusterManagementServiceTest {
@@ -95,19 +95,19 @@ public class LocatorClusterManagementServiceTest {
 
   @Before
   public void before() throws Exception {
+    persistenceService = spy(new InternalConfigurationPersistenceService(
+        JAXBService.create(CacheConfig.class)));
+
     cache = mock(InternalCache.class);
     regionValidator = mock(RegionConfigValidator.class);
     doCallRealMethod().when(regionValidator).validate(eq(CacheElementOperation.DELETE), any());
-    regionManager = spy(RegionConfigManager.class);
+    regionManager = spy(new RegionConfigManager(persistenceService));
     cacheElementValidator = spy(CommonConfigurationValidator.class);
     validators.put(Region.class, regionValidator);
     managers.put(Region.class, regionManager);
-    managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager());
+    managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager(null));
 
     memberValidator = mock(MemberValidator.class);
-
-    persistenceService = spy(new InternalConfigurationPersistenceService(
-        JAXBService.create(CacheConfig.class)));
 
     Set<String> groups = new HashSet<>();
     groups.add("cluster");
@@ -144,13 +144,13 @@ public class LocatorClusterManagementServiceTest {
   public void delete_validatorIsCalledCorrectly() {
     doReturn(Collections.emptySet()).when(memberValidator).findServers(anyString());
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(
-        regionConfig.getId(),
+        regionConfig,
         regionManager);
     doNothing().when(persistenceService).updateCacheConfig(any(), any());
     service.delete(regionConfig);
     verify(cacheElementValidator).validate(CacheElementOperation.DELETE, regionConfig);
     verify(regionValidator).validate(CacheElementOperation.DELETE, regionConfig);
-    verify(memberValidator).findGroupsWithThisElement(regionConfig.getId(), regionManager);
+    verify(memberValidator).findGroupsWithThisElement(regionConfig, regionManager);
     verify(memberValidator).findServers("cluster");
   }
 
@@ -209,7 +209,7 @@ public class LocatorClusterManagementServiceTest {
 
     service.list(regionConfig);
     verify(persistenceService).getCacheConfig("cluster", true);
-    verify(regionManager).list(any(), any());
+    verify(regionManager).list(any(Region.class), any(CacheConfig.class));
   }
 
   @Test
@@ -219,7 +219,7 @@ public class LocatorClusterManagementServiceTest {
 
     service.list(regionConfig);
     verify(persistenceService).getCacheConfig("cluster", true);
-    verify(regionManager).list(any(), any());
+    verify(regionManager).list(any(Region.class), any(CacheConfig.class));
   }
 
   @Test
@@ -232,8 +232,8 @@ public class LocatorClusterManagementServiceTest {
     region1group1.setName("region1");
     region1group1.setType(RegionType.REPLICATE);
 
-    List group2Regions = Arrays.asList(region1group2);
-    List group1Regions = Arrays.asList(region1group1);
+    List group2Regions = Collections.singletonList(region1group2);
+    List group1Regions = Collections.singletonList(region1group1);
     CacheConfig mockCacheConfigGroup2 = mock(CacheConfig.class);
     CacheConfig mockCacheConfigGroup1 = mock(CacheConfig.class);
     doReturn(mockCacheConfigGroup2).when(persistenceService).getCacheConfig(eq("group2"),
@@ -342,7 +342,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
     ClusterManagementRealizationResult result = service.delete(regionConfig);
-    verify(regionManager).delete(eq(regionConfig), any());
+    verify(regionManager).delete(eq(regionConfig), any(CacheConfig.class));
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).hasSize(0);
     assertThat(result.getStatusMessage())
@@ -385,11 +385,13 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void getRuntimeClass() throws Exception {
-    assertThat(service.getRuntimeClass(Region.class)).isEqualTo(RuntimeRegionInfo.class);
-    assertThat(service.hasRuntimeInfo(Region.class)).isTrue();
-    assertThat(service.getRuntimeClass(Index.class)).isEqualTo(RuntimeInfo.class);
-    assertThat(service.hasRuntimeInfo(Index.class)).isFalse();
+  public void getRuntimeClass() {
+    assertSoftly(softly -> {
+      softly.assertThat(service.getRuntimeClass(Region.class)).isEqualTo(RuntimeRegionInfo.class);
+      softly.assertThat(service.hasRuntimeInfo(Region.class)).isTrue();
+      softly.assertThat(service.getRuntimeClass(Index.class)).isEqualTo(IndexInfo.class);
+      softly.assertThat(service.hasRuntimeInfo(Index.class)).isTrue();
+    });
   }
 
 }

@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
+import static org.apache.geode.management.configuration.Index.INDEXES;
 import static org.apache.geode.management.configuration.Links.URI_VERSION;
 import static org.apache.geode.management.configuration.Region.REGION_CONFIG_ENDPOINT;
 
@@ -41,7 +42,7 @@ import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.Region;
-import org.apache.geode.management.runtime.RuntimeInfo;
+import org.apache.geode.management.runtime.IndexInfo;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -49,7 +50,6 @@ import org.apache.geode.security.ResourcePermission.Resource;
 @RestController("regionManagement")
 @RequestMapping(URI_VERSION)
 public class RegionManagementController extends AbstractManagementController {
-  public static final String INDEXES = "/indexes";
 
   @ApiOperation(value = "create region")
   @ApiResponses({
@@ -118,7 +118,7 @@ public class RegionManagementController extends AbstractManagementController {
               value = ".result[] | .configuration | {name:.name,expression:.expression}")})})
   @GetMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES)
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementListResult<Index, RuntimeInfo> listIndex(
+  public ClusterManagementListResult<Index, IndexInfo> listIndex(
       @PathVariable String regionName,
       @RequestParam(required = false, name = "id") String indexName) {
 
@@ -136,7 +136,7 @@ public class RegionManagementController extends AbstractManagementController {
               value = ".result[] | .configuration | {name:.name,expression:.expression,regionPath:.regionPath}")})})
   @GetMapping(INDEXES)
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementListResult<Index, RuntimeInfo> listAllIndex(
+  public ClusterManagementListResult<Index, IndexInfo> listAllIndex(
       @RequestParam(required = false, name = "id") String indexName) {
     Index filter = new Index();
     if (StringUtils.isNotBlank(indexName)) {
@@ -151,7 +151,7 @@ public class RegionManagementController extends AbstractManagementController {
               value = ".result | .configuration | {name:.name,expression:.expression}")})})
   @GetMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{id:.+}")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementGetResult<Index, RuntimeInfo> getIndex(
+  public ClusterManagementGetResult<Index, IndexInfo> getIndex(
       @PathVariable String regionName,
       @PathVariable String id) {
 
@@ -159,5 +159,41 @@ public class RegionManagementController extends AbstractManagementController {
     filter.setRegionPath(regionName);
     filter.setName(id);
     return clusterManagementService.get(filter);
+  }
+
+  @ApiOperation(value = "create index")
+  @ApiResponses({
+      @ApiResponse(code = 400, message = "Bad request."),
+      @ApiResponse(code = 409, message = "Index already exists."),
+      @ApiResponse(code = 500, message = "Internal error.")})
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE', 'QUERY')")
+  @PostMapping(INDEXES)
+  public ResponseEntity<ClusterManagementResult> createIndex(
+      @RequestBody Index indexConfig) {
+    ClusterManagementResult result =
+        clusterManagementService.create(indexConfig);
+    return new ResponseEntity<>(result,
+        HttpStatus.CREATED);
+  }
+
+  @ApiOperation(value = "create region index")
+  @ApiResponses({
+      @ApiResponse(code = 400, message = "Bad request."),
+      @ApiResponse(code = 409, message = "Index already exists."),
+      @ApiResponse(code = 500, message = "Internal error.")})
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE', 'QUERY')")
+  @PostMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES)
+  public ResponseEntity<ClusterManagementResult> createIndexOnRegion(
+      @RequestBody Index indexConfig, @PathVariable String regionName) {
+    if (indexConfig.getRegionName() == null) {
+      indexConfig.setRegionPath(regionName);
+    } else if (!regionName.equals(indexConfig.getRegionName())) {
+      throw new IllegalArgumentException(
+          "Region name in path must match Region name in configuration");
+    }
+    ClusterManagementResult result =
+        clusterManagementService.create(indexConfig);
+    return new ResponseEntity<>(result,
+        HttpStatus.CREATED);
   }
 }

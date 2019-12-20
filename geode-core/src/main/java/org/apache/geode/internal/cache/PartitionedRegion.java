@@ -243,7 +243,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
@@ -476,7 +475,7 @@ public class PartitionedRegion extends LocalRegion
 
   private final Object indexLock = new Object();
 
-  private final Set<ColocationListener> colocationListeners = new ConcurrentHashSet<>();
+  private final Set<ColocationListener> colocationListeners = ConcurrentHashMap.newKeySet();
 
   public void addColocationListener(ColocationListener colocationListener) {
     if (colocationListener != null) {

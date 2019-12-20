@@ -116,5 +116,11 @@ public interface Message<ID extends MemberIdentifier> extends DataSerializableFi
    */
   int getBytesRead();
 
-  boolean containsRegionContentChange();
+  /**
+   * Membership tests consult this predicate to know whether this message should be
+   * elided when membership is playing sick or playing dead.
+   */
+  default boolean dropMessageWhenMembershipIsPlayingDead() {
+    return false;
+  }
 }

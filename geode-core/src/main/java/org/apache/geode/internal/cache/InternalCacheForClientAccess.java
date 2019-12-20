@@ -16,6 +16,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.util.UncheckedUtils.uncheckedRegion;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +38,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -82,6 +85,8 @@ import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
+import org.apache.geode.internal.cache.eviction.HeapEvictor;
+import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -103,6 +108,8 @@ import org.apache.geode.security.NotAuthorizedException;
  * This class delegates all methods to the InternalCache instance
  * it wraps. Any regions returned will be checked and if they are
  * internal an exception is thrown if they are.
+ *
+ * <p>
  * Note: an instance of this class should be used by servers that
  * process requests from clients that contains region names to prevent
  * the client from directly accessing internal regions.
@@ -129,8 +136,8 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @SuppressWarnings("unchecked")
-  private void checkSetOfRegions(@SuppressWarnings("rawtypes") Set regions) {
-    for (InternalRegion r : (Set<InternalRegion>) regions) {
+  private void checkSetOfRegions(Set regions) {
+    for (Region r : (Set<Region>) regions) {
       checkForInternalRegion(r);
     }
   }
@@ -152,10 +159,10 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public Region getRegion(String path, boolean returnDestroyedRegion) {
+  public <K, V> Region<K, V> getRegion(String path, boolean returnDestroyedRegion) {
     Region result = delegate.getRegion(path, returnDestroyedRegion);
     checkForInternalRegion(result);
-    return result;
+    return uncheckedRegion(result);
   }
 
   @Override
@@ -166,8 +173,15 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public InternalRegion getRegionByPath(String path) {
-    InternalRegion result = delegate.getRegionByPath(path);
+  public <K, V> Region<K, V> getRegionByPath(String path) {
+    InternalRegion result = delegate.getInternalRegionByPath(path);
+    checkForInternalRegion(result);
+    return uncheckedRegion(result);
+  }
+
+  @Override
+  public InternalRegion getInternalRegionByPath(String path) {
+    InternalRegion result = delegate.getInternalRegionByPath(path);
     checkForInternalRegion(result);
     return result;
   }
@@ -246,9 +260,8 @@ public class InternalCacheForClientAccess implements InternalCache {
     Cache reconnectedCache = delegate.getReconnectedCache();
     if (reconnectedCache != null) {
       return new InternalCacheForClientAccess((InternalCache) reconnectedCache);
-    } else {
-      return null;
     }
+    return null;
   }
 
   @Override
@@ -946,16 +959,12 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public void determineDefaultPool() {
-    delegate.determineDefaultPool();
-  }
-
-  @Override
   public BackupService getBackupService() {
     return delegate.getBackupService();
   }
 
   @Override
+  @VisibleForTesting
   public Throwable getDisconnectCause() {
     return delegate.getDisconnectCause();
   }
@@ -1027,7 +1036,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public int getUpTime() {
+  public long getUpTime() {
     return delegate.getUpTime();
   }
 
@@ -1102,6 +1111,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public RestAgent getRestAgent() {
     return delegate.getRestAgent();
   }
@@ -1137,6 +1147,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public boolean removeCacheServer(CacheServer cacheServer) {
     return delegate.removeCacheServer(cacheServer);
   }
@@ -1147,6 +1158,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public void setReadSerializedForTest(boolean value) {
     delegate.setReadSerializedForTest(value);
   }
@@ -1194,8 +1206,13 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public InternalQueryService getQueryService() {
+  public QueryService getQueryService() {
     return delegate.getQueryService();
+  }
+
+  @Override
+  public InternalQueryService getInternalQueryService() {
+    return delegate.getInternalQueryService();
   }
 
   @Override
@@ -1204,11 +1221,13 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly) {
     return delegate.getAsyncEventQueues(visibleOnly);
   }
 
   @Override
+  @VisibleForTesting
   public void closeDiskStores() {
     delegate.closeDiskStores();
   }
@@ -1251,6 +1270,18 @@ public class InternalCacheForClientAccess implements InternalCache {
   @Override
   public void saveCacheXmlForReconnect() {
     delegate.saveCacheXmlForReconnect();
+  }
+
+  @Override
+  @VisibleForTesting
+  public HeapEvictor getHeapEvictor() {
+    return delegate.getHeapEvictor();
+  }
+
+  @Override
+  @VisibleForTesting
+  public OffHeapEvictor getOffHeapEvictor() {
+    return delegate.getOffHeapEvictor();
   }
 
   @Override

@@ -48,7 +48,7 @@ public class MemberValidator {
   public void validateCreate(AbstractConfiguration config, CacheConfigurationManager manager) {
 
     Map<String, AbstractConfiguration> existingElementsAndTheirGroups =
-        findCacheElement(config.getId(), manager);
+        findCacheElement(config, manager);
     if (existingElementsAndTheirGroups.size() == 0) {
       return;
     }
@@ -80,22 +80,20 @@ public class MemberValidator {
     }
   }
 
-  public String[] findGroupsWithThisElement(String id, CacheConfigurationManager manager) {
-    return findCacheElement(id, manager).keySet().toArray(new String[0]);
+  public String[] findGroupsWithThisElement(AbstractConfiguration config,
+      CacheConfigurationManager manager) {
+    return findCacheElement(config, manager).keySet().toArray(new String[0]);
   }
 
   /**
    * this returns a map of CacheElement with this id, with the group as the key of the map
    */
-  public Map<String, AbstractConfiguration> findCacheElement(String id,
+  public Map<String, AbstractConfiguration> findCacheElement(AbstractConfiguration config,
       CacheConfigurationManager manager) {
     Map<String, AbstractConfiguration> results = new HashMap<>();
     for (String group : persistenceService.getGroups()) {
-      CacheConfig cacheConfig = persistenceService.getCacheConfig(group);
-      if (cacheConfig == null) {
-        continue;
-      }
-      AbstractConfiguration existing = manager.get(id, cacheConfig);
+      CacheConfig cacheConfig = persistenceService.getCacheConfig(group, true);
+      AbstractConfiguration existing = manager.get(config, cacheConfig);
       if (existing != null) {
         results.put(group, existing);
       }

@@ -19,7 +19,6 @@ package org.apache.geode.management.internal.configuration.mutators;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.configuration.AbstractConfiguration;
 
 /**
@@ -28,14 +27,11 @@ import org.apache.geode.management.configuration.AbstractConfiguration;
 @Experimental
 public interface ConfigurationManager<T extends AbstractConfiguration> {
 
-  /**
-   * specify how to add the config to the existing group of cluster configuration
-   */
-  boolean add(InternalConfigurationPersistenceService service, T config, String groupName);
+  void add(T config, String groupName);
 
-  boolean delete(InternalConfigurationPersistenceService service, T config, String groupName);
+  void delete(T config, String groupName);
 
-  boolean update(InternalConfigurationPersistenceService service, T config, String groupName);
+  void update(T config, String groupName);
 
-  List<T> list(InternalConfigurationPersistenceService service, T filterConfig, String groupName);
+  List<T> list(T filterConfig, String groupName);
 }

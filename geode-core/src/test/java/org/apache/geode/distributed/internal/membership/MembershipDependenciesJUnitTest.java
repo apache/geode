@@ -15,7 +15,6 @@
 package org.apache.geode.distributed.internal.membership;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
-import static com.tngtech.archunit.core.domain.JavaClass.Predicates.assignableTo;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.type;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
@@ -29,20 +28,13 @@ import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.GemFireException;
-import org.apache.geode.InternalGemFireError;
 import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
-import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -77,7 +69,13 @@ public class MembershipDependenciesJUnitTest {
       .should()
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
+
+              // OK to depend on these "leaf" dependencies
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
+              .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api.."))
+              .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
+              .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
+
               .or(not(resideInAPackage("org.apache.geode.."))));
 
   /*
@@ -99,6 +97,7 @@ public class MembershipDependenciesJUnitTest {
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
               .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api.."))
               .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
+              .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
 
               .or(not(resideInAPackage("org.apache.geode..")))
 
@@ -108,18 +107,8 @@ public class MembershipDependenciesJUnitTest {
               // TODO: Create a new stats interface for membership
               .or(type(LocatorStats.class))
 
-              // TODO: Figure out what to do with exceptions
-              .or(assignableTo(GemFireException.class))
-              .or(type(InternalGemFireError.class))
-
               // TODO: Serialization needs to become its own module
               .or(type(InternalDataSerializer.class)) // still used by GMSLocator
-
-              // TODO
-              .or(assignableTo(CancelCriterion.class))
-
-              // TODO
-              .or(assignableTo(ConnectionWatcher.class))
 
               // TODO:
               .or(type(SocketCreator.class))
@@ -127,18 +116,12 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO: break dependencies on locator-related classes
               .or(type(Locator.class))
-              .or(type(TcpClient.class))
-              .or(type(DistributionLocatorId.class))
-              .or(type(NetLocator.class))
 
               // TODO: break dependency on internal.security
               .or(type(SecurableCommunicationChannel.class))
 
               // TODO:
               .or(type(JavaWorkarounds.class))
-
-              // TODO:
-              .or(type(ConcurrentHashSet.class))
 
               // TODO:
               .or(type(OSProcess.class))
@@ -150,7 +133,5 @@ public class MembershipDependenciesJUnitTest {
               .or(type(AlertingAction.class))
 
               // TODO:
-              .or(type(LocalViewMessage.class))
-
-  );
+              .or(type(LocalViewMessage.class)));
 }

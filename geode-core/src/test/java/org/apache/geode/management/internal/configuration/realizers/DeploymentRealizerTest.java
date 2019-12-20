@@ -22,6 +22,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,7 +60,12 @@ public class DeploymentRealizerTest {
     when(deployedJar.getFile()).thenReturn(new File("/test/a.jar"));
     deployed.put("a", deployedJar);
     DeploymentInfo deploymentInfo = realizer.get(deployment, null);
-    assertThat(deploymentInfo.getJarLocation().replace('\\', '/'))
-        .isEqualTo("/test/a.jar");
+    assertThat(Paths.get(deploymentInfo.getJarLocation()).toUri())
+        .isEqualTo(Paths.get("/test/a.jar").toUri());
+  }
+
+  @Test
+  public void getDateString() throws Exception {
+    assertThat(realizer.getDateString(1576029093330L)).isEqualTo("2019-12-11T01:51:33.330Z");
   }
 }

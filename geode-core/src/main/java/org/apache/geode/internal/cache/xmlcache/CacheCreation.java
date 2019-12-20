@@ -50,6 +50,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -145,6 +146,8 @@ import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
+import org.apache.geode.internal.cache.eviction.HeapEvictor;
+import org.apache.geode.internal.cache.eviction.OffHeapEvictor;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
@@ -1075,7 +1078,12 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public InternalQueryService getQueryService() {
+  public QueryService getQueryService() {
+    return queryService;
+  }
+
+  @Override
+  public InternalQueryService getInternalQueryService() {
     return queryService;
   }
 
@@ -1173,6 +1181,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public boolean removeCacheServer(final CacheServer cacheServer) {
     throw new UnsupportedOperationException("Should not be invoked");
   }
@@ -1188,6 +1197,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public void setReadSerializedForTest(final boolean value) {
     throw new UnsupportedOperationException("Should not be invoked");
   }
@@ -1259,7 +1269,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public int getUpTime() {
+  public long getUpTime() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
@@ -1354,6 +1364,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public RestAgent getRestAgent() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
@@ -1419,11 +1430,13 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly) {
     return asyncEventQueues;
   }
 
   @Override
+  @VisibleForTesting
   public void closeDiskStores() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
@@ -1626,7 +1639,12 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public LocalRegion getRegionByPath(final String path) {
+  public <K, V> Region<K, V> getRegionByPath(String path) {
+    return null;
+  }
+
+  @Override
+  public InternalRegion getInternalRegionByPath(String path) {
     return null;
   }
 
@@ -1803,11 +1821,6 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public void determineDefaultPool() {
-    throw new UnsupportedOperationException("Should not be invoked");
-  }
-
-  @Override
   public <K, V> Region<K, V> basicCreateRegion(final String name,
       final RegionAttributes<K, V> attrs) throws RegionExistsException, TimeoutException {
     throw new UnsupportedOperationException("Should not be invoked");
@@ -1819,6 +1832,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  @VisibleForTesting
   public Throwable getDisconnectCause() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
@@ -2451,6 +2465,18 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void saveCacheXmlForReconnect() {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
+  @VisibleForTesting
+  public HeapEvictor getHeapEvictor() {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
+  @VisibleForTesting
+  public OffHeapEvictor getOffHeapEvictor() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 

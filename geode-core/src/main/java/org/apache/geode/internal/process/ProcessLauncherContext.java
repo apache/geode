@@ -105,12 +105,12 @@ public class ProcessLauncherContext {
 
   private static void installLogListener(final StartupStatusListener startupListener) {
     if (startupListener != null) {
-      StartupStatus.setListener(startupListener);
+      StartupStatusListenerRegistry.setListener(startupListener);
     }
   }
 
   private static void clearLogListener() {
-    StartupStatus.clearListener();
+    StartupStatusListenerRegistry.clearListener();
   }
 
   private ProcessLauncherContext(final boolean redirectOutput, final Properties overriddenDefaults,

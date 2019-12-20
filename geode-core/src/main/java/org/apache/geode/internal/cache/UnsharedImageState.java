@@ -24,7 +24,6 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.util.concurrent.StoppableNonReentrantLock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 
@@ -47,8 +46,8 @@ public class UnsharedImageState implements ImageState {
   private volatile boolean clearRegionFlag = false;
   private volatile RegionVersionVector clearRVV;
   private volatile boolean wasRegionClearedDuringGII = false;
-  private volatile ConcurrentHashSet<VersionTagEntry> versionTags;
-  private volatile ConcurrentHashSet<VersionSource> leftMembers;
+  private volatile Set<VersionTagEntry> versionTags;
+  private volatile Set<VersionSource> leftMembers;
 
   UnsharedImageState(final boolean isClient, final boolean isReplicate, final boolean mayDoRecovery,
       CancelCriterion stopper) {
@@ -141,7 +140,7 @@ public class UnsharedImageState implements ImageState {
   }
 
   private void initVersionTagsSet() {
-    versionTags = new ConcurrentHashSet<>(16);
+    versionTags = ConcurrentHashMap.newKeySet(16);
   }
 
   @Override
@@ -157,7 +156,7 @@ public class UnsharedImageState implements ImageState {
   }
 
   private void initFailedMembersSet() {
-    leftMembers = new ConcurrentHashSet<>(16);
+    leftMembers = ConcurrentHashMap.newKeySet(16);
   }
 
   @Override

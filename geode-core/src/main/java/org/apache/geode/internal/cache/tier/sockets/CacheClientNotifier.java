@@ -101,7 +101,6 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.serialization.Version;
@@ -921,7 +920,7 @@ public class CacheClientNotifier {
    * collection of non-durable identifiers of clients connected to this VM
    */
   Set<ClientProxyMembershipID> getProxyIDs(Set mixedDurableAndNonDurableIDs) {
-    Set<ClientProxyMembershipID> result = new ConcurrentHashSet<>();
+    Set<ClientProxyMembershipID> result = ConcurrentHashMap.newKeySet();
     for (Object id : mixedDurableAndNonDurableIDs) {
       if (id instanceof String) {
         CacheClientProxy clientProxy = getClientProxy((String) id, true);
