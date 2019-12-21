@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 
 @Experimental
 public class ClusterManagementRealizationResult extends ClusterManagementResult {

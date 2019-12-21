@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.RealizationResult;
@@ -79,6 +80,62 @@ public class IndexRealizerTest {
     assertSoftly(softly -> {
       softly.assertThat(realizationResult.isSuccess()).isFalse();
       softly.assertThat(realizationResult.getMessage()).contains("I do not support this operation");
+    });
+  }
+
+  @Test
+  public void delete_succeeds() {
+    Region<Object, Object> region = mock(Region.class);
+    org.apache.geode.cache.query.Index removeIndex = mock(org.apache.geode.cache.query.Index.class);
+    when(queryService.getIndex(region, "testIndex")).thenReturn(removeIndex);
+    when(cache.getRegion("/testRegion")).thenReturn(region);
+    RealizationResult realizationResult = indexRealizer.delete(index, cache);
+    assertSoftly(softly -> {
+      softly.assertThat(realizationResult.isSuccess()).isTrue();
+      softly.assertThat(realizationResult.getMessage())
+          .isEqualTo("Index testIndex successfully removed from testRegion");
+    });
+  }
+
+  @Test
+  public void delete_fails_removal() {
+    Region<Object, Object> region = mock(Region.class);
+    org.apache.geode.cache.query.Index removeIndex = mock(org.apache.geode.cache.query.Index.class);
+    when(queryService.getIndex(region, "testIndex")).thenReturn(removeIndex);
+    when(cache.getRegion("/testRegion")).thenReturn(region);
+    doThrow(new RuntimeException("removal failed")).when(queryService).removeIndex(removeIndex);
+    RealizationResult realizationResult = indexRealizer.delete(index, cache);
+    assertSoftly(softly -> {
+      softly.assertThat(realizationResult.isSuccess()).isFalse();
+      softly.assertThat(realizationResult.getMessage()).isEqualTo("removal failed");
+    });
+  }
+
+  @Test
+  public void delete_fails_to_find_region() {
+    Region<Object, Object> region = mock(Region.class);
+    org.apache.geode.cache.query.Index removeIndex = mock(org.apache.geode.cache.query.Index.class);
+    when(queryService.getIndex(region, "testIndex")).thenReturn(removeIndex);
+    when(cache.getRegion("/testRegion")).thenReturn(null);
+    RealizationResult realizationResult = indexRealizer.delete(index, cache);
+    assertSoftly(softly -> {
+      softly.assertThat(realizationResult.isSuccess()).isFalse();
+      softly.assertThat(realizationResult.getMessage())
+          .isEqualTo("Region for index not found: testRegion");
+    });
+  }
+
+  @Test
+  public void delete_fails_to_find_index() {
+    Region<Object, Object> region = mock(Region.class);
+    org.apache.geode.cache.query.Index removeIndex = mock(org.apache.geode.cache.query.Index.class);
+    when(queryService.getIndex(region, "testIndex")).thenReturn(null);
+    when(cache.getRegion("/testRegion")).thenReturn(region);
+    RealizationResult realizationResult = indexRealizer.delete(index, cache);
+    assertSoftly(softly -> {
+      softly.assertThat(realizationResult.isSuccess()).isFalse();
+      softly.assertThat(realizationResult.getMessage())
+          .isEqualTo("Index not found for Region: testRegion, testIndex");
     });
   }
 

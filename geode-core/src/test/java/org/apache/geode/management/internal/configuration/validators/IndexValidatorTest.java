@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.configuration.validators;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -84,9 +85,15 @@ public class IndexValidatorTest {
   public void validate_hasRegionPath() {
     index.setRegionPath(null);
 
-    assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.CREATE, index))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("RegionPath is required");
+    assertSoftly(softly -> {
+      softly.assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.CREATE, index))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("RegionPath is required");
+      softly.assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.DELETE, index))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("RegionPath is required");
+    });
+
   }
 
   @Test
@@ -102,7 +109,12 @@ public class IndexValidatorTest {
   public void validate_IndexHasName() {
     index.setName(null);
 
-    assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.CREATE, index))
-        .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Name is required");
+    assertSoftly(softly -> {
+      softly.assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.CREATE, index))
+          .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Name is required");
+      softly.assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.DELETE, index))
+          .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Name is required");
+    });
+
   }
 }

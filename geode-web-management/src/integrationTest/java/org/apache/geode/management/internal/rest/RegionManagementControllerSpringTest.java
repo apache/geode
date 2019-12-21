@@ -125,4 +125,24 @@ public class RegionManagementControllerSpringTest {
     assertThat(regionPassedToGet.getName())
         .isEqualTo(regionNameWithDot);
   }
+
+  @Test
+  public void deleteRegionMappingRecognizesIndexNameWithDot() throws Exception {
+    String regionName = "regionName";
+    String indexNameWithDot = "index.name";
+    String requestPath =
+        URI_VERSION + REGION_CONFIG_ENDPOINT + "/" + regionName + INDEXES + "/" + indexNameWithDot;
+
+    when(cms.delete(any())).thenReturn(new ClusterManagementRealizationResult());
+
+    context.perform(delete(requestPath))
+        .andExpect(status().is2xxSuccessful());
+
+    ArgumentCaptor<Index> indexCaptor = ArgumentCaptor.forClass(Index.class);
+    verify(cms).delete(indexCaptor.capture());
+    Index indexPassedToGet = indexCaptor.getValue();
+
+    assertThat(indexPassedToGet.getName())
+        .isEqualTo(indexNameWithDot);
+  }
 }
