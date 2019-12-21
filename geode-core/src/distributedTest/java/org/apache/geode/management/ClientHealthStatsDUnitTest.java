@@ -224,7 +224,7 @@ public class ClientHealthStatsDUnitTest implements Serializable {
       DistributedSystemMXBean dsBean =
           ClusterStartupRule.memberStarter.getManagementService().getDistributedSystemMXBean();
       assertThat(dsBean.getNumClients()).isEqualTo(2);
-      assertThat(dsBean.getNumSubscriptions()).isEqualTo(subscriptionCount);
+      await().until(() -> dsBean.getNumSubscriptions() == subscriptionCount);
     });
   }
 }
