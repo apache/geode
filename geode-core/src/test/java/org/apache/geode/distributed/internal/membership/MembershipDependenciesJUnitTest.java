@@ -33,8 +33,6 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
@@ -104,10 +102,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO: Create a new stats interface for membership
               .or(type(LocatorStats.class))
-
-              // TODO:
-              .or(type(SocketCreator.class))
-              .or(type(SocketCreatorFactory.class))
 
               // TODO: break dependencies on locator-related classes
               .or(type(Locator.class))

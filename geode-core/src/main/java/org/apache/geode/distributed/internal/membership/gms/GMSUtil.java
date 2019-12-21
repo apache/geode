@@ -31,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
@@ -53,7 +52,7 @@ public class GMSUtil {
 
     try {
       if (bindAddress == null || bindAddress.trim().length() == 0) {
-        addr = SocketCreator.getLocalHost();
+        addr = InetAddress.getLocalHost();
       } else {
         addr = InetAddress.getByName(bindAddress);
       }

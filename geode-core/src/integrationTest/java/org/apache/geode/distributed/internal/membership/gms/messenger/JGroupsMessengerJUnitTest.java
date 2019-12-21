@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -96,8 +97,11 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequest
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
@@ -123,6 +127,7 @@ public class JGroupsMessengerJUnitTest {
   private long statsId = 123;
   private MembershipConfig membershipConfig;
   private RemoteTransportConfig tconfig;
+  private TcpSocketCreator socketCreator;
 
   private void initMocks(boolean enableMcast) throws Exception {
     initMocks(enableMcast, new Properties());
@@ -175,7 +180,9 @@ public class JGroupsMessengerJUnitTest {
 
     when(services.getStatistics()).thenReturn(mock(DistributionStats.class));
 
-    messenger = new JGroupsMessenger();
+    socketCreator = asTcpSocketCreator(SocketCreatorFactory.setDistributionConfig(config)
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER));
+    messenger = new JGroupsMessenger<MemberIdentifier>(socketCreator);
     messenger.init(services);
 
     // if I do this earlier then test this return messenger as null
@@ -871,7 +878,7 @@ public class JGroupsMessengerJUnitTest {
     JChannel channel = messenger.myChannel;
     tconfig.setOldDSMembershipInfo(new MembershipInformationImpl(channel,
         new ConcurrentLinkedQueue<>()));
-    JGroupsMessenger newMessenger = new JGroupsMessenger();
+    JGroupsMessenger newMessenger = new JGroupsMessenger(socketCreator);
     newMessenger.init(services);
     newMessenger.start();
     newMessenger.started();

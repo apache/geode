@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Objects;
 
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
@@ -28,16 +30,17 @@ import org.apache.geode.internal.net.SocketCreator;
  * Adapt a SocketCreator from geode-core to function as a TcpSocketAdapter
  * in geode-tcp-server
  */
-public class SocketCreatorAdapter implements TcpSocketCreator {
-  final SocketCreator socketCreator;
+public class TcpSocketCreatorAdapter implements TcpSocketCreator {
+  private final SocketCreator socketCreator;
 
-  private SocketCreatorAdapter(final SocketCreator socketCreator) {
+  private TcpSocketCreatorAdapter(final SocketCreator socketCreator) {
+    Objects.requireNonNull(socketCreator);
     this.socketCreator = socketCreator;
   }
 
   public static TcpSocketCreator asTcpSocketCreator(
       final SocketCreator socketCreator) {
-    return new SocketCreatorAdapter(socketCreator);
+    return new TcpSocketCreatorAdapter(socketCreator);
   }
 
   @Override
@@ -58,6 +61,24 @@ public class SocketCreatorAdapter implements TcpSocketCreator {
   }
 
   @Override
+  public InetAddress getLocalHost() throws UnknownHostException {
+    return SocketCreator.getLocalHost();
+  }
+
+  @Override
+  public String getHostName(final InetAddress addr) {
+    return SocketCreator.getHostName(addr);
+  }
+
+  @Override
+  public ServerSocket createServerSocketUsingPortRange(final InetAddress ba, final int backlog,
+      final boolean isBindAddress, final boolean useNIO, final int tcpBufferSize,
+      final int[] tcpPortRange, final boolean sslConnection) throws IOException {
+    return socketCreator.createServerSocketUsingPortRange(ba, backlog, isBindAddress, useNIO,
+        tcpBufferSize, tcpPortRange, sslConnection);
+  }
+
+  @Override
   public Socket connect(final InetAddress inetadd, final int port, final int timeout,
       final ConnectionWatcher optionalWatcher, final boolean clientSide)
       throws IOException {
@@ -65,7 +86,20 @@ public class SocketCreatorAdapter implements TcpSocketCreator {
   }
 
   @Override
+  public Socket connect(InetAddress inetadd, int port, int timeout,
+      ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize,
+      boolean sslConnection) throws IOException {
+    return socketCreator.connect(inetadd, port, timeout, optionalWatcher, clientSide,
+        socketBufferSize, sslConnection);
+  }
+
+  @Override
   public void handshakeIfSocketIsSSL(final Socket socket, final int timeout) throws IOException {
     socketCreator.handshakeIfSocketIsSSL(socket, timeout);
+  }
+
+  @Override
+  public boolean resolveDns() {
+    return socketCreator.resolve_dns;
   }
 }

@@ -47,6 +47,7 @@ public class MembershipAPIArchUnitTest {
               .or(not(resideInAPackage("org.apache.geode..")))
               // Serialization is a dependency of membership
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
+              .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
 
               // TODO: replace this with a rule allowing dependencies on geode-tcp-server module
               .or(type(TcpClient.class))

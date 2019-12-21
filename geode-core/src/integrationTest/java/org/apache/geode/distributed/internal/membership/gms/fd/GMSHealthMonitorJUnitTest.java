@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -97,6 +98,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequ
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -195,7 +197,11 @@ public class GMSHealthMonitorJUnitTest {
         new InternalDistributedMember("localhost", 12345);
     mbr.setVmViewId(1);
     when(messenger.getMemberID()).thenReturn(mbr);
-    gmsHealthMonitor.started();
+    try {
+      gmsHealthMonitor.started();
+    } catch (MemberStartupException e) {
+      e.printStackTrace();
+    }
 
     GMSMembershipView v = new GMSMembershipView(mbr, 1, mockMembers);
 
@@ -211,7 +217,11 @@ public class GMSHealthMonitorJUnitTest {
     // stopServices call will attempt to shut down the socket during a normal close. This test tries
     // to create a problematic ordering to make sure we still shutdown properly.
     ((GMSHealthMonitorTest) gmsHealthMonitor).useBlockingSocket = true;
-    gmsHealthMonitor.started();
+    try {
+      gmsHealthMonitor.started();
+    } catch (MemberStartupException e) {
+      e.printStackTrace();
+    }
     gmsHealthMonitor.stop();
   }
 
@@ -288,7 +298,11 @@ public class GMSHealthMonitorJUnitTest {
 
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(myAddressIndex));
-    gmsHealthMonitor.started();
+    try {
+      gmsHealthMonitor.started();
+    } catch (MemberStartupException e) {
+      e.printStackTrace();
+    }
 
     gmsHealthMonitor.installView(v);
 
@@ -392,7 +406,11 @@ public class GMSHealthMonitorJUnitTest {
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(0)); // coordinator and local member
     when(joinLeave.getMemberID()).thenReturn(mockMembers.get(0)); // coordinator and local member
-    gmsHealthMonitor.started();
+    try {
+      gmsHealthMonitor.started();
+    } catch (MemberStartupException e) {
+      e.printStackTrace();
+    }
 
     gmsHealthMonitor.installView(v);
 
@@ -1016,6 +1034,11 @@ public class GMSHealthMonitorJUnitTest {
     public boolean useBlockingSocket = false;
     public Set<MemberIdentifier> availabilityCheckedMembers = new HashSet<>();
 
+    public GMSHealthMonitorTest() {
+      super(asTcpSocketCreator(SocketCreatorFactory
+          .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)));
+    }
+
     @Override
     boolean doTCPCheckMember(MemberIdentifier suspectMember, int port,
         boolean retryIfConnectFails) {
@@ -1035,7 +1058,7 @@ public class GMSHealthMonitorJUnitTest {
     }
 
     @Override
-    ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
+    ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) throws IOException {
       final ServerSocket serverSocket = super.createServerSocket(socketAddress, portRange);
       if (useBlockingSocket) {
         try {

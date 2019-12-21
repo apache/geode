@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -69,8 +70,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRe
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.JavaWorkarounds;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -96,6 +96,7 @@ import org.apache.geode.logging.internal.executors.LoggingExecutors;
 @SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter", "NullableProblems"})
 public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMonitor<ID> {
 
+  private final TcpSocketCreator socketCreator;
   private Services<ID> services;
   private volatile GMSMembershipView<ID> currentView;
   private volatile ID nextNeighbor;
@@ -402,8 +403,9 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     }
   }
 
-  public GMSHealthMonitor() {
-
+  public GMSHealthMonitor(final TcpSocketCreator socketCreator) {
+    Objects.requireNonNull(socketCreator);
+    this.socketCreator = socketCreator;
   }
 
   @SuppressWarnings("EmptyMethod")
@@ -575,7 +577,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
         logger.debug("Checking member {} with TCP socket connection {}:{}.", suspectMember,
             suspectMember.getInetAddress(), port);
         clientSocket =
-            SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)
+            socketCreator
                 .connect(suspectMember.getInetAddress(), port, (int) memberTimeout,
                     new ConnectTimeoutTask(services.getTimer(), memberTimeout), false, -1, false);
         clientSocket.setTcpNoDelay(true);
@@ -681,9 +683,8 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
         LoggingExecutors.newCachedThreadPool("Geode Failure Detection Server thread ", true);
   }
 
-  ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) {
-    ServerSocket newSocket = SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)
+  ServerSocket createServerSocket(InetAddress socketAddress, int[] portRange) throws IOException {
+    ServerSocket newSocket = socketCreator
         .createServerSocketUsingPortRange(socketAddress, 50/* backlog */, true/* isBindAddress */,
             false/* useNIO */, 65536/* tcpBufferSize */, portRange, false);
     socketPort = newSocket.getLocalPort();
@@ -937,10 +938,14 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
   }
 
   @Override
-  public void started() {
+  public void started() throws MemberStartupException {
     setLocalAddress(services.getMessenger().getMemberID());
-    serverSocket = createServerSocket(localAddress.getInetAddress(),
-        services.getConfig().getMembershipPortRange());
+    try {
+      serverSocket = createServerSocket(localAddress.getInetAddress(),
+          services.getConfig().getMembershipPortRange());
+    } catch (IOException e) {
+      throw new MemberStartupException("Problem creating HealthMonitor socket", e);
+    }
     startTcpServer(serverSocket);
     startHeartbeatThread();
   }
