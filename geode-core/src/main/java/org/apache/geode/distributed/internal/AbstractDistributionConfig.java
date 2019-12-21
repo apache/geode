@@ -1508,21 +1508,6 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     return getLocators().equals("") && getMcastPort() == 0;
   }
 
-  static InetAddress _getDefaultMcastAddress() {
-    // Default MCast address can be just IPv4 address.
-    // On IPv6 machines, JGroups converts IPv4 address to equivalent IPv6 address.
-    try {
-      String ipLiteral = "239.192.81.1";
-      return InetAddress.getByName(ipLiteral);
-    } catch (UnknownHostException ex) {
-      // this should never happen
-      throw new Error(
-          String.format("Unexpected problem getting inetAddress: %s",
-              ex),
-          ex);
-    }
-  }
-
   @Immutable
   static final Map<String, Method> checkers;
 

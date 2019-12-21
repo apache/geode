@@ -187,6 +187,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -367,7 +368,22 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * The default value of the {@link ConfigurationProperties#MCAST_ADDRESS} property. Current value
    * is <code>239.192.81.1</code>
    */
-  InetAddress DEFAULT_MCAST_ADDRESS = AbstractDistributionConfig._getDefaultMcastAddress();
+  InetAddress DEFAULT_MCAST_ADDRESS = _getDefaultMcastAddress();
+
+  static InetAddress _getDefaultMcastAddress() {
+    // Default MCast address can be just IPv4 address.
+    // On IPv6 machines, JGroups converts IPv4 address to equivalent IPv6 address.
+    try {
+      String ipLiteral = "239.192.81.1";
+      return InetAddress.getByName(ipLiteral);
+    } catch (UnknownHostException ex) {
+      // this should never happen
+      throw new Error(
+          String.format("Unexpected problem getting inetAddress: %s",
+              ex),
+          ex);
+    }
+  }
 
   /**
    * Returns the value of the {@link ConfigurationProperties#MCAST_TTL} property
