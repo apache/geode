@@ -158,6 +158,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_LOCATOR_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PARAMETER_EXTENSION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_ALIAS;
@@ -1474,6 +1475,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SSL_DEFAULT_ALIAS, "The default certificate alias to be used in a multi-key keystore");
     m.put(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION,
         "This property determines is the HTTP service with use mutual ssl authentication.");
+    m.put(SSL_PARAMETER_EXTENSION,
+        "User defined fully qualified class name implementing SSLParameterExtension interface for SSL parameter extensions. Defaults to \"{0}\". Legal values can be any \"class name\" implementing SecurityManager that is present in the classpath.");
     m.put(VALIDATE_SERIALIZABLE_OBJECTS,
         "If true checks incoming java serializable objects against a filter");
     m.put(SERIALIZABLE_OBJECT_FILTER, "The filter to check incoming java serializables against");

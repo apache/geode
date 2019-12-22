@@ -158,6 +158,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_LOCATOR_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PARAMETER_EXTENSION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_ALIAS;
@@ -5262,6 +5263,35 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * The default value for http service ssl mutual authentication
    */
   boolean DEFAULT_SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION = false;
+
+
+  /**
+   * Returns user defined class name SSL Parameter Extension in
+   * {@link ConfigurationProperties#SSL_PARAMETER_EXTENSION}
+   */
+  @ConfigAttributeGetter(name = SSL_PARAMETER_EXTENSION)
+  String getSSLParameterExtension();
+
+  /**
+   * Sets the user defined class name in {@link ConfigurationProperties#SSL_PARAMETER_EXTENSION}
+   * property.
+   */
+  @ConfigAttributeSetter(name = SSL_PARAMETER_EXTENSION)
+  void setSSLParameterExtension(String attValue);
+
+  /**
+   * The name of class for {@link ConfigurationProperties#SSL_PARAMETER_EXTENSION} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_PARAMETER_EXTENSION_NAME = SSL_PARAMETER_EXTENSION;
+
+  /**
+   * The default {@link ConfigurationProperties#SSL_PARAMETER_EXTENSION} class name.
+   * <p>
+   * Actual value of this is fully qualified <code>"class name"</code>.
+   */
+  String DEFAULT_SSL_PARAMETER_EXTENSION = "";
+
 
   /**
    * Returns the value of the {@link ConfigurationProperties#VALIDATE_SERIALIZABLE_OBJECTS} property
