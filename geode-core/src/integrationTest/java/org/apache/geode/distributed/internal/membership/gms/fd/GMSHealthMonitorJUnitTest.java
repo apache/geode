@@ -222,7 +222,7 @@ public class GMSHealthMonitorJUnitTest {
    * checks who is next neighbor
    */
   @Test
-  public void testHMNextNeighborVerify() throws   Exception {
+  public void testHMNextNeighborVerify() throws Exception {
     installAView();
     assertEquals(mockMembers.get(myAddressIndex + 1), gmsHealthMonitor.getNextNeighbor());
   }
