@@ -122,7 +122,7 @@ public class GMSHealthMonitorJUnitTest {
   private final int myAddressIndex = 3;
 
   @Before
-  public void initMocks() throws UnknownHostException, MemberStartupException {
+  public void initMocks() throws MemberStartupException {
     // ensure that Geode's serialization and version are initialized
     Version currentVersion = Version.CURRENT;
     InternalDataSerializer.getDSFIDSerializer();
@@ -191,7 +191,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testHMServiceStarted() throws IOException, Exception {
+  public void testHMServiceStarted() throws Exception {
 
     MemberIdentifier mbr =
         new InternalDistributedMember("localhost", 12345);
@@ -222,7 +222,7 @@ public class GMSHealthMonitorJUnitTest {
    * checks who is next neighbor
    */
   @Test
-  public void testHMNextNeighborVerify() throws IOException, Exception {
+  public void testHMNextNeighborVerify() throws   Exception {
     installAView();
     assertEquals(mockMembers.get(myAddressIndex + 1), gmsHealthMonitor.getNextNeighbor());
   }
@@ -253,7 +253,7 @@ public class GMSHealthMonitorJUnitTest {
    */
 
   @Test
-  public void testHMNextNeighborBeforeTimeout() throws IOException, Exception {
+  public void testHMNextNeighborBeforeTimeout() throws Exception {
     long startTime = System.currentTimeMillis();
     installAView();
     final MemberIdentifier neighbor = gmsHealthMonitor.getNextNeighbor();
@@ -888,7 +888,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testBeSickAndPlayDead() throws Exception {
+  public void testBeSickAndPlayDead() {
     GMSMembershipView v = new GMSMembershipView(mockMembers.get(0), 2, mockMembers);
     gmsHealthMonitor.installView(v);
     gmsHealthMonitor.beSick();
