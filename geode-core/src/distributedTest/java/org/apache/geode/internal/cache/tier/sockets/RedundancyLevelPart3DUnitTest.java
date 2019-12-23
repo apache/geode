@@ -342,12 +342,10 @@ public class RedundancyLevelPart3DUnitTest implements Serializable {
   private void doPuts() {
     Region<String, String> region = cache.getRegion(REGION_NAME);
     assertThat(region).isNotNull();
-    // for (int i = 0; i < 4; i++) {
     region.put(K1, K1);
     region.put(K2, K2);
     assertThat(region.get(K1)).isEqualTo(K1);
     assertThat(region.get(K2)).isEqualTo(K2);
-    // }
   }
 
   private void verifyDispatcherIsAlive() {
