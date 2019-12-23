@@ -31,7 +31,6 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
@@ -48,13 +47,11 @@ public class JTAUtils {
   }
 
   public static long start() {
-    long beginTime = getCurrentTimeMillis();
-    return beginTime;
+    return getCurrentTimeMillis();
   }
 
   public static long stop() {
-    long endTime = getCurrentTimeMillis();
-    return endTime;
+    return getCurrentTimeMillis();
   }
 
   static long getCurrentTimeMillis() {
@@ -65,15 +62,12 @@ public class JTAUtils {
    * Calls the corresponding cache APIs to create a sub-region by name 'command' in the current
    * region.
    */
-  public void mkrgn(String command) throws Exception {
+  private void makeRegion(String command) throws Exception {
 
     try {
-      String name = command;
-      AttributesFactory fac = new AttributesFactory(this.currRegion.getAttributes());
-      Region nr = this.currRegion.createSubregion(name, fac.create());
+      cache.createRegionFactory(currRegion.getAttributes()).createSubregion(currRegion, command);
     } catch (Exception e) {
-      // fail (" unable to make region..." + e.getMessage ());
-      throw new Exception(" failed in mkrgn " + command);
+      throw new Exception(" failed in makeRegion " + command);
     }
 
   }
@@ -84,17 +78,16 @@ public class JTAUtils {
    */
   public void getRegionFromCache(String region) throws Exception {
     try {
-      Region subr = this.currRegion.getSubregion(region);
+      Region subregion = this.currRegion.getSubregion(region);
 
-      if (subr == null) {
-        mkrgn(region);
+      if (subregion == null) {
+        makeRegion(region);
         currRegion = this.currRegion.getSubregion(region);
       } else {
-        currRegion = subr;
+        currRegion = subregion;
       }
 
     } catch (Exception e) {
-      // fail (" unable to get sub-region...");
       System.out.println("err: " + e);
       e.printStackTrace();
       throw new Exception(" failed in getRegionFromCache ");
@@ -125,18 +118,8 @@ public class JTAUtils {
    */
 
   public String get(String command) throws CacheException {
-    String value = null;
-
-    // try {
-    String name = command;
-    Object valueBytes = this.currRegion.get(name);
-    value = printEntry(name, valueBytes);
-    // }
-    // catch (CacheException e) {
-    // //fail (" unable to get value..." + e.getMessage ());
-    // throw new CacheExistsException("failed getting region: " + command);
-    // }
-    return value;
+    Object valueBytes = this.currRegion.get(command);
+    return printEntry(command, valueBytes);
   }
 
   /**
@@ -168,7 +151,6 @@ public class JTAUtils {
         }
       }
     } catch (Exception e) {
-      // fail (" unable to put..." + e.getMessage ());
       throw new Exception("unable to put: " + e);
     }
 
@@ -183,13 +165,13 @@ public class JTAUtils {
 
     if (valueBytes != null) {
       if (valueBytes instanceof byte[]) {
-        value = new String("byte[]: \"" + new String((byte[]) valueBytes) + "\"");
+        value = "byte[]: \"" + new String((byte[]) valueBytes) + "\"";
       } else if (valueBytes instanceof String) {
-        value = new String("String: \"" + valueBytes + "\"");
+        value = "String: \"" + valueBytes + "\"";
       } else if (valueBytes instanceof Integer) {
-        value = new String("Integer: \"" + valueBytes.toString() + "\"");
+        value = "Integer: \"" + valueBytes.toString() + "\"";
       } else {
-        value = new String("No value in cache.");
+        value = "No value in cache.";
       }
 
       System.out.print("     " + key + " -> " + value);
@@ -198,14 +180,14 @@ public class JTAUtils {
   }
 
   /**
-   * This method is used to parse the string with delimeter ':'returned by get(). The delimeter is
+   * This method is used to parse the string with delimiter ':'returned by get(). The delimiter is
    * appended by printEntry().
    */
   public String parseGetValue(String str) {
 
     String returnVal = null;
     if (str.indexOf(':') != -1) {
-      String tokens[] = str.split(":");
+      String[] tokens = str.split(":");
       returnVal = tokens[1].trim();
     } else if (str.equals("No value in cache.")) { // dont change this string!!
       returnVal = str;
@@ -218,29 +200,25 @@ public class JTAUtils {
    * This method is used to delete all rows from the timestamped table created by createTable() in
    * CacheUtils class.
    */
-  public int deleteRows(String tableName) throws NamingException, SQLException {
+  public void deleteRows(String tableName) throws NamingException, SQLException {
 
     Context ctx = cache.getJNDIContext();
     DataSource da = (DataSource) ctx.lookup("java:/SimpleDataSource"); // doesn't req txn
 
     Connection conn = da.getConnection();
     Statement stmt = conn.createStatement();
-    int rowsDeleted = 0; // assume that rows are always inserted in CacheUtils
-    String sql = "";
-    sql = "select * from " + tableName;
+    String sql = "select * from " + tableName;
     ResultSet rs = stmt.executeQuery(sql);
     if (rs.next()) {
 
       sql = "delete from  " + tableName;
-      rowsDeleted = stmt.executeUpdate(sql);
+      stmt.executeUpdate(sql);
     }
 
     rs.close();
 
     stmt.close();
     conn.close();
-
-    return rowsDeleted;
   }
 
 
@@ -261,7 +239,6 @@ public class JTAUtils {
         ResultSet rs = sm.executeQuery(sql)) {
       while (rs.next()) {
         counter++;
-        // System.out.println("id "+rs.getString(1)+ " name "+rs.getString(2));
       }
     }
 
@@ -298,6 +275,4 @@ public class JTAUtils {
 
     return found;
   }
-
-
-} // end of class
+}
