@@ -16,6 +16,7 @@ package org.apache.geode.cache;
 
 import static org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.getInstance;
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -485,7 +486,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return "expected " + expectedConsPerServer + " but endpoints=" + outOfBalanceReport(pool);
       }
     };
-    GeodeAwaitility.await().untilAsserted(ev);
+    await().untilAsserted(ev);
     assertTrue("expected " + expectedConsPerServer + " but endpoints=" + outOfBalanceReport(pool),
         balanced(pool, expectedConsPerServer));
   }
@@ -527,7 +528,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return null;
       }
     };
-    GeodeAwaitility.await().untilAsserted(ev);
+    await().untilAsserted(ev);
     assertEquals("unexpected denylistedServers=" + pool.getDenylistedServers(), 0,
         pool.getDenylistedServers().size());
   }
@@ -552,7 +553,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return excuse;
       }
     };
-    GeodeAwaitility.await().untilAsserted(ev);
+    await().untilAsserted(ev);
   }
 
   /**
@@ -1367,18 +1368,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           PoolImpl pool = getPool(region);
           final PoolStats stats = pool.getStats();
           verifyServerCount(pool, 1);
-          WaitCriterion ev = new WaitCriterion() {
-            @Override
-            public boolean done() {
-              return stats.getLoadConditioningCheck() >= (10 + baselineLifetimeCheck);
-            }
 
-            @Override
-            public String description() {
-              return null;
-            }
-          };
-          GeodeAwaitility.await().untilAsserted(ev);
+          await().until(() ->stats.getLoadConditioningCheck() >= (10 + baselineLifetimeCheck));
 
           // make sure no replacements are happening.
           // since we have 2 threads and 2 cnxs and 1 server
@@ -1394,8 +1385,10 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           assertEquals(stats.getLoadConditioningDisconnect(), baselineLifetimeDisconnect);
         }
       });
-      assertTrue(putAI.isAlive());
-      assertTrue(putAI2.isAlive());
+
+      await().until(putAI::isAlive);
+      await().until(putAI2::isAlive);
+
     } finally {
       vm2.invoke("Stop Putters", () -> stopTestLifetimeExpire = true);
 
@@ -3131,7 +3124,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return "Waiting for entry " + key + " on region " + r;
       }
     };
-    GeodeAwaitility.await().untilAsserted(ev);
+    await().untilAsserted(ev);
   }
 
   private static Region waitForSubRegion(final Region r, final String subRegName) {
@@ -3147,7 +3140,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         return "Waiting for subregion " + subRegName;
       }
     };
-    GeodeAwaitility.await().untilAsserted(ev);
+    await().untilAsserted(ev);
     return r.getSubregion(subRegName);
   }
 
@@ -3398,7 +3391,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                   return null;
                 }
               };
-              GeodeAwaitility.await().untilAsserted(ev);
+              await().untilAsserted(ev);
               assertEquals("HealthMonitor Client Register/UnRegister mismatch.",
                   ccnStats.getClientRegisterRequests(), ccnStats.getClientUnRegisterRequests());
             }
@@ -4300,7 +4293,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                 return null;
               }
             };
-            GeodeAwaitility.await().untilAsserted(ev);
+            await().untilAsserted(ev);
             assertNotNull(pool.getPrimary());
             assertTrue("backups=" + pool.getRedundants() + " expected=" + 1,
                 pool.getRedundants().size() >= 1);
@@ -4356,7 +4349,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
               return "waiting for ccnStat";
             }
           };
-          GeodeAwaitility.await().untilAsserted(ev);
+          await().untilAsserted(ev);
         }
       });
       srv2.invoke("Validate Server2 update", new CacheSerializableRunnable() {
@@ -5373,7 +5366,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                 return "waiting for region to be size 3";
               }
             };
-            GeodeAwaitility.await().untilAsserted(ev);
+            await().untilAsserted(ev);
             // assertIndexDetailsEquals(3, region.size());
             assertTrue(region.containsKey("k1"));
             assertTrue(region.containsKey("k2"));
@@ -5493,7 +5486,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                 return "waiting for region to be size 3";
               }
             };
-            GeodeAwaitility.await().untilAsserted(ev);
+            await().untilAsserted(ev);
             assertTrue(region.containsKey("k1"));
             assertTrue(region.containsKey("k2"));
             assertTrue(region.containsKey("k3"));
