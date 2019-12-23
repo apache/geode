@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.management.builder.ClusterManagementServiceBuilder.buildWithCache;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -65,9 +66,11 @@ public class GeodeClientClusterManagementSSLTest {
   @Test
   public void getServiceUseClientSSLConfig() throws Exception {
     client.invoke(() -> {
-      ClusterManagementService service = buildWithCache()
-          .setCache(ClusterStartupRule.getClientCache()).build();
-      assertThat(service.isConnected()).isTrue();
+      await().untilAsserted(() -> {
+        ClusterManagementService service = buildWithCache()
+            .setCache(ClusterStartupRule.getClientCache()).build();
+        assertThat(service.isConnected()).isTrue();
+      });
     });
   }
 }
