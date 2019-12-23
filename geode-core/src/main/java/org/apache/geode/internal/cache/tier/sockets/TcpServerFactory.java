@@ -15,7 +15,7 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.net.InetAddress;
 import java.util.concurrent.ExecutorService;

@@ -22,9 +22,7 @@ import java.net.InetAddress;
 
 import org.jgroups.util.UUID;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
@@ -72,32 +70,6 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   }
 
   public GMSMemberData() {}
-
-  @VisibleForTesting
-  public GMSMemberData(String localhost, int udpPort, Version version) {
-    this.hostName = localhost;
-    this.inetAddr = SocketCreator.toInetAddress(localhost);
-    this.udpPort = udpPort;
-    this.versionOrdinal = version.ordinal();
-    this.vmKind = NORMAL_DM_TYPE;
-    this.preferredForCoordinator = true;
-    this.vmViewId = -1;
-    this.processId = -1;
-    this.directPort = -1;
-    setUUID(UUID.randomUUID());
-  }
-
-
-  /**
-   * Create a CacheMember referring to the current host (as defined by the given string).
-   *
-   * @param i the hostname, must be for the current host
-   * @param p the membership listening port
-   */
-  @VisibleForTesting
-  public GMSMemberData(String i, int p) {
-    this(i, p, Version.getCurrentVersion());
-  }
 
   /**
    * Create a CacheMember referring to the current host (as defined by the given string).
@@ -573,9 +545,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
     this.inetAddr = StaticSerialization.readInetAddress(in);
     if (this.inetAddr != null) {
-      this.hostName =
-          SocketCreator.resolve_dns ? SocketCreator.getHostName(inetAddr)
-              : inetAddr.getHostAddress();
+      this.hostName = inetAddr.getHostName();
     }
     this.udpPort = in.readInt();
     this.vmViewId = in.readInt();

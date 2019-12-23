@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import javax.management.Notification;
@@ -39,6 +41,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -113,6 +116,7 @@ public class SystemManagementService extends BaseManagementService {
   private final StatisticsClock statisticsClock;
   private final FederatingManagerFactory federatingManagerFactory;
 
+
   /**
    * whether the service is closed or not if cache is closed automatically this service will be
    * closed
@@ -133,15 +137,33 @@ public class SystemManagementService extends BaseManagementService {
    * Managing node.
    */
   private ManagementMembershipListener listener;
+  private final Function<SystemManagementService, LocalManager> localManagerFactory;
 
   static BaseManagementService newSystemManagementService(
       InternalCacheForClientAccess cache) {
-    return new SystemManagementService(cache).init();
+    return newSystemManagementService(cache, NotificationHub::new,
+        SystemManagementService::createLocalManager,
+        createFederatingManagerFactory(), ManagementAgent::new);
   }
 
-  private SystemManagementService(InternalCacheForClientAccess cache) {
+  @VisibleForTesting
+  static BaseManagementService newSystemManagementService(InternalCacheForClientAccess cache,
+      Function<ManagementResourceRepo, NotificationHub> notificationHubFactory,
+      Function<SystemManagementService, LocalManager> localManagerFactory,
+      FederatingManagerFactory federatingManagerFactory,
+      BiFunction<DistributionConfig, InternalCacheForClientAccess, ManagementAgent> managementAgentFactory) {
+    return new SystemManagementService(cache, notificationHubFactory, localManagerFactory,
+        federatingManagerFactory, managementAgentFactory).init();
+  }
+
+  private SystemManagementService(InternalCacheForClientAccess cache,
+      Function<ManagementResourceRepo, NotificationHub> notificationHubFactory,
+      Function<SystemManagementService, LocalManager> localManagerFactory,
+      FederatingManagerFactory federatingManagerFactory,
+      BiFunction<DistributionConfig, InternalCacheForClientAccess, ManagementAgent> managementAgentFactory) {
     this.cache = cache;
     system = cache.getInternalDistributedSystem();
+    this.localManagerFactory = localManagerFactory;
 
     if (!system.isConnected()) {
       throw new DistributedSystemDisconnectedException(
@@ -152,10 +174,10 @@ public class SystemManagementService extends BaseManagementService {
     statisticsClock = cache.getStatisticsClock();
     jmxAdapter = new MBeanJMXAdapter(system.getDistributedMember());
     repo = new ManagementResourceRepo();
-    notificationHub = new NotificationHub(repo);
+    notificationHub = notificationHubFactory.apply(repo);
 
     if (system.getConfig().getJmxManager()) {
-      agent = new ManagementAgent(system.getConfig(), cache);
+      agent = managementAgentFactory.apply(system.getConfig(), cache);
     } else {
       agent = null;
     }
@@ -163,7 +185,7 @@ public class SystemManagementService extends BaseManagementService {
     FunctionService.registerFunction(new ManagementFunction(notificationHub));
 
     proxyListeners = new CopyOnWriteArrayList<>();
-    federatingManagerFactory = createFederatingManagerFactory();
+    this.federatingManagerFactory = federatingManagerFactory;
   }
 
   @Override
@@ -341,34 +363,28 @@ public class SystemManagementService extends BaseManagementService {
             "Manager is already running");
       }
 
-      boolean needsToBeStarted = false;
       if (!isManagerCreated()) {
         createManager();
-        needsToBeStarted = true;
-      } else if (!federatingManager.isRunning()) {
-        needsToBeStarted = true;
       }
 
-      if (needsToBeStarted) {
-        boolean started = false;
-        try {
-          system.handleResourceEvent(ResourceEvent.MANAGER_START, null);
-          federatingManager.startManager();
-          if (agent != null) {
-            agent.startAgent();
+      boolean started = false;
+      try {
+        system.handleResourceEvent(ResourceEvent.MANAGER_START, null);
+        federatingManager.startManager();
+        if (agent != null) {
+          agent.startAgent();
+        }
+        cache.getJmxManagerAdvisor().broadcastChange();
+        started = true;
+      } catch (RuntimeException | Error e) {
+        logger.error("Jmx manager could not be started because {}", e.getMessage(), e);
+        throw e;
+      } finally {
+        if (!started) {
+          if (federatingManager != null) {
+            federatingManager.stopManager();
           }
-          cache.getJmxManagerAdvisor().broadcastChange();
-          started = true;
-        } catch (RuntimeException | Error e) {
-          logger.error("Jmx manager could not be started because {}", e.getMessage(), e);
-          throw e;
-        } finally {
-          if (!started) {
-            if (federatingManager != null) {
-              federatingManager.stopManager();
-            }
-            system.handleResourceEvent(ResourceEvent.MANAGER_STOP, null);
-          }
+          system.handleResourceEvent(ResourceEvent.MANAGER_STOP, null);
         }
       }
     }
@@ -672,8 +688,7 @@ public class SystemManagementService extends BaseManagementService {
    */
   private SystemManagementService init() {
     try {
-      localManager =
-          new LocalManager(repo, system, this, cache, statisticsFactory, statisticsClock);
+      localManager = localManagerFactory.apply(this);
       listener = new ManagementMembershipListener(this);
 
       localManager.startManager();
@@ -688,6 +703,14 @@ public class SystemManagementService extends BaseManagementService {
       logger.error(e.getMessage(), e);
       throw new ManagementException(e);
     }
+  }
+
+  private static LocalManager createLocalManager(SystemManagementService service) {
+    return service.newLocalManager();
+  }
+
+  private LocalManager newLocalManager() {
+    return new LocalManager(repo, system, this, cache, statisticsFactory, statisticsClock);
   }
 
   private static FederatingManagerFactory createFederatingManagerFactory() {

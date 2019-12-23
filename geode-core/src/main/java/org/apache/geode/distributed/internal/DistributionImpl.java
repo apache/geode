@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -155,6 +155,8 @@ public class DistributionImpl implements Distribution {
                       .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
               InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
               InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()))
+          .setSocketCreator(asTcpSocketCreator(SocketCreatorFactory
+              .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER)))
           .create();
     } catch (MembershipConfigurationException e) {
       throw new GemFireConfigException(e.getMessage(), e.getCause());
@@ -337,6 +339,10 @@ public class DistributionImpl implements Distribution {
     try {
       membership.checkCancelled();
     } catch (MembershipClosedException e) {
+      if (e.getCause() instanceof MemberDisconnectedException) {
+        ForcedDisconnectException fde = new ForcedDisconnectException(e.getCause().getMessage());
+        throw new DistributedSystemDisconnectedException(e.getMessage(), fde);
+      }
       throw new DistributedSystemDisconnectedException(e.getMessage());
     }
   }
@@ -466,8 +472,10 @@ public class DistributionImpl implements Distribution {
     try {
       return membership.requestMemberRemoval(member, reason);
     } catch (MemberDisconnectedException | MembershipClosedException e) {
+      checkCancelled();
       throw new DistributedSystemDisconnectedException("Distribution is closed");
     } catch (RuntimeException e) {
+      checkCancelled();
       if (!membership.isConnected()) {
         throw new DistributedSystemDisconnectedException("Distribution is closed", e);
       }
@@ -584,7 +592,11 @@ public class DistributionImpl implements Distribution {
 
   @Override
   public Throwable getShutdownCause() {
-    return membership.getShutdownCause();
+    Throwable cause = membership.getShutdownCause();
+    if (cause instanceof MemberDisconnectedException) {
+      cause = new ForcedDisconnectException(cause.getMessage());
+    }
+    return cause;
   }
 
   @Override

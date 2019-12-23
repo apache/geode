@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.api;
 
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.net.InetSocketAddress;
 import java.util.List;

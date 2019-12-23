@@ -43,6 +43,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.util.internal.GeodeJsonMapper;
@@ -89,6 +90,12 @@ public class ClusterManagementSecurityRestIntegrationTest {
     testContexts
         .add(new TestContext(get("/v1/regions/regionA/indexes/index1"),
             "CLUSTER:READ:QUERY"));
+    testContexts
+        .add(new TestContext(post("/v1/regions/regionA/indexes/"),
+            "CLUSTER:MANAGE:QUERY").setContent(mapper.writeValueAsString(new Index())));
+    testContexts
+        .add(new TestContext(delete("/v1/regions/regionA/indexes/index1"),
+            "CLUSTER:MANAGE:QUERY"));
 
     testContexts.add(new TestContext(get("/v1/gateways/receivers"), "CLUSTER:READ"));
     testContexts

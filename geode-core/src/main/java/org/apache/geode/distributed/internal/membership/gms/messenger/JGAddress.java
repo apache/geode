@@ -30,7 +30,6 @@ import org.jgroups.util.UUID;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * This is a copy of JGroups 3.6.4 IpAddress (Apache 2.0 License) that is repurposed to be a Logical
@@ -96,11 +95,7 @@ public class JGAddress extends UUID {
     if (ip_addr == null)
       sb.append("<null>");
     else {
-      if (SocketCreator.resolve_dns) {
-        sb.append(SocketCreator.getHostName(ip_addr));
-      } else {
-        sb.append(ip_addr.getHostAddress());
-      }
+      sb.append(ip_addr.getHostName());
     }
     if (vmViewId >= 0) {
       sb.append("<v").append(vmViewId).append('>');

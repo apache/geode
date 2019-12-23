@@ -1679,7 +1679,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
   public void start() throws MemberStartupException {}
 
   @Override
-  public void started() {}
+  public void started() throws MemberStartupException {}
 
   public void setLocalAddress(ID address) {
     this.localAddress = address;

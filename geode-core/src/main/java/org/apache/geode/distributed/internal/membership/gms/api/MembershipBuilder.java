@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 
 /**
@@ -42,6 +43,7 @@ public interface MembershipBuilder<ID extends MemberIdentifier> {
 
   MembershipBuilder<ID> setLocatorClient(final TcpClient tcpClient);
 
+  MembershipBuilder<ID> setSocketCreator(final TcpSocketCreator socketCreator);
 
   Membership<ID> create() throws MembershipConfigurationException;
 

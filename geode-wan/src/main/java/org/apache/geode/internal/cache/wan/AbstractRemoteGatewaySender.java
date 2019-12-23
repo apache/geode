@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import static org.apache.geode.distributed.internal.membership.adapter.SocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 
 import java.io.IOException;
 import java.net.ConnectException;
