@@ -967,6 +967,14 @@ public class SocketCreator {
     if (!"any".equalsIgnoreCase(ciphers[0])) {
       serverSocket.setEnabledCipherSuites(ciphers);
     }
+
+    SSLParameterExtension sslParameterExtension = this.sslConfig.getSSLParameterExtension();
+    if (sslParameterExtension != null) {
+      SSLParameters modifiedParams =
+          sslParameterExtension.modifySSLServerSocketParameters(serverSocket.getSSLParameters());
+      serverSocket.setSSLParameters(modifiedParams);
+    }
+
   }
 
   /**
@@ -982,6 +990,12 @@ public class SocketCreator {
 
       SSLParameters modifiedParams =
           checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
+
+      SSLParameterExtension sslParameterExtension = this.sslConfig.getSSLParameterExtension();
+      if (sslParameterExtension != null) {
+        modifiedParams =
+            sslParameterExtension.modifySSLClientSocketParameters(modifiedParams);
+      }
       sslSocket.setSSLParameters(modifiedParams);
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();
