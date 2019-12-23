@@ -385,8 +385,10 @@ public class DistributionImpl implements Distribution {
         checkCancelled();
       }
     } catch (MembershipClosedException e) {
+      checkCancelled();
       throw new DistributedSystemDisconnectedException(e.getMessage(), e.getCause());
     } catch (DistributedSystemDisconnectedException ex) {
+      checkCancelled();
       throw ex;
     } catch (ConnectExceptions ex) {
       // Check if the connect exception is due to system shutting down.
@@ -426,12 +428,14 @@ public class DistributionImpl implements Distribution {
       return new HashSet<>(members);
     } // catch ConnectionExceptions
     catch (ToDataException | CancelException e) {
+      checkCancelled();
       throw e;
     } catch (NotSerializableException | RuntimeException | Error e) {
       if (logger.isDebugEnabled()) {
         logger.debug("Membership: directChannelSend caught exception: {}",
             e.getMessage(), e);
       }
+      checkCancelled();
       throw e;
     }
     return null;

@@ -63,6 +63,7 @@ import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
@@ -2868,6 +2869,9 @@ public class ClusterDistributionManager implements DistributionManager {
       }
 
       if (e == null) {
+        if (rc instanceof MemberDisconnectedException) {
+          rc = new ForcedDisconnectException(rc.getMessage());
+        }
         // Caller did not specify any root cause, so just use our own.
         return new DistributedSystemDisconnectedException(reason, rc);
       }
