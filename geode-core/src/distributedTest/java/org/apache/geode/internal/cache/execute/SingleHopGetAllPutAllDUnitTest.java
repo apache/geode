@@ -66,22 +66,21 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
   @Test
   public void testGetAllInClient() {
     client.invoke("testGetAllInClient", () -> {
-      Region region = cache.getRegion(PartitionedRegionName);
+      Region<Integer, Object> region = cache.getRegion(PartitionedRegionName);
       assertThat(region).isNotNull();
-      final List testValueList = new ArrayList();
-      final List testKeyList = new ArrayList();
-      for (int i = (totalNumBuckets.intValue() * 3); i > 0; i--) {
+      final List<Object> testValueList = new ArrayList<>();
+      final List<Integer> testKeyList = new ArrayList<>();
+      for (int i = (totalNumBuckets * 3); i > 0; i--) {
         testValueList.add("execKey-" + i);
       }
       DistributedSystem.setThreadsSocketPolicy(false);
       int j = 0;
-      Map origVals = new HashMap();
-      for (Iterator i = testValueList.iterator(); i.hasNext();) {
+      Map<Integer, Object> origVals = new HashMap<>();
+      for (Object o : testValueList) {
         testKeyList.add(j);
-        Integer key = new Integer(j++);
-        Object val = i.next();
-        origVals.put(key, val);
-        region.put(key, val);
+        Integer key = j++;
+        origVals.put(key, o);
+        region.put(key, o);
       }
 
       // check if the client meta-data is in synch
@@ -91,7 +90,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
           ((GemFireCacheImpl) cache).getClientMetadataService()
               .getTotalRefreshTaskCount_TEST_ONLY();
 
-      Map resultMap = region.getAll(testKeyList);
+      Map<Integer, Object> resultMap = region.getAll(testKeyList);
       assertThat(resultMap).isEqualTo(origVals);
 
       // a new refresh should not have been triggered
@@ -112,9 +111,9 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
       Region<String, String> region = cache.getRegion(PartitionedRegionName);
       assertThat(region).isNotNull();
 
-      Map<String, String> keysValuesMap = new HashMap<String, String>();
+      Map<String, String> keysValuesMap = new HashMap<>();
       List<String> testKeysList = new ArrayList<>();
-      for (int i = (totalNumBuckets.intValue() * 3); i > 0; i--) {
+      for (int i = (totalNumBuckets * 3); i > 0; i--) {
         testKeysList.add("putAllKey-" + i);
         keysValuesMap.put("putAllKey-" + i, "values-" + i);
       }
@@ -148,9 +147,9 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
       Region<String, String> region = cache.getRegion(PartitionedRegionName);
       assertThat(region).isNotNull();
 
-      Map<String, String> keysValuesMap = new HashMap<String, String>();
-      List<String> testKeysList = new ArrayList<String>();
-      for (int i = (totalNumBuckets.intValue() * 3); i > 0; i--) {
+      Map<String, String> keysValuesMap = new HashMap<>();
+      List<String> testKeysList = new ArrayList<>();
+      for (int i = (totalNumBuckets * 3); i > 0; i--) {
         testKeysList.add("putAllKey-" + i);
         keysValuesMap.put("putAllKey-" + i, "values-" + i);
       }
@@ -172,7 +171,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
           .getTotalRefreshTaskCount_TEST_ONLY())
               .isEqualTo(metadataRefreshes);
 
-      HashMap<String, Object> noValueMap = new HashMap<String, Object>();
+      HashMap<String, Object> noValueMap = new HashMap<>();
       for (String key : testKeysList) {
         noValueMap.put(key, null);
       }
@@ -194,22 +193,21 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
   @Test
   public void testBulkOpInClientWithBadMetadataCausesRefresh() {
     client.invoke("testBulkOpInClientWithBadMetadataCausesRefresh", () -> {
-      Region region = cache.getRegion(PartitionedRegionName);
+      Region<Integer, Object> region = cache.getRegion(PartitionedRegionName);
       assertThat(region).isNotNull();
-      final List testValueList = new ArrayList();
-      final List testKeyList = new ArrayList();
-      for (int i = (totalNumBuckets.intValue() * 3); i > 0; i--) {
+      final List<Object> testValueList = new ArrayList<>();
+      final List<Integer> testKeyList = new ArrayList<>();
+      for (int i = (totalNumBuckets * 3); i > 0; i--) {
         testValueList.add("execKey-" + i);
       }
       DistributedSystem.setThreadsSocketPolicy(false);
       int j = 0;
-      Map origVals = new HashMap();
-      for (Iterator i = testValueList.iterator(); i.hasNext();) {
+      Map<Integer, Object> origVals = new HashMap<>();
+      for (Object o : testValueList) {
         testKeyList.add(j);
-        Integer key = new Integer(j++);
-        Object val = i.next();
-        origVals.put(key, val);
-        region.put(key, val);
+        Integer key = j++;
+        origVals.put(key, o);
+        region.put(key, o);
       }
 
       // check if the client meta-data is in synch
@@ -221,7 +219,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
 
       removePrimaryMetadata();
 
-      Map resultMap = region.getAll(testKeyList);
+      Map<Integer, Object> resultMap = region.getAll(testKeyList);
       assertThat(resultMap).isEqualTo(origVals);
 
       // a new refresh should have been triggered
@@ -237,10 +235,13 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.getClientPRMetadata((LocalRegion) region);
 
-    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
+    await().until(cms::isMetadataStable);
 
-    await().until(() -> regionMetaData.size() > 0);
+    await().until(() -> cms.getClientPRMetadata_TEST_ONLY().size() > 0);
+
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     assertThat(regionMetaData).containsKey(region.getFullPath());
+
     await().until(() -> {
       ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
       assertThat(prMetaData).isNotNull();
