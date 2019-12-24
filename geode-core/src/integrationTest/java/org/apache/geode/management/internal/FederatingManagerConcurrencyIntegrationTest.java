@@ -15,7 +15,7 @@
 package org.apache.geode.management.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
+import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.management.internal.SystemManagementService.FEDERATING_MANAGER_FACTORY_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;

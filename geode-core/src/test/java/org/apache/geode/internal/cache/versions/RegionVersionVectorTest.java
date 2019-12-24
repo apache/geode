@@ -48,7 +48,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
@@ -1093,7 +1093,7 @@ public class RegionVersionVectorTest {
 
   private static String getIPLiteral() {
     try {
-      return SocketCreator.getLocalHost().getHostAddress();
+      return LocalHostUtil.getLocalHost().getHostAddress();
     } catch (UnknownHostException e) {
       throw new Error("Problem determining host IP address", e);
     }

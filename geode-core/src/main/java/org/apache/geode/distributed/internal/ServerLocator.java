@@ -55,7 +55,7 @@ import org.apache.geode.internal.cache.ControllerAdvisor;
 import org.apache.geode.internal.cache.ControllerAdvisor.ControllerProfile;
 import org.apache.geode.internal.cache.FindDurableQueueProcessor;
 import org.apache.geode.internal.cache.GridAdvisor.GridProfile;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -94,7 +94,7 @@ public class ServerLocator implements RestartableTcpHandler, DistributionAdvisee
 
   ServerLocator() throws IOException {
     this.port = 10334;
-    this.hostName = SocketCreator.getLocalHost().getCanonicalHostName();
+    this.hostName = LocalHostUtil.getLocalHost().getCanonicalHostName();
     this.hostNameForClients = this.hostName;
     this.logFile = null;
     this.memberName = null;
@@ -113,7 +113,7 @@ public class ServerLocator implements RestartableTcpHandler, DistributionAdvisee
     this.port = port;
 
     if (bindAddress == null) {
-      this.hostName = SocketCreator.getLocalHost().getCanonicalHostName();
+      this.hostName = LocalHostUtil.getLocalHost().getCanonicalHostName();
     } else {
       this.hostName = bindAddress.getHostAddress();
     }

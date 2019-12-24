@@ -70,6 +70,7 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.ByteBufferOutputStream;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -372,7 +373,7 @@ public class SSLSocketIntegrationTest {
     // a client SSL socket to it and demonstrate that the
     // handshake times out
     final ServerSocket serverSocket = new ServerSocket();
-    serverSocket.bind(new InetSocketAddress(SocketCreator.getLocalHost(), 0));
+    serverSocket.bind(new InetSocketAddress(LocalHostUtil.getLocalHost(), 0));
     Thread serverThread = new Thread() {
       @Override
       public void run() {
@@ -406,7 +407,7 @@ public class SSLSocketIntegrationTest {
       await("connect to server socket").until(() -> {
         try {
           Socket clientSocket = socketCreator.connectForClient(
-              SocketCreator.getLocalHost().getHostAddress(), serverSocketPort, 500);
+              LocalHostUtil.getLocalHost().getHostAddress(), serverSocketPort, 500);
           clientSocket.close();
           System.err.println(
               "client successfully connected to server but should not have been able to do so");

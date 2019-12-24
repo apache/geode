@@ -42,7 +42,7 @@ import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.StatListener;
 import org.apache.geode.internal.admin.StatResource;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -204,7 +204,7 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
   @Override
   public java.net.InetAddress getHost() {
     try {
-      return SocketCreator.getLocalHost();
+      return LocalHostUtil.getLocalHost();
 
     } catch (Exception ex) {
       throw new org.apache.geode.InternalGemFireException(

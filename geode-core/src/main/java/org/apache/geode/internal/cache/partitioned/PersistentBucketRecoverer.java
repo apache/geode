@@ -38,7 +38,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentStateListener;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.process.StartupStatus;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -291,7 +291,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
         InetAddress localHost = null;
 
         try {
-          localHost = SocketCreator.getLocalHost();
+          localHost = LocalHostUtil.getLocalHost();
         } catch (UnknownHostException e) {
           logger.error("Could not determine my own host", e);
         }

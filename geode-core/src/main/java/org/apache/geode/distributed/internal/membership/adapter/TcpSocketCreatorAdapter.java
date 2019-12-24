@@ -24,6 +24,7 @@ import java.util.Objects;
 
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -62,7 +63,7 @@ public class TcpSocketCreatorAdapter implements TcpSocketCreator {
 
   @Override
   public InetAddress getLocalHost() throws UnknownHostException {
-    return SocketCreator.getLocalHost();
+    return LocalHostUtil.getLocalHost();
   }
 
   @Override

@@ -34,7 +34,7 @@ import static org.apache.geode.internal.AvailablePort.MULTICAST;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPortRange;
-import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
+import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.assertj.core.api.Assertions.assertThat;

@@ -68,6 +68,7 @@ import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -448,7 +449,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         return getBindAddress().getCanonicalHostName();
       }
 
-      InetAddress localhost = SocketCreator.getLocalHost();
+      InetAddress localhost = LocalHostUtil.getLocalHost();
 
       return localhost.getCanonicalHostName();
     } catch (UnknownHostException handled) {
@@ -1591,7 +1592,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
       } else {
         try {
           InetAddress address = InetAddress.getByName(bindAddress);
-          if (SocketCreator.isLocalHost(address)) {
+          if (LocalHostUtil.isLocalHost(address)) {
             this.bindAddress = address;
             return this;
           } else {

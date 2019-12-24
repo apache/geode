@@ -35,7 +35,7 @@ import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordina
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.Version;
@@ -152,7 +152,7 @@ public class TcpServerGossipVersionDUnitTest extends JUnit4DistributedTestCase {
                   .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer())
-              .requestToServer(SocketCreator.getLocalHost(), port0, req, 5000);
+              .requestToServer(LocalHostUtil.getLocalHost(), port0, req, 5000);
       assertThat(response).isNotNull();
 
     } catch (IllegalStateException e) {

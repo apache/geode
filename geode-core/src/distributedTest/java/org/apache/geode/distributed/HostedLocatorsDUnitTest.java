@@ -40,7 +40,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -110,7 +110,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
       });
     }
 
-    final String host = SocketCreator.getLocalHost().getHostAddress();
+    final String host = LocalHostUtil.getLocalHost().getHostAddress();
 
     final Set<String> locators = new HashSet<String>();
     locators.add(host + "["
@@ -229,7 +229,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
       ports[i] = port;
     }
 
-    final String host = SocketCreator.getLocalHost().getHostAddress();
+    final String host = LocalHostUtil.getLocalHost().getHostAddress();
 
     final Set<String> locators = new HashSet<String>();
     locators.add(host + "["

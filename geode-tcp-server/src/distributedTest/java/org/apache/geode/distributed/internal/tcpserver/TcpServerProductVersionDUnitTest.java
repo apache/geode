@@ -43,7 +43,7 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -170,7 +170,7 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
       }
 
       final Object response = tcpClient
-          .requestToServer(SocketCreator.getLocalHost(), locatorPort, requestMessage, 1000);
+          .requestToServer(LocalHostUtil.getLocalHost(), locatorPort, requestMessage, 1000);
 
       final Class<?> responseClass = Class.forName(responseClassName);
 

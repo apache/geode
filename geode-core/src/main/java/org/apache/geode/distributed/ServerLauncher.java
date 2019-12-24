@@ -80,8 +80,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.lang.ObjectUtils;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
 import org.apache.geode.internal.process.ControllableProcess;
@@ -562,7 +562,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         return getServerBindAddress().getCanonicalHostName();
       }
 
-      final InetAddress localhost = SocketCreator.getLocalHost();
+      final InetAddress localhost = LocalHostUtil.getLocalHost();
 
       return localhost.getCanonicalHostName();
     } catch (UnknownHostException handled) {
@@ -2105,7 +2105,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       // NOTE only set the 'bind address' if the user specified a value
       try {
         InetAddress bindAddress = InetAddress.getByName(serverBindAddress);
-        if (SocketCreator.isLocalHost(bindAddress)) {
+        if (LocalHostUtil.isLocalHost(bindAddress)) {
           this.serverBindAddress = bindAddress;
           serverBindAddressSetByUser = true;
           return this;

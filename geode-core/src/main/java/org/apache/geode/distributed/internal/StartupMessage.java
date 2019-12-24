@@ -33,7 +33,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalDataSerializer.SerializerAttributesHolder;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
@@ -69,7 +69,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
    */
   public static Set<InetAddress> getMyAddresses(ClusterDistributionManager dm) {
     try {
-      return SocketCreator.getMyAddresses();
+      return LocalHostUtil.getMyAddresses();
     } catch (IllegalArgumentException e) {
       logger.fatal(e.getMessage(), e);
       return Collections.emptySet();
