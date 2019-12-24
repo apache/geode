@@ -49,7 +49,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
    */
   @Override
   public CqListener[] getCqListeners() {
-    final ArrayList listeners = this.cqListeners;
+    final ArrayList<CqListener> listeners = this.cqListeners;
     if (listeners == null) {
       return CqAttributesImpl.EMPTY_LISTENERS;
     }

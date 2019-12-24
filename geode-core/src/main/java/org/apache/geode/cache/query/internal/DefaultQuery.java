@@ -229,7 +229,7 @@ public class DefaultQuery implements Query {
 
     Object result = null;
     Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
-    final ExecutionContext context = new QueryExecutionContext(params, this.cache, this);
+    final QueryExecutionContext context = new QueryExecutionContext(params, this.cache, this);
 
     try {
       // Setting the readSerialized flag for local queries
@@ -282,7 +282,7 @@ public class DefaultQuery implements Query {
       // have the OR condition
       boolean needsCopyOnReadWrapper =
           this.cache.getCopyOnRead() && !DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL
-              || (((QueryExecutionContext) context).isIndexUsed()
+              || (context.isIndexUsed()
                   && DefaultQueryService.COPY_ON_READ_AT_ENTRY_LEVEL);
       // For local queries returning pdx objects wrap the resultset with
       // ResultsCollectionPdxDeserializerWrapper
