@@ -206,8 +206,11 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(LOCATORS, "");
     new HARQueueNewImplDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
-    ClientServerTestCase.configureConnectionPool(factory, host, port1.intValue(), port2.intValue(),
-        true, Integer.parseInt(rLevel), 2, null, 1000, 250);
+    ClientServerTestCase
+        .configureConnectionPool(factory, host, port1.intValue(), port2.intValue(), true,
+            Integer.parseInt(rLevel),
+            2, (String) null, 1000, 250,
+            -2/* lifetimeTimeout */);
 
     factory.setScope(Scope.LOCAL);
 

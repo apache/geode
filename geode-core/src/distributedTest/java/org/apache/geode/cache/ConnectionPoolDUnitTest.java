@@ -15,14 +15,12 @@
 package org.apache.geode.cache;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.cache30.ClientServerTestCase.TEST_POOL_NAME;
+import static org.apache.geode.cache30.ClientServerTestCase.configureConnectionPool;
+import static org.apache.geode.cache30.ClientServerTestCase.configureConnectionPoolWithNameAndFactory;
 import static org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.getInstance;
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertNull;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.runners.MethodSorters.NAME_ASCENDING;
@@ -30,47 +28,44 @@ import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.GemFireException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
-import org.apache.geode.cache30.ClientServerTestCase;
-import org.apache.geode.cache30.TestCacheLoader;
 import org.apache.geode.cache30.TestCacheWriter;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.EntryExpiryTask;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifierStats;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Invoke;
@@ -79,9 +74,8 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
@@ -101,9 +95,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   private static int bridgeServerPort;
 
-  protected static int port = 0;
-  protected static int port2 = 0;
-
   private static int numberOfAfterInvalidates;
   private static int numberOfAfterCreates;
   private static int numberOfAfterUpdates;
@@ -112,6 +103,10 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   private static final int TYPE_UPDATE = 1;
   private static final int TYPE_INVALIDATE = 2;
   private static final int TYPE_DESTROY = 3;
+
+  @Rule
+  public DistributedRule distributedRule = new DistributedRule();
+
   private VM vm0;
   private VM vm1;
   private VM vm2;
@@ -120,31 +115,21 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   @Before
   public void setup() {
     vm0 = VM.getVM(0);
-    vm1 = VM.getVM(1);
+    vm1 = VM.getVM(-1);
     vm2 = VM.getVM(2);
     vm3 = VM.getVM(3);
   }
 
   @After
   public void tearDown() {
-
-  }
-
-  @Override
-  public final void postSetUp() throws Exception {
-    // avoid IllegalStateException from HandShake by connecting all vms to
-    // system before creating pool
     getSystem();
-    Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+    Invoke.invokeInEveryVM("getSystem", new SerializableRunnable() {
       @Override
       public void run() {
         getSystem();
       }
     });
-    postSetUpConnectionPoolDUnitTest();
   }
-
-  protected void postSetUpConnectionPoolDUnitTest() throws Exception {}
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
@@ -152,7 +137,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       Map pools = PoolManager.getAll();
       if (!pools.isEmpty()) {
         logger.warn("found pools remaining after teardown: " + pools);
-        assertEquals(0, pools.size());
+        assertThat(0).isEqualTo(pools.size());
       }
     });
     postTearDownConnectionPoolDUnitTest();
@@ -175,55 +160,19 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     return (TestCacheWriter) r.getAttributes().getCacheWriter();
   }
 
-  /**
-   * Create a cache server on the given port without starting it.
-   *
-   * @since GemFire 5.0.2
-   */
-  protected void createBridgeServer(int port) {
-    CacheServer bridge = getCache().addCacheServer();
-    bridge.setPort(port);
-    bridge.setMaxThreads(getMaxThreads());
-    bridgeServerPort = bridge.getPort();
-  }
-
-  /**
-   * Starts a cache server on the given port, using the given deserializeValues and
-   * notifyBySubscription to serve up the given region.
-   *
-   * @since GemFire 4.0
-   */
-  private void startBridgeServer(int port) throws IOException {
-    startBridgeServer(port, -1);
-  }
-
-  private void startBridgeServer(int port, int socketBufferSize) throws IOException {
-    startBridgeServer(port, socketBufferSize, CacheServer.DEFAULT_LOAD_POLL_INTERVAL);
-  }
-
-  private void startBridgeServer(int port, int socketBufferSize, long loadPollInterval)
+  private void startBridgeServer(int port)
       throws IOException {
 
     Cache cache = getCache();
     CacheServer bridge = cache.addCacheServer();
     bridge.setPort(port);
-    if (socketBufferSize != -1) {
-      bridge.setSocketBufferSize(socketBufferSize);
+    if (-1 != -1) {
+      bridge.setSocketBufferSize(-1);
     }
-    bridge.setMaxThreads(getMaxThreads());
-    bridge.setLoadPollInterval(loadPollInterval);
+    bridge.setMaxThreads(0);
+    bridge.setLoadPollInterval(CacheServer.DEFAULT_LOAD_POLL_INTERVAL);
     bridge.start();
     bridgeServerPort = bridge.getPort();
-  }
-
-  /**
-   * By default return 0 which turns off selector and gives thread per cnx. Test subclasses can
-   * override to run with selector.
-   *
-   * @since GemFire 5.1
-   */
-  private int getMaxThreads() {
-    return 0;
   }
 
   /**
@@ -234,31 +183,13 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   private void stopBridgeServer(Cache cache) {
     CacheServer bridge = cache.getCacheServers().iterator().next();
     bridge.stop();
-    assertFalse(bridge.isRunning());
-  }
-
-  void stopBridgeServers(Cache cache) {
-    CacheServer bridge;
-    for (CacheServer cacheServer : cache.getCacheServers()) {
-      bridge = cacheServer;
-      bridge.stop();
-      assertFalse(bridge.isRunning());
-    }
-  }
-
-  private void restartBridgeServers(Cache cache) throws IOException {
-    CacheServer bridge;
-    for (CacheServer cacheServer : cache.getCacheServers()) {
-      bridge = cacheServer;
-      bridge.start();
-      assertTrue(bridge.isRunning());
-    }
+    assertThat(bridge.isRunning()).isFalse();
   }
 
   private void createLonerDS() {
     disconnectFromDS();
     InternalDistributedSystem ds = getLonerSystem();
-    assertEquals(0, ds.getDistributionManager().getOtherDistributionManagerIds().size());
+    assertThat(0).isEqualTo(ds.getDistributionManager().getOtherDistributionManagerIds().size());
   }
 
   /**
@@ -269,18 +200,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     factory.setScope(Scope.LOCAL);
     factory.setConcurrencyChecksEnabled(false); // test validation expects this behavior
     return factory.create();
-  }
-
-  private static String createBridgeClientConnection(String host, int[] ports) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < ports.length; i++) {
-      if (i > 0) {
-        sb.append(",");
-      }
-      sb.append("name").append(i).append("=");
-      sb.append(host).append(":").append(ports[i]);
-    }
-    return sb.toString();
   }
 
   private static class EventWrapper {
@@ -303,12 +222,12 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  static class ControlListener extends CacheListenerAdapter {
+  static class ControlListener extends CacheListenerAdapter<Object, Object> {
     final LinkedList<EventWrapper> events = new LinkedList<>();
     final Object CONTROL_LOCK = new Object();
 
-    void waitWhileNotEnoughEvents(long sleepMs, int eventCount) {
-      long maxMillis = System.currentTimeMillis() + sleepMs;
+    void waitWhileNotEnoughEvents(int eventCount) {
+      long maxMillis = System.currentTimeMillis() + (long) 60000;
       synchronized (this.CONTROL_LOCK) {
         try {
           while (this.events.size() < eventCount) {
@@ -361,201 +280,11 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  /**
-   * Create a fake EntryEvent that returns the provided region for {@link CacheEvent#getRegion()}
-   * and returns {@link org.apache.geode.cache.Operation#LOCAL_LOAD_CREATE} for {@link
-   * CacheEvent#getOperation()}
-   *
-   * @return fake entry event
-   */
-  protected static EntryEvent createFakeyEntryEvent(final Region r) {
-    return new EntryEvent() {
-      @Override
-      public Operation getOperation() {
-        return Operation.LOCAL_LOAD_CREATE; // fake out pool to exit early
-      }
-
-      @Override
-      public Region getRegion() {
-        return r;
-      }
-
-      @Override
-      public Object getKey() {
-        return null;
-      }
-
-      @Override
-      public Object getOldValue() {
-        return null;
-      }
-
-      @Override
-      public boolean isOldValueAvailable() {
-        return true;
-      }
-
-      @Override
-      public Object getNewValue() {
-        return null;
-      }
-
-      public boolean isLocalLoad() {
-        return false;
-      }
-
-      public boolean isNetLoad() {
-        return false;
-      }
-
-      public boolean isLoad() {
-        return true;
-      }
-
-      public boolean isNetSearch() {
-        return false;
-      }
-
-      @Override
-      public TransactionId getTransactionId() {
-        return null;
-      }
-
-      @Override
-      public Object getCallbackArgument() {
-        return null;
-      }
-
-      @Override
-      public boolean isCallbackArgumentAvailable() {
-        return true;
-      }
-
-      @Override
-      public boolean isOriginRemote() {
-        return false;
-      }
-
-      @Override
-      public DistributedMember getDistributedMember() {
-        return null;
-      }
-
-      public boolean isExpiration() {
-        return false;
-      }
-
-      public boolean isDistributed() {
-        return false;
-      }
-
-      public boolean isBridgeEvent() {
-        return hasClientOrigin();
-      }
-
-      @Override
-      public boolean hasClientOrigin() {
-        return false;
-      }
-
-      public ClientProxyMembershipID getContext() {
-        return null;
-      }
-
-      @Override
-      public SerializedCacheValue getSerializedOldValue() {
-        return null;
-      }
-
-      @Override
-      public SerializedCacheValue getSerializedNewValue() {
-        return null;
-      }
-    };
-  }
-
-  public void verifyBalanced(final PoolImpl pool, int expectedServer,
-      final int expectedConsPerServer) {
-    verifyServerCount(pool, expectedServer);
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return balanced(pool, expectedConsPerServer);
-      }
-
-      @Override
-      public String description() {
-        return "expected " + expectedConsPerServer + " but endpoints=" + outOfBalanceReport(pool);
-      }
-    };
-    await().untilAsserted(ev);
-    assertTrue("expected " + expectedConsPerServer + " but endpoints=" + outOfBalanceReport(pool),
-        balanced(pool, expectedConsPerServer));
-  }
-
-  private boolean balanced(PoolImpl pool, int expectedConsPerServer) {
-    for (Endpoint ep : pool.getEndpointMap().values()) {
-      if (ep.getStats().getConnections() != expectedConsPerServer) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private String outOfBalanceReport(PoolImpl pool) {
-    StringBuilder result = new StringBuilder();
-    Iterator it = pool.getEndpointMap().values().iterator();
-    result.append("<");
-    while (it.hasNext()) {
-      Endpoint ep = (Endpoint) it.next();
-      result.append("ep=").append(ep);
-      result.append(" conCount=").append(ep.getStats().getConnections());
-      if (it.hasNext()) {
-        result.append(", ");
-      }
-    }
-    result.append(">");
-    return result.toString();
-  }
-
-  public void waitForDenylistToClear(final PoolImpl pool) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return pool.getDenylistedServers().size() == 0;
-      }
-
-      @Override
-      public String description() {
-        return null;
-      }
-    };
-    await().untilAsserted(ev);
-    assertEquals("unexpected denylistedServers=" + pool.getDenylistedServers(), 0,
-        pool.getDenylistedServers().size());
-  }
 
   private void verifyServerCount(final PoolImpl pool, final int expectedCount) {
     getCache().getLogger().info("verifyServerCount expects=" + expectedCount);
-    WaitCriterion ev = new WaitCriterion() {
-      String excuse;
-
-      @Override
-      public boolean done() {
-        int actual = pool.getConnectedServerCount();
-        if (actual == expectedCount) {
-          return true;
-        }
-        excuse = "Found only " + actual + " servers, expected " + expectedCount;
-        return false;
-      }
-
-      @Override
-      public String description() {
-        return excuse;
-      }
-    };
-    await().untilAsserted(ev);
+    await().alias("Expecting found server count to match expected count")
+        .until(() -> pool.getConnectedServerCount() == expectedCount);
   }
 
   /**
@@ -565,92 +294,63 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test001CallbackArg() throws CacheException {
     final String name = this.getName();
 
-
-
     final Object createCallbackArg = "CREATE CALLBACK ARG";
     final Object updateCallbackArg = "PUT CALLBACK ARG";
 
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-
-        CacheWriter<Object, Object> cw = new TestCacheWriter() {
-          @Override
-          public final void beforeUpdate2(EntryEvent event) throws CacheWriterException {
-            Object beca = event.getCallbackArgument();
-            assertEquals(updateCallbackArg, beca);
-          }
-
-          @Override
-          public void beforeCreate2(EntryEvent event) throws CacheWriterException {
-            Object beca = event.getCallbackArgument();
-            assertEquals(createCallbackArg, beca);
-          }
-        };
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, cw);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+    vm0.invoke("Create Cache Server", () -> {
+      CacheWriter<Object, Object> cw = new TestCacheWriter<Object, Object>() {
+        @Override
+        public final void beforeUpdate2(EntryEvent event) throws CacheWriterException {
+          Object beca = event.getCallbackArgument();
+          assertThat(updateCallbackArg).isEqualTo(beca);
         }
 
-      }
+        @Override
+        public void beforeCreate2(EntryEvent event) throws CacheWriterException {
+          Object beca = event.getCallbackArgument();
+          assertThat(createCallbackArg).isEqualTo(beca);
+        }
+      };
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, cw);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
 
-    vm1.invoke("Create region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
 
-        ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(),
-            port, -1, true, -1, -1, null);
-        createRegion(name, factory.create());
-      }
+      configureConnectionPool(factory, NetworkUtils.getServerHostName(),
+          new int[] {port}, true, -1, -1, null);
+      createRegion(name, factory);
     });
-    vm1.invoke("Add entries", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.create(i, "old" + i, createCallbackArg);
-        }
-        for (int i = 0; i < 10; i++) {
-          region.put(i, "new" + i, updateCallbackArg);
-        }
+
+    vm1.invoke("Add entries", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.create(i, "old" + i, createCallbackArg);
+      }
+      for (int i = 0; i < 10; i++) {
+        region.put(i, "new" + i, updateCallbackArg);
       }
     });
 
-    vm0.invoke("Check cache writer", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        TestCacheWriter writer = getTestWriter(region);
-        assertTrue(writer.wasInvoked());
-      }
+    vm0.invoke("Check cache writer", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      TestCacheWriter writer = getTestWriter(region);
+      assertThat(writer.wasInvoked()).isTrue();
     });
 
-    vm1.invoke("Close Pool", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
-      }
+    vm1.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
     });
 
-    vm0.invoke("Stop CacheServer", new SerializableRunnable() {
-      @Override
-      public void run() {
-        stopBridgeServer(getCache());
-      }
-    });
+    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
 
   }
 
@@ -660,93 +360,63 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void test002CallbackArg2() throws CacheException {
     final String name = this.getName();
-
-
-
     final Object createCallbackArg = "CREATE CALLBACK ARG";
-    // final Object updateCallbackArg = "PUT CALLBACK ARG";
 
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        CacheWriter<Object, Object> cw = new TestCacheWriter<Object, Object>() {
-          @Override
-          public void beforeCreate2(EntryEvent event) throws CacheWriterException {
-            Integer key = (Integer) event.getKey();
-            if (key % 2 == 0) {
-              Object beca = event.getCallbackArgument();
-              assertEquals(createCallbackArg, beca);
-            } else {
-              Object beca = event.getCallbackArgument();
-              assertNull(beca);
-            }
+    vm0.invoke("Create Cache Server", () -> {
+      CacheWriter<Object, Object> cacheWriter = new TestCacheWriter<Object, Object>() {
+        @Override
+        public void beforeCreate2(EntryEvent event) throws CacheWriterException {
+          Integer key = (Integer) event.getKey();
+          if (key % 2 == 0) {
+            Object callbackArgument = event.getCallbackArgument();
+            assertThat(createCallbackArg).isEqualTo(callbackArgument);
+          } else {
+            Object callbackArgument = event.getCallbackArgument();
+            assertThat(callbackArgument).isNull();
           }
-        };
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, cw);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
         }
-
-      }
+      };
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, cacheWriter);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    vm1.invoke("Create region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        createRegion(name, factory.create());
-      }
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      createRegion(name, factory);
     });
-    vm1.invoke("Add entries", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          if (i % 2 == 0) {
-            region.create(i, "old" + i, createCallbackArg);
 
-          } else {
-            region.create(i, "old" + i);
-          }
+    vm1.invoke("Add entries", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        if (i % 2 == 0) {
+          region.create(i, "old" + i, createCallbackArg);
+
+        } else {
+          region.create(i, "old" + i);
         }
       }
     });
 
-    vm1.invoke("Close Pool", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
-      }
+    vm1.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
     });
 
-    vm0.invoke("Check cache writer", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        TestCacheWriter writer = getTestWriter(region);
-        assertTrue(writer.wasInvoked());
-      }
+    vm0.invoke("Check cache writer", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      TestCacheWriter writer = getTestWriter(region);
+      assertThat(writer.wasInvoked()).isTrue();
     });
 
-    vm0.invoke("Stop CacheServer", new SerializableRunnable() {
-      @Override
-      public void run() {
-        stopBridgeServer(getCache());
-      }
-    });
+    vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
   /**
@@ -755,15 +425,12 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    * will get null sometimes.
    */
   @Test
-  public void test003Bug36684() throws CacheException {
+  public void test003Bug36684() throws CacheException, TimeoutException, InterruptedException {
     final String name = this.getName();
 
-
-
     // Create the cache servers with distributed, mirrored region
-    SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
-      @Override
-      public void run2() throws CacheException {
+    Stream.of(vm0, vm1).forEach(vm -> {
+      vm.invoke("Create Cache Server", () -> {
         CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
           @Override
           public Object load(LoaderHelper helper) {
@@ -775,52 +442,44 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
           }
         };
-        AttributesFactory<Object, Object> factory =
-            getBridgeServerMirroredAckRegionAttributes(cl, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
+        RegionFactory<Object, Object> factory =
+            getBridgeServerMirroredAckRegionAttributes(cl);
+        createRegion(name, factory);
+        startBridgeServer(0);
 
-      }
-    };
-    getSystem().getLogWriter().info("before create server");
-    vm0.invoke(createServer);
-    vm1.invoke(createServer);
+      });
+      logger.info("before create server");
+    });
 
     // Create cache server clients
     final int numberOfKeys = 1000;
     final String host0 = NetworkUtils.getServerHostName();
     final int vm0Port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final int vm1Port = vm1.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
-    SerializableRunnable createClient =
-        new CacheSerializableRunnable("Create Cache Server Client") {
-          @Override
-          public void run2() throws CacheException {
-            // reset all static listener variables in case this is being rerun in a subclass
-            numberOfAfterInvalidates = 0;
-            numberOfAfterCreates = 0;
-            numberOfAfterUpdates = 0;
-            // create the region
-            getLonerSystem();
-            AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-            factory.setScope(Scope.LOCAL);
-            factory.setConcurrencyChecksEnabled(false); // test validation expects this behavior
-            // create bridge writer
-            ClientServerTestCase.configureConnectionPool(factory, host0, vm0Port, vm1Port, true, -1,
-                -1, null);
-            createRegion(name, factory.create());
-          }
-        };
-    getSystem().getLogWriter().info("before create client");
-    vm2.invoke(createClient);
-    vm3.invoke(createClient);
+    SerializableRunnable createClient = new CacheSerializableRunnable() {
+      @Override
+      public void run2() throws CacheException {
+        // reset all static listener variables in case this is being rerun in a subclass
+        numberOfAfterInvalidates = 0;
+        numberOfAfterCreates = 0;
+        numberOfAfterUpdates = 0;
+        // create the region
+        getLonerSystem();
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.LOCAL);
+        factory.setConcurrencyChecksEnabled(false); // test validation expects this behavior
+        // create bridge writer
+        configureConnectionPool(factory, host0, new int[] {vm0Port, vm1Port}, true, -1,
+            -1, null);
+        createRegion(name, factory);
+      }
+    };
+    logger.info("before create client");
+    vm2.invoke("Create Cache Server Client", createClient);
+    vm3.invoke("Create Cache Server Client", createClient);
 
     // Initialize each client with entries (so that afterInvalidate is called)
-    SerializableRunnable initializeClient = new CacheSerializableRunnable("Initialize Client") {
+    SerializableRunnable initializeClient = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         // StringBuffer errors = new StringBuffer();
@@ -831,24 +490,17 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         for (int i = 0; i < numberOfKeys; i++) {
           String expected = "key-" + i;
           String actual = (String) region.get("key-" + i);
-          assertEquals(expected, actual);
+          assertThat(expected).isEqualTo(actual);
         }
       }
     };
 
-    getSystem().getLogWriter().info("before initialize client");
-    AsyncInvocation inv2 = vm2.invokeAsync(initializeClient);
-    AsyncInvocation inv3 = vm3.invokeAsync(initializeClient);
+    logger.info("before initialize client");
+    AsyncInvocation inv2 = vm2.invokeAsync("Initialize Client", initializeClient);
+    AsyncInvocation inv3 = vm3.invokeAsync("Initialize Client", initializeClient);
 
-    ThreadUtils.join(inv2, 30 * 1000);
-    ThreadUtils.join(inv3, 30 * 1000);
-
-    if (inv2.exceptionOccurred()) {
-      fail("Error occurred in vm2", inv2.getException());
-    }
-    if (inv3.exceptionOccurred()) {
-      fail("Error occurred in vm3", inv3.getException());
-    }
+    inv2.get(30, SECONDS);
+    inv3.get(30, SECONDS);
   }
 
   /**
@@ -862,33 +514,24 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     VM client = VM.getVM(1);
 
     // Create the cache servers with distributed, mirrored region
-    getSystem().getLogWriter().info("before create server");
+    logger.info("before create server");
 
-    server.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
-          @Override
-          public Object load(LoaderHelper helper) {
-            System.out.println("### CALLING CACHE LOADER....");
-            throw new CacheLoaderException(
-                "Test for CahceLoaderException causing Client connection to disconnect.");
-          }
-
-          @Override
-          public void close() {}
-        };
-        AttributesFactory<Object, Object> factory =
-            getBridgeServerMirroredAckRegionAttributes(cl, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+    server.invoke("Create Cache Server", () -> {
+      CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
+        @Override
+        public Object load(LoaderHelper helper) {
+          System.out.println("### CALLING CACHE LOADER....");
+          throw new CacheLoaderException(
+              "Test for CahceLoaderException causing Client connection to disconnect.");
         }
 
-      }
+        @Override
+        public void close() {}
+      };
+      RegionFactory<Object, Object> factory =
+          getBridgeServerMirroredAckRegionAttributes(cl);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
 
     // Create cache server clients
@@ -898,50 +541,36 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         new int[] {server.invoke(ConnectionPoolDUnitTest::getCacheServerPort)};
     final String poolName = "myPool";
 
-    getSystem().getLogWriter().info("before create client");
-    client.invoke("Create Cache Server Client", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        // create bridge writer
-        ClientServerTestCase.configureConnectionPoolWithName(factory, host0, port, true, -1, -1,
-            null, poolName);
-        createRegion(name, factory.create());
-      }
+    logger.info("before create client");
+    client.invoke("Create Cache Server Client", () -> {
+      getLonerSystem();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      // create bridge writer
+      configureConnectionPoolWithNameAndFactory(factory, host0, port, true,
+          -1, -1, null, poolName, PoolManager.createFactory(), -1, -1, -2, -1);
+      createRegion(name, factory);
     });
 
     // Initialize each client with entries (so that afterInvalidate is called)
 
-    getSystem().getLogWriter().info("before initialize client");
-    AsyncInvocation inv2 = client.invokeAsync(new CacheSerializableRunnable("Initialize Client") {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        PoolStats stats = ((PoolImpl) PoolManager.find(poolName)).getStats();
-        int oldConnects = stats.getConnects();
-        int oldDisConnects = stats.getDisConnects();
-        try {
-          for (int i = 0; i < numberOfKeys; i++) {
-            region.get("key-" + i);
-          }
-        } catch (Exception ex) {
-          if (!(ex.getCause() instanceof CacheLoaderException)) {
-            fail(
-                "UnExpected Exception, expected to receive CacheLoaderException from server, instead found: "
-                    + ex.getCause().getClass());
-          }
-        }
-        int newConnects = stats.getConnects();
-        int newDisConnects = stats.getDisConnects();
-
-        // newDisConnects);
-        if (newConnects != oldConnects && newDisConnects != oldDisConnects) {
-          fail("New connection has created for Server side CacheLoaderException.");
-        }
+    logger.info("before initialize client");
+    AsyncInvocation inv2 = client.invokeAsync("Initialize Client", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      PoolStats stats = ((PoolImpl) PoolManager.find(poolName)).getStats();
+      int oldConnects = stats.getConnects();
+      int oldDisConnects = stats.getDisConnects();
+      for (int i = 0; i < numberOfKeys; i++) {
+        region.get("key-" + i);
       }
+      int newConnects = stats.getConnects();
+      int newDisConnects = stats.getDisConnects();
+
+      // newDisConnects);
+      if (newConnects != oldConnects && newDisConnects != oldDisConnects) {
+        fail("New connection has created for Server side CacheLoaderException.");
+      } ;
     });
 
     ThreadUtils.join(inv2, 30 * 1000);
@@ -950,13 +579,13 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void validateDS() {
-    List l = InternalDistributedSystem.getExistingSystems();
-    if (l.size() > 1) {
-      getSystem().getLogWriter().info("validateDS: size=" + l.size() + " isDedicatedAdminVM="
-          + ClusterDistributionManager.isDedicatedAdminVM() + " l=" + l);
+    List list = InternalDistributedSystem.getExistingSystems();
+    if (list.size() > 1) {
+      logger.info("validateDS: size=" + list.size() + " isDedicatedAdminVM="
+          + ClusterDistributionManager.isDedicatedAdminVM() + " l=" + list);
     }
-    assertFalse(ClusterDistributionManager.isDedicatedAdminVM());
-    assertEquals(1, l.size());
+    assertThat(ClusterDistributionManager.isDedicatedAdminVM()).isFalse();
+    assertThat(1).isEqualTo(list.size());
   }
 
   /**
@@ -968,118 +597,87 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test006Pool() throws CacheException {
     final String name = this.getName();
 
-
-
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setConcurrencyChecksEnabled(false);
-        factory.setCacheLoader(new CacheLoader<Object, Object>() {
-          @Override
-          public Object load(LoaderHelper helper) {
-            // System.err.println("CacheServer data loader called");
-            return helper.getKey().toString();
-          }
-
-          @Override
-          public void close() {
-
-          }
-        });
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.DISTRIBUTED_ACK);
+      factory.setConcurrencyChecksEnabled(false);
+      factory.setCacheLoader(new CacheLoader<Object, Object>() {
+        @Override
+        public Object load(LoaderHelper helper) {
+          return helper.getKey().toString();
         }
 
-      }
+        @Override
+        public void close() {
+
+        }
+      });
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
-    vm1.invoke("Create region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        validateDS();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        createRegion(name, factory.create());
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      validateDS();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      createRegion(name, factory);
+    });
+
+    vm1.invoke("Get values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object value = region.get(i);
+        assertThat(String.valueOf(i)).isEqualTo(value);
       }
     });
 
-    vm1.invoke("Get values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object value = region.get(i);
-          assertEquals(String.valueOf(i), value);
-        }
+    vm1.invoke("Update values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+
+      for (int i = 0; i < 10; i++) {
+        region.put(i, i);
       }
     });
 
-    vm1.invoke("Update values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-
-        for (int i = 0; i < 10; i++) {
-          region.put(i, i);
-        }
+    vm2.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      validateDS();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      createRegion(name, factory);
+    });
+    vm2.invoke("Validate values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object value = region.get(i);
+        assertThat(value).isNotNull();
+        assertThat(value).isInstanceOf(Integer.class);
+        assertThat(i).isEqualTo(((Integer) value).intValue());
       }
     });
 
-    vm2.invoke("Create region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        validateDS();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        createRegion(name, factory.create());
+    vm1.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      String pName = region.getAttributes().getPoolName();
+      PoolImpl p = (PoolImpl) PoolManager.find(pName);
+      assertThat(p.isDestroyed()).isFalse();
+      assertThat(1).isEqualTo(p.getAttachCount());
+      try {
+        p.destroy();
+        fail("expected IllegalStateException");
+      } catch (IllegalStateException ignored) {
       }
-    });
-    vm2.invoke("Validate values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object value = region.get(i);
-          assertNotNull(value);
-          assertTrue(value instanceof Integer);
-          assertEquals(i, ((Integer) value).intValue());
-        }
-      }
-    });
-
-    vm1.invoke("Close Pool", new CacheSerializableRunnable() {
-      // do some special close validation here
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        String pName = region.getAttributes().getPoolName();
-        PoolImpl p = (PoolImpl) PoolManager.find(pName);
-        assertFalse(p.isDestroyed());
-        assertEquals(1, p.getAttachCount());
-        try {
-          p.destroy();
-          fail("expected IllegalStateException");
-        } catch (IllegalStateException ignored) {
-        }
-        region.localDestroyRegion();
-        assertFalse(p.isDestroyed());
-        assertEquals(0, p.getAttachCount());
-      }
+      region.localDestroyRegion();
+      assertThat(p.isDestroyed()).isFalse();
+      assertThat(0).isEqualTo(p.getAttachCount());
     });
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
@@ -1105,25 +703,12 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   private void basicTestBridgeServerFailover(final int cnxCount) throws CacheException {
     final String name = this.getName();
 
-
-
     // Create two cache servers
-    SerializableRunnable createCacheServer = new CacheSerializableRunnable("Create Cache Server") {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        createRegion(name, factory.create());
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-      }
-    };
-
-    vm0.invoke(createCacheServer);
-    vm1.invoke(createCacheServer);
+    Stream.of(vm0, vm1).forEach(vm -> vm.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
+    }));
 
     final int port0 = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
@@ -1132,36 +717,32 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Create one bridge client in this VM
 
-    vm2.invoke("Create region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port0, port1, true, -1,
-            cnxCount, null, 100);
+    vm2.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      String ServerGroup = null;
+      configureConnectionPoolWithNameAndFactory(factory, host0, new int[] {port0, port1}, true,
+          -1, cnxCount, ServerGroup, TEST_POOL_NAME, PoolManager.createFactory(), 100, -1, -2,
+          -1);
+      Region<Object, Object> region = createRegion(name, factory);
 
-        Region<Object, Object> region = createRegion(name, factory.create());
-
-        // force connections to form
-        region.put("keyInit", 0);
-        region.put("keyInit2", 0);
-      }
+      // force connections to form
+      region.put("keyInit", 0);
+      region.put("keyInit2", 0);
     });
 
-    vm2.invoke("verify2Servers", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        PoolImpl pool = getPool(region);
-        verifyServerCount(pool, 2);
-      }
+    vm2.invoke("verify2Servers", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      PoolImpl pool = getPool(region);
+      verifyServerCount(pool, 2);
     });
 
     final String expected = "java.io.IOException";
-    final String addExpected = "<ExpectedException action=add>" + expected + "</ExpectedException>";
+    final String addExpected =
+        "<ExpectedException action=add>" + expected + "</ExpectedException>";
     final String removeExpected =
         "<ExpectedException action=remove>" + expected + "</ExpectedException>";
 
@@ -1176,35 +757,24 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       // because ...
       vm1.invoke(() -> stopBridgeServer(getCache()));
 
-      vm2.invoke("verify1Server", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          Region<Object, Object> region = getRootRegion().getSubregion(name);
-          PoolImpl pool = getPool(region);
-          verifyServerCount(pool, 1);
-        }
+      vm2.invoke("verify1Server", () -> {
+        Region<Object, Object> region = getRootRegion().getSubregion(name);
+        PoolImpl pool = getPool(region);
+        verifyServerCount(pool, 1);
       });
 
       vm1.invoke("Restart CacheServer", () -> {
-        try {
-          Region<Object, Object> region = getRootRegion().getSubregion(name);
-          assertNotNull(region);
-          startBridgeServer(port1);
-        } catch (Exception e) {
-          getSystem().getLogWriter().fine(new Exception(e));
-          fail("Failed to start CacheServer", e);
-        }
+        Region<Object, Object> region = getRootRegion().getSubregion(name);
+        assertThat(region).isNotNull();
+        startBridgeServer(port1);
       });
 
       // Pause long enough for the monitor to realize the server has been bounced
       // and reconnect to it.
-      vm2.invoke("verify2Servers", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          Region<Object, Object> region = getRootRegion().getSubregion(name);
-          PoolImpl pool = getPool(region);
-          verifyServerCount(pool, 2);
-        }
+      vm2.invoke("verify2Servers", () -> {
+        Region<Object, Object> region = getRootRegion().getSubregion(name);
+        PoolImpl pool = getPool(region);
+        verifyServerCount(pool, 2);
       });
 
     } finally {
@@ -1218,22 +788,16 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(() -> stopBridgeServer(getCache()));
 
     // Run awhile
-    vm2.invoke("verify1Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        PoolImpl pool = getPool(region);
-        verifyServerCount(pool, 1);
-      }
+    vm2.invoke("verify1Server", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      PoolImpl pool = getPool(region);
+      verifyServerCount(pool, 1);
     });
 
     // Close Pool
-    vm2.invoke("Close Pool", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
-      }
+    vm2.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
     });
 
     // Stop the last cache server
@@ -1253,8 +817,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       throws CacheException, TimeoutException, InterruptedException {
     final String name = this.getName();
 
-
-
     AsyncInvocation putAI = null;
     AsyncInvocation putAI2 = null;
 
@@ -1262,38 +824,22 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
       // Create two cache servers
 
-      vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-          factory.addCacheListener(new DelayListener(25));
-          createRegion(name, factory.create());
-          try {
-            startBridgeServer(0);
+      vm0.invoke("Create Cache Server", () -> {
+        RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+        factory.addCacheListener(new DelayListener());
+        createRegion(name, factory);
+        startBridgeServer(0);
 
-          } catch (Exception ex) {
-            fail("While starting CacheServer", ex);
-          }
-
-        }
       });
 
       final int port0 = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
       final String host0 = NetworkUtils.getServerHostName();
-      vm1.invoke("Create Cache Server", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-          factory.addCacheListener(new DelayListener(25));
-          createRegion(name, factory.create());
-          try {
-            startBridgeServer(0);
+      vm1.invoke("Create Cache Server", () -> {
+        RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+        factory.addCacheListener(new DelayListener());
+        createRegion(name, factory);
+        startBridgeServer(0);
 
-          } catch (Exception ex) {
-            fail("While starting CacheServer", ex);
-          }
-
-        }
       });
       final int port1 = vm1.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
       // we only had to stop it to reserve a port
@@ -1301,97 +847,85 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
       // Create one bridge client in this VM
 
-      vm2.invoke("Create region", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          getLonerSystem();
-          getCache();
-          AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-          factory.setScope(Scope.LOCAL);
-          factory.setConcurrencyChecksEnabled(false);
-          ClientServerTestCase.configureConnectionPool(factory, host0, port0, port1,
-              false/* queue */, -1, 0, null, 100, 500, 500);
+      vm2.invoke("Create region", () -> {
+        getLonerSystem();
+        getCache();
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.LOCAL);
+        factory.setConcurrencyChecksEnabled(false);
+        configureConnectionPoolWithNameAndFactory(factory, host0, new int[] {port0, port1},
+            false, -1, 0, null, TEST_POOL_NAME, PoolManager.createFactory(), 100, 500, 500, -1);
 
-          Region<Object, Object> region = createRegion(name, factory.create());
+        Region<Object, Object> region = createRegion(name, factory);
 
-          // force connections to form
-          region.put("keyInit", 0);
-          region.put("keyInit2", 0);
-        }
+        // force connections to form
+        region.put("keyInit", 0);
+        region.put("keyInit2", 0);
       });
 
       // Launch async thread that puts objects into cache. This thread will execute until
       // the test has ended.
-      putAI = vm2.invokeAsync("Put objects", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          Region<Object, Object> region = getRootRegion().getSubregion(name);
-          PoolImpl pool = getPool(region);
-          PoolStats stats = pool.getStats();
-          baselineLifetimeCheck = stats.getLoadConditioningCheck();
-          baselineLifetimeExtensions = stats.getLoadConditioningExtensions();
-          baselineLifetimeConnect = stats.getLoadConditioningConnect();
-          baselineLifetimeDisconnect = stats.getLoadConditioningDisconnect();
-          try {
-            int count = 0;
-            while (!stopTestLifetimeExpire) {
-              count++;
-              region.put("keyAI1", count);
-            }
-          } catch (NoAvailableServersException ex) {
-            if (!stopTestLifetimeExpire) {
-              throw ex;
-            }
-
+      putAI = vm2.invokeAsync("Put objects", () -> {
+        Region<Object, Object> region = getRootRegion().getSubregion(name);
+        PoolImpl pool = getPool(region);
+        PoolStats stats = pool.getStats();
+        baselineLifetimeCheck = stats.getLoadConditioningCheck();
+        baselineLifetimeExtensions = stats.getLoadConditioningExtensions();
+        baselineLifetimeConnect = stats.getLoadConditioningConnect();
+        baselineLifetimeDisconnect = stats.getLoadConditioningDisconnect();
+        try {
+          int count = 0;
+          while (!stopTestLifetimeExpire) {
+            count++;
+            region.put("keyAI1", count);
           }
+        } catch (NoAvailableServersException ex) {
+          if (!stopTestLifetimeExpire) {
+            throw ex;
+          }
+
         }
       });
-      putAI2 = vm2.invokeAsync("Put objects", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          Region<Object, Object> region = getRootRegion().getSubregion(name);
-          try {
-            int count = 0;
-            while (!stopTestLifetimeExpire) {
-              count++;
-              region.put("keyAI2", count);
-            }
-          } catch (NoAvailableServersException ex) {
-            if (!stopTestLifetimeExpire) {
-              throw ex;
-            }
+      putAI2 = vm2.invokeAsync("Put objects", () -> {
+        Region<Object, Object> region = getRootRegion().getSubregion(name);
+        try {
+          int count = 0;
+          while (!stopTestLifetimeExpire) {
+            count++;
+            region.put("keyAI2", count);
+          }
+        } catch (NoAvailableServersException ex) {
+          if (!stopTestLifetimeExpire) {
+            throw ex;
           }
         }
       });
 
-      vm2.invoke("verify1Server", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          Region<Object, Object> region = getRootRegion().getSubregion(name);
-          PoolImpl pool = getPool(region);
-          final PoolStats stats = pool.getStats();
-          verifyServerCount(pool, 1);
+      vm2.invoke("verify1Server", () -> {
+        Region<Object, Object> region = getRootRegion().getSubregion(name);
+        PoolImpl pool = getPool(region);
+        final PoolStats stats = pool.getStats();
+        verifyServerCount(pool, 1);
 
-          await().until(() -> stats.getLoadConditioningCheck() >= (10 + baselineLifetimeCheck));
+        await().until(() -> stats.getLoadConditioningCheck() >= (10 + baselineLifetimeCheck));
 
-          // make sure no replacements are happening.
-          // since we have 2 threads and 2 cnxs and 1 server
-          // when lifetimes are up we should only want to connect back to the
-          // server we are already connected to and thus just extend our lifetime
-          assertTrue(
-              "baselineLifetimeCheck=" + baselineLifetimeCheck
-                  + " but stats.getLoadConditioningCheck()=" + stats.getLoadConditioningCheck(),
-              stats.getLoadConditioningCheck() >= (10 + baselineLifetimeCheck));
-          baselineLifetimeCheck = stats.getLoadConditioningCheck();
-          assertThat(stats.getLoadConditioningExtensions())
-              .isGreaterThan(baselineLifetimeExtensions);
-          assertThat(stats.getLoadConditioningConnect()).isEqualTo(baselineLifetimeConnect);
-          assertThat(stats.getLoadConditioningDisconnect()).isEqualTo(baselineLifetimeDisconnect);
-        }
+        // make sure no replacements are happening.
+        // since we have 2 threads and 2 cnxs and 1 server
+        // when lifetimes are up we should only want to connect back to the
+        // server we are already connected to and thus just extend our lifetime
+        assertThat(stats.getLoadConditioningCheck() >= (10 + baselineLifetimeCheck))
+            .describedAs("baselineLifetimeCheck=" + baselineLifetimeCheck
+                + " but stats.getLoadConditioningCheck()=" + stats.getLoadConditioningCheck())
+            .isTrue();
+        baselineLifetimeCheck = stats.getLoadConditioningCheck();
+        assertThat(stats.getLoadConditioningExtensions())
+            .isGreaterThan(baselineLifetimeExtensions);
+        assertThat(stats.getLoadConditioningConnect()).isEqualTo(baselineLifetimeConnect);
+        assertThat(stats.getLoadConditioningDisconnect()).isEqualTo(baselineLifetimeDisconnect);
       });
 
-      assertThat(putAI.isAlive()).isTrue();
-      assertThat(putAI2.isAlive()).isTrue();
+      await().until(putAI::isAlive);
+      await().until(putAI2::isAlive);
 
     } finally {
       vm2.invoke("Stop Putters", () -> stopTestLifetimeExpire = true);
@@ -1409,14 +943,11 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       } finally {
         vm2.invoke("Stop Putters", () -> stopTestLifetimeExpire = false);
         // Close Pool
-        vm2.invoke("Close Pool", new CacheSerializableRunnable() {
-          @Override
-          public void run2() throws CacheException {
-            Region<Object, Object> region = getRootRegion().getSubregion(name);
-            String poolName = region.getAttributes().getPoolName();
-            region.localDestroyRegion();
-            PoolManager.find(poolName).destroy();
-          }
+        vm2.invoke("Close Pool", () -> {
+          Region<Object, Object> region = getRootRegion().getSubregion(name);
+          String poolName = region.getAttributes().getPoolName();
+          region.localDestroyRegion();
+          PoolManager.find(poolName).destroy();
         });
 
         vm1.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
@@ -1434,71 +965,50 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test011PoolCreate() throws CacheException {
     final String name = this.getName();
 
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    vm1.invoke("Create region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, false, -1, -1, null);
-        createRegion(name, factory.create());
-      }
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, false, -1, -1, null);
+      createRegion(name, factory);
     });
-    vm1.invoke("Create values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.create(i, i);
-        }
+    vm1.invoke("Create values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.create(i, i);
       }
     });
 
-    vm2.invoke("Create region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, false, -1, -1, null);
-        createRegion(name, factory.create());
-      }
+    vm2.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, false, -1, -1, null);
+      createRegion(name, factory);
     });
-    vm2.invoke("Validate values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object value = region.get(i);
-          assertNotNull(value);
-          assertTrue(value instanceof Integer);
-          assertEquals(i, ((Integer) value).intValue());
-        }
+    vm2.invoke("Validate values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object value = region.get(i);
+        assertThat(value).isNotNull();
+        assertThat(value).isInstanceOf(Integer.class);
+        assertThat(i).isEqualTo(((Integer) value).intValue());
       }
     });
 
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
+    SerializableRunnable close = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -1506,8 +1016,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    vm1.invoke(close);
-    vm2.invoke(close);
+    vm1.invoke("Close Pool", close);
+    vm2.invoke("Close Pool", close);
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -1525,100 +1035,79 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     vm1 = VM.getVM(1);
     vm2 = VM.getVM(2);
 
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        createRegion(name, factory.create());
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
 
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
-    SerializableRunnable createPool = new CacheSerializableRunnable("Create region") {
+    SerializableRunnable createRegion = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         getLonerSystem();
         getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
         factory.setScope(Scope.LOCAL);
         factory.setConcurrencyChecksEnabled(false);
         // create bridge writer
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, false, -1, -1, null);
-        createRegion(name, factory.create());
+        configureConnectionPool(factory, host0, new int[] {port}, false, -1, -1, null);
+        createRegion(name, factory);
       }
     };
 
-    vm1.invoke(createPool);
+    vm1.invoke("Create region", createRegion);
 
-    vm1.invoke("Put values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          // put string values
-          region.put("key-string-" + i, "value-" + i);
+    vm1.invoke("Put values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        // put string values
+        region.put("key-string-" + i, "value-" + i);
 
-          // put object values
-          Order order = new Order();
-          order.init(i);
-          region.put("key-object-" + i, order);
+        // put object values
+        Order order = new Order();
+        order.init(i);
+        region.put("key-object-" + i, order);
 
-          // put byte[] values
-          region.put("key-bytes-" + i, ("value-" + i).getBytes());
-        }
+        // put byte[] values
+        region.put("key-bytes-" + i, ("value-" + i).getBytes());
       }
     });
 
-    vm2.invoke(createPool);
+    vm2.invoke("Create region", createRegion);
 
-    vm2.invoke("Get / validate string values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object value = region.get("key-string-" + i);
-          assertNotNull(value);
-          assertTrue(value instanceof String);
-          assertEquals("value-" + i, value);
-        }
+    vm2.invoke("Get / validate string values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object value = region.get("key-string-" + i);
+        assertThat(value).isNotNull();
+        assertThat(value).isInstanceOf(String.class);
+        assertThat("value-" + i).isEqualTo(value);
       }
     });
 
-    vm2.invoke("Get / validate object values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object value = region.get("key-object-" + i);
-          assertNotNull(value);
-          assertTrue(value instanceof Order);
-          assertEquals(i, ((Order) value).getIndex());
-        }
+    vm2.invoke("Get / validate object values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object value = region.get("key-object-" + i);
+        assertThat(value).isNotNull();
+        assertThat(value).isInstanceOf(Order.class);
+        assertThat(i).isEqualTo(((Order) value).getIndex());
       }
     });
 
-    vm2.invoke("Get / validate byte[] values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object value = region.get("key-bytes-" + i);
-          assertNotNull(value);
-          assertTrue(value instanceof byte[]);
-          assertEquals("value-" + i, new String((byte[]) value));
-        }
+    vm2.invoke("Get / validate byte[] values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object value = region.get("key-bytes-" + i);
+        assertThat(value).isNotNull();
+        assertThat(value instanceof byte[]).isTrue();
+        assertThat("value-" + i).isEqualTo(new String((byte[]) value));
       }
     });
 
-    SerializableRunnable closePool = new CacheSerializableRunnable("Close Pool") {
+    SerializableRunnable closePool = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -1641,101 +1130,79 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test013PoolPutNoDeserialize() throws CacheException {
     final String name = this.getName();
 
-
-
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        createRegion(name, factory.create());
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
 
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    SerializableRunnable createPool = new CacheSerializableRunnable("Create region") {
+    SerializableRunnable createRegion = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         getLonerSystem();
         getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
         factory.setScope(Scope.LOCAL);
         factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, false, -1, -1, null);
-        createRegion(name, factory.create());
+        configureConnectionPool(factory, host0, new int[] {port}, false, -1, -1, null);
+        createRegion(name, factory);
       }
     };
 
-    vm1.invoke(createPool);
+    vm1.invoke("Create Region", createRegion);
 
-    vm1.invoke("Put values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          // put string values
-          region.put("key-string-" + i, "value-" + i);
+    vm1.invoke("Put values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        // put string values
+        region.put("key-string-" + i, "value-" + i);
 
-          // put object values
-          Order order = new Order();
-          order.init(i);
-          region.put("key-object-" + i, order);
+        // put object values
+        Order order = new Order();
+        order.init(i);
+        region.put("key-object-" + i, order);
 
-          // put byte[] values
-          region.put("key-bytes-" + i, ("value-" + i).getBytes());
-        }
+        // put byte[] values
+        region.put("key-bytes-" + i, ("value-" + i).getBytes());
       }
     });
 
-    vm2.invoke(createPool);
+    vm2.invoke("Create Region", createRegion);
 
-    vm2.invoke("Get / validate string values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object value = region.get("key-string-" + i);
-          assertNotNull(value);
-          assertTrue(value instanceof String);
-          assertEquals("value-" + i, value);
-        }
+    vm2.invoke("Get / validate string values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object value = region.get("key-string-" + i);
+        assertThat(value).isNotNull();
+        assertThat(value).isInstanceOf(String.class);
+        assertThat("value-" + i).isEqualTo(value);
       }
     });
 
-    vm2.invoke("Get / validate object values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object value = region.get("key-object-" + i);
-          assertNotNull(value);
-          assertTrue(value instanceof Order);
-          assertEquals(i, ((Order) value).getIndex());
-        }
+    vm2.invoke("Get / validate object values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object value = region.get("key-object-" + i);
+        assertThat(value).isNotNull();
+        assertThat(value).isInstanceOf(Order.class);
+        assertThat(i).isEqualTo(((Order) value).getIndex());
       }
     });
 
-    vm2.invoke("Get / validate byte[] values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object value = region.get("key-bytes-" + i);
-          assertNotNull(value);
-          assertTrue(value instanceof byte[]);
-          assertEquals("value-" + i, new String((byte[]) value));
-        }
+    vm2.invoke("Get / validate byte[] values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object value = region.get("key-bytes-" + i);
+        assertThat(value).isNotNull();
+        assertThat(value instanceof byte[]).isTrue();
+        assertThat("value-" + i).isEqualTo(new String((byte[]) value));
       }
     });
 
-    SerializableRunnable closePool = new CacheSerializableRunnable("Close Pool") {
+    SerializableRunnable closePool = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -1743,11 +1210,11 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    vm1.invoke(closePool);
-    vm2.invoke(closePool);
+    vm1.invoke("Close Pool", closePool);
+    vm2.invoke("Close Pool", closePool);
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
-    Wait.pause(5 * 1000);
+    // Wait.pause(5000);
   }
 
   /**
@@ -1759,190 +1226,156 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test014InvalidateAndDestroyPropagation() throws CacheException {
     final String name = this.getName();
 
-
-
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
-
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
+    SerializableRunnable create = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         getLonerSystem();
         getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
         factory.setScope(Scope.LOCAL);
         factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        CertifiableTestCacheListener l = new CertifiableTestCacheListener(
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
-        factory.setCacheListener(l);
-        Region rgn = createRegion(name, factory.create());
+        configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+        factory.addCacheListener(new CertifiableTestCacheListener<>());
+        Region rgn = createRegion(name, factory);
         rgn.registerInterestRegex(".*", false, false);
       }
     };
 
-    vm1.invoke(create);
-    vm1.invoke("Populate region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.put(i, "old" + i);
-        }
+    vm1.invoke("Create region", create);
+    vm1.invoke("Populate region", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.put(i, "old" + i);
       }
     });
-    vm2.invoke(create);
-    Wait.pause(5 * 1000);
+    vm2.invoke("Create region", create);
 
-    vm1.invoke("Turn on history", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        ctl.enableEventHistory();
-      }
+    vm1.invoke("Turn on history", () -> {
+      await().until(() -> getRootRegion().getSubregion(name) != null);
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      ctl.enableEventHistory();
     });
-    vm2.invoke("Update region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.put(i, "new" + i, "callbackArg" + i);
-        }
-      }
-    });
-    Wait.pause(5 * 1000);
 
-    vm1.invoke("Verify invalidates", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
+    vm2.invoke("Update region", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.put(i, "new" + i, "callbackArg" + i);
+      }
+    });
+    // Wait.pause(5000);
+
+    vm1.invoke("Verify invalidates", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        ctl.waitForInvalidated(key);
+        Region.Entry entry = region.getEntry(key);
+        assertThat(entry).isNotNull();
+        assertThat(entry.getValue()).isNull();
+      }
+      {
+        List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
+        assertThat(10).isEqualTo(list.size());
         for (int i = 0; i < 10; i++) {
           Object key = i;
-          ctl.waitForInvalidated(key);
-          Region.Entry entry = region.getEntry(key);
-          assertNotNull(entry);
-          assertNull(entry.getValue());
-        }
-        {
-          List l = ctl.getEventHistory();
-          assertEquals(10, l.size());
-          for (int i = 0; i < 10; i++) {
-            Object key = i;
-            EntryEvent ee = (EntryEvent) l.get(i);
-            assertEquals(key, ee.getKey());
-            assertEquals("old" + i, ee.getOldValue());
-            assertEquals(Operation.INVALIDATE, ee.getOperation());
-            assertEquals("callbackArg" + i, ee.getCallbackArgument());
-            assertTrue(ee.isOriginRemote());
-          }
+          EntryEvent ee = (EntryEvent) list.get(i);
+          assertThat(key).isEqualTo(ee.getKey());
+          assertThat("old" + i).isEqualTo(ee.getOldValue());
+          assertThat(Operation.INVALIDATE).isEqualTo(ee.getOperation());
+          assertThat("callbackArg" + i).isEqualTo(ee.getCallbackArgument());
+          assertThat(ee.isOriginRemote()).isTrue();
         }
       }
     });
 
-    vm2.invoke("Validate original and destroy", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          assertEquals("new" + i, region.getEntry(key).getValue());
-          region.destroy(key, "destroyCB" + i);
-        }
+    vm2.invoke("Validate original and destroy", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        assertThat("new" + i).isEqualTo(region.getEntry(key).getValue());
+        region.destroy(key, "destroyCB" + i);
       }
     });
-    Wait.pause(5 * 1000);
+    // Wait.pause(5000);
 
-    vm1.invoke("Verify destroys", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
+    vm1.invoke("Verify destroys", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        ctl.waitForDestroyed(key);
+        Region.Entry entry = region.getEntry(key);
+        assertThat(entry).isNull();
+      }
+      {
+        List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
+        assertThat(10).isEqualTo(list.size());
         for (int i = 0; i < 10; i++) {
           Object key = i;
-          ctl.waitForDestroyed(key);
-          Region.Entry entry = region.getEntry(key);
-          assertNull(entry);
-        }
-        {
-          List l = ctl.getEventHistory();
-          assertEquals(10, l.size());
-          for (int i = 0; i < 10; i++) {
-            Object key = i;
-            EntryEvent ee = (EntryEvent) l.get(i);
-            assertEquals(key, ee.getKey());
-            assertNull(ee.getOldValue());
-            assertEquals(Operation.DESTROY, ee.getOperation());
-            assertEquals("destroyCB" + i, ee.getCallbackArgument());
-            assertTrue(ee.isOriginRemote());
-          }
+          EntryEvent ee = (EntryEvent) list.get(i);
+          assertThat(key).isEqualTo(ee.getKey());
+          assertThat(ee.getOldValue()).isNull();
+          assertThat(Operation.DESTROY).isEqualTo(ee.getOperation());
+          assertThat("destroyCB" + i).isEqualTo(ee.getCallbackArgument());
+          assertThat(ee.isOriginRemote()).isTrue();
         }
       }
     });
-    vm2.invoke("recreate", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          region.create(key, "create" + i);
-        }
+    vm2.invoke("recreate", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        region.create(key, "create" + i);
       }
     });
-    Wait.pause(5 * 1000);
+    // Wait.pause(5000);
 
-    vm1.invoke("Verify creates", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        List l = ctl.getEventHistory();
-        logger
-            .info("history (should be empty): " + l);
-        assertEquals(0, l.size());
-        // now see if we can get it from the server
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          assertEquals("create" + i, region.get(key, "loadCB" + i));
-        }
-        l = ctl.getEventHistory();
-        assertEquals(10, l.size());
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          EntryEvent ee = (EntryEvent) l.get(i);
-          logger.info("processing " + ee);
-          assertEquals(key, ee.getKey());
-          assertNull(ee.getOldValue());
-          assertEquals("create" + i, ee.getNewValue());
-          assertEquals(Operation.LOCAL_LOAD_CREATE, ee.getOperation());
-          assertEquals("loadCB" + i, ee.getCallbackArgument());
-          assertFalse(ee.isOriginRemote());
-        }
+    vm1.invoke("Verify creates", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
+      logger
+          .info("history (should be empty): " + list);
+      assertThat(0).isEqualTo(list.size());
+      // now see if we can get it from the server
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        assertThat("create" + i).isEqualTo(region.get(key, "loadCB" + i));
+      }
+      list = ctl.getEventHistory();
+      assertThat(10).isEqualTo(list.size());
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        EntryEvent ee = (EntryEvent) list.get(i);
+        logger.info("processing " + ee);
+        assertThat(key).isEqualTo(ee.getKey());
+        assertThat(ee.getOldValue()).isNull();
+        assertThat("create" + i).isEqualTo(ee.getNewValue());
+        assertThat(Operation.LOCAL_LOAD_CREATE).isEqualTo(ee.getOperation());
+        assertThat("loadCB" + i).isEqualTo(ee.getCallbackArgument());
+        assertThat(ee.isOriginRemote()).isFalse();
       }
     });
 
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
+    SerializableRunnable close = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -1950,8 +1383,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    vm1.invoke(close);
-    vm2.invoke(close);
+    vm1.invoke("Close Pool", close);
+    vm2.invoke("Close Pool", close);
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -1966,230 +1399,181 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test015InvalidateAndDestroyToEmptyAllPropagation() throws CacheException {
     final String name = this.getName();
 
-
-
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    SerializableRunnable createEmpty = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        CertifiableTestCacheListener l = new CertifiableTestCacheListener(
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
-        factory.setCacheListener(l);
-        factory.setDataPolicy(DataPolicy.EMPTY);
-        factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-        Region rgn = createRegion(name, factory.create());
-        rgn.registerInterestRegex(".*", false, false);
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      factory.addCacheListener(new CertifiableTestCacheListener<>());
+      factory.setDataPolicy(DataPolicy.EMPTY);
+      factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
+      Region rgn = createRegion(name, factory);
+      rgn.registerInterestRegex(".*", false, false);
+    });
+    vm1.invoke("Populate region", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.put(i, "old" + i);
       }
-    };
-    SerializableRunnable createNormal = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        CertifiableTestCacheListener l = new CertifiableTestCacheListener(
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
-        factory.setCacheListener(l);
-        Region rgn = createRegion(name, factory.create());
-        rgn.registerInterestRegex(".*", false, false);
-      }
-    };
+    });
 
-    vm1.invoke(createEmpty);
-    vm1.invoke("Populate region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
+    vm2.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      factory.addCacheListener(new CertifiableTestCacheListener<>());
+      Region rgn = createRegion(name, factory);
+      rgn.registerInterestRegex(".*", false, false);
+    });
+    vm1.invoke("Turn on history", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      ctl.enableEventHistory();
+    });
+    vm2.invoke("Update region", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.put(i, "new" + i, "callbackArg" + i);
+      }
+    });
+
+    vm1.invoke("Verify invalidates", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      await().until(() -> {
         for (int i = 0; i < 10; i++) {
-          region.put(i, "old" + i);
+          assertThat(region.get("new" + i) == ("callbackArg" + i));
+        }
+        return true;
+      });
+
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        ctl.waitForInvalidated(key);
+        await().until(() -> region.getEntry(key) == null);
+      }
+      {
+        List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
+        assertThat(10).isEqualTo(list.size());
+        for (int i = 0; i < 10; i++) {
+          Object key = i;
+          EntryEvent ee = (EntryEvent) list.get(i);
+          assertThat(key).isEqualTo(ee.getKey());
+          assertThat(ee.getOldValue()).isNull();
+          assertThat(ee.isOldValueAvailable()).isFalse(); // failure
+          assertThat(Operation.INVALIDATE).isEqualTo(ee.getOperation());
+          assertThat("callbackArg" + i).isEqualTo(ee.getCallbackArgument());
+          assertThat(ee.isOriginRemote()).isTrue();
         }
       }
     });
 
-    vm2.invoke(createNormal);
-    vm1.invoke("Turn on history", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        ctl.enableEventHistory();
-      }
-    });
-    vm2.invoke("Update region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.put(i, "new" + i, "callbackArg" + i);
-        }
-      }
-    });
-    Wait.pause(5 * 1000);
-
-    vm1.invoke("Verify invalidates", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          ctl.waitForInvalidated(key);
-          Region.Entry entry = region.getEntry(key);
-          assertNull(entry); // we are empty!
-        }
-        {
-          List l = ctl.getEventHistory();
-          assertEquals(10, l.size());
-          for (int i = 0; i < 10; i++) {
-            Object key = i;
-            EntryEvent ee = (EntryEvent) l.get(i);
-            assertEquals(key, ee.getKey());
-            assertNull(ee.getOldValue());
-            assertFalse(ee.isOldValueAvailable()); // failure
-            assertEquals(Operation.INVALIDATE, ee.getOperation());
-            assertEquals("callbackArg" + i, ee.getCallbackArgument());
-            assertTrue(ee.isOriginRemote());
-          }
-        }
-
+    vm2.invoke("Validate original and destroy", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        assertThat("new" + i).isEqualTo(region.getEntry(key).getValue());
+        region.destroy(key, "destroyCB" + i);
       }
     });
 
-    vm2.invoke("Validate original and destroy", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
+    vm1.invoke("Verify destroys", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        ctl.waitForDestroyed(key);
+        await().until(() -> region.getEntry(key) == null);
+      }
+      {
+        List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
+        assertThat(10).isEqualTo(list.size());
         for (int i = 0; i < 10; i++) {
           Object key = i;
-          assertEquals("new" + i, region.getEntry(key).getValue());
-          region.destroy(key, "destroyCB" + i);
+          EntryEvent ee = (EntryEvent) list.get(i);
+          assertThat(key).isEqualTo(ee.getKey());
+          assertThat(ee.getOldValue()).isNull();
+          assertThat(ee.isOldValueAvailable()).isFalse();
+          assertThat(Operation.DESTROY).isEqualTo(ee.getOperation());
+          assertThat("destroyCB" + i).isEqualTo(ee.getCallbackArgument());
+          assertThat(ee.isOriginRemote()).isTrue();
         }
       }
     });
-    Wait.pause(5 * 1000);
-
-    vm1.invoke("Verify destroys", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          ctl.waitForDestroyed(key);
-          Region.Entry entry = region.getEntry(key);
-          assertNull(entry);
-        }
-        {
-          List l = ctl.getEventHistory();
-          assertEquals(10, l.size());
-          for (int i = 0; i < 10; i++) {
-            Object key = i;
-            EntryEvent ee = (EntryEvent) l.get(i);
-            assertEquals(key, ee.getKey());
-            assertNull(ee.getOldValue());
-            assertFalse(ee.isOldValueAvailable());
-            assertEquals(Operation.DESTROY, ee.getOperation());
-            assertEquals("destroyCB" + i, ee.getCallbackArgument());
-            assertTrue(ee.isOriginRemote());
-          }
-        }
+    vm2.invoke("recreate", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        region.create(key, "create" + i, "createCB" + i);
       }
     });
-    vm2.invoke("recreate", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          region.create(key, "create" + i, "createCB" + i);
-        }
-      }
-    });
-    Wait.pause(5 * 1000);
+    // Wait.pause(5000);
 
-    vm1.invoke("Verify creates", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          ctl.waitForInvalidated(key);
-          Region.Entry entry = region.getEntry(key);
-          assertNull(entry);
-        }
-        List l = ctl.getEventHistory();
-        assertEquals(10, l.size());
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          EntryEvent ee = (EntryEvent) l.get(i);
-          assertEquals(key, ee.getKey());
-          assertNull(ee.getOldValue());
-          assertFalse(ee.isOldValueAvailable());
-          assertEquals(Operation.INVALIDATE, ee.getOperation());
-          assertEquals("createCB" + i, ee.getCallbackArgument());
-          assertTrue(ee.isOriginRemote());
-        }
-        // now see if we can get it from the server
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          assertEquals("create" + i, region.get(key, "loadCB" + i));
-        }
-        l = ctl.getEventHistory();
-        assertEquals(10, l.size());
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          EntryEvent ee = (EntryEvent) l.get(i);
-          assertEquals(key, ee.getKey());
-          assertNull(ee.getOldValue());
-          assertEquals("create" + i, ee.getNewValue());
-          assertEquals(Operation.LOCAL_LOAD_CREATE, ee.getOperation());
-          assertEquals("loadCB" + i, ee.getCallbackArgument());
-          assertFalse(ee.isOriginRemote());
-        }
+    vm1.invoke("Verify creates", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        ctl.waitForInvalidated(key);
+        await().until(() -> region.getEntry(key) == null);
+      }
+      List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
+      assertThat(10).isEqualTo(list.size());
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        EntryEvent ee = (EntryEvent) list.get(i);
+        assertThat(key).isEqualTo(ee.getKey());
+        assertThat(ee.getOldValue()).isNull();
+        assertThat(ee.isOldValueAvailable()).isFalse();
+        assertThat(Operation.INVALIDATE).isEqualTo(ee.getOperation());
+        assertThat("createCB" + i).isEqualTo(ee.getCallbackArgument());
+        assertThat(ee.isOriginRemote()).isTrue();
+      }
+      // now see if we can get it from the server
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        assertThat("create" + i).isEqualTo(region.get(key, "loadCB" + i));
+      }
+
+      list = ctl.getEventHistory();
+      assertThat(10).isEqualTo(list.size());
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        EntryEvent ee = (EntryEvent) list.get(i);
+        assertThat(key).isEqualTo(ee.getKey());
+        assertThat(ee.getOldValue()).isNull();
+        assertThat("create" + i).isEqualTo(ee.getNewValue());
+        assertThat(Operation.LOCAL_LOAD_CREATE).isEqualTo(ee.getOperation());
+        assertThat("loadCB" + i).isEqualTo(ee.getCallbackArgument());
+        assertThat(ee.isOriginRemote()).isFalse();
       }
     });
 
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
-      }
-    };
-
-    vm1.invoke(close);
-    vm2.invoke(close);
+    Stream.of(vm1, vm2).forEach(vm -> vm.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
+    }));
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -2204,175 +1588,127 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test016InvalidateAndDestroyToEmptyCCPropagation() throws CacheException {
     final String name = this.getName();
 
-
-
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        createRegion(name, factory.create());
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    SerializableRunnable createEmpty = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        CertifiableTestCacheListener l = new CertifiableTestCacheListener(
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
-        factory.setCacheListener(l);
-        factory.setDataPolicy(DataPolicy.EMPTY);
-        factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.CACHE_CONTENT));
-        Region rgn = createRegion(name, factory.create());
-        rgn.registerInterestRegex(".*", false, false);
-      }
-    };
-    SerializableRunnable createNormal = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        CertifiableTestCacheListener l = new CertifiableTestCacheListener(
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
-        factory.setCacheListener(l);
-        Region rgn = createRegion(name, factory.create());
-        rgn.registerInterestRegex(".*", false, false);
-      }
-    };
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      factory.addCacheListener(new CertifiableTestCacheListener<>());
+      factory.setDataPolicy(DataPolicy.EMPTY);
+      factory
+          .setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.CACHE_CONTENT));
+      Region rgn = createRegion(name, factory);
+      rgn.registerInterestRegex(".*", false, false);
+    });
 
-    vm1.invoke(createEmpty);
-    vm1.invoke("Populate region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.put(i, "old" + i);
-        }
+    vm1.invoke("Populate region", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.put(i, "old" + i);
       }
     });
 
-    vm2.invoke(createNormal);
-    vm1.invoke("Turn on history", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        ctl.enableEventHistory();
-      }
+    vm2.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      factory.addCacheListener(new CertifiableTestCacheListener<>());
+      Region rgn = createRegion(name, factory);
+      rgn.registerInterestRegex(".*", false, false);
     });
-    vm2.invoke("Update region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.put(i, "new" + i, "callbackArg" + i);
-        }
-      }
-    });
-    Wait.pause(5 * 1000);
 
-    vm1.invoke("Verify invalidates", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        List l = ctl.getEventHistory();
-        assertEquals(0, l.size());
+    vm1.invoke("Turn on history", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      ctl.enableEventHistory();
+    });
+
+    vm2.invoke("Update region", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.put(i, "new" + i, "callbackArg" + i);
       }
     });
 
-    vm2.invoke("Validate original and destroy", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          assertEquals("new" + i, region.getEntry(key).getValue());
-          region.destroy(key, "destroyCB" + i);
-        }
+    vm1.invoke("Verify invalidates", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      await().until(() -> ctl.getEventHistory().size() == 0);
+    });
+
+    vm2.invoke("Validate original and destroy", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        assertThat("new" + i).isEqualTo(region.getEntry(key).getValue());
+        region.destroy(key, "destroyCB" + i);
       }
     });
 
-    vm1.invoke("Verify destroys", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        List l = ctl.getEventHistory();
-        assertEquals(0, l.size());
-      }
+    vm1.invoke("Verify destroys", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      await().until(() -> ctl.getEventHistory().size() == 0);
     });
-    vm2.invoke("recreate", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          region.create(key, "create" + i, "createCB" + i);
-        }
-      }
-    });
-    Wait.pause(5 * 1000);
-
-    vm1.invoke("Verify creates", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        List l = ctl.getEventHistory();
-        assertEquals(0, l.size());
-        // now see if we can get it from the server
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          assertEquals("create" + i, region.get(key, "loadCB" + i));
-        }
-        l = ctl.getEventHistory();
-        assertEquals(10, l.size());
-        for (int i = 0; i < 10; i++) {
-          Object key = i;
-          EntryEvent ee = (EntryEvent) l.get(i);
-          assertEquals(key, ee.getKey());
-          assertNull(ee.getOldValue());
-          assertEquals("create" + i, ee.getNewValue());
-          assertEquals(Operation.LOCAL_LOAD_CREATE, ee.getOperation());
-          assertEquals("loadCB" + i, ee.getCallbackArgument());
-          assertFalse(ee.isOriginRemote());
-        }
+    vm2.invoke("recreate", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        region.create(key, "create" + i, "createCB" + i);
       }
     });
 
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
-      }
-    };
+    vm1.invoke("Verify creates", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      await().until(() -> ctl.getEventHistory().size() == 0);
 
-    vm1.invoke(close);
-    vm2.invoke(close);
+      List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
+      assertThat(0).isEqualTo(list.size());
+      // now see if we can get it from the server
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        assertThat("create" + i).isEqualTo(region.get(key, "loadCB" + i));
+      }
+      list = ctl.getEventHistory();
+      assertThat(10).isEqualTo(list.size());
+      for (int i = 0; i < 10; i++) {
+        Object key = i;
+        EntryEvent ee = (EntryEvent) list.get(i);
+        assertThat(key).isEqualTo(ee.getKey());
+        assertThat(ee.getOldValue()).isNull();
+        assertThat("create" + i).isEqualTo(ee.getNewValue());
+        assertThat(Operation.LOCAL_LOAD_CREATE).isEqualTo(ee.getOperation());
+        assertThat("loadCB" + i).isEqualTo(ee.getCallbackArgument());
+        assertThat(ee.isOriginRemote()).isFalse();
+      }
+    });
+
+    Stream.of(vm1, vm2).forEach(vm -> vm.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
+    }));
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -2385,151 +1721,121 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     disconnectAllFromDS();
     final String name = this.getName();
 
-
-
     // Create cache server
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        // In lieu of System.setProperty("gemfire.EXPIRE_SENDS_ENTRY_AS_CALLBACK", "true");
-        EntryExpiryTask.expireSendsEntryAsCallback = true;
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        factory.setEntryTimeToLive(new ExpirationAttributes(1, ExpirationAction.DESTROY));
-        createRegion(name, factory.create());
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      // In lieu of System.setProperty("gemfire.EXPIRE_SENDS_ENTRY_AS_CALLBACK", "true");
+      EntryExpiryTask.expireSendsEntryAsCallback = true;
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      factory.setEntryTimeToLive(new ExpirationAttributes(1, ExpirationAction.DESTROY));
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
 
     // Create cache server clients
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    SerializableRunnable createClient = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setDataPolicy(DataPolicy.EMPTY);
-        factory.setSubscriptionAttributes(new SubscriptionAttributes((InterestPolicy.ALL)));
-        factory.setConcurrencyChecksEnabled(false);
-        // create bridge writer
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        CertifiableTestCacheListener l = new CertifiableTestCacheListener(
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter());
-        factory.setCacheListener(l);
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setDataPolicy(DataPolicy.EMPTY);
+      factory.setSubscriptionAttributes(new SubscriptionAttributes((InterestPolicy.ALL)));
+      factory.setConcurrencyChecksEnabled(false);
+      // create bridge writer
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      factory.addCacheListener(new CertifiableTestCacheListener<>());
 
-        Region<Object, Object> r = createRegion(name, factory.create());
-        r.registerInterest("ALL_KEYS");
-      }
-    };
-
-    vm1.invoke(createClient);
-
-    vm1.invoke("Turn on history", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        ctl.enableEventHistory();
-      }
+      Region<Object, Object> region = createRegion(name, factory);
+      region.registerInterest("ALL_KEYS");
     });
-    Wait.pause(500);
+
+    vm1.invoke("Turn on history", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      ctl.enableEventHistory();
+    });
 
     // Create some entries on the client
-    vm1.invoke("Create entries", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 5; i++) {
-          region.put("key-client-" + i, "value-client-" + i);
-        }
+    vm1.invoke("Create entries", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 5; i++) {
+        region.put("key-client-" + i, "value-client-" + i);
       }
     });
 
     // Create some entries on the server
-    vm0.invoke("Create entries", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 5; i++) {
-          region.put("key-server-" + i, "value-server-" + i);
-        }
+    vm0.invoke("Create entries", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 5; i++) {
+        region.put("key-server-" + i, "value-server-" + i);
       }
     });
 
     // Wait for expiration
     Wait.pause(2000);
 
-    vm1.invoke("Validate listener events", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        CertifiableTestCacheListener ctl =
-            (CertifiableTestCacheListener) region.getAttributes().getCacheListener();
-        int destroyCallbacks = 0;
-        List<CacheEvent> l = ctl.getEventHistory();
-        for (CacheEvent ce : l) {
-          logger.info("--->>> " + ce);
-          if (ce.getOperation() == Operation.DESTROY
-              && ce.getCallbackArgument() instanceof String) {
-            destroyCallbacks++;
-          }
+    vm1.invoke("Validate listener events", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) region.getAttributes()
+              .getCacheListeners()[0];
+      int destroyCallbacks = 0;
+      List<CacheEvent<Object, Object>> list = ctl.getEventHistory();
+      for (CacheEvent ce : list) {
+        logger.info("--->>> " + ce);
+        if (ce.getOperation() == Operation.DESTROY
+            && ce.getCallbackArgument() instanceof String) {
+          destroyCallbacks++;
         }
-        assertEquals(10, destroyCallbacks);
       }
+      assertThat(10).isEqualTo(destroyCallbacks);
     });
 
     // Close cache server clients
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
+
+    vm1.invoke("Close Pool", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
         region.localDestroyRegion();
       }
-    };
-
-    vm1.invoke(close);
+    });
 
     // Stop cache server
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
 
-  private <K, V> AttributesFactory<K, V> getBridgeServerRegionAttributes(CacheLoader<K, V> cl,
+  private <K, V> RegionFactory<K, V> getBridgeServerRegionAttributes(CacheLoader<K, V> cl,
       CacheWriter<K, V> cw) {
-    AttributesFactory<K, V> ret = new AttributesFactory<>();
+    RegionFactory<K, V> regionFactory = getCache().createRegionFactory();
     if (cl != null) {
-      ret.setCacheLoader(cl);
+      regionFactory.setCacheLoader(cl);
     }
     if (cw != null) {
-      ret.setCacheWriter(cw);
+      regionFactory.setCacheWriter(cw);
     }
-    ret.setScope(Scope.DISTRIBUTED_ACK);
-    ret.setConcurrencyChecksEnabled(false);
-    return ret;
+    regionFactory.setScope(Scope.DISTRIBUTED_ACK);
+    regionFactory.setConcurrencyChecksEnabled(false);
+    return regionFactory;
   }
 
-  private <K, V> AttributesFactory<K, V> getBridgeServerMirroredAckRegionAttributes(
-      CacheLoader<K, V> cl,
-      CacheWriter<K, V> cw) {
-    AttributesFactory<K, V> ret = new AttributesFactory<>();
+  private <K, V> RegionFactory<K, V> getBridgeServerMirroredAckRegionAttributes(
+      CacheLoader<K, V> cl) {
+    RegionFactory<K, V> regionFactory = getCache().createRegionFactory();
     if (cl != null) {
-      ret.setCacheLoader(cl);
+      regionFactory.setCacheLoader(cl);
     }
-    if (cw != null) {
-      ret.setCacheWriter(cw);
+    if (null != null) {
+      regionFactory.setCacheWriter(null);
     }
-    ret.setScope(Scope.DISTRIBUTED_ACK);
-    ret.setConcurrencyChecksEnabled(false);
-    ret.setMirrorType(MirrorType.KEYS_VALUES);
-
-    return ret;
+    regionFactory.setScope(Scope.DISTRIBUTED_ACK);
+    regionFactory.setConcurrencyChecksEnabled(false);
+    regionFactory.setDataPolicy(DataPolicy.REPLICATE);
+    return regionFactory;
   }
 
   /**
@@ -2540,138 +1846,102 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     final String name1 = this.getName() + "-1";
     final String name2 = this.getName() + "-2";
 
-
-
     // Cache server serves up both regions
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        createRegion(name1, factory.create());
-        createRegion(name2, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      createRegion(name1, factory);
+      createRegion(name2, factory);
+      startBridgeServer(0);
     });
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
     // vm1 sends updates to the server
-    vm1.invoke("Create regions", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
+    vm1.invoke("Create regions", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
 
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
 
-        Region rgn = createRegion(name1, factory.create());
-        rgn.registerInterestRegex(".*", false, false);
-        rgn = createRegion(name2, factory.create());
-        rgn.registerInterestRegex(".*", false, false);
-
-      }
+      Region rgn = createRegion(name1, factory);
+      rgn.registerInterestRegex(".*", false, false);
+      rgn = createRegion(name2, factory);
+      rgn.registerInterestRegex(".*", false, false);
     });
 
     // vm2 only wants updates to updates to region1
-    vm2.invoke("Create region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
+    vm2.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
 
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
 
-        Region rgn = createRegion(name1, factory.create());
-        rgn.registerInterestRegex(".*", false, false);
-        createRegion(name2, factory.create());
-        // no interest registration for region 2
-      }
+      Region rgn = createRegion(name1, factory);
+      rgn.registerInterestRegex(".*", false, false);
+      createRegion(name2, factory);
+      // no interest registration for region 2
+
     });
 
-    SerializableRunnable populate = new CacheSerializableRunnable("Populate region") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region1 = getRootRegion().getSubregion(name1);
-        for (int i = 0; i < 10; i++) {
-          region1.put(i, "Region1Old" + i);
-        }
-        Region<Object, Object> region2 = getRootRegion().getSubregion(name2);
-        for (int i = 0; i < 10; i++) {
-          region2.put(i, "Region2Old" + i);
-        }
+    Stream.of(vm1, vm2).forEach(vm -> vm.invoke("Populate region", () -> {
+      Region<Object, Object> region1 = getRootRegion().getSubregion(name1);
+      for (int i = 0; i < 10; i++) {
+        region1.put(i, "Region1Old" + i);
       }
-    };
-    vm1.invoke(populate);
-    vm2.invoke(populate);
+      Region<Object, Object> region2 = getRootRegion().getSubregion(name2);
+      for (int i = 0; i < 10; i++) {
+        region2.put(i, "Region2Old" + i);
+      }
+    }));
 
-    vm1.invoke("Update", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region1 = getRootRegion().getSubregion(name1);
-        for (int i = 0; i < 10; i++) {
-          region1.put(i, "Region1New" + i);
-        }
-        Region<Object, Object> region2 = getRootRegion().getSubregion(name2);
-        for (int i = 0; i < 10; i++) {
-          region2.put(i, "Region2New" + i);
-        }
+    vm1.invoke("Update", () -> {
+      Region<Object, Object> region1 = getRootRegion().getSubregion(name1);
+      for (int i = 0; i < 10; i++) {
+        region1.put(i, "Region1New" + i);
+      }
+      Region<Object, Object> region2 = getRootRegion().getSubregion(name2);
+      for (int i = 0; i < 10; i++) {
+        region2.put(i, "Region2New" + i);
       }
     });
 
     // Wait for updates to be propagated
-    Wait.pause(5 * 1000);
-
-    vm2.invoke("Validate", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region1 = getRootRegion().getSubregion(name1);
-        for (int i = 0; i < 10; i++) {
-          assertEquals("Region1New" + i, region1.get(i));
-        }
-        Region<Object, Object> region2 = getRootRegion().getSubregion(name2);
-        for (int i = 0; i < 10; i++) {
-          assertEquals("Region2Old" + i, region2.get(i));
-        }
+    vm2.invoke("Validate", () -> {
+      Region<Object, Object> region1 = getRootRegion().getSubregion(name1);
+      for (int i = 0; i < 10; i++) {
+        final int testInt = i;
+        await().until(() -> ("Region1New" + testInt).compareTo((String) region1.get(testInt)) == 0);
+      }
+      Region<Object, Object> region2 = getRootRegion().getSubregion(name2);
+      for (int i = 0; i < 10; i++) {
+        final int testInt = i;
+        await().until(() -> ("Region2Old" + testInt).compareTo((String) region2.get(testInt)) == 0);
       }
     });
 
-    vm1.invoke("Close Pool", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        // Terminate region1's Pool
-        Region<Object, Object> region1 = getRootRegion().getSubregion(name1);
-        region1.localDestroyRegion();
-        // Terminate region2's Pool
-        Region<Object, Object> region2 = getRootRegion().getSubregion(name2);
-        region2.localDestroyRegion();
-      }
+    vm1.invoke("Close Pool", () -> {
+      // Terminate region1's Pool
+      Region<Object, Object> region1 = getRootRegion().getSubregion(name1);
+      region1.localDestroyRegion();
+      // Terminate region2's Pool
+      Region<Object, Object> region2 = getRootRegion().getSubregion(name2);
+      region2.localDestroyRegion();
     });
 
-    vm2.invoke("Close Pool", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        // Terminate region1's Pool
-        Region<Object, Object> region1 = getRootRegion().getSubregion(name1);
-        region1.localDestroyRegion();
-      }
+    vm2.invoke("Close Pool", () -> {
+      // Terminate region1's Pool
+      Region<Object, Object> region1 = getRootRegion().getSubregion(name1);
+      region1.localDestroyRegion();
     });
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
-
 
   /**
    * Tests interest key registration.
@@ -2680,240 +1950,152 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test019InterestKeyRegistration() throws CacheException {
     final String name = this.getName();
 
-
-
     // Create cache server
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
-          @Override
-          public Object load(LoaderHelper helper) {
-            return helper.getKey();
-          }
-
-          @Override
-          public void close() {
-
-          }
-        };
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(cl, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+    vm0.invoke("Create Cache Server", () -> {
+      CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
+        @Override
+        public Object load(LoaderHelper helper) {
+          return helper.getKey();
         }
 
-      }
+        @Override
+        public void close() {
+
+        }
+      };
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(cl, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
 
     // Create cache server clients
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        // create bridge writer
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        createRegion(name, factory.create());
-      }
-    };
-
-    vm1.invoke(create);
-    vm2.invoke(create);
+    Stream.of(vm1, vm2).forEach(vm -> vm.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      // create bridge writer
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      createRegion(name, factory);
+    }));
 
     // Get values for key 1 and key 2 so that there are entries in the clients.
     // Register interest in one of the keys.
-    vm1.invoke("Create Entries and Register Interest", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        assertEquals(region.get("key-1"), "key-1");
-        assertEquals(region.get("key-2"), "key-2");
-        try {
-          region.registerInterest("key-1");
-        } catch (Exception ex) {
-          fail("While registering interest: ", ex);
-        }
-      }
+    vm1.invoke("Create Entries and Register Interest", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      assertThat(region.get("key-1")).isEqualTo("key-1");
+      assertThat(region.get("key-2")).isEqualTo("key-2");
+      region.registerInterest("key-1");
     });
 
-    vm2.invoke("Create Entries and Register Interest", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        assertEquals(region.get("key-1"), "key-1");
-        assertEquals(region.get("key-2"), "key-2");
-        try {
-          region.registerInterest("key-2");
-        } catch (Exception ex) {
-          fail("While registering interest: ", ex);
-        }
-      }
+    vm2.invoke("Create Entries and Register Interest", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      assertThat(region.get("key-1")).isEqualTo("key-1");
+      assertThat(region.get("key-2")).isEqualTo("key-2");
+      region.registerInterest("key-2");
     });
 
     // Put new values and validate updates (VM1)
-    vm1.invoke("Put New Values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.put("key-1", "vm1-key-1");
-        region.put("key-2", "vm1-key-2");
-        // Verify that no invalidates occurred to this region
-        assertEquals(region.getEntry("key-1").getValue(), "vm1-key-1");
-        assertEquals(region.getEntry("key-2").getValue(), "vm1-key-2");
-      }
+    vm1.invoke("Put New Values", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.put("key-1", "vm1-key-1");
+      region.put("key-2", "vm1-key-2");
+      // Verify that no invalidates occurred to this region
+      assertThat(region.getEntry("key-1").getValue()).isEqualTo("vm1-key-1");
+      assertThat(region.getEntry("key-2").getValue()).isEqualTo("vm1-key-2");
     });
 
-    Wait.pause(500);
-    vm2.invoke("Validate Entries", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        // Verify that 'key-2' was updated, but 'key-1' was not
-        // and contains the original value
-        assertEquals(region.getEntry("key-1").getValue(), "key-1");
-        assertEquals(region.getEntry("key-2").getValue(), "vm1-key-2");
-        // assertNull(region.getEntry("key-2").getValue());
-      }
+    vm2.invoke("Validate Entries", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      // Verify that 'key-2' was updated, but 'key-1' was not
+      // and contains the original value
+      await().until(() -> "key-1".compareTo((String) region.getEntry("key-1").getValue()) == 0);
+      await().until(() -> "vm1-key-2".compareTo((String) region.getEntry("key-2").getValue()) == 0);
     });
 
     // Put new values and validate updates (VM2)
-    vm2.invoke("Put New Values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.put("key-1", "vm2-key-1");
-        region.put("key-2", "vm2-key-2");
-        // Verify that no updates occurred to this region
-        assertEquals(region.getEntry("key-1").getValue(), "vm2-key-1");
-        assertEquals(region.getEntry("key-2").getValue(), "vm2-key-2");
-      }
+    vm2.invoke("Put New Values", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.put("key-1", "vm2-key-1");
+      region.put("key-2", "vm2-key-2");
+      // Verify that no updates occurred to this region
+      assertThat(region.getEntry("key-1").getValue()).isEqualTo("vm2-key-1");
+      assertThat(region.getEntry("key-2").getValue()).isEqualTo("vm2-key-2");
     });
 
-    Wait.pause(500);
-    vm1.invoke("Validate Entries", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        // Verify that 'key-1' was updated, but 'key-2' was not
-        // and contains the original value
-        assertEquals(region.getEntry("key-2").getValue(), "vm1-key-2");
-        assertEquals(region.getEntry("key-1").getValue(), "vm2-key-1");
-        // assertNull(region.getEntry("key-1").getValue());
-      }
+    vm1.invoke("Validate Entries", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      // Verify that 'key-1' was updated, but 'key-2' was not
+      // and contains the original value
+      await().until(() -> "vm1-key-2".compareTo((String) region.getEntry("key-2").getValue()) == 0);
+      await().until(() -> "vm2-key-1".compareTo((String) region.getEntry("key-1").getValue()) == 0);
     });
 
     // Unregister interest
-    vm1.invoke("Unregister Interest", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        try {
-          region.unregisterInterest("key-1");
-        } catch (Exception ex) {
-          fail("While registering interest: ", ex);
-        }
-      }
+    vm1.invoke("Unregister Interest", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.unregisterInterest("key-1");
     });
 
-    vm2.invoke("Unregister Interest", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        try {
-          region.unregisterInterest("key-2");
-        } catch (Exception ex) {
-          fail("While registering interest: ", ex);
-        }
-      }
+    vm2.invoke("Unregister Interest", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.unregisterInterest("key-2");
     });
 
     // Put new values and validate updates (VM1)
-    vm1.invoke("Put New Values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.put("key-1", "vm1-key-1-again");
-        region.put("key-2", "vm1-key-2-again");
-        // Verify that no updates occurred to this region
-        assertEquals(region.getEntry("key-1").getValue(), "vm1-key-1-again");
-        assertEquals(region.getEntry("key-2").getValue(), "vm1-key-2-again");
-      }
+    vm1.invoke("Put New Values", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.put("key-1", "vm1-key-1-again");
+      region.put("key-2", "vm1-key-2-again");
+      // Verify that no updates occurred to this region
+      assertThat(region.getEntry("key-1").getValue()).isEqualTo("vm1-key-1-again");
+      assertThat(region.getEntry("key-2").getValue()).isEqualTo("vm1-key-2-again");
     });
 
-    Wait.pause(500);
-    vm2.invoke("Validate Entries", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        // Verify that neither 'key-1' 'key-2' was updated
-        // and contain the original value
-        assertEquals(region.getEntry("key-1").getValue(), "vm2-key-1");
-        assertEquals(region.getEntry("key-2").getValue(), "vm2-key-2");
-      }
+    vm2.invoke("Validate Entries", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      // Verify that neither 'key-1' 'key-2' was updated
+      // and contain the original value
+      await().until(() -> "vm2-key-1".compareTo((String) region.getEntry("key-1").getValue()) == 0);
+      await().until(() -> "vm2-key-2".compareTo((String) region.getEntry("key-2").getValue()) == 0);
     });
 
     // Put new values and validate updates (VM2)
-    vm2.invoke("Put New Values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.put("key-1", "vm2-key-1-again");
-        region.put("key-2", "vm2-key-2-again");
-        // Verify that no updates occurred to this region
-        assertEquals(region.getEntry("key-1").getValue(), "vm2-key-1-again");
-        assertEquals(region.getEntry("key-2").getValue(), "vm2-key-2-again");
-      }
+    vm2.invoke("Put New Values", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.put("key-1", "vm2-key-1-again");
+      region.put("key-2", "vm2-key-2-again");
+      // Verify that no updates occurred to this region
+      assertThat(region.getEntry("key-1").getValue()).isEqualTo("vm2-key-1-again");
+      assertThat(region.getEntry("key-2").getValue()).isEqualTo("vm2-key-2-again");
     });
 
-    Wait.pause(500);
-    vm1.invoke("Validate Entries", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        // Verify that neither 'key-1' 'key-2' was updated
-        // and contain the original value
-        assertEquals(region.getEntry("key-1").getValue(), "vm1-key-1-again");
-        assertEquals(region.getEntry("key-2").getValue(), "vm1-key-2-again");
-      }
+    vm1.invoke("Validate Entries", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      // Verify that neither 'key-1' 'key-2' was updated
+      // and contain the original value
+      await().until(
+          () -> "vm1-key-1-again".compareTo((String) region.getEntry("key-1").getValue()) == 0);
+      await().until(() -> region.getEntry("key-2").getValue() == "vm1-key-2-again");
     });
 
     // Unregister interest again (to verify that a client can unregister interest
     // in a key that its not interested in with no problem.
-    vm1.invoke("Unregister Interest", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        try {
-          region.unregisterInterest("key-1");
-        } catch (Exception ex) {
-          fail("While registering interest: ", ex);
-        }
-      }
+    vm1.invoke("Unregister Interest", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.unregisterInterest("key-1");
     });
 
-    vm2.invoke("Unregister Interest", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        try {
-          region.unregisterInterest("key-2");
-        } catch (Exception ex) {
-          fail("While registering interest: ", ex);
-        }
-      }
+    vm2.invoke("Unregister Interest", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.unregisterInterest("key-2");
     });
 
     // Close cache server clients
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
+    SerializableRunnable close = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -2921,8 +2103,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    vm1.invoke(close);
-    vm2.invoke(close);
+    vm1.invoke("Close Pool", close);
+    vm2.invoke("Close Pool", close);
 
     // Stop cache server
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
@@ -2935,113 +2117,87 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test020InterestListRegistration() throws CacheException {
     final String name = this.getName();
 
-
-
     // Create cache server
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
-          @Override
-          public Object load(LoaderHelper helper) {
-            return helper.getKey();
-          }
-
-          @Override
-          public void close() {
-
-          }
-        };
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(cl, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+    vm0.invoke("Create Cache Server", () -> {
+      CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
+        @Override
+        public Object load(LoaderHelper helper) {
+          return helper.getKey();
         }
 
-      }
+        @Override
+        public void close() {
+
+        }
+      };
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(cl, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
 
     // Create cache server clients
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
+    SerializableRunnable createRegion = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         getLonerSystem();
         getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
         factory.setScope(Scope.LOCAL);
         factory.setConcurrencyChecksEnabled(false);
         // create bridge writer
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        createRegion(name, factory.create());
+        configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+        createRegion(name, factory);
       }
     };
 
-    vm1.invoke(create);
-    vm2.invoke(create);
+    vm1.invoke("Create region", createRegion);
+    vm2.invoke("Create region", createRegion);
 
     // Get values for key 1 and key 6 so that there are entries in the clients.
     // Register interest in a list of keys.
-    vm1.invoke("Create Entries and Register Interest", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        assertEquals(region.get("key-1"), "key-1");
-        assertEquals(region.get("key-6"), "key-6");
-        try {
-          List<Object> list = new ArrayList<>();
-          list.add("key-1");
-          list.add("key-2");
-          list.add("key-3");
-          list.add("key-4");
-          list.add("key-5");
-          region.registerInterest(list);
-        } catch (Exception ex) {
-          fail("While registering interest: ", ex);
-        }
-      }
+    vm1.invoke("Create Entries and Register Interest", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      assertThat(region.get("key-1")).isEqualTo("key-1");
+      assertThat(region.get("key-6")).isEqualTo("key-6");
+
+      List<Object> list = new ArrayList<>();
+      list.add("key-1");
+      list.add("key-2");
+      list.add("key-3");
+      list.add("key-4");
+      list.add("key-5");
+      region.registerInterest(list);
+
     });
 
-    vm2.invoke("Create Entries and Register Interest", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        assertEquals(region.get("key-1"), "key-1");
-        assertEquals(region.get("key-6"), "key-6");
-      }
+    vm2.invoke("Create Entries and Register Interest", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      assertThat(region.get("key-1")).isEqualTo("key-1");
+      assertThat(region.get("key-6")).isEqualTo("key-6");
     });
 
     // Put new values and validate updates (VM2)
-    vm2.invoke("Put New Values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.put("key-1", "vm2-key-1");
-        region.put("key-6", "vm2-key-6");
-        // Verify that no updates occurred to this region
-        assertEquals(region.getEntry("key-1").getValue(), "vm2-key-1");
-        assertEquals(region.getEntry("key-6").getValue(), "vm2-key-6");
-      }
+    vm2.invoke("Put New Values", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.put("key-1", "vm2-key-1");
+      region.put("key-6", "vm2-key-6");
+      // Verify that no updates occurred to this region
+      assertThat(region.getEntry("key-1").getValue()).isEqualTo("vm2-key-1");
+      assertThat(region.getEntry("key-6").getValue()).isEqualTo("vm2-key-6");
     });
-    Wait.pause(5 * 1000);
 
-    vm1.invoke("Validate Entries", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        // Verify that 'key-1' was updated
-        assertEquals(region.getEntry("key-1").getValue(), "vm2-key-1");
-        // Verify that 'key-6' was not invalidated
-        assertEquals(region.getEntry("key-6").getValue(), "key-6");
-      }
+    vm1.invoke("Validate Entries", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      // Verify that 'key-1' was updated
+      await().until(() -> "vm2-key-1".compareTo((String) region.getEntry("key-1").getValue()) == 0);
+      // Verify that 'key-6' was not invalidated
+      await().until(() -> "key-6".compareTo((String) region.getEntry("key-6").getValue()) == 0);
     });
 
     // Close cache server clients
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
+    SerializableRunnable closePool = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -3049,8 +2205,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    vm1.invoke(close);
-    vm2.invoke(close);
+    vm1.invoke("Close Pool", closePool);
+    vm2.invoke("Close Pool", closePool);
 
     // Stop cache server
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
@@ -3094,7 +2250,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    */
   private void createDynamicRegionCache(String testName, String connectionPoolName) {
     // note that clients use non-persistent dr factories.
-
     DynamicRegionFactory.get()
         .open(new DynamicRegionFactory.Config(null, connectionPoolName, false, true));
     logger.info("CREATED IT");
@@ -3108,94 +2263,17 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
    * @param key the key of the Entry to poll for
    */
   private static void waitForEntry(final Region r, final Object key) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return r.containsValueForKey(key);
-      }
-
-      @Override
-      public String description() {
-        return "Waiting for entry " + key + " on region " + r;
-      }
-    };
-    await().untilAsserted(ev);
+    await().alias("Waiting for entry " + key + " on region " + r)
+        .until(() -> r.containsValueForKey(key));
   }
 
-  private static Region waitForSubRegion(final Region r, final String subRegName) {
-    // final long start = System.currentTimeMillis();
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return r.getSubregion(subRegName) != null;
-      }
-
-      @Override
-      public String description() {
-        return "Waiting for subregion " + subRegName;
-      }
-    };
-    await().untilAsserted(ev);
+  private static <K, V> Region<K, V> waitForSubRegion(final Region<K, V> r,
+      final String subRegName) {
+    await().alias("Waiting for subregion " + subRegName)
+        .until(() -> r.getSubregion(subRegName) != null);
     return r.getSubregion(subRegName);
   }
 
-  static class CacheServerCacheLoader extends TestCacheLoader implements Declarable {
-
-    CacheServerCacheLoader() {}
-
-    @Override
-    public Object load2(LoaderHelper helper) {
-      if (helper.getArgument() instanceof Integer) {
-        try {
-          Thread.sleep((Integer) helper.getArgument());
-        } catch (InterruptedException ugh) {
-          fail("interrupted");
-        }
-      }
-      return helper.getKey();
-    }
-
-    @Override
-    public void init(Properties props) {}
-  }
-
-  /**
-   * Create a server that has a value for every key queried and a unique key/value in the specified
-   * Region that uniquely identifies each instance.
-   *
-   * @param vm the VM on which to create the server
-   * @param rName the name of the Region to create on the server
-   * @param port the TCP port on which the server should listen
-   */
-  public void createBridgeServer(VM vm, final String rName, final int port,
-      final boolean notifyBySubscription) {
-    vm.invoke("Create Region on Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() {
-        try {
-          AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setConcurrencyChecksEnabled(false);
-          factory.setCacheLoader(new CacheServerCacheLoader());
-          beginCacheXml();
-          createRegion(rName, factory.create());
-          startBridgeServer(port);
-          finishCacheXml(rName + "-" + port);
-
-          Region<Object, Object> region = getRootRegion().getSubregion(rName);
-          assertNotNull(region);
-          assertNotNull(getRootRegion().getSubregion(rName));
-          region.put("BridgeServer", port); // A unique key/value to identify the
-          // BridgeServer
-        } catch (Exception e) {
-          getSystem().getLogWriter().severe(e);
-          fail("Failed to start CacheServer " + e);
-        }
-      }
-    });
-  }
-
-  // test for bug 35884
   @Test
   public void test021ClientGetOfInvalidServerEntry() throws CacheException {
     final String regionName1 = this.getName() + "-1";
@@ -3203,72 +2281,44 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     VM server1 = VM.getVM(0);
     VM client = VM.getVM(2);
 
-    SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setDataPolicy(DataPolicy.REPLICATE);
-        factory.setConcurrencyChecksEnabled(false);
-        createRegion(regionName1, factory.create());
-
-        Wait.pause(1000);
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
-    };
-
     // Create server1.
-    server1.invoke(createServer);
+    server1.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.DISTRIBUTED_ACK);
+      factory.setDataPolicy(DataPolicy.REPLICATE);
+      factory.setConcurrencyChecksEnabled(false);
+      createRegion(regionName1, factory);
+      startBridgeServer(0);
+    });
 
     final int port = server1.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
-    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
+    final String host0 = NetworkUtils.getServerHostName();
 
     // Init values at server.
-    server1.invoke("Create values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region1 = getRootRegion().getSubregion(regionName1);
-        // create it invalid
-        region1.create("key-string-1", null);
-      }
+    server1.invoke("Create values", () -> {
+      Region<Object, Object> region1 = getRootRegion().getSubregion(regionName1);
+      // create it invalid
+      region1.create("key-string-1", null);
     });
 
     // now try it with a local scope
 
-    SerializableRunnable createPool2 = new CacheSerializableRunnable("Create region 2") {
-      @Override
-      public void run2() throws CacheException {
-        // Region<Object, Object> region1 = getRootRegion().getSubregion(regionName1);
-        // region1.localDestroyRegion();
-        getLonerSystem();
-        AttributesFactory<Object, Object> regionFactory = new AttributesFactory<>();
-        regionFactory.setScope(Scope.LOCAL);
-        regionFactory.setConcurrencyChecksEnabled(false);
-        logger
-            .info("ZZZZZ host0:" + host0 + " port:" + port);
-        ClientServerTestCase.configureConnectionPool(regionFactory, host0, port, -1, false, -1, -1,
-            null);
-        logger
-            .info("ZZZZZDone host0:" + host0 + " port:" + port);
-        createRegion(regionName1, regionFactory.create());
-      }
-    };
-    client.invoke(createPool2);
+    client.invoke("Create region 2", () -> {
+      getLonerSystem();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, false, -1, -1,
+          null);
+
+      createRegion(regionName1, factory);
+    });
 
     // get the invalid entry on the client.
-    client.invoke("get values on client", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region1 = getRootRegion().getSubregion(regionName1);
-        assertNull(region1.getEntry("key-string-1"));
-        assertNull(region1.get("key-string-1"));
-      }
+    client.invoke("get values on client", () -> {
+      Region<Object, Object> region1 = getRootRegion().getSubregion(regionName1);
+      assertThat(region1.getEntry("key-string-1")).isNull();
+      assertThat(region1.get("key-string-1")).isNull();
     });
 
     server1.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
@@ -3279,124 +2329,79 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test022ClientRegisterUnregisterRequests() throws CacheException {
     final String regionName1 = this.getName() + "-1";
 
-    VM server1 = VM.getVM(0);
-    VM client = VM.getVM(2);
-
-    SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setDataPolicy(DataPolicy.REPLICATE);
-        factory.setConcurrencyChecksEnabled(false);
-        createRegion(regionName1, factory.create());
-
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
-    };
+    VM server1 = vm0;
+    VM client = vm2;
 
     // Create server1.
-    server1.invoke(createServer);
+    server1.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.DISTRIBUTED_ACK);
+      factory.setDataPolicy(DataPolicy.REPLICATE);
+      factory.setConcurrencyChecksEnabled(false);
+      createRegion(regionName1, factory);
+
+      startBridgeServer(0);
+    });
 
     final int port = server1.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
-    final String host0 = NetworkUtils.getServerHostName(server1.getHost());
-
-    SerializableRunnable createPool = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1,
-            null);
-
-        Region<Object, Object> region1 = createRegion(regionName1, factory.create());
-        region1.getAttributesMutator().addCacheListener(new CertifiableTestCacheListener(
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()));
-      }
-    };
+    final String host0 = NetworkUtils.getServerHostName();
 
     // Create client.
-    client.invoke(createPool);
+    client.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1,
+          null);
+
+      Region<Object, Object> region11 = createRegion(regionName1, factory);
+      region11.getAttributesMutator().addCacheListener(new CertifiableTestCacheListener<>());
+    });
 
     // Init values at server.
-    server1.invoke("Create values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region1 = getRootRegion().getSubregion(regionName1);
-        for (int i = 0; i < 20; i++) {
-          region1.put("key-string-" + i, "value-" + i);
-        }
+    server1.invoke("Create values", () -> {
+      Region<Object, Object> region1 = getRootRegion().getSubregion(regionName1);
+      for (int i = 0; i < 20; i++) {
+        region1.put("key-string-" + i, "value-" + i);
       }
     });
 
     // Put some values on the client.
-    client.invoke("Put values client", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region1 = getRootRegion().getSubregion(regionName1);
+    client.invoke("Put values client", () -> {
+      Region<Object, Object> region1 = getRootRegion().getSubregion(regionName1);
 
-        for (int i = 0; i < 10; i++) {
-          region1.put("key-string-" + i, "client-value-" + i);
-        }
+      for (int i = 0; i < 10; i++) {
+        region1.put("key-string-" + i, "client-value-" + i);
       }
     });
 
-    SerializableRunnable closePool = new CacheSerializableRunnable("Close Pool") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region1 = getRootRegion().getSubregion(regionName1);
-        String pName = region1.getAttributes().getPoolName();
-        region1.localDestroyRegion();
-        PoolImpl p = (PoolImpl) PoolManager.find(pName);
-        p.destroy();
+    client.invoke("Close Pool", () -> {
+      Region<Object, Object> region1 = getRootRegion().getSubregion(regionName1);
+      String pName = region1.getAttributes().getPoolName();
+      region1.localDestroyRegion();
+      PoolImpl p = (PoolImpl) PoolManager.find(pName);
+      p.destroy();
+    });
+
+    server1.invoke("validate Client Register UnRegister", () -> {
+      for (CacheServer cacheServer : getCache().getCacheServers()) {
+        CacheServerImpl bsi = (CacheServerImpl) cacheServer;
+        final CacheClientNotifierStats ccnStats =
+            bsi.getAcceptor().getCacheClientNotifier().getStats();
+
+        await().until(() -> ccnStats.getClientRegisterRequests() == ccnStats
+            .getClientUnRegisterRequests());
+        assertThat(ccnStats.getClientRegisterRequests())
+            .describedAs("HealthMonitor Client Register/UnRegister mismatch.")
+            .isEqualTo(ccnStats.getClientUnRegisterRequests());
       }
-    };
-
-    client.invoke(closePool);
-
-    SerializableRunnable validateClientRegisterUnRegister =
-        new CacheSerializableRunnable("validate Client Register UnRegister") {
-          @Override
-          public void run2() throws CacheException {
-            for (CacheServer cacheServer : getCache().getCacheServers()) {
-              CacheServerImpl bsi = (CacheServerImpl) cacheServer;
-              final CacheClientNotifierStats ccnStats =
-                  bsi.getAcceptor().getCacheClientNotifier().getStats();
-              WaitCriterion ev = new WaitCriterion() {
-                @Override
-                public boolean done() {
-                  return ccnStats.getClientRegisterRequests() == ccnStats
-                      .getClientUnRegisterRequests();
-                }
-
-                @Override
-                public String description() {
-                  return null;
-                }
-              };
-              await().untilAsserted(ev);
-              assertEquals("HealthMonitor Client Register/UnRegister mismatch.",
-                  ccnStats.getClientRegisterRequests(), ccnStats.getClientUnRegisterRequests());
-            }
-          }
-        };
-
-    server1.invoke(validateClientRegisterUnRegister);
+    });
 
     server1.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
-
   }
 
   /**
@@ -3408,85 +2413,58 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test023ContainsKeyOnServer() throws CacheException {
     final String name = this.getName();
 
-
-
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setConcurrencyChecksEnabled(false);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.DISTRIBUTED_ACK);
+      factory.setConcurrencyChecksEnabled(false);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
+
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, false, -1, -1, null);
-        createRegion(name, factory.create());
-      }
-    };
-    vm1.invoke(create);
-    vm2.invoke(create);
+
+    Stream.of(vm1, vm2).forEach(vm -> vm.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, false, -1, -1, null);
+      createRegion(name, factory);
+    }));
 
     final Integer key1 = 0;
     final String key2 = "0";
-    vm2.invoke("Contains key on server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        boolean containsKey;
-        containsKey = region.containsKeyOnServer(key1);
-        assertFalse(containsKey);
-        containsKey = region.containsKeyOnServer(key2);
-        assertFalse(containsKey);
-      }
+    vm2.invoke("Contains key on server", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      boolean containsKey;
+      containsKey = region.containsKeyOnServer(key1);
+      assertThat(containsKey).isFalse();
+      containsKey = region.containsKeyOnServer(key2);
+      assertThat(containsKey).isFalse();
     });
 
-    vm1.invoke("Put values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.put(0, 0);
-        region.put("0", "0");
-      }
+    vm1.invoke("Put values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.put(0, 0);
+      region.put("0", "0");
     });
 
-    vm2.invoke("Contains key on server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        boolean containsKey;
-        containsKey = region.containsKeyOnServer(key1);
-        assertTrue(containsKey);
-        containsKey = region.containsKeyOnServer(key2);
-        assertTrue(containsKey);
-      }
+    vm2.invoke("Contains key on server", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      boolean containsKey = region.containsKeyOnServer(key1);
+      assertThat(containsKey).isTrue();
+      containsKey = region.containsKeyOnServer(key2);
+      assertThat(containsKey).isTrue();
     });
 
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
-      @Override
-      public void run2() throws CacheException {
+    for (VM vm : Arrays.asList(vm1, vm2)) {
+      vm.invoke("Close Pool", () -> {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
         region.localDestroyRegion();
-      }
-    };
-    vm1.invoke(close);
-    vm2.invoke(close);
+      });
+    }
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -3501,102 +2479,64 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test024CreateNullValue() throws CacheException {
     final String name = this.getName();
 
-
-
     final Object createCallbackArg = "CREATE CALLBACK ARG";
 
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
+
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
+    Stream.of(vm1, vm2).forEach(vm -> vm.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
 
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        createRegion(name, factory.create());
-      }
-    };
-    vm1.invoke(create);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      createRegion(name, factory);
+    }));
 
-    vm2.invoke(create);
-    vm2.invoke("Create nulls", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.create(i, null, createCallbackArg);
-        }
+    vm2.invoke("Create nulls", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.create(i, null, createCallbackArg);
       }
     });
 
-    Wait.pause(1000); // Wait for updates to be propagated
-
-    vm2.invoke("Verify invalidates", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Region.Entry entry = region.getEntry(i);
-          assertNotNull(entry);
-          assertNull(entry.getValue());
-        }
+    vm2.invoke("Verify invalidates", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Region.Entry entry = region.getEntry(i);
+        await().until(() -> entry != null);
+        await().until(() -> entry.getValue() == null);
       }
     });
 
-    vm1.invoke("Attempt to create values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.create(i, "new" + i);
-        }
+    vm1.invoke("Attempt to create values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.create(i, "new" + i);
       }
     });
 
-    Wait.pause(1000); // Wait for updates to be propagated
-
-    vm2.invoke("Verify invalidates", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          Region.Entry entry = region.getEntry(i);
-          assertNotNull(entry);
-          assertNull(entry.getValue());
-        }
+    vm2.invoke("Verify invalidates", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        Region.Entry entry = region.getEntry(i);
+        await().until(() -> entry != null);
+        await().until(() -> entry.getValue() == null);
       }
     });
 
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
-      }
-    };
-
-    vm1.invoke(close);
-    vm2.invoke(close);
+    Stream.of(vm1, vm2).forEach(vm -> vm.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
+    }));
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -3609,149 +2549,120 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test025Destroy() throws CacheException {
     final String name = this.getName();
 
-
-
     final Object callbackArg = "DESTROY CALLBACK";
 
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
+    vm0.invoke("Create Cache Server", () -> {
+      CacheWriter<Object, Object> cw = new TestCacheWriter<Object, Object>() {
+        @Override
+        public void beforeCreate2(EntryEvent event) throws CacheWriterException {
 
-        CacheWriter<Object, Object> cw = new TestCacheWriter<Object, Object>() {
-          @Override
-          public void beforeCreate2(EntryEvent event) throws CacheWriterException {
-
-          }
-
-          @Override
-          public void beforeDestroy2(EntryEvent event) throws CacheWriterException {
-            Object beca = event.getCallbackArgument();
-            assertEquals(callbackArg, beca);
-          }
-        };
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, cw);
-        createRegion(name, factory.create());
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
         }
 
-      }
+        @Override
+        public void beforeDestroy2(EntryEvent event) throws CacheWriterException {
+          Object beca = event.getCallbackArgument();
+          assertThat(callbackArg).isEqualTo(beca);
+        }
+      };
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, cw);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
 
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
 
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
 
-        Region rgn = createRegion(name, factory.create());
-        rgn.registerInterestRegex(".*", false, false);
-      }
-    };
-    vm1.invoke(create);
-    vm1.invoke("Populate region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.put(i, String.valueOf(i));
-        }
+      Region rgn = createRegion(name, factory);
+      rgn.registerInterestRegex(".*", false, false);
+    });
+
+    vm1.invoke("Populate region", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.put(i, String.valueOf(i));
       }
     });
 
-    vm2.invoke(create);
-    vm2.invoke("Load region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          assertEquals(String.valueOf(i), region.get(i));
-        }
+    vm2.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+
+      Region rgn = createRegion(name, factory);
+      rgn.registerInterestRegex(".*", false, false);
+    });
+
+    vm2.invoke("Load region", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        assertThat(String.valueOf(i)).isEqualTo(region.get(i));
       }
     });
 
-    vm1.invoke("Local destroy", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.localDestroy(i);
-        }
+    vm1.invoke("Local destroy", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.localDestroy(i);
       }
     });
 
-    vm2.invoke("No destroy propagate", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          assertEquals(String.valueOf(i), region.get(i));
-        }
+    vm2.invoke("No destroy propagate", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        assertThat(String.valueOf(i)).isEqualTo(region.get(i));
       }
     });
 
-    vm1.invoke("Fetch from server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          assertEquals(String.valueOf(i), region.get(i));
-        }
+    vm1.invoke("Fetch from server", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        assertThat(String.valueOf(i)).isEqualTo(region.get(i));
       }
     });
 
-    vm0.invoke("Check no server cache writer", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        TestCacheWriter writer = getTestWriter(region);
-        writer.wasInvoked();
+    vm0.invoke("Check no server cache writer", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      TestCacheWriter writer = getTestWriter(region);
+      writer.wasInvoked();
+    });
+
+    vm1.invoke("Distributed destroy", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.destroy(i, callbackArg);
       }
     });
 
-    vm1.invoke("Distributed destroy", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.destroy(i, callbackArg);
-        }
-      }
-    });
-    Wait.pause(1000); // Wait for destroys to propagate
-
-    vm1.invoke("Attempt get from server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          assertNull(region.getEntry(i));
-        }
+    vm1.invoke("Attempt get from server", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        final int testInt = i;
+        await().until(() -> region.getEntry(testInt) == null);
       }
     });
 
-    vm2.invoke("Validate destroy propagate", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          assertNull(region.getEntry(i));
-        }
+    vm2.invoke("Validate destroy propagate", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        final int testInt = i;
+        await().until(() -> region.getEntry(testInt) == null);
       }
     });
 
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
+    SerializableRunnable close = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -3759,8 +2670,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    vm1.invoke(close);
-    vm2.invoke(close);
+    vm1.invoke("Close Pool", close);
+    vm2.invoke("Close Pool", close);
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -3774,110 +2685,73 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void testDestroyRegion() throws CacheException {
     final String name = this.getName();
 
-
-
     final Object callbackArg = "DESTROY CALLBACK";
 
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
+    vm0.invoke("Create Cache Server", () -> {
+      CacheWriter<Object, Object> cw = new TestCacheWriter<Object, Object>() {
+        @Override
+        public void beforeCreate2(EntryEvent event) throws CacheWriterException {
 
-        CacheWriter<Object, Object> cw = new TestCacheWriter<Object, Object>() {
-          @Override
-          public void beforeCreate2(EntryEvent event) throws CacheWriterException {
-
-          }
-
-          @Override
-          public void beforeRegionDestroy2(RegionEvent event) throws CacheWriterException {
-
-            assertEquals(callbackArg, event.getCallbackArgument());
-          }
-        };
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, cw);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
         }
 
-      }
+        @Override
+        public void beforeRegionDestroy2(RegionEvent event) throws CacheWriterException {
+
+          assertThat(callbackArg).isEqualTo(event.getCallbackArgument());
+        }
+      };
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, cw);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
+    SerializableRunnable create = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         getLonerSystem();
         getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
         factory.setScope(Scope.LOCAL);
         factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        createRegion(name, factory.create());
+        configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+        createRegion(name, factory);
       }
     };
 
-    vm1.invoke(create);
-    vm2.invoke(create);
+    vm1.invoke("Create region", create);
+    vm2.invoke("Create region", create);
 
-    vm1.invoke("Local destroy region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
-        assertNull(getRootRegion().getSubregion(name));
-        // close the bridge writer to prevent callbacks on the connections
-        // Not necessary since locally destroying the region takes care of this.
-        // getPoolClient(region).close();
-      }
+    vm1.invoke("Local destroy region", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
+      assertThat(getRootRegion().getSubregion(name)).isNull();
     });
 
-    vm2.invoke("No destroy propagate", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        assertNotNull(region);
-      }
+    vm2.invoke("No destroy propagate", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      assertThat(region).isNotNull();
     });
 
-    vm0.invoke("Check no server cache writer", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        TestCacheWriter writer = getTestWriter(region);
-        writer.wasInvoked();
-      }
+    vm0.invoke("Check no server cache writer", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      TestCacheWriter writer = getTestWriter(region);
+      writer.wasInvoked();
     });
 
     vm1.invoke(create);
 
-    vm1.invoke("Distributed destroy region", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        assertNotNull(region);
-        region.destroyRegion(callbackArg);
-        assertNull(getRootRegion().getSubregion(name));
-        // close the bridge writer to prevent callbacks on the connections
-        // Not necessary since locally destroying the region takes care of this.
-        // getPoolClient(region).close();
-      }
+    vm1.invoke("Distributed destroy region", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      assertThat(region).isNotNull();
+      region.destroyRegion(callbackArg);
+      assertThat(getRootRegion().getSubregion(name)).isNull();
     });
-    Wait.pause(1000); // Wait for destroys to propagate
 
-    vm2.invoke("Verify destroy propagate", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        assertNull(region);
-        // todo close the bridge writer
-        // Not necessary since locally destroying the region takes care of this.
-      }
+    vm2.invoke("Verify destroy propagate", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      await().until(() -> region == null);
     });
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
@@ -3892,162 +2766,122 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test026DPEmptyInterestListRegistrationWithCallbackArg() throws CacheException {
     final String name = this.getName();
 
-
-
     // Create cache server
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
-          @Override
-          public Object load(LoaderHelper helper) {
-            return helper.getKey();
-          }
-
-          @Override
-          public void close() {
-
-          }
-        };
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(cl, null);
-        createRegion(name, factory.create());
-        Wait.pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+    vm0.invoke("Create Cache Server", () -> {
+      CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
+        @Override
+        public Object load(LoaderHelper helper) {
+          return helper.getKey();
         }
 
-      }
+        @Override
+        public void close() {}
+      };
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(cl, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
 
     // Create cache server clients
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        // create bridge writer
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        factory.addCacheListener(new ControlListener());
-        factory.setDataPolicy(DataPolicy.EMPTY);
-        factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-        createRegion(name, factory.create());
-      }
-    };
-    SerializableRunnable createPublisher =
-        new CacheSerializableRunnable("Create publisher region") {
-          @Override
-          public void run2() throws CacheException {
-            getLonerSystem();
-            AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-            factory.setScope(Scope.LOCAL);
-            factory.setConcurrencyChecksEnabled(false);
-            // create bridge writer
-            ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1,
-                null);
-            factory.addCacheListener(new ControlListener());
-            factory.setDataPolicy(DataPolicy.EMPTY); // make sure empty works with client publishers
-            createRegion(name, factory.create());
-          }
-        };
 
-    vm1.invoke(create);
-    vm2.invoke(createPublisher);
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      // create bridge writer
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      factory.addCacheListener(new ControlListener());
+      factory.setDataPolicy(DataPolicy.EMPTY);
+      factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
+      createRegion(name, factory);
+    });
+
+    vm2.invoke("Create publisher region", () -> {
+      getLonerSystem();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      // create bridge writer
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1,
+          null);
+      factory.addCacheListener(new ControlListener());
+      factory.setDataPolicy(DataPolicy.EMPTY); // make sure empty works with client publishers
+      createRegion(name, factory);
+    });
 
     // VM1 Register interest
-    vm1.invoke("Create Entries and Register Interest", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        try {
-          // This call will cause no value to be put into the region
-          region.registerInterest("key-1", InterestResultPolicy.NONE);
-        } catch (Exception ex) {
-          fail("While registering interest: ", ex);
-        }
-      }
+    vm1.invoke("Create Entries and Register Interest", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+
+      // This call will cause no value to be put into the region
+      region.registerInterest("key-1", InterestResultPolicy.NONE);
     });
 
     // VM2 Put entry (this will cause a create event in both VM1 and VM2)
-    vm2.invoke("Put Value", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.create("key-1", "key-1-create", "key-1-create");
-      }
+    vm2.invoke("Put Value", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.create("key-1", "key-1-create", "key-1-create");
     });
 
     // VM2 Put entry (this will cause an update event in both VM1 and VM2)
-    vm2.invoke("Put Value", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.put("key-1", "key-1-update", "key-1-update");
-      }
+    vm2.invoke("Put Value", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.put("key-1", "key-1-update", "key-1-update");
     });
 
     // VM2 Destroy entry (this will cause a destroy event)
-    vm2.invoke("Destroy Entry", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.destroy("key-1", "key-1-destroy");
+    vm2.invoke("Destroy Entry", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.destroy("key-1", "key-1-destroy");
+    });
+
+    vm1.invoke("Verify events", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      ControlListener listener = (ControlListener) region.getAttributes().getCacheListeners()[0];
+      int eventCount = 3;
+      listener.waitWhileNotEnoughEvents(eventCount);
+      assertThat(eventCount).isEqualTo(listener.events.size());
+
+      {
+        EventWrapper ew = listener.events.get(0);
+        assertThat(TYPE_CREATE).isEqualTo(ew.type);
+        Object key = "key-1";
+        assertThat(key).isEqualTo(ew.event.getKey());
+        assertThat(ew.event.getOldValue()).isNull();
+        assertThat(ew.event.isOldValueAvailable()).isFalse(); // failure
+        assertThat("key-1-create").isEqualTo(ew.event.getNewValue());
+        assertThat(Operation.CREATE).isEqualTo(ew.event.getOperation());
+        assertThat("key-1-create").isEqualTo(ew.event.getCallbackArgument());
+        assertThat(ew.event.isOriginRemote()).isTrue();
+
+        ew = listener.events.get(1);
+        assertThat(TYPE_UPDATE).isEqualTo(ew.type);
+        assertThat(key).isEqualTo(ew.event.getKey());
+        assertThat(ew.event.getOldValue()).isNull();
+        assertThat(ew.event.isOldValueAvailable()).isFalse();
+        assertThat("key-1-update").isEqualTo(ew.event.getNewValue());
+        assertThat(Operation.UPDATE).isEqualTo(ew.event.getOperation());
+        assertThat("key-1-update").isEqualTo(ew.event.getCallbackArgument());
+        assertThat(ew.event.isOriginRemote()).isTrue();
+
+        ew = listener.events.get(2);
+        assertThat(TYPE_DESTROY).isEqualTo(ew.type);
+        assertThat("key-1-destroy").isEqualTo(ew.arg);
+        assertThat(key).isEqualTo(ew.event.getKey());
+        assertThat(ew.event.getOldValue()).isNull();
+        assertThat(ew.event.isOldValueAvailable()).isFalse();
+        assertThat(ew.event.getNewValue()).isNull();
+        assertThat(Operation.DESTROY).isEqualTo(ew.event.getOperation());
+        assertThat("key-1-destroy").isEqualTo(ew.event.getCallbackArgument());
+        assertThat(ew.event.isOriginRemote()).isTrue();
       }
     });
 
-    final SerializableRunnable assertEvents = new CacheSerializableRunnable("Verify events") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        ControlListener listener = (ControlListener) region.getAttributes().getCacheListeners()[0];
-        int eventCount = 3;
-        listener.waitWhileNotEnoughEvents(60000, eventCount);
-        assertEquals(eventCount, listener.events.size());
-
-        {
-          EventWrapper ew = listener.events.get(0);
-          assertEquals(TYPE_CREATE, ew.type);
-          Object key = "key-1";
-          assertEquals(key, ew.event.getKey());
-          assertNull(ew.event.getOldValue());
-          assertFalse(ew.event.isOldValueAvailable()); // failure
-          assertEquals("key-1-create", ew.event.getNewValue());
-          assertEquals(Operation.CREATE, ew.event.getOperation());
-          assertEquals("key-1-create", ew.event.getCallbackArgument());
-          assertTrue(ew.event.isOriginRemote());
-
-          ew = listener.events.get(1);
-          assertEquals(TYPE_UPDATE, ew.type);
-          assertEquals(key, ew.event.getKey());
-          assertNull(ew.event.getOldValue());
-          assertFalse(ew.event.isOldValueAvailable());
-          assertEquals("key-1-update", ew.event.getNewValue());
-          assertEquals(Operation.UPDATE, ew.event.getOperation());
-          assertEquals("key-1-update", ew.event.getCallbackArgument());
-          assertTrue(ew.event.isOriginRemote());
-
-          ew = listener.events.get(2);
-          assertEquals(TYPE_DESTROY, ew.type);
-          assertEquals("key-1-destroy", ew.arg);
-          assertEquals(key, ew.event.getKey());
-          assertNull(ew.event.getOldValue());
-          assertFalse(ew.event.isOldValueAvailable());
-          assertNull(ew.event.getNewValue());
-          assertEquals(Operation.DESTROY, ew.event.getOperation());
-          assertEquals("key-1-destroy", ew.event.getCallbackArgument());
-          assertTrue(ew.event.isOriginRemote());
-        }
-      }
-    };
-    vm1.invoke(assertEvents);
-
     // Close cache server clients
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
+    SerializableRunnable close = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -4055,8 +2889,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       }
     };
 
-    vm1.invoke(close);
-    vm2.invoke(close);
+    vm1.invoke("Close Pool", close);
+    vm2.invoke("Close Pool", close);
 
     // Stop cache server
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
@@ -4070,137 +2904,91 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test027DPEmptyCCInterestListRegistrationWithCallbackArg() throws CacheException {
     final String name = this.getName();
 
-
-
     // Create cache server
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
-          @Override
-          public Object load(LoaderHelper helper) {
-            return helper.getKey();
-          }
-
-          @Override
-          public void close() {
-
-          }
-        };
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(cl, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+    vm0.invoke("Create Cache Server", () -> {
+      CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
+        @Override
+        public Object load(LoaderHelper helper) {
+          return helper.getKey();
         }
 
-      }
+        @Override
+        public void close() {
+
+        }
+      };
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(cl, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
 
     // Create cache server clients
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        factory.setCacheListener(new ControlListener());
-        factory.setDataPolicy(DataPolicy.EMPTY);
-        factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.CACHE_CONTENT));
-        createRegion(name, factory.create());
-      }
-    };
-    SerializableRunnable createPublisher =
-        new CacheSerializableRunnable("Create publisher region") {
-          @Override
-          public void run2() throws CacheException {
-            getLonerSystem();
-            AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-            factory.setScope(Scope.LOCAL);
-            factory.setConcurrencyChecksEnabled(false);
-            // create bridge writer
-            ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1,
-                null);
-            factory.setCacheListener(new ControlListener());
-            factory.setDataPolicy(DataPolicy.EMPTY); // make sure empty works with client publishers
-            createRegion(name, factory.create());
-          }
-        };
 
-    vm1.invoke(create);
-    vm2.invoke(createPublisher);
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      factory.addCacheListener(new ControlListener());
+      factory.setDataPolicy(DataPolicy.EMPTY);
+      factory
+          .setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.CACHE_CONTENT));
+      createRegion(name, factory);
+    });
+    vm2.invoke("Create publisher region", () -> {
+      getLonerSystem();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      // create bridge writer
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1,
+          null);
+      factory.addCacheListener(new ControlListener());
+      factory.setDataPolicy(DataPolicy.EMPTY); // make sure empty works with client publishers
+      createRegion(name, factory);
+    });
 
     // VM1 Register interest
-    vm1.invoke("Create Entries and Register Interest", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        try {
-          // This call will cause no value to be put into the region
-          region.registerInterest("key-1", InterestResultPolicy.NONE);
-        } catch (Exception ex) {
-          fail("While registering interest: ", ex);
-        }
-      }
+    vm1.invoke("Create Entries and Register Interest", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+
+      // This call will cause no value to be put into the region
+      region.registerInterest("key-1", InterestResultPolicy.NONE);
     });
 
     // VM2 Put entry (this will cause a create event in both VM1 and VM2)
-    vm2.invoke("Put Value", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.create("key-1", "key-1-create", "key-1-create");
-      }
+    vm2.invoke("Put Value", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.create("key-1", "key-1-create", "key-1-create");
     });
 
     // VM2 Put entry (this will cause an update event in both VM1 and VM2)
-    vm2.invoke("Put Value", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.put("key-1", "key-1-update", "key-1-update");
-      }
+    vm2.invoke("Put Value", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.put("key-1", "key-1-update", "key-1-update");
     });
 
     // VM2 Destroy entry (this will cause a destroy event)
-    vm2.invoke("Destroy Entry", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.destroy("key-1", "key-1-destroy");
-      }
+    vm2.invoke("Destroy Entry", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.destroy("key-1", "key-1-destroy");
     });
 
-    final SerializableRunnable assertEvents = new CacheSerializableRunnable("Verify events") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        ControlListener listener = (ControlListener) region.getAttributes().getCacheListeners()[0];
-        Wait.pause(1000); // we should not get any events but give some time for the server to send
-        // them
-        assertEquals(0, listener.events.size());
-      }
-    };
-    vm1.invoke(assertEvents);
+    vm1.invoke("Verify events", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      ControlListener listener = (ControlListener) region.getAttributes().getCacheListeners()[0];
+
+      await().until(() -> listener.events.size() == 0);
+    });
 
     // Close cache server clients
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
-      }
-    };
-
-    vm1.invoke(close);
-    vm2.invoke(close);
-
+    Stream.of(vm1, vm2).forEach(vm -> vm.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
+    }));
     // Stop cache server
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -4219,360 +3007,290 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test028DynamicRegionCreation() {
     final String name = this.getName();
 
-    final VM client1 = VM.getVM(0);
-    final VM srv1 = VM.getVM(2);
-    final VM srv2 = VM.getVM(3);
+    final VM client1 = vm0;
+    final VM srv1 = vm2;
+    final VM srv2 = vm3;
 
-    final String k1 = name + "-key1";
-    final String v1 = name + "-val1";
-    final String k2 = name + "-key2";
-    final String v2 = name + "-val2";
-    final String k3 = name + "-key3";
-    final String v3 = name + "-val3";
+    final String key1 = name + "-key1";
+    final String value1 = name + "-val1";
+    final String key2 = name + "-key2";
+    final String value2 = name + "-val2";
+    final String key3 = name + "-key3";
+    final String value3 = name + "-val3";
 
-    client1.invoke(JUnit4DistributedTestCase::disconnectFromDS);
-    srv1.invoke(JUnit4DistributedTestCase::disconnectFromDS);
-    srv2.invoke(JUnit4DistributedTestCase::disconnectFromDS);
-    try {
-      // setup servers
-      CacheSerializableRunnable ccs = new CacheSerializableRunnable("Create Cache Server") {
-        @Override
-        public void run2() throws CacheException {
-          createDynamicRegionCache(name, null); // Creates a new DS and Cache
-          assertTrue(DynamicRegionFactory.get().isOpen());
+    // setup servers
+    Stream.of(srv1, srv2).forEach(vm -> vm.invoke("Create Cache Server", () -> {
+      createDynamicRegionCache(name, null); // Creates a new DS and Cache
+      assertThat(DynamicRegionFactory.get().isOpen()).isTrue();
+      try {
+        startBridgeServer(0);
+      } catch (IOException ugh) {
+        fail("cache server startup failed");
+      }
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.DISTRIBUTED_ACK);
+      factory.setDataPolicy(DataPolicy.REPLICATE);
+      factory.setConcurrencyChecksEnabled(false);
+      Region<Object, Object> region = createRootRegion(name, factory);
+      region.put(key1, value1);
+      assertThat(region.get(key1)).isEqualTo(value1);
+    }));
+    final String srv1Host = NetworkUtils.getServerHostName();
+    final int srv1Port = srv1.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
+
+    final int srv2Port = srv2.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
+
+    // setup clients, do basic tests to make sure pool with notifier work as advertised
+    client1.invoke("Create Cache Client", () -> {
+      createLonerDS();
+      AttributesFactory<Object, Object> factory = new AttributesFactory<>();
+      factory.setConcurrencyChecksEnabled(false);
+      Pool cp = configureConnectionPool(factory, srv1Host, new int[] {srv1Port,
+          srv2Port}, true, -1, -1, null);
+      {
+        final PoolImpl pool = (PoolImpl) cp;
+
+        await().until(() -> {
+          if (pool.getPrimary() == null) {
+            return false;
+          }
+          return pool.getRedundants().size() >= 1;
+        });
+        assertThat(pool.getPrimary()).isNotNull();
+        assertThat(pool.getRedundants().size() >= 1)
+            .describedAs("backups=" + pool.getRedundants() + " expected=" + 1).isTrue();
+      }
+
+      createDynamicRegionCache(name, "testPool");
+
+      assertThat(DynamicRegionFactory.get().isOpen()).isTrue();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      factory.addCacheListener(new CertifiableTestCacheListener<>());
+      Region<Object, Object> region = createRootRegion(name, factory.create());
+
+      assertThat(region.getEntry(key1)).isNull();
+      region.registerInterestRegex(".*", InterestResultPolicy.KEYS_VALUES); // this should match
+      // the key
+      assertThat(value1).isEqualTo(region.getEntry(key1).getValue()); // Update via registered
+      // interest
+
+      assertThat(region.getEntry(key2)).isNull();
+      region.put(key2, value2); // use the Pool
+      assertThat(value2).isEqualTo(region.getEntry(key2).getValue()); // Ensure that the notifier
+      // didn't un-do
+      // the put, bug 35355
+
+      region.put(key3, value3); // setup a key for invalidation from a notifier;
+    });
+
+    srv1.invoke("Validate Server1 update", () -> {
+      CacheClientNotifier ccn = getInstance();
+      final CacheClientNotifierStats ccnStats = ccn.getStats();
+      final int eventCount = ccnStats.getEvents();
+      Region<Object, Object> region = getRootRegion(name);
+      assertThat(region).isNotNull();
+      assertThat(value2)
+          .isEqualTo(region.getEntry(key2).getValue()); // Validate the Pool worked,
+      // getEntry
+      // works
+      // because of the mirror
+      assertThat(value3).isEqualTo(region.getEntry(key3).getValue()); // Make sure we have the
+      // other
+      // entry
+      // to use
+      // for notification
+      region.put(key3, value1); // Change k3, sending some data to the client notifier
+
+      // Wait for the update to propagate to the clients
+      await("waiting for ccnStat").until(() -> ccnStats.getEvents() > eventCount);
+    });
+    srv2.invoke("Validate Server2 update", () -> {
+      Region<Object, Object> rootRegion = getRootRegion(name);
+      assertThat(rootRegion).isNotNull();
+      assertThat(value2).isEqualTo(rootRegion.getEntry(key2).getValue()); // Validate the Pool
+      // worked, getEntry
+      // works
+      // because of the mirror
+      assertThat(value1).isEqualTo(rootRegion.getEntry(key3).getValue()); // From peer update;
+    });
+    client1.invoke("Validate Client notification", () -> {
+      Region<Object, Object> rootRegion = getRootRegion(name);
+      assertThat(rootRegion).isNotNull();
+      CertifiableTestCacheListener<Object, Object> ctl =
+          (CertifiableTestCacheListener<Object, Object>) rootRegion.getAttributes()
+              .getCacheListeners()[0];
+      ctl.waitForUpdated(key3);
+      assertThat(value1).isEqualTo(rootRegion.getEntry(key3).getValue()); // Ensure that the
+      // notifier updated
+      // the entry
+
+    });
+    // Ok, now we are ready to do some dynamic region action!
+    final String v1Dynamic = value1 + "dynamic";
+    final String dynFromClientName = name + "-dynamic-client";
+    final String dynFromServerName = name + "-dynamic-server";
+    client1.invoke("Client dynamic region creation", () -> {
+      assertThat(DynamicRegionFactory.get().isOpen()).isTrue();
+      Region region = getRootRegion(name);
+      assertThat(region).isNotNull();
+      Region dynamicRegion =
+          DynamicRegionFactory.get().createDynamicRegion(name, dynFromClientName);
+      assertThat(dynamicRegion.get(key1)).isNull(); // This should be enough to validate the
+      // creation on the
+      // server
+      dynamicRegion.put(key1, v1Dynamic);
+      assertThat(v1Dynamic).isEqualTo(dynamicRegion.getEntry(key1).getValue());
+    });
+
+    // Assert the servers have the dynamic region and the new value
+    CacheSerializableRunnable valDR = new CacheSerializableRunnable() {
+      @Override
+      public void run2() throws CacheException {
+        Region<Object, Object> rootRegion = getRootRegion(name);
+        assertThat(rootRegion).isNotNull();
+        long end = System.currentTimeMillis() + 10000;
+        Region<Object, Object> dynamicRegion;
+        for (;;) {
           try {
-            startBridgeServer(0);
-          } catch (IOException ugh) {
-            fail("cache server startup failed");
+            dynamicRegion = rootRegion.getSubregion(dynFromClientName);
+            assertThat(dynamicRegion).isNotNull();
+            assertThat(getCache().getRegion(name + Region.SEPARATOR + dynFromClientName))
+                .isNotNull();
+            break;
+          } catch (AssertionError e) {
+            if (System.currentTimeMillis() > end) {
+              throw e;
+            }
           }
-          AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-          factory.setScope(Scope.DISTRIBUTED_ACK);
-          factory.setDataPolicy(DataPolicy.REPLICATE);
-          factory.setConcurrencyChecksEnabled(false);
-          Region<Object, Object> region = createRootRegion(name, factory.create());
-          region.put(k1, v1);
-          Assert.assertTrue(region.get(k1).equals(v1));
         }
-      };
-      srv1.invoke(ccs);
-      srv2.invoke(ccs);
 
-      final String srv1Host = NetworkUtils.getServerHostName(srv1.getHost());
-      final int srv1Port = srv1.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
+        assertThat(v1Dynamic).isEqualTo(dynamicRegion.getEntry(key1).getValue());
+      }
+    };
+    srv1.invoke("Validate dynamic region creation on server", valDR);
+    srv2.invoke("Validate dynamic region creation on server", valDR);
+    // now delete the dynamic region and see if it goes away on servers
+    client1.invoke("Client dynamic region destruction", () -> {
+      assertThat(DynamicRegionFactory.get().isActive()).isTrue();
+      Region<Object, Object> r = getRootRegion(name);
+      assertThat(r).isNotNull();
+      String drName = r.getFullPath() + Region.SEPARATOR + dynFromClientName;
 
-      final int srv2Port = srv2.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
-      // final String srv2Host = getServerHostName(srv2.getHost());
-
-      // setup clients, do basic tests to make sure pool with notifier work as advertised
-      client1.invoke("Create Cache Client", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          createLonerDS();
-          AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-          factory.setConcurrencyChecksEnabled(false);
-          Pool cp = ClientServerTestCase.configureConnectionPool(factory, srv1Host, srv1Port,
-              srv2Port, true, -1, -1, null);
-          {
-            final PoolImpl pool = (PoolImpl) cp;
-            WaitCriterion ev = new WaitCriterion() {
-              @Override
-              public boolean done() {
-                if (pool.getPrimary() == null) {
-                  return false;
-                }
-                return pool.getRedundants().size() >= 1;
-              }
-
-              @Override
-              public String description() {
-                return null;
-              }
-            };
-            await().untilAsserted(ev);
-            assertNotNull(pool.getPrimary());
-            assertTrue("backups=" + pool.getRedundants() + " expected=" + 1,
-                pool.getRedundants().size() >= 1);
-          }
-
-          createDynamicRegionCache(name, "testPool");
-
-          assertTrue(DynamicRegionFactory.get().isOpen());
-          factory.setScope(Scope.LOCAL);
-          factory.setConcurrencyChecksEnabled(false);
-          factory.setCacheListener(new CertifiableTestCacheListener(
-              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()));
-          Region<Object, Object> region = createRootRegion(name, factory.create());
-
-
-          assertNull(region.getEntry(k1));
-          region.registerInterestRegex(".*", InterestResultPolicy.KEYS_VALUES); // this should match
-          // the key
-          assertEquals(v1, region.getEntry(k1).getValue()); // Update via registered interest
-
-          assertNull(region.getEntry(k2));
-          region.put(k2, v2); // use the Pool
-          assertEquals(v2, region.getEntry(k2).getValue()); // Ensure that the notifier didn't un-do
-          // the put, bug 35355
-
-          region.put(k3, v3); // setup a key for invalidation from a notifier
-        }
-      });
-
-      srv1.invoke("Validate Server1 update", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          CacheClientNotifier ccn = getInstance();
-          final CacheClientNotifierStats ccnStats = ccn.getStats();
-          final int eventCount = ccnStats.getEvents();
-          Region<Object, Object> r = getRootRegion(name);
-          assertNotNull(r);
-          assertEquals(v2, r.getEntry(k2).getValue()); // Validate the Pool worked, getEntry works
-          // because of the mirror
-          assertEquals(v3, r.getEntry(k3).getValue()); // Make sure we have the other entry to use
-          // for notification
-          r.put(k3, v1); // Change k3, sending some data to the client notifier
-
-          // Wait for the update to propagate to the clients
-          WaitCriterion ev = new WaitCriterion() {
-            @Override
-            public boolean done() {
-              return ccnStats.getEvents() > eventCount;
-            }
-
-            @Override
-            public String description() {
-              return "waiting for ccnStat";
-            }
-          };
-          await().untilAsserted(ev);
-        }
-      });
-      srv2.invoke("Validate Server2 update", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          Region<Object, Object> r = getRootRegion(name);
-          assertNotNull(r);
-          assertEquals(v2, r.getEntry(k2).getValue()); // Validate the Pool worked, getEntry works
-          // because of the mirror
-          assertEquals(v1, r.getEntry(k3).getValue()); // From peer update
-        }
-      });
-      client1.invoke("Validate Client notification", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          Region<Object, Object> r = getRootRegion(name);
-          assertNotNull(r);
-          CertifiableTestCacheListener ctl =
-              (CertifiableTestCacheListener) r.getAttributes().getCacheListener();
-          ctl.waitForUpdated(k3);
-          assertEquals(v1, r.getEntry(k3).getValue()); // Ensure that the notifier updated the entry
-        }
-      });
-      // Ok, now we are ready to do some dynamic region action!
-      final String v1Dynamic = v1 + "dynamic";
-      final String dynFromClientName = name + "-dynamic-client";
-      final String dynFromServerName = name + "-dynamic-server";
-      client1.invoke("Client dynamic region creation", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          assertTrue(DynamicRegionFactory.get().isOpen());
-          Region<Object, Object> r = getRootRegion(name);
-          assertNotNull(r);
-          Region<Object, Object> dr =
-              DynamicRegionFactory.get().createDynamicRegion(name, dynFromClientName);
-          assertNull(dr.get(k1)); // This should be enough to validate the creation on the server
-          dr.put(k1, v1Dynamic);
-          assertEquals(v1Dynamic, dr.getEntry(k1).getValue());
-        }
-      });
-
-      // Assert the servers have the dynamic region and the new value
-      CacheSerializableRunnable valDR =
-          new CacheSerializableRunnable("Validate dynamic region creation on server") {
-            @Override
-            public void run2() throws CacheException {
-              Region<Object, Object> r = getRootRegion(name);
-              assertNotNull(r);
-              long end = System.currentTimeMillis() + 10000;
-              Region dr;
-              for (;;) {
-                try {
-                  dr = r.getSubregion(dynFromClientName);
-                  assertNotNull(dr);
-                  assertNotNull(getCache().getRegion(name + Region.SEPARATOR + dynFromClientName));
-                  break;
-                } catch (AssertionError e) {
-                  if (System.currentTimeMillis() > end) {
-                    throw e;
-                  }
-                }
-              }
-
-              assertEquals(v1Dynamic, dr.getEntry(k1).getValue());
-            }
-          };
-      srv1.invoke(valDR);
-      srv2.invoke(valDR);
-      // now delete the dynamic region and see if it goes away on servers
-      client1.invoke("Client dynamic region destruction", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          assertTrue(DynamicRegionFactory.get().isActive());
-          Region<Object, Object> r = getRootRegion(name);
-          assertNotNull(r);
-          String drName = r.getFullPath() + Region.SEPARATOR + dynFromClientName;
-
-          assertNotNull(getCache().getRegion(drName));
+      assertThat(getCache().getRegion(drName)).isNotNull();
+      DynamicRegionFactory.get().destroyDynamicRegion(drName);
+      assertThat(getCache().getRegion(drName)).isNull();
+    });
+    // Assert the servers no longer have the dynamic region
+    CacheSerializableRunnable valNoDR = new CacheSerializableRunnable() {
+      @Override
+      public void run2() throws CacheException {
+        Region<Object, Object> r = getRootRegion(name);
+        assertThat(r).isNotNull();
+        String drName = r.getFullPath() + Region.SEPARATOR + dynFromClientName;
+        assertThat(getCache().getRegion(drName)).isNull();
+        try {
           DynamicRegionFactory.get().destroyDynamicRegion(drName);
-          assertNull(getCache().getRegion(drName));
+          fail("expected RegionDestroyedException");
+        } catch (RegionDestroyedException ignored) {
         }
-      });
-      // Assert the servers no longer have the dynamic region
-      CacheSerializableRunnable valNoDR =
-          new CacheSerializableRunnable("Validate dynamic region destruction on server") {
-            @Override
-            public void run2() throws CacheException {
-              Region<Object, Object> r = getRootRegion(name);
-              assertNotNull(r);
-              String drName = r.getFullPath() + Region.SEPARATOR + dynFromClientName;
-              assertNull(getCache().getRegion(drName));
-              try {
-                DynamicRegionFactory.get().destroyDynamicRegion(drName);
-                fail("expected RegionDestroyedException");
-              } catch (RegionDestroyedException ignored) {
-              }
-            }
-          };
-      srv1.invoke(valNoDR);
-      srv2.invoke(valNoDR);
-      // Now try the reverse, create a dynamic region on the server and see if the client
-      // has it
-      srv2.invoke("Server dynamic region creation", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          Region<Object, Object> r = getRootRegion(name);
-          assertNotNull(r);
-          Region<Object, Object> dr =
-              DynamicRegionFactory.get().createDynamicRegion(name, dynFromServerName);
-          assertNull(dr.get(k1));
-          dr.put(k1, v1Dynamic);
-          assertEquals(v1Dynamic, dr.getEntry(k1).getValue());
-        }
-      });
-      // Assert the servers have the dynamic region and the new value
-      srv1.invoke(new CacheSerializableRunnable(
-          "Validate dynamic region creation propagation to other server") {
-        @Override
-        public void run2() throws CacheException {
-          Region<Object, Object> r = getRootRegion(name);
-          assertNotNull(r);
-          Region<Object, Object> dr = waitForSubRegion(r, dynFromServerName);
-          assertNotNull(dr);
-          assertNotNull(getCache().getRegion(name + Region.SEPARATOR + dynFromServerName));
-          waitForEntry(dr, k1);
-          assertNotNull(dr.getEntry(k1));
-          assertEquals(v1Dynamic, dr.getEntry(k1).getValue());
-        }
-      });
-      // Assert the clients have the dynamic region and the new value
-      client1.invoke("Validate dynamic region creation on client", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          Region<Object, Object> r = getRootRegion(name);
-          assertNotNull(r);
-          long end = System.currentTimeMillis() + 10000;
-          Region<Object, Object> dr;
-          for (;;) {
-            try {
-              dr = r.getSubregion(dynFromServerName);
-              assertNotNull(dr);
-              assertNotNull(getCache().getRegion(name + Region.SEPARATOR + dynFromServerName));
-              break;
-            } catch (AssertionError e) {
-              if (System.currentTimeMillis() > end) {
-                throw e;
-              } else {
-                Wait.pause(1000);
-              }
-            }
-          }
-          waitForEntry(dr, k1);
-          assertNotNull(dr.getEntry(k1));
-          assertEquals(v1Dynamic, dr.getEntry(k1).getValue());
-        }
-      });
-      // now delete the dynamic region on a server and see if it goes away on client
-      srv2.invoke("Server dynamic region destruction", new CacheSerializableRunnable() {
-        @Override
-        public void run2() throws CacheException {
-          assertTrue(DynamicRegionFactory.get().isActive());
-          Region<Object, Object> r = getRootRegion(name);
-          assertNotNull(r);
-          String drName = r.getFullPath() + Region.SEPARATOR + dynFromServerName;
+      }
+    };
+    srv1.invoke("Validate dynamic region destruction on server", valNoDR);
+    srv2.invoke("Validate dynamic region destruction on server", valNoDR);
+    // Now try the reverse, create a dynamic region on the server and see if the client
+    // has it
+    srv2.invoke("Server dynamic region creation", () -> {
+      Region<Object, Object> r = getRootRegion(name);
+      assertThat(r).isNotNull();
+      Region<Object, Object> dr =
+          DynamicRegionFactory.get().createDynamicRegion(name, dynFromServerName);
+      assertThat(dr.get(key1)).isNull();
+      dr.put(key1, v1Dynamic);
+      assertThat(v1Dynamic).isEqualTo(dr.getEntry(key1).getValue());
+    });
+    // Assert the servers have the dynamic region and the new value
+    srv1.invoke("Validate dynamic region creation propagation to other server", () -> {
+      Region<Object, Object> r = getRootRegion(name);
+      assertThat(r).isNotNull();
+      Region<Object, Object> dr = waitForSubRegion(r, dynFromServerName);
+      assertThat(dr).isNotNull();
+      assertThat(getCache().getRegion(name + Region.SEPARATOR + dynFromServerName))
+          .isNotNull();
+      waitForEntry(dr, key1);
+      assertThat(dr.getEntry(key1)).isNotNull();
+      assertThat(v1Dynamic).isEqualTo(dr.getEntry(key1).getValue());
+    });
+    // Assert the clients have the dynamic region and the new value
+    client1.invoke("Validate dynamic region creation on client", () -> {
+      Region<Object, Object> r = getRootRegion(name);
+      assertThat(r).isNotNull();
+      Region<Object, Object> dr;
 
-          assertNotNull(getCache().getRegion(drName));
-          DynamicRegionFactory.get().destroyDynamicRegion(drName);
-          assertNull(getCache().getRegion(drName));
+      await().pollInterval(1, SECONDS).until(() -> r.getSubregion(dynFromServerName) != null
+          && getCache().getRegion(name + Region.SEPARATOR + dynFromServerName) != null);
+
+      dr = r.getSubregion(dynFromServerName);
+      waitForEntry(dr, key1);
+      assertThat(dr.getEntry(key1)).isNotNull();
+      assertThat(v1Dynamic).isEqualTo(dr.getEntry(key1).getValue());
+    });
+    // now delete the dynamic region on a server and see if it goes away on client
+    srv2.invoke("Server dynamic region destruction", () -> {
+      assertThat(DynamicRegionFactory.get().isActive()).isTrue();
+      Region<Object, Object> r = getRootRegion(name);
+      assertThat(r).isNotNull();
+      String drName = r.getFullPath() + Region.SEPARATOR + dynFromServerName;
+
+      assertThat(getCache().getRegion(drName)).isNotNull();
+      DynamicRegionFactory.get().destroyDynamicRegion(drName);
+      assertThat(getCache().getRegion(drName)).isNull();
+    });
+    srv1.invoke("Validate dynamic region destruction on other server", () -> {
+      Region<Object, Object> r = getRootRegion(name);
+      assertThat(r).isNotNull();
+      String drName = r.getFullPath() + Region.SEPARATOR + dynFromServerName;
+      {
+        int retry = 100;
+        while (retry-- > 0 && getCache().getRegion(drName) != null) {
+          try {
+            Thread.sleep(100);
+          } catch (InterruptedException ignore) {
+            fail("interrupted");
+          }
         }
-      });
-      srv1.invoke(
-          new CacheSerializableRunnable("Validate dynamic region destruction on other server") {
-            @Override
-            public void run2() throws CacheException {
-              Region<Object, Object> r = getRootRegion(name);
-              assertNotNull(r);
-              String drName = r.getFullPath() + Region.SEPARATOR + dynFromServerName;
-              {
-                int retry = 100;
-                while (retry-- > 0 && getCache().getRegion(drName) != null) {
-                  try {
-                    Thread.sleep(100);
-                  } catch (InterruptedException ignore) {
-                    fail("interrupted");
-                  }
-                }
-              }
-              assertNull(getCache().getRegion(drName));
-            }
-          });
-      // Assert the clients no longer have the dynamic region
-      client1
-          .invoke("Validate dynamic region destruction on client", new CacheSerializableRunnable() {
-            @Override
-            public void run2() throws CacheException {
-              Region<Object, Object> r = getRootRegion(name);
-              assertNotNull(r);
-              String drName = r.getFullPath() + Region.SEPARATOR + dynFromServerName;
-              {
-                int retry = 100;
-                while (retry-- > 0 && getCache().getRegion(drName) != null) {
-                  try {
-                    Thread.sleep(100);
-                  } catch (InterruptedException ignore) {
-                    fail("interrupted");
-                  }
-                }
-              }
-              assertNull(getCache().getRegion(drName));
-              // sleep to make sure that the dynamic region entry from the internal
-              // region,dynamicRegionList in DynamicRegionFactory // ?
-              try {
-                Thread.sleep(10000);
-              } catch (InterruptedException ignore) {
-                fail("interrupted");
-              }
-              try {
-                DynamicRegionFactory.get().destroyDynamicRegion(drName);
-                fail("expected RegionDestroyedException");
-              } catch (RegionDestroyedException ignored) {
-              }
-            }
-          });
-    } finally {
-      client1.invoke(JUnit4DistributedTestCase::disconnectFromDS); // clean-up loner
-      srv1.invoke(JUnit4DistributedTestCase::disconnectFromDS);
-      srv2.invoke(JUnit4DistributedTestCase::disconnectFromDS);
-    }
+      }
+      assertThat(getCache().getRegion(drName)).isNull();
+    });
+    // Assert the clients no longer have the dynamic region
+    client1.invoke("Validate dynamic region destruction on client", () -> {
+      Region<Object, Object> r = getRootRegion(name);
+      assertThat(r).isNotNull();
+      String drName = r.getFullPath() + Region.SEPARATOR + dynFromServerName;
+      {
+        int retry = 100;
+        while (retry-- > 0 && getCache().getRegion(drName) != null) {
+          try {
+            Thread.sleep(100);
+          } catch (InterruptedException ignore) {
+            fail("interrupted");
+          }
+        }
+      }
+      assertThat(getCache().getRegion(drName)).isNull();
+      // sleep to make sure that the dynamic region entry from the internal
+      // region,dynamicRegionList in DynamicRegionFactory // ?
+      try {
+        Thread.sleep(10000);
+      } catch (InterruptedException ignore) {
+        fail("interrupted");
+      }
+      try {
+        DynamicRegionFactory.get().destroyDynamicRegion(drName);
+        fail("expected RegionDestroyedException");
+      } catch (RegionDestroyedException ignored) {
+      }
+    });
   }
 
 
@@ -4585,85 +3303,59 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     final Object createCallbackArg = "CREATE CALLBACK ARG";
 
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
+
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
 
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        createRegion(name, factory.create());
-      }
-    };
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      createRegion(name, factory);
+    });
 
-    vm1.invoke(create);
-    vm1.invoke("Create empty byte array", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 1; i++) {
-          region.create(i, new byte[0], createCallbackArg);
-        }
+    vm1.invoke("Create empty byte array", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 1; i++) {
+        region.create(i, new byte[0], createCallbackArg);
       }
     });
 
-    vm1.invoke("Verify values on client", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 1; i++) {
-          Region.Entry entry = region.getEntry(i);
-          assertNotNull(entry);
-          byte[] value = (byte[]) entry.getValue();
-          assertNotNull(value);
-          assertEquals(0, value.length);
-        }
-      }
-    });
-    vm0.invoke("Verify values on server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 1; i++) {
-          Region.Entry entry = region.getEntry(i);
-          assertNotNull(entry);
-          byte[] value = (byte[]) entry.getValue();
-          assertNotNull(value);
-          assertEquals(0, value.length);
-        }
+    vm1.invoke("Verify values on client", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 1; i++) {
+        Region.Entry entry = region.getEntry(i);
+        assertThat(entry).isNotNull();
+        byte[] value = (byte[]) entry.getValue();
+        assertThat(value).isNotNull();
+        assertThat(0).isEqualTo(value.length);
       }
     });
 
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
+    vm0.invoke("Verify values on server", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 1; i++) {
+        Region.Entry entry = region.getEntry(i);
+        assertThat(entry).isNotNull();
+        byte[] value = (byte[]) entry.getValue();
+        assertThat(value).isNotNull();
+        assertThat(0).isEqualTo(value.length);
       }
-    };
+    });
 
-    vm1.invoke(close);
+    vm1.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
+    });
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -4676,148 +3368,114 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     final String name = this.getName();
 
     // Create cache server
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
-          @Override
-          public Object load(LoaderHelper helper) {
-            return helper.getKey();
-          }
-
-          @Override
-          public void close() {
-
-          }
-        };
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(cl, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
+    vm0.invoke("Create Cache Server", () -> {
+      CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
+        @Override
+        public Object load(LoaderHelper helper) {
+          return helper.getKey();
         }
 
-      }
+        @Override
+        public void close() {
+
+        }
+      };
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(cl, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
 
     // Create cache server clients
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
+    SerializableRunnable create = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         getLonerSystem();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
         factory.setScope(Scope.LOCAL);
         factory.setConcurrencyChecksEnabled(false);
         // create bridge writer
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        factory.setCacheListener(new ControlListener());
-        createRegion(name, factory.create());
+        configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+        factory.addCacheListener(new ControlListener());
+        createRegion(name, factory);
       }
     };
 
-    vm1.invoke(create);
-    vm2.invoke(create);
+    vm1.invoke("Create region", create);
+    vm2.invoke("Create region", create);
 
     // VM1 Register interest
-    vm1.invoke("Create Entries and Register Interest", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        try {
-          // This call will cause no value to be put into the region
-          region.registerInterest("key-1", InterestResultPolicy.NONE);
-        } catch (Exception ex) {
-          fail("While registering interest: ", ex);
-        }
-      }
+    vm1.invoke("Create Entries and Register Interest", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+
+      // This call will cause no value to be put into the region
+      region.registerInterest("key-1", InterestResultPolicy.NONE);
+
     });
 
     // VM2 Put entry (this will cause a create event in both VM1 and VM2)
-    vm2.invoke("Put Value", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.create("key-1", "key-1-create", "key-1-create");
-      }
+    vm2.invoke("Put Value", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.create("key-1", "key-1-create", "key-1-create");
     });
 
     // VM2 Put entry (this will cause an update event in both VM1 and VM2)
-    vm2.invoke("Put Value", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.put("key-1", "key-1-update", "key-1-update");
-      }
+    vm2.invoke("Put Value", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.put("key-1", "key-1-update", "key-1-update");
     });
 
     // VM2 Destroy entry (this will cause a destroy event)
-    vm2.invoke("Destroy Entry", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        region.destroy("key-1", "key-1-destroy");
+    vm2.invoke("Destroy Entry", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.destroy("key-1", "key-1-destroy");
+    });
+
+    vm1.invoke("Verify events", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      ControlListener listener = (ControlListener) region.getAttributes().getCacheListeners()[0];
+      int eventCount = 3;
+      listener.waitWhileNotEnoughEvents(eventCount);
+      assertThat(eventCount).isEqualTo(listener.events.size());
+
+      {
+        EventWrapper ew = listener.events.get(0);
+        assertThat(ew.type).isEqualTo(TYPE_CREATE);
+        Object key = "key-1";
+        assertThat(key).isEqualTo(ew.event.getKey());
+        assertThat(ew.event.getOldValue()).isNull();
+        assertThat("key-1-create").isEqualTo(ew.event.getNewValue());
+        assertThat(Operation.CREATE).isEqualTo(ew.event.getOperation());
+        assertThat("key-1-create").isEqualTo(ew.event.getCallbackArgument());
+        assertThat(ew.event.isOriginRemote()).isTrue();
+
+        ew = listener.events.get(1);
+        assertThat(ew.type).isEqualTo(TYPE_UPDATE);
+        assertThat(key).isEqualTo(ew.event.getKey());
+        assertThat("key-1-create").isEqualTo(ew.event.getOldValue());
+        assertThat("key-1-update").isEqualTo(ew.event.getNewValue());
+        assertThat(Operation.UPDATE).isEqualTo(ew.event.getOperation());
+        assertThat("key-1-update").isEqualTo(ew.event.getCallbackArgument());
+        assertThat(ew.event.isOriginRemote()).isTrue();
+
+        ew = listener.events.get(2);
+        assertThat(ew.type).isEqualTo(TYPE_DESTROY);
+        assertThat("key-1-destroy").isEqualTo(ew.arg);
+        assertThat(key).isEqualTo(ew.event.getKey());
+        assertThat("key-1-update").isEqualTo(ew.event.getOldValue());
+        assertThat(ew.event.getNewValue()).isNull();
+        assertThat(Operation.DESTROY).isEqualTo(ew.event.getOperation());
+        assertThat("key-1-destroy").isEqualTo(ew.event.getCallbackArgument());
+        assertThat(ew.event.isOriginRemote()).isTrue();
       }
     });
 
-    final SerializableRunnable assertEvents = new CacheSerializableRunnable("Verify events") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        ControlListener listener = (ControlListener) region.getAttributes().getCacheListeners()[0];
-        int eventCount = 3;
-        listener.waitWhileNotEnoughEvents(60000, eventCount);
-        assertEquals(eventCount, listener.events.size());
-
-        {
-          EventWrapper ew = listener.events.get(0);
-          assertEquals(ew.type, TYPE_CREATE);
-          Object key = "key-1";
-          assertEquals(key, ew.event.getKey());
-          assertNull(ew.event.getOldValue());
-          assertEquals("key-1-create", ew.event.getNewValue());
-          assertEquals(Operation.CREATE, ew.event.getOperation());
-          assertEquals("key-1-create", ew.event.getCallbackArgument());
-          assertTrue(ew.event.isOriginRemote());
-
-          ew = listener.events.get(1);
-          assertEquals(ew.type, TYPE_UPDATE);
-          assertEquals(key, ew.event.getKey());
-          assertEquals("key-1-create", ew.event.getOldValue());
-          assertEquals("key-1-update", ew.event.getNewValue());
-          assertEquals(Operation.UPDATE, ew.event.getOperation());
-          assertEquals("key-1-update", ew.event.getCallbackArgument());
-          assertTrue(ew.event.isOriginRemote());
-
-          ew = listener.events.get(2);
-          assertEquals(ew.type, TYPE_DESTROY);
-          assertEquals("key-1-destroy", ew.arg);
-          assertEquals(key, ew.event.getKey());
-          assertEquals("key-1-update", ew.event.getOldValue());
-          assertNull(ew.event.getNewValue());
-          assertEquals(Operation.DESTROY, ew.event.getOperation());
-          assertEquals("key-1-destroy", ew.event.getCallbackArgument());
-          assertTrue(ew.event.isOriginRemote());
-        }
-      }
-    };
-    vm1.invoke(assertEvents);
-
     // Close cache server clients
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
-      }
-    };
-
-    vm1.invoke(close);
-    vm2.invoke(close);
-
+    Stream.of(vm1, vm2).forEach(vm -> vm.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
+    }));
     // Stop cache server
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -4831,78 +3489,54 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test031KeySetOnServer() throws CacheException {
     final String name = this.getName();
 
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setConcurrencyChecksEnabled(false);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.DISTRIBUTED_ACK);
+      factory.setConcurrencyChecksEnabled(false);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        createRegion(name, factory.create());
-      }
-    };
-    vm1.invoke(create);
-    vm2.invoke(create);
+    Stream.of(vm1, vm2).forEach(vm -> vm.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      createRegion(name, factory);
+    }));
+    vm2.invoke("Get keys on server", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      Set keySet = region.keySetOnServer();
+      assertThat(keySet).isNotNull();
+      assertThat(0).isEqualTo(keySet.size());
+    });
 
-    vm2.invoke("Get keys on server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        Set keySet = region.keySetOnServer();
-        assertNotNull(keySet);
-        assertEquals(0, keySet.size());
+    vm1.invoke("Put values", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.put(i, i);
       }
     });
 
-    vm1.invoke("Put values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.put(i, i);
-        }
-      }
+    vm2.invoke("Get keys on server", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      Set keySet = region.keySetOnServer();
+      assertThat(keySet).isNotNull();
+      assertThat(10).isEqualTo(keySet.size());
     });
 
-    vm2.invoke("Get keys on server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        Set keySet = region.keySetOnServer();
-        assertNotNull(keySet);
-        assertEquals(10, keySet.size());
-      }
-    });
-
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
+    SerializableRunnable closePool = new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         Region<Object, Object> region = getRootRegion().getSubregion(name);
         region.localDestroyRegion();
       }
     };
-    vm1.invoke(close);
-    vm2.invoke(close);
+    vm1.invoke("Close Pool", closePool);
+    vm2.invoke("Close Pool", closePool);
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -4915,93 +3549,66 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   public void test033NotSerializableException() throws CacheException {
     final String name = this.getName();
 
-    vm0.invoke("Create Cache Server", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
+      createRegion(name, factory);
+      startBridgeServer(0);
     });
+
     final int port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
 
-    SerializableRunnable create = new CacheSerializableRunnable("Create region") {
-      @Override
-      public void run2() throws CacheException {
-        getLonerSystem();
-        getCache();
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.LOCAL);
-        factory.setConcurrencyChecksEnabled(false);
+    vm1.invoke("Create region", () -> {
+      getLonerSystem();
+      getCache();
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
 
-        ClientServerTestCase.configureConnectionPool(factory, host0, port, -1, true, -1, -1, null);
-        createRegion(name, factory.create());
-      }
-    };
-    vm1.invoke(create);
+      configureConnectionPool(factory, host0, new int[] {port}, true, -1, -1, null);
+      createRegion(name, factory);
+    });
 
-    vm1.invoke("Attempt to create a non-serializable value", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        try {
-          region.create(1, new ConnectionPoolTestNonSerializable());
-          fail("Should not have been able to create a ConnectionPoolTestNonSerializable");
-        } catch (Exception e) {
-          if (!(e.getCause() instanceof java.io.NotSerializableException)) {
-            fail("Unexpected exception while creating a non-serializable value " + e);
-          }
+    vm1.invoke("Attempt to create a non-serializable value", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      try {
+        region.create(1, new ConnectionPoolTestNonSerializable());
+        fail("Should not have been able to create a ConnectionPoolTestNonSerializable");
+      } catch (GemFireException e) {
+        if (!(e.getCause() instanceof NotSerializableException)) {
+          fail("Unexpected exception while creating a non-serializable value " + e);
         }
       }
     });
 
-    vm1.invoke("Attempt to put a non-serializable value", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        try {
-          region.put(1, new ConnectionPoolTestNonSerializable());
-          fail("Should not have been able to put a ConnectionPoolTestNonSerializable");
-        } catch (Exception e) {
-          if (!(e.getCause() instanceof java.io.NotSerializableException)) {
-            fail("Unexpected exception while putting a non-serializable value " + e);
-          }
+    vm1.invoke("Attempt to put a non-serializable value", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      try {
+        region.put(1, new ConnectionPoolTestNonSerializable());
+        fail("Should not have been able to put a ConnectionPoolTestNonSerializable");
+      } catch (GemFireException e) {
+        if (!(e.getCause() instanceof java.io.NotSerializableException)) {
+          fail("Unexpected exception while putting a non-serializable value " + e);
         }
       }
     });
 
-    vm1.invoke("Attempt to get a non-serializable key", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        try {
-          region.get(new ConnectionPoolTestNonSerializable());
-          fail("Should not have been able to get a ConnectionPoolTestNonSerializable");
-        } catch (Exception e) {
-          if (!(e.getCause() instanceof java.io.NotSerializableException)) {
-            fail("Unexpected exception while getting a non-serializable key " + e);
-          }
+    vm1.invoke("Attempt to get a non-serializable key", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      try {
+        region.get(new ConnectionPoolTestNonSerializable());
+        fail("Should not have been able to get a ConnectionPoolTestNonSerializable");
+      } catch (GemFireException e) {
+        if (!(e.getCause() instanceof java.io.NotSerializableException)) {
+          fail("Unexpected exception while getting a non-serializable key " + e);
         }
       }
     });
 
-    SerializableRunnable close = new CacheSerializableRunnable("Close Pool") {
-      @Override
-      public void run2() throws CacheException {
-        Region<Object, Object> region = getRootRegion().getSubregion(name);
-        region.localDestroyRegion();
-      }
-    };
-
-    vm1.invoke(close);
+    vm1.invoke("Close Pool", () -> {
+      Region<Object, Object> region = getRootRegion().getSubregion(name);
+      region.localDestroyRegion();
+    });
 
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
   }
@@ -5022,10 +3629,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     disconnectAllFromDS();
 
-    // Create the cache servers with distributed, mirrored region
-    SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
-      @Override
-      public void run2() throws CacheException {
+    for (VM vm : new VM[] {vm0, vm1}) {
+      // Create the cache servers with distributed, mirrored region
+      vm.invoke("Create Cache Server", () -> {
         CacheLoader<Object, Object> cl = new CacheLoader<Object, Object>() {
           @Override
           public Object load(LoaderHelper helper) {
@@ -5037,185 +3643,140 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
           }
         };
-        AttributesFactory<Object, Object> factory =
-            getBridgeServerMirroredAckRegionAttributes(cl, null);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-
-      }
-    };
-    getSystem().getLogWriter().info("before create server");
-    vm0.invoke(createServer);
-    vm1.invoke(createServer);
+        RegionFactory<Object, Object> factory =
+            getBridgeServerMirroredAckRegionAttributes(cl);
+        createRegion(name, factory);
+        startBridgeServer(0);
+      });
+    }
 
     // Create cache server clients
     final int numberOfKeys = 10;
     final String host0 = NetworkUtils.getServerHostName();
     final int vm0Port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
     final int vm1Port = vm1.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
-    SerializableRunnable createClient =
-        new CacheSerializableRunnable("Create Cache Server Client") {
-          @Override
-          public void run2() throws CacheException {
-            // reset all static listener variables in case this is being rerun in a subclass
-            numberOfAfterInvalidates = 0;
-            numberOfAfterCreates = 0;
-            numberOfAfterUpdates = 0;
-            getLonerSystem();
-            // create the region
-            AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-            factory.setScope(Scope.LOCAL);
-            factory.setConcurrencyChecksEnabled(false);
-            // create bridge writer
-            ClientServerTestCase.configureConnectionPool(factory, host0, vm0Port, vm1Port, true, -1,
-                -1, null);
-            createRegion(name, factory.create());
-          }
-        };
-    getSystem().getLogWriter().info("before create client");
-    vm2.invoke(createClient);
-    vm3.invoke(createClient);
+    Stream.of(vm2, vm3).forEach(vm -> {
+      logger.info("before create client");
+      vm.invoke("Create Cache Server Client", () -> {
+        // reset all static listener variables in case this is being rerun in a subclass
+        numberOfAfterInvalidates = 0;
+        numberOfAfterCreates = 0;
+        numberOfAfterUpdates = 0;
+        getLonerSystem();
+        // create the region
+        RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+        factory.setScope(Scope.LOCAL);
+        factory.setConcurrencyChecksEnabled(false);
+        // create bridge writer
+        configureConnectionPool(factory, host0, new int[] {vm0Port, vm1Port}, true, -1,
+            -1, null);
+        createRegion(name, factory);
+      });
+    });
 
     // Initialize each client with entries (so that afterInvalidate is called)
-    SerializableRunnable initializeClient = new CacheSerializableRunnable("Initialize Client") {
-      @Override
-      public void run2() throws CacheException {
+    Stream.of(vm2, vm3).forEach(vm -> {
+      logger.info("before initialize client");
+      vm.invoke("Initialize Client", () -> {
         numberOfAfterInvalidates = 0;
         numberOfAfterCreates = 0;
         numberOfAfterUpdates = 0;
         LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
         for (int i = 0; i < numberOfKeys; i++) {
-          assertEquals("key-" + i, region.get("key-" + i));
+          assertThat("key-" + i).isEqualTo(region.get("key-" + i));
         }
-      }
-    };
-    getSystem().getLogWriter().info("before initialize client");
-    vm2.invoke(initializeClient);
-    vm3.invoke(initializeClient);
-
+      });
+    });
     // Add a CacheListener to both vm2 and vm3
-    vm2.invoke("Add CacheListener 1", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        CacheListener listener = new CacheListenerAdapter() {
-          @Override
-          public void afterCreate(EntryEvent e) {
-            numberOfAfterCreates++;
-            logger
-                .info("vm2 numberOfAfterCreates: " + numberOfAfterCreates);
-          }
+    vm2.invoke("Add CacheListener 1", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      CacheListener listener = new CacheListenerAdapter() {
+        @Override
+        public void afterCreate(EntryEvent e) {
+          numberOfAfterCreates++;
+          logger.info("vm2 numberOfAfterCreates: " + numberOfAfterCreates);
+        }
 
-          @Override
-          public void afterUpdate(EntryEvent e) {
-            numberOfAfterUpdates++;
-            logger
-                .info("vm2 numberOfAfterUpdates: " + numberOfAfterUpdates);
-          }
+        @Override
+        public void afterUpdate(EntryEvent e) {
+          numberOfAfterUpdates++;
+          logger.info("vm2 numberOfAfterUpdates: " + numberOfAfterUpdates);
+        }
 
-          @Override
-          public void afterInvalidate(EntryEvent e) {
-            numberOfAfterInvalidates++;
-            logger
-                .info("vm2 numberOfAfterInvalidates: " + numberOfAfterInvalidates);
-          }
-        };
-        region.getAttributesMutator().addCacheListener(listener);
-        region.registerInterestRegex(".*", false, false);
-      }
+        @Override
+        public void afterInvalidate(EntryEvent e) {
+          numberOfAfterInvalidates++;
+          logger.info("vm2 numberOfAfterInvalidates: " + numberOfAfterInvalidates);
+        }
+      };
+      region.getAttributesMutator().addCacheListener(listener);
+      region.registerInterestRegex(".*", false, false);
     });
 
-    vm3.invoke("Add CacheListener 2", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        CacheListener<Object, Object> listener = new CacheListenerAdapter<Object, Object>() {
-          @Override
-          public void afterCreate(EntryEvent e) {
-            numberOfAfterCreates++;
-          }
+    vm3.invoke("Add CacheListener 2", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      CacheListener<Object, Object> listener = new CacheListenerAdapter<Object, Object>() {
+        @Override
+        public void afterCreate(EntryEvent e) {
+          numberOfAfterCreates++;
+        }
 
-          @Override
-          public void afterUpdate(EntryEvent e) {
-            numberOfAfterUpdates++;
-          }
+        @Override
+        public void afterUpdate(EntryEvent e) {
+          numberOfAfterUpdates++;
+        }
 
-          @Override
-          public void afterInvalidate(EntryEvent e) {
-            numberOfAfterInvalidates++;
-          }
-        };
-        region.getAttributesMutator().addCacheListener(listener);
-        region.registerInterestRegex(".*", false, false);
-      }
+        @Override
+        public void afterInvalidate(EntryEvent e) {
+          numberOfAfterInvalidates++;
+        }
+      };
+      region.getAttributesMutator().addCacheListener(listener);
+      region.registerInterestRegex(".*", false, false);
     });
 
-    Wait.pause(3000);
+    vm2.invoke(() -> await().until(() -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      for (int i = 0; i < numberOfKeys; i++) {
+        assertThat("key-" + i).isEqualTo(region.get("key-" + i));
+      }
+      return true;
+    }));
 
-    getSystem().getLogWriter().info("before puts");
     // Use vm2 to put new values
     // This should cause 10 afterUpdates to vm2 and 10 afterInvalidates to vm3
-    vm2.invoke("Put New Values", new CacheSerializableRunnable() {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        for (int i = 0; i < 10; i++) {
-          region.put("key-" + i, "key-" + i);
-        }
+    vm2.invoke("Put New Values", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      for (int i = 0; i < 10; i++) {
+        region.put("key-" + i, "key-" + i);
       }
     });
-    getSystem().getLogWriter().info("after puts");
 
-    // Wait to make sure all the updates are received
-    Wait.pause(1000);
+    vm2.invoke(() -> {
+      await("VM2 should not have received any afterCreate messages")
+          .until(() -> ConnectionPoolDUnitTest.getNumberOfAfterCreates() == 0);
+      await("VM2 should not have received any afterInvalidate messages")
+          .until(() -> ConnectionPoolDUnitTest.getNumberOfAfterInvalidates() == 0);
+    });
 
-    long vm2AfterCreates = vm2.invoke(ConnectionPoolDUnitTest::getNumberOfAfterCreates);
     long vm2AfterUpdates = vm2.invoke(ConnectionPoolDUnitTest::getNumberOfAfterUpdates);
-    long vm2AfterInvalidates =
-        vm2.invoke(ConnectionPoolDUnitTest::getNumberOfAfterInvalidates);
-    long vm3AfterCreates = vm3.invoke(ConnectionPoolDUnitTest::getNumberOfAfterCreates);
-    long vm3AfterUpdates = vm3.invoke(ConnectionPoolDUnitTest::getNumberOfAfterUpdates);
-    long vm3AfterInvalidates =
-        vm3.invoke(ConnectionPoolDUnitTest::getNumberOfAfterInvalidates);
-    logger
-        .info("vm2AfterCreates: " + vm2AfterCreates);
-    logger
-        .info("vm2AfterUpdates: " + vm2AfterUpdates);
-    logger
-        .info("vm2AfterInvalidates: " + vm2AfterInvalidates);
-    logger
-        .info("vm3AfterCreates: " + vm3AfterCreates);
-    logger
-        .info("vm3AfterUpdates: " + vm3AfterUpdates);
-    logger
-        .info("vm3AfterInvalidates: " + vm3AfterInvalidates);
-
-    assertEquals("VM2 should not have received any afterCreate messages", 0, vm2AfterCreates);
-    assertEquals("VM2 should not have received any afterInvalidate messages", 0,
-        vm2AfterInvalidates);
-    assertEquals(
-        "VM2 received " + vm2AfterUpdates + " afterUpdate messages. It should have received "
-            + numberOfKeys,
-        vm2AfterUpdates, numberOfKeys);
-
-    assertEquals("VM3 should not have received any afterCreate messages", 0, vm3AfterCreates);
-    assertEquals("VM3 should not have received any afterUpdate messages", 0, vm3AfterUpdates);
-    assertEquals("VM3 received " + vm3AfterInvalidates
-        + " afterInvalidate messages. It should have received " + numberOfKeys, vm3AfterInvalidates,
-        numberOfKeys);
+    long vm3AfterInvalidates = vm3.invoke(ConnectionPoolDUnitTest::getNumberOfAfterInvalidates);
+    assertThat(vm2AfterUpdates)
+        .describedAs("VM2 received " + vm2AfterUpdates
+            + " afterUpdate messages. It should have received " + numberOfKeys)
+        .isEqualTo(numberOfKeys);
+    assertThat(vm3AfterInvalidates)
+        .describedAs("VM3 received " + vm3AfterInvalidates
+            + " afterInvalidate messages. It should have received " + numberOfKeys)
+        .isEqualTo(numberOfKeys);
   }
 
 
-  static class DelayListener extends CacheListenerAdapter {
+  static class DelayListener extends CacheListenerAdapter<Object, Object> {
     private final int delay;
 
-    DelayListener(int delay) {
-      this.delay = delay;
+    DelayListener() {
+      this.delay = 25;
     }
 
     private void delay() {
@@ -5281,98 +3842,63 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     final String name = this.getName();
 
     // Create the cache servers with distributed, empty region
-    SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setDataPolicy(DataPolicy.EMPTY);
-        factory.setConcurrencyChecksEnabled(false);
-        createRegion(name, factory.create());
-        // pause(1000);
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-      }
-    };
-    getSystem().getLogWriter().info("before create server");
-    vm0.invoke(createServer);
+    logger.info("before create server");
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.DISTRIBUTED_ACK);
+      factory.setDataPolicy(DataPolicy.EMPTY);
+      factory.setConcurrencyChecksEnabled(false);
+      createRegion(name, factory);
+      startBridgeServer(0);
+    });
 
     // Create cache server client
     final String host0 = NetworkUtils.getServerHostName();
     final int vm0Port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
-    SerializableRunnable createClient =
-        new CacheSerializableRunnable("Create Cache Server Client") {
-          @Override
-          public void run2() throws CacheException {
-            getLonerSystem();
-            // create the region
-            AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-            factory.setScope(Scope.LOCAL);
-            factory.setConcurrencyChecksEnabled(false);
-            // create bridge writer
-            ClientServerTestCase.configureConnectionPool(factory, host0, vm0Port, -1, true, -1, -1,
-                null);
-            createRegion(name, factory.create());
-            LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-            region.registerInterestRegex(".*");
-          }
-        };
-    getSystem().getLogWriter().info("before create client");
-    vm1.invoke(createClient);
+    logger.info("before create client");
+    vm1.invoke("Create Cache Server Client", () -> {
+      getLonerSystem();
+      // create the region
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      // create bridge writer
+      configureConnectionPool(factory, host0, new int[] {vm0Port}, true, -1, -1,
+          null);
+      createRegion(name, factory);
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.registerInterestRegex(".*");
+    });
 
     // now do a tx in the server
-    SerializableRunnable doServerTx = new CacheSerializableRunnable("doServerTx") {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        Cache cache = getCache();
-        CacheTransactionManager txmgr = cache.getCacheTransactionManager();
-        txmgr.begin();
-        try {
-          region.put("k1", "v1");
-          region.put("k2", "v2");
-          region.put("k3", "v3");
-        } finally {
-          txmgr.commit();
-        }
+    logger.info("before doServerTx");
+    vm0.invoke("doServerTx", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      Cache cache1 = getCache();
+      CacheTransactionManager txMgr = cache1.getCacheTransactionManager();
+      txMgr.begin();
+      try {
+        region.put("k1", "v1");
+        region.put("k2", "v2");
+        region.put("k3", "v3");
+      } finally {
+        txMgr.commit();
       }
-    };
-    getSystem().getLogWriter().info("before doServerTx");
-    vm0.invoke(doServerTx);
+    });
 
     // now verify that the client receives the committed data
-    SerializableRunnable validateClient =
-        new CacheSerializableRunnable("Validate Cache Server Client") {
-          @Override
-          public void run2() throws CacheException {
-            final LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-            // wait for a while for us to have the correct number of entries
-            WaitCriterion ev = new WaitCriterion() {
-              @Override
-              public boolean done() {
-                return region.size() == 3;
-              }
-
-              @Override
-              public String description() {
-                return "waiting for region to be size 3";
-              }
-            };
-            await().untilAsserted(ev);
-            // assertIndexDetailsEquals(3, region.size());
-            assertTrue(region.containsKey("k1"));
-            assertTrue(region.containsKey("k2"));
-            assertTrue(region.containsKey("k3"));
-            assertEquals("v1", region.getEntry("k1").getValue());
-            assertEquals("v2", region.getEntry("k2").getValue());
-            assertEquals("v3", region.getEntry("k3").getValue());
-          }
-        };
-    getSystem().getLogWriter().info("before confirmCommitOnClient");
-    vm1.invoke(validateClient);
+    logger.info("before confirmCommitOnClient");
+    vm1.invoke("Validate Cache Server Client", () -> {
+      final LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      // wait for a while for us to have the correct number of entries
+      await().alias("waiting for region to be size 3").until(() -> region.size() == 3);
+      assertThat(region.containsKey("k1")).isTrue();
+      assertThat(region.containsKey("k2")).isTrue();
+      assertThat(region.containsKey("k3")).isTrue();
+      assertThat("v1").isEqualTo(region.getEntry("k1").getValue());
+      assertThat("v2").isEqualTo(region.getEntry("k2").getValue());
+      assertThat("v3").isEqualTo(region.getEntry("k3").getValue());
+    });
   }
 
   /**
@@ -5385,121 +3911,84 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     final String name = this.getName();
 
     // Create the cache servers with distributed, empty region
-    SerializableRunnable createServer = new CacheSerializableRunnable("Create Cache Server") {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setConcurrencyChecksEnabled(false);
-        factory.setDataPolicy(DataPolicy.EMPTY);
-        factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-        createRegion(name, factory.create());
-        try {
-          startBridgeServer(0);
-        } catch (Exception ex) {
-          fail("While starting CacheServer", ex);
-        }
-      }
-    };
-    getSystem().getLogWriter().info("before create server");
-    vm0.invoke(createServer);
+    logger.info("before create server");
+    vm0.invoke("Create Cache Server", () -> {
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.DISTRIBUTED_ACK);
+      factory.setConcurrencyChecksEnabled(false);
+      factory.setDataPolicy(DataPolicy.EMPTY);
+      factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
+      createRegion(name, factory);
+      startBridgeServer(0);
+    });
 
     // Create cache server client
     final String host0 = NetworkUtils.getServerHostName();
     final int vm0Port = vm0.invoke(ConnectionPoolDUnitTest::getCacheServerPort);
-    SerializableRunnable createClient =
-        new CacheSerializableRunnable("Create Cache Server Client") {
-          @Override
-          public void run2() throws CacheException {
-            getLonerSystem();
-            // create the region
-            AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-            factory.setScope(Scope.LOCAL);
-            factory.setConcurrencyChecksEnabled(false);
-            // create bridge writer
-            ClientServerTestCase.configureConnectionPool(factory, host0, vm0Port, -1, true, -1, -1,
-                null);
-            createRegion(name, factory.create());
-            LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-            region.registerInterestRegex(".*");
-          }
-        };
-    getSystem().getLogWriter().info("before create client");
-    vm1.invoke(createClient);
+    logger.info("before create client");
+    vm1.invoke("Create Cache Server Client", () -> {
+      getLonerSystem();
+      // create the region
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.LOCAL);
+      factory.setConcurrencyChecksEnabled(false);
+      // create bridge writer
+      configureConnectionPool(factory, host0, new int[] {vm0Port}, true, -1, -1,
+          null);
+      createRegion(name, factory);
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      region.registerInterestRegex(".*");
+    });
 
-    SerializableRunnable createServerPeer = new CacheSerializableRunnable("Create Server Peer") {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory<Object, Object> factory = new AttributesFactory<>();
-        factory.setScope(Scope.DISTRIBUTED_ACK);
-        factory.setDataPolicy(DataPolicy.EMPTY);
-        factory.setConcurrencyChecksEnabled(false);
-        createRegion(name, factory.create());
-      }
-    };
-    getSystem().getLogWriter().info("before create server peer");
-    vm2.invoke(createServerPeer);
+    logger.info("before create server peer");
+    vm2.invoke("Create Server Peer", () -> {
+      RegionFactory<Object, Object> factory = getCache().createRegionFactory();
+      factory.setScope(Scope.DISTRIBUTED_ACK);
+      factory.setDataPolicy(DataPolicy.EMPTY);
+      factory.setConcurrencyChecksEnabled(false);
+      createRegion(name, factory);
+    });
 
     // now do a tx in the server
-    SerializableRunnable doServerTx = new CacheSerializableRunnable("doServerTx") {
-      @Override
-      public void run2() throws CacheException {
-        LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-        Cache cache = getCache();
-        CacheTransactionManager txmgr = cache.getCacheTransactionManager();
-        txmgr.begin();
-        try {
-          region.put("k1", "v1");
-          region.put("k2", "v2");
-          region.put("k3", "v3");
-        } finally {
-          txmgr.commit();
-        }
+    logger.info("before doServerTx");
+    vm2.invoke("doServerTx", () -> {
+      LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      Cache cache1 = getCache();
+      CacheTransactionManager txmgr = cache1.getCacheTransactionManager();
+      txmgr.begin();
+      try {
+        region.put("k1", "v1");
+        region.put("k2", "v2");
+        region.put("k3", "v3");
+      } finally {
+        txmgr.commit();
       }
-    };
-    getSystem().getLogWriter().info("before doServerTx");
-    vm2.invoke(doServerTx);
-
-    // @todo verify server received it but to do this need a listener in
-    // the server
+    });
 
     // now verify that the client receives the committed data
-    SerializableRunnable validateClient =
-        new CacheSerializableRunnable("Validate Cache Server Client") {
-          @Override
-          public void run2() throws CacheException {
-            final LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
-            // wait for a while for us to have the correct number of entries
-            WaitCriterion ev = new WaitCriterion() {
-              @Override
-              public boolean done() {
-                return region.size() == 3;
-              }
+    logger.info("before confirmCommitOnClient");
+    vm1.invoke("Validate Cache Server Client", () -> {
+      final LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
+      // wait for a while for us to have the correct number of entries
 
-              @Override
-              public String description() {
-                return "waiting for region to be size 3";
-              }
-            };
-            await().untilAsserted(ev);
-            assertTrue(region.containsKey("k1"));
-            assertTrue(region.containsKey("k2"));
-            assertTrue(region.containsKey("k3"));
-            assertEquals("v1", region.getEntry("k1").getValue());
-            assertEquals("v2", region.getEntry("k2").getValue());
-            assertEquals("v3", region.getEntry("k3").getValue());
-          }
-        };
-    getSystem().getLogWriter().info("before confirmCommitOnClient");
-    vm1.invoke(validateClient);
+      await().alias("waiting for region to be size 3").until(() -> region.size() == 3);
+      assertThat(region.containsKey("k1")).isTrue();
+      assertThat(region.containsKey("k2")).isTrue();
+      assertThat(region.containsKey("k3")).isTrue();
+      assertThat("v1").isEqualTo(region.getEntry("k1").getValue());
+      assertThat("v2").isEqualTo(region.getEntry("k2").getValue());
+      assertThat("v3").isEqualTo(region.getEntry("k3").getValue());
+    });
     disconnectAllFromDS();
   }
 
+  @SuppressWarnings("WeakerAccess")
   static class Order implements DataSerializable {
     int index;
 
     public Order() {}
 
+    @SuppressWarnings("WeakerAccess")
     public void init(int index) {
       this.index = index;
     }

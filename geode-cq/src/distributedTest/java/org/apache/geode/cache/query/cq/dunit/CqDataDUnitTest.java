@@ -461,7 +461,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
           Region region = createRegion(cqDUnitTest.regions[i], factory.createRegionAttributes());
           // Set CacheListener.
           region.getAttributesMutator()
-              .addCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
+              .addCacheListener(new CertifiableTestCacheListener());
         }
         Wait.pause(2000);
 

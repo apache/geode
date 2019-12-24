@@ -134,8 +134,11 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    ClientServerTestCase.configureConnectionPoolWithName(factory, hostName,
-        new int[] {PORT1, PORT2}, true, -1, 2, null, "FailoverPool");
+    ClientServerTestCase
+        .configureConnectionPoolWithNameAndFactory(factory, hostName, new int[] {PORT1, PORT2},
+            true, -1,
+            2, (String) null, "FailoverPool", PoolManager.createFactory(), -1, -1, -2,
+            -1);
     factory.setCacheListener(new CacheListenerAdapter() {
       @Override
       public void afterUpdate(EntryEvent event) {

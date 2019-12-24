@@ -1386,8 +1386,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       System.out.println("[testGetConnectedServers] creating connectionpool for "
           + NetworkUtils.getServerHostName(host) + " " + ports[i]);
       int[] thisServerPorts = new int[] {ports[i]};
-      ClientServerTestCase.configureConnectionPoolWithName(factory,
-          NetworkUtils.getServerHostName(host), thisServerPorts, false, -1, -1, null, "pooly" + i);
+      configureConnectionPoolWithNameAndFactory(factory, NetworkUtils.getServerHostName(host),
+          thisServerPorts, false, -1,
+          -1, null, "pooly" + i, PoolManager.createFactory(), -1, -1, -2,
+          -1);
       Region region = createRegion(name + "_" + i, factory.create());
       assertNotNull(getRootRegion().getSubregion(name + "_" + i));
       region.get("KEY-1");
