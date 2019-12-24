@@ -50,13 +50,15 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSMemberWrapper;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
+import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
+public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, TcpHandler {
 
   static final int LOCATOR_FILE_STAMP = 0x7b8cf741;
 
@@ -205,7 +207,6 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     if (logger.isDebugEnabled()) {
       logger.debug("Peer locator processing {}", request);
     }
-
     if (localAddress == null && services != null) {
       localAddress = services.getMessenger().getMemberID();
     }
@@ -380,6 +381,11 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
   public void shutDown() {
     // nothing to do for GMSLocator
     publicKeys.clear();
+  }
+
+  @Override
+  public void init(TcpServer tcpServer) {
+    // no-op. This is normally handled by the GMSLocatorAdapter wrapper in geode-core
   }
 
   @VisibleForTesting

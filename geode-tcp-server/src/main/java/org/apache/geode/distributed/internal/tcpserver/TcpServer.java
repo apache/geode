@@ -404,10 +404,7 @@ public class TcpServer {
         logger.debug("Locator received request " + request + " from " + socket.getInetAddress());
       }
       if (request instanceof ShutdownRequest) {
-        shuttingDown = true;
-        // Don't call shutdown from within the worker thread, see java bug #6576792.
-        // Closing the socket will cause our acceptor thread to shutdown the executor
-        srv_sock.close();
+        requestShutdown();
         response = new ShutdownResponse();
       } else if (request instanceof VersionRequest) {
         response = handleVersionRequest(request);
@@ -433,6 +430,17 @@ public class TcpServer {
       // Close the socket. We can not accept requests from a newer version
       rejectUnknownProtocolConnection(socket, gossipVersion);
     }
+  }
+
+  /**
+   * Request that this TcpServer shut down. Use join() or join(long) to
+   * wait for shutdown to complete.
+   */
+  public void requestShutdown() throws IOException {
+    shuttingDown = true;
+    // Don't call shutdown from within the worker thread, see java bug #6576792.
+    // Closing the socket will cause our acceptor thread to shutdown the executor
+    srv_sock.close();
   }
 
   private void rejectUnknownProtocolConnection(Socket socket, int gossipVersion) {

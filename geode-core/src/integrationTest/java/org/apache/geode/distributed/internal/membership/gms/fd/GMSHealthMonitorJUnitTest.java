@@ -191,7 +191,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testHMServiceStarted() throws Exception {
+  public void testHMServiceStarted() throws IOException, MemberStartupException {
 
     MemberIdentifier mbr =
         new InternalDistributedMember("localhost", 12345);
@@ -208,13 +208,12 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testHMServiceHandlesShutdownRace() throws IOException, Exception {
+  public void testHMServiceHandlesShutdownRace() throws Exception {
     // The health monitor starts a thread to monitor the tcp socket, both that thread and the
     // stopServices call will attempt to shut down the socket during a normal close. This test tries
     // to create a problematic ordering to make sure we still shutdown properly.
     ((GMSHealthMonitorTest) gmsHealthMonitor).useBlockingSocket = true;
     gmsHealthMonitor.started();
-
     gmsHealthMonitor.stop();
   }
 
@@ -292,8 +291,6 @@ public class GMSHealthMonitorJUnitTest {
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(myAddressIndex));
     gmsHealthMonitor.started();
-
-
     gmsHealthMonitor.installView(v);
 
     return v;

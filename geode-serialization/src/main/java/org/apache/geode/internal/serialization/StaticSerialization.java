@@ -399,6 +399,7 @@ public class StaticSerialization {
     byte typeCode = in.readByte();
     if (typeCode == DSCODE.CLASS.toByte()) {
       String className = readString(in);
+      className = processIncomingClassName(className);
       return Class.forName(className);
     } else {
       return StaticSerialization.decodePrimitiveClass(typeCode);

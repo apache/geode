@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -46,8 +47,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.StartupMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -97,6 +96,10 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   private LifecycleListener<ID> lifecycleListener;
 
   private volatile boolean isCloseInProgress;
+
+  private ExecutorService viewExcecutor = LoggingExecutors.newSingleThreadExecutor(
+      "Geode View Installation thread ",
+      true);
 
   /**
    * Trick class to make the startup synch more visible in stack traces
@@ -980,15 +983,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       // view processing can take a while, so we use a separate thread
       // to avoid blocking a reader thread
       long newId = viewArg.getViewId();
-      LocalViewMessage v = new LocalViewMessage((InternalDistributedMember) address, newId,
-          (MembershipView<InternalDistributedMember>) viewArg,
-          (GMSMembership<InternalDistributedMember>) GMSMembership.this);
-
-      try {
-        messageListener.messageReceived((Message<ID>) v);
-      } catch (MemberShunnedException e) {
-        logger.error("View installation was blocked by a MemberShunnedException", e);
-      }
+      viewExcecutor.submit(() -> {
+        processView(newId, viewArg);
+      });
     } finally {
       latestViewWriteLock.unlock();
     }
@@ -1919,6 +1916,8 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       if (cleanupTimer != null) {
         cleanupTimer.shutdown();
       }
+
+      viewExcecutor.shutdown();
 
       if (logger.isDebugEnabled()) {
         logger.debug("Membership: channel closed");

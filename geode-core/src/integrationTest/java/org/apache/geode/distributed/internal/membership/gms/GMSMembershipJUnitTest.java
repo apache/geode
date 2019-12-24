@@ -56,7 +56,6 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership.StartupEvent;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
@@ -269,14 +268,6 @@ public class GMSMembershipJUnitTest {
     verify(listener).newMemberConnected(surpriseMember2);
     // supriseMember should have been rejected (old view ID)
     verify(listener, never()).newMemberConnected(surpriseMember);
-
-    // for code coverage also install a view after we finish joining but before
-    // event processing has started. This should notify the distribution manager
-    // with a LocalViewMessage to process the view
-    reset(listener);
-    manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 5, viewmembers));
-    assertEquals(0, manager.getStartupEvents().size());
-    verify(messageListener).messageReceived(isA(LocalViewMessage.class));
 
     // process a suspect now - it will be passed to the listener
     reset(listener);

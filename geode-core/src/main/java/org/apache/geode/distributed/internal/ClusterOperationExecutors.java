@@ -32,7 +32,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
@@ -108,14 +107,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
   // 76 not in use
 
 
-  /**
-   * Executor for view related messages
-   *
-   * @see ViewAckMessage
-   */
-  public static final int VIEW_EXECUTOR = 79;
-
-
   private InternalDistributedSystem system;
 
   private DistributionStats stats;
@@ -155,13 +146,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
 
   /** Message processing executor for serial, ordered, messages. */
   private ExecutorService serialThread;
-
-  /**
-   * Message processing executor for view messages
-   *
-   * @see ViewAckMessage
-   */
-  private ExecutorService viewThread;
 
   /**
    * If using a throttling queue for the serialThread, we cache the queue here so we can see if
@@ -226,11 +210,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
           threadMonitor, poolQueue);
 
     }
-
-    viewThread =
-        CoreLoggingExecutors.newSerialThreadPoolWithUnlimitedFeed("View Message Processor",
-            thread -> stats.incViewThreadStarts(), this::doViewThread,
-            stats.getViewProcessorHelper(), threadMonitor);
 
     threadPool =
         CoreLoggingExecutors.newThreadPoolWithFeedStatistics("Pooled Message Processor ",
@@ -306,8 +285,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
         return getThreadPool();
       case SERIAL_EXECUTOR:
         return getSerialExecutor(sender);
-      case VIEW_EXECUTOR:
-        return viewThread;
       case HIGH_PRIORITY_EXECUTOR:
         return getHighPriorityThreadPool();
       case WAITING_POOL_EXECUTOR:
@@ -446,18 +423,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
     }
   }
 
-  private void doViewThread(Runnable command) {
-    stats.incNumViewThreads(1);
-    try {
-      ConnectionTable.threadWantsSharedResources();
-      Connection.makeReaderThread();
-      runUntilShutdown(command);
-    } finally {
-      ConnectionTable.releaseThreadsSockets();
-      stats.incNumViewThreads(-1);
-    }
-  }
-
   private void doSerialThread(Runnable command) {
     stats.incNumSerialThreads(1);
     try {
@@ -498,13 +463,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
     threadMonitor.close();
     es = serialThread;
     if (es != null) {
-      es.shutdown();
-    }
-    es = viewThread;
-    if (es != null) {
-      // Hmmm...OK, I'll let any view events currently in the queue be
-      // processed. Not sure it's very important whether they get
-      // handled...
       es.shutdown();
     }
     if (serialQueuedExecutorPool != null) {
@@ -548,7 +506,7 @@ public class ClusterOperationExecutors implements OperationExecutors {
     long start = System.currentTimeMillis();
     long remaining = timeInMillis;
 
-    ExecutorService[] allExecutors = new ExecutorService[] {serialThread, viewThread,
+    ExecutorService[] allExecutors = new ExecutorService[] {serialThread,
         functionExecutionThread, functionExecutionPool, partitionedRegionThread,
         partitionedRegionPool, highPriorityPool, waitingPool,
         prMetaDataCleanupThreadPool, threadPool};
@@ -596,10 +554,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
       if (executorAlive(serialThread, "serial thread")) {
         stillAlive = true;
         culprits.append(" serial thread;");
-      }
-      if (executorAlive(viewThread, "view thread")) {
-        stillAlive = true;
-        culprits.append(" view thread;");
       }
       if (executorAlive(partitionedRegionThread, "partitioned region thread")) {
         stillAlive = true;
@@ -650,9 +604,6 @@ public class ClusterOperationExecutors implements OperationExecutors {
     // Kill with no mercy
     if (serialThread != null) {
       serialThread.shutdownNow();
-    }
-    if (viewThread != null) {
-      viewThread.shutdownNow();
     }
     if (functionExecutionThread != null) {
       functionExecutionThread.shutdownNow();

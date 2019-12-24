@@ -27,7 +27,6 @@ import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
@@ -40,7 +39,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
-public class GMSLocatorAdapter implements RestartableTcpHandler, NetLocator {
+public class GMSLocatorAdapter implements NetLocator {
 
   private final GMSLocator<InternalDistributedMember> gmsLocator;
 

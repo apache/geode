@@ -30,7 +30,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -114,8 +113,6 @@ public class MembershipDependenciesJUnitTest {
               .or(type(JavaWorkarounds.class))
 
               // TODO:
-              .or(type(OSProcess.class))
+              .or(type(OSProcess.class)));
 
-              // TODO:
-              .or(type(LocalViewMessage.class)));
 }
