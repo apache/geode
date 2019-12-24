@@ -701,7 +701,6 @@ public class HashIndexSet implements Set {
     private int prevPos;
     private Collection keysToRemove;
     private Object current;
-    private int hash;
     private int mask;
     private int probe;
 
@@ -717,7 +716,7 @@ public class HashIndexSet implements Set {
       this.keyToMatch = keyToMatch;
       this.objects = metaData.set;
       mask = metaData.mask;
-      hash = computeHash(keyToMatch);
+      int hash = computeHash(keyToMatch);
       pos = (it.unimi.dsi.fastutil.HashCommon.mix(hash)) & mask;
       prevPos = pos;
       current = this.objects[pos];

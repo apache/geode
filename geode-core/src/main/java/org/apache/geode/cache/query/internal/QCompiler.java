@@ -502,7 +502,7 @@ public class QCompiler implements OQLLexerTokenTypes {
   public void mod(int opKind) {
     CompiledValue v2 = (CompiledValue) pop();
     CompiledValue v1 = (CompiledValue) pop();
-    push(new CompiledMod(v1, v2, opKind));
+    push(new CompiledMod(v1, v2));
   }
 
   public void arithmetic(int opKind) {
@@ -531,25 +531,25 @@ public class QCompiler implements OQLLexerTokenTypes {
   private void addition(int opKind) {
     CompiledValue v2 = (CompiledValue) pop();
     CompiledValue v1 = (CompiledValue) pop();
-    push(new CompiledAddition(v1, v2, opKind));
+    push(new CompiledAddition(v1, v2));
   }
 
   private void subtraction(int opKind) {
     CompiledValue v2 = (CompiledValue) pop();
     CompiledValue v1 = (CompiledValue) pop();
-    push(new CompiledSubtraction(v1, v2, opKind));
+    push(new CompiledSubtraction(v1, v2));
   }
 
   private void division(int opKind) {
     CompiledValue v2 = (CompiledValue) pop();
     CompiledValue v1 = (CompiledValue) pop();
-    push(new CompiledDivision(v1, v2, opKind));
+    push(new CompiledDivision(v1, v2));
   }
 
   private void multiplication(int opKind) {
     CompiledValue v2 = (CompiledValue) pop();
     CompiledValue v1 = (CompiledValue) pop();
-    push(new CompiledMultiplication(v1, v2, opKind));
+    push(new CompiledMultiplication(v1, v2));
   }
 
 

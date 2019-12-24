@@ -84,7 +84,7 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     vm7.invoke(() -> WANTestBase.resumeSender("ln"));
 
     SerializableRunnableIF serializableRunnableIF =
-        () -> WANTestBase.validateRegionSize(getTestMethodName(), 50, 240000);
+        () -> WANTestBase.validateRegionSize(getTestMethodName(), 50);
     vm2.invoke(serializableRunnableIF);
     vm3.invoke(serializableRunnableIF);
 
@@ -159,7 +159,7 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.doHeavyPuts(getTestMethodName(), numEventPuts));
 
     SerializableRunnableIF serializableRunnableIF =
-        () -> WANTestBase.validateRegionSize(getTestMethodName(), 50, 240000);
+        () -> WANTestBase.validateRegionSize(getTestMethodName(), 50);
     vm2.invoke(serializableRunnableIF);
     vm3.invoke(serializableRunnableIF);
 

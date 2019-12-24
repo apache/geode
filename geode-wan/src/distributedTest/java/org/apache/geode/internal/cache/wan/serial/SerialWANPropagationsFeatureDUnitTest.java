@@ -66,8 +66,8 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.doHeavyPuts(getTestMethodName() + "_RR", 15));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15, 240000));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15, 240000));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15));
     vm4.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
     vm5.invoke(() -> WANTestBase.waitForConcurrentSerialSenderQueueToDrain("ln"));
   }

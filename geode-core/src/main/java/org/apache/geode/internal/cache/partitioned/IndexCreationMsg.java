@@ -493,7 +493,7 @@ public class IndexCreationMsg extends PartitionMessage {
           throw re;
         }
       }
-      return new IndexCreationResult(this.indexBucketsMap, this.numTotalBuckets);
+      return new IndexCreationResult(this.indexBucketsMap);
     }
 
     /**
@@ -519,18 +519,13 @@ public class IndexCreationMsg extends PartitionMessage {
     /** Map of indexes created and number of buckets indexed. */
     private Map<String, Integer> indexBucketsMap;
 
-    /** Number of total bukets in this vm. */
-    private int numTotalBuckets;
-
     /**
      * Constructor for index creation result.
      *
      * @param indexBucketsMap Map of indexes created and number of buckets indexed
-     * @param numTotalBuckets Number of total buckets in this vm
      */
-    IndexCreationResult(Map<String, Integer> indexBucketsMap, int numTotalBuckets) {
+    IndexCreationResult(Map<String, Integer> indexBucketsMap) {
       this.indexBucketsMap = indexBucketsMap;
-      this.numTotalBuckets = numTotalBuckets;
     }
 
     /**

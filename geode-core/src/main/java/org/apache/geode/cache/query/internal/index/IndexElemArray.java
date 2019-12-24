@@ -278,7 +278,6 @@ public class IndexElemArray implements Iterable, Collection {
 
   private class IndexArrayListIterator implements Iterator {
     private byte current;
-    private Object currentEntry;
     private Object[] elements;
     private int len;
 
@@ -306,6 +305,7 @@ public class IndexElemArray implements Iterable, Collection {
      */
     @Override
     public Object next() {
+      Object currentEntry;
       try {
         currentEntry = elements[current++];
       } catch (IndexOutOfBoundsException e) {

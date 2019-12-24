@@ -2170,9 +2170,7 @@ public class HARegionQueue implements RegionQueue {
      * Guards the Put permits
      */
     private final Object putGuard = new Object();
-
-    private final int capacity;
-
+    
     /**
      * Current put permits available
      */
@@ -2208,8 +2206,7 @@ public class HARegionQueue implements RegionQueue {
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
       super(regionName, cache, haContainer, clientProxyId, clientConflation, isPrimary,
           statisticsClock);
-      this.capacity = hrqa.getBlockingQueueCapacity();
-      this.putPermits = this.capacity;
+      this.putPermits = hrqa.getBlockingQueueCapacity();
       this.lock = new StoppableReentrantLock(this.region.getCancelCriterion());
       this.blockCond = lock.newCondition();
 

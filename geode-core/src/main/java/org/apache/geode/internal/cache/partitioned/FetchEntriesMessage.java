@@ -91,7 +91,7 @@ public class FetchEntriesMessage extends PartitionMessage {
   public static FetchEntriesResponse send(InternalDistributedMember recipient, PartitionedRegion r,
       int bucketId) throws ForceReattemptException {
     Assert.assertTrue(recipient != null, "FetchEntriesMessage NULL reply message");
-    FetchEntriesResponse p = new FetchEntriesResponse(r.getSystem(), r, recipient, bucketId);
+    FetchEntriesResponse p = new FetchEntriesResponse(r.getSystem(), recipient, bucketId);
     FetchEntriesMessage m = new FetchEntriesMessage(recipient, r.getPRId(), p, bucketId);
     m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
@@ -439,8 +439,6 @@ public class FetchEntriesMessage extends PartitionMessage {
    */
   public static class FetchEntriesResponse extends ReplyProcessor21 {
 
-    private final PartitionedRegion pr;
-
     protected volatile RegionVersionVector returnRVV;
     protected final HashMap<Object, Object> returnValue;
     protected final HashMap<Object, VersionTag> returnVersions = new HashMap();
@@ -463,10 +461,9 @@ public class FetchEntriesMessage extends PartitionMessage {
 
     private InternalDistributedMember recipient;
 
-    public FetchEntriesResponse(InternalDistributedSystem ds, final PartitionedRegion pr,
+    public FetchEntriesResponse(InternalDistributedSystem ds,
         final InternalDistributedMember recipient, final int bucketId) {
       super(ds, Collections.singleton(recipient));
-      this.pr = pr;
       this.bucketId = bucketId;
       this.recipient = recipient;
       this.returnValue = new HashMap<Object, Object>() {

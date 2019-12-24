@@ -18,8 +18,8 @@ import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 
 public class CompiledAddition extends CompiledArithmetic implements OQLLexerTokenTypes {
 
-  CompiledAddition(CompiledValue left, CompiledValue right, int op) {
-    super(left, right, op);
+  CompiledAddition(CompiledValue left, CompiledValue right) {
+    super(left, right);
   }
 
   @Override

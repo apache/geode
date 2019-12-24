@@ -101,8 +101,6 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   protected static final short HAS_BRIDGE_CONTEXT = UNRESERVED_FLAGS_START;
   protected static final short SKIP_CALLBACKS = (HAS_BRIDGE_CONTEXT << 1);
 
-  private transient InternalDistributedSystem internalDs;
-
   /** whether direct-acknowledgement is desired */
   private transient boolean directAck = false;
 
@@ -135,7 +133,6 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
   public void initMessage(PartitionedRegion r, Set recipients, boolean notifyOnly,
       DirectReplyProcessor p) {
-    setInternalDs(r.getSystem());
     setDirectAck(false);
     this.resetRecipients();
     if (recipients != null) {
@@ -681,10 +678,6 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
       buff.append("; entry").append(i).append(":").append(putAllPRData[i].getKey()).append(",")
           .append(putAllPRData[i].versionTag);
     }
-  }
-
-  public void setInternalDs(InternalDistributedSystem internalDs) {
-    this.internalDs = internalDs;
   }
 
   public void setDirectAck(boolean directAck) {

@@ -279,7 +279,7 @@ public class PRQueryProcessor {
   private List<QueryTask> buildCallableTaskList(Collection<Collection> resultsColl) {
     List<QueryTask> callableTasks = new ArrayList<>();
     for (Integer bId : _bucketsToQuery) {
-      callableTasks.add(new QueryTask(this.query, this.parameters, _prds, bId, resultsColl));
+      callableTasks.add(new QueryTask(this.query, this.parameters, bId, resultsColl));
     }
     return callableTasks;
   }
@@ -394,14 +394,12 @@ public class PRQueryProcessor {
   private class QueryTask implements Callable {
     private final DefaultQuery query;
     private final Object[] parameters;
-    private final PartitionedRegionDataStore _prDs;
     private final Integer _bucketId;
     private final Collection<Collection> resultColl;
 
-    public QueryTask(DefaultQuery query, Object[] parameters, PartitionedRegionDataStore prDS,
+    public QueryTask(DefaultQuery query, Object[] parameters,
         Integer bucketId, final Collection<Collection> rColl) {
       this.query = query;
-      this._prDs = prDS;
       this._bucketId = bucketId;
       this.resultColl = rColl;
       this.parameters = parameters;

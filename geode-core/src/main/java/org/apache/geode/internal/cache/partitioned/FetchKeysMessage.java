@@ -160,7 +160,7 @@ public class FetchKeysMessage extends PartitionMessage {
   // override processor type
   @Override
   PartitionResponse createReplyProcessor(PartitionedRegion r, Set recipients) {
-    return new FetchKeysResponse(r.getSystem(), r, recipients);
+    return new FetchKeysResponse(r.getSystem(), recipients);
   }
 
   @Override
@@ -489,8 +489,6 @@ public class FetchKeysMessage extends PartitionMessage {
    */
   public static class FetchKeysResponse extends PartitionResponse {
 
-    private final PartitionedRegion pr;
-
     private final Set returnValue;
 
     /**
@@ -513,9 +511,8 @@ public class FetchKeysMessage extends PartitionMessage {
      */
     private volatile boolean lastChunkReceived;
 
-    public FetchKeysResponse(InternalDistributedSystem ds, PartitionedRegion pr, Set recipients) {
+    public FetchKeysResponse(InternalDistributedSystem ds, Set recipients) {
       super(ds, recipients);
-      this.pr = pr;
       returnValue = new HashSet();
     }
 
