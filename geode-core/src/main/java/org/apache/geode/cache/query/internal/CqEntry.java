@@ -82,7 +82,7 @@ public class CqEntry implements DataSerializableFixedID {
 
   @Override
   public boolean equals(Object other) {
-    if (other == null) {
+    if (other == null || !(other instanceof CqEntry) {
       return false;
     }
     return this.key.equals(((CqEntry) other).getKey());

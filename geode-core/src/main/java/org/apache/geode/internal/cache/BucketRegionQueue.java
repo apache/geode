@@ -395,7 +395,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     Object object = null;
     try {
       object = getValueInVMOrDiskWithoutFaultIn(k);
-      if (object != null && object instanceof CachedDeserializable) {
+      if (object instanceof CachedDeserializable) {
         object = ((CachedDeserializable) object).getDeserializedValue(this, this.getRegionEntry(k));
       }
     } catch (EntryNotFoundException ok) {

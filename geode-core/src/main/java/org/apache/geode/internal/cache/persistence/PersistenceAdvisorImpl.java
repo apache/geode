@@ -931,9 +931,10 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
         }
 
         // If the peer thinks we are newer or equal to them, we don't need to wait for this peer.
+        boolean stateOnlineOrEqual = state.equals(PersistentMemberState.ONLINE)
+                || state.equals(PersistentMemberState.EQUAL);
         if (membersHostingThisRegion.contains(memberId) && persistentID != null && state != null
-            && myInitializingId == null && (state.equals(PersistentMemberState.ONLINE)
-                || state.equals(PersistentMemberState.EQUAL))) {
+            && myInitializingId == null && stateOnlineOrEqual) {
           if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
             logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
                 "{}-{}: Not waiting for {} because it thinks our state was {}", shortDiskStoreId(),
@@ -949,8 +950,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
 
         // If the peer thinks we are newer or equal to them, we don't need to wait for this peer.
         if (membersHostingThisRegion.contains(memberId) && initializingID != null && state != null
-            && (state.equals(PersistentMemberState.ONLINE)
-                || state.equals(PersistentMemberState.EQUAL))) {
+            && stateOnlineOrEqual) {
           if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {
             logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE,
                 "{}-{}: Not waiting for {} because it thinks our state was {}", shortDiskStoreId(),

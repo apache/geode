@@ -254,7 +254,7 @@ public class CompactRangeIndex extends AbstractIndex {
               if (iter != null) {
                 iter.close();
               }
-              if (innerValue != null && innerValue instanceof CloseableIterator) {
+              if (innerValue instanceof CloseableIterator) {
                 ((CloseableIterator<IndexStoreEntry>) innerValue).close();
               }
             }
@@ -280,7 +280,7 @@ public class CompactRangeIndex extends AbstractIndex {
     } finally {
       ((AbstractIndex) indx).updateIndexUseEndStats(start);
       updateIndexUseEndStats(start);
-      if (inner != null && indx instanceof CompactRangeIndex
+      if (indx instanceof CompactRangeIndex
           && inner instanceof CloseableIterator) {
         ((CloseableIterator<IndexStoreEntry>) inner).close();
       }

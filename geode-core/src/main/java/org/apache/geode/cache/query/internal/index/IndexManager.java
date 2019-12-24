@@ -679,8 +679,7 @@ public class IndexManager {
 
           // If we chose new index we should release lock on previous index
           // chosen as bestIndex.
-          if (prIndex != null && prevBestPRIndex != null
-              && prevBestPRIndex instanceof PartitionedIndex) {
+          if (prIndex != null && prevBestPRIndex instanceof PartitionedIndex) {
             ((PartitionedIndex) prevBestPRIndex).releaseIndexReadLockForRemove();
             prevBestPRIndex = null;
           } else if (prevBestIndex != null) {
@@ -689,7 +688,7 @@ public class IndexManager {
           }
           break;
         } else if ((bestIndexMatchLevel > 0 && matchLevel < bestIndexMatchLevel)
-            || (bestIndexMatchLevel < 0 && matchLevel < 0 && matchLevel > bestIndexMatchLevel)) {
+            || (matchLevel < 0 && matchLevel > bestIndexMatchLevel)) {
           prevBestPRIndex = bestPRIndex;
           bestPRIndex = prIndex;
           prevBestIndex = bestIndex;
@@ -709,7 +708,7 @@ public class IndexManager {
 
         // If we chose new index we should release lock on previous index
         // chosen as bestIndex.
-        if (prevBestPRIndex != null && prevBestPRIndex instanceof PartitionedIndex) {
+        if (prevBestPRIndex instanceof PartitionedIndex) {
           ((PartitionedIndex) prevBestPRIndex).releaseIndexReadLockForRemove();
           prevBestPRIndex = null;
         } else if (prevBestIndex != null) {
