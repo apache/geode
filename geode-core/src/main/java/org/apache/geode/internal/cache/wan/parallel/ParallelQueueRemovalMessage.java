@@ -92,9 +92,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
         for (Object name : regionToDispatchedKeysMap.keySet()) {
           final String regionName = (String) name;
           final PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
-          if (region == null) {
-            continue;
-          } else {
+          if (region != null) {
             AbstractGatewaySender abstractSender = region.getParallelGatewaySender();
             // Find the map: bucketId to dispatchedKeys
             // Find the bucket

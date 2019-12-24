@@ -932,7 +932,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
 
         // If the peer thinks we are newer or equal to them, we don't need to wait for this peer.
         boolean stateOnlineOrEqual = state.equals(PersistentMemberState.ONLINE)
-                || state.equals(PersistentMemberState.EQUAL);
+            || state.equals(PersistentMemberState.EQUAL);
         if (membersHostingThisRegion.contains(memberId) && persistentID != null && state != null
             && myInitializingId == null && stateOnlineOrEqual) {
           if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR_VERBOSE)) {

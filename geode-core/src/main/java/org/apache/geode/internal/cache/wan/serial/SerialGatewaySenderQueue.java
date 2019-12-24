@@ -397,7 +397,6 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           Thread.currentThread().interrupt();
           break;
         }
-        continue;
       }
     }
     if (isTraceEnabled) {

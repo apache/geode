@@ -1570,16 +1570,12 @@ public class PartitionedRegion extends LocalRegion
           Map<String, PartitionedRegion> colocationMap =
               ColocationHelper.getAllColocationRegions(this);
           if (!colocationMap.isEmpty()) {
-            if (colocationMap.containsKey(config.getFullPath())) {
-              continue;
-            } else {
+            if (!colocationMap.containsKey(config.getFullPath())) {
               int prID = config.getPRId();
               PartitionedRegion colocatedPR = PartitionedRegion.getPRFromId(prID);
               PartitionedRegion leader = ColocationHelper.getLeaderRegion(colocatedPR);
 
-              if (colocationMap.containsValue(leader)) {
-                continue;
-              } else {
+              if (!colocationMap.containsValue(leader)) {
                 throw new IllegalStateException(String.format(
                     "Non colocated regions %s, %s cannot have the same parallel %s id %s configured.",
                     this.getFullPath(), config.getFullPath(),
@@ -7340,7 +7336,6 @@ public class PartitionedRegion extends LocalRegion
         // to drain
         // keepWaiting : comes from the MAXIMUM_SHUTDOWN_WAIT_TIME case handled
         if (cacheWrite && parallelQueueRegion.size() != 0 && keepWaiting) {
-          continue;
         } else {// In any case, destroy shadow PR locally. distributed destroy of
                 // userPR will take care of detsroying shadowPR locally on other
                 // nodes.
@@ -7357,7 +7352,6 @@ public class PartitionedRegion extends LocalRegion
           parallelQueueRegion.basicDestroyRegion(event, false, lock, callbackEvents);
           parallelQueue.removeShadowPR(this.getFullPath());
           countOfQueueRegionsToBeDestroyed--;
-          continue;
         }
       }
 

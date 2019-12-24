@@ -1571,9 +1571,7 @@ public class HARegionQueue implements RegionQueue {
     while (true) {
       internalMap = this.threadIdToSeqId.map;
       synchronized (internalMap) {
-        if (internalMap != this.threadIdToSeqId.map) {
-          continue;
-        } else {
+        if (internalMap == this.threadIdToSeqId.map) {
           wasEmpty = internalMap.isEmpty();
           oldvalue = (Long) internalMap.put(tid, lastSequenceNumber);
           if (ackedEvents != null) {
@@ -2170,7 +2168,7 @@ public class HARegionQueue implements RegionQueue {
      * Guards the Put permits
      */
     private final Object putGuard = new Object();
-    
+
     /**
      * Current put permits available
      */

@@ -610,7 +610,6 @@ public abstract class AbstractRegionMap extends BaseRegionMap
           if (re.getVersionStamp() == null) { // bug #50992 - recovery from versioned to
                                               // non-versioned
             iter.remove();
-            continue;
           } else {
             tombstones.put(re.getVersionStamp().asVersionTag(), re);
           }

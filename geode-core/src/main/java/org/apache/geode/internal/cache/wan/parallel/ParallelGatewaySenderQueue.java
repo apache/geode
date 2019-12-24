@@ -1269,7 +1269,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           if (isDebugEnabled) {
             logger.debug("{}: Peeked object was null. Peek continuing", this);
           }
-          continue;
         }
       } else {
         // If time to wait is -1 (don't wait) or time interval has elapsed
@@ -1293,7 +1292,6 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           Thread.currentThread().interrupt();
           break;
         }
-        continue;
       }
     }
     if (isDebugEnabled) {
