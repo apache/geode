@@ -5591,7 +5591,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       notifyBridgeClients(event);
       notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
           : EnumListenerEvent.AFTER_CREATE, event);
-      return false;
+      throw ignore;
     }
 
     // for EMPTY clients, see if a concurrent map operation had an entry on the server
