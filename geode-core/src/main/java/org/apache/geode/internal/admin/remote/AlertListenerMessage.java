@@ -128,6 +128,11 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
   }
 
   @Override
+  public boolean isHighPriority() {
+    return true;
+  }
+
+  @Override
   public int getDSFID() {
     return ALERT_LISTENER_MESSAGE;
   }

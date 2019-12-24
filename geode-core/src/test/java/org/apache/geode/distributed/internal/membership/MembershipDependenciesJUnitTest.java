@@ -28,7 +28,6 @@ import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
@@ -118,9 +117,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO:
               .or(type(OSProcess.class))
-
-              // TODO:
-              .or(type(AlertingAction.class))
 
               // TODO:
               .or(type(LocalViewMessage.class)));
