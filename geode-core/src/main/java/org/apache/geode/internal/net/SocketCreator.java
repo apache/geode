@@ -26,6 +26,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
@@ -78,6 +79,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
 import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -185,6 +187,13 @@ public class SocketCreator {
   // -------------------------------------------------------------------------
   // Static instance accessors
   // -------------------------------------------------------------------------
+
+  /**
+   * @deprecated use LocalHostUtil.getLocalHost()
+   */
+  public static InetAddress getLocalHost() throws UnknownHostException {
+    return LocalHostUtil.getLocalHost();
+  }
 
   /**
    * returns the host name for the given inet address, using a local cache of names to avoid dns

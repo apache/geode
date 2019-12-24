@@ -33,7 +33,12 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.internal.OSProcess;
+<<<<<<< HEAD
 import org.apache.geode.internal.net.SocketCreator;
+||||||| merged common ancestors
+=======
+import org.apache.geode.internal.inet.LocalHostUtil;
+>>>>>>> added deprecated SocketCreator.getLocalHost() for use in upgrade tests
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
@@ -95,6 +100,7 @@ public class MembershipDependenciesJUnitTest {
               .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api.."))
               .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
               .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
+              .or(type(LocalHostUtil.class))
 
               .or(not(resideInAPackage("org.apache.geode..")))
 
