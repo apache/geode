@@ -108,9 +108,9 @@ public class ClusterConfigurationStatusRetriever {
     return buffer.toString();
   }
 
-  public static String fromLocator(LocatorLauncher.LocatorState locatorState)
+  public static String fromLocator(LocatorLauncher.LocatorState locatorState, Properties properties)
       throws ClassNotFoundException, IOException {
     return fromLocator(locatorState.getHost(), Integer.parseInt(locatorState.getPort()),
-        new Properties());
+        properties);
   }
 }
