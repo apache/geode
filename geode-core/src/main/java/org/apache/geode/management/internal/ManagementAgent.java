@@ -56,6 +56,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -288,7 +289,7 @@ public class ManagementAgent {
     } else if (StringUtils.isNotBlank(bindAddress)) {
       return InetAddress.getByName(bindAddress).getHostAddress();
     } else {
-      return SocketCreator.getLocalHost().getHostAddress();
+      return LocalHostUtil.getLocalHost().getHostAddress();
     }
   }
 
@@ -310,7 +311,7 @@ public class ManagementAgent {
     final String hostname;
     final InetAddress bindAddr;
     if (StringUtils.isBlank(this.config.getJmxManagerBindAddress())) {
-      hostname = SocketCreator.getLocalHost().getHostName();
+      hostname = LocalHostUtil.getLocalHost().getHostName();
       bindAddr = null;
     } else {
       hostname = this.config.getJmxManagerBindAddress();

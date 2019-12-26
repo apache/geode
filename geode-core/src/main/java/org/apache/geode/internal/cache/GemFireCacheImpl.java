@@ -244,6 +244,7 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlPropertyResolver;
 import org.apache.geode.internal.cache.xmlcache.PropertyResolver;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.lang.ThrowableUtils;
@@ -2766,7 +2767,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private PoolFactory createDefaultPF() {
     PoolFactory defaultPoolFactory = PoolManager.createFactory();
     try {
-      String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
+      String localHostName = SocketCreator.getHostName(LocalHostUtil.getLocalHost());
       defaultPoolFactory.addServer(localHostName, CacheServer.DEFAULT_PORT);
     } catch (UnknownHostException ex) {
       throw new IllegalStateException("Could not determine local host name", ex);
@@ -2791,7 +2792,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (poolFactoryImpl.getPoolAttributes().locators.isEmpty()
         && poolFactoryImpl.getPoolAttributes().servers.isEmpty()) {
       try {
-        String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
+        String localHostName = SocketCreator.getHostName(LocalHostUtil.getLocalHost());
         poolFactoryImpl.addServer(localHostName, CacheServer.DEFAULT_PORT);
       } catch (UnknownHostException ex) {
         throw new IllegalStateException("Could not determine local host name", ex);

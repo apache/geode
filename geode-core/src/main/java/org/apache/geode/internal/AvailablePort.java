@@ -33,7 +33,7 @@ import java.util.Random;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 
 /**
  * This class determines whether or not a given port is available and can also provide a randomly
@@ -108,7 +108,7 @@ public class AvailablePort {
       MulticastSocket socket = null;
       try {
         socket = new MulticastSocket();
-        InetAddress localHost = SocketCreator.getLocalHost();
+        InetAddress localHost = LocalHostUtil.getLocalHost();
         socket.setInterface(localHost);
         socket.setSoTimeout(Integer.getInteger("AvailablePort.timeout", 2000).intValue());
         socket.setReuseAddress(true);

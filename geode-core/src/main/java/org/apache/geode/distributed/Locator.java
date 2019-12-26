@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -385,7 +386,7 @@ public abstract class Locator {
     Object ba = this.bindAddress;
     if (ba == null) {
       try {
-        ba = SocketCreator.getHostName(SocketCreator.getLocalHost());
+        ba = SocketCreator.getHostName(LocalHostUtil.getLocalHost());
       } catch (java.net.UnknownHostException uh) {
       }
     }

@@ -77,9 +77,9 @@ import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.sequencelog.MembershipLogger;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ConnectionTable;
@@ -1576,7 +1576,7 @@ public class ClusterDistributionManager implements DistributionManager {
       // no network interface
       equivs = new HashSet<>();
       try {
-        equivs.add(SocketCreator.getLocalHost());
+        equivs.add(LocalHostUtil.getLocalHost());
       } catch (UnknownHostException e) {
         // can't even get localhost
         if (getViewMembers().size() > 1) {

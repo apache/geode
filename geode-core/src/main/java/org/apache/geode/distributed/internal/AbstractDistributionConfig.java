@@ -207,8 +207,8 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.AbstractConfig;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -325,22 +325,22 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
   @ConfigAttributeChecker(name = BIND_ADDRESS)
   protected String checkBindAddress(String value) {
-    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !LocalHostUtil.isLocalHost(value)) {
       throw new IllegalArgumentException(
           String.format(
               "The bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
-              value, SocketCreator.getMyAddresses()));
+              value, LocalHostUtil.getMyAddresses()));
     }
     return value;
   }
 
   @ConfigAttributeChecker(name = SERVER_BIND_ADDRESS)
   protected String checkServerBindAddress(String value) {
-    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !LocalHostUtil.isLocalHost(value)) {
       throw new IllegalArgumentException(
           String.format(
               "The bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
-              value, SocketCreator.getMyAddresses()));
+              value, LocalHostUtil.getMyAddresses()));
     }
     return value;
   }
@@ -357,11 +357,11 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
   @ConfigAttributeChecker(name = HTTP_SERVICE_BIND_ADDRESS)
   protected String checkHttpServiceBindAddress(String value) {
-    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !LocalHostUtil.isLocalHost(value)) {
       throw new IllegalArgumentException(
           String.format(
               "The bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
-              value, SocketCreator.getMyAddresses()));
+              value, LocalHostUtil.getMyAddresses()));
     }
     return value;
   }
@@ -656,22 +656,22 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
 
   @ConfigAttributeChecker(name = MEMCACHED_BIND_ADDRESS)
   protected String checkMemcachedBindAddress(String value) {
-    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !LocalHostUtil.isLocalHost(value)) {
       throw new IllegalArgumentException(
           String.format(
               "The memcached-bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
-              value, SocketCreator.getMyAddresses()));
+              value, LocalHostUtil.getMyAddresses()));
     }
     return value;
   }
 
   @ConfigAttributeChecker(name = REDIS_BIND_ADDRESS)
   protected String checkRedisBindAddress(String value) {
-    if (value != null && value.length() > 0 && !SocketCreator.isLocalHost(value)) {
+    if (value != null && value.length() > 0 && !LocalHostUtil.isLocalHost(value)) {
       throw new IllegalArgumentException(
           String.format(
               "The redis-bind-address %s is not a valid address for this machine.  These are the valid addresses for this machine: %s",
-              value, SocketCreator.getMyAddresses()));
+              value, LocalHostUtil.getMyAddresses()));
     }
     return value;
   }

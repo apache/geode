@@ -34,7 +34,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -132,9 +132,9 @@ public class RestAgent {
       return bindAddress;
 
     try {
-      bindAddress = SocketCreator.getLocalHost().getHostAddress();
+      bindAddress = LocalHostUtil.getLocalHost().getHostAddress();
       logger.info("RestAgent.getBindAddressForHttpService.localhost: "
-          + SocketCreator.getLocalHost().getHostAddress());
+          + LocalHostUtil.getLocalHost().getHostAddress());
     } catch (UnknownHostException e) {
       logger.error("LocalHost could not be found.", e);
     }

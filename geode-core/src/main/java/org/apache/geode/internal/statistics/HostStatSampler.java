@@ -28,6 +28,7 @@ import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
@@ -152,7 +153,7 @@ public abstract class HostStatSampler
   @Override
   public String getSystemDirectoryPath() {
     try {
-      return SocketCreator.getHostName(SocketCreator.getLocalHost());
+      return SocketCreator.getHostName(LocalHostUtil.getLocalHost());
     } catch (UnknownHostException ignore) {
       return "";
     }

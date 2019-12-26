@@ -50,6 +50,7 @@ import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCreator;
@@ -239,7 +240,7 @@ public class TCPConduit implements Runnable {
 
     if (address == null) {
       try {
-        SocketCreator.getLocalHost();
+        LocalHostUtil.getLocalHost();
       } catch (UnknownHostException e) {
         throw new ConnectionException("Unable to resolve localHost address", e);
       }

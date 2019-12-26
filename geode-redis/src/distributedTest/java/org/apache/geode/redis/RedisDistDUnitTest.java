@@ -28,7 +28,7 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -71,7 +71,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
   public final void postSetUp() throws Exception {
     JUnit4DistributedTestCase.disconnectAllFromDS();
 
-    localHost = SocketCreator.getLocalHost().getHostName();
+    localHost = LocalHostUtil.getLocalHost().getHostName();
 
     host = Host.getHost(0);
     server1 = host.getVM(0);
@@ -86,7 +86,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
       public Object call() throws Exception {
         int port = ports[VM.getCurrentVMNum()];
         CacheFactory cF = new CacheFactory();
-        String locator = SocketCreator.getLocalHost().getHostName() + "[" + locatorPort + "]";
+        String locator = LocalHostUtil.getLocalHost().getHostName() + "[" + locatorPort + "]";
         cF.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         cF.set(ConfigurationProperties.REDIS_BIND_ADDRESS, localHost);
         cF.set(ConfigurationProperties.REDIS_PORT, "" + port);

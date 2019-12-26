@@ -60,7 +60,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
@@ -162,7 +162,7 @@ public class GMSLocatorRecoveryIntegrationTest {
   @Test
   public void testRecoverFromOther() throws Exception {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    InetAddress localHost = SocketCreator.getLocalHost();
+    InetAddress localHost = LocalHostUtil.getLocalHost();
 
     // this locator will hook itself up with the first Membership to be created
     locator = InternalLocator.startLocator(port, null, null, null, localHost, false,

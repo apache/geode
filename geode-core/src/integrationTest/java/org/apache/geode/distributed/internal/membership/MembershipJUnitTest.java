@@ -77,7 +77,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
@@ -142,7 +142,7 @@ public class MembershipJUnitTest {
 
       // boot up a locator
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
-      InetAddress localHost = SocketCreator.getLocalHost();
+      InetAddress localHost = LocalHostUtil.getLocalHost();
 
       // this locator will hook itself up with the first Membership
       // to be created
@@ -321,7 +321,7 @@ public class MembershipJUnitTest {
 
       // boot up a locator
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
-      InetAddress localHost = SocketCreator.getLocalHost();
+      InetAddress localHost = LocalHostUtil.getLocalHost();
       Properties p = new Properties();
       p.setProperty(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       // this locator will hook itself up with the first Membership
@@ -447,7 +447,7 @@ public class MembershipJUnitTest {
     assertEquals(24000, sc.getJoinTimeout());
 
     nonDefault.clear();
-    nonDefault.put(LOCATORS, SocketCreator.getLocalHost().getHostAddress() + "[" + 12345 + "]");
+    nonDefault.put(LOCATORS, LocalHostUtil.getLocalHost().getHostAddress() + "[" + 12345 + "]");
     config = new DistributionConfigImpl(nonDefault);
     transport = new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
     sc = new ServiceConfig(transport, config);

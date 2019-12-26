@@ -38,7 +38,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category(WanTest.class)
@@ -64,7 +64,7 @@ public class GatewayReceiverImplTest {
     GatewayReceiver gateway = new GatewayReceiverImpl(cache, 2000, 2001, 5, 100, null, null, null,
         true, true, 2000);
 
-    assertThat(gateway.getHost()).isEqualTo(SocketCreator.getLocalHost().getHostName());
+    assertThat(gateway.getHost()).isEqualTo(LocalHostUtil.getLocalHost().getHostName());
   }
 
   @Test

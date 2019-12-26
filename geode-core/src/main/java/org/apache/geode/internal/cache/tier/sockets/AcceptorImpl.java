@@ -89,6 +89,7 @@ import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.net.SocketCreator;
@@ -1199,7 +1200,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   public String getServerName() {
     String name = serverSock.getLocalSocketAddress().toString();
     try {
-      name = SocketCreator.getLocalHost().getCanonicalHostName() + "-" + name;
+      name = LocalHostUtil.getLocalHost().getCanonicalHostName() + "-" + name;
     } catch (Exception e) {
     }
     return name;
@@ -1786,7 +1787,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
     }
     if (needCanonicalHostName) {
       try {
-        result = SocketCreator.getLocalHost().getCanonicalHostName();
+        result = LocalHostUtil.getLocalHost().getCanonicalHostName();
       } catch (UnknownHostException ex) {
         throw new IllegalStateException("getLocalHost failed with " + ex);
       }

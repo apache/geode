@@ -29,6 +29,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -70,7 +71,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   public DistributionLocatorId(int port, String bindAddress, String hostnameForClients) {
     try {
-      this.host = SocketCreator.getLocalHost();
+      this.host = LocalHostUtil.getLocalHost();
     } catch (UnknownHostException ex) {
       throw new InternalGemFireException(
           "Failed getting local host", ex);
@@ -356,7 +357,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   /**
    * Converts a collection of {@link Locator} instances to a collection of DistributionLocatorId
-   * instances. Note this will use {@link SocketCreator#getLocalHost()} as the host for
+   * instances. Note this will use {@link LocalHostUtil#getLocalHost()} as the host for
    * DistributionLocatorId. This is because all instances of Locator are local only.
    *
    * @param locators collection of Locator instances
@@ -371,7 +372,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     Collection<DistributionLocatorId> locatorIds = new ArrayList<DistributionLocatorId>();
     for (Locator locator : locators) {
       DistributionLocatorId locatorId =
-          new DistributionLocatorId(SocketCreator.getLocalHost(), locator);
+          new DistributionLocatorId(LocalHostUtil.getLocalHost(), locator);
       locatorIds.add(locatorId);
     }
     return locatorIds;
@@ -379,7 +380,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   /**
    * Marshals a collection of {@link Locator} instances to a collection of DistributionLocatorId
-   * instances. Note this will use {@link SocketCreator#getLocalHost()} as the host for
+   * instances. Note this will use {@link LocalHostUtil#getLocalHost()} as the host for
    * DistributionLocatorId. This is because all instances of Locator are local only.
    *
    * @param locatorIds collection of DistributionLocatorId instances

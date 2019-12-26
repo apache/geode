@@ -36,6 +36,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.memcached.ConnectionHandler;
 import org.apache.geode.internal.net.SocketCreator;
 
@@ -211,12 +212,12 @@ public class GemFireMemcachedServer {
     acceptor.setDaemon(true);
     acceptor.start();
     latch.await();
-    logger.config("GemFireMemcachedServer server started on host:" + SocketCreator.getLocalHost()
+    logger.config("GemFireMemcachedServer server started on host:" + LocalHostUtil.getLocalHost()
         + " port: " + this.serverPort);
   }
 
   private InetAddress getBindAddress() throws UnknownHostException {
-    return this.bindAddress == null || this.bindAddress.isEmpty() ? SocketCreator.getLocalHost()
+    return this.bindAddress == null || this.bindAddress.isEmpty() ? LocalHostUtil.getLocalHost()
         : InetAddress.getByName(this.bindAddress);
   }
 

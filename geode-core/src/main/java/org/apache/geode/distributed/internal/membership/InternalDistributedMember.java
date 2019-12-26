@@ -49,6 +49,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
@@ -141,9 +142,9 @@ public class InternalDistributedMember
     memberData.setProcessId(OSProcess.getId());
     try {
       if (SocketCreator.resolve_dns) {
-        memberData.setHostName(SocketCreator.getHostName(SocketCreator.getLocalHost()));
+        memberData.setHostName(SocketCreator.getHostName(LocalHostUtil.getLocalHost()));
       } else {
-        memberData.setHostName(SocketCreator.getLocalHost().getHostAddress());
+        memberData.setHostName(LocalHostUtil.getLocalHost().getHostAddress());
       }
     } catch (UnknownHostException ee) {
       throw new InternalGemFireError(ee);
@@ -280,7 +281,7 @@ public class InternalDistributedMember
    */
   public InternalDistributedMember(String host, int p, String n, String u, int vmKind,
       String[] groups, DurableClientAttributes attr) throws UnknownHostException {
-    InetAddress addr = SocketCreator.toInetAddress(host);
+    InetAddress addr = LocalHostUtil.toInetAddress(host);
     MemberDataBuilder builder = MemberDataBuilder.newBuilder(addr, host)
         .setName(n)
         .setMembershipPort(p)

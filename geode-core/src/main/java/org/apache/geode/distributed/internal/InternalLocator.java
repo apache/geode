@@ -77,9 +77,9 @@ import org.apache.geode.internal.cache.InternalCacheBuilder;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.statistics.StatisticsConfig;
@@ -666,7 +666,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       if (bindAddress != null) {
         sb.append(bindAddress.getHostAddress());
       } else {
-        sb.append(SocketCreator.getLocalHost().getHostAddress());
+        sb.append(LocalHostUtil.getLocalHost().getHostAddress());
       }
       sb.append('[').append(getPort()).append(']');
       String thisLocator = sb.toString();
@@ -1317,7 +1317,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   public void onConnect(InternalDistributedSystem sys) {
     try {
       locatorStats.hookupStats(sys,
-          SocketCreator.getLocalHost().getCanonicalHostName() + '-' + server.getBindAddress());
+          LocalHostUtil.getLocalHost().getCanonicalHostName() + '-' + server.getBindAddress());
     } catch (UnknownHostException e) {
       logger.warn(e);
     }

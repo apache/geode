@@ -33,7 +33,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -46,7 +46,7 @@ public class MembershipViewJUnitTest {
     int numMembers = 10;
     members = new ArrayList<>(numMembers);
     for (int i = 0; i < numMembers; i++) {
-      members.add(new InternalDistributedMember(SocketCreator.getLocalHost(), 1000 + i));
+      members.add(new InternalDistributedMember(LocalHostUtil.getLocalHost(), 1000 + i));
     }
     // view creator is a locator
     members.get(0).setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
@@ -183,7 +183,7 @@ public class MembershipViewJUnitTest {
 
     int oldSize = view.size();
     for (int i = 0; i < 100; i++) {
-      MemberIdentifier mbr = new InternalDistributedMember(SocketCreator.getLocalHost(), 2000 + i);
+      MemberIdentifier mbr = new InternalDistributedMember(LocalHostUtil.getLocalHost(), 2000 + i);
       mbr.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
       mbr.setVmViewId(2);
       view.add(mbr);

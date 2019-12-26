@@ -65,7 +65,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ByteToCommandDecoder;
 import org.apache.geode.redis.internal.Coder;
@@ -365,7 +365,7 @@ public class GeodeRedisServer {
    * @return The InetAddress to bind to
    */
   private InetAddress getBindAddress() throws UnknownHostException {
-    return this.bindAddress == null || this.bindAddress.isEmpty() ? SocketCreator.getLocalHost()
+    return this.bindAddress == null || this.bindAddress.isEmpty() ? LocalHostUtil.getLocalHost()
         : InetAddress.getByName(this.bindAddress);
   }
 

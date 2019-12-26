@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.Version;
 
 public class MemberIdentifierFactoryImplTest {
@@ -42,7 +42,7 @@ public class MemberIdentifierFactoryImplTest {
 
   @Test
   public void testRemoteHost() throws UnknownHostException {
-    InetAddress localhost = SocketCreator.getLocalHost();
+    InetAddress localhost = LocalHostUtil.getLocalHost();
     MemberData memberData =
         MemberDataBuilder.newBuilder(localhost, localhost.getHostName()).build();
     MemberIdentifier data = factory.create(memberData);
@@ -52,7 +52,7 @@ public class MemberIdentifierFactoryImplTest {
 
   @Test
   public void testNewBuilderForLocalHost() throws UnknownHostException {
-    InetAddress localhost = SocketCreator.getLocalHost();
+    InetAddress localhost = LocalHostUtil.getLocalHost();
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname").build();
     MemberIdentifier data = factory.create(memberData);
     assertThat(data.getInetAddress()).isEqualTo(localhost);
