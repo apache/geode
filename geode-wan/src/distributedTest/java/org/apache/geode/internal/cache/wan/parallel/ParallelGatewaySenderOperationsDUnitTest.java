@@ -421,14 +421,14 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm4.invoke(() -> doPuts(getTestMethodName() + "_PR", 200));
 
     // Make sure the puts make it to the remote side
-    vm2.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 200, 120000));
-    vm3.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 200, 120000));
+    vm2.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 200));
+    vm3.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 200));
 
     // now, stop all of the senders
     stopSenders();
 
-    vm2.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 200, 120000));
-    vm3.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 200, 120000));
+    vm2.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 200));
+    vm3.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 200));
 
     // SECOND RUN: do some of the puts after the senders are stopped
     vm4.invoke(() -> doPuts(getTestMethodName() + "_PR", 1000));

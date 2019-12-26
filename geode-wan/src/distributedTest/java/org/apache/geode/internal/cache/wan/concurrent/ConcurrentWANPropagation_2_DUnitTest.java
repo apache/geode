@@ -75,8 +75,8 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.doHeavyPuts(getTestMethodName() + "_RR", 15));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15, 240000));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15, 240000));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15));
   }
 
   @Ignore("Bug46921")

@@ -134,8 +134,8 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.resumeSender("ln"));
     vm7.invoke(() -> WANTestBase.resumeSender("ln"));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 50, 240000));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 50, 240000));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 50));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 50));
   }
 
   /**
