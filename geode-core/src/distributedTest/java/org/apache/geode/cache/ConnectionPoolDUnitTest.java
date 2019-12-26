@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.getInstance;
 import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -22,6 +23,7 @@ import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
@@ -35,7 +37,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -1247,7 +1252,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   private static volatile int baselineLifetimeDisconnect;
 
   @Test
-  public void basicTestLifetimeExpire() throws CacheException {
+  public void basicTestLifetimeExpire()
+      throws CacheException, TimeoutException, InterruptedException {
     final String name = this.getName();
 
 
@@ -1263,7 +1269,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         @Override
         public void run2() throws CacheException {
           AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-          factory.setCacheListener(new DelayListener(25));
+          factory.addCacheListener(new DelayListener(25));
           createRegion(name, factory.create());
           try {
             startBridgeServer(0);
@@ -1281,7 +1287,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
         @Override
         public void run2() throws CacheException {
           AttributesFactory<Object, Object> factory = getBridgeServerRegionAttributes(null, null);
-          factory.setCacheListener(new DelayListener(25));
+          factory.addCacheListener(new DelayListener(25));
           createRegion(name, factory.create());
           try {
             startBridgeServer(0);
@@ -1319,7 +1325,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
       // Launch async thread that puts objects into cache. This thread will execute until
       // the test has ended.
-      putAI = vm2.invokeAsync(new CacheSerializableRunnable("Put objects") {
+      putAI = vm2.invokeAsync("Put objects", new CacheSerializableRunnable() {
         @Override
         public void run2() throws CacheException {
           Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -1343,7 +1349,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           }
         }
       });
-      putAI2 = vm2.invokeAsync(new CacheSerializableRunnable("Put objects") {
+      putAI2 = vm2.invokeAsync("Put objects", new CacheSerializableRunnable() {
         @Override
         public void run2() throws CacheException {
           Region<Object, Object> region = getRootRegion().getSubregion(name);
@@ -1380,14 +1386,14 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                   + " but stats.getLoadConditioningCheck()=" + stats.getLoadConditioningCheck(),
               stats.getLoadConditioningCheck() >= (10 + baselineLifetimeCheck));
           baselineLifetimeCheck = stats.getLoadConditioningCheck();
-          assertTrue(stats.getLoadConditioningExtensions() > baselineLifetimeExtensions);
-          assertEquals(stats.getLoadConditioningConnect(), baselineLifetimeConnect);
-          assertEquals(stats.getLoadConditioningDisconnect(), baselineLifetimeDisconnect);
+          assertThat(stats.getLoadConditioningExtensions()).isGreaterThan(baselineLifetimeExtensions);
+          assertThat(stats.getLoadConditioningConnect()).isEqualTo(baselineLifetimeConnect);
+          assertThat(stats.getLoadConditioningDisconnect()).isEqualTo(baselineLifetimeDisconnect);
         }
       });
 
-      await().until(putAI::isAlive);
-      await().until(putAI2::isAlive);
+      assertThat(putAI.isAlive()).isTrue();
+      assertThat(putAI2.isAlive()).isTrue();
 
     } finally {
       vm2.invoke("Stop Putters", () -> stopTestLifetimeExpire = true);
@@ -1395,24 +1401,15 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
       try {
         if (putAI != null) {
           // Verify that no exception has occurred in the putter thread
-          ThreadUtils.join(putAI, 30 * 1000);
-          if (putAI.exceptionOccurred()) {
-            fail("While putting entries: ",
-                putAI.getException());
-          }
+          putAI.get(30, SECONDS);
         }
 
         if (putAI2 != null) {
           // Verify that no exception has occurred in the putter thread
-          ThreadUtils.join(putAI, 30 * 1000);
-          // FIXME this thread does not terminate
-          // if (putAI2.exceptionOccurred()) {
-          // fail("While putting entries: ", putAI.getException());
-          // }
+          putAI.get(30, SECONDS);
         }
-
       } finally {
-        vm2.invoke("Stop Putters", () -> stopTestLifetimeExpire = true);
+        vm2.invoke("Stop Putters", () ->  stopTestLifetimeExpire = false);
         // Close Pool
         vm2.invoke("Close Pool", new CacheSerializableRunnable() {
           @Override
