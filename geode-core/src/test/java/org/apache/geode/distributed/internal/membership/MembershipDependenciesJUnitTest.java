@@ -106,6 +106,8 @@ public class MembershipDependenciesJUnitTest {
               // TODO: break dependencies on locator-related classes
               .or(type(Locator.class))
 
+              .or(type(SocketCreator.class))
+
               // TODO: break dependency on internal.security
               .or(type(SecurableCommunicationChannel.class))
 

@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal.membership.gms;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -244,7 +243,6 @@ public class MembershipOnlyJUnitTest {
     nonDefault.put(DISABLE_TCP, "true");
     nonDefault.put(MCAST_PORT, "0");
     nonDefault.put(LOG_FILE, "");
-    nonDefault.put(LOG_LEVEL, "fine");
     nonDefault.put(MEMBER_TIMEOUT, "2000");
     nonDefault.put(LOCATORS, locators);
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);

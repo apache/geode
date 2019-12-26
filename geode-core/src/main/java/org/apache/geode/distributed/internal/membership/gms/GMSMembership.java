@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -983,9 +984,15 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       // view processing can take a while, so we use a separate thread
       // to avoid blocking a reader thread
       long newId = viewArg.getViewId();
-      viewExcecutor.submit(() -> {
+      try {
+        viewExcecutor.submit(() -> {
+          processView(newId, viewArg);
+        });
+      } catch (RejectedExecutionException ex) {
+        logger.info(
+            "membership view executor rejected a request to install a new view.  Installing it locally...");
         processView(newId, viewArg);
-      });
+      }
     } finally {
       latestViewWriteLock.unlock();
     }

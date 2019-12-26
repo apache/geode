@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
 import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -235,10 +236,13 @@ public class MembershipJUnitTest {
       // let the managers idle for a while and get used to each other
       // Thread.sleep(4000l);
 
+      System.out.println("BRUCE: shutting down second membership");
       m2.disconnect(false);
       assertTrue(!m2.isConnected());
 
-      assertTrue(m1.getView().size() == 1);
+      System.out.println("BRUCE: checking that member has departed in first membership");
+      final Membership<InternalDistributedMember> waitingMembership = m1;
+      await().untilAsserted(() -> assertTrue(waitingMembership.getView().size() == 1));
 
       return result;
     } finally {
@@ -412,7 +416,8 @@ public class MembershipJUnitTest {
       m2.disconnect(false);
       assertTrue(!m2.isConnected());
 
-      assertTrue(m1.getView().size() == 1);
+      final Membership<InternalDistributedMember> waitingMembership = m1;
+      await().untilAsserted(() -> assertTrue(waitingMembership.getView().size() == 1));
 
     } finally {
 
