@@ -122,7 +122,7 @@ public class MembershipOnlyJUnitTest {
           System::nanoTime, MembershipOnlyJUnitTest::newThreadPool, socketCreator,
           dsfidSerializer.getObjectSerializer(),
           dsfidSerializer.getObjectDeserializer(),
-          "scooby_scooby_doo",
+          "scooby_dooby_doo",
           "where_are_you");
       System.out.println("Test is starting a locator");
       tcpServer.start();
@@ -139,6 +139,7 @@ public class MembershipOnlyJUnitTest {
       } finally {
         System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
       }
+      // we shouldn't need to do this:
       locator.setMembership(m1);
 
       System.out.println("Test is creating the second membership manager");
@@ -168,40 +169,12 @@ public class MembershipOnlyJUnitTest {
         }
       }
 
-      GMSMembershipView<MemberID> view = jl1.getView();
-      MemberIdentifier notCreator;
-      if (view.getCreator().equals(jl1.getMemberID())) {
-        notCreator = view.getMembers().get(1);
-      } else {
-        notCreator = view.getMembers().get(0);
-      }
-      List<String> result = notCreator.getGroups();
-
       System.out.println("sending SerialMessage from m1 to m2");
       SerialMessage msg = new SerialMessage();
       msg.setRecipient(m2.getLocalMember());
       msg.setMulticast(false);
       m1.send(new MemberID[] {m2.getLocalMember()}, msg);
-      giveUp = System.currentTimeMillis() + 15000;
-      boolean verified = false;
-      Throwable problem = null;
-      while (giveUp > System.currentTimeMillis()) {
-        try {
-          verify(listener2).messageReceived(isA(SerialMessage.class));
-          verified = true;
-          break;
-        } catch (Error e) {
-          problem = e;
-          Thread.sleep(500);
-        }
-      }
-      if (!verified) {
-        AssertionError error = new AssertionError("Expected a message to be received");
-        if (problem != null) {
-          error.initCause(problem);
-        }
-        throw error;
-      }
+      await().untilAsserted(() -> verify(listener2).messageReceived(isA(SerialMessage.class)));
 
       // let the managers idle for a while and get used to each other
       // Thread.sleep(4000l);
@@ -599,14 +572,6 @@ public class MembershipOnlyJUnitTest {
     @Override
     public Version[] getSerializationVersions() {
       return new Version[0];
-    }
-  }
-
-  public static class LocationService {
-    TcpServer tcpServer;
-
-    public LocationService(TcpServer server) {
-      this.tcpServer = server;
     }
   }
 
