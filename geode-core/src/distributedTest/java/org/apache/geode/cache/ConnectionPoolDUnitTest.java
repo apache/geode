@@ -37,10 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.assertj.core.api.Assertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -74,7 +72,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifierStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.LocalLogWriter;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -1375,7 +1372,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           final PoolStats stats = pool.getStats();
           verifyServerCount(pool, 1);
 
-          await().until(() ->stats.getLoadConditioningCheck() >= (10 + baselineLifetimeCheck));
+          await().until(() -> stats.getLoadConditioningCheck() >= (10 + baselineLifetimeCheck));
 
           // make sure no replacements are happening.
           // since we have 2 threads and 2 cnxs and 1 server
@@ -1386,7 +1383,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
                   + " but stats.getLoadConditioningCheck()=" + stats.getLoadConditioningCheck(),
               stats.getLoadConditioningCheck() >= (10 + baselineLifetimeCheck));
           baselineLifetimeCheck = stats.getLoadConditioningCheck();
-          assertThat(stats.getLoadConditioningExtensions()).isGreaterThan(baselineLifetimeExtensions);
+          assertThat(stats.getLoadConditioningExtensions())
+              .isGreaterThan(baselineLifetimeExtensions);
           assertThat(stats.getLoadConditioningConnect()).isEqualTo(baselineLifetimeConnect);
           assertThat(stats.getLoadConditioningDisconnect()).isEqualTo(baselineLifetimeDisconnect);
         }
@@ -1409,7 +1407,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           putAI.get(30, SECONDS);
         }
       } finally {
-        vm2.invoke("Stop Putters", () ->  stopTestLifetimeExpire = false);
+        vm2.invoke("Stop Putters", () -> stopTestLifetimeExpire = false);
         // Close Pool
         vm2.invoke("Close Pool", new CacheSerializableRunnable() {
           @Override
