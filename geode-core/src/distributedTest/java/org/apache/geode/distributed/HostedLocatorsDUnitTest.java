@@ -71,6 +71,12 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
     disconnectAllFromDS();
   }
 
+  private String getUniqueLocatorName() {
+    String uniqueLocatorName = Host.getHost(0).getHostName() + "_"
+        + getUniqueName();
+    return uniqueLocatorName;
+  }
+
   @Test
   public void testGetAllHostedLocators() throws Exception {
     final InternalDistributedSystem system = getSystem();
@@ -80,7 +86,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
 
     final int[] ports = getRandomAvailableTCPPorts(4);
 
-    final String uniqueName = getUniqueName();
+    final String uniqueName = getUniqueLocatorName();
     for (int i = 0; i < 4; i++) {
       final int whichvm = i;
       getHost(0).getVM(whichvm).invoke(new SerializableCallable() {
@@ -198,7 +204,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
     // This will eventually contain the ports used by locators
     final int[] ports = new int[] {0, 0, 0, 0};
 
-    final String uniqueName = getUniqueName();
+    final String uniqueName = getUniqueLocatorName();
     for (int i = 0; i < 4; i++) {
       final int whichvm = i;
       Integer port = (Integer) Host.getHost(0).getVM(whichvm).invoke(new SerializableCallable() {

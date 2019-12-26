@@ -135,9 +135,10 @@ public class SSLSocketIntegrationTest {
     this.distributionConfig = new DistributionConfigImpl(properties);
 
     SocketCreatorFactory.setDistributionConfig(this.distributionConfig);
-    this.socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
+    this.socketCreator =
+        SocketCreatorFactory.getSocketCreatorForComponent(this.distributionConfig, CLUSTER);
 
-    this.localHost = InetAddress.getLocalHost();
+    this.localHost = LocalHostUtil.getLocalHost();
   }
 
   @After
