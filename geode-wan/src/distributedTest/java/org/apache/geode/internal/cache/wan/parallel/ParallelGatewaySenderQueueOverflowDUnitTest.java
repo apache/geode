@@ -89,8 +89,10 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.pauseSender("ln"));
     vm7.invoke(() -> WANTestBase.pauseSender("ln"));
 
-    // give some time for the senders to pause
-    Wait.pause(1000);
+    vm4.invoke(() -> waitForSenderPausedState("ln"));
+    vm5.invoke(() -> waitForSenderPausedState("ln"));
+    vm6.invoke(() -> waitForSenderPausedState("ln"));
+    vm7.invoke(() -> waitForSenderPausedState("ln"));
 
     vm2.invoke(
         () -> WANTestBase.createPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap()));

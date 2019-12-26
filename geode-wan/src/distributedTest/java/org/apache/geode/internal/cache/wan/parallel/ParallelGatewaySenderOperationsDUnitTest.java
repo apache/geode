@@ -34,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -673,7 +674,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> {
       AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      assertThat(sender.getStatistics().getBatchesResized()).isGreaterThan(0);
+      GeodeAwaitility.await().untilAsserted(() -> {assertThat(sender.getStatistics().getBatchesResized()).isGreaterThan(0);});
     });
   }
 

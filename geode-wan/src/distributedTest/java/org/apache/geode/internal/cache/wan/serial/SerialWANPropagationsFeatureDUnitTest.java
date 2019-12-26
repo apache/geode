@@ -39,8 +39,6 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(vm2, vm3);
-
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
 
     vm4.invoke(() -> WANTestBase.createSender("ln", 2, false, 10, 10, false, false, null, true));
@@ -50,6 +48,7 @@ public class SerialWANPropagationsFeatureDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
     vm3.invoke(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+    createReceiverInVMs(vm2, vm3);
 
     startSenderInVMs("ln", vm4, vm5);
     vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getTestMethodName() + "_RR"));
