@@ -14,11 +14,16 @@
  */
 package org.apache.geode.internal.net;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.internal.security.SecurableCommunicationChannel.ALL;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.CLUSTER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,8 +65,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
@@ -74,7 +77,6 @@ import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * Integration tests for SocketCreatorFactory with SSL.
@@ -84,7 +86,6 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  *
  * @see ClientSocketFactoryIntegrationTest
  */
-@Category({MembershipTest.class})
 public class SSLSocketIntegrationTest {
 
   private static final String MESSAGE = SSLSocketIntegrationTest.class.getName() + " Message";
@@ -102,9 +103,6 @@ public class SSLSocketIntegrationTest {
   public ErrorCollector errorCollector = new ErrorCollector();
 
   @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-
-  @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
@@ -115,22 +113,24 @@ public class SSLSocketIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
+    SocketCreatorFactory.close(); // ensure nothing lingers from past tests
+
     IgnoredException.addIgnoredException("javax.net.ssl.SSLException: Read timed out");
 
     File keystore = findTestKeystore();
-    System.setProperty("javax.net.ssl.trustStore", keystore.getCanonicalPath());
-    System.setProperty("javax.net.ssl.trustStorePassword", "password");
-    System.setProperty("javax.net.ssl.keyStore", keystore.getCanonicalPath());
-    System.setProperty("javax.net.ssl.keyStorePassword", "password");
     // System.setProperty("javax.net.debug", "ssl,handshake");
 
 
     Properties properties = new Properties();
     properties.setProperty(MCAST_PORT, "0");
-    properties.setProperty(CLUSTER_SSL_ENABLED, "true");
-    properties.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
-    properties.setProperty(CLUSTER_SSL_CIPHERS, "any");
-    properties.setProperty(CLUSTER_SSL_PROTOCOLS, "TLSv1.2");
+    properties.setProperty(SSL_ENABLED_COMPONENTS, ALL.getConstant());
+    properties.setProperty(SSL_KEYSTORE, keystore.getCanonicalPath());
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_TRUSTSTORE, keystore.getCanonicalPath());
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.setProperty(SSL_CIPHERS, "any");
+    properties.setProperty(SSL_PROTOCOLS, "TLSv1.2");
 
     this.distributionConfig = new DistributionConfigImpl(properties);
 
@@ -143,6 +143,7 @@ public class SSLSocketIntegrationTest {
 
   @After
   public void tearDown() throws Exception {
+    SocketCreatorFactory.close();
     if (this.clientSocket != null) {
       this.clientSocket.close();
     }
@@ -152,7 +153,6 @@ public class SSLSocketIntegrationTest {
     if (this.serverThread != null && this.serverThread.isAlive()) {
       this.serverThread.interrupt();
     }
-    SocketCreatorFactory.close();
   }
 
   @Test

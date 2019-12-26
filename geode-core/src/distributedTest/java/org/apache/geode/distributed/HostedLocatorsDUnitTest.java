@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
@@ -31,12 +31,12 @@ import java.util.concurrent.Callable;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.shell.support.util.FileUtils;
 
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -92,26 +92,22 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
       getHost(0).getVM(whichvm).invoke(new SerializableCallable() {
         @Override
         public Object call() throws Exception {
-          try {
-            System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "locators", dunitLocator);
-            System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
-
-            final String name = uniqueName + "-" + whichvm;
-            final File subdir = new File(name);
-            subdir.mkdir();
-            assertTrue(subdir.exists() && subdir.isDirectory());
-
-            final Builder builder = new Builder().setMemberName(name).setPort(ports[whichvm])
-                .setRedirectOutput(true).setWorkingDirectory(name);
-
-            launcher = builder.build();
-            assertEquals(Status.ONLINE, launcher.start().getStatus());
-            waitForLocatorToStart(launcher, TIMEOUT_MILLISECONDS, 10, true);
-            return null;
-          } finally {
-            System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "locators");
-            System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT);
+          final String name = uniqueName + "-" + whichvm;
+          final File subdir = new File(name);
+          if (subdir.exists()) {
+            FileUtils.deleteRecursively(subdir);
           }
+          subdir.mkdir();
+          assertTrue(subdir.exists() && subdir.isDirectory());
+
+          final Builder builder = new Builder().setMemberName(name).setPort(ports[whichvm])
+              .set(LOCATORS, dunitLocator)
+              .setRedirectOutput(true).setWorkingDirectory(name);
+
+          launcher = builder.build();
+          assertEquals(Status.ONLINE, launcher.start().getStatus());
+          waitForLocatorToStart(launcher, TIMEOUT_MILLISECONDS, 10, true);
+          return null;
         }
       });
     }
@@ -210,26 +206,22 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
       Integer port = (Integer) Host.getHost(0).getVM(whichvm).invoke(new SerializableCallable() {
         @Override
         public Object call() throws Exception {
-          try {
-            System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "locators", dunitLocator);
-            System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
-
-            final String name = uniqueName + "-" + whichvm;
-            final File subdir = new File(name);
-            subdir.mkdir();
-            assertTrue(subdir.exists() && subdir.isDirectory());
-
-            final Builder builder = new Builder().setMemberName(name).setPort(ports[whichvm])
-                .setRedirectOutput(true).setWorkingDirectory(name);
-
-            launcher = builder.build();
-            assertEquals(Status.ONLINE, launcher.start().getStatus());
-            waitForLocatorToStart(launcher, TIMEOUT_MILLISECONDS, 10, true);
-            return launcher.getPort();
-          } finally {
-            System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "locators");
-            System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT);
+          final String name = uniqueName + "-" + whichvm;
+          final File subdir = new File(name);
+          if (subdir.exists()) {
+            FileUtils.deleteRecursively(subdir);
           }
+          subdir.mkdir();
+          assertTrue(subdir.exists() && subdir.isDirectory());
+
+          final Builder builder = new Builder().setMemberName(name).setPort(ports[whichvm])
+              .set(LOCATORS, dunitLocator)
+              .setRedirectOutput(true).setWorkingDirectory(name);
+
+          launcher = builder.build();
+          assertEquals(Status.ONLINE, launcher.start().getStatus());
+          waitForLocatorToStart(launcher, TIMEOUT_MILLISECONDS, 10, true);
+          return launcher.getPort();
         }
       });
       ports[i] = port;
