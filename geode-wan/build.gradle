@@ -24,14 +24,14 @@ dependencies {
   compile(platform(project(':boms:geode-all-bom')))
   gradleLint.ignore {
     // See GEODE-6128 -- ignore xml-apis in linter to avoid changes with every run.
-    upgradeTestCompile('xml-apis:xml-apis:1.4.01')
+    upgradeTestCompile('xml-apis:xml-apis:2.0.2')
   }
   implementation(project(':geode-logging'))
   implementation(project(':geode-serialization'))
   implementation(project(':geode-tcp-server'))
   compile(project(':geode-core'))
 
-  compileOnly('org.apache.logging.log4j:log4j-api:2.12.0')
+  compileOnly('org.apache.logging.log4j:log4j-api:2.12.1')
 
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
