@@ -67,9 +67,13 @@ public class GeodeClientClusterManagementSSLTest {
   public void getServiceUseClientSSLConfig() throws Exception {
     client.invoke(() -> {
       await().untilAsserted(() -> {
-        ClusterManagementService service = buildWithCache()
-            .setCache(ClusterStartupRule.getClientCache()).build();
-        assertThat(service.isConnected()).isTrue();
+        try {
+          ClusterManagementService service = buildWithCache()
+              .setCache(ClusterStartupRule.getClientCache()).build();
+          assertThat(service.isConnected()).isTrue();
+        } catch (IllegalStateException e) {
+          throw new AssertionError(e);
+        }
       });
     });
   }
