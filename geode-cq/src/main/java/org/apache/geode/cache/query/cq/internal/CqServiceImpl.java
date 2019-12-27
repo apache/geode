@@ -129,7 +129,7 @@ public class CqServiceImpl implements CqService {
 
   // Map to manage the similar CQs (having same query - performance optimization).
   // With query as key and Set of CQs as values.
-  private final ConcurrentHashMap matchingCqMap;
+  private final ConcurrentHashMap<String, Set<String>> matchingCqMap;
 
   // CQ Service statistics
   private final CqServiceStatisticsImpl cqServiceStats;
@@ -164,7 +164,7 @@ public class CqServiceImpl implements CqService {
     this.cache = cache;
 
     // Initialize the Map which maintains the matching cqs.
-    this.matchingCqMap = new ConcurrentHashMap<String, HashSet<String>>();
+    this.matchingCqMap = new ConcurrentHashMap<>();
 
     // Initialize the VSD statistics
     StatisticsFactory factory = this.cache.getDistributedSystem();
@@ -1551,11 +1551,11 @@ public class CqServiceImpl implements CqService {
       String cqQuery = cq.getQueryString();
       Set<String> matchingCQs;
       if (!matchingCqMap.containsKey(cqQuery)) {
-        matchingCQs = Collections.newSetFromMap(new ConcurrentHashMap());
+        matchingCQs = Collections.newSetFromMap(new ConcurrentHashMap<>());
         matchingCqMap.put(cqQuery, matchingCQs);
         this.stats.incUniqueCqQuery();
       } else {
-        matchingCQs = (Set) matchingCqMap.get(cqQuery);
+        matchingCQs = (Set<String>) matchingCqMap.get(cqQuery);
       }
       matchingCQs.add(cq.getServerCqName());
       if (logger.isDebugEnabled()) {
@@ -1592,7 +1592,7 @@ public class CqServiceImpl implements CqService {
    *
    * @return HashMap matchingCqMap
    */
-  public Map<String, HashSet<String>> getMatchingCqMap() {
+  public Map<String, Set<String>> getMatchingCqMap() {
     return matchingCqMap;
   }
 
