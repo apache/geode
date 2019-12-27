@@ -13,11 +13,11 @@
  * the License.
  */
 
-package org.apache.geode.internal.net;
-
-import java.util.Properties;
+package org.apache.geode.net;
 
 import javax.net.ssl.SSLParameters;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
  * User implementation of a SSLParameter extension logic.
@@ -31,7 +31,7 @@ public interface SSLParameterExtension {
    *
    * @param properties the properties
    */
-  default void init(Properties properties) {}
+  default void init(DistributionConfig config) {}
 
   SSLParameters modifySSLClientSocketParameters(SSLParameters parameters);
 

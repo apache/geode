@@ -1476,7 +1476,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     m.put(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION,
         "This property determines is the HTTP service with use mutual ssl authentication.");
     m.put(SSL_PARAMETER_EXTENSION,
-        "User defined fully qualified class name implementing SSLParameterExtension interface for SSL parameter extensions. Defaults to \"{0}\". Legal values can be any \"class name\" implementing SecurityManager that is present in the classpath.");
+        "User defined fully qualified class name implementing SSLParameterExtension interface for SSL parameter extensions. Defaults to \"{0}\". Legal values can be any \"class name\" implementing SSLParameterExtension that is present in the classpath.");
     m.put(VALIDATE_SERIALIZABLE_OBJECTS,
         "If true checks incoming java serializable objects against a filter");
     m.put(SERIALIZABLE_OBJECT_FILTER, "The filter to check incoming java serializables against");

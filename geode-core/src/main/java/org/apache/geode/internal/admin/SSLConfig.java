@@ -27,10 +27,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.net.SSLParameterExtension;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.SSLUtil;
+import org.apache.geode.net.SSLParameterExtension;
 
 /**
  * The SSL configuration settings for a GemFire distributed system.
@@ -331,7 +332,13 @@ public class SSLConfig {
       SSLParameterExtension sslParameterExtension =
           CallbackInstantiator.getObjectOfTypeFromClassName(sslParameterExtensionConfig,
               SSLParameterExtension.class);
-      sslParameterExtension.init(System.getProperties());
+      InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
+
+      if (ids == null) {
+        this.sslParameterExtension = null;
+        return this;
+      }
+      sslParameterExtension.init(ids.getConfig());
       this.sslParameterExtension = sslParameterExtension;
       return this;
     }
