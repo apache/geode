@@ -405,7 +405,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
     public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
       if (OLD_MEMBERS_OPTIMIZED) {
-        this.myDataVersion = InternalDataSerializer.getVersionForDataStreamOrNull(in);
+        this.myDataVersion = StaticSerialization.getVersionForDataStreamOrNull(in);
         this.myData = DataSerializer.readByteArray(in);
       } else {
         this.cqs = DataSerializer.readHashMap(in);
@@ -417,7 +417,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
       if (OLD_MEMBERS_OPTIMIZED) {
         HeapDataOutputStream hdos =
-            new HeapDataOutputStream(1000, InternalDataSerializer.getVersionForDataStream(out));
+            new HeapDataOutputStream(1000, StaticSerialization.getVersionForDataStream(out));
         if (this.cqs == null) {
           hdos.writeBoolean(false);
         } else {

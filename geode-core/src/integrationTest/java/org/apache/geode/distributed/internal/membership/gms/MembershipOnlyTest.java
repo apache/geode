@@ -31,8 +31,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactoryImpl;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
@@ -93,10 +94,10 @@ public class MembershipOnlyTest {
     TcpClient client = new TcpClient(socketCreator, dsfidSerializer.getObjectSerializer(),
         dsfidSerializer.getObjectDeserializer());
 
-    LifecycleListener<InternalDistributedMember> lifeCycleListener = mock(LifecycleListener.class);
+    LifecycleListener<MemberIdentifierImpl> lifeCycleListener = mock(LifecycleListener.class);
 
-    final Membership<InternalDistributedMember> membership =
-        MembershipBuilder.<InternalDistributedMember>newMembershipBuilder()
+    final Membership<MemberIdentifierImpl> membership =
+        MembershipBuilder.<MemberIdentifierImpl>newMembershipBuilder()
             .setConfig(config)
             .setSerializer(dsfidSerializer)
             .setLifecycleListener(lifeCycleListener)
@@ -109,7 +110,7 @@ public class MembershipOnlyTest {
     // TODO - the membership *must* be installed in the locator at this special
     // point during membership startup for the start to succeed
     doAnswer(invocation -> {
-      locator.getLocatorHandler().setMembership(membership);
+      locator.getLocatorHandler().setMembership((Membership) membership);
       return null;
     }).when(lifeCycleListener).started();
 

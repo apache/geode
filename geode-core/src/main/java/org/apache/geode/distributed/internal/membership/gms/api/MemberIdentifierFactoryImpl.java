@@ -12,26 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
 import java.util.Comparator;
 
-import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
-
-@VisibleForTesting
 public class MemberIdentifierFactoryImpl
-    implements MemberIdentifierFactory<InternalDistributedMember> {
+    implements MemberIdentifierFactory<MemberIdentifierImpl> {
 
   @Override
-  public InternalDistributedMember create(MemberData memberInfo) {
-    return new InternalDistributedMember(memberInfo);
+  public MemberIdentifierImpl create(MemberData memberInfo) {
+    return new MemberIdentifierImpl(memberInfo, false, null);
   }
 
   @Override
-  public Comparator<InternalDistributedMember> getComparator() {
-    return Comparator.naturalOrder();
+  public Comparator<MemberIdentifierImpl> getComparator() {
+    return MemberIdentifierImpl::compare;
   }
 }

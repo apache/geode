@@ -2211,7 +2211,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         return;
       }
       boolean invoked = false;
-      Version v = InternalDataSerializer.getVersionForDataStreamOrNull(out);
+      Version v = StaticSerialization.getVersionForDataStreamOrNull(out);
 
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
@@ -2280,7 +2280,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
     try {
       boolean invoked = false;
-      Version v = InternalDataSerializer.getVersionForDataStreamOrNull(in);
+      Version v = StaticSerialization.getVersionForDataStreamOrNull(in);
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
         Version[] versions = null;
@@ -2343,66 +2343,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
           String.format("Could not create an instance of %s .",
               c.getName()),
           ex);
-    }
-  }
-
-  /**
-   * Get the {@link Version} of the peer or disk store that created this
-   * {@link DataInput}.
-   */
-  public static Version getVersionForDataStream(DataInput in) {
-    // check if this is a versioned data input
-    if (in instanceof VersionedDataStream) {
-      final Version v = ((VersionedDataStream) in).getVersion();
-      return v != null ? v : Version.CURRENT;
-    } else {
-      // assume latest version
-      return Version.CURRENT;
-    }
-  }
-
-  /**
-   * Get the {@link Version} of the peer or disk store that created this
-   * {@link DataInput}. Returns
-   * null if the version is same as this member's.
-   */
-  public static Version getVersionForDataStreamOrNull(DataInput in) {
-    // check if this is a versioned data input
-    if (in instanceof VersionedDataStream) {
-      return ((VersionedDataStream) in).getVersion();
-    } else {
-      // assume latest version
-      return null;
-    }
-  }
-
-  /**
-   * Get the {@link Version} of the peer or disk store that created this
-   * {@link DataOutput}.
-   */
-  public static Version getVersionForDataStream(DataOutput out) {
-    // check if this is a versioned data output
-    if (out instanceof VersionedDataStream) {
-      final Version v = ((VersionedDataStream) out).getVersion();
-      return v != null ? v : Version.CURRENT;
-    } else {
-      // assume latest version
-      return Version.CURRENT;
-    }
-  }
-
-  /**
-   * Get the {@link Version} of the peer or disk store that created this
-   * {@link DataOutput}. Returns
-   * null if the version is same as this member's.
-   */
-  public static Version getVersionForDataStreamOrNull(DataOutput out) {
-    // check if this is a versioned data output
-    if (out instanceof VersionedDataStream) {
-      return ((VersionedDataStream) out).getVersion();
-    } else {
-      // assume latest version
-      return null;
     }
   }
 

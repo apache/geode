@@ -36,7 +36,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.BucketRegion.RawValue;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.DataLocationException;
@@ -51,6 +50,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -306,7 +306,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
       this.valueIsByteArray = (in.readByte() == 1);
       this.valueInBytes = DataSerializer.readByteArray(in);
       if (!this.valueIsByteArray) {
-        this.remoteVersion = InternalDataSerializer.getVersionForDataStreamOrNull(in);
+        this.remoteVersion = StaticSerialization.getVersionForDataStreamOrNull(in);
       }
     }
 
