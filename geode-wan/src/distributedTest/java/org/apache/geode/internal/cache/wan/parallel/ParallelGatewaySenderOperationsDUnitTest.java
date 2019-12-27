@@ -674,6 +674,7 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> {
       AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
+      GeodeAwaitility.await().untilAsserted(() -> assertThat(System.getProperty(MAX_MESSAGE_SIZE_PROPERTY)).isEqualTo(String.valueOf(1024 * 1024)));
       GeodeAwaitility.await().untilAsserted(() -> {assertThat(sender.getStatistics().getBatchesResized()).isGreaterThan(0);});
     });
   }
