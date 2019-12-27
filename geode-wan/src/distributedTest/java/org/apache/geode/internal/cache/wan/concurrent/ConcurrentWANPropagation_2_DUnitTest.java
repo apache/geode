@@ -56,27 +56,27 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
         true, 5, OrderPolicy.KEY));
 
     vm2.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
     vm3.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
     startSenderInVMs("ln", vm4, vm5);
-    vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getTestMethodName() + "_RR"));
-    vm3.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getTestMethodName() + "_RR"));
+    vm2.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getUniqueName() + "_RR"));
+    vm3.invoke(() -> addListenerToSleepAfterCreateEvent(1000, getUniqueName() + "_RR"));
 
     vm4.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm5.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm6.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm7.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
 
-    vm4.invoke(() -> WANTestBase.doHeavyPuts(getTestMethodName() + "_RR", 15));
+    vm4.invoke(() -> WANTestBase.doHeavyPuts(getUniqueName() + "_RR", 15));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 15));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 15));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 15));
   }
 
   @Ignore("Bug46921")
@@ -97,25 +97,25 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
         true, 5, OrderPolicy.THREAD));
 
     vm2.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
     vm3.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
     startSenderInVMs("ln", vm4, vm5);
 
     vm4.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm5.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm6.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm7.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
 
-    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 1000));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
 
   }
 
@@ -144,27 +144,27 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
         false, null, true, 5, OrderPolicy.THREAD));
 
     vm2.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
     vm3.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
     startSenderInVMs("lnSerial1", vm4, vm5);
 
     startSenderInVMs("lnSerial2", vm4, vm5);
 
-    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR",
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR",
         "lnSerial1,lnSerial2", isOffHeap()));
-    vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR",
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR",
         "lnSerial1,lnSerial2", isOffHeap()));
-    vm6.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR",
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR",
         "lnSerial1,lnSerial2", isOffHeap()));
-    vm7.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR",
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR",
         "lnSerial1,lnSerial2", isOffHeap()));
 
-    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 1000));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
   }
 
   @Test
@@ -187,31 +187,31 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
         true, 5, OrderPolicy.THREAD));
 
     vm2.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
     vm3.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
     startSenderInVMs("ln", vm4, vm5);
 
     vm4.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm5.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm6.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm7.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
 
     AsyncInvocation inv1 =
-        vm5.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 10000));
+        vm5.invokeAsync(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 10000));
     Wait.pause(2000);
     AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender());
 
     inv1.join();
     inv2.join();
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 10000));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 10000));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 10000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 10000));
   }
 
   @Test
@@ -231,25 +231,25 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
         null, true, 5, OrderPolicy.THREAD));
 
     vm2.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
     vm3.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
     startSenderInVMs("ln", vm4, vm5);
 
     vm4.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm5.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm6.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm7.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
 
-    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 1000));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
   }
 
   @Test
@@ -269,25 +269,25 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
         true, 4, OrderPolicy.THREAD));
 
     vm2.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
     vm3.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
 
     startSenderInVMs("ln", vm4, vm5);
 
     vm4.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm5.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm6.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
     vm7.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", "ln", isOffHeap()));
 
-    vm4.invoke(() -> WANTestBase.doMultiThreadedPuts(getTestMethodName() + "_RR", 1000));
+    vm4.invoke(() -> WANTestBase.doMultiThreadedPuts(getUniqueName() + "_RR", 1000));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
   }
 
   @Test
@@ -307,24 +307,24 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
         new MyGatewayEventFilter(), true, 5, OrderPolicy.THREAD));
 
     vm4.invoke(
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
+        () -> WANTestBase.createPartitionedRegion(getUniqueName(), "ln", 1, 100, isOffHeap()));
     vm5.invoke(
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
+        () -> WANTestBase.createPartitionedRegion(getUniqueName(), "ln", 1, 100, isOffHeap()));
     vm6.invoke(
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
+        () -> WANTestBase.createPartitionedRegion(getUniqueName(), "ln", 1, 100, isOffHeap()));
     vm7.invoke(
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), "ln", 1, 100, isOffHeap()));
+        () -> WANTestBase.createPartitionedRegion(getUniqueName(), "ln", 1, 100, isOffHeap()));
 
     startSenderInVMs("ln", vm4, vm5);
 
     vm2.invoke(
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap()));
+        () -> WANTestBase.createPartitionedRegion(getUniqueName(), null, 1, 100, isOffHeap()));
     vm3.invoke(
-        () -> WANTestBase.createPartitionedRegion(getTestMethodName(), null, 1, 100, isOffHeap()));
+        () -> WANTestBase.createPartitionedRegion(getUniqueName(), null, 1, 100, isOffHeap()));
 
-    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getUniqueName(), 1000));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 800));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName(), 800));
   }
 
   @Test
@@ -334,8 +334,8 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
-    vm2.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName(), null, isOffHeap()));
-    vm3.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName(), null, isOffHeap()));
+    vm2.invoke(() -> WANTestBase.createReplicatedRegion(getUniqueName(), null, isOffHeap()));
+    vm3.invoke(() -> WANTestBase.createReplicatedRegion(getUniqueName(), null, isOffHeap()));
     createReceiverInVMs(vm2, vm3);
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -347,15 +347,15 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
 
     startSenderInVMs("ln", vm4, vm5);
 
-    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName(), "ln", isOffHeap()));
-    vm5.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName(), "ln", isOffHeap()));
-    vm6.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName(), "ln", isOffHeap()));
-    vm7.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName(), "ln", isOffHeap()));
+    vm4.invoke(() -> WANTestBase.createReplicatedRegion(getUniqueName(), "ln", isOffHeap()));
+    vm5.invoke(() -> WANTestBase.createReplicatedRegion(getUniqueName(), "ln", isOffHeap()));
+    vm6.invoke(() -> WANTestBase.createReplicatedRegion(getUniqueName(), "ln", isOffHeap()));
+    vm7.invoke(() -> WANTestBase.createReplicatedRegion(getUniqueName(), "ln", isOffHeap()));
 
-    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 1000));
+    vm4.invoke(() -> WANTestBase.doPuts(getUniqueName(), 1000));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 800));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 800));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName(), 800));
+    vm3.invoke(() -> WANTestBase.validateRegionSize(getUniqueName(), 800));
   }
 
   @Test
@@ -365,7 +365,7 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
 
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
     vm2.invoke(
-        () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", null, isOffHeap()));
+        () -> WANTestBase.createReplicatedRegion(getUniqueName() + "_RR", null, isOffHeap()));
     vm2.invoke(() -> WANTestBase.createReceiver());
 
     WANTestBase.createCacheInVMs(lnPort, vm4, vm5);
@@ -378,20 +378,20 @@ public class ConcurrentWANPropagation_2_DUnitTest extends WANTestBase {
 
     startSenderInVMs("ln", vm4, vm5);
 
-    vm4.invoke(() -> WANTestBase.createNormalRegion(getTestMethodName() + "_RR", "ln"));
-    vm5.invoke(() -> WANTestBase.createNormalRegion(getTestMethodName() + "_RR", "ln"));
+    vm4.invoke(() -> WANTestBase.createNormalRegion(getUniqueName() + "_RR", "ln"));
+    vm5.invoke(() -> WANTestBase.createNormalRegion(getUniqueName() + "_RR", "ln"));
 
-    vm5.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    vm5.invoke(() -> WANTestBase.doPuts(getUniqueName() + "_RR", 1000));
 
     vm4.invoke(() -> WANTestBase.checkQueueStats("ln", 0, 0, 0, 0));
 
     vm5.invoke(() -> WANTestBase.checkQueueStats("ln", 0, 1000, 0, 0));
 
-    vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
+    vm5.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 1000));
 
-    vm4.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
+    vm4.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 0));
 
-    vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 0));
+    vm2.invoke(() -> WANTestBase.validateRegionSize(getUniqueName() + "_RR", 0));
 
     vm2.invoke(() -> WANTestBase.checkGatewayReceiverStats(0, 0, 0));
 
