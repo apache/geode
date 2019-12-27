@@ -2,7 +2,6 @@ HdrHistogram
 HikariCP
 LatencyUtils
 accessors-smart
-animal-sniffer-annotations
 antlr
 asm
 byte-buddy
@@ -117,6 +116,5 @@ springfox-spring-web
 springfox-swagger
 springfox-swagger-common
 springfox-swagger-ui
-spring-jcl
 swagger-annotations
 swagger-models

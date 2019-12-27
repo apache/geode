@@ -125,7 +125,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
   private VM vm2;
   private VM vm3;
 
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();

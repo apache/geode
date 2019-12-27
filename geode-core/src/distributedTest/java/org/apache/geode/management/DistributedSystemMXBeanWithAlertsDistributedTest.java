@@ -88,7 +88,7 @@ public class DistributedSystemMXBeanWithAlertsDistributedTest implements Seriali
 
   private static final String MANAGER_NAME = "managerVM";
   private static final String MEMBER_NAME = "memberVM-";
-  private static final long TIMEOUT = getTimeout().getValueInMS();
+  private static final long TIMEOUT = getTimeout().toMillis();
   private static final NotificationFilter SYSTEM_ALERT_FILTER =
       notification -> notification.getType().equals(SYSTEM_ALERT);
 

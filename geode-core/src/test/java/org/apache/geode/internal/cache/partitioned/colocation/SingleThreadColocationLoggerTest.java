@@ -48,7 +48,7 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class SingleThreadColocationLoggerTest {
 
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
 
   private Function<PartitionedRegion, Set<String>> allColocationRegionsProvider;
   private Consumer<String> logger;

@@ -63,7 +63,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public abstract class LauncherIntegrationTestCase {
 
-  protected static final long AWAIT_MILLIS = getTimeout().getValueInMS() * 2;
+  protected static final long AWAIT_MILLIS = getTimeout().toMillis() * 2;
 
   private static final int PREFERRED_FAKE_PID = 42;
 

@@ -260,7 +260,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
       ResultCollector<String, List<String>> resultCollector = FunctionServiceCast
           .<Void, String, List<String>>onRegion(getRegion())
           .withFilter(filter)
-          .execute(LongRunningFunction.class.getSimpleName(), getTimeout().getValueInMS(),
+          .execute(LongRunningFunction.class.getSimpleName(), getTimeout().toMillis(),
               MILLISECONDS);
 
       assertThat(resultCollector.getResult().get(0))
@@ -645,7 +645,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
     });
 
     client.invoke(() -> {
-      LATCH.get().await(getTimeout().getValueInMS(), MILLISECONDS);
+      LATCH.get().await(getTimeout().toMillis(), MILLISECONDS);
     });
 
     emptyServer1.invoke(() -> closeCacheHA());
@@ -1469,7 +1469,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
     @Override
     public void execute(FunctionContext<Void> context) {
       try {
-        latch.await(getTimeout().getValueInMS(), MILLISECONDS);
+        latch.await(getTimeout().toMillis(), MILLISECONDS);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }

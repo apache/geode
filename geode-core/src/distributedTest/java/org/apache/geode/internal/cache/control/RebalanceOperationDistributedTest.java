@@ -122,7 +122,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @SuppressWarnings("serial")
 public class RebalanceOperationDistributedTest extends CacheTestCase {
 
-  private static final long TIMEOUT_SECONDS = GeodeAwaitility.getTimeout().getValue();
+  private static final long TIMEOUT_SECONDS = GeodeAwaitility.getTimeout().getSeconds();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =

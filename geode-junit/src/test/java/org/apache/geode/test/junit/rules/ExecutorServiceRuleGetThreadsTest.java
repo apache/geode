@@ -34,7 +34,7 @@ import org.junit.Test;
  */
 public class ExecutorServiceRuleGetThreadsTest {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
 
   private final CountDownLatch terminateLatch = new CountDownLatch(1);
   private final AtomicBoolean submittedChildren = new AtomicBoolean();

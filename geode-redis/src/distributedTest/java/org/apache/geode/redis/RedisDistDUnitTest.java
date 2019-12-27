@@ -58,7 +58,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
   private String localHost;
 
   private static final int JEDIS_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().getValueInMS());
+      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private abstract class ClientTestBase extends SerializableCallable {
 

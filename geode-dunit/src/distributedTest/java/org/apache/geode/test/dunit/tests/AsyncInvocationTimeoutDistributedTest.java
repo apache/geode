@@ -38,7 +38,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 @SuppressWarnings("serial")
 public class AsyncInvocationTimeoutDistributedTest implements Serializable {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
 
   private static final AtomicReference<Long> threadId = new AtomicReference<>();
   private static final AtomicReference<CountDownLatch> latch = new AtomicReference<>();

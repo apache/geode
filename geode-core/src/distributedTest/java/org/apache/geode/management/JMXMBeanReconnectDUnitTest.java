@@ -54,7 +54,7 @@ public class JMXMBeanReconnectDUnitTest {
   private static final int NUM_REMOTE_BEANS = 19;
   private static final int NUM_LOCATOR_BEANS = 8;
   private static final int NUM_SERVER_BEANS = 3;
-  private static final long TIMEOUT = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long TIMEOUT = GeodeAwaitility.getTimeout().toMillis();
 
   private MemberVM locator1, locator2, server1;
 

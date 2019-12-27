@@ -112,7 +112,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @SuppressWarnings("serial")
 public class PutAllClientServerDistributedTest extends CacheTestCase {
 
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
 
   private static final int ONE_HUNDRED = 100;
   private static final int ONE_THOUSAND = 1000;

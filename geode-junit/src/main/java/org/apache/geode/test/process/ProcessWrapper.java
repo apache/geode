@@ -58,7 +58,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public class ProcessWrapper implements Consumer<String> {
   private static final Logger logger = LogService.getLogger();
 
-  private static final long PROCESS_TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long PROCESS_TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
   private static final long DELAY = 10;
 
   private final boolean headless;

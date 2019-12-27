@@ -38,7 +38,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 
 public class StackTraceDistributedTest {
 
-  private static final long TIMEOUT_MILLIS = getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = getTimeout().toMillis();
   private static final Pattern COUNTDOWNLATCH_AWAIT = Pattern.compile(
       ".*java\\.util\\.concurrent\\.CountDownLatch\\.await\\(CountDownLatch\\.java:\\d+\\).*");
 

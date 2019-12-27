@@ -48,7 +48,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 public abstract class ServerLauncherRemoteIntegrationTestCase
     extends ServerLauncherIntegrationTestCase implements UsesServerCommand {
 
-  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().toMillis();
 
   private final AtomicBoolean threwBindException = new AtomicBoolean();
 
