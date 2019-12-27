@@ -341,7 +341,7 @@ public class CqServiceVsdStats {
       return 0;
     }
     DefaultQueryService queryService = (DefaultQueryService) cache.getQueryService();
-    CqService cqService = null;
+    CqService cqService;
     try {
       cqService = queryService.getCqService();
     } catch (CqException e) {

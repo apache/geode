@@ -1446,7 +1446,7 @@ public class CqServiceImpl implements CqService {
           // Get the matching CQs if any.
           // synchronized (this.matchingCqMap){
           String query = cQuery.getQueryString();
-          Set matchingCqs = (Set) matchingCqMap.get(query);
+          Set matchingCqs = matchingCqMap.get(query);
           if (matchingCqs != null) {
             Iterator iter = matchingCqs.iterator();
             while (iter.hasNext()) {
@@ -1553,7 +1553,7 @@ public class CqServiceImpl implements CqService {
         matchingCqMap.put(cqQuery, matchingCQs);
         this.stats.incUniqueCqQuery();
       } else {
-        matchingCQs = (Set<String>) matchingCqMap.get(cqQuery);
+        matchingCQs = matchingCqMap.get(cqQuery);
       }
       matchingCQs.add(cq.getServerCqName());
       if (logger.isDebugEnabled()) {
@@ -1570,7 +1570,7 @@ public class CqServiceImpl implements CqService {
     synchronized (this.matchingCqMap) {
       String cqQuery = cq.getQueryString();
       if (matchingCqMap.containsKey(cqQuery)) {
-        Set matchingCQs = (Set) matchingCqMap.get(cqQuery);
+        Set matchingCQs = matchingCqMap.get(cqQuery);
         matchingCQs.remove(cq.getServerCqName());
         if (logger.isDebugEnabled()) {
           logger.debug(
@@ -1656,7 +1656,7 @@ public class CqServiceImpl implements CqService {
       cqPoolsConnected.put(poolName, connected);
 
       Collection<? extends InternalCqQuery> cqs = this.getAllCqs();
-      String cqName = null;
+      String cqName;
       final boolean isDebugEnabled = logger.isDebugEnabled();
       for (InternalCqQuery query : cqs) {
         try {

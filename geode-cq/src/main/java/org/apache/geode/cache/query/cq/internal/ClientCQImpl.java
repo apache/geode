@@ -44,7 +44,7 @@ import org.apache.geode.security.GemFireSecurityException;
 public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
   private static final Logger logger = LogService.getLogger();
 
-  private CqAttributes cqAttributes = null;
+  private CqAttributes cqAttributes;
 
   private volatile ServerCQProxyImpl cqProxy;
 
@@ -315,7 +315,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
         if (!this.queuedEvents.isEmpty()) {
           try {
             Thread thread = new LoggingThread("CQEventHandler For " + cqName, () -> {
-              Object[] eventArray = null;
+              Object[] eventArray;
               if (CqQueryImpl.testHook != null) {
                 testHook.setEventCount(queuedEvents.size());
               }

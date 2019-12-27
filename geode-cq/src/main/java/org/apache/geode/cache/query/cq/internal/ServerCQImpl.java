@@ -174,7 +174,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     DataPolicy dp = this.cqBaseRegion.getDataPolicy();
     this.isPR = dp.withPartitioning();
     if (!(this.isPR || dp.withReplication())) {
-      String errMsg = null;
+      String errMsg;
       // replicated regions with eviction set to local destroy get turned into preloaded
       if (dp.withPreloaded() && cqBaseRegion.getAttributes().getEvictionAttributes() != null
           && cqBaseRegion.getAttributes().getEvictionAttributes().getAction()
