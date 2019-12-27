@@ -448,8 +448,7 @@ public class CqServiceImpl implements CqService {
       return;
     }
     String cqName = null;
-    for (InternalCqQuery internalCq : cqs) {
-      CqQuery cq = internalCq;
+    for (CqQuery cq : cqs) {
       if (!cq.isClosed() && cq.isStopped()) {
         try {
           cqName = cq.getName();
@@ -490,8 +489,7 @@ public class CqServiceImpl implements CqService {
     }
 
     String cqName = null;
-    for (InternalCqQuery internalCqQuery : cqs) {
-      CqQuery cq = internalCqQuery;
+    for (CqQuery cq : cqs) {
       if (!cq.isClosed() && cq.isRunning()) {
         try {
           cqName = cq.getName();
