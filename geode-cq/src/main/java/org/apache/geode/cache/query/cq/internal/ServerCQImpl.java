@@ -422,10 +422,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
   @Override
   public boolean isOldValueRequiredForQueryProcessing(Object key) {
-    if (this.cqResultKeysInitialized && this.isPartOfCqResult(key)) {
-      return false;
-    }
-    return true;
+    return !this.cqResultKeysInitialized || !this.isPartOfCqResult(key);
   }
 
   /**
