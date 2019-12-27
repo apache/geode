@@ -211,7 +211,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
             // Handle client side exceptions.
           } catch (Exception ex) {
             logger.warn("Exception occurred in the CqListener of the CQ, CqName : {} Error : {}",
-                    new Object[]{cqName, ex.getLocalizedMessage()});
+                new Object[] {cqName, ex.getLocalizedMessage()});
             if (isDebugEnabled) {
               logger.debug(ex.getMessage(), ex);
             }
@@ -228,8 +228,8 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
             // is still usable:
             SystemFailure.checkFailure();
             logger.warn(
-                    "RuntimeException occurred in the CqListener of the CQ, CqName : {} Error : {}",
-                    new Object[]{cqName, t.getLocalizedMessage()});
+                "RuntimeException occurred in the CqListener of the CQ, CqName : {} Error : {}",
+                new Object[] {cqName, t.getLocalizedMessage()});
             if (isDebugEnabled) {
               logger.debug(t.getMessage(), t);
             }

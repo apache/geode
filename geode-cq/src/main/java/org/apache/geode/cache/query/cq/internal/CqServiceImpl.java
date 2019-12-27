@@ -1034,15 +1034,15 @@ public class CqServiceImpl implements CqService {
               logger.debug("CqService.dispatchCqListeners(): Requesting full value...");
             }
             Part result = (Part) GetEventValueOp
-                    .executeOnPrimary(cqEvent.getQueueManager().getPool(), cqEvent.getEventID(), null);
+                .executeOnPrimary(cqEvent.getQueueManager().getPool(), cqEvent.getEventID(), null);
             Object newVal = result.getObject();
             if (result == null || newVal == null) {
               if (!cache.getCancelCriterion().isCancelInProgress()) {
                 Exception ex =
-                        new Exception("Failed to retrieve full value from server for eventID "
-                                + cqEvent.getEventID());
+                    new Exception("Failed to retrieve full value from server for eventID "
+                        + cqEvent.getEventID());
                 logger.warn("Exception in the CqListener of the CQ, CqName: {} Error : {}",
-                        new Object[]{cqName, ex.getMessage()});
+                    new Object[] {cqName, ex.getMessage()});
                 if (isDebugEnabled) {
                   logger.debug(ex.getMessage(), ex);
                 }
@@ -1050,8 +1050,8 @@ public class CqServiceImpl implements CqService {
             } else {
               this.cache.getCachePerfStats().incDeltaFullValuesRequested();
               cqEvent = new CqEventImpl(cQuery, cqEvent.getBaseOperation(),
-                      cqEvent.getQueryOperation(), cqEvent.getKey(), newVal, cqEvent.getDeltaValue(),
-                      cqEvent.getQueueManager(), cqEvent.getEventID());
+                  cqEvent.getQueryOperation(), cqEvent.getKey(), newVal, cqEvent.getDeltaValue(),
+                  cqEvent.getQueueManager(), cqEvent.getEventID());
               if (cqEvent.getThrowable() != null) {
                 cqListener.onError(cqEvent);
               } else {
@@ -1067,7 +1067,7 @@ public class CqServiceImpl implements CqService {
       } catch (Exception ex) {
         if (!cache.getCancelCriterion().isCancelInProgress()) {
           logger.warn("Exception in the CqListener of the CQ, CqName: {} Error : {}",
-                  new Object[]{cqName, ex.getMessage()});
+              new Object[] {cqName, ex.getMessage()});
           if (isDebugEnabled) {
             logger.debug(ex.getMessage(), ex);
           }
@@ -1085,7 +1085,7 @@ public class CqServiceImpl implements CqService {
         // is still usable:
         SystemFailure.checkFailure();
         logger.warn("Runtime Exception in the CqListener of the CQ, CqName: {} Error : {}",
-                new Object[]{cqName, t.getLocalizedMessage()});
+            new Object[] {cqName, t.getLocalizedMessage()});
         if (isDebugEnabled) {
           logger.debug(t.getMessage(), t);
         }
@@ -1122,7 +1122,7 @@ public class CqServiceImpl implements CqService {
       } catch (Exception ex) {
         if (!cache.getCancelCriterion().isCancelInProgress()) {
           logger.warn("Exception in the CqListener of the CQ, CqName: {} Error : {}",
-                  new Object[]{cqName, ex.getMessage()});
+              new Object[] {cqName, ex.getMessage()});
           if (logger.isDebugEnabled()) {
             logger.debug(ex.getMessage(), ex);
           }
@@ -1140,7 +1140,7 @@ public class CqServiceImpl implements CqService {
         // is still usable:
         SystemFailure.checkFailure();
         logger.warn("Runtime Exception in the CqListener of the CQ, CqName: {} Error : {}",
-                new Object[]{cqName, t.getLocalizedMessage()});
+            new Object[] {cqName, t.getLocalizedMessage()});
         if (logger.isDebugEnabled()) {
           logger.debug(t.getMessage(), t);
         }
@@ -1338,7 +1338,7 @@ public class CqServiceImpl implements CqService {
           }
           // Update the Cache Results for this CQ.
           if (cqEvent == MessageType.LOCAL_CREATE
-                  || cqEvent == MessageType.LOCAL_UPDATE) {
+              || cqEvent == MessageType.LOCAL_UPDATE) {
             cQuery.addToCqResultKeys(eventKey);
           } else if (cqEvent == MessageType.LOCAL_DESTROY) {
             cQuery.markAsDestroyedInCqResultKeys(eventKey);
@@ -1353,7 +1353,7 @@ public class CqServiceImpl implements CqService {
                   executionStartTime = this.stats.startCqQueryExecution();
 
                   b_cqResults_newValue =
-                          evaluateQuery(cQuery, new Object[]{cqUnfilteredEventsSet_newValue});
+                      evaluateQuery(cQuery, new Object[] {cqUnfilteredEventsSet_newValue});
                   this.stats.endCqQueryExecution(executionStartTime);
                 }
               }
@@ -1370,13 +1370,13 @@ public class CqServiceImpl implements CqService {
                   // For PR if not found in cache, apply the query on old value.
                   // Also apply if the query was not executed during cq execute
                   if ((cQuery.isPR || !CqServiceImpl.EXECUTE_QUERY_DURING_INIT)
-                          && b_cqResults_oldValue == false) {
+                      && b_cqResults_oldValue == false) {
                     queryOldValue = true;
                   }
                   if (isDebugEnabled && !cQuery.isPR && !b_cqResults_oldValue) {
                     logger.debug(
-                            "Event Key not found in the CQ Result Queue. EventKey : {} CQ Name : {}",
-                            eventKey, cqName);
+                        "Event Key not found in the CQ Result Queue. EventKey : {} CQ Name : {}",
+                        eventKey, cqName);
                   }
                 } else {
                   queryOldValue = true;
@@ -1395,13 +1395,13 @@ public class CqServiceImpl implements CqService {
                     if (!cqUnfilteredEventsSet_oldValue.isEmpty()) {
                       executionStartTime = this.stats.startCqQueryExecution();
                       b_cqResults_oldValue =
-                              evaluateQuery(cQuery, new Object[]{cqUnfilteredEventsSet_oldValue});
+                          evaluateQuery(cQuery, new Object[] {cqUnfilteredEventsSet_oldValue});
                       this.stats.endCqQueryExecution(executionStartTime);
                     } else {
                       if (isDebugEnabled) {
                         logger.debug(
-                                "old value for event with key {} is null - query execution not performed",
-                                eventKey);
+                            "old value for event with key {} is null - query execution not performed",
+                            eventKey);
                       }
                     }
                   }
@@ -1415,8 +1415,8 @@ public class CqServiceImpl implements CqService {
               error = true;
               // CHANGE LOG MESSAGE:
               logger.info("Error while processing CQ on the event, key : {} CqName: {}, Error: {}",
-                      new Object[]{((EntryEvent) event).getKey(), cQuery.getName(),
-                              ex.getLocalizedMessage()});
+                  new Object[] {((EntryEvent) event).getKey(), cQuery.getName(),
+                      ex.getLocalizedMessage()});
             }
 
             if (error) {
@@ -1454,7 +1454,7 @@ public class CqServiceImpl implements CqService {
                 matchedCqs.put(matchingCqName, cqEvent);
                 if (isDebugEnabled) {
                   logger.debug("Adding CQ into Matching CQ Map: {} Event is: {}", matchingCqName,
-                          cqEvent);
+                      cqEvent);
                 }
               }
             }
@@ -1464,7 +1464,7 @@ public class CqServiceImpl implements CqService {
         if (cqEvent != null && cQuery.isRunning()) {
           if (isDebugEnabled) {
             logger.debug("Added event to CQ with client-side name: {} key: {} operation : {}",
-                    cQuery.cqName, eventKey, cqEvent);
+                cQuery.cqName, eventKey, cqEvent);
           }
           cqInfo.put(filterID, cqEvent);
           CqQueryVsdStats stats = cQuery.getVsdStats();
