@@ -30,7 +30,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache.wan.EventSequenceID;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.Conflatable;
@@ -53,6 +52,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.size.Sizeable;
@@ -739,7 +739,7 @@ public class GatewaySenderEventImpl
     this.numberOfParts = in.readInt();
     // this._id = in.readUTF();
     if (version < 0x11 && (in instanceof InputStream)
-        && InternalDataSerializer.getVersionForDataStream(in) == Version.CURRENT) {
+        && StaticSerialization.getVersionForDataStream(in) == Version.CURRENT) {
       in = new VersionedDataInputStream((InputStream) in, Version.GFE_701);
     }
     this.id = (EventID) context.getDeserializer().readObject(in);

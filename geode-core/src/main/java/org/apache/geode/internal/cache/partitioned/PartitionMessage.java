@@ -48,7 +48,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DataLocationException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
@@ -65,6 +64,7 @@ import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
@@ -541,7 +541,7 @@ public abstract class PartitionMessage extends DistributionMessage
     setBooleans(this.flags, in, context);
     this.regionId = in.readInt();
     // extra field post 9.0
-    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_90) >= 0) {
+    if (StaticSerialization.getVersionForDataStream(in).compareTo(Version.GFE_90) >= 0) {
       this.isTransactionDistributed = in.readBoolean();
     }
   }
@@ -585,7 +585,7 @@ public abstract class PartitionMessage extends DistributionMessage
       context.getSerializer().writeObject(this.txMemberId, out);
     out.writeInt(this.regionId);
     // extra field post 9.0
-    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GFE_90) >= 0) {
+    if (StaticSerialization.getVersionForDataStream(out).compareTo(Version.GFE_90) >= 0) {
       out.writeBoolean(this.isTransactionDistributed);
     }
   }

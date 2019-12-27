@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,10 +24,6 @@ import java.util.Arrays;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.api.MemberData;
-import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
-import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.serialization.Version;
 
@@ -112,10 +108,10 @@ public class MemberIdentifierFactoryImplTest {
   public void membersAreEqual() {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    InternalDistributedMember member1 = factory.create(memberData);
+    MemberIdentifierImpl member1 = factory.create(memberData);
     memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    InternalDistributedMember member2 = factory.create(memberData);
+    MemberIdentifierImpl member2 = factory.create(memberData);
     assertThat(factory.getComparator().compare(member1, member2)).isZero();
   }
 
@@ -123,10 +119,10 @@ public class MemberIdentifierFactoryImplTest {
   public void membersAreNotEqual() {
     MemberData memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(1).build();
-    InternalDistributedMember member1 = factory.create(memberData);
+    MemberIdentifierImpl member1 = factory.create(memberData);
     memberData = MemberDataBuilder.newBuilderForLocalHost("hostname")
         .setMembershipPort(2).build();
-    InternalDistributedMember member2 = factory.create(memberData);
+    MemberIdentifierImpl member2 = factory.create(memberData);
     assertThat(factory.getComparator().compare(member1, member2)).isLessThan(0);
     assertThat(factory.getComparator().compare(member2, member1)).isGreaterThan(0);
   }
