@@ -2112,7 +2112,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   }
 
 
-  static class ViewExecutorBlockHandler implements RejectedExecutionHandler {
+  private static class ViewExecutorBlockHandler implements RejectedExecutionHandler {
 
     private final Queue queue;
 
