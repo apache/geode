@@ -1364,9 +1364,9 @@ public class WANTestBase extends DistributedTestCase {
       Set<GatewaySender> senders = cache.getGatewaySenders();
       final GatewaySender sender = getGatewaySenderById(senders, senderId);
       await()
-              .untilAsserted(
-                      () -> assertEquals("Expected sender isRunning state to " + "be true but is false",
-                              true, (sender != null && sender.isPaused())));
+          .untilAsserted(
+              () -> assertEquals("Expected sender isRunning state to " + "be true but is false",
+                  true, (sender != null && sender.isPaused())));
     } finally {
       exln.remove();
     }

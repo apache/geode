@@ -34,7 +34,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,6 +55,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.RMIException;
@@ -674,8 +674,12 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> {
       AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender("ln");
-      GeodeAwaitility.await().untilAsserted(() -> assertThat(System.getProperty(MAX_MESSAGE_SIZE_PROPERTY)).isEqualTo(String.valueOf(1024 * 1024)));
-      GeodeAwaitility.await().untilAsserted(() -> {assertThat(sender.getStatistics().getBatchesResized()).isGreaterThan(0);});
+      GeodeAwaitility.await()
+          .untilAsserted(() -> assertThat(System.getProperty(MAX_MESSAGE_SIZE_PROPERTY))
+              .isEqualTo(String.valueOf(1024 * 1024)));
+      GeodeAwaitility.await().untilAsserted(() -> {
+        assertThat(sender.getStatistics().getBatchesResized()).isGreaterThan(0);
+      });
     });
   }
 
