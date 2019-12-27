@@ -57,7 +57,6 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -206,7 +205,7 @@ public class GMSLocatorRecoveryIntegrationTest {
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer());
     gmsLocator.setViewFile(new File(temporaryFolder.getRoot(), "locator2.dat"));
-    gmsLocator.init((TcpServer) null);
+    gmsLocator.init("");
 
     assertThat(gmsLocator.getMembers())
         .contains(distribution.getLocalMember());
