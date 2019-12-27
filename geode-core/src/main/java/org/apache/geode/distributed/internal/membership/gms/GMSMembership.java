@@ -208,7 +208,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   }
 
   private int membershipCheckTimeout =
-      DistributionConfig.DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT;
+      MembershipConfig.DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT;
 
   /**
    * This object synchronizes threads waiting for startup to finish. Updates to

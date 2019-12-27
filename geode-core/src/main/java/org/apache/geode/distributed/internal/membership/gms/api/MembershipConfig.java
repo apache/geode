@@ -14,8 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.api;
 
-import java.net.InetAddress;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
 public interface MembershipConfig {
@@ -25,89 +25,201 @@ public interface MembershipConfig {
   /** in a small cluster we might want to involve all members in operations */
   int SMALL_CLUSTER_SIZE = 9;
 
-  boolean isReconnecting();
+  @MakeImmutable
+  int[] DEFAULT_MEMBERSHIP_PORT_RANGE = {41000, 61000};
 
-  int getLocatorWaitTime();
+  int DEFAULT_LOCATOR_WAIT_TIME = 0;
+  String DEFAULT_SECURITY_UDP_DHALGO = "";
+  int DEFAULT_UDP_FRAGMENT_SIZE = 60000;
+  String DEFAULT_START_LOCATOR = "";
+  int DEFAULT_MEMBER_TIMEOUT = 5000;
+  int DEFAULT_LOSS_THRESHOLD = 51;
+  int DEFAULT_MEMBER_WEIGHT = 0;
+  boolean DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION = true;
+  int DEFAULT_MCAST_PORT = 0;
+  String DEFAULT_LOCATORS = "";
+  String DEFAULT_BIND_ADDRESS = "";
+  String DEFAULT_SECURITY_PEER_AUTH_INIT = "";
+  boolean DEFAULT_DISABLE_TCP = false;
+  String DEFAULT_NAME = "";
+  String DEFAULT_ROLES = "";
+  String DEFAULT_GROUPS = "";
+  String DEFAULT_DURABLE_CLIENT_ID = "";
+  int DEFAULT_DURABLE_CLIENT_TIMEOUT = 300;
+  String DEFAULT_MCAST_ADDRESS = "239.192.81.1";
+  int DEFAULT_MCAST_TTL = 32;
+  int DEFAULT_MCAST_SEND_BUFFER_SIZE = 65535;
+  int DEFAULT_MCAST_RECV_BUFFER_SIZE = 1048576;
+  int DEFAULT_UDP_RECV_BUFFER_SIZE = 1048576;
+  int DEFAULT_UDP_SEND_BUFFER_SIZE = 65535;
+  int DEFAULT_MCAST_BYTE_ALLOWANCE = 1048576;
+  float DEFAULT_MCAST_RECHARGE_THRESHOLD = (float) 0.25;
+  int DEFAULT_MCAST_RECHARGE_BLOCKING_MS = 5000;
+  int DEFAULT_ACK_WAIT_THRESHOLD = 51;
+  boolean DEFAULT_DISABLE_AUTO_RECONNECT = false;
+  int DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT = 1000;
+  int DEFAULT_ACK_SEVERE_ALERT_THRESHOLD = 0;
+  Object DEFAULT_OLD_MEMBERSHIP_INFO = null;
+  boolean DEFAULT_IS_RECONNECTING_DS = false;
+  int DEFAULT_JOIN_TIMEOUT = 24000;
 
-  long getJoinTimeout();
+  default boolean isReconnecting() {
+    return false;
+  }
 
-  int[] getMembershipPortRange();
+  default int getLocatorWaitTime() {
+    return DEFAULT_LOCATOR_WAIT_TIME;
+  }
 
-  long getMemberTimeout();
+  default long getJoinTimeout() {
+    return DEFAULT_JOIN_TIMEOUT;
+  }
 
-  int getLossThreshold();
+  default int[] getMembershipPortRange() {
+    return DEFAULT_MEMBERSHIP_PORT_RANGE;
+  }
 
-  int getMemberWeight();
+  default long getMemberTimeout() {
+    return DEFAULT_MEMBER_TIMEOUT;
+  }
 
-  boolean isMulticastEnabled();
+  default int getLossThreshold() {
+    return DEFAULT_LOSS_THRESHOLD;
+  }
 
-  boolean isNetworkPartitionDetectionEnabled();
+  default int getMemberWeight() {
+    return DEFAULT_MEMBER_WEIGHT;
+  }
 
-  boolean isUDPSecurityEnabled();
+  default boolean isMulticastEnabled() {
+    return getMcastPort() > 0;
+  }
 
-  boolean areLocatorsPreferredAsCoordinators();
+  default boolean isNetworkPartitionDetectionEnabled() {
+    return DEFAULT_ENABLE_NETWORK_PARTITION_DETECTION;
+  }
 
-  String getSecurityUDPDHAlgo();
+  default boolean isUDPSecurityEnabled() {
+    return !getSecurityUDPDHAlgo().isEmpty();
+  }
 
-  int getMcastPort();
+  default boolean areLocatorsPreferredAsCoordinators() {
+    return isNetworkPartitionDetectionEnabled();
+  }
 
-  String getLocators();
+  default String getSecurityUDPDHAlgo() {
+    return DEFAULT_SECURITY_UDP_DHALGO;
+  }
 
-  String getStartLocator();
+  default int getMcastPort() {
+    return DEFAULT_MCAST_PORT;
+  }
 
-  boolean getEnableNetworkPartitionDetection();
+  default String getLocators() {
+    return DEFAULT_LOCATORS;
+  }
 
-  String getBindAddress();
+  default String getStartLocator() {
+    return DEFAULT_START_LOCATOR;
+  }
 
-  String getSecurityPeerAuthInit();
+  default String getBindAddress() {
+    return DEFAULT_BIND_ADDRESS;
+  };
 
-  boolean getDisableTcp();
+  default String getSecurityPeerAuthInit() {
+    return DEFAULT_SECURITY_PEER_AUTH_INIT;
+  }
 
-  String getName();
+  default boolean getDisableTcp() {
+    return DEFAULT_DISABLE_TCP;
+  }
 
-  String getRoles();
+  default String getName() {
+    return DEFAULT_NAME;
+  }
 
-  String getGroups();
+  default String getRoles() {
+    return DEFAULT_ROLES;
+  }
 
-  String getDurableClientId();
+  default String getGroups() {
+    return DEFAULT_GROUPS;
+  }
 
-  int getDurableClientTimeout();
+  default String getDurableClientId() {
+    return DEFAULT_DURABLE_CLIENT_ID;
+  }
 
-  InetAddress getMcastAddress();
+  default int getDurableClientTimeout() {
+    return DEFAULT_DURABLE_CLIENT_TIMEOUT;
+  }
 
-  int getMcastTtl();
+  default String getMcastAddress() {
+    return DEFAULT_MCAST_ADDRESS;
+  }
 
-  int getMcastSendBufferSize();
+  default int getMcastTtl() {
+    return DEFAULT_MCAST_TTL;
+  }
 
-  int getMcastRecvBufferSize();
+  default int getMcastSendBufferSize() {
+    return DEFAULT_MCAST_SEND_BUFFER_SIZE;
+  }
 
-  int getUdpFragmentSize();
+  default int getMcastRecvBufferSize() {
+    return DEFAULT_MCAST_RECV_BUFFER_SIZE;
+  }
 
-  int getUdpRecvBufferSize();
+  default int getUdpFragmentSize() {
+    return DEFAULT_UDP_FRAGMENT_SIZE;
+  }
 
-  int getUdpSendBufferSize();
+  default int getUdpRecvBufferSize() {
+    return DEFAULT_UDP_RECV_BUFFER_SIZE;
+  }
 
-  int getMcastByteAllowance();
+  default int getUdpSendBufferSize() {
+    return DEFAULT_UDP_SEND_BUFFER_SIZE;
+  }
 
-  float getMcastRechargeThreshold();
+  default int getMcastByteAllowance() {
+    return DEFAULT_MCAST_BYTE_ALLOWANCE;
+  }
 
-  int getMcastRechargeBlockMs();
+  default float getMcastRechargeThreshold() {
+    return DEFAULT_MCAST_RECHARGE_THRESHOLD;
+  }
 
-  long getAckWaitThreshold();
+  default int getMcastRechargeBlockMs() {
+    return DEFAULT_MCAST_RECHARGE_BLOCKING_MS;
+  }
 
-  boolean getDisableAutoReconnect();
+  default long getAckWaitThreshold() {
+    return DEFAULT_ACK_WAIT_THRESHOLD;
+  }
 
-  int getSecurityPeerMembershipTimeout();
+  default boolean getDisableAutoReconnect() {
+    return DEFAULT_DISABLE_AUTO_RECONNECT;
+  }
 
-  long getAckSevereAlertThreshold();
+  default int getSecurityPeerMembershipTimeout() {
+    return DEFAULT_SECURITY_PEER_VERIFYMEMBER_TIMEOUT;
+  }
 
-  int getVmKind();
+  default long getAckSevereAlertThreshold() {
+    return DEFAULT_ACK_SEVERE_ALERT_THRESHOLD;
+  }
 
-  boolean isMcastEnabled();
+  default int getVmKind() {
+    return MemberIdentifier.NORMAL_DM_TYPE;
+  }
 
-  boolean isTcpDisabled();
+  default Object getOldDSMembershipInfo() {
+    return DEFAULT_OLD_MEMBERSHIP_INFO;
+  }
 
-  Object getOldDSMembershipInfo();
-
-  boolean getIsReconnectingDS();
+  default boolean getIsReconnectingDS() {
+    return DEFAULT_IS_RECONNECTING_DS;
+  }
 }

@@ -1853,7 +1853,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     this.viewAckTimeout = ackCollectionTimeout;
 
     this.quorumRequired =
-        config.getEnableNetworkPartitionDetection();
+        config.isNetworkPartitionDetectionEnabled();
 
     String bindAddr = config.getBindAddress();
     locators = GMSUtil.parseLocators(config.getLocators(), bindAddr);

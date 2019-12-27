@@ -146,7 +146,7 @@ public abstract class Locator {
    * gemfire.properties file, or equivalent system properties to fill in the gaps in its
    * configuration.
    * <p>
-   * The locator will not start a distributed system. The locator will provice peer location
+   * The locator will not start a distributed system. The locator will provide peer location
    * services only.
    *
    * @param port The port on which the locator will listen for membership information requests from
@@ -176,7 +176,7 @@ public abstract class Locator {
    * <p>
    * The locator starts a AdminDistributedSystem configured with the given properties to provide the
    * system with a long-running process that can be relied on for stable membership information. The
-   * locator will provide provide peer and cache server location services.
+   * locator will provide peer and cache server location services.
    *
    * @since GemFire 5.0
    *
