@@ -29,7 +29,7 @@ public interface SSLParameterExtension {
   /**
    * Initialize the SSLParameterExtension.
    *
-   * @param properties the properties
+   * @param config the DistributionConfig
    */
   default void init(DistributionConfig config) {}
 
