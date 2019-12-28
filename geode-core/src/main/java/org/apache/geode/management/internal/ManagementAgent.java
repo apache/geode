@@ -418,8 +418,7 @@ public class ManagementAgent {
       jmxConnectorServer.addNotificationListener(shiroAuthenticator, null,
           jmxConnectorServer.getAttributes());
       // always going to assume authorization is needed as well, if no custom AccessControl, then
-      // the CustomAuthRealm
-      // should take care of that
+      // the CustomAuthRealm should take care of that
       MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(this.securityService);
       jmxConnectorServer.setMBeanServerForwarder(mBeanServerWrapper);
     } else {
@@ -434,6 +433,10 @@ public class ManagementAgent {
         // Rewire the mbs hierarchy to set accessController
         ReadOpFileAccessController controller = new ReadOpFileAccessController(accessFile);
         controller.setMBeanServer(mbs);
+        jmxConnectorServer.setMBeanServerForwarder(controller);
+      } else {
+        // if no access control, do not allow mbean creation to prevent Mlet attack
+        jmxConnectorServer.setMBeanServerForwarder(new BlockMBeanCreationController());
       }
     }
     registerAccessControlMBean();
