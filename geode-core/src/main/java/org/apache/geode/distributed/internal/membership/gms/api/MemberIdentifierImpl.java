@@ -17,7 +17,6 @@ import org.apache.http.conn.util.InetAddressUtils;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -391,7 +390,9 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
       host = add.getHostAddress();
     else {
       String hostName = memberData.getHostName();
-      host = SocketCreator.resolve_dns ? shortName(hostName) : hostName;
+      boolean isIpAddress =
+          InetAddressUtils.isIPv4Address(hostName) || InetAddressUtils.isIPv6Address(hostName);
+      host = isIpAddress ? hostName : shortName(hostName);
     }
 
     sb.append(host);
