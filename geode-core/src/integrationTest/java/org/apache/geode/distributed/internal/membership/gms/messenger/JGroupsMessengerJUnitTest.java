@@ -182,7 +182,7 @@ public class JGroupsMessengerJUnitTest {
 
     socketCreator = asTcpSocketCreator(SocketCreatorFactory.setDistributionConfig(config)
         .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER));
-    messenger = new JGroupsMessenger<MemberIdentifier>(socketCreator);
+    messenger = new JGroupsMessenger<MemberIdentifier>();
     messenger.init(services);
 
     // if I do this earlier then test this return messenger as null
@@ -878,7 +878,7 @@ public class JGroupsMessengerJUnitTest {
     JChannel channel = messenger.myChannel;
     tconfig.setOldDSMembershipInfo(new MembershipInformationImpl(channel,
         new ConcurrentLinkedQueue<>()));
-    JGroupsMessenger newMessenger = new JGroupsMessenger(socketCreator);
+    JGroupsMessenger newMessenger = new JGroupsMessenger();
     newMessenger.init(services);
     newMessenger.start();
     newMessenger.started();

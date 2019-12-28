@@ -144,7 +144,7 @@ public class Services<ID extends MemberIdentifier> {
     this.manager = membershipManager;
     this.joinLeave = new GMSJoinLeave<>(locatorClient);
     this.healthMon = new GMSHealthMonitor<>(socketCreator);
-    this.messenger = new JGroupsMessenger<>(socketCreator);
+    this.messenger = new JGroupsMessenger<>();
     this.auth = authenticator;
     this.serializer = serializer;
     this.memberFactory = memberFactory;
