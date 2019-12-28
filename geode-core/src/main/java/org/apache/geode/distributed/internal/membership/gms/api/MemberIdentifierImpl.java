@@ -29,11 +29,11 @@ import org.apache.geode.internal.serialization.Version;
  */
 public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableFixedID {
   /** serialization bit flag */
-  private static final int NPD_ENABLED_BIT = 0x1;
+  protected static final int NPD_ENABLED_BIT = 0x1;
   /** serialization bit flag */
-  private static final int COORD_ENABLED_BIT = 0x2;
+  protected static final int COORD_ENABLED_BIT = 0x2;
   /** partial ID bit flag */
-  private static final int PARTIAL_ID_BIT = 0x4;
+  protected static final int PARTIAL_ID_BIT = 0x4;
   /** product version bit flag */
   private static final int VERSION_BIT = 0x8;
   /** The versions in which this message was modified */
@@ -57,6 +57,13 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
   protected transient String cachedToString;
 
   public MemberIdentifierImpl() {}
+
+  public MemberIdentifierImpl(
+      MemberData memberData, boolean isPartial, String uniqueTag) {
+    this.memberData = memberData;
+    this.isPartial = isPartial;
+    this.uniqueTag = uniqueTag;
+  }
 
   public int getVmPid() {
     return memberData.getProcessId();
@@ -180,7 +187,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     return result;
   }
 
-  public int compare(MemberIdentifierImpl other) {
+  public int compareTo(MemberIdentifierImpl other) {
     return this.compareTo(other, false, true);
   }
 
@@ -696,9 +703,6 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
     String hostName = StaticSerialization.readString(in);
 
-    hostName = SocketCreator.resolve_dns
-        ? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
-
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
     boolean elCoord = (flags & COORD_ENABLED_BIT) != 0;
@@ -751,9 +755,6 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
     String hostName = StaticSerialization.readString(in);
 
-    hostName = SocketCreator.resolve_dns
-        ? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
-
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
     boolean elCoord = (flags & COORD_ENABLED_BIT) != 0;
@@ -796,79 +797,6 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
         .build();
 
     assert memberData.getVmKind() > 0;
-  }
-
-  public void _readEssentialData(DataInput in) throws IOException, ClassNotFoundException {
-    this.isPartial = true;
-    InetAddress inetAddr = StaticSerialization.readInetAddress(in);
-    int port = in.readInt();
-
-    String hostName =
-        SocketCreator.resolve_dns ? SocketCreator.getHostName(inetAddr) : inetAddr.getHostAddress();
-
-    int flags = in.readUnsignedByte();
-    boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
-    boolean elCoord = (flags & COORD_ENABLED_BIT) != 0;
-
-    int vmKind = in.readUnsignedByte();
-    int vmViewId = -1;
-
-    if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
-      this.uniqueTag = StaticSerialization.readString(in);
-    } else {
-      String str = StaticSerialization.readString(in);
-      if (str != null) { // backward compatibility from earlier than 6.5
-        vmViewId = Integer.parseInt(str);
-      }
-    }
-
-    String name = StaticSerialization.readString(in);
-
-    memberData = MemberDataBuilder.newBuilder(inetAddr, hostName)
-        .setMembershipPort(port)
-        .setName(name)
-        .setNetworkPartitionDetectionEnabled(sbEnabled)
-        .setPreferredForCoordinator(elCoord)
-        .setVersionOrdinal(StaticSerialization.getVersionForDataStream(in).ordinal())
-        .setVmKind(vmKind)
-        .setVmViewId(vmViewId)
-        .build();
-
-    if (StaticSerialization.getVersionForDataStream(in).compareTo(Version.GFE_90) == 0) {
-      memberData.readAdditionalData(in);
-    }
-  }
-
-  public void writeEssentialData(DataOutput out) throws IOException {
-    assert memberData.getVmKind() > 0;
-    StaticSerialization.writeInetAddress(getInetAddress(), out);
-    out.writeInt(getMembershipPort());
-
-    int flags = 0;
-    if (memberData.isNetworkPartitionDetectionEnabled())
-      flags |= NPD_ENABLED_BIT;
-    if (memberData.isPreferredForCoordinator())
-      flags |= COORD_ENABLED_BIT;
-    flags |= PARTIAL_ID_BIT;
-    out.writeByte((byte) (flags & 0xff));
-
-    // out.writeInt(dcPort);
-    byte vmKind = memberData.getVmKind();
-    out.writeByte(vmKind);
-
-    if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
-      StaticSerialization.writeString(this.uniqueTag, out);
-    } else { // added in 6.5 for unique identifiers in P2P
-      StaticSerialization.writeString(String.valueOf(memberData.getVmViewId()), out);
-    }
-    // write name last to fix bug 45160
-    StaticSerialization.writeString(memberData.getName(), out);
-
-    Version outputVersion = StaticSerialization.getVersionForDataStream(out);
-    if (0 <= outputVersion.compareTo(Version.GFE_90)
-        && outputVersion.compareTo(Version.GEODE_1_1_0) < 0) {
-      memberData.writeAdditionalData(out);
-    }
   }
 
   /**

@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.membership;
 
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -41,6 +42,7 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
 
@@ -81,8 +83,7 @@ public class InternalDistributedMember extends MemberIdentifierImpl
    */
   public InternalDistributedMember(InetAddress i, int membershipPort, boolean splitBrainEnabled,
       boolean canBeCoordinator) {
-
-    String hostName = SocketCreator.resolve_dns ? SocketCreator.getHostName(i) : i.getHostAddress();
+    String hostName = getHostName(i);
 
     this.memberData = MemberDataBuilder.newBuilder(i, hostName)
         .setMembershipPort(membershipPort)
@@ -90,6 +91,10 @@ public class InternalDistributedMember extends MemberIdentifierImpl
         .setPreferredForCoordinator(canBeCoordinator)
         .build();
     this.versionObj = Version.CURRENT;
+  }
+
+  private String getHostName(InetAddress i) {
+    return SocketCreator.resolve_dns ? SocketCreator.getHostName(i) : i.getHostAddress();
   }
 
 
@@ -101,8 +106,7 @@ public class InternalDistributedMember extends MemberIdentifierImpl
     memberData = m;
 
     if (memberData.getHostName() == null || memberData.isPartial()) {
-      String hostName = SocketCreator.resolve_dns ? SocketCreator.getHostName(m.getInetAddress())
-          : m.getInetAddress().getHostAddress();
+      String hostName = getHostName(m.getInetAddress());
       memberData.setHostName(hostName);
     }
 
@@ -329,6 +333,78 @@ public class InternalDistributedMember extends MemberIdentifierImpl
       }
     } catch (UnknownHostException ee) {
       throw new InternalGemFireError(ee);
+    }
+  }
+
+  public void _readEssentialData(DataInput in) throws IOException, ClassNotFoundException {
+    this.isPartial = true;
+    InetAddress inetAddr = StaticSerialization.readInetAddress(in);
+    int port = in.readInt();
+
+    String hostName = getHostName(inetAddr);
+
+    int flags = in.readUnsignedByte();
+    boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
+    boolean elCoord = (flags & COORD_ENABLED_BIT) != 0;
+
+    int vmKind = in.readUnsignedByte();
+    int vmViewId = -1;
+
+    if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
+      this.uniqueTag = StaticSerialization.readString(in);
+    } else {
+      String str = StaticSerialization.readString(in);
+      if (str != null) { // backward compatibility from earlier than 6.5
+        vmViewId = Integer.parseInt(str);
+      }
+    }
+
+    String name = StaticSerialization.readString(in);
+
+    memberData = MemberDataBuilder.newBuilder(inetAddr, hostName)
+        .setMembershipPort(port)
+        .setName(name)
+        .setNetworkPartitionDetectionEnabled(sbEnabled)
+        .setPreferredForCoordinator(elCoord)
+        .setVersionOrdinal(StaticSerialization.getVersionForDataStream(in).ordinal())
+        .setVmKind(vmKind)
+        .setVmViewId(vmViewId)
+        .build();
+
+    if (StaticSerialization.getVersionForDataStream(in).compareTo(Version.GFE_90) == 0) {
+      memberData.readAdditionalData(in);
+    }
+  }
+
+  public void writeEssentialData(DataOutput out) throws IOException {
+    assert memberData.getVmKind() > 0;
+    StaticSerialization.writeInetAddress(getInetAddress(), out);
+    out.writeInt(getMembershipPort());
+
+    int flags = 0;
+    if (memberData.isNetworkPartitionDetectionEnabled())
+      flags |= NPD_ENABLED_BIT;
+    if (memberData.isPreferredForCoordinator())
+      flags |= COORD_ENABLED_BIT;
+    flags |= PARTIAL_ID_BIT;
+    out.writeByte((byte) (flags & 0xff));
+
+    // out.writeInt(dcPort);
+    byte vmKind = memberData.getVmKind();
+    out.writeByte(vmKind);
+
+    if (vmKind == MemberIdentifier.LONER_DM_TYPE) {
+      StaticSerialization.writeString(this.uniqueTag, out);
+    } else { // added in 6.5 for unique identifiers in P2P
+      StaticSerialization.writeString(String.valueOf(memberData.getVmViewId()), out);
+    }
+    // write name last to fix bug 45160
+    StaticSerialization.writeString(memberData.getName(), out);
+
+    Version outputVersion = StaticSerialization.getVersionForDataStream(out);
+    if (0 <= outputVersion.compareTo(Version.GFE_90)
+        && outputVersion.compareTo(Version.GEODE_1_1_0) < 0) {
+      memberData.writeAdditionalData(out);
     }
   }
 
