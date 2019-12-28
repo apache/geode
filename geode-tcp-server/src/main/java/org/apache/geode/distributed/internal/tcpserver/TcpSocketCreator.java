@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 
 /**
@@ -32,10 +31,6 @@ public interface TcpSocketCreator {
 
   ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr)
       throws IOException;
-
-  InetAddress getLocalHost() throws UnknownHostException;
-
-  String getHostName(InetAddress addr);
 
   ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
       boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange,
@@ -50,5 +45,4 @@ public interface TcpSocketCreator {
 
   void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException;
 
-  boolean resolveDns();
 }
