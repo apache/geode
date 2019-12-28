@@ -19,12 +19,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Objects;
 
 import org.apache.geode.distributed.internal.tcpserver.ConnectionWatcher;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
@@ -62,16 +60,6 @@ public class TcpSocketCreatorAdapter implements TcpSocketCreator {
   }
 
   @Override
-  public InetAddress getLocalHost() throws UnknownHostException {
-    return LocalHostUtil.getLocalHost();
-  }
-
-  @Override
-  public String getHostName(final InetAddress addr) {
-    return SocketCreator.getHostName(addr);
-  }
-
-  @Override
   public ServerSocket createServerSocketUsingPortRange(final InetAddress ba, final int backlog,
       final boolean isBindAddress, final boolean useNIO, final int tcpBufferSize,
       final int[] tcpPortRange, final boolean sslConnection) throws IOException {
@@ -99,8 +87,4 @@ public class TcpSocketCreatorAdapter implements TcpSocketCreator {
     socketCreator.handshakeIfSocketIsSSL(socket, timeout);
   }
 
-  @Override
-  public boolean resolveDns() {
-    return socketCreator.resolve_dns;
-  }
 }
