@@ -33,7 +33,6 @@ import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.inet.LocalHostUtil;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
 @RunWith(ArchUnitRunner.class)
@@ -106,9 +105,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO: break dependencies on locator-related classes
               .or(type(Locator.class))
-
-              // TODO: break dependency on internal.security
-              .or(type(SecurableCommunicationChannel.class))
 
               // TODO:
               .or(type(JavaWorkarounds.class))
