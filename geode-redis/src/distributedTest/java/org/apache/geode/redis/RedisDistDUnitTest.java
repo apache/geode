@@ -29,6 +29,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -56,7 +57,8 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
 
   private String localHost;
 
-  private static final int JEDIS_TIMEOUT = 20 * 1000;
+  private static final int JEDIS_TIMEOUT =
+      Math.toIntExact(GeodeAwaitility.getTimeout().getValueInMS());
 
   private abstract class ClientTestBase extends SerializableCallable {
 
