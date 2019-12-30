@@ -2116,7 +2116,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
 
     private final Queue queue;
 
-    ViewExecutorBlockHandler(Queue feed) {
+    private ViewExecutorBlockHandler(Queue feed) {
       queue = feed;
     }
 
