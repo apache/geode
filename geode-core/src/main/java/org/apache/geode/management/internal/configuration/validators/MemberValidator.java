@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.configuration.validators;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,6 +31,8 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.configuration.AbstractConfiguration;
+import org.apache.geode.management.configuration.GroupableConfiguration;
+import org.apache.geode.management.configuration.RegionAware;
 import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
@@ -52,6 +55,15 @@ public class MemberValidator {
     if (existingElementsAndTheirGroups.size() == 0) {
       return;
     }
+
+    // if the configuration is not groupable and already exists, throw exception
+    if (!(config instanceof GroupableConfiguration)) {
+      throw new EntityExistsException(
+          config.getClass().getSimpleName() + " '" + config.getId()
+              + "' already exists");
+    }
+
+    // if configuration is groupable, then check if it's already in the group
     String configGroup = AbstractConfiguration.getGroupName(config.getGroup());
     if (existingElementsAndTheirGroups.keySet().contains(configGroup)) {
       throw new EntityExistsException(
@@ -59,9 +71,11 @@ public class MemberValidator {
               + "' already exists in group " + configGroup);
     }
 
+    // if other group and this new group has common members, then throw exception
+    String[] groups = existingElementsAndTheirGroups.keySet().toArray(new String[0]);
     Set<DistributedMember> membersOfExistingGroups =
-        findServers(existingElementsAndTheirGroups.keySet().toArray(new String[0]));
-    Set<DistributedMember> membersOfNewGroup = findServers(config.getGroup());
+        findMembers(false, groups);
+    Set<DistributedMember> membersOfNewGroup = findMembers(false, config.getGroup());
     Set<DistributedMember> intersection = new HashSet<>(membersOfExistingGroups);
     intersection.retainAll(membersOfNewGroup);
     if (intersection.size() > 0) {
@@ -101,13 +115,33 @@ public class MemberValidator {
     return results;
   }
 
-  /**
-   * @param groups should not be null contains no element
-   */
-  public Set<DistributedMember> findServers(String... groups) {
-    return findMembers(false, groups);
+  public Set<String> findGroups(String regionName) {
+    Set<String> results = new HashSet<>();
+    Set<String> groups = persistenceService.getGroups();
+    for (String group : groups) {
+      CacheConfig existing = persistenceService.getCacheConfig(group, false);
+      if (existing != null && existing.findRegionConfiguration(regionName) != null) {
+        results.add(group);
+      }
+    }
+    return results;
   }
 
+  public Set<DistributedMember> findServers(AbstractConfiguration configuration) {
+    if (configuration instanceof RegionAware) {
+      Set<String> groups = findGroups(((RegionAware) configuration).getRegionName());
+      if (groups.size() == 0) {
+        return Collections.emptySet();
+      }
+      return findMembers(false, groups.toArray(new String[0]));
+    }
+
+    return findMembers(false, configuration.getGroup());
+  }
+
+  /**
+   * if id is specified, find the member with that id, otherwise find members in the groups
+   */
   public Set<DistributedMember> findMembers(String id, String... groups) {
     if (StringUtils.isNotBlank(id)) {
       return getAllServersAndLocators().stream().filter(m -> m.getName().equals(id))
@@ -117,6 +151,11 @@ public class MemberValidator {
     return findMembers(true, groups);
   }
 
+  /**
+   * find members within these groups
+   *
+   * @param includeLocators whether to include locators in this search or not
+   */
   public Set<DistributedMember> findMembers(boolean includeLocators, String... groups) {
     if (groups == null) {
       groups = new String[] {AbstractConfiguration.CLUSTER};

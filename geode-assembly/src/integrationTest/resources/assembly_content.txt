@@ -755,6 +755,7 @@ javadoc/org/apache/geode/management/configuration/Region.Expiration.html
 javadoc/org/apache/geode/management/configuration/Region.ExpirationAction.html
 javadoc/org/apache/geode/management/configuration/Region.ExpirationType.html
 javadoc/org/apache/geode/management/configuration/Region.html
+javadoc/org/apache/geode/management/configuration/RegionAware.html
 javadoc/org/apache/geode/management/configuration/RegionType.html
 javadoc/org/apache/geode/management/configuration/package-frame.html
 javadoc/org/apache/geode/management/configuration/package-summary.html

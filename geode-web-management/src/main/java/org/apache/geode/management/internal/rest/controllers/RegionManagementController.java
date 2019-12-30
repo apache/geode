@@ -202,14 +202,10 @@ public class RegionManagementController extends AbstractManagementController {
   @DeleteMapping(REGION_CONFIG_ENDPOINT + "/{regionName}" + INDEXES + "/{indexName:.+}")
   public ClusterManagementResult deleteIndex(
       @PathVariable String regionName,
-      @PathVariable String indexName,
-      @RequestParam(required = false) String group) {
+      @PathVariable String indexName) {
     Index config = new Index();
     config.setName(indexName);
     config.setRegionPath(regionName);
-    if (StringUtils.isNotBlank(group)) {
-      config.setGroup(group);
-    }
     return clusterManagementService.delete(config);
   }
 }

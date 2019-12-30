@@ -23,6 +23,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,6 +68,7 @@ import org.apache.geode.management.configuration.Links;
 import org.apache.geode.management.configuration.Member;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionAware;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
@@ -117,7 +119,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     validators.put(Region.class, new RegionConfigValidator(cache));
     validators.put(GatewayReceiver.class, new GatewayReceiverConfigValidator());
     validators.put(Pdx.class, new PdxValidator());
-    validators.put(Index.class, new IndexValidator(persistenceService));
+    validators.put(Index.class, new IndexValidator());
   }
 
   @VisibleForTesting
@@ -145,9 +147,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
           "Cluster configuration service needs to be enabled."));
     }
 
-    String group = config.getGroup();
-    final String groupName =
-        AbstractConfiguration.isCluster(group) ? AbstractConfiguration.CLUSTER : group;
     try {
       // first validate common attributes of all configuration object
       commonValidator.validate(CacheElementOperation.CREATE, config);
@@ -157,20 +156,38 @@ public class LocatorClusterManagementService implements ClusterManagementService
         validator.validate(CacheElementOperation.CREATE, config);
       }
 
-      // check if this config already exists on all/some members of this group
+      // check if this config already exists
       if (configurationManager instanceof CacheConfigurationManager) {
         memberValidator.validateCreate(config, (CacheConfigurationManager) configurationManager);
       }
-      // execute function on all members
     } catch (EntityExistsException e) {
       raise(StatusCode.ENTITY_EXISTS, e);
     } catch (IllegalArgumentException e) {
       raise(StatusCode.ILLEGAL_ARGUMENT, e);
     }
 
-    Set<DistributedMember> targetedMembers = memberValidator.findServers(group);
+    // find the targeted members
+    Set<String> groups = new HashSet<>();
+    Set<DistributedMember> targetedMembers;
+    if (config instanceof RegionAware) {
+      String regionName = ((RegionAware) config).getRegionName();
+      groups = memberValidator.findGroups(regionName);
+      if (groups.size() == 0) {
+        raise(StatusCode.ENTITY_NOT_FOUND, "Region provided does not exist: " + regionName);
+      }
+      targetedMembers = memberValidator.findMembers(false, groups.toArray(new String[0]));
+    } else {
+      final String groupName =
+          AbstractConfiguration.isCluster(config.getGroup()) ? AbstractConfiguration.CLUSTER
+              : config.getGroup();
+      groups.add(groupName);
+      targetedMembers = memberValidator.findMembers(false, groupName);
+    }
+
+
     ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
 
+    // execute function on all targeted members
     List<RealizationResult> functionResults = executeAndGetFunctionResult(
         new CacheRealizationFunction(),
         Arrays.asList(config, CacheElementOperation.CREATE),
@@ -185,10 +202,17 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // persist configuration in cache config
-
-    configurationManager.add(config, groupName);
-    result.setStatus(StatusCode.OK,
-        "Successfully updated configuration for " + groupName + ".");
+    if (groups.size() == 1) {
+      String groupName = groups.iterator().next();
+      configurationManager.add(config, groupName);
+      result.setStatus(StatusCode.OK,
+          "Successfully updated configuration for " + groupName + ".");
+    } else {
+      for (String groupName : groups) {
+        configurationManager.add(config, groupName);
+      }
+      result.setStatus(StatusCode.OK, "Successfully updated configuration");
+    }
 
     // add the config object which includes the HATEOAS information of the element created
     if (result.isSuccessful()) {
@@ -234,7 +258,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     List<RealizationResult> functionResults = executeAndGetFunctionResult(
         new CacheRealizationFunction(),
         Arrays.asList(config, CacheElementOperation.DELETE),
-        memberValidator.findServers(groupsWithThisElement));
+        memberValidator.findMembers(false, groupsWithThisElement));
     functionResults.forEach(result::addMemberStatus);
 
     // if any false result is added to the member list
@@ -305,7 +329,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
             }
           });
         }
-        resultList.addAll(list);
+        list.stream().forEach(t -> {
+          if (!resultList.contains(t)) {
+            resultList.add(t);
+          }
+        });
       }
     }
 
@@ -327,7 +355,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
         members =
             memberValidator.findMembers(filter.getId(), filter.getGroup());
       } else {
-        members = memberValidator.findServers(element.getGroup());
+        members = memberValidator.findServers(element);
       }
 
       // no member belongs to these groups

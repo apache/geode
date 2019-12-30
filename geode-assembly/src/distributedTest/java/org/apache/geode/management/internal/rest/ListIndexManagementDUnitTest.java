@@ -252,7 +252,6 @@ public class ListIndexManagementDUnitTest {
     index.setName("index");
     index.setExpression("key");
     index.setRegionPath("/region2");
-    index.setGroup("group1");
     index.setIndexType(IndexType.KEY);
     cms.create(index);
 
