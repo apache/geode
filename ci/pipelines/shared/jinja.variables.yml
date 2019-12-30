@@ -24,7 +24,7 @@ benchmarks:
     flag: ''
     options: ''
   - title: '_with_ssl'
-    flag: '-PwithSsl'
+    flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/java-11-openjdk-amd64/'
     options: '--tests=*GetBenchmark --tests=*PutBenchmark'
   - title: '_with_security_manager'
     flag: '-PwithSecurityManager'
