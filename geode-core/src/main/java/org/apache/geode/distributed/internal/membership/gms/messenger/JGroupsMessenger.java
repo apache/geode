@@ -67,7 +67,6 @@ import org.jgroups.stack.IpAddress;
 import org.jgroups.util.Digest;
 import org.jgroups.util.UUID;
 
-import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
@@ -120,9 +119,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
   /** JG magic numbers for types added to the JG ClassConfigurator */
   private static final short JGROUPS_TYPE_JGADDRESS = 2000;
   private static final short JGROUPS_PROTOCOL_TRANSPORT = 1000;
-
-  @MutableForTesting
-  public static boolean THROW_EXCEPTION_ON_START_HOOK;
 
   protected String jgStackConfig;
 
@@ -391,11 +387,6 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     } catch (Exception e) {
       myChannel.close();
       throw new MemberStartupException("unable to create jgroups channel", e);
-    }
-
-    if (JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK) {
-      JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = false;
-      throw new MemberStartupException("failing for test");
     }
 
     establishLocalAddress();

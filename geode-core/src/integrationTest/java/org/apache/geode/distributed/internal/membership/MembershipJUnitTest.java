@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
 
@@ -57,23 +58,17 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
-import org.apache.geode.distributed.internal.membership.gms.GMSMemberData;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierFactoryImpl;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
+import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -164,12 +159,7 @@ public class MembershipJUnitTest {
           new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
       // start the first membership manager
-      try {
-        System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
-        m1 = createMembershipManager(config, transport).getLeft();
-      } finally {
-        System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
-      }
+      m1 = createMembershipManager(config, transport).getLeft();
 
       // start the second membership manager
       final Pair<Membership, MessageListener> pair =
@@ -181,15 +171,15 @@ public class MembershipJUnitTest {
       // manager queues new views for processing through the DM listener,
       // which is a mock object in this test
       System.out.println("waiting for views to stabilize");
-      JoinLeave jl1 = ((GMSMembership) m1).getServices().getJoinLeave();
-      JoinLeave jl2 = ((GMSMembership) m2).getServices().getJoinLeave();
+      final Membership mgr1 = m1;
+      final Membership mgr2 = m2;
       long giveUp = System.currentTimeMillis() + 15000;
       for (;;) {
         try {
-          assertTrue("view = " + jl2.getView(), jl2.getView().size() == 2);
-          assertTrue("view = " + jl1.getView(), jl1.getView().size() == 2);
-          assertTrue(jl1.getView().getCreator().equals(jl2.getView().getCreator()));
-          assertTrue(jl1.getView().getViewId() == jl2.getView().getViewId());
+          assertTrue("view = " + mgr2.getView(), mgr2.getView().size() == 2);
+          assertTrue("view = " + mgr1.getView(), mgr1.getView().size() == 2);
+          assertTrue(mgr1.getView().getCreator().equals(mgr2.getView().getCreator()));
+          assertTrue(mgr1.getView().getViewId() == mgr2.getView().getViewId());
           break;
         } catch (AssertionError e) {
           if (System.currentTimeMillis() > giveUp) {
@@ -198,9 +188,9 @@ public class MembershipJUnitTest {
         }
       }
 
-      GMSMembershipView<InternalDistributedMember> view = jl1.getView();
+      MembershipView<InternalDistributedMember> view = mgr1.getView();
       MemberIdentifier notCreator;
-      if (view.getCreator().equals(jl1.getMemberID())) {
+      if (view.getCreator().equals(mgr1.getLocalMember())) {
         notCreator = view.getMembers().get(1);
       } else {
         notCreator = view.getMembers().get(0);
@@ -267,10 +257,10 @@ public class MembershipJUnitTest {
     final SecurityService securityService = SecurityServiceFactory.create();
     DSFIDSerializer serializer = InternalDataSerializer.getDSFIDSerializer();
     final MemberIdentifierFactory memberFactory = mock(MemberIdentifierFactory.class);
-    when(memberFactory.create(isA(GMSMemberData.class))).thenAnswer(new Answer<MemberIdentifier>() {
+    when(memberFactory.create(isA(MemberData.class))).thenAnswer(new Answer<MemberIdentifier>() {
       @Override
       public MemberIdentifier answer(InvocationOnMock invocation) throws Throwable {
-        return new InternalDistributedMember((GMSMemberData) invocation.getArgument(0));
+        return new InternalDistributedMember((MemberData) invocation.getArgument(0));
       }
     });
     LifecycleListener lifeCycleListener = mock(LifecycleListener.class);
@@ -284,7 +274,17 @@ public class MembershipJUnitTest {
             .setConfig(new ServiceConfig(transport, config))
             .setSerializer(serializer)
             .setLifecycleListener(lifeCycleListener)
-            .setMemberIDFactory(new MemberIdentifierFactoryImpl())
+            .setMemberIDFactory(new MemberIdentifierFactory() {
+              @Override
+              public InternalDistributedMember create(MemberData memberInfo) {
+                return new InternalDistributedMember(memberInfo);
+              }
+
+              @Override
+              public Comparator<InternalDistributedMember> getComparator() {
+                return Comparator.naturalOrder();
+              }
+            })
             .setLocatorClient(new TcpClient(
                 asTcpSocketCreator(
                     SocketCreatorFactory
@@ -346,12 +346,7 @@ public class MembershipJUnitTest {
           new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
       // start the first membership manager
-      try {
-        System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
-        m1 = createMembershipManager(config, transport).getLeft();
-      } finally {
-        System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
-      }
+      m1 = createMembershipManager(config, transport).getLeft();
 
       // start the second membership manager
       final Pair<Membership, MessageListener> pair =
@@ -363,15 +358,15 @@ public class MembershipJUnitTest {
       // manager queues new views for processing through the DM listener,
       // which is a mock object in this test
       System.out.println("waiting for views to stabilize");
-      JoinLeave jl1 = ((GMSMembership) m1).getServices().getJoinLeave();
-      JoinLeave jl2 = ((GMSMembership) m2).getServices().getJoinLeave();
+      final Membership mgr1 = m1;
+      final Membership mgr2 = m2;
       long giveUp = System.currentTimeMillis() + 15000;
       for (;;) {
         try {
-          assertTrue("view = " + jl2.getView(), jl2.getView().size() == 2);
-          assertTrue("view = " + jl1.getView(), jl1.getView().size() == 2);
-          assertTrue(jl1.getView().getCreator().equals(jl2.getView().getCreator()));
-          assertTrue(jl1.getView().getViewId() == jl2.getView().getViewId());
+          assertTrue("view = " + mgr2.getView(), mgr2.getView().size() == 2);
+          assertTrue("view = " + mgr1.getView(), mgr1.getView().size() == 2);
+          assertTrue(mgr1.getView().getCreator().equals(mgr2.getView().getCreator()));
+          assertTrue(mgr1.getView().getViewId() == mgr2.getView().getViewId());
           break;
         } catch (AssertionError e) {
           if (System.currentTimeMillis() > giveUp) {
@@ -469,35 +464,4 @@ public class MembershipJUnitTest {
 
   }
 
-  @Test
-  public void testMulticastDiscoveryNotAllowed() {
-    Properties nonDefault = new Properties();
-    nonDefault.put(DISABLE_TCP, "true");
-    nonDefault.put(MCAST_PORT, "12345");
-    nonDefault.put(LOG_FILE, "");
-    nonDefault.put(LOG_LEVEL, "fine");
-    nonDefault.put(LOCATORS, "");
-    DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
-    RemoteTransportConfig transport =
-        new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
-
-    MembershipConfig membershipConfig = new ServiceConfig(transport, config);
-
-    Services services = mock(Services.class);
-    when(services.getConfig()).thenReturn(membershipConfig);
-
-    GMSJoinLeave joinLeave = new GMSJoinLeave(new TcpClient(
-        asTcpSocketCreator(
-            SocketCreatorFactory.setDistributionConfig(config)
-                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
-        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer()));
-    try {
-      joinLeave.init(services);
-      throw new Error(
-          "expected a GemFireConfigException to be thrown because no locators are configured");
-    } catch (MembershipConfigurationException e) {
-      // expected
-    }
-  }
 }

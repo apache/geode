@@ -50,10 +50,8 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
-import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -100,7 +98,6 @@ public class LocatorIntegrationTest {
 
   @After
   public void tearDown() {
-    JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = false;
     if (locator != null) {
       locator.stop();
     }
@@ -188,8 +185,6 @@ public class LocatorIntegrationTest {
 
   @Test
   public void testNoThreadLeftBehind() throws Exception {
-    JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = true;
-
     Properties configProperties = new Properties();
     configProperties.setProperty(MCAST_PORT, "0");
     configProperties.setProperty(JMX_MANAGER_START, "false");
@@ -198,9 +193,9 @@ public class LocatorIntegrationTest {
     int threadCount = Thread.activeCount();
 
     Throwable thrown = catchThrowable(
-        () -> locator = Locator.startLocatorAndDS(port, new File(""), configProperties));
+        () -> locator = Locator.startLocatorAndDS(-2, new File(""), configProperties));
 
-    assertThat(thrown).isInstanceOf(SystemConnectException.class);
+    assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
 
     for (int i = 0; i < 10; i++) {
       if (threadCount < Thread.activeCount()) {

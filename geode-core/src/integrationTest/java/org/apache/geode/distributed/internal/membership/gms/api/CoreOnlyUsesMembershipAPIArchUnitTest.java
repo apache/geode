@@ -27,8 +27,6 @@ import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.distributed.LocatorIntegrationTest;
-import org.apache.geode.distributed.internal.membership.MembershipJUnitTest;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 
 @RunWith(ArchUnitRunner.class)
@@ -48,9 +46,6 @@ public class CoreOnlyUsesMembershipAPIArchUnitTest {
       // .and(not(type(GMSMembershipViewJUnitTest.class)))
       // .and(not(type(AbstractGMSAuthenticatorTestCase.class)))
       // .and(not(type(DistributionTest.class)))
-
-      .and(not(type(MembershipJUnitTest.class)))
-      .and(not(type(LocatorIntegrationTest.class)))
 
       .should()
       .onlyDependOnClassesThat(

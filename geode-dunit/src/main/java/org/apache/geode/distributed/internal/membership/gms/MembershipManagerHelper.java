@@ -130,7 +130,7 @@ public class MembershipManagerHelper {
     MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
     MembershipManagerHelper.beSickMember(msys);
     MembershipManagerHelper.playDead(msys);
-    ((GMSMembership.ManagerImpl) mgr).forceDisconnect("for testing");
+    ((GMSMembership) mgr.getMembership()).getGMSManager().forceDisconnect("for testing");
     // wait at most 10 seconds for system to be disconnected
     await().until(() -> !msys.isConnected());
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
