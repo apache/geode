@@ -204,7 +204,6 @@ public class DistributionStats implements DMStats {
   private static final int messageBytesBeingReceivedId;
 
   private static final int serialThreadStartsId;
-  private static final int viewThreadStartsId;
   private static final int processingThreadStartsId;
   private static final int highPriorityThreadStartsId;
   private static final int waitingThreadStartsId;
@@ -215,9 +214,7 @@ public class DistributionStats implements DMStats {
 
   private static final int replyHandoffTimeId;
 
-  private static final int viewThreadsId;
   private static final int serialThreadJobsId;
-  private static final int viewProcessorThreadJobsId;
   private static final int serialPooledThreadJobsId;
   private static final int pooledMessageThreadJobsId;
   private static final int highPriorityThreadJobsId;
@@ -243,8 +240,6 @@ public class DistributionStats implements DMStats {
   private static final int tcpFinalCheckResponsesSentId;
   private static final int tcpFinalCheckResponsesReceivedId;
   private static final int udpFinalCheckRequestsSentId;
-  private static final int udpFinalCheckRequestsReceivedId;
-  private static final int udpFinalCheckResponsesSentId;
   private static final int udpFinalCheckResponsesReceivedId;
 
   static {
@@ -391,11 +386,8 @@ public class DistributionStats implements DMStats {
         "The number of messages currently being processed by partitioned region threads";
     final String functionExecutionThreadJobsDesc =
         "The number of messages currently being processed by function execution threads";
-    final String viewThreadsDesc = "The number of threads currently processing view messages.";
     final String serialThreadJobsDesc =
         "The number of messages currently being processed by serial threads.";
-    final String viewThreadJobsDesc =
-        "The number of messages currently being processed by view threads.";
     final String serialPooledThreadJobsDesc =
         "The number of messages currently being processed by pooled serial processor threads.";
     final String processingThreadJobsDesc =
@@ -681,9 +673,6 @@ public class DistributionStats implements DMStats {
         f.createLongCounter("serialThreadStarts",
             "Total number of times a thread has been created for the serial message executor.",
             "starts", false),
-        f.createLongCounter("viewThreadStarts",
-            "Total number of times a thread has been created for the view message executor.",
-            "starts", false),
         f.createLongCounter("processingThreadStarts",
             "Total number of times a thread has been created for the pool processing normal messages.",
             "starts", false),
@@ -710,9 +699,7 @@ public class DistributionStats implements DMStats {
             "messages"),
         f.createIntGauge("functionExecutionThreadJobs", functionExecutionThreadJobsDesc,
             "messages"),
-        f.createIntGauge("viewThreads", viewThreadsDesc, "threads"),
         f.createIntGauge("serialThreadJobs", serialThreadJobsDesc, "messages"),
-        f.createIntGauge("viewThreadJobs", viewThreadJobsDesc, "messages"),
         f.createIntGauge("serialPooledThreadJobs", serialPooledThreadJobsDesc, "messages"),
         f.createIntGauge("processingThreadJobs", processingThreadJobsDesc, "messages"),
         f.createIntGauge("highPriorityThreadJobs", highPriorityThreadJobsDesc, "messages"),
@@ -898,7 +885,6 @@ public class DistributionStats implements DMStats {
     messageBytesBeingReceivedId = type.nameToId("messageBytesBeingReceived");
 
     serialThreadStartsId = type.nameToId("serialThreadStarts");
-    viewThreadStartsId = type.nameToId("viewThreadStarts");
     processingThreadStartsId = type.nameToId("processingThreadStarts");
     highPriorityThreadStartsId = type.nameToId("highPriorityThreadStarts");
     waitingThreadStartsId = type.nameToId("waitingThreadStarts");
@@ -909,9 +895,7 @@ public class DistributionStats implements DMStats {
     replyHandoffTimeId = type.nameToId("replyHandoffTime");
     partitionedRegionThreadJobsId = type.nameToId("partitionedRegionThreadJobs");
     functionExecutionThreadJobsId = type.nameToId("functionExecutionThreadJobs");
-    viewThreadsId = type.nameToId("viewThreads");
     serialThreadJobsId = type.nameToId("serialThreadJobs");
-    viewProcessorThreadJobsId = type.nameToId("viewThreadJobs");
     serialPooledThreadJobsId = type.nameToId("serialPooledThreadJobs");
     pooledMessageThreadJobsId = type.nameToId("processingThreadJobs");
     highPriorityThreadJobsId = type.nameToId("highPriorityThreadJobs");
@@ -937,8 +921,6 @@ public class DistributionStats implements DMStats {
     tcpFinalCheckResponsesSentId = type.nameToId("tcpFinalCheckResponsesSent");
     tcpFinalCheckResponsesReceivedId = type.nameToId("tcpFinalCheckResponsesReceived");
     udpFinalCheckRequestsSentId = type.nameToId("udpFinalCheckRequestsSent");
-    udpFinalCheckRequestsReceivedId = type.nameToId("udpFinalCheckRequestsReceived");
-    udpFinalCheckResponsesSentId = type.nameToId("udpFinalCheckResponsesSent");
     udpFinalCheckResponsesReceivedId = type.nameToId("udpFinalCheckResponsesReceived");
   }
 
@@ -2322,10 +2304,6 @@ public class DistributionStats implements DMStats {
     stats.incLong(serialThreadStartsId, 1);
   }
 
-  public void incViewThreadStarts() {
-    stats.incLong(viewThreadStartsId, 1);
-  }
-
   public void incProcessingThreadStarts() {
     stats.incLong(processingThreadStartsId, 1);
   }
@@ -2367,10 +2345,6 @@ public class DistributionStats implements DMStats {
     this.stats.incInt(functionExecutionThreadJobsId, i);
   }
 
-  public void incNumViewThreads(int threads) {
-    this.stats.incInt(viewThreadsId, threads);
-  }
-
   public PoolStatHelper getSerialProcessorHelper() {
     return new PoolStatHelper() {
       @Override
@@ -2391,31 +2365,6 @@ public class DistributionStats implements DMStats {
 
   protected void incNumSerialThreadJobs(int jobs) {
     this.stats.incInt(serialThreadJobsId, jobs);
-  }
-
-  public PoolStatHelper getViewProcessorHelper() {
-    return new PoolStatHelper() {
-      @Override
-      public void startJob() {
-        incViewProcessorThreadJobs(1);
-        if (logger.isTraceEnabled()) {
-          logger.trace("[DM.SerialQueuedExecutor.execute] numViewThreads={}", getNumViewThreads());
-        }
-      }
-
-      @Override
-      public void endJob() {
-        incViewProcessorThreadJobs(-1);
-      }
-    };
-  }
-
-  public int getNumViewThreads() {
-    return this.stats.getInt(viewThreadsId);
-  }
-
-  protected void incViewProcessorThreadJobs(int jobs) {
-    this.stats.incInt(viewProcessorThreadJobsId, jobs);
   }
 
   public PoolStatHelper getSerialPooledProcessorHelper() {

@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -56,7 +57,6 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership.StartupEvent;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
@@ -78,8 +78,6 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class GMSMembershipJUnitTest {
-
-
 
   private Services services;
   private MembershipConfig mockConfig;
@@ -273,10 +271,8 @@ public class GMSMembershipJUnitTest {
     // for code coverage also install a view after we finish joining but before
     // event processing has started. This should notify the distribution manager
     // with a LocalViewMessage to process the view
-    reset(listener);
     manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 5, viewmembers));
-    assertEquals(0, manager.getStartupEvents().size());
-    verify(messageListener).messageReceived(isA(LocalViewMessage.class));
+    await().untilAsserted(() -> assertEquals(manager.getView().getViewId(), 5));
 
     // process a suspect now - it will be passed to the listener
     reset(listener);

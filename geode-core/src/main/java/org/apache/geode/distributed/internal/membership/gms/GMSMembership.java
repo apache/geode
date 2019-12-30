@@ -27,10 +27,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
@@ -46,8 +53,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.StartupMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.LocalViewMessage;
 import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -66,6 +71,7 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 
 public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID> {
   private static final Logger logger = Services.getLogger();
@@ -97,6 +103,8 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   private LifecycleListener<ID> lifecycleListener;
 
   private volatile boolean isCloseInProgress;
+
+  private ExecutorService viewExecutor;
 
   /**
    * Trick class to make the startup synch more visible in stack traces
@@ -652,6 +660,10 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     this.listener = listener;
     this.messageListener = messageListener;
     this.gmsManager = new ManagerImpl();
+    LinkedBlockingQueue<Runnable> feed = new LinkedBlockingQueue<>();
+    ThreadFactory threadFactory = new LoggingThreadFactory("Geode View Processor");
+    this.viewExecutor = new ThreadPoolExecutor(1, 1, 30,
+        TimeUnit.SECONDS, feed, threadFactory, new ViewExecutorBlockHandler(feed));
   }
 
   public Manager<ID> getGMSManager() {
@@ -977,18 +989,9 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
           }
         }
       }
-      // view processing can take a while, so we use a separate thread
-      // to avoid blocking a reader thread
-      long newId = viewArg.getViewId();
-      LocalViewMessage v = new LocalViewMessage((InternalDistributedMember) address, newId,
-          (MembershipView<InternalDistributedMember>) viewArg,
-          (GMSMembership<InternalDistributedMember>) GMSMembership.this);
 
-      try {
-        messageListener.messageReceived((Message<ID>) v);
-      } catch (MemberShunnedException e) {
-        logger.error("View installation was blocked by a MemberShunnedException", e);
-      }
+      viewExecutor.submit(() -> processView(viewArg.getViewId(), viewArg));
+
     } finally {
       latestViewWriteLock.unlock();
     }
@@ -1268,6 +1271,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
   public void shutdown() {
     setShutdown();
     services.stop();
+    viewExecutor.shutdownNow();
   }
 
   @Override
@@ -2105,6 +2109,33 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       return wasReconnectingSystem && !reconnectCompleted;
     }
 
+  }
+
+
+  private static class ViewExecutorBlockHandler implements RejectedExecutionHandler {
+
+    private final Queue queue;
+
+    private ViewExecutorBlockHandler(Queue feed) {
+      queue = feed;
+    }
+
+    @Override
+    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+      if (executor.isShutdown()) {
+        throw new RejectedExecutionException(
+            "executor has been shutdown");
+      } else {
+        try {
+          executor.getQueue().put(r);
+        } catch (InterruptedException ie) {
+          Thread.currentThread().interrupt();
+          RejectedExecutionException e = new RejectedExecutionException(
+              "interrupted");
+          e.initCause(ie);
+        }
+      }
+    }
   }
 
 }
