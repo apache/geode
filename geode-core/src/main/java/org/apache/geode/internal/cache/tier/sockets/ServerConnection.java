@@ -1449,15 +1449,6 @@ public abstract class ServerConnection implements Runnable {
   }
 
   /**
-   * Just ensure that this class gets loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    // nothing needed, just make sure this class gets loaded.
-  }
-
-  /**
    * @see SystemFailure#emergencyClose()
    */
   public void emergencyClose() {

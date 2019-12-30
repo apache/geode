@@ -1439,25 +1439,6 @@ public class InternalDistributedSystem extends DistributedSystem
   }
 
   /**
-   * break any potential circularity in {@link #loadEmergencyClasses()}
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded = false;
-
-  /**
-   * Ensure that the Distribution class gets loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    if (emergencyClassesLoaded) {
-      return;
-    }
-    emergencyClassesLoaded = true;
-    DistributionImpl.loadEmergencyClasses();
-  }
-
-  /**
    * Closes the membership manager
    *
    * @see SystemFailure#emergencyClose()

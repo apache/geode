@@ -246,7 +246,7 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
     Distribution mgr = dm.getDistribution();
-    assertThat(mgr.getDirectChannelPort()).isEqualTo(this.tcpPort);
+    assertThat(mgr.getLocalMember().getDirectChannelPort()).isEqualTo(this.tcpPort);
   }
 
   /**

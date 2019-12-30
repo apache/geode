@@ -1485,8 +1485,4 @@ public class QueueManagerImpl implements QueueManager {
     }
 
   }
-
-  public static void loadEmergencyClasses() {
-    QueueConnectionImpl.loadEmergencyClasses();
-  }
 }

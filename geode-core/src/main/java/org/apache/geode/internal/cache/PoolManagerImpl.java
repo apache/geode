@@ -300,10 +300,6 @@ public class PoolManagerImpl {
     });
   }
 
-  public static void loadEmergencyClasses() {
-    PoolImpl.loadEmergencyClasses();
-  }
-
   public Pool find(Region<?, ?> region) {
     return find(region.getAttributes().getPoolName());
   }

@@ -50,7 +50,6 @@ import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
 import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
 import org.apache.geode.cache.client.internal.locator.ServerLocationResponse;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -75,7 +74,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   private static final LocatorListRequest LOCATOR_LIST_REQUEST = new LocatorListRequest();
 
   @Immutable
-  private static final Comparator<HostAddress> SOCKET_ADDRESS_COMPARATOR =
+  private static final Comparator<LocatorAddress> SOCKET_ADDRESS_COMPARATOR =
       (address, otherAddress) -> {
         InetSocketAddress inetSocketAddress = address.getSocketInetAddress();
         InetSocketAddress otherInetSocketAddress = otherAddress.getSocketInetAddress();
@@ -93,7 +92,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
           return inetSocketAddress.getPort() - otherInetSocketAddress.getPort();
         }
       };
-  private final List<HostAddress> initialLocators;
+  private final List<LocatorAddress> initialLocators;
   private final String serverGroup;
   private AtomicReference<LocatorList> locators = new AtomicReference<>();
   private AtomicReference<LocatorList> onlineLocators = new AtomicReference<>();
@@ -108,7 +107,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
    */
   private final Map<InetSocketAddress, Exception> locatorState = new HashMap<>();
 
-  public AutoConnectionSourceImpl(List<HostAddress> contacts, String serverGroup,
+  public AutoConnectionSourceImpl(List<LocatorAddress> contacts, String serverGroup,
       int handshakeTimeout) {
     this.locators.set(new LocatorList(new ArrayList<>(contacts)));
     this.onlineLocators.set(new LocatorList(Collections.emptyList()));
@@ -197,13 +196,13 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
 
-  private ServerLocationResponse queryOneLocator(HostAddress locator,
+  private ServerLocationResponse queryOneLocator(LocatorAddress locator,
       ServerLocationRequest request) {
     return queryOneLocatorUsingConnection(locator, request, tcpClient);
   }
 
 
-  ServerLocationResponse queryOneLocatorUsingConnection(HostAddress locator,
+  ServerLocationResponse queryOneLocatorUsingConnection(LocatorAddress locator,
       ServerLocationRequest request,
       TcpClient locatorConnection) {
     Object returnObj = null;
@@ -243,16 +242,16 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
    * This will cause another DNS lookup, hopefully finding the locator.
    *
    */
-  protected void updateLocatorInLocatorList(HostAddress locator) {
+  protected void updateLocatorInLocatorList(LocatorAddress locator) {
     if (locator.getSocketInetAddressNoLookup().getHostName() != null && !locator.isIpString()) {
       LocatorList locatorList = locators.get();
-      List<HostAddress> newLocatorsList = new ArrayList<>();
+      List<LocatorAddress> newLocatorsList = new ArrayList<>();
 
-      for (HostAddress tloc : locatorList.getLocatorAddresses()) {
+      for (LocatorAddress tloc : locatorList.getLocatorAddresses()) {
         if (tloc.equals(locator)) {
           InetSocketAddress changeLoc = new InetSocketAddress(locator.getHostName(),
               locator.getSocketInetAddressNoLookup().getPort());
-          HostAddress hostAddress = new HostAddress(changeLoc, locator.getHostName());
+          LocatorAddress hostAddress = new LocatorAddress(changeLoc, locator.getHostName());
           newLocatorsList.add(hostAddress);
         } else {
           newLocatorsList.add(tloc);
@@ -277,7 +276,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     do {
-      HostAddress hostAddress = (HostAddress) controllerItr.next();
+      LocatorAddress hostAddress = (LocatorAddress) controllerItr.next();
       if (isDebugEnabled) {
         logger.debug("Sending query to locator {}: {}", hostAddress, request);
       }
@@ -296,13 +295,13 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     isBalanced = response.isBalanced();
     List<ServerLocation> locatorResponse = response.getLocators();
 
-    List<HostAddress> newLocatorAddresses = new ArrayList<>(locatorResponse.size());
-    List<HostAddress> newOnlineLocators = new ArrayList<>(locatorResponse.size());
+    List<LocatorAddress> newLocatorAddresses = new ArrayList<>(locatorResponse.size());
+    List<LocatorAddress> newOnlineLocators = new ArrayList<>(locatorResponse.size());
 
-    Set<HostAddress> badLocators = new HashSet<>(initialLocators);
+    Set<LocatorAddress> badLocators = new HashSet<>(initialLocators);
     for (ServerLocation locator : locatorResponse) {
       InetSocketAddress address = new InetSocketAddress(locator.getHostName(), locator.getPort());
-      HostAddress hostAddress = new HostAddress(address, locator.getHostName());
+      LocatorAddress hostAddress = new LocatorAddress(address, locator.getHostName());
       newLocatorAddresses.add(hostAddress);
       newOnlineLocators.add(hostAddress);
       badLocators.remove(hostAddress);
@@ -341,10 +340,10 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
    * This method will add bad locator only when locator with hostname and port is not already in
    * list.
    */
-  protected void addbadLocators(List<HostAddress> newLocators, Set<HostAddress> badLocators) {
-    for (HostAddress badloc : badLocators) {
+  protected void addbadLocators(List<LocatorAddress> newLocators, Set<LocatorAddress> badLocators) {
+    for (LocatorAddress badloc : badLocators) {
       boolean addIt = true;
-      for (HostAddress goodloc : newLocators) {
+      for (LocatorAddress goodloc : newLocators) {
         boolean isSameHost = badloc.getHostName().equals(goodloc.getHostName());
         if (isSameHost && badloc.getPort() == goodloc.getPort()) {
           // ip has been changed so don't add this in current
@@ -410,23 +409,23 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
    * A list of locators, which remembers the last known good locator.
    */
   private static class LocatorList {
-    protected final List<HostAddress> locators;
+    protected final List<LocatorAddress> locators;
     AtomicInteger currentLocatorIndex = new AtomicInteger();
 
-    LocatorList(List<HostAddress> locators) {
+    LocatorList(List<LocatorAddress> locators) {
       locators.sort(SOCKET_ADDRESS_COMPARATOR);
       this.locators = Collections.unmodifiableList(locators);
     }
 
     public List<InetSocketAddress> getLocators() {
       List<InetSocketAddress> locs = new ArrayList<>();
-      for (HostAddress la : locators) {
+      for (LocatorAddress la : locators) {
         locs.add(la.getSocketInetAddress());
       }
       return locs;
     }
 
-    List<HostAddress> getLocatorAddresses() {
+    List<LocatorAddress> getLocatorAddresses() {
       return locators;
     }
 
@@ -434,7 +433,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       return locators.size();
     }
 
-    public Iterator<HostAddress> iterator() {
+    public Iterator<LocatorAddress> iterator() {
       return new LocatorIterator();
     }
 
@@ -449,7 +448,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
      * controller.
      *
      */
-    protected class LocatorIterator implements Iterator<HostAddress> {
+    protected class LocatorIterator implements Iterator<LocatorAddress> {
       private int startLocator = currentLocatorIndex.get();
       private int locatorNum = 0;
 
@@ -459,12 +458,12 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       }
 
       @Override
-      public HostAddress next() {
+      public LocatorAddress next() {
         if (!hasNext()) {
           return null;
         } else {
           int index = (locatorNum + startLocator) % locators.size();
-          HostAddress nextLocator = locators.get(index);
+          LocatorAddress nextLocator = locators.get(index);
           currentLocatorIndex.set(index);
           locatorNum++;
           return nextLocator;

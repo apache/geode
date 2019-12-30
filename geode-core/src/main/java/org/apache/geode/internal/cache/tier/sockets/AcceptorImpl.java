@@ -861,26 +861,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
   }
 
   /**
-   * break any potential circularity in {@link #loadEmergencyClasses()}
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded;
-
-  /**
-   * Ensure that the CachedRegionHelper and ServerConnection classes get loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    if (emergencyClassesLoaded) {
-      return;
-    }
-    emergencyClassesLoaded = true;
-    CachedRegionHelper.loadEmergencyClasses();
-    ServerConnection.loadEmergencyClasses();
-  }
-
-  /**
    * @see SystemFailure#emergencyClose()
    */
   @Override

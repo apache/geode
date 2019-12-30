@@ -408,9 +408,6 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
     this.socketCreator = socketCreator;
   }
 
-  @SuppressWarnings("EmptyMethod")
-  public static void loadEmergencyClasses() {}
-
   /*
    * Record the member activity for current time interval.
    */

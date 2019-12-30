@@ -718,15 +718,6 @@ public class DirectChannel {
   }
 
   /**
-   * Ensure that the TCPConduit class gets loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    TCPConduit.loadEmergencyClasses();
-  }
-
-  /**
    * Close the Conduit
    *
    * @see SystemFailure#emergencyClose()

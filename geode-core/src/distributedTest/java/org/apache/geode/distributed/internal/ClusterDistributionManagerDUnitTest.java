@@ -61,6 +61,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
 import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
@@ -171,7 +172,6 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     InternalDistributedSystem system = getSystem();
     Distribution membershipManager =
         MembershipManagerHelper.getDistribution(system);
-    assertThat(membershipManager.isCleanupTimerStarted()).isTrue();
 
     InternalDistributedMember member = new InternalDistributedMember(getIPLiteral(), 12345);
 
@@ -194,7 +194,7 @@ public class ClusterDistributionManagerDUnitTest extends CacheTestCase {
     // now forcibly add it as a surprise member and show that it is reaped
     long gracePeriod = 5000;
     long startTime = System.currentTimeMillis();
-    long timeout = membershipManager.getSurpriseMemberTimeout();
+    long timeout = ((GMSMembership) membershipManager.getMembership()).getSurpriseMemberTimeout();
     long birthTime = startTime - timeout + gracePeriod;
     MembershipManagerHelper.addSurpriseMember(system, member, birthTime);
     assertThat(membershipManager.isSurpriseMember(member)).as("Member was not a surprise member")

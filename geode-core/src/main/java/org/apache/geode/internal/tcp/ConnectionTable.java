@@ -918,15 +918,6 @@ public class ConnectionTable {
   }
 
   /**
-   * Just ensure that this class gets loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    // don't go any further, Frodo!
-  }
-
-  /**
    * Clears lastInstance. Does not yet close underlying sockets, but probably not strictly
    * necessary.
    *

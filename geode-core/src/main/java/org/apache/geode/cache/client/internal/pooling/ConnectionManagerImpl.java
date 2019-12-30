@@ -613,10 +613,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     return false;
   }
 
-  public static void loadEmergencyClasses() {
-    PooledConnection.loadEmergencyClasses();
-  }
-
   protected class LifetimeExpireConnectionsTask implements Runnable {
     @Override
     public void run() {

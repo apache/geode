@@ -126,14 +126,19 @@ public class MembershipManagerHelper {
   // this method is only used for testing. Should be extract to a test helper instead
   public static void crashDistributedSystem(final DistributedSystem msys) {
     msys.getLogWriter().info("crashing distributed system: " + msys);
-    Distribution mgr = ((Distribution) getDistribution(msys));
+    Distribution mgr = getDistribution(msys);
     MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
     MembershipManagerHelper.beSickMember(msys);
     MembershipManagerHelper.playDead(msys);
-    mgr.forceDisconnect("for testing");
+    ((GMSMembership.ManagerImpl) mgr).forceDisconnect("for testing");
     // wait at most 10 seconds for system to be disconnected
     await().until(() -> !msys.isConnected());
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
   }
 
+  public static void disableDisconnectOnQuorumLossForTesting(DistributedSystem msys) {
+    msys.getLogWriter().info("crashing distributed system: " + msys);
+    Distribution mgr = getDistribution(msys);
+    ((GMSMembership) mgr.getMembership()).disableDisconnectOnQuorumLossForTesting();
+  }
 }

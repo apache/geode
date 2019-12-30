@@ -30,14 +30,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
-public class MembershipViewJUnitTest {
+public class GMSMembershipViewJUnitTest {
 
   private List<MemberIdentifier> members;
 
@@ -49,21 +48,21 @@ public class MembershipViewJUnitTest {
       members.add(new InternalDistributedMember(LocalHostUtil.getLocalHost(), 1000 + i));
     }
     // view creator is a locator
-    members.get(0).setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    members.get(0).setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
     members.get(0).setVmViewId(0);
     members.get(0).setPreferredForCoordinator(true);
 
     // members who joined in view #1
     for (int i = 1; i < (numMembers - 1); i++) {
       members.get(i).setVmViewId(1);
-      members.get(i).setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+      members.get(i).setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
       members.get(i).setPreferredForCoordinator(false);
     }
 
     // member joining in this view
     members.get(numMembers - 1).setVmViewId(2);
     members.get(numMembers - 1).getMemberData()
-        .setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+        .setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
   }
 
   private void setFailureDetectionPorts(GMSMembershipView view) {
@@ -184,7 +183,7 @@ public class MembershipViewJUnitTest {
     int oldSize = view.size();
     for (int i = 0; i < 100; i++) {
       MemberIdentifier mbr = new InternalDistributedMember(LocalHostUtil.getLocalHost(), 2000 + i);
-      mbr.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+      mbr.setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
       mbr.setVmViewId(2);
       view.add(mbr);
       view.setFailureDetectionPort(mbr, 2000 + i);
@@ -233,22 +232,22 @@ public class MembershipViewJUnitTest {
             new InternalDistributedMember("localhost", 6)};
     int i = 0;
     // weight 3
-    members[i].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    members[i].setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
     members[i++].setPreferredForCoordinator(true);
     // weight 3
-    members[i].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
+    members[i].setVmKind(MemberIdentifier.LOCATOR_DM_TYPE);
     members[i++].setPreferredForCoordinator(true);
     // weight 15 (cache+leader)
-    members[i].setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+    members[i].setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
     members[i++].setPreferredForCoordinator(false);
     // weight 0
-    members[i].setVmKind(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
+    members[i].setVmKind(MemberIdentifier.ADMIN_ONLY_DM_TYPE);
     members[i++].setPreferredForCoordinator(false);
     // weight 0
-    members[i].setVmKind(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
+    members[i].setVmKind(MemberIdentifier.ADMIN_ONLY_DM_TYPE);
     members[i++].setPreferredForCoordinator(false);
     // weight 10
-    members[i].setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+    members[i].setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
     members[i++].setPreferredForCoordinator(false);
 
     List<MemberIdentifier> vmbrs = new ArrayList<>(members.length);
@@ -262,7 +261,7 @@ public class MembershipViewJUnitTest {
     assertTrue(!leader.preferredForCoordinator());
 
     MemberIdentifier joiningMember = new InternalDistributedMember("localhost", 7);
-    joiningMember.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+    joiningMember.setVmKind(MemberIdentifier.NORMAL_DM_TYPE);
     joiningMember.setPreferredForCoordinator(false);
 
     // have the joining member and another cache process (weight 10) in the failed members
@@ -287,4 +286,5 @@ public class MembershipViewJUnitTest {
     Set<MemberIdentifier> actual = newView.getActualCrashedMembers(lastView);
     assertTrue(!actual.contains(members[members.length - 2]));
   }
+
 }

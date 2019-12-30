@@ -385,15 +385,6 @@ public class TCPConduit implements Runnable {
   }
 
   /**
-   * Ensure that the ConnectionTable class gets loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    ConnectionTable.loadEmergencyClasses();
-  }
-
-  /**
    * Close the ServerSocketChannel, ServerSocket, and the ConnectionTable.
    *
    * @see SystemFailure#emergencyClose()

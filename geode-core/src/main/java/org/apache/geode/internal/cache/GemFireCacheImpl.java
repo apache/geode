@@ -227,7 +227,6 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.snapshot.CacheSnapshotServiceImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
@@ -387,12 +386,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @MakeNotStatic
   private static final Set<CacheLifecycleListener> cacheLifecycleListeners =
       new CopyOnWriteArraySet<>();
-
-  /**
-   * Break any potential circularity in {@link #loadEmergencyClasses()}.
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded;
 
   /**
    * Property set to true if resource manager heap percentage is set and query monitor is required
@@ -1646,21 +1639,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public boolean keepDurableSubscriptionsAlive() {
     return keepAlive;
-  }
-
-  /**
-   * Ensure that all the necessary classes for closing the cache are loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    if (emergencyClassesLoaded) {
-      return;
-    }
-    emergencyClassesLoaded = true;
-    InternalDistributedSystem.loadEmergencyClasses();
-    AcceptorImpl.loadEmergencyClasses();
-    PoolManagerImpl.loadEmergencyClasses();
   }
 
   /**

@@ -1652,8 +1652,6 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
         VIEW_BROADCAST_INTERVAL);
   }
 
-  public static void loadEmergencyClasses() {}
-
   @Override
   public void emergencyClose() {
     isStopping = true;
