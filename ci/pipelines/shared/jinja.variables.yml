@@ -16,8 +16,8 @@
 #
 
 benchmarks:
-  baseline_branch: develop/highwater
-  baseline_version: ''
+  baseline_branch: ''
+  baseline_version: '1.10.0'
   benchmark_branch: develop
   flavors:
   - title: '_base'
