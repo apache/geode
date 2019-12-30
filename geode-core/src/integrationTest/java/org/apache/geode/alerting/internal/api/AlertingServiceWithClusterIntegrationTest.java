@@ -26,7 +26,9 @@ import static org.apache.geode.internal.admin.remote.AlertListenerMessage.remove
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
@@ -118,6 +120,23 @@ public class AlertingServiceWithClusterIntegrationTest {
     logger.warn(alertMessage);
 
     verify(messageListener, timeout(TIMEOUT)).received(isA(AlertListenerMessage.class));
+  }
+
+  @Test
+  public void alertMessageProcessingDoesNotTriggerAdditionalAlertMessage() {
+    alertingService.addAlertListener(member, WARNING);
+    logger = spy(logger);
+
+    String recursiveAlert = "Recursive Alert";
+    doAnswer(invocation -> {
+      logger.warn(recursiveAlert);
+      return null;
+    }).when(messageListener).received(isA(AlertListenerMessage.class));
+
+    logger.warn(alertMessage);
+
+    verify(messageListener, timeout(TIMEOUT).times(1)).received(isA(AlertListenerMessage.class));
+    verify(logger, timeout(TIMEOUT).times(1)).warn(eq(recursiveAlert));
   }
 
   @Test

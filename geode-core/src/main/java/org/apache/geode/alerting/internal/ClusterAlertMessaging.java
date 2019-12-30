@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.alerting.internal.spi.AlertLevel;
+import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -66,7 +67,7 @@ public class ClusterAlertMessaging implements AlertMessaging {
       final long threadId,
       final String formattedMessage,
       final String stackTrace) {
-    executor.submit(() -> {
+    executor.submit(() -> AlertingAction.execute(() -> {
       try {
         String connectionName = system.getConfig().getName();
 
@@ -77,14 +78,16 @@ public class ClusterAlertMessaging implements AlertMessaging {
         if (member.equals(system.getDistributedMember())) {
           // process in local member
           logger.debug("Processing local alert message: {}, {}, {}, {}, {}, {}, [{}], [{}].",
-              member, alertLevel, timestamp, connectionName, threadName, threadId, formattedMessage,
+              member, alertLevel, timestamp, connectionName, threadName, threadId,
+              formattedMessage,
               stackTrace);
           processAlertListenerMessage(message);
 
         } else {
           // send to remote member
           logger.debug("Sending remote alert message: {}, {}, {}, {}, {}, {}, [{}], [{}].",
-              member, alertLevel, timestamp, connectionName, threadName, threadId, formattedMessage,
+              member, alertLevel, timestamp, connectionName, threadName, threadId,
+              formattedMessage,
               stackTrace);
           dm.putOutgoing(message);
         }
@@ -92,7 +95,7 @@ public class ClusterAlertMessaging implements AlertMessaging {
         // OK. We can't send to this recipient because we're in the middle of
         // trying to connect to it.
       }
-    });
+    }));
   }
 
   public void close() {

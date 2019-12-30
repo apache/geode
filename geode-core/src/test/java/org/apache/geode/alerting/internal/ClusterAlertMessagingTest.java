@@ -41,6 +41,7 @@ import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.alerting.internal.spi.AlertLevel;
+import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -109,6 +110,23 @@ public class ClusterAlertMessagingTest {
         Thread.currentThread().getId(), "formattedMessage", "stackTrace");
 
     verify(executor).submit(any(Runnable.class));
+  }
+
+  @Test
+  public void sendAlertUsesAlertingAction() {
+    ExecutorService executor = currentThreadExecutorService();
+    ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
+    ClusterAlertMessaging clusterAlertMessaging =
+        spyClusterAlertMessaging(distributionManager, executor);
+    when(distributionManager.putOutgoing(any())).thenAnswer(invocation -> {
+      assertThat(AlertingAction.isThreadAlerting()).isTrue();
+      return null;
+    });
+
+    clusterAlertMessaging.sendAlert(remoteMember, AlertLevel.WARNING, Instant.now(), "threadName",
+        Thread.currentThread().getId(), "formattedMessage", "stackTrace");
+
+    verify(distributionManager).putOutgoing(any());
   }
 
   @Test

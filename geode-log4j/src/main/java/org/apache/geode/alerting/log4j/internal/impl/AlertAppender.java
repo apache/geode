@@ -149,7 +149,7 @@ public class AlertAppender extends AbstractAppender
       LOGGER.trace("Skipping append of {} because {} is alerting.", event, Thread.currentThread());
       return;
     }
-    AlertingAction.execute(() -> doAppend(event));
+    doAppend(event);
   }
 
   private void doAppend(final LogEvent event) {
