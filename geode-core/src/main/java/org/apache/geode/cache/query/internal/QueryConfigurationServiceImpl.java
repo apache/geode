@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.query.internal;
 
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;

@@ -23,11 +23,11 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
+import org.apache.geode.logging.internal.OSProcess;
 
 /**
  * Contains the logic for evaluating the health of a GemFire distributed system member according to

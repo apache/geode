@@ -35,7 +35,6 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -49,6 +48,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class uniquely identifies any Region Operation like create, update destroy etc. It is
@@ -60,7 +60,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   /** turns on very verbose logging ove membership id bytes */
   private static final boolean LOG_ID_BYTES =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "log-event-member-id-bytes");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "log-event-member-id-bytes");
 
   /**
    * Uniquely identifies the distributed member VM in which the Event is produced

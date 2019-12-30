@@ -28,12 +28,12 @@ import com.fasterxml.jackson.core.JsonToken;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.internal.ProxyCache;
 import org.apache.geode.cache.client.internal.UserAttributes;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.pdx.internal.json.JSONToPdxMapper;
 import org.apache.geode.pdx.internal.json.PdxInstanceHelper;
 import org.apache.geode.pdx.internal.json.PdxInstanceSortedHelper;
 import org.apache.geode.pdx.internal.json.PdxListHelper;
 import org.apache.geode.pdx.internal.json.PdxToJSON;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**
@@ -105,7 +105,7 @@ public class JSONFormatter {
    * JSON documents have same fields in the different order.
    */
   public static final String SORT_JSON_FIELD_NAMES_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "pdx.mapper.sort-json-field-names";
+      GeodeGlossary.GEMFIRE_PREFIX + "pdx.mapper.sort-json-field-names";
 
   enum states {
     NONE, OBJECT_START, FIELD_NAME, SCALAR_FOUND, LIST_FOUND, LIST_ENDS, OBJECT_ENDS

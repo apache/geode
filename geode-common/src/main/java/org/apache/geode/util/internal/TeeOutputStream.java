@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.io;
+package org.apache.geode.util.internal;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;

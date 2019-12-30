@@ -41,7 +41,6 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.PoolStatHelper;
@@ -55,6 +54,7 @@ import org.apache.geode.internal.net.SocketCreatorFailHandshake;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({MembershipTest.class})
 public class TCPServerSSLJUnitTest {
@@ -76,7 +76,7 @@ public class TCPServerSSLJUnitTest {
 
     SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
         expectedSocketTimeout);
 
     localhost = InetAddress.getLocalHost();
@@ -99,8 +99,8 @@ public class TCPServerSSLJUnitTest {
             socketCreator),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
-        DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
-        DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
 
     server.start();
   }

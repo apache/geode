@@ -30,8 +30,8 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.OutOfOffHeapMemoryException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Manages the free lists and slabs for a MemoryAllocator
@@ -292,7 +292,7 @@ public class FreeListManager {
    * clobber performance so turn on only when necessary.
    */
   final boolean validateMemoryWithFill =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "validateOffHeapWithFill");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "validateOffHeapWithFill");
   /**
    * Every allocated chunk smaller than TINY_MULTIPLE*TINY_FREE_LIST_COUNT will allocate a chunk of
    * memory that is a multiple of this value. Sizes are always rounded up to the next multiple of
@@ -302,7 +302,7 @@ public class FreeListManager {
    * currently is always 8 bytes.
    */
   public static final int TINY_MULTIPLE =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT", 8);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT", 8);
   static {
     verifyOffHeapAlignment(TINY_MULTIPLE);
   }
@@ -310,7 +310,7 @@ public class FreeListManager {
    * Number of free lists to keep for tiny allocations.
    */
   public static final int TINY_FREE_LIST_COUNT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT", 65536);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT", 65536);
   static {
     verifyOffHeapFreeListCount(TINY_FREE_LIST_COUNT);
   }
@@ -530,11 +530,11 @@ public class FreeListManager {
   static void verifyOffHeapAlignment(int tinyMultiple) {
     if (tinyMultiple <= 0 || (tinyMultiple & 3) != 0) {
       throw new IllegalStateException(
-          DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8.");
+          GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8.");
     }
     if (tinyMultiple > 256) {
       // this restriction exists because of the dataSize field in the object header.
-      throw new IllegalStateException(DistributionConfig.GEMFIRE_PREFIX
+      throw new IllegalStateException(GeodeGlossary.GEMFIRE_PREFIX
           + "OFF_HEAP_ALIGNMENT must be <= 256 and a multiple of 8.");
     }
   }
@@ -542,7 +542,7 @@ public class FreeListManager {
   static void verifyOffHeapFreeListCount(int tinyFreeListCount) {
     if (tinyFreeListCount <= 0) {
       throw new IllegalStateException(
-          DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
+          GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
     }
   }
 

@@ -66,6 +66,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class RegionAdvisor extends CacheDistributionAdvisor {
   private static final Logger logger = LogService.getLogger();
@@ -74,7 +75,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    * Number of threads allowed to concurrently volunteer for bucket primary.
    */
   public static final short VOLUNTEERING_THREAD_COUNT = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "RegionAdvisor.volunteeringThreadCount", 1)
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "RegionAdvisor.volunteeringThreadCount", 1)
       .shortValue();
 
   /**

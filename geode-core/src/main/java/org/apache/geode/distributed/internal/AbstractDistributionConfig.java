@@ -212,6 +212,7 @@ import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
@@ -369,7 +370,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   @ConfigAttributeChecker(name = DISTRIBUTED_SYSTEM_ID)
   protected int checkDistributedSystemId(int value) {
     String distributedSystemListener =
-        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener");
+        System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "DistributedSystemListener");
     // this check is specific for Jayesh's use case of WAN BootStrapping
     if (distributedSystemListener == null) {
       if (value < MIN_DISTRIBUTED_SYSTEM_ID) {

@@ -50,7 +50,6 @@ import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -65,6 +64,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Tests for durable reconnect issue
@@ -121,7 +121,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
     SERVER4 = NetworkUtils.getServerHostName() + PORT4;
 
     // CacheServerTestUtil.disableShufflingOfEndpoints();
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
         "false");
   }
 

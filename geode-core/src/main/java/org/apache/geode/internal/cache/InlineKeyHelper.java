@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * No instances of this class. Just some static method having to do with inline keys.
@@ -22,7 +22,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  */
 public class InlineKeyHelper {
   public static final boolean INLINE_REGION_KEYS =
-      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_INLINE_REGION_KEYS");
+      !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "DISABLE_INLINE_REGION_KEYS");
 
   /**
    * The maximum number of longs any of region entry subclasses use to store the string key inline.

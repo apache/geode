@@ -20,7 +20,6 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -35,6 +34,7 @@ import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.PdxUnreadFields;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A new instance of this class is created for each (nested) instance of {@link PdxSerializable}.
@@ -91,7 +91,7 @@ public class PdxWriterImpl implements PdxWriter {
    * pdx serialization.
    */
   private static final boolean sysPropDoExtraPdxValidation =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "validatePdxWriters");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "validatePdxWriters");
 
   private boolean doExtraValidation = sysPropDoExtraPdxValidation;
 

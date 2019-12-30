@@ -12,31 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.io;
+package org.apache.geode.util.internal;
 
-import java.io.PrintStream;
-
-/**
- * @since GemFire 7.0
- */
-public class TeePrintStream extends PrintStream {
-
-  private final TeeOutputStream teeOut;
-
-  public TeePrintStream(TeeOutputStream teeOut) {
-    super(teeOut, true);
-    this.teeOut = teeOut;
-  }
-
-  public TeeOutputStream getTeeOutputStream() {
-    return this.teeOut;
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("teeOutputStream=").append(this.teeOut);
-    return sb.append("}").toString();
-  }
+public class GeodeGlossary {
+  /**
+   * The prefix used for Gemfire properties set through java system properties
+   */
+  public static final String GEMFIRE_PREFIX = "gemfire.";
 }

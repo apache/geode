@@ -47,7 +47,6 @@ import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilde
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.net.SocketCreator;
@@ -56,6 +55,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.logging.internal.OSProcess;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed system.

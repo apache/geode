@@ -36,8 +36,8 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({OQLQueryTest.class})
 public class DistinctResultsWithDupValuesInRegionJUnitTest {
@@ -49,7 +49,7 @@ public class DistinctResultsWithDupValuesInRegionJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "Query.VERBOSE", "true");
     CacheUtils.startCache();
   }
 

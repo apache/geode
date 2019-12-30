@@ -16,12 +16,12 @@ package org.apache.geode.distributed.internal.membership.gms.api;
 
 
 import org.apache.geode.annotations.internal.MakeImmutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public interface MembershipConfig {
   /** stall time to wait for concurrent join/leave/remove requests to be received */
   long MEMBER_REQUEST_COLLECTION_INTERVAL =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "member-request-collection-interval", 300);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "member-request-collection-interval", 300);
   /** in a small cluster we might want to involve all members in operations */
   int SMALL_CLUSTER_SIZE = 9;
 

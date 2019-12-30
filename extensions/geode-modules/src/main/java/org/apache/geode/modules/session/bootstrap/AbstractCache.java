@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.modules.util.Banner;
 import org.apache.geode.modules.util.RegionHelper;
 import org.apache.geode.modules.util.ResourceManagerValidator;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public abstract class AbstractCache {
 
@@ -57,7 +58,7 @@ public abstract class AbstractCache {
   private static final float DEFAULT_CRITICAL_HEAP_PERCENTAGE =
       ResourceManager.DEFAULT_CRITICAL_PERCENTAGE;
 
-  private static final String GEMFIRE_PREFIX = DistributionConfig.GEMFIRE_PREFIX;
+  private static final String GEMFIRE_PREFIX = GeodeGlossary.GEMFIRE_PREFIX;
   private static final String DEFAULT_CACHE_XML_FILE =
       DistributionConfig.DEFAULT_CACHE_XML_FILE.getName();
 

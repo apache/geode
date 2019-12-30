@@ -254,6 +254,7 @@ import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A Region whose total storage is split into chunks of data (partitions) which are copied up to a
@@ -265,7 +266,7 @@ public class PartitionedRegion extends LocalRegion
 
   @Immutable
   public static final Random RANDOM =
-      new Random(Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "PartitionedRegionRandomSeed",
+      new Random(Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "PartitionedRegionRandomSeed",
           NanoTimer.getTime()));
 
   @MakeNotStatic
@@ -294,7 +295,7 @@ public class PartitionedRegion extends LocalRegion
    * Changes scope of replication to secondary bucket to SCOPE.DISTRIBUTED_NO_ACK
    */
   static final boolean DISABLE_SECONDARY_BUCKET_ACK =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disablePartitionedRegionBucketAck");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disablePartitionedRegionBucketAck");
 
   /**
    * A debug flag used for testing calculation of starting bucket id
@@ -722,7 +723,7 @@ public class PartitionedRegion extends LocalRegion
   private final StoppableCountDownLatch initializationLatchAfterBucketIntialization;
 
   public static final String RETRY_TIMEOUT_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout";
+      GeodeGlossary.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout";
 
   private final PartitionRegionConfigValidator validator;
 
@@ -800,11 +801,11 @@ public class PartitionedRegion extends LocalRegion
 
     // No redundancy required for writes
     this.minimumWriteRedundancy = Integer.getInteger(
-        DistributionConfig.GEMFIRE_PREFIX + "mimimumPartitionedRegionWriteRedundancy", 0);
+        GeodeGlossary.GEMFIRE_PREFIX + "mimimumPartitionedRegionWriteRedundancy", 0);
 
     // No redundancy required for reads
     this.minimumReadRedundancy = Integer.getInteger(
-        DistributionConfig.GEMFIRE_PREFIX + "mimimumPartitionedRegionReadRedundancy", 0);
+        GeodeGlossary.GEMFIRE_PREFIX + "mimimumPartitionedRegionReadRedundancy", 0);
 
     this.haveCacheLoader = regionAttributes.getCacheLoader() != null;
 

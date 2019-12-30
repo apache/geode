@@ -22,8 +22,8 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.DiskWriteAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implementation of DiskWriteAttributes
@@ -60,7 +60,7 @@ public class DiskWriteAttributesImpl implements DiskWriteAttributes {
 
   /** default max in bytes **/
   private static final long DEFAULT_MAX_OPLOG_SIZE =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue()
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE", 1024L).longValue()
           * (1024 * 1024); // 1 GB
 
   /** default max limit in bytes **/

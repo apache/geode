@@ -12,34 +12,31 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.offheap;
+package org.apache.geode.util.internal;
 
-import org.junit.experimental.categories.Category;
+import java.io.PrintStream;
 
-import org.apache.geode.test.junit.categories.OffHeapTest;
-import org.apache.geode.util.internal.GeodeGlossary;
+/**
+ * @since GemFire 7.0
+ */
+public class TeePrintStream extends PrintStream {
 
-@Category({OffHeapTest.class})
-public class FreeListOffHeapRegionJUnitTest extends OffHeapRegionBase {
+  private final TeeOutputStream teeOut;
 
-  @Override
-  protected String getOffHeapMemorySize() {
-    return "20m";
+  public TeePrintStream(TeeOutputStream teeOut) {
+    super(teeOut, true);
+    this.teeOut = teeOut;
+  }
+
+  public TeeOutputStream getTeeOutputStream() {
+    return this.teeOut;
   }
 
   @Override
-  public void configureOffHeapStorage() {
-    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1m");
+  public String toString() {
+    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+    sb.append("@").append(System.identityHashCode(this)).append("{");
+    sb.append("teeOutputStream=").append(this.teeOut);
+    return sb.append("}").toString();
   }
-
-  @Override
-  public void unconfigureOffHeapStorage() {
-    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
-  }
-
-  @Override
-  public int perObjectOverhead() {
-    return OffHeapStoredObject.HEADER_SIZE;
-  }
-
 }

@@ -41,11 +41,11 @@ import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Statistics related to a Java VM. This version is hardcoded to use 1.5 MXBean stats from
@@ -132,7 +132,7 @@ public class VMStats50 implements VMStatsContract {
   private long threadStartCount = 0;
   private long[] allThreadIds = null;
   private static final boolean THREAD_STATS_ENABLED =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableThreadStats");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enableThreadStats");
   private final Map<Long, ThreadStatInfo> threadMap =
       THREAD_STATS_ENABLED ? new HashMap<Long, ThreadStatInfo>() : null;
   @Immutable
@@ -200,14 +200,14 @@ public class VMStats50 implements VMStatsContract {
     if (THREAD_STATS_ENABLED) {
       if (threadBean.isThreadCpuTimeSupported()) {
         if (!threadBean.isThreadCpuTimeEnabled()) {
-          if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableCpuTime")) {
+          if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enableCpuTime")) {
             threadBean.setThreadCpuTimeEnabled(true);
           }
         }
       }
       if (threadBean.isThreadContentionMonitoringSupported()) {
         if (!threadBean.isThreadContentionMonitoringEnabled()) {
-          if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enableContentionTime")) {
+          if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enableContentionTime")) {
             threadBean.setThreadContentionMonitoringEnabled(true);
           }
         }

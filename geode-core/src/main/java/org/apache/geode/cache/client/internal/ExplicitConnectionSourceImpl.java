@@ -26,12 +26,12 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.GemFireSecurityException;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A connection source where the list of endpoints is specified explicitly.
@@ -56,7 +56,7 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
    * A debug flag, which can be toggled by tests to disable/enable shuffling of the endpoints list
    */
   private boolean DISABLE_SHUFFLING =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
 
   ExplicitConnectionSourceImpl(List<InetSocketAddress> contacts) {
     ArrayList<ServerLocation> serverList = new ArrayList<>(contacts.size());

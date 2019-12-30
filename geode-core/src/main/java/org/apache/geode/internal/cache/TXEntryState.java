@@ -39,7 +39,6 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -56,6 +55,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.PdxSerializationException;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * TXEntryState is the entity that tracks transactional changes, except for those tracked by
@@ -206,7 +206,7 @@ public class TXEntryState implements Releasable {
    * detection are at: https://wiki.gemstone.com/display/PR/Read+conflict+detection
    */
   private static final boolean DETECT_READ_CONFLICTS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "detectReadConflicts");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "detectReadConflicts");
 
   // TODO: optimize footprint by having this field on a subclass
   // that is only created by TXRegionState when it knows its region needs refCounts.
@@ -262,7 +262,7 @@ public class TXEntryState implements Releasable {
    * Use this system property if you need to display/log string values in conflict messages
    */
   private static final boolean VERBOSE_CONFLICT_STRING =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "verboseConflictString");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "verboseConflictString");
 
   /**
    * This constructor is used to create a singleton used by LocalRegion to signal that noop

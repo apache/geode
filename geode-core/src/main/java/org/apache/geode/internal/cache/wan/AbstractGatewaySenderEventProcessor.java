@@ -40,7 +40,6 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -58,6 +57,7 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * EventProcessor responsible for peeking from queue and handling over the events to the dispatcher.
@@ -355,13 +355,13 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    * instances. Hopefully this should never happen in practice.
    */
   protected static final int FAILURE_MAP_MAXSIZE = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.FAILURE_MAP_MAXSIZE", 1000000);
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.FAILURE_MAP_MAXSIZE", 1000000);
 
   /**
    * The maximum interval for logging failures of the same event in millis.
    */
   protected static final int FAILURE_LOG_MAX_INTERVAL = Integer.getInteger(
-      DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.FAILURE_LOG_MAX_INTERVAL", 300000);
+      GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.FAILURE_LOG_MAX_INTERVAL", 300000);
 
   public boolean skipFailureLogging(Integer batchId) {
     boolean skipLogging = false;

@@ -93,6 +93,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.AuthTokenEnabledComponents;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that knows how to read the
@@ -413,7 +414,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * Prefix to use for properties that are put as JVM java properties for use with layers (e.g.
    * jgroups membership) that do not have a <code>DistributionConfig</code> object.
    */
-  public static final String SECURITY_SYSTEM_PREFIX = GEMFIRE_PREFIX + "sys.";
+  public static final String SECURITY_SYSTEM_PREFIX = GeodeGlossary.GEMFIRE_PREFIX + "sys.";
 
   /**
    * whether to remove unresponsive client or not
@@ -963,16 +964,17 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     // all the system properties instead of looping through attNames
     Set attNameSet = new HashSet();
     for (int index = 0; index < attNames.length; ++index) {
-      attNameSet.add(GEMFIRE_PREFIX + attNames[index]);
+      attNameSet.add(GeodeGlossary.GEMFIRE_PREFIX + attNames[index]);
     }
 
     // Ensure that we're also iterating over the default properties - see GEODE-4690.
     for (String key : System.getProperties().stringPropertyNames()) {
-      if (attNameSet.contains(key) || key.startsWith(GEMFIRE_PREFIX + SECURITY_PREFIX_NAME)
-          || key.startsWith(GEMFIRE_PREFIX + SSL_SYSTEM_PROPS_NAME)) {
+      if (attNameSet.contains(key)
+          || key.startsWith(GeodeGlossary.GEMFIRE_PREFIX + SECURITY_PREFIX_NAME)
+          || key.startsWith(GeodeGlossary.GEMFIRE_PREFIX + SSL_SYSTEM_PROPS_NAME)) {
         String sysValue = System.getProperty(key);
         if (sysValue != null) {
-          String attName = key.substring(GEMFIRE_PREFIX.length());
+          String attName = key.substring(GeodeGlossary.GEMFIRE_PREFIX.length());
           props.put(attName, sysValue);
           sourceMap.put(attName, ConfigSource.sysprop());
         }
@@ -3371,11 +3373,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * test.
    */
   void checkForDisallowedDefaults() {
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disallowMcastDefaults")) {
+    if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disallowMcastDefaults")) {
       if (getMcastPort() != 0) { // it is not disabled
         if (getMcastAddress().equals(DistributionConfig.DEFAULT_MCAST_ADDRESS)
             && getMcastPort() == DistributionConfig.DEFAULT_MCAST_PORT) {
-          throw new IllegalStateException(DistributionConfig.GEMFIRE_PREFIX
+          throw new IllegalStateException(GeodeGlossary.GEMFIRE_PREFIX
               + "disallowMcastDefaults set and default address and port are being used");
         }
       }

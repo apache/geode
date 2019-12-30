@@ -37,8 +37,8 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Ensure that the ignoreJTA Region setting works
@@ -161,7 +161,7 @@ public class JtaNoninvolvementJUnitTest {
   public void test002IgnoreJTASysProp() throws Exception {
     javax.transaction.UserTransaction ut = null;
     try {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA", "true");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "ignoreJTA", "true");
       createCache(false);
       ut = (UserTransaction) cache.getJNDIContext().lookup("java:/UserTransaction");
       ut.begin();
@@ -172,7 +172,7 @@ public class JtaNoninvolvementJUnitTest {
     } finally {
       closeCache();
       cache = null;
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ignoreJTA", "false");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "ignoreJTA", "false");
     }
   }
 }

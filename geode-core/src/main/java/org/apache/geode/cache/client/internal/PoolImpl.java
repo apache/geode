@@ -66,6 +66,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Manages the client side of client to server connections and client queues.
@@ -75,18 +76,18 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class PoolImpl implements InternalPool {
 
   public static final String ON_DISCONNECT_CLEAR_PDXTYPEIDS =
-      DistributionConfig.GEMFIRE_PREFIX + "ON_DISCONNECT_CLEAR_PDXTYPEIDS";
+      GeodeGlossary.GEMFIRE_PREFIX + "ON_DISCONNECT_CLEAR_PDXTYPEIDS";
 
   private static final Logger logger = LogService.getLogger();
 
   public static final long SHUTDOWN_TIMEOUT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.SHUTDOWN_TIMEOUT", 30000);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "PoolImpl.SHUTDOWN_TIMEOUT", 30000);
 
   private static final int BACKGROUND_TASK_POOL_SIZE = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.BACKGROUND_TASK_POOL_SIZE", 20);
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "PoolImpl.BACKGROUND_TASK_POOL_SIZE", 20);
 
   private static final int BACKGROUND_TASK_POOL_KEEP_ALIVE = Integer.getInteger(
-      DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.BACKGROUND_TASK_POOL_KEEP_ALIVE", 1000);
+      GeodeGlossary.GEMFIRE_PREFIX + "PoolImpl.BACKGROUND_TASK_POOL_KEEP_ALIVE", 1000);
 
   /**
    * For durable client tests only. Connection Sources read this flag and return an empty list of
@@ -234,7 +235,7 @@ public class PoolImpl implements InternalPool {
           statisticInterval);
     }
     cancelCriterion = new Stopper();
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE")) {
+    if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "SPECIAL_DURABLE")) {
       ClientProxyMembershipID.setPoolName(name);
       proxyId = ClientProxyMembershipID.getNewProxyMembership(distributedSystem);
       ClientProxyMembershipID.setPoolName(null);
@@ -508,7 +509,7 @@ public class PoolImpl implements InternalPool {
     int cnt = getAttachCount();
     this.keepAlive = keepAlive;
     boolean SPECIAL_DURABLE =
-        Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE");
+        Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "SPECIAL_DURABLE");
     if (cnt > 0) {
       // special case to allow closing durable client pool under the keep alive flag
       // closing regions prior to closing pool can cause them to unregister interest

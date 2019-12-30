@@ -34,6 +34,7 @@ import java.util.Random;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class determines whether or not a given port is available and can also provide a randomly
@@ -58,9 +59,9 @@ public class AvailablePort {
     String name = null;
     try {
       if (protocol == SOCKET) {
-        name = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "bind-address");
+        name = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "bind-address");
       } else if (protocol == MULTICAST) {
-        name = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "mcast-address");
+        name = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "mcast-address");
       }
       if (name != null) {
         return InetAddress.getByName(name);

@@ -137,6 +137,7 @@ import org.apache.geode.pdx.internal.PdxReaderImpl;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
 import org.apache.geode.pdx.internal.TypeRegistry;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Contains static methods for data serializing instances of internal GemFire classes. It also
@@ -147,7 +148,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  */
 public abstract class InternalDataSerializer extends DataSerializer {
   public static final boolean LOAD_CLASS_EACH_TIME =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "loadClassOnEveryDeserialization");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "loadClassOnEveryDeserialization");
   private static final Logger logger = LogService.getLogger();
   /**
    * Maps Class names to their DataSerializer. This is used to find a DataSerializer during
@@ -207,7 +208,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
           // geode-modules
           + ";org.apache.geode.modules.util.SessionCustomExpiry" + ";";
   private static final String serializationVersionTxt =
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "serializationVersion");
+      System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "serializationVersion");
   /**
    * Change this constant to be the last one in SERIALIZATION_VERSION
    */
@@ -3359,7 +3360,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
      */
     @MutableForTesting
     public static int WAIT_MS = Integer.getInteger(
-        DistributionConfig.GEMFIRE_PREFIX + "InternalDataSerializer.WAIT_MS", 60 * 1000);
+        GeodeGlossary.GEMFIRE_PREFIX + "InternalDataSerializer.WAIT_MS", 60 * 1000);
 
     /**
      * Returns the serializer associated with this marker. If the serializer has not been registered

@@ -14,9 +14,9 @@
  */
 package org.apache.geode.distributed.internal.locks;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Identifies specific lock grantor member and version.
@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 public class LockGrantorId {
 
   public static final int ROLLOVER_MARGIN = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "DLockService.LockGrantorId.rolloverMargin",
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "DLockService.LockGrantorId.rolloverMargin",
           10000)
       .intValue();
 

@@ -49,7 +49,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Conflatable;
@@ -74,6 +73,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.beans.AsyncEventQueueMBean;
 import org.apache.geode.management.internal.beans.GatewaySenderMBean;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * @since GemFire 7.0
@@ -162,7 +162,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * Whether the <code>Gateway</code> queue should be no-ack instead of ack.
    */
   private static final boolean NO_ACK =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "gateway-queue-no-ack");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "gateway-queue-no-ack");
 
   private volatile long lastDispatchedKey = -1;
 

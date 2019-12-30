@@ -34,9 +34,9 @@ import org.junit.Before;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Abstract base class for integration tests of {@link LocatorLauncher} as an application main in a
@@ -76,7 +76,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   @Override
   public List<String> getJvmArguments() {
     List<String> jvmArguments = new ArrayList<>();
-    jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "log-level=config");
+    jvmArguments.add("-D" + GeodeGlossary.GEMFIRE_PREFIX + "log-level=config");
     jvmArguments.add("-D" + TEST_OVERRIDE_DEFAULT_PORT_PROPERTY + "=" + defaultLocatorPort);
     return jvmArguments;
   }

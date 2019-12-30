@@ -21,7 +21,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Creates a pid file and writes the process id to the pid file.
@@ -43,7 +43,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 class LocalProcessLauncher {
 
   static final String PROPERTY_IGNORE_IS_PID_ALIVE =
-      DistributionConfig.GEMFIRE_PREFIX + "test.LocalProcessLauncher.ignoreIsPidAlive";
+      GeodeGlossary.GEMFIRE_PREFIX + "test.LocalProcessLauncher.ignoreIsPidAlive";
 
   private final int pid;
   private final File pidFile;

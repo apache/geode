@@ -91,12 +91,13 @@ import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordina
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 @SuppressWarnings("StatementWithEmptyBody")
@@ -259,7 +260,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
       properties = replaceStrings(properties, "MCAST_RECV_BUFFER_SIZE",
           String.valueOf(config.getMcastRecvBufferSize()));
       properties = replaceStrings(properties, "MCAST_RETRANSMIT_INTERVAL", "" + Integer
-          .getInteger(DistributionConfig.GEMFIRE_PREFIX + "mcast-retransmit-interval", 500));
+          .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "mcast-retransmit-interval", 500));
       properties = replaceStrings(properties, "RETRANSMIT_LIMIT",
           String.valueOf(config.getUdpFragmentSize() - 256));
     }
@@ -286,7 +287,7 @@ public class JGroupsMessenger<ID extends MemberIdentifier> implements Messenger<
     }
     properties = replaceStrings(properties, "BIND_ADDR_SETTING", "bind_addr=\"" + str + "\"");
 
-    int port = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "jg-bind-port", 0);
+    int port = Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "jg-bind-port", 0);
     if (port != 0) {
       properties = replaceStrings(properties, "MEMBERSHIP_PORT_RANGE_START", "" + port);
       properties = replaceStrings(properties, "MEMBERSHIP_PORT_RANGE", "" + 0);

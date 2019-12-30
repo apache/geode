@@ -26,6 +26,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * DSClock tracks the system time. The most useful method is cacheTimeMillis(). The rest are for
@@ -110,7 +111,7 @@ public class DSClock implements CacheTime {
    * @since GemFire 8.0
    */
   public void setCacheTimeOffset(DistributedMember coord, long offset, boolean isJoin) {
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disable-distributed-clock")) {
+    if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disable-distributed-clock")) {
       return;
     }
     if (isLoner) {

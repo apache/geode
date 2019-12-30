@@ -41,9 +41,9 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class StartServerCommandTest {
   private StartServerCommand serverCommands;
@@ -160,10 +160,10 @@ public class StartServerCommandTest {
         serverLauncher.getEvictionHeapPercentage()));
 
     expectedCommandLineElements
-        .add("-d" + DistributionConfig.GEMFIRE_PREFIX + "" + START_DEV_REST_API + "=" + "true");
+        .add("-d" + GeodeGlossary.GEMFIRE_PREFIX + "" + START_DEV_REST_API + "=" + "true");
     expectedCommandLineElements
-        .add("-d" + DistributionConfig.GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8080");
-    expectedCommandLineElements.add("-d" + DistributionConfig.GEMFIRE_PREFIX + ""
+        .add("-d" + GeodeGlossary.GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8080");
+    expectedCommandLineElements.add("-d" + GeodeGlossary.GEMFIRE_PREFIX + ""
         + HTTP_SERVICE_BIND_ADDRESS + "=" + "localhost");
 
     for (String commandLineElement : commandLineElements) {

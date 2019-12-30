@@ -85,7 +85,6 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
@@ -123,6 +122,7 @@ import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Represents a (disk-based) persistent store for region data. Used for both persistent recoverable
@@ -137,20 +137,20 @@ public class DiskStoreImpl implements DiskStore {
   public static final boolean KRF_DEBUG = Boolean.getBoolean("disk.KRF_DEBUG");
 
   public static final int MAX_OPEN_INACTIVE_OPLOGS =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPEN_INACTIVE_OPLOGS", 7);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_OPEN_INACTIVE_OPLOGS", 7);
 
   /*
    * If less than 20MB (default - configurable through this property) of the available space is left
    * for logging and other misc stuff then it is better to bail out.
    */
   public static final int MIN_DISK_SPACE_FOR_LOGS =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MIN_DISK_SPACE_FOR_LOGS", 20);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MIN_DISK_SPACE_FOR_LOGS", 20);
 
   /** Represents an invalid id of a key/value on disk */
   public static final long INVALID_ID = 0L; // must be zero
 
   public static final String COMPLETE_COMPACTION_BEFORE_TERMINATION_PROPERTY_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "disk.completeCompactionBeforeTermination";
+      GeodeGlossary.GEMFIRE_PREFIX + "disk.completeCompactionBeforeTermination";
 
   static final int MINIMUM_DIR_SIZE = 1024;
 
@@ -171,27 +171,27 @@ public class DiskStoreImpl implements DiskStore {
    * Kept for backwards compat. Should use allowForceCompaction api/dtd instead.
    */
   private static final boolean ENABLE_NOTIFY_TO_ROLL =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ENABLE_NOTIFY_TO_ROLL");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ENABLE_NOTIFY_TO_ROLL");
 
   public static final String RECOVER_VALUE_PROPERTY_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "disk.recoverValues";
+      GeodeGlossary.GEMFIRE_PREFIX + "disk.recoverValues";
 
   public static final String RECOVER_VALUES_SYNC_PROPERTY_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "disk.recoverValuesSync";
+      GeodeGlossary.GEMFIRE_PREFIX + "disk.recoverValuesSync";
 
   /**
    * Allows recovering values for LRU regions. By default values are not recovered for LRU regions
    * during recovery.
    */
   public static final String RECOVER_LRU_VALUES_PROPERTY_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "disk.recoverLruValues";
+      GeodeGlossary.GEMFIRE_PREFIX + "disk.recoverLruValues";
 
   boolean RECOVER_VALUES = getBoolean(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, true);
 
   boolean RECOVER_VALUES_SYNC = getBoolean(DiskStoreImpl.RECOVER_VALUES_SYNC_PROPERTY_NAME, false);
 
   boolean FORCE_KRF_RECOVERY =
-      getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disk.FORCE_KRF_RECOVERY", false);
+      getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disk.FORCE_KRF_RECOVERY", false);
 
   final boolean RECOVER_LRU_VALUES =
       getBoolean(DiskStoreImpl.RECOVER_LRU_VALUES_PROPERTY_NAME, false);
@@ -218,12 +218,12 @@ public class DiskStoreImpl implements DiskStore {
    * static so tests can set it.
    */
   private final int MAX_OPLOGS_PER_COMPACTION = Integer.getInteger(
-      DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION",
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_ROLL", 1).intValue());
+      GeodeGlossary.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION",
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_ROLL", 1).intValue());
 
   public static final int MAX_CONCURRENT_COMPACTIONS = Integer.getInteger(
-      DistributionConfig.GEMFIRE_PREFIX + "MAX_CONCURRENT_COMPACTIONS",
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_CONCURRENT_ROLLS", 1).intValue());
+      GeodeGlossary.GEMFIRE_PREFIX + "MAX_CONCURRENT_COMPACTIONS",
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_CONCURRENT_ROLLS", 1).intValue());
 
   /**
    * This system property indicates that maximum number of delayed write tasks that can be pending
@@ -231,7 +231,7 @@ public class DiskStoreImpl implements DiskStore {
    * delete oplogs, etc.
    */
   public static final int MAX_PENDING_TASKS =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "disk.MAX_PENDING_TASKS", 6);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "disk.MAX_PENDING_TASKS", 6);
 
   /**
    * This system property indicates that IF should also be preallocated. This property will be used
@@ -239,7 +239,7 @@ public class DiskStoreImpl implements DiskStore {
    * by default be ON but in order to switch it off you need to explicitly
    */
   static final boolean PREALLOCATE_IF =
-      !System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateIF", "true")
+      !System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "preAllocateIF", "true")
           .equalsIgnoreCase("false");
 
   /**
@@ -247,7 +247,7 @@ public class DiskStoreImpl implements DiskStore {
    * specified for the disk store.
    */
   static final boolean PREALLOCATE_OPLOGS =
-      !System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateDisk", "true")
+      !System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "preAllocateDisk", "true")
           .equalsIgnoreCase("false");
 
   /**
@@ -260,7 +260,7 @@ public class DiskStoreImpl implements DiskStore {
    * This system property turns on synchronous writes just the the init file.
    */
   static final boolean SYNC_IF_WRITES =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "syncMetaDataWrites");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "syncMetaDataWrites");
 
   /**
    * For testing - to keep track of files for which fallocate happened
@@ -377,9 +377,9 @@ public class DiskStoreImpl implements DiskStore {
     if (ct == DiskStoreFactory.DEFAULT_COMPACTION_THRESHOLD) {
       // allow the old sys prop for backwards compat.
       if (System
-          .getProperty(DistributionConfig.GEMFIRE_PREFIX + "OVERFLOW_ROLL_PERCENTAGE") != null) {
+          .getProperty(GeodeGlossary.GEMFIRE_PREFIX + "OVERFLOW_ROLL_PERCENTAGE") != null) {
         ct = (int) (Double.parseDouble(System
-            .getProperty(DistributionConfig.GEMFIRE_PREFIX + "OVERFLOW_ROLL_PERCENTAGE", "0.50"))
+            .getProperty(GeodeGlossary.GEMFIRE_PREFIX + "OVERFLOW_ROLL_PERCENTAGE", "0.50"))
             * 100.0);
       }
     }

@@ -24,13 +24,13 @@ import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.junit.categories.WanTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * All the test cases are similar to SerialWANPropagationDUnitTest except that the we create
@@ -524,13 +524,13 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
       vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR_1", 1000));
     } finally {
       System.setProperty(
-          DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION",
+          GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION",
           "False");
       vm4.invoke(new CacheSerializableRunnable("UnSetting system property ") {
         @Override
         public void run2() throws CacheException {
           System.setProperty(
-              DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION",
+              GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION",
               "False");
         }
       });
@@ -539,7 +539,7 @@ public class ConcurrentWANPropagation_1_DUnitTest extends WANTestBase {
         @Override
         public void run2() throws CacheException {
           System.setProperty(
-              DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION",
+              GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION",
               "False");
         }
       });

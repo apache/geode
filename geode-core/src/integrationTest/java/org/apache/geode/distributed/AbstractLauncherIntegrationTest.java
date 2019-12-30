@@ -17,7 +17,7 @@ package org.apache.geode.distributed;
 import static org.apache.geode.distributed.AbstractLauncher.loadGemFireProperties;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;

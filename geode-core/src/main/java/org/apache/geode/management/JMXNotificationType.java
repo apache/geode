@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Enumerated type for JMX notification types emitted by GemFire management system. This types can
@@ -31,28 +31,28 @@ public interface JMXNotificationType {
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.region.created</CODE>.
    */
   String REGION_CREATED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.created";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.region.created";
 
   /**
    * Notification type which indicates that a region has been closed/destroyed in the cache <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.region.closed</CODE>.
    */
   String REGION_CLOSED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.closed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.region.closed";
 
   /**
    * Notification type which indicates that a disk store has been created <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.disk.created</CODE>.
    */
   String DISK_STORE_CREATED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.disk.created";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.disk.created";
 
   /**
    * Notification type which indicates that a disk store has been closed. <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.disk.closed</CODE>.
    */
   String DISK_STORE_CLOSED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.disk.closed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.disk.closed";
 
   /**
    * Notification type which indicates that a lock service has been created. <BR>
@@ -60,7 +60,7 @@ public interface JMXNotificationType {
    * <CODE>gemfire.distributedsystem.cache.lockservice.created</CODE>.
    */
   String LOCK_SERVICE_CREATED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.lockservice.created";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.lockservice.created";
 
   /**
    * Notification type which indicates that a lock service has been closed. <BR>
@@ -68,28 +68,28 @@ public interface JMXNotificationType {
    * <CODE>gemfire.distributedsystem.cache.lockservice.closed</CODE>.
    */
   String LOCK_SERVICE_CLOSED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.lockservice.closed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.lockservice.closed";
 
   /**
    * Notification type which indicates that a member has been added to the system. <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.created</CODE>.
    */
   String CACHE_MEMBER_JOINED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.member.joined";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.member.joined";
 
   /**
    * Notification type which indicates that a member has departed from the system. <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.created</CODE>.
    */
   String CACHE_MEMBER_DEPARTED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.member.departed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.member.departed";
 
   /**
    * Notification type which indicates that a member is suspected. <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.created</CODE>.
    */
   String CACHE_MEMBER_SUSPECT =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.member.suspect";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.member.suspect";
 
   /**
    * Notification type which indicates that a client has joined <BR>
@@ -97,7 +97,7 @@ public interface JMXNotificationType {
    * <CODE>gemfire.distributedsystem.cacheserver.client.joined</CODE>.
    */
   String CLIENT_JOINED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cacheserver.client.joined";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cacheserver.client.joined";
 
   /**
    * Notification type which indicates that a client has left <BR>
@@ -105,7 +105,7 @@ public interface JMXNotificationType {
    * <CODE>gemfire.distributedsystem.cacheserver.client.left</CODE>.
    */
   String CLIENT_LEFT =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cacheserver.client.left";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cacheserver.client.left";
 
   /**
    * Notification type which indicates that a client has crashed <BR>
@@ -113,7 +113,7 @@ public interface JMXNotificationType {
    * <CODE>gemfire.distributedsystem.cacheserver.client.crashed</CODE>.
    */
   String CLIENT_CRASHED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cacheserver.client.crashed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cacheserver.client.crashed";
 
   /**
    * Notification type which indicates that a gateway receiver is created <BR>
@@ -121,49 +121,49 @@ public interface JMXNotificationType {
    * <CODE>gemfire.distributedsystem.gateway.receiver.created</CODE>.
    */
   String GATEWAY_RECEIVER_CREATED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.created";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.created";
 
   /**
    * Notification type which indicates that a gateway sender is created <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.created</CODE>.
    */
   String GATEWAY_SENDER_CREATED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.created";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.created";
 
   /**
    * Notification type which indicates that a gateway sender is started <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.started</CODE>.
    */
   String GATEWAY_SENDER_STARTED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.started";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.started";
 
   /**
    * Notification type which indicates that a gateway sender is stopped <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.stopped</CODE>.
    */
   String GATEWAY_SENDER_STOPPED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.stopped";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.stopped";
 
   /**
    * Notification type which indicates that a gateway sender is paused <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.paused</CODE>.
    */
   String GATEWAY_SENDER_PAUSED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.paused";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.paused";
 
   /**
    * Notification type which indicates that a gateway sender is resumed <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.resumed</CODE>.
    */
   String GATEWAY_SENDER_RESUMED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.resumed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.resumed";
 
   /**
    * Notification type which indicates that a gateway sender is removed <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.removed</CODE>.
    */
   public static final String GATEWAY_SENDER_REMOVED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.removed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.removed";
 
   /**
    * Notification type which indicates that an async queue is created <BR>
@@ -171,7 +171,7 @@ public interface JMXNotificationType {
    * <CODE>ggemfire.distributedsystem.asycn.event.queue.created</CODE>.
    */
   String ASYNC_EVENT_QUEUE_CREATED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.asycn.event.queue.created";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.asycn.event.queue.created";
 
   /**
    * Notification type which indicates that an async queue has been closed. <BR>
@@ -179,7 +179,7 @@ public interface JMXNotificationType {
    * <CODE>gemfire.distributedsystem.async.event.queue.closed</CODE>.
    */
   String ASYNC_EVENT_QUEUE_CLOSED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.async.event.queue.closed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.async.event.queue.closed";
 
   /**
    * Notification type which indicates a GemFire system generated alert <BR>
@@ -192,14 +192,14 @@ public interface JMXNotificationType {
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.server.started</CODE>.
    */
   String CACHE_SERVER_STARTED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.server.started";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.server.started";
 
   /**
    * Notification type which indicates that cache server is stopped <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.server.stopped</CODE>.
    */
   String CACHE_SERVER_STOPPED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.server.stopped";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.server.stopped";
 
   /**
    * Notification type which indicates that a gateway receiver is started <BR>
@@ -207,7 +207,7 @@ public interface JMXNotificationType {
    * <CODE>gemfire.distributedsystem.gateway.receiver.started</CODE>.
    */
   String GATEWAY_RECEIVER_STARTED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.started";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.started";
 
   /**
    * Notification type which indicates that a gateway receiver is stopped <BR>
@@ -215,7 +215,7 @@ public interface JMXNotificationType {
    * <CODE>gemfire.distributedsystem.gateway.receiver.stopped</CODE>.
    */
   String GATEWAY_RECEIVER_STOPPED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.stopped";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.stopped";
 
   /**
    * Notification type which indicates that a gateway receiver is destroyed <BR>
@@ -223,19 +223,19 @@ public interface JMXNotificationType {
    * <CODE>gemfire.distributedsystem.gateway.receiver.destroyed</CODE>.
    */
   public static final String GATEWAY_RECEIVER_DESTROYED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.destroyed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.destroyed";
 
 
   /**
    * Notification type which indicates that locator is started <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.locator.started</CODE>.
    */
-  String LOCATOR_STARTED = DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.locator.started";
+  String LOCATOR_STARTED = GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.locator.started";
 
   /**
    * Notification type which indicates that a cache service is created <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.cache.service.created</CODE>.
    */
   String CACHE_SERVICE_CREATED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.service.created";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.service.created";
 }

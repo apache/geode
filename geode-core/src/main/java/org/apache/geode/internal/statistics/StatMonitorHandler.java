@@ -22,10 +22,10 @@ import java.util.concurrent.SynchronousQueue;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * @since GemFire 7.0
@@ -35,7 +35,7 @@ public class StatMonitorHandler implements SampleHandler {
   private static final Logger logger = LogService.getLogger();
 
   protected static final String ENABLE_MONITOR_THREAD =
-      DistributionConfig.GEMFIRE_PREFIX + "stats.enableMonitorThread";
+      GeodeGlossary.GEMFIRE_PREFIX + "stats.enableMonitorThread";
 
   private final boolean enableMonitorThread;
 

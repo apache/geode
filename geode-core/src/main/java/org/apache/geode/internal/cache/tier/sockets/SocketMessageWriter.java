@@ -22,14 +22,14 @@ import java.util.HashMap;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class SocketMessageWriter {
   private static final int CLIENT_PING_TASK_PERIOD =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
 
   public void writeHandshakeMessage(DataOutputStream dos, byte type, String p_msg,
       Version clientVersion, byte endpointType, int queueSize) throws IOException {

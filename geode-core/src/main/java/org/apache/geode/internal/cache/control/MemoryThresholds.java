@@ -22,7 +22,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Stores eviction and critical thresholds for memory as well as the logic for determining how
@@ -78,7 +78,7 @@ public class MemoryThresholds {
    */
   @MutableForTesting
   private static boolean DISABLE_LOW_MEM_EXCEPTION =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableLowMemoryException");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disableLowMemoryException");
 
   /**
    * The default percent of memory at which the VM is considered in a critical state.
@@ -99,14 +99,14 @@ public class MemoryThresholds {
    * Memory usage must fall below THRESHOLD-THRESHOLD_THICKNESS before we deliver a down event
    */
   private static final double THRESHOLD_THICKNESS = Double.parseDouble(
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "thresholdThickness", "2.00"));
+      System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "thresholdThickness", "2.00"));
 
   /**
    * Memory usage must fall below THRESHOLD-THRESHOLD_THICKNESS_EVICT before we deliver an eviction
    * down event
    */
   private static final double THRESHOLD_THICKNESS_EVICT = Double.parseDouble(
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "eviction-thresholdThickness",
+      System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "eviction-thresholdThickness",
           Double.toString(THRESHOLD_THICKNESS)));
 
   private final long maxMemoryBytes;
@@ -135,7 +135,7 @@ public class MemoryThresholds {
    */
   @MutableForTesting
   private static int memoryStateChangeTolerance =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", 0);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "memoryEventTolerance", 0);
 
   // Only change state when these counters exceed {@link
   // HeapMemoryMonitor#memoryStateChangeTolerance}

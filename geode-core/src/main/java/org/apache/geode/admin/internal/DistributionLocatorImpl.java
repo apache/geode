@@ -30,11 +30,11 @@ import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Default administrative implementation of a DistributionLocator.
@@ -284,7 +284,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     Enumeration en = props.propertyNames();
     while (en.hasMoreElements()) {
       String pn = (String) en.nextElement();
-      sb.append(" -D" + DistributionConfig.GEMFIRE_PREFIX + "" + pn + "=" + props.getProperty(pn));
+      sb.append(" -D" + GeodeGlossary.GEMFIRE_PREFIX + "" + pn + "=" + props.getProperty(pn));
     }
 
     String bindAddress = this.getConfig().getBindAddress();

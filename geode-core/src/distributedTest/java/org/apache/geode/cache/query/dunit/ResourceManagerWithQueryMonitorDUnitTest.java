@@ -61,7 +61,6 @@ import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -83,6 +82,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({OQLQueryTest.class})
 public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCase {
@@ -1159,11 +1159,11 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
         getSystem(getServerProperties(disableQueryMonitorForLowMemory, queryTimeout));
         if (disableQueryMonitorForLowMemory == true) {
           System.setProperty(
-              DistributionConfig.GEMFIRE_PREFIX + "Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY",
+              GeodeGlossary.GEMFIRE_PREFIX + "Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY",
               "true");
         } else {
           System.clearProperty(
-              DistributionConfig.GEMFIRE_PREFIX + "Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY");
+              GeodeGlossary.GEMFIRE_PREFIX + "Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY");
         }
 
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();

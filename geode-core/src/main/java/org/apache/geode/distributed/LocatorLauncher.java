@@ -60,7 +60,6 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
@@ -91,6 +90,7 @@ import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.util.HostUtils;
 import org.apache.geode.management.internal.util.JsonUtil;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The LocatorLauncher class is a launcher for a GemFire Locator.
@@ -1867,7 +1867,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     protected void validateOnStart() {
       if (Command.START == getCommand()) {
         if (isBlank(getMemberName())
-            && !isSet(System.getProperties(), DistributionConfig.GEMFIRE_PREFIX + NAME)
+            && !isSet(System.getProperties(), GeodeGlossary.GEMFIRE_PREFIX + NAME)
             && !isSet(getDistributedSystemProperties(), NAME)
             && !isSet(loadGemFireProperties(DistributedSystem.getPropertyFileURL()), NAME)) {
           throw new IllegalStateException(

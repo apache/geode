@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.ha;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  *
@@ -35,7 +35,7 @@ public class HARegionQueueAttributes {
    * String storing the System Property key representing the blocking queue capacity
    */
   private static final String BLOCKING_QUEUE_CAPACITY =
-      DistributionConfig.GEMFIRE_PREFIX + "Capacity";
+      GeodeGlossary.GEMFIRE_PREFIX + "Capacity";
 
   /**
    * expiry time for region entries in seconds

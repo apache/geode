@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -54,6 +53,7 @@ import org.apache.geode.internal.cache.partitioned.rebalance.SimulatedBucketOper
 import org.apache.geode.internal.cache.partitioned.rebalance.model.AddressComparor;
 import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRegionLoadModel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This class performs a rebalance on a single partitioned region.
@@ -80,9 +80,9 @@ public class PartitionedRegionRebalanceOp {
   private static final Logger logger = LogService.getLogger();
 
   private static final int MAX_PARALLEL_OPERATIONS =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_PARALLEL_BUCKET_RECOVERIES", 8);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAX_PARALLEL_BUCKET_RECOVERIES", 8);
   private final boolean DEBUG =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "LOG_REBALANCE");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "LOG_REBALANCE");
 
   private final boolean simulate;
   private final boolean replaceOfflineData;

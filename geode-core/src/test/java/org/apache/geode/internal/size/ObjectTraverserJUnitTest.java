@@ -26,7 +26,7 @@ import java.util.Set;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class ObjectTraverserJUnitTest {
 
@@ -99,7 +99,7 @@ public class ObjectTraverserJUnitTest {
     set1.add(set2);
     set2.add(object3);
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "ObjectSizer.SIZE_OF_CLASS",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "ObjectSizer.SIZE_OF_CLASS",
         "org.apache.geode.internal.size.SizeOfUtil0");
     System.out.println(ObjectGraphSizer.histogram(set1, true));
   }
