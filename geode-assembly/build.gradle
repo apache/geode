@@ -69,6 +69,7 @@ evaluationDependsOnChildren()
 }
 
 apply plugin: 'distribution'
+apply plugin: 'com.palantir.docker'
 apply from: "${rootDir}/${scriptDir}/publish-common.gradle"
 
 
@@ -669,4 +670,9 @@ task dumpInstalledJars(dependsOn: installDist) {
       }
     }
   }
+}
+
+docker {
+  name 'geode:develop'
+  copySpec.from('build/install/apache-geode').into('geode')
 }
