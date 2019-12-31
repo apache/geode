@@ -8,7 +8,7 @@ to ensure the following steps have been taken:
 
 - [ ] Has your PR been rebased against the latest commit within the target branch (typically `develop`)?
 
-- [ ] Is your initial contribution squashed for ease of review (e.g. a single commit, or a 'refactoring' commit plus a 'fix' commit)
+- [ ] Is your initial contribution squashed for ease of review (e.g. a single commit, or a 'refactoring' commit plus a 'fix' commit)?
 
 - [ ] Does `gradlew build` run cleanly?
 
@@ -17,6 +17,6 @@ to ensure the following steps have been taken:
 - [ ] If adding new dependencies to the code, are these dependencies licensed in a way that is compatible for inclusion under [ASF 2.0](http://www.apache.org/legal/resolved.html#category-a)?
 
 ### Note:
-Please ensure that once the PR is submitted, check Concourse for build issues and
-submit an update to your PR as soon as possible. If you need help, please send an
-email to dev@geode.apache.org.
+After your PR is submitted, monitor the PR checks for any issues and
+submit an update to your PR as soon as possible.  If you need help,
+please send an email to dev@geode.apache.org.

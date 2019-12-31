@@ -23,5 +23,5 @@ github:
     merge:   false
     # enable squash button:
     squash:  true
-    # enable rebase button:
-    rebase:  true
+    # disable rebase button:
+    rebase:  false
