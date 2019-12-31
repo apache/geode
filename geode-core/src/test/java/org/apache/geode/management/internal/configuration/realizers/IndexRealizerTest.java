@@ -15,7 +15,9 @@
 
 package org.apache.geode.management.internal.configuration.realizers;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -25,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.RealizationResult;
@@ -47,6 +50,14 @@ public class IndexRealizerTest {
     index.setName("testIndex");
     index.setRegionPath("testRegion");
     index.setExpression("test Expression");
+  }
+
+  @Test
+  public void createIndexThrowIndexExistsException() throws Exception {
+    when(queryService.createKeyIndex(any(), any(), any())).thenThrow(IndexExistsException.class);
+    index.setIndexType(IndexType.KEY);
+    RealizationResult realizationResult = indexRealizer.create(index, cache);
+    assertThat(realizationResult.isSuccess()).isTrue();
   }
 
   @Test
