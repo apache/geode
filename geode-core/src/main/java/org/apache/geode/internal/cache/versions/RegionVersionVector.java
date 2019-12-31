@@ -36,7 +36,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -51,6 +50,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * RegionVersionVector tracks the highest region-level version number of operations applied to a
@@ -65,7 +65,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   // TODO:LOG:CONVERT: REMOVE THIS
   public static final boolean DEBUG =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "VersionVector.VERBOSE");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "VersionVector.VERBOSE");
 
 
 
@@ -73,11 +73,11 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   /** maximum ms wait time while waiting for dominance to be achieved */
   public static final long MAX_DOMINANCE_WAIT_TIME =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "max-dominance-wait-time", 5000);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "max-dominance-wait-time", 5000);
 
   /** maximum ms pause time while waiting for dominance to be achieved */
   public static final long DOMINANCE_PAUSE_TIME =
-      Math.min(Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "dominance-pause-time", 300),
+      Math.min(Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "dominance-pause-time", 300),
           MAX_DOMINANCE_WAIT_TIME);
 
   private static final int INITIAL_CAPACITY = 2;

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.logging.internal;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,9 +36,9 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.io.TeePrintStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
+import org.apache.geode.util.internal.TeePrintStream;
 
 /**
  * Used to interact with operating system processes. Use <code>exec</code> to create a new process
@@ -58,21 +58,21 @@ public class OSProcess {
    */
   @Deprecated
   public static final String DISABLE_OUTPUT_REDIRECTION_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "OSProcess.DISABLE_OUTPUT_REDIRECTION";
+      GeodeGlossary.GEMFIRE_PREFIX + "OSProcess.DISABLE_OUTPUT_REDIRECTION";
 
   /**
    * @deprecated use GFSH redirect-output flag instead.
    */
   @Deprecated
   public static final String ENABLE_OUTPUT_REDIRECTION_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "OSProcess.ENABLE_OUTPUT_REDIRECTION";
+      GeodeGlossary.GEMFIRE_PREFIX + "OSProcess.ENABLE_OUTPUT_REDIRECTION";
 
   /**
    * @deprecated use GFSH redirect-output flag instead.
    */
   @Deprecated
   public static final String DISABLE_REDIRECTION_CONFIGURATION_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "OSProcess.DISABLE_REDIRECTION_CONFIGURATION";
+      GeodeGlossary.GEMFIRE_PREFIX + "OSProcess.DISABLE_REDIRECTION_CONFIGURATION";
 
   /**
    * @deprecated use GFSH redirect-output flag instead.
@@ -141,7 +141,7 @@ public class OSProcess {
   public static int bgexec(String cmdarray[], File workdir, File logfile, boolean inheritLogfile,
       Map<String, String> env) throws IOException {
     String commandShell =
-        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "commandShell", "bash");
+        System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "commandShell", "bash");
     if (cmdarray.length == 0) {
       throw new java.lang.IndexOutOfBoundsException();
     }
@@ -237,7 +237,7 @@ public class OSProcess {
             new Object[] {logfile.getPath(), io.getMessage()}));
       }
     }
-    String trace = System.getProperty("org.apache.geode.internal.OSProcess.trace");
+    String trace = System.getProperty("org.apache.geode.logging.internal.OSProcess.trace");
     if (trace != null && trace.length() > 0) {
       for (int i = 0; i < cmdarray.length; i++) {
         System.out.println("cmdarray[" + i + "] = " + cmdarray[i]);

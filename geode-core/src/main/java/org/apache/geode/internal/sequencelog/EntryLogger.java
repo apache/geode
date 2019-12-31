@@ -15,7 +15,6 @@
 package org.apache.geode.internal.sequencelog;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -26,6 +25,7 @@ import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 /**
@@ -41,7 +41,7 @@ public class EntryLogger {
   private static final ThreadLocal<String> SOURCE_TYPE = new ThreadLocal<String>();
 
   public static final String TRACK_VALUES_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "EntryLogger.TRACK_VALUES";
+      GeodeGlossary.GEMFIRE_PREFIX + "EntryLogger.TRACK_VALUES";
   private static final boolean TRACK_VALUES = Boolean.getBoolean(TRACK_VALUES_PROPERTY);
 
   public static void clearSource() {

@@ -66,7 +66,6 @@ import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
 import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PoolStatHelper;
@@ -86,6 +85,7 @@ import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @SuppressWarnings("deprecation")
 @Category(ClientServerTest.class)
@@ -389,7 +389,7 @@ public class AutoConnectionSourceImplJUnitTest {
   @Test
   public void testSysPropLocatorUpdateInterval() {
     long updateLocatorInterval = 543;
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
         String.valueOf(updateLocatorInterval));
     source.start(pool);
     assertEquals(updateLocatorInterval, source.getLocatorUpdateInterval());
@@ -405,7 +405,7 @@ public class AutoConnectionSourceImplJUnitTest {
   @Test
   public void testLocatorUpdateIntervalZero() {
     long updateLocatorInterval = 0;
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
         String.valueOf(updateLocatorInterval));
     source.start(pool);
     assertEquals(updateLocatorInterval, source.getLocatorUpdateInterval());

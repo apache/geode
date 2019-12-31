@@ -48,7 +48,6 @@ import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
@@ -58,6 +57,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Thread-safe implementation of org.apache.persistence.query.Query
@@ -85,7 +85,7 @@ public class DefaultQuery implements Query {
 
   @MutableForTesting
   public static boolean QUERY_VERBOSE =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Query.VERBOSE");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "Query.VERBOSE");
 
   /**
    * System property to cleanup the compiled query. The compiled query will be removed if it is not
@@ -93,7 +93,7 @@ public class DefaultQuery implements Query {
    * MilliSecs.
    */
   public static final int COMPILED_QUERY_CLEAR_TIME = Integer.getInteger(
-      DistributionConfig.GEMFIRE_PREFIX + "Query.COMPILED_QUERY_CLEAR_TIME", 10 * 60 * 1000);
+      GeodeGlossary.GEMFIRE_PREFIX + "Query.COMPILED_QUERY_CLEAR_TIME", 10 * 60 * 1000);
 
   @MutableForTesting
   public static int TEST_COMPILED_QUERY_CLEAR_TIME = -1;

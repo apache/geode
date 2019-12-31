@@ -17,7 +17,7 @@ package org.apache.geode.cache.wan;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  *
@@ -50,7 +50,7 @@ public interface GatewaySender {
    */
   int DEFAULT_SOCKET_READ_TIMEOUT = Integer
       .getInteger(
-          DistributionConfig.GEMFIRE_PREFIX + "cache.gatewaySender.default-socket-read-timeout", 0)
+          GeodeGlossary.GEMFIRE_PREFIX + "cache.gatewaySender.default-socket-read-timeout", 0)
       .intValue();
 
   /**
@@ -62,7 +62,7 @@ public interface GatewaySender {
    * Size of the oplog file used for the persistent queue in bytes
    */
   int QUEUE_OPLOG_SIZE =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "cache.gatewaySender.queueOpLogSize",
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "cache.gatewaySender.queueOpLogSize",
           1024 * 1024 * 100).intValue();
 
 
@@ -92,7 +92,7 @@ public interface GatewaySender {
    */
   int DEFAULT_ALERT_THRESHOLD = 0;
 
-  int DEFAULT_PARALLELISM_REPLICATED_REGION = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX
+  int DEFAULT_PARALLELISM_REPLICATED_REGION = Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX
       + "cache.gatewaySender.defaultParallelismForReplicatedRegion", 113).intValue();
 
   int DEFAULT_DISTRIBUTED_SYSTEM_ID = -1;
@@ -114,7 +114,7 @@ public interface GatewaySender {
    * aborted
    */
   long GATEWAY_SENDER_TIMEOUT = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "GATEWAY_SENDER_TIMEOUT", 30).intValue();
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "GATEWAY_SENDER_TIMEOUT", 30).intValue();
 
 
   /**
@@ -122,24 +122,24 @@ public interface GatewaySender {
    * property, it is used to log a warning.
    */
   String GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.GATEWAY_CONNECTION_READ_TIMEOUT";
+      GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.GATEWAY_CONNECTION_READ_TIMEOUT";
 
   int GATEWAY_CONNECTION_IDLE_TIMEOUT = Integer
       .getInteger(
-          DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.GATEWAY_CONNECTION_IDLE_TIMEOUT", -1)
+          GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.GATEWAY_CONNECTION_IDLE_TIMEOUT", -1)
       .intValue();
 
   /**
    * If the System property is set, use it. Otherwise, set default to 'true'.
    */
   boolean REMOVE_FROM_QUEUE_ON_EXCEPTION = (System.getProperty(
-      DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION") != null)
+      GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION") != null)
           ? Boolean.getBoolean(
-              DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION")
+              GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.REMOVE_FROM_QUEUE_ON_EXCEPTION")
           : true;
 
   boolean EARLY_ACK =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "GatewaySender.EARLY_ACK");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "GatewaySender.EARLY_ACK");
 
   boolean DEFAULT_IS_PARALLEL = false;
 
@@ -150,7 +150,7 @@ public interface GatewaySender {
    * case receiver is not up and running. Default is set to 1000 milliseconds i.e. 1 second.
    */
   int CONNECTION_RETRY_INTERVAL = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "gateway-connection-retry-interval", 1000)
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "gateway-connection-retry-interval", 1000)
       .intValue();
 
   /**

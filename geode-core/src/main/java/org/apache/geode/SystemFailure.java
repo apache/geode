@@ -16,12 +16,12 @@ package org.apache.geode;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.SystemFailureTestHook;
 import org.apache.geode.internal.admin.remote.RemoteGfManagerAgent;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  *
@@ -275,7 +275,7 @@ public final class SystemFailure {
    * sec.
    */
   private static final int WATCHDOG_WAIT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "WATCHDOG_WAIT", 15);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "WATCHDOG_WAIT", 15);
 
   /**
    * This is the watchdog thread
@@ -487,7 +487,7 @@ public final class SystemFailure {
    */
   @MakeNotStatic
   private static long minimumMemoryThreshold = Long.getLong(
-      DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.chronic_memory_threshold", 1048576);
+      GeodeGlossary.GEMFIRE_PREFIX + "SystemFailure.chronic_memory_threshold", 1048576);
 
   /**
    * This is the interval, in seconds, that the proctor thread will awaken and poll system free
@@ -499,7 +499,7 @@ public final class SystemFailure {
    * @see #setFailureMemoryThreshold(long)
    */
   private static final long MEMORY_POLL_INTERVAL =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.MEMORY_POLL_INTERVAL", 1);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "SystemFailure.MEMORY_POLL_INTERVAL", 1);
 
   /**
    * This is the maximum amount of time, in seconds, that the proctor thread will tolerate seeing
@@ -512,7 +512,7 @@ public final class SystemFailure {
    * @see #setFailureMemoryThreshold(long)
    */
   public static final long MEMORY_MAX_WAIT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.MEMORY_MAX_WAIT", 15);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "SystemFailure.MEMORY_MAX_WAIT", 15);
 
   /**
    * Flag that determines whether or not we monitor memory on our own. If this flag is set, we will
@@ -525,7 +525,7 @@ public final class SystemFailure {
    * @since GemFire 6.5
    */
   private static final boolean MONITOR_MEMORY =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.MONITOR_MEMORY");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "SystemFailure.MONITOR_MEMORY");
 
   /**
    * Start the proctor thread, if it isn't already running.

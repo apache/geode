@@ -53,7 +53,6 @@ import org.apache.logging.log4j.Logger;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
@@ -74,6 +73,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.JavaWorkarounds;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Failure Detection
@@ -236,7 +236,7 @@ public class GMSHealthMonitor<ID extends MemberIdentifier> implements HealthMoni
      * Here we use the same threshold for detecting JVM pauses as the StatSampler
      */
     private final long MONITOR_DELAY_THRESHOLD =
-        Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "statSamplerDelayThreshold", 3000);
+        Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "statSamplerDelayThreshold", 3000);
 
 
     final long memberTimeoutInMillis;

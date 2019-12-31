@@ -45,16 +45,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.unsafe.RegisterSignalHandlerSupport;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.SunAPINotFoundException;
+import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The AbstractLauncher class is a base class for implementing various launchers to construct and
@@ -86,7 +86,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
   public static final String DEFAULT_WORKING_DIRECTORY = CURRENT_DIRECTORY;
 
   public static final String SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "launcher.registerSignalHandlers";
+      GeodeGlossary.GEMFIRE_PREFIX + "launcher.registerSignalHandlers";
 
   protected static final String OPTION_PREFIX = "-";
 

@@ -36,7 +36,7 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class StartLocatorCommandTest {
 
@@ -87,8 +87,8 @@ public class StartLocatorCommandTest {
     expectedCommandLineElements.add(locatorLauncher.getMemberName().toLowerCase());
     expectedCommandLineElements.add(String.format("--port=%1$d", locatorLauncher.getPort()));
     expectedCommandLineElements
-        .add("-d" + DistributionConfig.GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8089");
-    expectedCommandLineElements.add("-d" + DistributionConfig.GEMFIRE_PREFIX + ""
+        .add("-d" + GeodeGlossary.GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8089");
+    expectedCommandLineElements.add("-d" + GeodeGlossary.GEMFIRE_PREFIX + ""
         + HTTP_SERVICE_BIND_ADDRESS + "=" + "localhost");
 
     for (String commandLineElement : commandLineElements) {

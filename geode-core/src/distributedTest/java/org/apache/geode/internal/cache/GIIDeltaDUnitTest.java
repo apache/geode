@@ -46,7 +46,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -75,6 +74,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
@@ -2185,7 +2185,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         try {
           String value =
-              System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close");
+              System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
           assertNull(value);
           RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
           // CCRegion = (LocalRegion)f.create(REGION_NAME);
@@ -2208,10 +2208,10 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         try {
           Cache cache = getCache();
-          System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close", "true");
+          System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close", "true");
           cache.close();
         } finally {
-          System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close");
+          System.getProperties().remove(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
         }
       }
     };

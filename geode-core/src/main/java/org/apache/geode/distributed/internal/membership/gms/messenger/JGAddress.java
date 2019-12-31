@@ -27,9 +27,9 @@ import org.jgroups.Global;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.UUID;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This is a copy of JGroups 3.6.4 IpAddress (Apache 2.0 License) that is repurposed to be a Logical
@@ -42,7 +42,7 @@ public class JGAddress extends UUID {
 
   // whether to show UUID info in toString()
   private static final boolean SHOW_UUIDS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_UUIDs");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "show_UUIDs");
 
   private InetAddress ip_addr;
   private int port;

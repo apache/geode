@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.util.ArrayList;
 import java.util.Collections;

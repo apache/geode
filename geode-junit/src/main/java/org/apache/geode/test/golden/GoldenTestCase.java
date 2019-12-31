@@ -25,8 +25,8 @@ import java.util.Properties;
 import org.junit.After;
 import org.junit.Before;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.process.ProcessWrapper;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Test framework for launching processes and comparing output to expected golden output.
@@ -122,8 +122,8 @@ public abstract class GoldenTestCase {
 
   protected final Properties createProperties() {
     Properties properties = new Properties();
-    properties.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
-    properties.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, "warning");
+    properties.setProperty(GeodeGlossary.GEMFIRE_PREFIX + MCAST_PORT, "0");
+    properties.setProperty(GeodeGlossary.GEMFIRE_PREFIX + LOG_LEVEL, "warning");
     properties.setProperty("file.encoding", "UTF-8");
     return editProperties(properties);
   }

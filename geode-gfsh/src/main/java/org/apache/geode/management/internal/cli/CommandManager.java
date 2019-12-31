@@ -37,7 +37,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Disabled;
@@ -46,6 +45,7 @@ import org.apache.geode.management.internal.cli.commands.VersionCommand;
 import org.apache.geode.management.internal.cli.help.Helper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  *
@@ -56,7 +56,7 @@ import org.apache.geode.management.internal.util.ClasspathScanLoadHelper;
 public class CommandManager {
 
   private static final String USER_CMD_PACKAGES_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + USER_COMMAND_PACKAGES;
+      GeodeGlossary.GEMFIRE_PREFIX + USER_COMMAND_PACKAGES;
   private static final String USER_CMD_PACKAGES_ENV_VARIABLE = "GEMFIRE_USER_COMMAND_PACKAGES";
 
   private final Helper helper = new Helper();

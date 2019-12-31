@@ -38,6 +38,7 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A message that is sent to all other distribution manager when a distribution manager starts up.
@@ -213,7 +214,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
           && distributedSystemId != dm.getDistributedSystemId()) {
 
         String distributedSystemListener =
-            System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener");
+            System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "DistributedSystemListener");
         // this check is specific for Jayesh's use case of WAN BootStraping
         if (distributedSystemListener != null) {
           if (-distributedSystemId != dm.getDistributedSystemId()) {

@@ -45,7 +45,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -73,6 +72,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.SerializationTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({SerializationTest.class})
 public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
@@ -87,7 +87,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         // Disable endpoint shuffling, so that the client will always connect
         // to the first server we give it.
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
       }
 
@@ -99,7 +99,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override
       public void run() {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "false");
       }
     });

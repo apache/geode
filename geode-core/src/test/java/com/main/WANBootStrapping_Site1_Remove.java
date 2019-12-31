@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ExitCode;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This is a stand alone locator with a distributed-system-id = -1
@@ -42,7 +42,7 @@ public class WANBootStrapping_Site1_Remove {
 
     // On this locator, I am not expecting a listener to take any action, so a empty listener is a
     // passed
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener", "");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "DistributedSystemListener", "");
 
     System.out.println("Starting a locator with negative ds id -1");
 

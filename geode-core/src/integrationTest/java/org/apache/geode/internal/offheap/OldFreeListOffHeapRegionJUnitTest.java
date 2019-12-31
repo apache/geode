@@ -16,8 +16,8 @@ package org.apache.geode.internal.offheap;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.test.junit.categories.OffHeapTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({OffHeapTest.class})
 public class OldFreeListOffHeapRegionJUnitTest extends OffHeapRegionBase {
@@ -29,13 +29,13 @@ public class OldFreeListOffHeapRegionJUnitTest extends OffHeapRegionBase {
 
   @Override
   public void configureOffHeapStorage() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1m");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE", "1m");
   }
 
   @Override
   public void unconfigureOffHeapStorage() {
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_TOTAL_SIZE");
-    System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_TOTAL_SIZE");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
   }
 
   @Override

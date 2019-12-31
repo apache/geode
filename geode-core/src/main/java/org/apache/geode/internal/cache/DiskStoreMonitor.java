@@ -27,19 +27,19 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class DiskStoreMonitor {
   private static final Logger logger = LogService.getLogger();
 
   private static final int USAGE_CHECK_INTERVAL = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_POLLING_INTERVAL_MILLIS", 10000);
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "DISK_USAGE_POLLING_INTERVAL_MILLIS", 10000);
 
   private static final float LOG_WARNING_THRESHOLD_PCT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_LOG_WARNING_PERCENT", 99);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "DISK_USAGE_LOG_WARNING_PERCENT", 99);
 
   enum DiskState {
     NORMAL, WARN, CRITICAL;
@@ -84,7 +84,7 @@ public class DiskStoreMonitor {
   }
 
   static final String DISK_USAGE_DISABLE_MONITORING =
-      DistributionConfig.GEMFIRE_PREFIX + "DISK_USAGE_DISABLE_MONITORING";
+      GeodeGlossary.GEMFIRE_PREFIX + "DISK_USAGE_DISABLE_MONITORING";
 
   private final boolean disableMonitor = Boolean.getBoolean(DISK_USAGE_DISABLE_MONITORING);
 

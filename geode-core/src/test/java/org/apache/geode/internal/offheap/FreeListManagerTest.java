@@ -32,7 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.OutOfOffHeapMemoryException;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class FreeListManagerTest {
 
@@ -529,7 +529,7 @@ public class FreeListManagerTest {
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
       assertThat(expected.getMessage())
-          .contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
+          .contains(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
     }
   }
 
@@ -540,7 +540,7 @@ public class FreeListManagerTest {
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
       assertThat(expected.getMessage())
-          .contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
+          .contains(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_FREE_LIST_COUNT must be >= 1.");
     }
   }
 
@@ -556,7 +556,7 @@ public class FreeListManagerTest {
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
       assertThat(expected.getMessage()).contains(
-          DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8");
+          GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8");
     }
   }
 
@@ -567,7 +567,7 @@ public class FreeListManagerTest {
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
       assertThat(expected.getMessage()).contains(
-          DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8");
+          GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be a multiple of 8");
     }
   }
 
@@ -578,7 +578,7 @@ public class FreeListManagerTest {
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
       assertThat(expected.getMessage())
-          .contains(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be <= 256");
+          .contains(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_ALIGNMENT must be <= 256");
     }
   }
 

@@ -24,7 +24,6 @@ import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
@@ -37,10 +36,11 @@ import org.apache.geode.internal.logging.CoreLoggingExecutors;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class TcpServerFactory {
   private static final int MAX_POOL_SIZE =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.MAX_POOL_SIZE", 100);
   private static final int POOL_IDLE_TIMEOUT = 60 * 1000;
   private final ClientProtocolServiceLoader clientProtocolServiceLoader;
   static final Logger logger = LogService.getLogger();
@@ -62,8 +62,8 @@ public class TcpServerFactory {
                 .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
-        DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
-        DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
   }
 
   public static Supplier<ExecutorService> createExecutorServiceSupplier(PoolStatHelper poolHelper) {

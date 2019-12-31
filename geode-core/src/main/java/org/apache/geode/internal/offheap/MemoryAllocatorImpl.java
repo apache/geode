@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -39,6 +38,7 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This allocator is somewhat like an Arena allocator. We start out with an array of multiple large
@@ -55,7 +55,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   static final Logger logger = LogService.getLogger();
 
   public static final String FREE_OFF_HEAP_MEMORY_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "free-off-heap-memory";
+      GeodeGlossary.GEMFIRE_PREFIX + "free-off-heap-memory";
 
   private volatile OffHeapMemoryStats stats;
 
@@ -83,7 +83,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   }
 
   private static final boolean DO_EXPENSIVE_VALIDATION =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_DO_EXPENSIVE_VALIDATION");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_DO_EXPENSIVE_VALIDATION");
 
   public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats,
       int slabCount, long offHeapMemorySize, long maxSlabSize) {

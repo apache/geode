@@ -76,7 +76,6 @@ import org.apache.geode.admin.internal.CacheServerConfigImpl;
 import org.apache.geode.admin.internal.DistributionLocatorImpl;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -90,6 +89,7 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.remote.UpdateAlertDefinitionMessage;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides MBean support for managing a GemFire distributed system.
@@ -318,22 +318,22 @@ public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
 
   /** Notification type for indicating system member joined */
   public static final String NOTIF_MEMBER_JOINED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.member.joined";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.member.joined";
   /** Notification type for indicating system member left */
   public static final String NOTIF_MEMBER_LEFT =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.member.left";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.member.left";
   /** Notification type for indicating system member crashed */
   public static final String NOTIF_MEMBER_CRASHED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.member.crashed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.member.crashed";
   /** Notification type for sending GemFire alerts as JMX notifications */
   public static final String NOTIF_ALERT =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.alert";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.alert";
   /** Notification type for sending GemFire StatAlerts as JMX notifications */
   public static final String NOTIF_STAT_ALERT =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.statalert";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.statalert";
   /** Notification type for indicating abnormal disconnection from the distributed system */
   public static final String NOTIF_ADMIN_SYSTEM_DISCONNECT =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.disconnect";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.disconnect";
 
 
   private static final String EML_SUBJ_PRFX_GFE_ALERT = "[GemFire Alert] ";

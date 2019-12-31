@@ -21,9 +21,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.sequencelog.io.OutputStreamAppender;
+import org.apache.geode.logging.internal.OSProcess;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class SequenceLoggerImpl implements SequenceLogger {
 
@@ -31,7 +31,7 @@ public class SequenceLoggerImpl implements SequenceLogger {
   private static final SequenceLoggerImpl INSTANCE;
 
   public static final String ENABLED_TYPES_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "GraphLoggerImpl.ENABLED_TYPES";
+      GeodeGlossary.GEMFIRE_PREFIX + "GraphLoggerImpl.ENABLED_TYPES";
 
   private final EnumSet<GraphType> enabledTypes;
 

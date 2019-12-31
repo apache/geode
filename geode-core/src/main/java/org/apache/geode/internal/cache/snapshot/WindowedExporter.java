@@ -41,7 +41,6 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.execute.InternalExecution;
@@ -51,6 +50,7 @@ import org.apache.geode.internal.cache.snapshot.FlowController.Window;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.Exporter;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Exports snapshot data using a sliding window to prevent the nodes in a partitioned region from
@@ -64,7 +64,7 @@ import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
  */
 public class WindowedExporter<K, V> implements Exporter<K, V> {
   private static final int WINDOW_SIZE =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "WindowedExporter.WINDOW_SIZE", 10);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "WindowedExporter.WINDOW_SIZE", 10);
 
   @Override
   public long export(Region<K, V> region, ExportSink sink, SnapshotOptions<K, V> options)

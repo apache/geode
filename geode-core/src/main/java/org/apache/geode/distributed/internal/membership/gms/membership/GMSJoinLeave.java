@@ -46,7 +46,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
@@ -71,6 +70,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * GMSJoinLeave handles membership communication with other processes in the distributed system. It
@@ -79,45 +79,45 @@ import org.apache.geode.logging.internal.executors.LoggingThread;
 public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> {
 
   public static final String BYPASS_DISCOVERY_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "bypass-discovery";
+      GeodeGlossary.GEMFIRE_PREFIX + "bypass-discovery";
 
   /**
    * amount of time to wait for responses to FindCoordinatorRequests
    */
   private static final int DISCOVERY_TIMEOUT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "discovery-timeout", 3000);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "discovery-timeout", 3000);
 
   /**
    * amount of time to sleep before trying to join after a failed attempt
    */
   private static final int JOIN_RETRY_SLEEP =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "join-retry-sleep", 1000);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "join-retry-sleep", 1000);
 
   /**
    * time to wait for a broadcast message to be transmitted by jgroups
    */
   private static final long BROADCAST_MESSAGE_SLEEP_TIME =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "broadcast-message-sleep-time", 1000);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "broadcast-message-sleep-time", 1000);
 
   /**
    * if the locators don't know who the coordinator is we send find-coord requests to this many
    * nodes
    */
   private static final int MAX_DISCOVERY_NODES =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "max-discovery-nodes", 30);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "max-discovery-nodes", 30);
 
   /**
    * interval for broadcasting the current view to members in case they didn't get it the first time
    */
   private static final long VIEW_BROADCAST_INTERVAL =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "view-broadcast-interval", 60000);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "view-broadcast-interval", 60000);
 
   /**
    * membership logger
    */
   private static final Logger logger = Services.getLogger();
   private static final boolean ALLOW_OLD_VERSION_FOR_TESTING = Boolean
-      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "allow_old_members_to_join_for_testing");
+      .getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "allow_old_members_to_join_for_testing");
 
   /**
    * the view ID where I entered into membership
@@ -1848,7 +1848,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
       ackCollectionTimeout = 12437;
     }
     ackCollectionTimeout = Long
-        .getLong(DistributionConfig.GEMFIRE_PREFIX + "VIEW_ACK_TIMEOUT", ackCollectionTimeout)
+        .getLong(GeodeGlossary.GEMFIRE_PREFIX + "VIEW_ACK_TIMEOUT", ackCollectionTimeout)
         .longValue();
     this.viewAckTimeout = ackCollectionTimeout;
 

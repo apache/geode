@@ -133,6 +133,7 @@ import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @SuppressWarnings("deprecation")
 public class DistributedRegion extends LocalRegion implements InternalDistributedRegion {
@@ -2581,7 +2582,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     // Fix for #48066 - make sure that region operations are completely
     // distributed to peers before destroying the region.
     boolean flushOnClose =
-        !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close"); // test hook
+        !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close"); // test hook
     if (!cache.forcedDisconnect() && flushOnClose
         && getDistributionManager().getDistribution() != null
         && getDistributionManager().getDistribution().isConnected()) {
@@ -3004,7 +3005,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   static class DiskPage extends DiskPosition {
 
     static final long DISK_PAGE_SIZE =
-        Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "DISK_PAGE_SIZE", 8 << 10);
+        Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "DISK_PAGE_SIZE", 8 << 10);
 
     DiskPage(DiskPosition diskPosition) {
       setPosition(diskPosition.oplogId, diskPosition.offset / DISK_PAGE_SIZE);

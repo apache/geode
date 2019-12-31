@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import org.apache.geode.metrics.internal.MetricsService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 
 public class InternalDistributedSystemTest {
@@ -48,7 +49,7 @@ public class InternalDistributedSystemTest {
 
   @Test
   public void lockMemoryAllowedIfAllowMemoryOverCommitIsSet() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT", "true");
     InternalDistributedSystem system =
         spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
     doNothing().when(system).lockMemory();
@@ -61,7 +62,7 @@ public class InternalDistributedSystemTest {
   @Test
   public void lockMemoryAvoidedIfAvoidMemoryLockWhenOverCommitIsSet() {
     System.setProperty(
-        DistributionConfig.GEMFIRE_PREFIX + "Cache.AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT", "true");
+        GeodeGlossary.GEMFIRE_PREFIX + "Cache.AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT", "true");
     InternalDistributedSystem system =
         spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
 
@@ -72,9 +73,9 @@ public class InternalDistributedSystemTest {
 
   @Test
   public void lockMemoryAvoidedIfAvoidAndAllowMemoryLockWhenOverCommitBothSet() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT", "true");
     System.setProperty(
-        DistributionConfig.GEMFIRE_PREFIX + "Cache.AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT", "true");
+        GeodeGlossary.GEMFIRE_PREFIX + "Cache.AVOID_MEMORY_LOCK_WHEN_OVERCOMMIT", "true");
     InternalDistributedSystem system =
         spy(new InternalDistributedSystem.Builder(new Properties(), builder).build());
 

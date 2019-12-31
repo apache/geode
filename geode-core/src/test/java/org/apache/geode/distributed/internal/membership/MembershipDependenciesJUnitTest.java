@@ -30,7 +30,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
@@ -69,6 +68,7 @@ public class MembershipDependenciesJUnitTest {
               .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api.."))
               .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
               .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
+              .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
 
               .or(not(resideInAPackage("org.apache.geode.."))));
 
@@ -89,7 +89,7 @@ public class MembershipDependenciesJUnitTest {
 
               // OK to depend on these "leaf" dependencies
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
-              .or(resideInAPackage("org.apache.geode.logging.internal.log4j.api.."))
+              .or(resideInAPackage("org.apache.geode.logging.internal.."))
               .or(resideInAPackage("org.apache.geode.logging.internal.executors.."))
               .or(resideInAPackage("org.apache.geode.distributed.internal.tcpserver.."))
               .or(type(LocalHostUtil.class))
@@ -108,6 +108,5 @@ public class MembershipDependenciesJUnitTest {
               // TODO:
               .or(type(JavaWorkarounds.class))
 
-              // TODO:
-              .or(type(OSProcess.class)));
+  );
 }

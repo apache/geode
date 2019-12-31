@@ -47,7 +47,6 @@ import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
@@ -60,6 +59,7 @@ import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides an implementation for region snapshots.
@@ -71,11 +71,11 @@ import org.apache.geode.internal.serialization.DSCODE;
 public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K, V> {
   // controls number of concurrent putAll ops during an import
   private static final int IMPORT_CONCURRENCY = Integer.getInteger(
-      DistributionConfig.GEMFIRE_PREFIX + "RegionSnapshotServiceImpl.IMPORT_CONCURRENCY", 10);
+      GeodeGlossary.GEMFIRE_PREFIX + "RegionSnapshotServiceImpl.IMPORT_CONCURRENCY", 10);
 
   // controls the size (in bytes) of the r/w buffer during imoprt and export
   static final int BUFFER_SIZE = Integer.getInteger(
-      DistributionConfig.GEMFIRE_PREFIX + "RegionSnapshotServiceImpl.BUFFER_SIZE", 1024 * 1024);
+      GeodeGlossary.GEMFIRE_PREFIX + "RegionSnapshotServiceImpl.BUFFER_SIZE", 1024 * 1024);
 
   @Immutable
   static final SnapshotFileMapper LOCAL_MAPPER = new SnapshotFileMapper() {

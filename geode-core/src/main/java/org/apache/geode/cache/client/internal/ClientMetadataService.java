@@ -37,7 +37,6 @@ import org.apache.geode.cache.FixedPartitionResolver;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.EntryOperationImpl;
@@ -46,6 +45,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Maintains {@link ClientPartitionAdvisor} for Partitioned Regions on servers Client operations
@@ -63,7 +63,7 @@ public class ClientMetadataService {
   private final Set<String> nonPRs = new HashSet<String>();
 
   private boolean HONOUR_SERVER_GROUP_IN_PR_SINGLE_HOP = Boolean
-      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop");
+      .getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop");
 
   public static final int SIZE_BYTES_ARRAY_RECEIVED = 2;
 

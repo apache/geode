@@ -15,7 +15,7 @@
 package org.apache.geode.admin.jmx;
 
 import org.apache.geode.admin.DistributedSystemConfig;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A configuration object for a JMX administration {@linkplain Agent agent} that is hosted by a
@@ -257,7 +257,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 public interface AgentConfig extends DistributedSystemConfig {
 
   /** The prefix for JMX Agent configuration system properties */
-  String SYSTEM_PROPERTY_PREFIX = DistributionConfig.GEMFIRE_PREFIX + "agent.";
+  String SYSTEM_PROPERTY_PREFIX = GeodeGlossary.GEMFIRE_PREFIX + "agent.";
 
   /** The default "propertyFile" value */
   String DEFAULT_PROPERTY_FILE = "agent.properties";

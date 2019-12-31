@@ -37,7 +37,6 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.internal.cache.InternalCache;
@@ -60,6 +59,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category(ClientServerTest.class)
 public class ExecuteFunction66Test {
@@ -89,7 +89,7 @@ public class ExecuteFunction66Test {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "statsDisabled", "true");
 
     authzRequest = mock(AuthorizeRequest.class);
     functionResponseMessage = mock(ChunkedMessage.class);

@@ -149,7 +149,6 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -221,6 +220,7 @@ import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implementation of a local scoped-region. Note that this class has a different meaning starting
@@ -351,7 +351,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL)};
 
   public static final String EXPIRY_MS_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_UNITS_MS";
+      GeodeGlossary.GEMFIRE_PREFIX + "EXPIRY_UNITS_MS";
 
   /**
    * Used by unit tests to set expiry to milliseconds instead of the default seconds. Used in
@@ -3183,7 +3183,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @since GemFire 5.0.2
    */
   private final boolean doExpensiveValidations =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DO_EXPENSIVE_VALIDATIONS");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "DO_EXPENSIVE_VALIDATIONS");
 
   /**
    * the number of tombstone entries in the RegionMap
@@ -3685,7 +3685,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   public void finishRegisterInterest() {
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "testing.slow-interest-recovery")) {
+    if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "testing.slow-interest-recovery")) {
       if (logger.isDebugEnabled()) {
         logger.debug("slowing interest recovery...");
       }

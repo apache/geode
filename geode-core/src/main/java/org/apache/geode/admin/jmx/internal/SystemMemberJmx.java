@@ -38,9 +38,9 @@ import org.apache.geode.admin.SystemMemberCacheEvent;
 import org.apache.geode.admin.SystemMemberRegionEvent;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Operation;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Defines methods that all <code>SystemMember</code> MBeans should implement.
@@ -52,35 +52,35 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
    * Notification type for indicating a cache got created on a member of this distributed system.
    */
   String NOTIF_CACHE_CREATED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.created";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.created";
   /**
    * Notification type for indicating a cache is closed on a member of this distributed system.
    */
-  String NOTIF_CACHE_CLOSED = DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.closed";
+  String NOTIF_CACHE_CLOSED = GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.closed";
   /**
    * Notification type for indicating a region is created in a cache on a member of this distributed
    * system.
    */
   String NOTIF_REGION_CREATED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.created";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.region.created";
   /**
    * Notification type for indicating a region was removed from a cache on a member of this
    * distributed system.
    */
   String NOTIF_REGION_LOST =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.region.lost";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.region.lost";
 
   /** Notification type for indicating client joined */
   String NOTIF_CLIENT_JOINED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.joined";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.client.joined";
 
   /** Notification type for indicating client left */
   String NOTIF_CLIENT_LEFT =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.left";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.client.left";
 
   /** Notification type for indicating client crashed */
   String NOTIF_CLIENT_CRASHED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.client.crashed";
+      GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.cache.client.crashed";
 
   /**
    * Gets the interval in seconds between config refreshes

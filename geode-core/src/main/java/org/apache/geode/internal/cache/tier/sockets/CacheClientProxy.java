@@ -65,7 +65,6 @@ import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.internal.SystemTimer;
@@ -102,6 +101,7 @@ import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AccessControl;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Class <code>CacheClientProxy</code> represents the server side of the {@link CacheClientUpdater}.
@@ -189,7 +189,7 @@ public class CacheClientProxy implements ClientSession {
    * The number of times to peek on shutdown before giving up and shutting down
    */
   protected static final int MAXIMUM_SHUTDOWN_PEEKS = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAXIMUM_SHUTDOWN_PEEKS", 50).intValue();
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MAXIMUM_SHUTDOWN_PEEKS", 50).intValue();
 
   /**
    * The number of milliseconds to wait for an offering to the message queue
@@ -219,7 +219,7 @@ public class CacheClientProxy implements ClientSession {
    * system property to true to cause dropped messages to NOT be logged.
    */
   protected static final boolean LOG_DROPPED_MSGS =
-      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableNotificationWarnings");
+      !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "disableNotificationWarnings");
 
   /**
    * for testing purposes, delays the start of the dispatcher thread
@@ -283,7 +283,7 @@ public class CacheClientProxy implements ClientSession {
    * <code>PartitionedRegion</code>s currently.
    */
   protected static final boolean NOTIFY_REGION_ON_INTEREST =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "updateAccessTimeOnClientInterest");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "updateAccessTimeOnClientInterest");
 
   /**
    * The AcceptorImpl identifier to which the proxy is connected.
@@ -923,7 +923,7 @@ public class CacheClientProxy implements ClientSession {
             }
             // if it is still alive then warn and move on
             if (this._messageDispatcher.isAlive()) {
-              // org.apache.geode.internal.OSProcess.printStacks(org.apache.geode.internal.OSProcess.getId());
+              // org.apache.geode.logging.internal.OSProcess.printStacks(org.apache.geode.logging.internal.OSProcess.getId());
               logger.warn("{}: Could not stop message dispatcher thread.",
                   this);
             }

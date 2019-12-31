@@ -26,8 +26,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Hosts common utility methods needed by the management package
@@ -148,7 +148,7 @@ public class AgentUtil {
     // Check for empty variable. if empty, then log message and exit HTTP server
     // startup
     if (StringUtils.isBlank(geodeHome)) {
-      geodeHome = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "home");
+      geodeHome = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "home");
       logger.info("Reading gemfire.home System Property -> {}", geodeHome);
       if (StringUtils.isBlank(geodeHome)) {
         logger.info("GEODE_HOME environment variable not set; HTTP service will not start.");

@@ -29,8 +29,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.statistics.LocalStatisticsImpl;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class LinuxProcFsStatistics {
   @MakeNotStatic
@@ -54,7 +54,7 @@ public class LinuxProcFsStatistics {
   private static final int DEFAULT_PAGESIZE = 4 * 1024;
   private static final int OneMeg = 1024 * 1024;
   private static final String pageSizeProperty =
-      DistributionConfig.GEMFIRE_PREFIX + "statistics.linux.pageSize";
+      GeodeGlossary.GEMFIRE_PREFIX + "statistics.linux.pageSize";
   @MakeNotStatic
   private static CpuStat cpuStatSingleton;
   @Immutable

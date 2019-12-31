@@ -28,7 +28,6 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -64,6 +63,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This message is used as the request for a
@@ -110,7 +110,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
   }
 
   private static final boolean ORDER_PR_GETS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "order-pr-gets");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "order-pr-gets");
 
   @Override
   public int getProcessorType() {

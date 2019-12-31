@@ -211,6 +211,7 @@ import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.logging.internal.spi.LogConfig;
 import org.apache.geode.logging.internal.spi.LogWriterLevel;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the various GemFire distribution
@@ -228,11 +229,6 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * The static String definition of the prefix used to defined ssl-* properties
    */
   String SSL_PREFIX = "ssl-";
-
-  /**
-   * The prefix used for Gemfire properties set through java system properties
-   */
-  String GEMFIRE_PREFIX = "gemfire.";
 
   /**
    * Returns the value of the {@link ConfigurationProperties#NAME} property Gets the member's name.
@@ -1403,9 +1399,9 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    */
   int MAX_SOCKET_BUFFER_SIZE = Connection.MAX_MSG_SIZE;
 
-  boolean VALIDATE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "validateMessageSize");
+  boolean VALIDATE = Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "validateMessageSize");
   int VALIDATE_CEILING = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "validateMessageSizeCeiling", 8 * 1024 * 1024)
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "validateMessageSizeCeiling", 8 * 1024 * 1024)
       .intValue();
 
   /**
@@ -1878,7 +1874,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   /**
    * set this boolean to restrict membership/communications to use ports in the ephemeral range
    */
-  String RESTRICT_MEMBERSHIP_PORT_RANGE = GEMFIRE_PREFIX + "use-ephemeral-ports";
+  String RESTRICT_MEMBERSHIP_PORT_RANGE = GeodeGlossary.GEMFIRE_PREFIX + "use-ephemeral-ports";
 
   @MakeImmutable
   int[] DEFAULT_MEMBERSHIP_PORT_RANGE = MembershipConfig.DEFAULT_MEMBERSHIP_PORT_RANGE;
@@ -2822,7 +2818,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * customers that are already using this system property.
    */
   boolean DEFAULT_ENFORCE_UNIQUE_HOST =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "EnforceUniqueHostStorageAllocation");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "EnforceUniqueHostStorageAllocation");
 
   @ConfigAttributeSetter(name = ENFORCE_UNIQUE_HOST)
   void setEnforceUniqueHost(boolean enforceUniqueHost);

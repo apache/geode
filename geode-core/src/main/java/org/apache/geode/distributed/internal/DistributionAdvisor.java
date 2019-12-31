@@ -15,7 +15,7 @@
 package org.apache.geode.distributed.internal;
 
 import static java.lang.System.lineSeparator;
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.DataInput;
 import java.io.DataOutput;

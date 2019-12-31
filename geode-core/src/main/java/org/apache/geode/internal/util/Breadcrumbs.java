@@ -16,8 +16,8 @@ package org.apache.geode.internal.util;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Breadcrumbs establishes traces in thread names that are useful in figuring out what is going on
@@ -32,7 +32,7 @@ public class Breadcrumbs {
 
   @MutableForTesting
   public static boolean ENABLED =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "enable-breadcrumbs");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "enable-breadcrumbs");
 
 
   /** delimiter for crumb numbers */

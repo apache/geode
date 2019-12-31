@@ -69,7 +69,6 @@ import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.query.internal.index.IndexCreationData;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.OperationExecutors;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -102,6 +101,7 @@ import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableReadLock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Implementation of DataStore (DS) for a PartitionedRegion (PR). This will be import
@@ -172,7 +172,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * Update an entry's last access time if a client is interested in the entry.
    */
   private static final boolean UPDATE_ACCESS_TIME_ON_INTEREST =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "updateAccessTimeOnClientInterest");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "updateAccessTimeOnClientInterest");
 
 
   // Only for testing
@@ -713,7 +713,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     }
     factory.setEnableAsyncConflation(true);
 
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
+    if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRDebug")) {
       factory.addCacheListener(createDebugBucketListener());
     }
 
@@ -774,7 +774,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     LocalRegion rootRegion = PartitionedRegionHelper.getPRRoot(this.partitionedRegion.getCache());
     BucketRegion bucketRegion = null;
 
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
+    if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRDebug")) {
       logger.info("createBucketRegion: Creating bucketId, {} name, {}.",
           this.partitionedRegion.bucketStringForLogs(bucketId),
           bucketRegionName);
@@ -818,7 +818,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     // Determine the size of the bucket (the Region in this case is mirrored,
     // get initial image has populated the bucket, compute the size of the
     // region)
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRDebug")) {
+    if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PRDebug")) {
       dumpBuckets();
       dumpBucket(bucketId, bucketRegion);
     }

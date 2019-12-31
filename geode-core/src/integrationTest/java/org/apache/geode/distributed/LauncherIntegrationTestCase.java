@@ -48,12 +48,12 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.lang.AvailablePid;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Abstract base class for integration tests of both {@link LocatorLauncher} and
@@ -86,7 +86,7 @@ public abstract class LauncherIntegrationTestCase {
 
   @Before
   public void setUpAbstractLauncherIntegrationTestCase() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, Integer.toString(0));
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + MCAST_PORT, Integer.toString(0));
     addIgnoredException(EXPECTED_EXCEPTION_MBEAN_NOT_REGISTERED);
     localPid = identifyPid();
     fakePid = new AvailablePid().findAvailablePid(PREFERRED_FAKE_PID);

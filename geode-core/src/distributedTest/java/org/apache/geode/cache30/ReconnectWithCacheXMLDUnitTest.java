@@ -34,7 +34,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.ServerLauncherParameters;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
@@ -45,6 +44,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * This test exercises auto-reconnect functionality when there is a cache-server that was started by
@@ -55,7 +55,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @SuppressWarnings("serial")
 public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
 
-  private String xmlProperty = DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile";
+  private String xmlProperty = GeodeGlossary.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile";
   private String oldPropertySetting;
 
   @Rule
@@ -72,7 +72,7 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
     VM locatorVM = VM.getVM(0);
     final int port = locatorVM.invoke(() -> {
       System.setProperty(BYPASS_DISCOVERY_PROPERTY, "true");
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "member-weight", "100");
+      System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "member-weight", "100");
       return Locator.startLocatorAndDS(0, new File(""), new Properties()).getPort();
     });
     locatorPort = port;

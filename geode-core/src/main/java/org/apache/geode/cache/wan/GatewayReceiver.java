@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.wan.GatewayReceiverException;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * A GatewayReceiver that receives the events from a {@code GatewaySender}. GatewayReceiver is
@@ -74,7 +74,7 @@ public interface GatewayReceiver {
    * or not is decided by this attribute.
    */
   boolean APPLY_RETRIES =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "GatewayReceiver.ApplyRetries");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "GatewayReceiver.ApplyRetries");
 
   /**
    * Starts this receiver. Once the receiver is running, its configuration cannot be changed.

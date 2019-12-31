@@ -85,7 +85,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
@@ -101,6 +100,7 @@ import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.logging.internal.log4j.api.LogWithToString;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Takes care of RegionAttributes, AttributesMutator, and some no-brainer method implementations.
@@ -255,10 +255,10 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   private final AtomicLong lastModifiedTime;
 
   private static final boolean trackHits =
-      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreHits");
+      !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ignoreHits");
 
   private static final boolean trackMisses =
-      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ignoreMisses");
+      !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ignoreMisses");
 
   private final AtomicLong hitCount = new AtomicLong();
 

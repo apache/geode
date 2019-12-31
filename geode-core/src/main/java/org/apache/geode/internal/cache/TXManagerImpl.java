@@ -52,7 +52,6 @@ import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.TXManagerCancelledException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -66,6 +65,7 @@ import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * The internal implementation of the {@link CacheTransactionManager} interface returned by
@@ -120,14 +120,14 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
 
   // Used for testing only.
   private final Set<TXId> scheduledToBeRemovedTx =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "trackScheduledToBeRemovedTx")
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "trackScheduledToBeRemovedTx")
           ? ConcurrentHashMap.newKeySet() : null;
 
   /**
    * the number of client initiated transactions to store for client failover
    */
   public static final int FAILOVER_TX_MAP_SIZE =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "transactionFailoverMapSize", 1000);
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "transactionFailoverMapSize", 1000);
 
   /**
    * used to store TXCommitMessages for client initiated transactions, so that when a client
@@ -155,7 +155,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    */
   @MutableForTesting
   public static boolean ALLOW_PERSISTENT_TRANSACTIONS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ALLOW_PERSISTENT_TRANSACTIONS");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "ALLOW_PERSISTENT_TRANSACTIONS");
 
   /**
    * this keeps track of all the transactions that were initiated locally.
@@ -167,7 +167,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * minutes
    */
   private volatile long suspendedTXTimeout =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "suspendedTxTimeout", 30);
+      Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "suspendedTxTimeout", 30);
 
   /**
    * Thread-specific flag to indicate whether the transactions managed by this
@@ -200,7 +200,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     this.pauseJTA = new ThreadLocal<Boolean>();
     this.isTXDistributed = new ThreadLocal<>();
     this.transactionTimeToLive = Integer
-        .getInteger(DistributionConfig.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
+        .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
     currentInstance = this;
     this.statisticsClock = statisticsClock;
   }
@@ -1874,7 +1874,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   }
 
   private final Set<InternalDistributedMember> departedProxyServers =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "trackScheduledToBeRemovedTx")
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "trackScheduledToBeRemovedTx")
           ? ConcurrentHashMap.newKeySet() : null;
 
   /**

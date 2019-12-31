@@ -36,7 +36,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.cache.wan.WANTestBase;
@@ -50,6 +49,7 @@ import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({WanTest.class})
 public class NewWanAuthenticationDUnitTest extends WANTestBase {
@@ -270,7 +270,7 @@ public class NewWanAuthenticationDUnitTest extends WANTestBase {
     final String securityJsonResource =
         "org/apache/geode/internal/cache/wan/misc/NewWanAuthenticationDUnitTest.testWanSecurityManagerWithInvalidCredentials.security.json";
     final String gatewayConnectionRetryIntervalConfigParameter =
-        DistributionConfig.GEMFIRE_PREFIX + "gateway-connection-retry-interval";
+        GeodeGlossary.GEMFIRE_PREFIX + "gateway-connection-retry-interval";
 
     final Properties senderSecurityProps = buildSecurityProperties("admin", "wrongPswd");
 

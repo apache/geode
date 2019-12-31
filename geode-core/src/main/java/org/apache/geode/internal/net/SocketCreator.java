@@ -84,6 +84,7 @@ import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.SSLUtil;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Analyze configuration data (gemfire.properties) and configure sockets accordingly for SSL.
@@ -115,7 +116,7 @@ public class SocketCreator {
    * flag to force always using DNS (regardless of the fact that these lookups can hang)
    */
   public static final boolean FORCE_DNS_USE =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "forceDnsUse");
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "forceDnsUse");
 
   /**
    * set this to false to inhibit host name lookup
@@ -163,7 +164,7 @@ public class SocketCreator {
     // bug #49484 - customers want tcp/ip keep-alive turned on by default
     // to avoid dropped connections. It can be turned off by setting this
     // property to false
-    String str = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "setTcpKeepAlive");
+    String str = System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "setTcpKeepAlive");
     if (str != null) {
       ENABLE_TCP_KEEP_ALIVE = Boolean.valueOf(str);
     } else {
@@ -1047,7 +1048,7 @@ public class SocketCreator {
   protected void initializeClientSocketFactory() {
     this.clientSocketFactory = null;
     String className =
-        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory");
+        System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "clientSocketFactory");
     if (className != null) {
       Object o;
       try {

@@ -72,6 +72,7 @@ import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID> {
   private static final Logger logger = Services.getLogger();
@@ -322,7 +323,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
    * @see #shunnedMembers
    */
   private static final int SHUNNED_SUNSET = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "shunned-member-timeout", 300).intValue();
+      .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "shunned-member-timeout", 300).intValue();
 
   /**
    * Set to true when the service should stop.
@@ -1879,7 +1880,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
       surpriseMemberTimeout =
           Math.max(20 * DistributionConfig.DEFAULT_MEMBER_TIMEOUT, 20 * config.getMemberTimeout());
       surpriseMemberTimeout =
-          Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "surprise-member-timeout",
+          Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "surprise-member-timeout",
               surpriseMemberTimeout).longValue();
 
     }
