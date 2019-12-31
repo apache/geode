@@ -12,24 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.api;
+package org.apache.geode.distributed.internal.membership.api;
+
+import java.util.Comparator;
+
 
 /**
- * MemberStartupException is thrown if there is a problem starting up membership
- * services or joining the cluster. A subclass of MemberStartupException,
- * MembershipConfigurationException, may also be thrown during startup and indicates a
- * problem with configuration parameters.
+ * A MemberIdentifierFactory is provided when building a membership service. It must provide
+ * implementations of the MemberIdentifier interface for use as identifiers in the membership
+ * service. For Geode this implementation is InternalDistributedMember.<br>
+ * See {@link MembershipBuilder} - where you inject your factory into GMS
  */
-public class MemberStartupException extends Exception {
-  private static final long serialVersionUID = 6610743861046044144L;
+public interface MemberIdentifierFactory<ID extends MemberIdentifier> {
+  /**
+   * Create a new identifier instance
+   */
+  ID create(MemberData memberInfo);
 
-  public MemberStartupException() {}
-
-  public MemberStartupException(String reason) {
-    super(reason);
-  }
-
-  public MemberStartupException(String reason, Throwable cause) {
-    super(reason, cause);
-  }
+  /**
+   * Create a Comparator for the implementation of identifiers provided by this factory
+   */
+  Comparator<ID> getComparator();
 }

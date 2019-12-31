@@ -19,7 +19,7 @@ import java.util.Queue;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipInformation;
+import org.apache.geode.distributed.internal.membership.api.MembershipInformation;
 
 /**
  * Class MembershipInformation is used to pass membership data from a GMS that was

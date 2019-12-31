@@ -32,7 +32,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.Message;
+import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.logging.log4j.LogMarker;

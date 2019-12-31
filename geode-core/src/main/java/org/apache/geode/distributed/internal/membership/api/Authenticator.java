@@ -12,16 +12,27 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.api;
+package org.apache.geode.distributed.internal.membership.api;
 
-public interface MessageListener<ID extends MemberIdentifier> {
+import java.util.Properties;
+
+public interface Authenticator<ID extends MemberIdentifier> {
 
   /**
-   * Event indicating a message has been delivered that we need to process.
+   * Authenticate peer member
    *
-   * @param o the message that should be processed.
+   * @param member the member to be authenticated
+   * @param credentials the credentials used in authentication
+   * @return null if authentication succeed (including no authenticator case), otherwise, return
+   *         failure message
    */
-  void messageReceived(Message<ID> o) throws MemberShunnedException;
+  String authenticate(ID member, Properties credentials);
 
-
+  /**
+   * Get credential object for the given GemFire distributed member.
+   *
+   * @param member the target distributed member
+   * @return the credentials
+   */
+  Properties getCredentials(ID member);
 }

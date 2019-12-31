@@ -25,7 +25,7 @@ import org.jgroups.util.AsciiString;
 import org.jgroups.util.DefaultThreadFactory;
 import org.jgroups.util.LazyThreadFactory;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 
 public class Transport<ID extends MemberIdentifier> extends UDP {
 

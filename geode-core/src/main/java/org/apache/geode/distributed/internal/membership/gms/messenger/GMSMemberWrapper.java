@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 
 /**
  * A wrapper for GMSMember objects used in encryption services

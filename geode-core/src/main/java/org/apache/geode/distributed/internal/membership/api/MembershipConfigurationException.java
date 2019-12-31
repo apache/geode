@@ -12,23 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.distributed.internal.membership.api;
 
-package org.apache.geode.distributed.internal.membership.gms.api;
 
 /**
- * MemberShunnedException may be thrown to prevent ack-ing a message received from a member that has
- * been removed from membership. It is currently only thrown by
- * JGroupMembershipManager.processMessage()
+ * MembershipConfigurationException may be thrown during startup and indicates a
+ * problem with configuration parameters. MembershipConfigurationException is a
+ * subclass of MemberStartupException, which may also be thrown during startup but
+ * indicates a problem connecting to the cluster after membership configuration has
+ * completed.
  */
-public class MemberShunnedException extends Exception {
-  private static final long serialVersionUID = -8453126202477831557L;
+public class MembershipConfigurationException extends MemberStartupException {
+  private static final long serialVersionUID = 5633602142465129621L;
 
-  /**
-   * constructor
-   *
-   */
-  public MemberShunnedException() {
-    super("");
+  public MembershipConfigurationException() {}
+
+  public MembershipConfigurationException(String reason) {
+    super(reason);
   }
 
+  public MembershipConfigurationException(String reason, Throwable cause) {
+    super(reason, cause);
+  }
 }

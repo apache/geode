@@ -36,7 +36,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipTestHook;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;

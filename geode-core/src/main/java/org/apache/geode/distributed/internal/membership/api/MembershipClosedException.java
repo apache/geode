@@ -12,19 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.api;
+package org.apache.geode.distributed.internal.membership.api;
 
 /**
- * MemberDisconnectedException indicates that we've been kicked out of the cluster.
- * Geode-core generally translates this into a ForcedDisconnectException, which is
- * part of its public API.
+ * MembershipClosedException is thrown if membership services are no longer
+ * available. This exception may be thrown by any membership API and does
+ * not appear in API interfaces.
  */
-public class MemberDisconnectedException extends Exception {
-  private static final long serialVersionUID = -3649273301807236514L;
+public class MembershipClosedException extends RuntimeException {
+  private static final long serialVersionUID = 6112938405434046127L;
 
-  public MemberDisconnectedException() {}
+  public MembershipClosedException() {}
 
-  public MemberDisconnectedException(String reason) {
+  public MembershipClosedException(String reason) {
     super(reason);
+  }
+
+  public MembershipClosedException(String reason, Throwable cause) {
+    super(reason, cause);
   }
 }

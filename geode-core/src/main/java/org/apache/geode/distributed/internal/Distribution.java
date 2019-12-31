@@ -22,9 +22,9 @@ import java.util.function.Supplier;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 
 public interface Distribution {
   void start();

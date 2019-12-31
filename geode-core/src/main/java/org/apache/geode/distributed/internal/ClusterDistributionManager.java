@@ -62,13 +62,13 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.Message;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.Message;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.admin.remote.AdminConsoleDisconnectMessage;
@@ -2285,7 +2285,7 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    */
   private class DMListener implements
-      org.apache.geode.distributed.internal.membership.gms.api.MembershipListener<InternalDistributedMember> {
+      org.apache.geode.distributed.internal.membership.api.MembershipListener<InternalDistributedMember> {
     ClusterDistributionManager dm;
 
     DMListener(ClusterDistributionManager dm) {

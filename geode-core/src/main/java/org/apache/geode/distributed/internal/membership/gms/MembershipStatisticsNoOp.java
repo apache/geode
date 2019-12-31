@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
+import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 
 public class MembershipStatisticsNoOp implements MembershipStatistics {
   @Override

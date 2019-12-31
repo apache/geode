@@ -14,9 +14,9 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
 
 public interface JoinLeave<ID extends MemberIdentifier> extends Service<ID> {
 

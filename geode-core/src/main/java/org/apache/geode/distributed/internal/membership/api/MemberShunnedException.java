@@ -1,5 +1,3 @@
-package org.apache.geode.distributed.internal.membership.gms.api;
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -14,10 +12,23 @@ package org.apache.geode.distributed.internal.membership.gms.api;
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- * Class MembershipInformation is used to pass membership data from a GMS that was
- * kicked out of the cluster to a new one during auto-reconnect operations.
- */
 
-public interface MembershipInformation {
+package org.apache.geode.distributed.internal.membership.api;
+
+/**
+ * MemberShunnedException may be thrown to prevent ack-ing a message received from a member that has
+ * been removed from membership. It is currently only thrown by
+ * JGroupMembershipManager.processMessage()
+ */
+public class MemberShunnedException extends Exception {
+  private static final long serialVersionUID = -8453126202477831557L;
+
+  /**
+   * constructor
+   *
+   */
+  public MemberShunnedException() {
+    super("");
+  }
+
 }

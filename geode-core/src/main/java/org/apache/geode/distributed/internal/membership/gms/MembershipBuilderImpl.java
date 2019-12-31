@@ -15,17 +15,17 @@
 package org.apache.geode.distributed.internal.membership.gms;
 
 
-import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
-import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
-import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
+import org.apache.geode.distributed.internal.membership.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.MembershipBuilder;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
+import org.apache.geode.distributed.internal.membership.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
+import org.apache.geode.distributed.internal.membership.api.MessageListener;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;

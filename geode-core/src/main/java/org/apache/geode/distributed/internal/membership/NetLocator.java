@@ -15,7 +15,7 @@
 package org.apache.geode.distributed.internal.membership;
 
 import org.apache.geode.distributed.internal.RestartableTcpHandler;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.Membership;
 
 public interface NetLocator extends RestartableTcpHandler {
 

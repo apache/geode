@@ -62,6 +62,7 @@ public class MembershipDependenciesJUnitTest {
       .should()
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
+              .or(resideInAPackage("org.apache.geode.distributed.internal.membership.api.."))
 
               // OK to depend on these "leaf" dependencies
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))
@@ -86,6 +87,7 @@ public class MembershipDependenciesJUnitTest {
       .should()
       .onlyDependOnClassesThat(
           resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
+              .or(resideInAPackage("org.apache.geode.distributed.internal.membership.api.."))
 
               // OK to depend on these "leaf" dependencies
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))

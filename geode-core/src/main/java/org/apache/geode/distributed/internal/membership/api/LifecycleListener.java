@@ -12,25 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.api;
-
-import java.util.Comparator;
+package org.apache.geode.distributed.internal.membership.api;
 
 
-/**
- * A MemberIdentifierFactory is provided when building a membership service. It must provide
- * implementations of the MemberIdentifier interface for use as identifiers in the membership
- * service. For Geode this implementation is InternalDistributedMember.<br>
- * See {@link MembershipBuilder} - where you inject your factory into GMS
- */
-public interface MemberIdentifierFactory<ID extends MemberIdentifier> {
-  /**
-   * Create a new identifier instance
-   */
-  ID create(MemberData memberInfo);
+public interface LifecycleListener<ID extends MemberIdentifier> {
+
+  void start(
+      final ID memberID);
+
+  boolean disconnect(Exception exception);
 
   /**
-   * Create a Comparator for the implementation of identifiers provided by this factory
+   * TODO - (GEODE-7464) it seems like this could really just happen during
+   * {@link #start(ID)}
+   * The member ID passed to this method is exactly the same id as the one passed to start. However,
+   * this method has side affects in DirectChannel which may or may not need to happen at the point
+   * in time this method is called?
    */
-  Comparator<ID> getComparator();
+  void setLocalAddress(ID address);
+
+  void destroyMember(ID member, String reason);
+
+  void started();
+
+  void forcedDisconnect();
 }

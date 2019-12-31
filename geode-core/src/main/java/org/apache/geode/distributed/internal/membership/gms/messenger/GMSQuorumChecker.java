@@ -33,10 +33,10 @@ import org.jgroups.Message;
 import org.jgroups.Receiver;
 import org.jgroups.View;
 
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MembershipInformation;
+import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipInformation;
-import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class GMSQuorumChecker<ID extends MemberIdentifier> implements QuorumChecker {
