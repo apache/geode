@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 
 /** represents a suspicion raised about a member */
 public class SuspectMember<ID extends MemberIdentifier> {

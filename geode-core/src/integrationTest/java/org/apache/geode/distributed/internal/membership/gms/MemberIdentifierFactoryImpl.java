@@ -18,8 +18,8 @@ import java.util.Comparator;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifierFactory;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifierFactory;
 
 @VisibleForTesting
 public class MemberIdentifierFactoryImpl

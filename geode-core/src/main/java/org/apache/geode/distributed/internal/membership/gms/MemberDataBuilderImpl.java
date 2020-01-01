@@ -17,9 +17,9 @@ package org.apache.geode.distributed.internal.membership.gms;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDataBuilder;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.Version;
 
 public class MemberDataBuilderImpl implements MemberDataBuilder {

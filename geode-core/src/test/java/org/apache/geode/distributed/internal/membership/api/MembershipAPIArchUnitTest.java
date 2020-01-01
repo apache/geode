@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.api;
+package org.apache.geode.distributed.internal.membership.api;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
 import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
@@ -31,7 +31,7 @@ import org.apache.geode.distributed.internal.membership.gms.MemberDataBuilderImp
 import org.apache.geode.distributed.internal.membership.gms.MembershipBuilderImpl;
 
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms.api",
+@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.api",
     cacheMode = CacheMode.PER_CLASS,
     importOptions = ImportOption.DoNotIncludeArchives.class)
 public class MembershipAPIArchUnitTest {
@@ -39,10 +39,10 @@ public class MembershipAPIArchUnitTest {
   @ArchTest
   public static final ArchRule membershipAPIDoesntDependOnMembershipORCore = classes()
       .that()
-      .resideInAPackage("org.apache.geode.distributed.internal.membership.gms.api")
+      .resideInAPackage("org.apache.geode.distributed.internal.membership.api")
       .should()
       .onlyDependOnClassesThat(
-          resideInAPackage("org.apache.geode.distributed.internal.membership.gms.api")
+          resideInAPackage("org.apache.geode.distributed.internal.membership.api")
               .or(not(resideInAPackage("org.apache.geode..")))
               // Serialization is a dependency of membership
               .or(resideInAPackage("org.apache.geode.internal.serialization.."))

@@ -49,7 +49,8 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.api.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -306,7 +307,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
 
     Distribution manager =
         MembershipManagerHelper.getDistribution(basicGetSystem());
-    manager.replacePartialIdentifierInMessage(message);
+    ((GMSMembership) manager.getMembership()).replacePartialIdentifierInMessage(message);
 
     assertFalse(message.getSender().isPartial());
   }

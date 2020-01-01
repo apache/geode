@@ -41,8 +41,4 @@ public class SystemFailureTestHook {
   public static boolean errorIsExpected(Error failure) {
     return expectedClass != null && expectedClass.isInstance(failure);
   }
-
-  public static void loadEmergencyClasses() {
-    // nothing more needed
-  }
 }

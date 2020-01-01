@@ -53,7 +53,7 @@ import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
+import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
@@ -111,7 +111,7 @@ public class PoolImpl implements InternalPool {
   private final int subscriptionAckInterval;
   private final int subscriptionTimeoutMultiplier;
   private final String serverGroup;
-  private final List<HostAddress> locatorAddresses;
+  private final List<LocatorAddress> locatorAddresses;
   private final List<InetSocketAddress> locators;
   private final List<InetSocketAddress> servers;
   private final boolean startDisabled;
@@ -156,7 +156,7 @@ public class PoolImpl implements InternalPool {
   private final ThreadsMonitoring threadMonitoring;
 
   public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes,
-      List<HostAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
+      List<LocatorAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
       InternalCache cache, ThreadsMonitoring tMonitoring) {
     PoolImpl pool =
         new PoolImpl(pm, name, attributes, locatorAddresses, distributedSystem, cache, tMonitoring);
@@ -186,7 +186,7 @@ public class PoolImpl implements InternalPool {
   }
 
   protected PoolImpl(PoolManagerImpl pm, String name, Pool attributes,
-      List<HostAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
+      List<LocatorAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
       InternalCache cache, ThreadsMonitoring threadMonitoring) {
     this.pm = pm;
     this.name = name;
@@ -1370,12 +1370,6 @@ public class PoolImpl implements InternalPool {
       }
       return new PoolCancelledException(reason, t);
     }
-  }
-
-  public static void loadEmergencyClasses() {
-    QueueManagerImpl.loadEmergencyClasses();
-    ConnectionManagerImpl.loadEmergencyClasses();
-    EndpointManagerImpl.loadEmergencyClasses();
   }
 
   /**

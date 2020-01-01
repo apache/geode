@@ -27,8 +27,8 @@ import org.jgroups.Global;
 import org.jgroups.stack.IpAddress;
 import org.jgroups.util.UUID;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberData;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberData;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**

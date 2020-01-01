@@ -14,8 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 
 public class LifecycleListenerNoOp<ID extends MemberIdentifier> implements LifecycleListener<ID> {
   @Override

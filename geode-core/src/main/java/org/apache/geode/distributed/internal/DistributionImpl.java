@@ -37,11 +37,9 @@ import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
@@ -50,26 +48,21 @@ import org.apache.geode.distributed.internal.direct.ShunnedMemberException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.Message;
-import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
-import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
-import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberShunnedException;
+import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.MembershipBuilder;
+import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
+import org.apache.geode.distributed.internal.membership.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.Message;
+import org.apache.geode.distributed.internal.membership.api.MessageListener;
+import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -82,21 +75,16 @@ import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.logging.internal.executors.LoggingThread;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class DistributionImpl implements Distribution {
-  private static final Logger logger = Services.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @Immutable
   public static final InternalDistributedMember[] EMPTY_MEMBER_ARRAY =
       new InternalDistributedMember[0];
-  /**
-   * @see SystemFailure#loadEmergencyClasses() /** break any potential circularity in
-   *      {@link #loadEmergencyClasses()}
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded = false;
 
   private final ClusterDistributionManager clusterDistributionManager;
   private final boolean tcpDisabled;
@@ -163,23 +151,9 @@ public class DistributionImpl implements Distribution {
     } catch (GemFireSecurityException e) {
       throw e;
     } catch (RuntimeException e) {
-      Services.getLogger().error("Unexpected problem starting up membership services", e);
+      logger.error("Unexpected problem starting up membership services", e);
       throw new SystemConnectException("Problem starting up membership services", e);
     }
-  }
-
-  /**
-   * Ensure that the critical classes from components get loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    if (emergencyClassesLoaded)
-      return;
-    emergencyClassesLoaded = true;
-    DirectChannel.loadEmergencyClasses();
-    GMSJoinLeave.loadEmergencyClasses();
-    GMSHealthMonitor.loadEmergencyClasses();
   }
 
   public static void connectLocatorToServices(Membership<InternalDistributedMember> membership) {
@@ -638,49 +612,6 @@ public class DistributionImpl implements Distribution {
     return membership.getMembersNotShuttingDown();
   }
 
-  // TODO - this method is only used by tests
-  @Override
-  @VisibleForTesting
-  public void forceDisconnect(String reason) {
-    ((GMSMembership) membership).getGMSManager().forceDisconnect(reason);
-  }
-
-  // TODO - this method is only used by tests
-  @Override
-  @VisibleForTesting
-  public void replacePartialIdentifierInMessage(DistributionMessage message) {
-    ((GMSMembership) membership).replacePartialIdentifierInMessage(message);
-
-  }
-
-  // TODO - this method is only used by tests
-  @Override
-  @VisibleForTesting
-  public boolean isCleanupTimerStarted() {
-    return ((GMSMembership) membership).isCleanupTimerStarted();
-  }
-
-  // TODO - this method is only used by tests
-  @Override
-  @VisibleForTesting
-  public long getSurpriseMemberTimeout() {
-    return ((GMSMembership) membership).getSurpriseMemberTimeout();
-  }
-
-  // TODO - this method is only used by tests
-  @Override
-  @VisibleForTesting
-  public void installView(GMSMembershipView newView) {
-    ((GMSMembership) membership).getGMSManager().installView(newView);
-  }
-
-  // TODO - this method is only used by tests
-  @Override
-  @VisibleForTesting
-  public int getDirectChannelPort() {
-    return directChannel == null ? 0 : directChannel.getPort();
-  }
-
   /**
    * for mock testing this allows insertion of a DirectChannel mock
    */
@@ -688,11 +619,6 @@ public class DistributionImpl implements Distribution {
   @VisibleForTesting
   void setDirectChannel(DirectChannel dc) {
     this.directChannel = dc;
-  }
-
-  @Override
-  public void disableDisconnectOnQuorumLossForTesting() {
-    ((GMSMembership) membership).disableDisconnectOnQuorumLossForTesting();
   }
 
   private void startDirectChannel(final MemberIdentifier memberID) {

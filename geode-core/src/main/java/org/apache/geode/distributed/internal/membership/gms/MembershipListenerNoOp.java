@@ -17,9 +17,9 @@ package org.apache.geode.distributed.internal.membership.gms;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
 
 public class MembershipListenerNoOp<ID extends MemberIdentifier> implements MembershipListener<ID> {
   @Override

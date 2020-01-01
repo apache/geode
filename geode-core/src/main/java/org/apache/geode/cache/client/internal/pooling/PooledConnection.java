@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.client.internal.Connection;
-import org.apache.geode.cache.client.internal.ConnectionImpl;
 import org.apache.geode.cache.client.internal.ConnectionStats;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.Op;
@@ -351,10 +350,6 @@ public class PooledConnection implements Connection {
   @Override
   public Object execute(Op op) throws Exception {
     return getConnection().execute(op);
-  }
-
-  public static void loadEmergencyClasses() {
-    ConnectionImpl.loadEmergencyClasses();
   }
 
   @Override

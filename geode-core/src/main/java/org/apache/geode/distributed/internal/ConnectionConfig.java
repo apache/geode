@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
-import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 
 /**
  * Contains the distribution config and internal properties for connecting.

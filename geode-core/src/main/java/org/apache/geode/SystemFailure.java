@@ -356,30 +356,6 @@ public final class SystemFailure {
     boolean warned = false;
 
     logFine(WATCHDOG_NAME, "Starting");
-    try {
-      basicLoadEmergencyClasses();
-    } catch (ExceptionInInitializerError e) {
-      // Determine if we're shutting down...
-      boolean noSurprise = false;
-      Throwable cause = e.getCause();
-      if (cause != null) {
-        if (cause instanceof IllegalStateException) {
-          String msg = cause.getMessage();
-          if (msg.contains("Shutdown in progress")) {
-            noSurprise = true;
-          }
-        }
-      }
-      if (!noSurprise) {
-        logWarning(WATCHDOG_NAME, "Unable to load GemFire classes: ", e);
-      }
-      return;
-    } catch (CancelException e) {
-      // ignore this because we are shutting down anyway
-    } catch (Throwable t) {
-      logWarning(WATCHDOG_NAME, "Unable to initialize watchdog", t);
-      return;
-    }
     while (!stopping) {
       try {
         if (isCacheClosing) {
@@ -724,12 +700,6 @@ public final class SystemFailure {
   private static final String PROCTOR_NAME = "SystemFailure Proctor";
 
   /**
-   * break any potential circularity in {@link #loadEmergencyClasses()}
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded = false;
-
-  /**
    * Since it requires object memory to unpack a jar file, make sure this JVM has loaded the classes
    * necessary for closure <em>before</em> it becomes necessary to use them.
    * <p>
@@ -739,15 +709,6 @@ public final class SystemFailure {
    */
   public static void loadEmergencyClasses() {
     startThreads();
-  }
-
-  private static void basicLoadEmergencyClasses() {
-    if (emergencyClassesLoaded)
-      return;
-    emergencyClassesLoaded = true;
-    SystemFailureTestHook.loadEmergencyClasses(); // bug 50516
-    GemFireCacheImpl.loadEmergencyClasses();
-    RemoteGfManagerAgent.loadEmergencyClasses();
   }
 
   /**

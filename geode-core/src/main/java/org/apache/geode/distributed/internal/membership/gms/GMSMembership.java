@@ -27,17 +27,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
@@ -50,28 +44,28 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.StartupMessage;
-import org.apache.geode.distributed.internal.membership.gms.api.LifecycleListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberDisconnectedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberShunnedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberStartupException;
-import org.apache.geode.distributed.internal.membership.gms.api.Membership;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipClosedException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfigurationException;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.Message;
-import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
-import org.apache.geode.distributed.internal.membership.gms.api.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.api.LifecycleListener;
+import org.apache.geode.distributed.internal.membership.api.MemberDisconnectedException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberShunnedException;
+import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
+import org.apache.geode.distributed.internal.membership.api.Membership;
+import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
+import org.apache.geode.distributed.internal.membership.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.api.MembershipView;
+import org.apache.geode.distributed.internal.membership.api.Message;
+import org.apache.geode.distributed.internal.membership.api.MessageListener;
+import org.apache.geode.distributed.internal.membership.api.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.executors.LoggingThread;
-import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID> {
@@ -661,10 +655,7 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     this.listener = listener;
     this.messageListener = messageListener;
     this.gmsManager = new ManagerImpl();
-    LinkedBlockingQueue<Runnable> feed = new LinkedBlockingQueue<>();
-    ThreadFactory threadFactory = new LoggingThreadFactory("Geode View Processor");
-    this.viewExecutor = new ThreadPoolExecutor(1, 1, 30,
-        TimeUnit.SECONDS, feed, threadFactory, new ViewExecutorBlockHandler(feed));
+    this.viewExecutor = LoggingExecutors.newSingleThreadExecutor("Geode View Processor", true);
   }
 
   public Manager<ID> getGMSManager() {
@@ -1778,6 +1769,11 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     }
   }
 
+  @VisibleForTesting
+  public void forceDisconnect(String reason) {
+    this.gmsManager.forceDisconnect(reason);
+  }
+
   /**
    * Test hook - recover health
    */
@@ -2111,32 +2107,4 @@ public class GMSMembership<ID extends MemberIdentifier> implements Membership<ID
     }
 
   }
-
-
-  private static class ViewExecutorBlockHandler implements RejectedExecutionHandler {
-
-    private final Queue queue;
-
-    private ViewExecutorBlockHandler(Queue feed) {
-      queue = feed;
-    }
-
-    @Override
-    public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-      if (executor.isShutdown()) {
-        throw new RejectedExecutionException(
-            "executor has been shutdown");
-      } else {
-        try {
-          executor.getQueue().put(r);
-        } catch (InterruptedException ie) {
-          Thread.currentThread().interrupt();
-          RejectedExecutionException e = new RejectedExecutionException(
-              "interrupted");
-          e.initCause(ie);
-        }
-      }
-    }
-  }
-
 }

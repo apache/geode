@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
-import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
+import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 
 /**
  * Defines the interface used to access and modify DM statistics.

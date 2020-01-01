@@ -267,11 +267,6 @@ public class ConnectionImpl implements Connection {
 
   }
 
-
-  public static void loadEmergencyClasses() {
-    // do nothing
-  }
-
   @Override
   public short getWanSiteVersion() {
     return wanSiteVersion;

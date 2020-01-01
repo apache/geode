@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.api;
 
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -26,6 +26,7 @@ import org.apache.geode.distributed.internal.Distribution;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
@@ -126,14 +127,19 @@ public class MembershipManagerHelper {
   // this method is only used for testing. Should be extract to a test helper instead
   public static void crashDistributedSystem(final DistributedSystem msys) {
     msys.getLogWriter().info("crashing distributed system: " + msys);
-    Distribution mgr = ((Distribution) getDistribution(msys));
+    Distribution mgr = getDistribution(msys);
     MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
     MembershipManagerHelper.beSickMember(msys);
     MembershipManagerHelper.playDead(msys);
-    mgr.forceDisconnect("for testing");
+    ((GMSMembership) mgr.getMembership()).getGMSManager().forceDisconnect("for testing");
     // wait at most 10 seconds for system to be disconnected
     await().until(() -> !msys.isConnected());
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
   }
 
+  public static void disableDisconnectOnQuorumLossForTesting(DistributedSystem msys) {
+    msys.getLogWriter().info("crashing distributed system: " + msys);
+    Distribution mgr = getDistribution(msys);
+    ((GMSMembership) mgr.getMembership()).disableDisconnectOnQuorumLossForTesting();
+  }
 }

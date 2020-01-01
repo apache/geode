@@ -16,8 +16,8 @@ package org.apache.geode.distributed.internal.membership.gms;
 
 import java.util.Properties;
 
-import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 
 public class AuthenticatorNoOp<ID extends MemberIdentifier> implements Authenticator<ID> {
   @Override

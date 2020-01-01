@@ -206,12 +206,6 @@ public class RemoteGfManagerAgent implements GfManagerAgent {
   private static volatile List<RemoteGfManagerAgent> allAgents = new ArrayList<>();
 
   /**
-   * break any potential circularity in {@link #loadEmergencyClasses()}
-   */
-  @MakeNotStatic
-  private static volatile boolean emergencyClassesLoaded;
-
-  /**
    * Is this thread currently sending a message?
    */
   private static final ThreadLocal<Boolean> sending = ThreadLocal.withInitial(() -> Boolean.FALSE);
@@ -234,19 +228,6 @@ public class RemoteGfManagerAgent implements GfManagerAgent {
       replace.remove(toRemove);
       allAgents = replace;
     }
-  }
-
-  /**
-   * Ensure that the InternalDistributedSystem class gets loaded.
-   *
-   * @see SystemFailure#loadEmergencyClasses()
-   */
-  public static void loadEmergencyClasses() {
-    if (emergencyClassesLoaded) {
-      return;
-    }
-    emergencyClassesLoaded = true;
-    InternalDistributedSystem.loadEmergencyClasses();
   }
 
   /**

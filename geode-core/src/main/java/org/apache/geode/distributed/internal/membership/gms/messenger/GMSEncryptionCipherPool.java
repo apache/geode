@@ -23,8 +23,8 @@ import javax.crypto.Cipher;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
 public class GMSEncryptionCipherPool<ID extends MemberIdentifier> {
   private static final int MAX_CIPHERS_PER_POOL = Integer.getInteger("GMSEncrypt.MAX_ENCRYPTORS",

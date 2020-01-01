@@ -12,27 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.api;
+package org.apache.geode.distributed.internal.membership.api;
 
-import java.util.Properties;
+/**
+ * MemberDisconnectedException indicates that we've been kicked out of the cluster.
+ * Geode-core generally translates this into a ForcedDisconnectException, which is
+ * part of its public API.
+ */
+public class MemberDisconnectedException extends Exception {
+  private static final long serialVersionUID = -3649273301807236514L;
 
-public interface Authenticator<ID extends MemberIdentifier> {
+  public MemberDisconnectedException() {}
 
-  /**
-   * Authenticate peer member
-   *
-   * @param member the member to be authenticated
-   * @param credentials the credentials used in authentication
-   * @return null if authentication succeed (including no authenticator case), otherwise, return
-   *         failure message
-   */
-  String authenticate(ID member, Properties credentials);
-
-  /**
-   * Get credential object for the given GemFire distributed member.
-   *
-   * @param member the target distributed member
-   * @return the credentials
-   */
-  Properties getCredentials(ID member);
+  public MemberDisconnectedException(String reason) {
+    super(reason);
+  }
 }

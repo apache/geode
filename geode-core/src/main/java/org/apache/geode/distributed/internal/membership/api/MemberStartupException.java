@@ -12,28 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.api;
+package org.apache.geode.distributed.internal.membership.api;
 
+/**
+ * MemberStartupException is thrown if there is a problem starting up membership
+ * services or joining the cluster. A subclass of MemberStartupException,
+ * MembershipConfigurationException, may also be thrown during startup and indicates a
+ * problem with configuration parameters.
+ */
+public class MemberStartupException extends Exception {
+  private static final long serialVersionUID = 6610743861046044144L;
 
-public interface LifecycleListener<ID extends MemberIdentifier> {
+  public MemberStartupException() {}
 
-  void start(
-      final ID memberID);
+  public MemberStartupException(String reason) {
+    super(reason);
+  }
 
-  boolean disconnect(Exception exception);
-
-  /**
-   * TODO - (GEODE-7464) it seems like this could really just happen during
-   * {@link #start(ID)}
-   * The member ID passed to this method is exactly the same id as the one passed to start. However,
-   * this method has side affects in DirectChannel which may or may not need to happen at the point
-   * in time this method is called?
-   */
-  void setLocalAddress(ID address);
-
-  void destroyMember(ID member, String reason);
-
-  void started();
-
-  void forcedDisconnect();
+  public MemberStartupException(String reason, Throwable cause) {
+    super(reason, cause);
+  }
 }

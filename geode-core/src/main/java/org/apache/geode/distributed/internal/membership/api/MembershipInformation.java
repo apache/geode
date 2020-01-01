@@ -1,3 +1,5 @@
+package org.apache.geode.distributed.internal.membership.api;
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -12,26 +14,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.api;
-
-
 /**
- * MembershipConfigurationException may be thrown during startup and indicates a
- * problem with configuration parameters. MembershipConfigurationException is a
- * subclass of MemberStartupException, which may also be thrown during startup but
- * indicates a problem connecting to the cluster after membership configuration has
- * completed.
+ * Class MembershipInformation is used to pass membership data from a GMS that was
+ * kicked out of the cluster to a new one during auto-reconnect operations.
  */
-public class MembershipConfigurationException extends MemberStartupException {
-  private static final long serialVersionUID = 5633602142465129621L;
 
-  public MembershipConfigurationException() {}
-
-  public MembershipConfigurationException(String reason) {
-    super(reason);
-  }
-
-  public MembershipConfigurationException(String reason, Throwable cause) {
-    super(reason, cause);
-  }
+public interface MembershipInformation {
 }

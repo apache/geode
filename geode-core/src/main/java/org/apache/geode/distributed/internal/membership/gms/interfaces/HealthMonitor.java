@@ -15,7 +15,7 @@
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 
 public interface HealthMonitor<ID extends MemberIdentifier> extends Service<ID> {
 

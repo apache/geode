@@ -212,10 +212,6 @@ public class QueueConnectionImpl implements Connection {
     }
   }
 
-  public static void loadEmergencyClasses() {
-    ConnectionImpl.loadEmergencyClasses();
-  }
-
   @Override
   public short getWanSiteVersion() {
     throw new UnsupportedOperationException();

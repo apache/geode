@@ -14,8 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 
 /**
  * The Locator interface allows member services to interact with the Locator TcpHandler component of
