@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal.util;
+package org.apache.geode.util.internal;
 
 import java.util.Map;
 import java.util.function.Function;

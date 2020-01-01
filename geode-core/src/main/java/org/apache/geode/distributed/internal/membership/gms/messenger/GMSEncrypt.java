@@ -35,7 +35,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
-import org.apache.geode.internal.util.JavaWorkarounds;
+import org.apache.geode.util.internal.JavaWorkarounds;
 
 public final class GMSEncrypt<ID extends MemberIdentifier> {
   // Parameters for the Diffie-Hellman key exchange
