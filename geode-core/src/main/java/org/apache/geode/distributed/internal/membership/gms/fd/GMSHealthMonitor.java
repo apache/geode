@@ -53,7 +53,6 @@ import org.apache.logging.log4j.Logger;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.api.MembershipClosedException;
