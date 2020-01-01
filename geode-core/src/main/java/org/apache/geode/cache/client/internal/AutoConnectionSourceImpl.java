@@ -50,6 +50,7 @@ import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
 import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
 import org.apache.geode.cache.client.internal.locator.ServerLocationResponse;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;

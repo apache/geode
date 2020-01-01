@@ -37,6 +37,7 @@ import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.pooling.ConnectionManagerImpl;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;

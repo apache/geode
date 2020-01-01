@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.client.internal;
+package org.apache.geode.distributed.internal.tcpserver;
 
 import java.net.InetSocketAddress;
 
@@ -102,7 +102,8 @@ public class LocatorAddress {
 
   @Override
   public String toString() {
-    return "LocatorAddress [socketInetAddress=" + socketInetAddress + ", hostname=" + hostname
+    return getClass().getSimpleName()
+        + " [socketInetAddress=" + socketInetAddress + ", hostname=" + hostname
         + ", isIpString=" + isIpString + "]";
   }
 
