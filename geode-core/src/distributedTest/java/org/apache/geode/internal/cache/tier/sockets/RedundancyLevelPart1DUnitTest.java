@@ -24,7 +24,6 @@ import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.toArray;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -540,6 +539,7 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   }
 
   private void waitConnectedServers() {
-    await().untilAsserted(() -> assertThat(pool.getConnectedServerCount()).isEqualTo(DEFAULT_CONNECTED_SERVER_COUNT));
+    await().untilAsserted(
+        () -> assertThat(pool.getConnectedServerCount()).isEqualTo(DEFAULT_CONNECTED_SERVER_COUNT));
   }
 }
