@@ -63,7 +63,7 @@ if [[ "${CONCOURSE_HOST}" == "concourse.apachegeode-ci.info" ]]; then
   CONCOURSE_SCHEME=https
 fi
 CONCOURSE_URL=${CONCOURSE_SCHEME:-"http"}://${CONCOURSE_HOST}
-FLY_TARGET=${CONCOURSE_HOST}-{CONCOURSE_TEAM}
+FLY_TARGET=${CONCOURSE_HOST}-${CONCOURSE_TEAM}
 
 . ${SCRIPTDIR}/../shared/utilities.sh
 SANITIZED_GEODE_BRANCH=$(getSanitizedBranch ${GEODE_BRANCH})
