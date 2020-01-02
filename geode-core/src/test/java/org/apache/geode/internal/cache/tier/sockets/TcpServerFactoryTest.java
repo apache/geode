@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.distributed.internal.membership.adapter.TcpSocketCreatorAdapter.asTcpSocketCreator;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
@@ -25,9 +26,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.ProtocolCheckerImpl;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
 import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({MembershipTest.class})
 public class TcpServerFactoryTest {
@@ -44,7 +51,17 @@ public class TcpServerFactoryTest {
   @Test
   public void createsATcpServer() {
     TcpServerFactory factory = new TcpServerFactory();
-    TcpServer server = factory.makeTcpServer(80, null, null, null, null, null);
+
+    TcpServer server = new TcpServer(80, null, null,
+        null, new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
+        DistributionStats::getStatTime, TcpServerFactory.createExecutorServiceSupplier(null),
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
     assertTrue(server != null);
   }
 }

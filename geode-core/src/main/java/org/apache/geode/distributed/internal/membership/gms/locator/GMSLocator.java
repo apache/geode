@@ -38,10 +38,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.Membership;
 import org.apache.geode.distributed.internal.membership.api.MembershipConfigurationException;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocatorStatistics;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembership;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
@@ -50,13 +50,15 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.membership.gms.messenger.GMSMemberWrapper;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
+import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
+public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID>, TcpHandler {
 
   static final int LOCATOR_FILE_STAMP = 0x7b8cf741;
 
@@ -67,7 +69,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
   private final String securityUDPDHAlgo;
   private final String locatorString;
   private final List<HostAddress> locators;
-  private final LocatorStats locatorStats;
+  private final MembershipLocatorStatistics locatorStats;
   private final Set<ID> registrants = new HashSet<>();
   private final Map<GMSMemberWrapper, byte[]> publicKeys =
       new ConcurrentHashMap<>();
@@ -102,7 +104,7 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
    * @param objectDeserializer a deserializer used to recover the membership view
    */
   public GMSLocator(InetAddress bindAddress, String locatorString, boolean usePreferredCoordinators,
-      boolean networkPartitionDetectionEnabled, LocatorStats locatorStats,
+      boolean networkPartitionDetectionEnabled, MembershipLocatorStatistics locatorStats,
       String securityUDPDHAlgo, Path workingDirectory, final TcpClient locatorClient,
       ObjectSerializer objectSerializer,
       ObjectDeserializer objectDeserializer)
@@ -170,7 +172,8 @@ public class GMSLocator<ID extends MemberIdentifier> implements Locator<ID> {
     return viewFile;
   }
 
-  public void init(String persistentFileIdentifier) {
+  public void init(TcpServer server) {
+    String persistentFileIdentifier = "" + server.getPort();
     if (viewFile == null) {
       viewFile =
           workingDirectory.resolve("locator" + persistentFileIdentifier + "view.dat").toFile();

@@ -159,8 +159,8 @@ public class DistributionImpl implements Distribution {
   public static void connectLocatorToServices(Membership<InternalDistributedMember> membership) {
     // see if a locator was started and put it in GMS Services
     InternalLocator l = (InternalLocator) Locator.getLocator();
-    if (l != null && l.getLocatorHandler() != null) {
-      l.getLocatorHandler().setMembership(membership);
+    if (l != null && l.getMembershipLocator() != null) {
+      l.getMembershipLocator().setMembership(membership);
     }
   }
 

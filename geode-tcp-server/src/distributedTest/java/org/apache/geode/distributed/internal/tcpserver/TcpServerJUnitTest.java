@@ -50,14 +50,18 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InfoRequestHandler;
 import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.ProtocolCheckerImpl;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({MembershipTest.class})
 public class TcpServerJUnitTest {
@@ -83,8 +87,17 @@ public class TcpServerJUnitTest {
     port = getNeverUsedPort();
 
     stats = new SimpleStats();
-    server = new TcpServerFactory().makeTcpServer(port, localhost, handler,
-        stats, "server thread", null);
+
+    server = new TcpServer(port, localhost, handler,
+        "server thread", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
+        DistributionStats::getStatTime, TcpServerFactory.createExecutorServiceSupplier(stats),
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
     server.start();
   }
 

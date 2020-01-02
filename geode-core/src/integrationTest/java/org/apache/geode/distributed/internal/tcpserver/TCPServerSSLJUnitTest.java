@@ -44,7 +44,6 @@ import org.mockito.Mockito;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
@@ -91,7 +90,7 @@ public class TCPServerSSLJUnitTest {
     server = new TcpServer(
         port,
         localhost,
-        Mockito.mock(RestartableTcpHandler.class),
+        Mockito.mock(TcpHandler.class),
         "server thread",
         (socket, input, firstByte) -> false, DistributionStats::getStatTime,
         TcpServerFactory.createExecutorServiceSupplier(Mockito.mock(PoolStatHelper.class)),

@@ -56,7 +56,6 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.ToDataException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
@@ -66,17 +65,19 @@ import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
 import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
+import org.apache.geode.distributed.internal.ProtocolCheckerImpl;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.tcpserver.LocatorAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.PoolStats;
+import org.apache.geode.internal.cache.client.protocol.ClientProtocolServiceLoader;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -333,9 +334,19 @@ public class AutoConnectionSourceImplJUnitTest {
   public void test_DiscoverLocators_whenOneLocatorWasShutdown() throws Exception {
     startFakeLocator();
     int secondPort = AvailablePortHelper.getRandomAvailableTCPPort();
+
     TcpServer server2 =
-        new TcpServerFactory().makeTcpServer(secondPort, InetAddress.getLocalHost(),
-            handler, new FakeHelper(), "tcp server", null);
+        new TcpServer(secondPort, InetAddress.getLocalHost(), handler,
+            "tcp server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
+            DistributionStats::getStatTime,
+            TcpServerFactory.createExecutorServiceSupplier(new FakeHelper()),
+            asTcpSocketCreator(
+                SocketCreatorFactory
+                    .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+            InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+            InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+            GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+            GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
     server2.start();
 
     try {
@@ -412,13 +423,23 @@ public class AutoConnectionSourceImplJUnitTest {
   }
 
   private void startFakeLocator() throws IOException, InterruptedException {
-    server = new TcpServerFactory().makeTcpServer(port, InetAddress.getLocalHost(),
-        handler, new FakeHelper(), "Tcp Server", null);
+
+    server = new TcpServer(port, InetAddress.getLocalHost(), handler,
+        "Tcp Server", new ProtocolCheckerImpl(null, new ClientProtocolServiceLoader()),
+        DistributionStats::getStatTime,
+        TcpServerFactory.createExecutorServiceSupplier(new FakeHelper()),
+        asTcpSocketCreator(
+            SocketCreatorFactory
+                .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR)),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT",
+        GeodeGlossary.GEMFIRE_PREFIX + "TcpServer.BACKLOG");
     server.start();
     Thread.sleep(500);
   }
 
-  protected static class FakeHandler implements RestartableTcpHandler {
+  protected static class FakeHandler implements TcpHandler {
     volatile ClientConnectionResponse nextConnectionResponse;
     volatile LocatorListResponse nextLocatorListResponse;
 
@@ -443,11 +464,6 @@ public class AutoConnectionSourceImplJUnitTest {
 
     @Override
     public void endResponse(Object request, long startTime) {}
-
-    @Override
-    public void restarting(DistributedSystem ds, GemFireCache cache,
-        InternalConfigurationPersistenceService sharedConfig) {}
-
   }
 
   public static class FakeHelper implements PoolStatHelper {

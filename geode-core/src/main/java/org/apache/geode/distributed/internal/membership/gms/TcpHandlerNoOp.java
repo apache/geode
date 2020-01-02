@@ -12,32 +12,36 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal;
+package org.apache.geode.distributed.internal.membership.gms;
 
+import java.io.IOException;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 
-/**
- * A handler which responds to messages for the {@link TcpServer}
- *
- * @since GemFire 5.7
- */
-public interface RestartableTcpHandler extends TcpHandler {
+class TcpHandlerNoOp implements TcpHandler {
+  @Override
+  public Object processRequest(Object request) throws IOException {
+    return null;
+  }
 
-  /**
-   * Informs the handler that TcpServer is restarting with the given distributed system and cache
-   *
-   * @param sharedConfig TODO
-   */
-  void restarting(DistributedSystem ds, GemFireCache cache,
-      InternalConfigurationPersistenceService sharedConfig);
+  @Override
+  public void endRequest(Object request, long startTime) {
 
-  /**
-   * Informs the handler that restart has completed
-   */
-  default void restartCompleted(DistributedSystem ds) {}
+  }
 
+  @Override
+  public void endResponse(Object request, long startTime) {
+
+  }
+
+  @Override
+  public void shutDown() {
+
+  }
+
+  @Override
+  public void init(TcpServer tcpServer) {
+
+  }
 }

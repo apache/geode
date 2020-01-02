@@ -49,6 +49,7 @@ import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import org.apache.geode.internal.cache.ControllerAdvisor;
@@ -63,7 +64,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 5.7
  */
-public class ServerLocator implements RestartableTcpHandler, DistributionAdvisee {
+public class ServerLocator implements TcpHandler, RestartHandler, DistributionAdvisee {
   private static final Logger logger = LogService.getLogger();
 
   private final int port;

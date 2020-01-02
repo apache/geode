@@ -28,8 +28,6 @@ import com.tngtech.archunit.junit.CacheMode;
 import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
@@ -100,12 +98,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO: we dursn't depend on the test package cause it depends on pkgs in geode-core
               .or(resideInAPackage("org.apache.geode.test.."))
-
-              // TODO: Create a new stats interface for membership
-              .or(type(LocatorStats.class))
-
-              // TODO: break dependencies on locator-related classes
-              .or(type(Locator.class))
 
               // TODO:
               .or(type(JavaWorkarounds.class))

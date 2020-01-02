@@ -42,7 +42,6 @@ import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
@@ -113,7 +112,7 @@ public class TCPClientSSLIntegrationTest {
     localhost = InetAddress.getLocalHost();
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
 
-    RestartableTcpHandler tcpHandler = Mockito.mock(RestartableTcpHandler.class);
+    TcpHandler tcpHandler = Mockito.mock(TcpHandler.class);
     when(tcpHandler.processRequest(any())).thenReturn("Running!");
 
     server = new TcpServer(

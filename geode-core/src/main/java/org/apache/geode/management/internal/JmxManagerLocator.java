@@ -26,8 +26,9 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.distributed.internal.RestartableTcpHandler;
+import org.apache.geode.distributed.internal.RestartHandler;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
@@ -37,7 +38,7 @@ import org.apache.geode.management.AlreadyRunningException;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 
-public class JmxManagerLocator implements RestartableTcpHandler {
+public class JmxManagerLocator implements TcpHandler, RestartHandler {
   private static final Logger logger = LogService.getLogger();
 
   private InternalCacheForClientAccess cache;

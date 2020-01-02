@@ -12,42 +12,37 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.configuration.handlers;
+
+package org.apache.geode.distributed.internal.membership.api;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
-import org.apache.geode.distributed.internal.tcpserver.TcpServer;
-import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 
-public class SharedConfigurationStatusRequestHandler implements TcpHandler {
+public interface MembershipLocator<ID extends MemberIdentifier> {
 
+  int start() throws IOException;
 
-  @Override
-  public Object processRequest(Object request) throws IOException {
-    assert request instanceof SharedConfigurationStatusRequest;
-    InternalLocator locator = InternalLocator.getLocator();
-    return locator.getSharedConfigurationStatus();
-  }
+  void stop();
 
-  @Override
-  public void endRequest(Object request, long startTime) {
+  boolean isAlive();
 
-  }
+  int getPort();
 
-  @Override
-  public void endResponse(Object request, long startTime) {
+  boolean isShuttingDown();
 
-  }
+  void waitToShutdown(long waitTime) throws InterruptedException;
 
-  @Override
-  public void shutDown() {
+  void waitToShutdown() throws InterruptedException;
 
-  }
+  void restarting() throws IOException;
 
-  @Override
-  public void init(TcpServer tcpServer) {
+  SocketAddress getBindAddress();
 
-  }
+  void setMembership(Membership<ID> membership);
+
+  void addHandler(Class<?> clazz, TcpHandler handler);
+
+  boolean isHandled(Class<?> clazz);
 }
