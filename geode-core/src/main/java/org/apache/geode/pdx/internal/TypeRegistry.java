@@ -14,8 +14,6 @@
  */
 package org.apache.geode.pdx.internal;
 
-import static java.lang.Integer.valueOf;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -118,16 +116,9 @@ public class TypeRegistry {
     synchronized (this) {
       PdxType pdxType = this.distributedTypeRegistry.getType(typeId);
       if (pdxType != null) {
-        // if (logger.isInfoEnabled()) {
-        // logger.info("Adding: {}", pdxType.toFormattedString());
-        // }
-        // if (logger.isDebugEnabled()) {
-        // logger.debug("Adding entry into pdx type registry, typeId: {} {}", typeId, pdxType);
-        // }
         return pdxType;
       }
     }
-
     return null;
   }
 
@@ -175,19 +166,11 @@ public class TypeRegistry {
   public PdxType defineType(PdxType newType) {
     int id = this.distributedTypeRegistry.defineType(newType);
     PdxType oldType = this.distributedTypeRegistry.getType(id);
-    if (oldType == null) {
-      newType.setTypeId(id);
-      if (logger.isInfoEnabled()) {
-        logger.info("Caching {}", newType.toFormattedString());
-      }
-      return newType;
-    } else {
-      if (!oldType.equals(newType)) {
-        Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType
-            + " new type=" + newType);
-      }
-      return oldType;
+    if (!oldType.equals(newType)) {
+      Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType
+          + " new type=" + newType);
     }
+    return oldType;
   }
 
   public void addRemoteType(int typeId, PdxType newType) {
@@ -332,7 +315,7 @@ public class TypeRegistry {
         result = id;
       } else {
         result = this.distributedTypeRegistry.getEnumId(anEnum);
-        id = valueOf(result);
+        id = result;
         this.localEnumIds.put(anEnum, id);
       }
     }
@@ -340,10 +323,12 @@ public class TypeRegistry {
   }
 
   public void addRemoteEnum(int enumId, EnumInfo newInfo) {
-
     EnumInfo oldInfo = this.distributedTypeRegistry.getEnumById(enumId);
     if (oldInfo == null) {
       this.distributedTypeRegistry.addRemoteEnum(enumId, newInfo);
+      if (logger.isInfoEnabled()) {
+        logger.info("Adding, from remote WAN: {}", newInfo.toFormattedString());
+      }
     } else if (!oldInfo.equals(newInfo)) {
       Assert.fail("Old enum does not equal new enum for the same id. oldEnum=" + oldInfo
           + " new enum=" + newInfo);
@@ -353,11 +338,7 @@ public class TypeRegistry {
   public int defineEnum(EnumInfo newInfo) {
     int id = this.distributedTypeRegistry.defineEnum(newInfo);
     EnumInfo oldInfo = this.distributedTypeRegistry.getEnumById(id);
-    if (oldInfo == null) {
-      if (logger.isInfoEnabled()) {
-        logger.info("Caching PDX Enum: {}, dsid={} typenum={}", newInfo, id >> 24, id & 0xFFFFFF);
-      }
-    } else if (!oldInfo.equals(newInfo)) {
+    if (!oldInfo.equals(newInfo)) {
       Assert.fail("Old enum does not equal new enum for the same id. oldEnum=" + oldInfo
           + " newEnum=" + newInfo);
     }
@@ -473,6 +454,9 @@ public class TypeRegistry {
     }
 
     this.distributedTypeRegistry.addImportedEnum(enumId, importedEnum);
+    if (logger.isInfoEnabled()) {
+      logger.info("Importing type: {}", importedEnum.toFormattedString());
+    }
   }
 
   /**
@@ -491,6 +475,9 @@ public class TypeRegistry {
   }
 
   // accessors for unit test
+  Map<Enum<?>, Integer> getLocalEnumIds() {
+    return localEnumIds;
+  }
 
   Map<Class<?>, PdxType> getLocalTypeIds() {
     return localTypeIds;

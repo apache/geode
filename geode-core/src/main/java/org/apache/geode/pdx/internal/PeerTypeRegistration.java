@@ -347,7 +347,6 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public int defineType(PdxType newType) {
-    // statistics.typeDefined();
     verifyConfiguration();
     Integer existingId = reverseMap.getTypeId(newType);
     if (existingId != null) {
@@ -645,7 +644,6 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public int defineEnum(final EnumInfo newInfo) {
-    // statistics.enumDefined();
     verifyConfiguration();
     EnumId existingId = reverseMap.getEnumId(newInfo);
     if (existingId != null) {
