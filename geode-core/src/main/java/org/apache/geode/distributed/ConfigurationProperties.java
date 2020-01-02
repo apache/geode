@@ -2157,7 +2157,15 @@ public interface ConfigurationProperties {
   /**
    * The static String definition of the <i>"ssl-parameter-extension"</i> property
    *
-   * @since Geode 1.12
+   * <U>Description</U>SSLParameterExtension module name for Clients that want to use SSL Parameter
+   * extensions.
+   * Module must implement SSLParameterExtension interface.
+   * </p>
+   * <U>Default</U>: ""
+   * </p>
+   * <U>Since</U>: Geode 1.12
+   * </p>
+   * <U>Allowed values</U>: class name
    */
   String SSL_PARAMETER_EXTENSION = "ssl-parameter-extension";
 
