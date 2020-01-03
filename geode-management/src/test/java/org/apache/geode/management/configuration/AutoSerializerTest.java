@@ -35,7 +35,7 @@ public class AutoSerializerTest {
 
   @Test
   public void constructorWithNullPatterns() {
-    AutoSerializer autoSerializer = new AutoSerializer(true, null);
+    AutoSerializer autoSerializer = new AutoSerializer(true, (String[]) null);
     assertThat(autoSerializer.getPatterns()).isNull();
   }
 
