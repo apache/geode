@@ -23,6 +23,11 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * FinalCheckPassedMessage is sent from a member that has been performing suspect processing
+ * on another member in order to inform the cluster that the suspect seems to be alive.<br>
+ * No response is required.
+ */
 public class FinalCheckPassedMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
   private ID suspect;

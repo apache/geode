@@ -25,6 +25,11 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * A LeaveRequestMessage is sent by a member of the cluster when it intends to shut down.
+ * This informs other members of the cluster that they should not consider the shutdown to
+ * be abnormal. No response is required.
+ */
 public class LeaveRequestMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID>
     implements HasMemberID<ID> {
   private ID memberID;

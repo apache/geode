@@ -25,6 +25,19 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * A membership coordinator will send InstallViewMessages to other members when a node
+ * in the cluster joins or leaves. There are three types of IVMs:<br>
+ * 1) PREPARE informs other member of the intent to change membership. All members of the
+ * cluster are required to respond to this message. A non-responding member will be suspect and
+ * may be kicke out of the cluster. A member may respond to a PREPARE message to object
+ * due to having received a conflicting PREPARE message.<br>
+ * 2) INSTALL informs other members that all of the nodes recorded in the membership "view" have
+ * responded to a PREPARE message and that the enclosed view defines the current cluster.<br>
+ * 3) SYNC messages are periodically broadcast to ensure that all members of the cluster
+ * know the current cluster membership.<br>
+ * The first two types of InstallViewMessage require a ViewAckMessage in response.
+ */
 public class InstallViewMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
   enum messageType {

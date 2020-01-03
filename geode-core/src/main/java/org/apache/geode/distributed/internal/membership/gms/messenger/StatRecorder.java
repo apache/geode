@@ -33,10 +33,8 @@ import org.apache.geode.distributed.internal.membership.api.MembershipStatistics
 import org.apache.geode.distributed.internal.membership.gms.Services;
 
 /**
- * JGroups doesn't capture quite the stats we want so this protocol is inserted into the stack to
+ * JGroups doesn't capture the stats we want so this protocol is inserted into the stack to
  * gather the missing ones.
- *
- *
  */
 public class StatRecorder<ID extends MemberIdentifier> extends Protocol {
 

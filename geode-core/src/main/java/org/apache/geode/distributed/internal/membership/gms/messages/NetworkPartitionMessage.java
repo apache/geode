@@ -24,6 +24,13 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * A member that has detected loss of quorum will elect itself to be the membership
+ * coordinator and will send a NetworkPartitionMessage to the rest of the cluster
+ * No response is required.
+ *
+ * @param <ID>
+ */
 public class NetworkPartitionMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
   public NetworkPartitionMessage() {}

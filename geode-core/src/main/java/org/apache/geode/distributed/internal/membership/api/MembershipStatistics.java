@@ -14,6 +14,10 @@
  */
 package org.apache.geode.distributed.internal.membership.api;
 
+/**
+ * Create and install a MembershipStatistics in your MembershipBuilder if you want to
+ * record membership stats
+ */
 public interface MembershipStatistics {
   long startMsgSerialization();
 

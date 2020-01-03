@@ -19,6 +19,10 @@ import java.util.Properties;
 import org.apache.geode.distributed.internal.membership.api.Authenticator;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 
+/**
+ * AuthenticatorNoOp is the default Authenticator for a Membership. Create and install your own
+ * if you want to authenticate prospective members.
+ */
 public class AuthenticatorNoOp<ID extends MemberIdentifier> implements Authenticator<ID> {
   @Override
   public String authenticate(final ID member, final Properties credentials) {

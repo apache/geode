@@ -16,6 +16,10 @@ package org.apache.geode.distributed.internal.membership.gms;
 
 import org.apache.geode.distributed.internal.membership.api.MembershipStatistics;
 
+/**
+ * MembeshipStatisticsNoOp is the default implementation of MembershipStatistics. Create
+ * and install your own if you want to record membership stats.
+ */
 public class MembershipStatisticsNoOp implements MembershipStatistics {
   @Override
   public long startMsgSerialization() {

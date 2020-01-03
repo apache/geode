@@ -12,25 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.api;
-
-import java.util.Comparator;
-
-
 /**
- * A MemberIdentifierFactory is provided when building a membership service. It must provide
- * implementations of the MemberIdentifier interface for use as identifiers in the membership
- * service. For Geode this implementation is InternalDistributedMember.<br>
- * See {@link MembershipBuilder} - where you inject your factory into a Membership.
+ * The membership package implements cluster membership services. It is used to build a
+ * Membership instance using a MembershipBuilder. The builder allows plugging in listeners
+ * for various kinds of events (new member, departed member, unexpected shutdown, etc).
+ * <p>
+ * Once a Membership is created it must be started using its start() method.
+ * <p>
+ * The "api" package contains builders and interfaces for Membership.
+ * <p>
+ * The "gms" package contains the implementation of membership services. Class GMSMembership
+ * is the primary class in that package. It encapsulates a Services object that handles
+ * startup and shutdown of the various services (messaging, cluster membership, failure
+ * detection).
  */
-public interface MemberIdentifierFactory<ID extends MemberIdentifier> {
-  /**
-   * Create a new identifier instance
-   */
-  ID create(MemberData memberInfo);
-
-  /**
-   * Create a Comparator for the implementation of identifiers provided by this factory
-   */
-  Comparator<ID> getComparator();
-}
+package org.apache.geode.distributed.internal.membership;

@@ -25,6 +25,11 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * GetViewResponse is sent from one Locator to another in response to a GetViewRequest.
+ * It allows a Locator that is already in the cluster to inform a new Locator of who
+ * is in the cluster.
+ */
 public class GetViewResponse<ID extends MemberIdentifier> implements DataSerializableFixedID {
 
   private GMSMembershipView<ID> view;

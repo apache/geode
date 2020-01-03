@@ -24,6 +24,18 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * A JoinRequestMessage is sent from a prospective member of the cluster to a node
+ * that it believes is the coordinator. Members should retain this message in the
+ * event that they become the coordinator and need to send out a membership view
+ * allowing the prospective member to join. A member that is already filling the role
+ * of coordinator will prepare and install a new membership view allowing the prospect
+ * to join.<br>
+ * A prospective member is not part of the cluster until an InstallViewMessage(INSTALL) has
+ * been sent to the cluster. At that time the membership view will contain its valid
+ * membership address, including it's view ID. This must be registered in the new member's
+ * MemberData. Failure to do so may result in the new member being kicked out of the cluster.
+ */
 public class JoinRequestMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
   private ID memberID;
   private Object credentials;

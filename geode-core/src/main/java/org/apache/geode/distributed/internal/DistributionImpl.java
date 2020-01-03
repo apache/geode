@@ -906,7 +906,7 @@ public class DistributionImpl implements Distribution {
     }
 
     @Override
-    public void setLocalAddress(final InternalDistributedMember address) {
+    public void joinCompleted(final InternalDistributedMember address) {
       distribution.setDirectChannelLocalAddress(address);
     }
 

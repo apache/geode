@@ -18,6 +18,11 @@ import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.distributed.internal.membership.api.MemberStartupException;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 
+/**
+ * The JoinLeave service is responsible for joining and leaving the cluster. It must
+ * also fill the role of cluster coordinator and respond to join/leave/remove-member
+ * events by sending out new membership views when appropriate.
+ */
 public interface JoinLeave<ID extends MemberIdentifier> extends Service<ID> {
 
   /**

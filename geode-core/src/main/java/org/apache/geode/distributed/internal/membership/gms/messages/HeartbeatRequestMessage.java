@@ -23,6 +23,11 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * A member of the cluster sends a HeartbeatRequestMessage to another member if it suspects
+ * that member is gone. A member receiving one of these messages should respond with a
+ * HeartbeatMessage having the same requestId as this message.
+ */
 public class HeartbeatRequestMessage<ID extends MemberIdentifier> extends AbstractGMSMessage<ID> {
 
   int requestId;

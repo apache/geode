@@ -27,6 +27,10 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * FindCoordinatorRequest is a message intended to be sent via a TcpClient to a Locator.
+ * It is used during startup to discover the cluster's membership coordinator.
+ */
 public class FindCoordinatorRequest<ID extends MemberIdentifier> extends AbstractGMSMessage<ID>
     implements PeerLocatorRequest {
 

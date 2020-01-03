@@ -21,7 +21,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 
 /**
- * Services in GMS all implement this interface
+ * Membership services in GMS all implement this interface
  *
  */
 public interface Service<ID extends MemberIdentifier> {

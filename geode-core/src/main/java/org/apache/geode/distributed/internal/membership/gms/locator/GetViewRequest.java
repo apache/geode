@@ -23,6 +23,10 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * GetViewRequest is sent via TcpClient from one Locator to another during startup.
+ * It lets the new Locator discover the current cluster membership view.
+ */
 public class GetViewRequest implements DataSerializableFixedID, PeerLocatorRequest {
 
   public GetViewRequest() {}

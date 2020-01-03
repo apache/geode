@@ -23,6 +23,17 @@ import java.util.function.Supplier;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 
+/**
+ * Membership encapsulates membership services. Use MembershipBuilder to create a
+ * Membership instance. Create and install a MembershipListener implementation using
+ * the builder if you want to receive notification of membership events. Create and install
+ * a LifecycleListener using the builder if you want to receive notification of lifecycle
+ * events (start/disconnect/etc.). Create and install a MessageListener to receive messages
+ * sent by other members over UDP communications.
+ * <p>
+ * Once you've created a Membership instance use the start() method to boot it up and
+ * join the cluster.
+ */
 public interface Membership<ID extends MemberIdentifier> {
   /**
    * Fetch the current view of memberships in th distributed system, as an ordered list.

@@ -22,6 +22,11 @@ import org.apache.geode.distributed.internal.membership.api.MemberDataBuilder;
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.serialization.Version;
 
+/**
+ * MemberDataBuilderImpl is the implementation of MemberDataBuilder. It constructs a
+ * MemberData and is exposed to geode-core to support construction of identifiers in
+ * deserialization code and in tests.
+ */
 public class MemberDataBuilderImpl implements MemberDataBuilder {
 
   private static final String EMPTY_STRING = "";

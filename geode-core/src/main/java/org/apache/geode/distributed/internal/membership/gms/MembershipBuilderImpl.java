@@ -30,6 +30,10 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpSocketCreator;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 
+/**
+ * MembershipBuilderImpl is the implementation of MembershipBuilder. It can construct
+ * a GMSMembership.
+ */
 public class MembershipBuilderImpl<ID extends MemberIdentifier> implements MembershipBuilder<ID> {
   private TcpSocketCreator socketCreator;
   private TcpClient locatorClient;

@@ -17,6 +17,10 @@ package org.apache.geode.distributed.internal.membership.api;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Create and install a MembershipListener in your MembershipBuilder if you want to receive
+ * notification of membership events such as a new membership view or loss of quorum.
+ */
 public interface MembershipListener<ID extends MemberIdentifier> {
 
   /** this method is invoked when the processing of a new view is completed */

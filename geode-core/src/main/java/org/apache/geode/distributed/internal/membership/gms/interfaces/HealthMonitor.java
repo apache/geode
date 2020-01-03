@@ -17,6 +17,10 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 
+/**
+ * A HealthMonitor service is responsible for monitoring other members of the
+ * cluster and initiating suspect processing for members that seem unresponsive.
+ */
 public interface HealthMonitor<ID extends MemberIdentifier> extends Service<ID> {
 
   /**
