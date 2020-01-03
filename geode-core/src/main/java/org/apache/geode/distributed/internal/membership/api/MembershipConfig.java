@@ -222,4 +222,8 @@ public interface MembershipConfig {
   default boolean getIsReconnectingDS() {
     return DEFAULT_IS_RECONNECTING_DS;
   }
+
+  default boolean getHasLocator() {
+    return false;
+  }
 }

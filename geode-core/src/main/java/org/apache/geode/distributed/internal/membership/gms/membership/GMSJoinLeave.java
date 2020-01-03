@@ -1684,7 +1684,7 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
 
     if (services.getConfig().areLocatorsPreferredAsCoordinators()) {
       boolean preferred = false;
-      if (services.getLocator() != null
+      if (services.getLocator() != null || services.getConfig().getHasLocator()
           || !services.getConfig().getStartLocator().isEmpty()
           || localAddress.getMemberData().getVmKind() == MemberIdentifier.LOCATOR_DM_TYPE) {
         logger
