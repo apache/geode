@@ -30,11 +30,11 @@ done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 INSTANCE_NAME="$(cat instance-data/instance-name)"
-ZONE="$(cat instance-data/zone)"
-
+PERMITTED_ZONES=($(gcloud compute zones list --filter="name~'us-central.*'" --format=json | jq -r .[].name))
 
 echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
 
-gcloud compute instances delete ${INSTANCE_NAME} \
-  --zone=${ZONE} \
-  --quiet || true
+# Ensure no existing instance with this name in any zone
+for KILL_ZONE in $(echo ${PERMITTED_ZONES[*]}); do
+  gcloud compute instances delete ${INSTANCE_NAME} --zone=${KILL_ZONE} --quiet &>/dev/null || true
+done

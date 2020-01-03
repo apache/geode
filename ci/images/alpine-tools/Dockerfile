@@ -16,8 +16,8 @@
 FROM openjdk:8-jdk-alpine
 
 COPY --from=google/cloud-sdk:alpine /google-cloud-sdk /google-cloud-sdk
-COPY --from=hashicorp/packer:latest /bin/packer /usr/local/bin/packer
-COPY --from=hashicorp/packer:1.3.5 /bin/packer /usr/local/bin/packer135
+#COPY --from=hashicorp/packer:latest /bin/packer /usr/local/bin/packer
+COPY --from=hashicorp/packer:1.4.5 /bin/packer /usr/local/bin/packer
 ENV PATH /google-cloud-sdk/bin:$PATH
 RUN apk --no-cache add \
       bash \

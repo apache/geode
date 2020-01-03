@@ -281,7 +281,7 @@ jobs:
         - name: attempts-log
           path: new
         - name: instance-data
-      timeout: 15m
+      timeout: 20m
       attempts: 5
       on_failure:
         task: delete_instance
@@ -560,7 +560,7 @@ jobs:
       - name: instance-data
       - name: attempts-log
         path: new
-    timeout: 15m
+    timeout: 20m
     attempts: 5
   - task: rsync_code_up
     image: alpine-tools-image
@@ -648,7 +648,7 @@ jobs:
             path: instance-data
           - name: attempts-log
             path: new
-        timeout: 15m
+        timeout: 20m
         attempts: 5
       - do:
         - task: rsync_code_up-{{java_test_version.name}}
