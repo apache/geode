@@ -31,7 +31,6 @@ import org.apache.geode.management.internal.rest.controllers.ManagementControlle
 
 public class ManagementLoggingFilter extends OncePerRequestFilter {
 
-  // Because someone is going to want to disable this.
   private static final Boolean ENABLE_REQUEST_LOGGING =
       Boolean.parseBoolean(System.getProperty("geode.management.request.logging", "false"));
 
@@ -76,6 +75,10 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
         wrappedRequest.getCharacterEncoding());
     String message = String.format(requestPattern, request.getMethod(), requestUrl,
         request.getRemoteUser(), payload);
+    logMessage(message);
+  }
+
+  private void logMessage(String message) {
     if (ENABLE_REQUEST_LOGGING) {
       logger.info(message);
     } else {
@@ -91,11 +94,7 @@ public class ManagementLoggingFilter extends OncePerRequestFilter {
         wrappedResponse.getCharacterEncoding());
     String message = String.format(responsePattern, response.getStatus(),
         ManagementControllerAdvice.removeClassFromJsonText(payload));
-    if (ENABLE_REQUEST_LOGGING) {
-      logger.info(message);
-    } else {
-      logger.debug(message);
-    }
+    logMessage(message);
   }
 
   private String getContentAsString(byte[] buf, String encoding) {

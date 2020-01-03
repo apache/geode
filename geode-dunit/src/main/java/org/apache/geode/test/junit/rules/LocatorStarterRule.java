@@ -60,7 +60,7 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
 
   public LocatorStarterRule() {
     // in test environment, enable management request/response logging
-    systemProperties.setProperty("geode.management.request.logging", "true");
+    withSystemProperty("geode.management.request.logging", "true");
   }
 
   @Override
